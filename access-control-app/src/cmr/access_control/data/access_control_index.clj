@@ -163,6 +163,10 @@
    :collection-access-value-max m/int-field-mapping
    :collection-access-value-include-undefined-value m/bool-field-mapping
 
+   :temporal-range-start-date m/date-field-mapping
+   :temporal-range-stop-date m/date-field-mapping
+   :temporal-mask m/string-field-mapping
+
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
 
@@ -170,6 +174,10 @@
 
    :legacy-guid (m/stored m/string-field-mapping)
    :legacy-guid.lowercase m/string-field-mapping
+
+   ;; Target will be the target of a system identity or a provider identity such as ANY_ACL.
+   :target (m/stored m/string-field-mapping)
+   :target.lowercase m/string-field-mapping
 
    ;; target-provider-id indexes the provider id of the provider-identity or
    ;; catalog-item-identity field of an acl, if present
@@ -210,14 +218,20 @@
       :else                    (errors/internal-error!
                                  (str "ACL was missing identity " (pr-str acl))))))
 
+;; values used to index identity type names in Elastic
+(def system-identity-type-name "System")
+(def single-instance-identity-type-name "Group")
+(def provider-identity-type-name "Provider")
+(def catalog-item-identity-type-name "Catalog Item")
+
 (defn acl->identity-type
   "Returns the identity type to index with the ACL."
   [acl]
   (cond
-    (:system-identity acl)          "System"
-    (:single-instance-identity acl) "Group"
-    (:provider-identity acl)        "Provider"
-    (:catalog-item-identity acl)    "Catalog Item"
+    (:system-identity acl)          system-identity-type-name
+    (:single-instance-identity acl) single-instance-identity-type-name
+    (:provider-identity acl)        provider-identity-type-name
+    (:catalog-item-identity acl)    catalog-item-identity-type-name
     :else                    (errors/internal-error!
                                (str "ACL was missing identity " (pr-str acl)))))
 
@@ -253,20 +267,33 @@
       {:collection-applicable true}
       {:collection-applicable false})))
 
+(defn- temporal-elastic-doc-map
+  "Returns map for temporal range values to be merged into full elastic doc"
+  [acl]
+  (when-let [temporal (:temporal (:collection-identifier (:catalog-item-identity acl)))]
+    {:temporal-range-start-date (:start-date temporal)
+     :temporal-range-stop-date (:stop-date temporal)
+     :temporal-mask (:mask temporal)}))
+
 (defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
         permitted-groups (acl->permitted-groups acl)
-        provider-id (acls/acl->provider-id acl)]
+        provider-id (acls/acl->provider-id acl)
+        target (:target (or (:system-identity acl)
+                            (:provider-identity acl)))]
     (merge
       (access-value-elastic-doc-map acl)
+      (temporal-elastic-doc-map acl)
       (assoc (select-keys concept-map [:concept-id :revision-id])
              :display-name (acl->display-name acl)
              :identity-type (acl->identity-type acl)
              :permitted-group permitted-groups
              :permitted-group.lowercase (map str/lower-case permitted-groups)
              :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
+             :target target
+             :target.lowercase (util/safe-lowercase target)
              :target-provider-id provider-id
              :target-provider-id.lowercase (util/safe-lowercase provider-id)
              :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))

@@ -12,22 +12,26 @@
 (defn get-sids
   "Returns a seq of sids for the given username string or user type keyword
    for use in checking permissions against acls."
-  [context username-or-type]
-  (if (contains? #{"guest" "registered"} (name username-or-type))
-    [(keyword username-or-type)]
-    (let [query (qm/query {:concept-type :access-group
-                           :condition (qm/string-condition :member username-or-type)
-                           :skip-acls? true
-                           :page-size :unlimited
-                           :result-format :query-specified
-                           :result-fields [:concept-id :legacy-guid]})
-          groups (:items (qe/execute-query context query))]
-      (distinct
+  ([context]
+   (let [token (:token context)
+         user (if token (echo-tokens/get-user-id context token) "guest")]
+     (get-sids context user)))
+  ([context username-or-type]
+   (if (contains? #{"guest" "registered"} (name username-or-type))
+     [(keyword username-or-type)]
+     (let [query (qm/query {:concept-type :access-group
+                            :condition (qm/string-condition :member username-or-type)
+                            :skip-acls? true
+                            :page-size :unlimited
+                            :result-format :query-specified
+                            :result-fields [:concept-id :legacy-guid]})
+           groups (:items (qe/execute-query context query))]
+       (distinct
         (concat [:registered]
                 ;; ACLs may be from ECHO or CMR, and may reference ECHO GUIDs as well as CMR concept IDs,
                 ;; depending on the context, so we will return both types of IDs here.
                 (keep :legacy-guid groups)
-                (keep :concept-id groups))))))
+                (keep :concept-id groups)))))))
 
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."

@@ -40,6 +40,15 @@
                                     :latest true}
                            :humanizer))
 
+(defn- concept->humanizers-map
+  "Convert the concept to the humanizer map. If the data is just a list of humanizers (before adding
+   community usage metrics), convert to a map before manipulting"
+  [concept]
+  (let [humanizers (json/parse-string (:metadata concept) true)]
+    (if (map? humanizers)
+      humanizers
+      {:humanizers humanizers})))
+
 (defn fetch-humanizer-concept
   "Fetches the latest version of a humanizer concept by humanizer-key"
   [context]
@@ -61,7 +70,7 @@
   [context key data]
   {:pre [(or (= key :humanizers) (= key :community-usage-metrics))]}
   (if-let [latest-concept (find-latest-humanizer-concept context)]
-    (let [humanizers (json/parse-string (:metadata latest-concept) true)
+    (let [humanizers (concept->humanizers-map latest-concept)
           humanizers (assoc humanizers key data) ; Overwrite just the data we are saving, not the whole file
           humanizer-concept (humanizer-concept context (json/generate-string humanizers) (inc (:revision-id latest-concept)))]
       (mdb/save-concept context humanizer-concept))

@@ -93,6 +93,7 @@
       (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
+
     (context "/site" []
       ;; Return swagger.json if the application provides one
       (GET "/swagger.json" {:keys [headers]}

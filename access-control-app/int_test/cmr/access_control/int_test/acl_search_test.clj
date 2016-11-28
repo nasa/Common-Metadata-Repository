@@ -1,12 +1,14 @@
 (ns cmr.access-control.int-test.acl-search-test
   (:require
+    [clj-time.core :as t]
     [clojure.test :refer :all]
     [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
     [cmr.access-control.test.util :as u]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as e]
-    [cmr.transmit.access-control :as ac]))
+    [cmr.transmit.access-control :as ac]
+    [cmr.umm.umm-collection :as c]))
 
 (use-fixtures :each
   (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2", "prov3guid" "PROV3",
@@ -177,27 +179,32 @@
                                       [{:group_id group3-concept-id :permissions ["read"]}]))
         acl5 (ingest-acl token (provider-acl "OPTION_DEFINITION"))
         acl6 (ingest-acl token (assoc-in (provider-acl "OPTION_DEFINITION")
-                                         [:provider_identity :provider_id] "PROV2"))]
+                                         [:provider_identity :provider_id] "PROV2"))
+        ;; Create an ACL with a catalog item identity for PROV1
+        acl7 (ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                :catalog_item_identity {:provider_id "PROV1"
+                                                        :name "PROV1 All Collections ACL"
+                                                        :collection_applicable true}})]
     (u/wait-until-indexed)
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:provider "PROV1"})]
-        (is (= (acls->search-response 3 [fixtures/*fixture-provider-acl* acl4 acl5])
+        (is (= (acls->search-response 4 [fixtures/*fixture-provider-acl* acl4 acl5 acl7])
                (dissoc response :took)))))
     (testing "Guest search permission"
       (let [token (e/login-guest (u/conn-context))
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 4 [fixtures/*fixture-provider-acl* acl3 acl5 acl6])
+        (is (= (acls->search-response 1 [acl7])
                (dissoc response :took)))))
     (testing "User search permission"
       (let [token (e/login (u/conn-context) "user1")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 8 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3 acl4 acl5 acl6])
+        (is (= (acls->search-response 9 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3 acl4 acl5 acl6 acl7])
                (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
       (let [token (e/login (u/conn-context) "user2")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (acls->search-response 2 [fixtures/*fixture-provider-acl* acl2])
+        (is (= (acls->search-response 1 [acl7])
                (dissoc response :took)))))))
 
 (deftest acl-search-test
@@ -683,9 +690,137 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-permitted-concept-id
+(deftest acl-search-permitted-concept-id-temporal
+   ;; This test is for searching ACLs by permitted concept id.  For a given
+   ;; collection concept id, acls granting permission to this collection by temporal
+   ;; are returned.
+  (let [token (e/login (u/conn-context) "user1")
+
+        coll1 (u/save-collection {:entry-title "coll1 entry title"
+                                  :short-name "coll1"
+                                  :native-id "coll1"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2010)
+                                                   :EndingDateTime (t/date-time 2011)}})
+
+        coll2 (u/save-collection {:entry-title "coll2 entry title"
+                                  :short-name "coll2"
+                                  :native-id "coll2"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009)
+                                                   :EndingDateTime (t/date-time 2010)}})
+
+        coll3 (u/save-collection {:entry-title "coll3 entry title"
+                                  :short-name "coll3"
+                                  :native-id "coll3"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2011)
+                                                   :EndingDateTime (t/date-time 2012)}})
+
+        coll4 (u/save-collection {:entry-title "coll4 entry title"
+                                  :short-name "coll4"
+                                  :native-id "coll4"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2011 1 1 0 0 1)
+                                                   :EndingDateTime (t/date-time 2012)}})
+
+        coll5 (u/save-collection {:entry-title "coll5 entry title"
+                                  :short-name "coll5"
+                                  :native-id "coll5"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009)
+                                                   :EndingDateTime (t/date-time 2009 12 31 12 59 59)}})
+
+        coll6 (u/save-collection {:entry-title "coll6 entry title"
+                                  :short-name "coll6"
+                                  :native-id "coll6"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009 12 31 12 59 59)
+                                                   :EndingDateTime (t/date-time 2012 1 1 0 0 1)}})
+
+        coll7 (u/save-collection {:entry-title "coll7 entry title"
+                                  :short-name "coll7"
+                                  :native-id "coll7"
+                                  :provider-id "PROV1"
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009 12 31 12 59 59)}})
+
+        coll8 (u/save-collection {:entry-title "coll8 entry title"
+                                  :short-name "coll8"
+                                  :native-id "coll8"
+                                  :provider-id "PROV1"
+                                  :temporal-singles #{(t/date-time 2012 1 1 0 0 1)}})
+
+        acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
+                                      :catalog_item_identity {:name "Access value 1-10"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 1 :max_value 10}}
+                                                              :provider_id "PROV1"}))
+        acl2 (ingest-acl token (catalog-item-acl "No collection identifier"))
+        acl3 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
+                                         [:catalog_item_identity :provider_id] "PROV2"))
+
+        acl4 (ingest-acl token (assoc (catalog-item-acl "Temporal contains")
+                                      :catalog_item_identity {:name "Temporal contains"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}}
+                                                              :provider_id "PROV1"}))
+        acl5 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
+                                      :catalog_item_identity {:name "Temporal intersect"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                                                                 :mask "intersect"}}
+                                                              :provider_id "PROV1"}))
+        acl6 (ingest-acl token (assoc (catalog-item-acl "Temporal disjoint")
+                                      :catalog_item_identity {:name "Temporal disjoint"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                                                                 :mask "disjoint"}}
+                                                              :provider_id "PROV1"}))]
+    (u/wait-until-indexed)
+    (testing "collection concept id search"
+      (are3 [params acls]
+        (let [response (ac/search-for-acls (u/conn-context) params)]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "coll1 test"
+        {:permitted-concept-id coll1}
+        [acl2 acl4 acl5]
+
+        "coll2 test"
+        {:permitted-concept-id coll2}
+        [acl2 acl5]
+
+        "coll3 test"
+        {:permitted-concept-id coll3}
+        [acl2 acl5]
+
+        "coll4 test"
+        {:permitted-concept-id coll4}
+        [acl2 acl6]
+
+        "coll5 test"
+        {:permitted-concept-id coll5}
+        [acl2 acl6]
+
+        "coll6 test"
+        {:permitted-concept-id coll6}
+        [acl2 acl5]
+
+        "coll7 test"
+        {:permitted-concept-id coll7}
+        [acl2 acl5]
+
+        "coll8 test"
+        {:permitted-concept-id coll8}
+        [acl2 acl6]))))
+
+(deftest acl-search-permitted-concept-id-access-value
   ;; This test is for searching ACLs by permitted concept id.  For a given
-  ;; collection concept id, acls granting permission to this collection by access value
+  ;; collection concept id, acls granting permission to this collection by access-value
   ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
         save-access-value-collection (fn [short-name access-value]
@@ -697,9 +832,9 @@
         ;; one collection with a low access value
         coll1 (save-access-value-collection "coll1" 1)
         ;; one with an intermediate access value
-        coll2 (save-access-value-collection "coll2" 4)
+        coll2 (save-access-value-collection "coll2" 2)
         ;; one with a higher access value
-        coll3 (save-access-value-collection "coll3" 10)
+        coll3 (save-access-value-collection "coll3" 3)
         ;; one with no access value
         coll4 (save-access-value-collection "coll4" nil)
         ;; one with FOO entry-title
@@ -707,53 +842,67 @@
                                   :short-name "coll5"
                                   :native-id "coll5"
                                   :provider-id "PROV1"})
-
+        ;; one with a different provider, shouldn't match
         coll6 (u/save-collection {:entry-title "coll6 entry title"
                                   :short-name "coll6"
                                   :native-id "coll6"
+                                  :access-value 2
                                   :provider-id "PROV2"})
 
-        coll7 (u/save-collection {:entry-title "coll7 entry title"
-                                  :short-name "coll7"
-                                  :native-id "coll7"
-                                  :access-value 1
-                                  :provider-id "PROV2"})
-
-        acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
-                                      :catalog_item_identity {:name "Access value 1-10"
+        ;; For testing that a full range encompassing multiple collections will
+        ;; properly match all collections
+        acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-3")
+                                      :catalog_item_identity {:name "Access value 1-3"
                                                               :collection_applicable true
-                                                              :collection_identifier {:access_value {:min_value 1 :max_value 10}}
+                                                              :collection_identifier {:access_value {:min_value 1 :max_value 3}}
                                                               :provider_id "PROV1"}))
 
+        ;; For testing a single access value, instead of a range of multiple access values
         acl2 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
                                       :catalog_item_identity {:name "Access value 1"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :provider_id "PROV1"}))
-
-        acl3 (ingest-acl token (assoc (catalog-item-acl "Access value 5-10")
-                                      :catalog_item_identity {:name "Access value 5-10"
+        ;; For testing a range, but one that doesn't include all posssible collections, with min value checked
+        acl3 (ingest-acl token (assoc (catalog-item-acl "Access value 1-2")
+                                      :catalog_item_identity {:name "Access value 1-2"
                                                               :collection_applicable true
-                                                              :collection_identifier {:access_value {:min_value 5 :max_value 10}}
+                                                              :collection_identifier {:access_value {:min_value 1 :max_value 2}}
                                                               :provider_id "PROV1"}))
-        acl4 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
+        ;; For testing a range, but one that doesn't include all posssible collections, with max value checked
+        acl4 (ingest-acl token (assoc (catalog-item-acl "Access value 2-3")
+                                      :catalog_item_identity {:name "Access value 2-3"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 2 :max_value 3}}
+                                                              :provider_id "PROV1"}))
+        ;; For testing an access value which will match no collections
+        acl5 (ingest-acl token (assoc (catalog-item-acl "Access value 4")
+                                      :catalog_item_identity {:name "Access value 4"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:access_value {:min_value 4 :max_value 4}}
+                                                              :provider_id "PROV1"}))
+        ;; For testing on undefined access values
+        acl6 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
                                       :catalog_item_identity {:name "include undefined value"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:include_undefined_value true}}
                                                               :provider_id "PROV1"}))
-        acl5 (ingest-acl token (catalog-item-acl "No collection identifier"))
-        acl6 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
+
+        ;; For testing that an ACL with no collection identifier will still match collections with
+        ;; access values
+        acl7 (ingest-acl token (catalog-item-acl "No collection identifier"))
+        ;; Same as above, but with a different provider.
+        acl8 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
+                                         [:catalog_item_identity :provider_id] "PROV2"))
+        ;; For testing that an ACL with a collection identifier other than access values
+        ;; does not match
+        acl9 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
                                       :catalog_item_identity {:name "Entry titles FOO"
                                                               :collection_applicable true
                                                               :collection_identifier {:entry_titles ["FOO"]}
-                                                              :provider_id "PROV1"}))
-        acl7 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10 for granule")
-                                      :catalog_item_identity {:name "Access value 1-10 for granule"
-                                                              :granule_applicable true
-                                                              :granule_identifier {:access_value {:min_value 1 :max_value 10}}
-                                                              :provider_id "PROV1"}))
-        acl9 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
-                                         [:catalog_item_identity :provider_id] "PROV2"))]
+                                                              :provider_id "PROV1"}))]
+
+
     (u/wait-until-indexed)
     (testing "collection concept id search"
       (are3 [params acls]
@@ -762,29 +911,25 @@
                  (dissoc response :took))))
         "coll1 test"
         {:permitted-concept-id coll1}
-        [acl1 acl2 acl5]
+        [acl1 acl2 acl3 acl7]
 
         "coll2 test"
         {:permitted-concept-id coll2}
-        [acl1 acl5]
+        [acl1 acl3 acl4 acl7]
 
         "coll3 test"
         {:permitted-concept-id coll3}
-        [acl1 acl3 acl5]
+        [acl1 acl4 acl7]
 
         "coll4 test"
         {:permitted-concept-id coll4}
-        [acl4 acl5]
+        [acl6 acl7]
 
         ;; Will eventually also return acl6
         "coll5 test"
         {:permitted-concept-id coll5}
-        [acl5]
+        [acl7]
 
         "coll6 test"
         {:permitted-concept-id coll6}
-        [acl9]
-
-        "coll7 test"
-        {:permitted-concept-id coll7}
-        [acl9]))))
+        [acl8]))))

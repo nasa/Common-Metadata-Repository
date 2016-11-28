@@ -4,6 +4,7 @@
   (:require [cmr.common-app.services.search.query-model :as q]
             [cmr.common.services.errors :as errors]
             [cmr.common-app.services.search.condition-merger :as condition-merger])
+  (:refer-clojure :exclude [and or])
   (:import [cmr.common_app.services.search.query_model
             ConditionGroup]))
 
@@ -13,8 +14,8 @@
   conditions of those condition groups"
   [operation conditions]
   (mapcat (fn [c]
-            (if (and (= (type c) ConditionGroup)
-                     (= operation (:operation c)))
+            (if (clojure.core/and (= (type c) ConditionGroup)
+                                  (= operation (:operation c)))
               (:conditions c)
               [c]))
           conditions))
@@ -77,11 +78,21 @@
       (q/->ConditionGroup operation conditions))))
 
 (defn and-conds
-  "Combines conditions in an AND condition."
+  "Returns a condition representing conditions combined using a logical AND."
   [conditions]
   (group-conds :and conditions))
 
 (defn or-conds
-  "Combines conditions in an OR condition."
+  "Returns a condition representing conditions combined using a logical OR."
   [conditions]
   (group-conds :or conditions))
+
+(defn and
+  "Like and-conds but variadic."
+  [& conds]
+  (and-conds conds))
+
+(defn or
+  "Like or-conds but variadic."
+  [& conds]
+  (or-conds conds))

@@ -2867,7 +2867,7 @@ Content-Length: 292
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 
-Community usage metrics are metrics showing how many times a particular version of a collection has been accessed. Storing these metrics offers improved relevancy based on collection popularity. The metrics are obtained from the ESDID Metrics System (EMS) and ingested into the system through this API.
+Community usage metrics are metrics showing how many times a particular version of a collection has been accessed. Storing these metrics offers improved relevancy based on collection popularity. The metrics are obtained from the ESDIS Metrics System (EMS) and ingested into the system through this API.
 
 #### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 

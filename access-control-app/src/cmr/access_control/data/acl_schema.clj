@@ -10,6 +10,10 @@
                 (name id)
                 id))})
 
+;; NOTE: certain target values that are used in code are defined as vars here
+
+(def system-any-acl-target "ANY_ACL")
+
 (def system-object-targets
   "A collection of valid system_object.target values."
   ["SYSTEM_AUDIT_REPORT"
@@ -28,7 +32,7 @@
    "USER_CONTEXT"
    "USER"
    "GROUP"
-   "ANY_ACL"
+   system-any-acl-target
    "EVENT_NOTIFICATION"
    "EXTENDED_SERVICE"
    "SYSTEM_OPTION_DEFINITION"
@@ -37,6 +41,8 @@
    "SYSTEM_CALENDAR_EVENT"])
 
 (def ingest-management-acl-target "INGEST_MANAGEMENT_ACL")
+(def provider-catalog-item-acl-target "CATALOG_ITEM_ACL")
+(def provider-object-acl-target "PROVIDER_OBJECT_ACL")
 
 (def provider-object-targets
   "A collection of valid provider_object.target values."
@@ -59,8 +65,8 @@
    "PROVIDER_POLICIES"
    "USER"
    "GROUP"
-   "PROVIDER_OBJECT_ACL"
-   "CATALOG_ITEM_ACL"
+   provider-object-acl-target
+   provider-catalog-item-acl-target
    ingest-management-acl-target
    "DATA_QUALITY_SUMMARY_DEFINITION"
    "DATA_QUALITY_SUMMARY_ASSIGNMENT"

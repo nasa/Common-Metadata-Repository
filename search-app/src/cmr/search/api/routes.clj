@@ -316,6 +316,9 @@
 (defn- build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
+      (GET "/robots.txt" req {:status 200
+                              :body (slurp (io/resource "public/robots.txt"))})
+
       (context relative-root-url []
 
         ;; Add routes for tagging
