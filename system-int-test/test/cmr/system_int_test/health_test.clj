@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.test :refer :all]
+   [clojure.string :as str]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as tk]
    [cmr.elastic-utils.connect :as es-util]
@@ -50,6 +51,13 @@
                   :message-queue {:ok? true}
                   :cubby good-cubby-health
                   :indexer good-indexer-health}})
+
+(deftest robots-dot-txt-test
+  (let [robots (client/get "http://localhost:3003/robots.txt"
+                           {:accept :text
+                            :connection-manager (s/conn-mgr)})
+        body (str/split-lines (:body robots))]
+   (is (= "User-agent: *" (first body)))))
 
 (deftest index-set-health-test
   (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]

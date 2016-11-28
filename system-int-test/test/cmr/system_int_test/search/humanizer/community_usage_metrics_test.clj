@@ -168,3 +168,18 @@
     (is concept-id)
     (is (= 1 revision-id))
     (hu/assert-humanizers-saved {:community-usage-metrics sample-aggregation-data} "admin" concept-id revision-id)))
+
+(deftest commas-in-access-count-test
+  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
+
+  (testing "Successful community usage aggregation")
+  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])
+        {:keys [status concept-id revision-id]}
+        (hu/update-community-usage-metrics admin-update-token
+                                           "\"Product\",\"Version\",\"Hosts\"\n\"AMSR-L1A\",\"3\",\"4,186\"")]
+    (is (= 201 status))
+    (hu/assert-humanizers-saved
+     {:community-usage-metrics[{:short-name "AMSR-L1A"
+                                :version "3"
+                                :access-count 4186}]}
+     "admin" concept-id revision-id)))

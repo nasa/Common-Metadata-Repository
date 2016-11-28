@@ -119,8 +119,8 @@
                               {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
                                :single_instance_identity {:target_id group1-concept-id
                                                           :target "GROUP_MANAGEMENT"}}
-                              {:token token}))))
-    ))
+                              {:token token}))))))
+
 
 (deftest create-provider-acl-permission-test
   ;; Tests user permission to create provider acls
@@ -576,7 +576,8 @@
         resp (ac/update-acl (u/conn-context) concept-id (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) {:token token})]
     (is (= concept-id (:concept_id resp)))
     (is (= 2 (:revision_id resp)))
-    (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id) (ac/get-acl (u/conn-context) concept-id {:token token})))))
+    (is (= (assoc-in single-instance-acl [:single_instance_identity :target_id] group2-concept-id)
+           (ac/get-acl (u/conn-context) concept-id {:token token})))))
 
 (deftest update-acl-errors-test
   (let [token (e/login (u/conn-context) "admin")
@@ -682,13 +683,17 @@
 
 (deftest update-acl-invalid-data-test
   (let [token (e/login (u/conn-context) "admin")
-        {provider-concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})]
+        {concept-id :concept_id} (ac/create-acl (u/conn-context) provider-acl {:token token})]
     (testing "updating an ACL to change its legacy guid"
       (is (thrown-with-msg?
             Exception
             #"ACL legacy guid cannot be updated, was \[ABCD-EFG-HIJK-LMNOP\] and now \[XYZ-EFG-HIJK-LMNOP\]"
-            (ac/update-acl (u/conn-context) provider-concept-id
-                           (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))))
+            (ac/update-acl (u/conn-context) concept-id
+                           (assoc provider-acl :legacy_guid "XYZ-EFG-HIJK-LMNOP") {:token token}))))
+    (testing "Updating an ACL with an empty legacy guid is permitted"
+      (let [response (ac/update-acl (u/conn-context) concept-id (dissoc provider-acl :legacy_guid))]
+        (is (= {:concept_id concept-id :revision_id 2} response))
+        (is (= (:legacy_guid provider-acl) (:legacy_guid (ac/get-acl (u/conn-context) concept-id))))))))
 
 (deftest delete-acl-test
   (let [token (e/login-guest (u/conn-context))

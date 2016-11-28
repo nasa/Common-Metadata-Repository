@@ -163,6 +163,10 @@
    :collection-access-value-max m/int-field-mapping
    :collection-access-value-include-undefined-value m/bool-field-mapping
 
+   :temporal-range-start-date m/date-field-mapping
+   :temporal-range-stop-date m/date-field-mapping
+   :temporal-mask m/string-field-mapping
+
    :permitted-group (m/stored m/string-field-mapping)
    :permitted-group.lowercase m/string-field-mapping
 
@@ -263,6 +267,14 @@
       {:collection-applicable true}
       {:collection-applicable false})))
 
+(defn- temporal-elastic-doc-map
+  "Returns map for temporal range values to be merged into full elastic doc"
+  [acl]
+  (when-let [temporal (:temporal (:collection-identifier (:catalog-item-identity acl)))]
+    {:temporal-range-start-date (:start-date temporal)
+     :temporal-range-stop-date (:stop-date temporal)
+     :temporal-mask (:mask temporal)}))
+
 (defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
@@ -272,21 +284,22 @@
         target (:target (or (:system-identity acl)
                             (:provider-identity acl)))]
     (merge
-     (access-value-elastic-doc-map acl)
-     (assoc (select-keys concept-map [:concept-id :revision-id])
-            :display-name (acl->display-name acl)
-            :identity-type (acl->identity-type acl)
-            :permitted-group permitted-groups
-            :permitted-group.lowercase (map str/lower-case permitted-groups)
-            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
-            :target target
-            :target.lowercase (util/safe-lowercase target)
-            :target-provider-id provider-id
-            :target-provider-id.lowercase (util/safe-lowercase provider-id)
-            :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
-            :legacy-guid (:legacy-guid acl)
-            :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
-                                     (str/lower-case legacy-guid))))))
+      (access-value-elastic-doc-map acl)
+      (temporal-elastic-doc-map acl)
+      (assoc (select-keys concept-map [:concept-id :revision-id])
+             :display-name (acl->display-name acl)
+             :identity-type (acl->identity-type acl)
+             :permitted-group permitted-groups
+             :permitted-group.lowercase (map str/lower-case permitted-groups)
+             :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
+             :target target
+             :target.lowercase (util/safe-lowercase target)
+             :target-provider-id provider-id
+             :target-provider-id.lowercase (util/safe-lowercase provider-id)
+             :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
+             :legacy-guid (:legacy-guid acl)
+             :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
+                                      (str/lower-case legacy-guid))))))
 
 (defn index-acl
   "Indexes ACL concept map."

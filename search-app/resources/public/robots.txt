@@ -1,0 +1,21 @@
+User-agent: *
+Disallow: /ingest/health
+Disallow: /ingest/providers/
+Disallow: /ingest/translate/
+Disallow: /ingest/jobs/
+
+Disallow: /search/health
+Disallow: /search/tiles/
+Disallow: /search/reset
+Disallow: /search/community-usage-metrics
+Disallow: /search/humanizers/
+Disallow: /search/concepts/
+Disallow: /search/granules/
+Disallow: /search/collections/
+
+Disallow: /opensearch/granules/
+
+Disallow: /access-control/groups/
+Disallow: /access-control/acls/
+Disallow: /access-control/permissions/
+Disallow: /access-control/health

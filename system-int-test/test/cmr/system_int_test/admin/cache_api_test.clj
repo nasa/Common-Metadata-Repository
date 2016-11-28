@@ -71,7 +71,8 @@
         (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
 
         (url/indexer-read-caches-url) ["acls" "indexer-index-set-cache" "token-imp" "kms" "health"
-                                       "collection-granule-aggregation-cache" "humanizer-cache"]
+                                       "collection-granule-aggregation-cache" "humanizer-cache"
+                                       "usage-metrics-cache"]
         (url/index-set-read-caches-url) ["token-imp" "health"]
         (url/mdb-read-caches-url) ["token-imp" "health"]
         (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"

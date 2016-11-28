@@ -28,6 +28,7 @@
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.data.humanizer-fetcher :as hf]
    [cmr.indexer.data.index-set :as index-set]
+   [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.indexer.services.event-handler :as event-handler]
    [cmr.message-queue.config :as queue-config]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
@@ -62,6 +63,7 @@
                       kf/kms-cache-key (kf/create-kms-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
                       hf/humanizer-cache-key (hf/create-cache)
+                      metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
