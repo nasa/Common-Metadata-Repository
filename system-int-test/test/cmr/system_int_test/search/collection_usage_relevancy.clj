@@ -14,7 +14,8 @@
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.search.data.query-to-elastic :as query-to-elastic]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -36,7 +37,7 @@
     (index/wait-until-indexed))))
 
 (deftest community-usage-relevancy-scoring
-  (config/set-config-value! :sort-use-relevancy-score true)
+  (query-to-elastic/set-sort-use-relevancy-score! true)
   (ingest-community-usage-metrics)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
@@ -63,12 +64,12 @@
       (is (= "Relevancy 4" (:name (last results))))))
 
   (testing "Turn off using relevancy score"
-    (config/set-config-value! :sort-use-relevancy-score false)
+    (query-to-elastic/set-sort-use-relevancy-score! false)
     (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
       (is (= ["Relevancy 4" "Relevancy 3" "Relevancy 2" "Relevancy 1"] (map :name results))))))
 
 (deftest keyword-relevancy-takes-precedence
-  (config/set-config-value! :sort-use-relevancy-score true)
+  (query-to-elastic/set-sort-use-relevancy-score! true)
   (ingest-community-usage-metrics)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
@@ -96,7 +97,7 @@
              (map :name results))))))
 
 (deftest ingest-metrics-after-collections
-  (config/set-config-value! :sort-use-relevancy-score true)
+  (query-to-elastic/set-sort-use-relevancy-score! true)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
                                     :version-id "3"}))
@@ -113,7 +114,7 @@
     (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
 (deftest change-metrics
-  (config/set-config-value! :sort-use-relevancy-score true)
+  (query-to-elastic/set-sort-use-relevancy-score! true)
   (ingest-community-usage-metrics)
 
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
@@ -138,7 +139,7 @@
 
 ;; Outside of keyword search, allow the user to sort by community usage
 (deftest sort-by-community-usage
-  (config/set-config-value! :sort-use-relevancy-score true)
+  (query-to-elastic/set-sort-use-relevancy-score! true)
   (ingest-community-usage-metrics)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A" ;10
                                     :entry-title "Relevancy 1"
@@ -170,7 +171,7 @@
        "AG_MAPSS,2,30\n"))
 
 (deftest community-usage-not-provided-versions
-  (config/set-config-value! :sort-use-relevancy-score true)
+  (query-to-elastic/set-sort-use-relevancy-score! true)
   (ingest-community-usage-metrics sample-csv-not-provided-versions)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "AMSR-L1A V3 Relevancy"
