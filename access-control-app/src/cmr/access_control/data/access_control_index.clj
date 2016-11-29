@@ -154,11 +154,11 @@
   {:concept-id (m/stored m/string-field-mapping)
    :revision-id (m/stored m/int-field-mapping)
 
-   ;; collection-applicable is used in the access value condition to avoid
-   ;; applying the min max or undefined value conditions to catalog-item-identity
-   ;; acls that don't include collection-applicable
    :collection-identifier m/bool-field-mapping
    :collection-applicable m/bool-field-mapping
+
+   :entry-title m/string-field-mapping
+
    :collection-access-value-min m/int-field-mapping
    :collection-access-value-max m/int-field-mapping
    :collection-access-value-include-undefined-value m/bool-field-mapping
@@ -275,6 +275,12 @@
      :temporal-range-stop-date (:stop-date temporal)
      :temporal-mask (:mask temporal)}))
 
+(defn- entry-title-elastic-doc-map
+  "Returns map for entry titles to be merged into full elastic doc"
+  [acl]
+  (when-let [entry-titles (get-in acl [:catalog-item-identity :collection-identifier :entry-titles])]
+    {:entry-title entry-titles}))
+
 (defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
@@ -286,6 +292,7 @@
     (merge
       (access-value-elastic-doc-map acl)
       (temporal-elastic-doc-map acl)
+      (entry-title-elastic-doc-map acl)
       (assoc (select-keys concept-map [:concept-id :revision-id])
              :display-name (acl->display-name acl)
              :identity-type (acl->identity-type acl)
