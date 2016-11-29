@@ -24,7 +24,9 @@
 (defconfig sort-use-relevancy-score
   "Indicates whether in keyword search sorting if the community usage relevancy score should be used
   to sort collections. If true, consider the usage score as a tie-breaker when keyword relevancy
-  scores or the same. If false, no tie-breaker is applied"
+  scores or the same. If false, no tie-breaker is applied.
+  This config is here to allow for the usage score to be turned off until elastic indexes are updated-since
+  so keyword search will not be broken"
   {:type Boolean
    :default false})
 
