@@ -11,6 +11,7 @@
       {"type": "trim_whitespace", "field": "project", "order": -100},
       {"type": "trim_whitespace", "field": "processing_level", "order": -100},
       {"type": "trim_whitespace", "field": "organization", "order": -100},
+      {"type": "trim_whitespace", "field": "tiling_system_name", "order": -100},
 
       {"type": "capitalize", "field": "science_keyword", "order": -10},
 
