@@ -67,7 +67,8 @@
   {:group_permissions [{:user_type "guest" :permissions ["create"]}]
    :catalog_item_identity {:name "REPLACEME"
                            :provider_id "PROV1"
-                           :collection_applicable true}})
+                           :collection_applicable true
+                           :granule_applicable true}})
 
 (defn system-acl
   "Creates a system acl for testing with the given target."
@@ -849,6 +850,9 @@
                                   :access-value 2
                                   :provider-id "PROV2"})
 
+        gran1 (u/save-granule coll1 {:provider "PROV1"})
+        gran2 (u/save-granule coll6 {:provider "PROV2"})
+
         ;; For testing that a full range encompassing multiple collections will
         ;; properly match all collections
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-3")
@@ -873,7 +877,7 @@
         acl4 (ingest-acl token (assoc (catalog-item-acl "Access value 2-3")
                                       :catalog_item_identity {:name "Access value 2-3"
                                                               :collection_applicable true
-                                                              :collection_identifier {:access_value {:min_value 2 :max_value 3}}
+                                                              :collection_identifier {:access_value {:min_value 2 :max_value 3}}                                                             
                                                               :provider_id "PROV1"}))
         ;; For testing an access value which will match no collections
         acl5 (ingest-acl token (assoc (catalog-item-acl "Access value 4")
@@ -932,4 +936,12 @@
 
         "coll6 test"
         {:permitted-concept-id coll6}
+        [acl8]
+
+        "gran1 test"
+        {:permitted-concept-id gran1}
+        [acl7]
+
+        "gran2 test"
+        {:permitted-concept-id gran2}
         [acl8]))))

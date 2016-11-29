@@ -159,9 +159,13 @@
    ;; acls that don't include collection-applicable
    :collection-identifier m/bool-field-mapping
    :collection-applicable m/bool-field-mapping
-   :collection-access-value-min m/int-field-mapping
-   :collection-access-value-max m/int-field-mapping
-   :collection-access-value-include-undefined-value m/bool-field-mapping
+
+   :granule-identifier m/bool-field-mapping
+   :granule-applicable m/bool-field-mapping
+
+   :access-value-min m/int-field-mapping
+   :access-value-max m/int-field-mapping
+   :access-value-include-undefined-value m/bool-field-mapping
 
    :temporal-range-start-date m/date-field-mapping
    :temporal-range-stop-date m/date-field-mapping
@@ -252,28 +256,46 @@
      :permission permissions
      :permission.lowercase (map str/lower-case permissions)}))
 
+; (access-value-elastic-doc-map {:catalog-item-identity {:granule-identifier {:access-value {:min-value 1 :max-value 2}}}})
+; (access-value-elastic-doc-map {:catalog-item-identity {:collection-identifier {:access-value {:min-value 1 :max-value 2}}}})
+
 (defn- access-value-elastic-doc-map
   "Returns map for access value to be merged into full elasic doc"
   [acl]
   (merge
     (when-let [av (:access-value (:collection-identifier (:catalog-item-identity acl)))]
-      {:collection-access-value-max (:max-value av)
-       :collection-access-value-min (:min-value av)
-       :collection-access-value-include-undefined-value (:include-undefined-value av)})
+      {:access-value-max (:max-value av)
+       :access-value-min (:min-value av)
+       :access-value-include-undefined-value (:include-undefined-value av)})
+    (when-let [av (:access-value (:granule-identifier (:catalog-item-identity acl)))]
+      {:access-value-max (:max-value av)
+       :access-value-min (:min-value av)
+       :access-value-include-undefined-value (:include-undefined-value av)})
     (if (:collection-identifier (:catalog-item-identity acl))
       {:collection-identifier true}
       {:collection-identifier false})
     (if (:collection-applicable (:catalog-item-identity acl))
       {:collection-applicable true}
-      {:collection-applicable false})))
+      {:collection-applicable false})
+    (if (:granule-identifier (:catalog-item-identity acl))
+      {:granule-identifier true}
+      {:granule-identifier false})
+    (if (:granule-applicable (:catalog-item-identity acl))
+      {:granule-applicable true}
+      {:granule-applicable false})))
 
 (defn- temporal-elastic-doc-map
   "Returns map for temporal range values to be merged into full elastic doc"
   [acl]
-  (when-let [temporal (:temporal (:collection-identifier (:catalog-item-identity acl)))]
-    {:temporal-range-start-date (:start-date temporal)
-     :temporal-range-stop-date (:stop-date temporal)
-     :temporal-mask (:mask temporal)}))
+  (merge
+    (when-let [temporal (:temporal (:collection-identifier (:catalog-item-identity acl)))]
+      {:temporal-range-start-date (:start-date temporal)
+       :temporal-range-stop-date (:stop-date temporal)
+       :temporal-mask (:mask temporal)})
+    (when-let [temporal (:temporal (:granule-identifier (:catalog-item-identity acl)))]
+      {:temporal-range-start-date (:start-date temporal)
+       :temporal-range-stop-date (:stop-date temporal)
+       :temporal-mask (:mask temporal)})))
 
 (defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."

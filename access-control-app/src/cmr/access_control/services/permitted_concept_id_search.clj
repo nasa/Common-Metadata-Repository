@@ -6,14 +6,16 @@
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.umm-spec.time :as spec-time]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]))
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm.start-end-date :as umm-lib-time]
+    [cmr.umm.umm-core :as umm-lib]))
 
-(defn- create-generic-collection-applicable-condition
+(defn- create-generic-applicable-condition
   "Constructs query condition for collection-applicable acls without a collection identifier"
-  []
+  [applicable identifier]
   (gc/and-conds
-    [(common-qm/boolean-condition :collection-applicable true)
-     (common-qm/boolean-condition :collection-identifier false)]))
+    [(common-qm/boolean-condition applicable true)
+     (common-qm/boolean-condition identifier false)]))
 
 (defn- create-temporal-intersect-condition
   "Constructs query condition for intersect mask"
@@ -65,14 +67,18 @@
 
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
-  [parsed-metadata]
-  (let [start-date (spec-time/collection-start-date parsed-metadata)
-        stop-date (spec-time/collection-end-date parsed-metadata)
+  [parsed-metadata applicable]
+  (let [start-date (if (= applicable :granule-applicable)
+                     (umm-lib-time/start-date :granule (:temporal parsed-metadata))
+                     (spec-time/collection-start-date parsed-metadata))
+        stop-date (if (= applicable :granule-applicable)
+                    (umm-lib-time/start-date :granule (:temporal parsed-metadata))
+                    (spec-time/collection-end-date parsed-metadata))
         stop-date (if (= :present stop-date)
                     (t/now)
                     stop-date)]
     (gc/and-conds
-      [(common-qm/boolean-condition :collection-applicable true)
+      [(common-qm/boolean-condition applicable true)
        (gc/or-conds
          [(create-temporal-contains-condition start-date stop-date)
           (create-temporal-intersect-condition start-date stop-date)
@@ -80,26 +86,35 @@
 
 (defn- create-access-value-condition
   "Constructs query condition for searching permitted_concept_ids by access-value."
-  [parsed-metadata]
+  [parsed-metadata applicable]
   (gc/and-conds
     ;; If there are no access values present in the concept then the include undefined
     ;; value is used.
-    [(if-let [access-value (:Value (:AccessConstraints parsed-metadata))]
+    [(if-let [access-value (or (:access-value parsed-metadata) (:Value (:AccessConstraints parsed-metadata)))]
        (common-qm/numeric-range-intersection-condition
-         :collection-access-value-min
-         :collection-access-value-max
+         :access-value-min
+         :access-value-max
          access-value
          access-value)
-       (common-qm/boolean-condition :collection-access-value-include-undefined-value true))
-     (common-qm/boolean-condition :collection-applicable true)]))
+       (common-qm/boolean-condition :access-value-include-undefined-value true))
+     (common-qm/boolean-condition applicable true)]))
 
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
-  (let [parsed-metadata (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)]
+  (let [concept-type (:concept-type concept)
+        parsed-metadata (if (= concept-type :collection)
+                          (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
+                          (umm-lib/parse-concept concept))
+        identifier (if (= concept-type :collection)
+                     :collection-identifier
+                     :granule-identifier)
+        applicable (if (= concept-type :collection)
+                     :collection-applicable
+                     :granule-applicable)]
     (gc/and-conds
      [(common-qm/string-condition :provider (:provider-id concept))
       (gc/or-conds
-        [(create-generic-collection-applicable-condition)
-         (create-access-value-condition parsed-metadata)
-         (create-temporal-condition parsed-metadata)])])))
+        [(create-generic-applicable-condition applicable identifier)
+         (create-access-value-condition parsed-metadata applicable)
+         (create-temporal-condition parsed-metadata applicable)])])))
