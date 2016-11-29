@@ -89,6 +89,11 @@
         tdcs1 (dc/two-d "XYZ")
         tdcs2 (dc/two-d "twoduniq")
         org (dc/org :archive-center "Some&Place")
+        url1 (dc/related-url {:url "cmr.earthdata.nasa.gov"
+                              :title "CMR"
+                              :description "Earthdata"})
+        url2 (dc/related-url {:url "http://nsidc.org/"
+                              :description "Home page of National Snow and Ice Data Center"})
         coll1 (d/ingest "PROV1" (dc/collection
                                  {:entry-title "coll1" :version-description "VersionDescription"}))
         coll2 (d/ingest "PROV1" (dc/collection
@@ -122,10 +127,12 @@
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME" :short-name "Mixed"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :short-name "\"Quoted\" collection"}))
         coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
+        coll25 (d/ingest "PROV2" (dc/collection {:entry-title "coll25" :related-urls [url1 url2]}))
         coll-boost (d/ingest "PROV2" (dc/collection {:entry-title "boost"
                                                      :short-name "boost"
                                                      :platforms [pboost]
                                                      :science-keywords [skboost]}))]
+
 
     (index/wait-until-indexed)
 
@@ -260,6 +267,11 @@
         "Level2-3" [coll9]
         ;; - detailed-variable
         "SUPER" [coll9]
+
+        ;; Related URLs
+        "earthdata" [coll25]
+        "cmr" [coll25]
+        "nsidc" [coll25]
 
         ;; Special characters are escaped before sending to Elastic
         "ABC~ZYX" []
