@@ -93,7 +93,7 @@
                               :title "CMR"
                               :description "Earthdata"})
         url2 (dc/related-url {:url "http://nsidc.org/"
-                              :description "Home page of NSIDC"})
+                              :description "Home page of National Snow and Ice Data Center"})
         coll1 (d/ingest "PROV1" (dc/collection
                                  {:entry-title "coll1" :version-description "VersionDescription"}))
         coll2 (d/ingest "PROV1" (dc/collection
