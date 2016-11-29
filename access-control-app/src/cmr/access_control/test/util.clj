@@ -199,9 +199,9 @@
   ([parent-collection-id attrs]
    (let [short-name (str "gran" (swap! granule-num inc))
          version-id "v1"
-         provider (if (:provider attrs)
-                    (:provider attrs)
-                    "PROV1")
+         provider-id (if (:provider-id attrs)
+                       (:provider-id attrs)
+                       "PROV1")
          native-id short-name
          entry-id (str short-name "_" version-id)
          granule-ur (str short-name "ur")
@@ -223,7 +223,7 @@
                          {:format "application/echo10+xml"
                           :metadata (umm-core/umm->xml granule-umm :echo10)
                           :concept-type :granule
-                          :provider-id provider
+                          :provider-id provider-id
                           :native-id native-id
                           :revision-id 1
                           :extra-fields {:short-name short-name
