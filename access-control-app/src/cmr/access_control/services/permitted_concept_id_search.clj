@@ -106,12 +106,8 @@
         parsed-metadata (if (= concept-type :collection)
                           (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
                           (umm-lib/parse-concept concept))
-        identifier (if (= concept-type :collection)
-                     :collection-identifier
-                     :granule-identifier)
-        applicable (if (= concept-type :collection)
-                     :collection-applicable
-                     :granule-applicable)]
+        identifier (keyword (str (name concept-type) "-identifier"))
+        applicable (keyword (str (name concept-type) "-applicable"))]
     (gc/and-conds
      [(common-qm/string-condition :provider (:provider-id concept))
       (gc/or-conds
