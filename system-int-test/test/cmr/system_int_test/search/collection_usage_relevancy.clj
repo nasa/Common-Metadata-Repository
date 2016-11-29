@@ -5,11 +5,14 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as u]
+   [cmr.common.config :as config]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.data.query-to-elastic :as query-to-elastic]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -35,6 +38,7 @@
     (index/wait-until-indexed))))
 
 (deftest community-usage-relevancy-scoring
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (ingest-community-usage-metrics)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
@@ -58,9 +62,15 @@
     (index/wait-until-indexed)
 
     (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-      (is (= "Relevancy 4" (:name (last results)))))))
+      (is (= "Relevancy 4" (:name (last results))))))
+
+  (testing "Turn off using relevancy score"
+    (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! false))
+    (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
+      (is (= ["Relevancy 4" "Relevancy 3" "Relevancy 2" "Relevancy 1"] (map :name results))))))
 
 (deftest keyword-relevancy-takes-precedence
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (ingest-community-usage-metrics)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
@@ -88,6 +98,7 @@
              (map :name results))))))
 
 (deftest ingest-metrics-after-collections
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
                                     :version-id "3"}))
@@ -104,6 +115,7 @@
     (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
 (deftest change-metrics
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (ingest-community-usage-metrics)
 
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
@@ -128,6 +140,7 @@
 
 ;; Outside of keyword search, allow the user to sort by community usage
 (deftest sort-by-community-usage
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (ingest-community-usage-metrics)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A" ;10
                                     :entry-title "Relevancy 1"
@@ -159,6 +172,7 @@
        "AG_MAPSS,2,30\n"))
 
 (deftest community-usage-not-provided-versions
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (ingest-community-usage-metrics sample-csv-not-provided-versions)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "AMSR-L1A V3 Relevancy"
