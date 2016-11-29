@@ -256,9 +256,6 @@
      :permission permissions
      :permission.lowercase (map str/lower-case permissions)}))
 
-; (access-value-elastic-doc-map {:catalog-item-identity {:granule-identifier {:access-value {:min-value 1 :max-value 2}}}})
-; (access-value-elastic-doc-map {:catalog-item-identity {:collection-identifier {:access-value {:min-value 1 :max-value 2}}}})
-
 (defn- access-value-elastic-doc-map
   "Returns map for access value to be merged into full elasic doc"
   [acl]
