@@ -417,14 +417,14 @@
                                                   :collection_identifier {:entry_titles [(:entry-title coll1) (:entry-title coll2)]}}})
     (index/wait-until-indexed)
     ;; Verify that the ACLs are found in Access Control Service search.
-    (let [results (:items (ac/search-for-acls token {:identity_type "catalog_item"}))]
+    (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
       (is (= [1 1] (map :revision_id results)))
       (is (= ["coll1 ACL" "coll1/coll2 ACL"] (map :name results))))
     ;; Delete the collection via ingest.
     (ingest/delete-concept (d/item->concept coll1 :echo10))
     (index/wait-until-indexed)
     ;; Verify that those ACLs are NOT found.
-    (let [results (:items (ac/search-for-acls token {:identity_type "catalog_item"}))]
+    (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
       (is (= [2] (map :revision_id results)))
       (is (= ["coll1/coll2 ACL"] (map :name results)))
       (is (= [(:entry-title coll2)]
