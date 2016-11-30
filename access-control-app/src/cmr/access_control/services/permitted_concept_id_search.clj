@@ -104,6 +104,15 @@
       (common-qm/boolean-condition (make-keyword concept-type :access-value-include-undefined-value) true))
     (common-qm/boolean-condition (make-keyword concept-type :applicable) true)))
 
+(defn- create-entry-title-condition
+  "Constructs query condition for searching permitted_concept_ids by entry_titles"
+  [parsed-metadata]
+  (if-let [entry-title (:EntryTitle parsed-metadata)]
+    (gc/and
+      (common-qm/string-condition :entry-title entry-title true false)
+      (common-qm/boolean-condition :collection-applicable true))
+    common-qm/match-none))
+
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
@@ -116,4 +125,5 @@
       (gc/or
         (create-generic-applicable-condition concept-type)
         (create-access-value-condition parsed-metadata concept-type)
-        (create-temporal-condition parsed-metadata concept-type)))))
+        (create-temporal-condition parsed-metadata concept-type)
+        (create-entry-title-condition parsed-metadata)))))

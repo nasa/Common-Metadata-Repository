@@ -19,7 +19,8 @@
                       [:ScienceKeywords :DetailedVariable]]
    "project" [[:Projects :ShortName]]
    "processing_level" [[:ProcessingLevel :Id]]
-   "organization" [[:DataCenters :ShortName]]})
+   "organization" [[:DataCenters :ShortName]]
+   "tiling_system_name" [[:TilingIdentificationSystems :TilingIdentificationSystemName]]})
 
 (defmulti to-human
   "Map of humanizer JSON type values to functions which take a field value and
