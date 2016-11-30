@@ -7,6 +7,8 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
+   [cmr.umm.umm-granule :as umm-g]
+   [cmr.umm.umm-core :as umm-core]
    [cmr.elastic-utils.config :as es-config]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.metadata-db.config :as mdb-config]
@@ -185,6 +187,53 @@
        ~@body
        (finally
          (enable-publishing-messages)))))
+
+(def granule-num
+  "An atom storing the next number used to generate unique granules."
+  (atom 0))
+
+(defn save-granule
+  "Saves a granule with given property map to metadata db and returns concept id."
+  ([parent-collection-id]
+   (save-granule parent-collection-id {}))
+  ([parent-collection-id attrs]
+   (let [short-name (str "gran" (swap! granule-num inc))
+         version-id "v1"
+         provider-id (if (:provider-id attrs)
+                       (:provider-id attrs)
+                       "PROV1")
+         native-id short-name
+         entry-id (str short-name "_" version-id)
+         granule-ur (str short-name "ur")
+         parent-collection (mdb/get-latest-concept (conn-context) parent-collection-id)
+         parent-entry-title (:entry-title (:extra-fields parent-collection))
+         timestamps (umm-g/map->DataProviderTimestamps
+                     {:insert-time "2012-01-11T10:00:00.000Z"})
+         granule-umm (umm-g/map->UmmGranule
+                      {:granule-ur granule-ur
+                       :data-provider-timestamps timestamps
+                       :collection-ref (umm-g/map->CollectionRef
+                                        {:entry-title parent-entry-title})})
+         granule-umm (merge granule-umm attrs)]
+     ;; We don't want to publish messages in metadata db since different envs may or may not be running
+     ;; the indexer when we run this test.
+     (without-publishing-messages
+      (:concept-id
+       (mdb/save-concept (conn-context)
+                         {:format "application/echo10+xml"
+                          :metadata (umm-core/umm->xml granule-umm :echo10)
+                          :concept-type :granule
+                          :provider-id provider-id
+                          :native-id native-id
+                          :revision-id 1
+                          :extra-fields {:short-name short-name
+                                         :entry-title short-name
+                                         :entry-id entry-id
+                                         :granule-ur granule-ur
+                                         :version-id version-id
+                                         :parent-collection-id parent-collection-id
+                                         :parent-entry-title parent-entry-title}}))))))
+
 
 (defn save-collection
   "Test helper. Saves collection to Metadata DB and returns its concept id."
