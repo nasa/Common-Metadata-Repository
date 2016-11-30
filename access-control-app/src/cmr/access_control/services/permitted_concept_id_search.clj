@@ -97,9 +97,9 @@
   "Constructs query condition for searching permitted_concept_ids by entry_titles"
   [parsed-metadata]
   (let [entry-title (:EntryTitle parsed-metadata)]
-    (gc/and-conds
-      [(common-qm/boolean-condition :collection-applicable true)
-       (common-qm/string-condition :entry-title entry-title true false)])))
+    (gc/and
+     (common-qm/boolean-condition :collection-applicable true)
+     (common-qm/string-condition :entry-title entry-title true false))))
 
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
