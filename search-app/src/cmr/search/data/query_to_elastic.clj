@@ -2,17 +2,18 @@
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require [clojure.string :as str]
             [clojure.set :as set]
-            ;; require it so it will be available
-            [cmr.search.data.query-order-by-expense]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.data.keywords-to-elastic :as k2e]
             [clojurewerkz.elastisch.query :as eq]
+            [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.query-order-by-expense :as query-expense]
             [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.common.config :refer [defconfig]]
+            [cmr.common.services.errors :as errors]
+            [cmr.search.data.keywords-to-elastic :as k2e]
+            ;; require it so it will be available
+            [cmr.search.data.query-order-by-expense]
             [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
-            [cmr.common.config :refer [defconfig]]))
+            [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -165,6 +166,7 @@
 
 (defmethod q2e/query->elastic :collection
   [query]
+  (temporal-range-extractor/extract-temporal-ranges query)
   (let [boosts (:boosts query)
         {:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (q2e/condition->elastic condition concept-type)]

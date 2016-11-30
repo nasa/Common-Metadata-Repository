@@ -1,103 +1,73 @@
 (ns cmr.search.services.query-walkers.temporal-range-extractor
   "Defines protocols and functions to extract keywords from a query."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [clojure.string :as str]
-            [cmr.search.models.query :as qm]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.search.models.query :as qm]))
 
 (defprotocol ExtractTemporalRanges
   "Defines a function to extract temporal ranges"
   (extract-temporal-ranges-seq
     [c]
-    "Extracts keywords and keyword like values from keyword conditions and conditions which apply
-     to keywords scoring. Returns a sequence of the keywords."))
-  ; (contains-keyword-condition?
-  ;  [c]
-  ;  "Returns true if the query contains a keyword condition?"))
+    "Extracts temporal ranges from conditions.")
+  (contains-temporal-range-condition?
+   [c]
+   "Returns true if the query contains a date range condition"))
 
 (defn extract-temporal-ranges
-  "Extracts keywords and keyword like values from keyword conditions and conditions which apply
-   to keywords scoring. Returns a sequence of the distinct keywords or nil if there are none."
+  "Extracts temporal ranges from Date Range conditions"
   [c]
-  (proto-repl.saved-values/save 19)
-  (seq (extract-temporal-ranges-seq c)))
+  (extract-temporal-ranges-seq c))
 
 (extend-protocol ExtractTemporalRanges
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.Query
   (extract-temporal-ranges-seq
    [query]
-   (extract-temporal-ranges-seq (:condition query)))
-  ; (contains-keyword-condition?
-  ;  [query]
-  ;  (contains-keyword-condition? (:condition query)))
+   (when-let [ranges (extract-temporal-ranges-seq (:condition query))]
+     (flatten ranges)))
+  (contains-temporal-range-condition?
+   [query]
+   (contains-temporal-range-condition? (:condition query)))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.ConditionGroup
   (extract-temporal-ranges-seq
    [{:keys [conditions]}]
-   (mapcat extract-temporal-ranges-seq conditions))
-  ; (contains-keyword-condition?
-  ;  [{:keys [conditions]}]
-  ;  (reduce (fn [_ condition]
-  ;            (when (contains-keyword-condition? condition)
-  ;              (reduced true)))
-  ;          false
-  ;          conditions))
+   (when-let [ranges (seq (remove nil? (map extract-temporal-ranges-seq conditions)))]
+     ;; If a DateRangeCondition exists at the top level of the condition group, merge
+     ;; the conditions together to get both start and end date, if applicable
+     (if (some #{cmr.common_app.services.search.query_model.DateRangeCondition}
+               (map type conditions))
+       (apply merge ranges)
+       ranges)))
+  (contains-temporal-range-condition?
+   [{:keys [conditions]}]
+   (reduce (fn [_ condition]
+             (when (contains-temporal-range-condition? condition)
+               (reduced true)))
+           false
+           conditions))
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.NestedCondition
+  ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.common_app.services.search.query_model.DateRangeCondition
   (extract-temporal-ranges-seq
-   [{:keys [condition]}]
-   (extract-temporal-ranges-seq condition))
-  ; (contains-keyword-condition?
-  ;  [{:keys [condition]}]
-  ;  (contains-keyword-condition? condition))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.TextCondition
-  (extract-temporal-ranges-seq
-   [{:keys [field query-str]}]
-   (when (= field :keyword)
-     (extract-temporal-ranges-seq-from-value query-str)))
-  ; (contains-keyword-condition?
-  ;  [{:keys [field]}]
-  ;  (= field :keyword))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.StringCondition
-  (extract-temporal-ranges-seq
-   [{:keys [field value]}]
-   (when (contains? keyword-string-fields field)
-     (extract-temporal-ranges-seq-from-value value)))
-  ; (contains-keyword-condition?
-  ;  [_]
-  ;  false)
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.StringsCondition
-  (extract-temporal-ranges-seq
-   [{:keys [field values]}]
-   (when (contains? keyword-string-fields field)
-     (mapcat extract-temporal-ranges-seq-from-value values)))
-  ; (contains-keyword-condition?
-  ;  [_]
-  ;  false)
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.search.models.query.CollectionQueryCondition
-  (extract-temporal-ranges-seq
+   [{:keys [start-date end-date]}]
+   (util/remove-nil-keys
+    {:start-date start-date
+     :end-date end-date}))
+  (contains-temporal-range-condition?
    [_]
-   (errors/internal-error! "extract-temporal-ranges-seq does not support CollectionQueryCondition"))
-  ; (contains-keyword-condition?
-  ;  [_]
-  ;  (errors/internal-error! "contains-keyword-condition? does not support CollectionQueryCondition"))
+   true)
 
-  ;; catch all extractor
+  ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ; ;; catch all extractor
   java.lang.Object
   (extract-temporal-ranges-seq
    [this]
-   nil))
-  ; (contains-keyword-condition?
-  ;  [this]
-  ;  false))
+   nil)
+  (contains-temporal-range-condition?
+   [this]
+   false))
