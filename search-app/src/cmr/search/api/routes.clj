@@ -316,6 +316,9 @@
 (defn- build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
+      (GET "/robots.txt" req {:status 200
+                              :body (slurp (io/resource "public/robots.txt"))})
+
       (context relative-root-url []
 
         ;; Add routes for tagging
@@ -332,9 +335,6 @@
          (get-in system [:public-conf :protocol])
          relative-root-url
          "public/index.html")
-
-        (GET "/robots.txt" req {:status 200
-                                :body (slurp (io/resource "public/robots.txt"))})
 
         ;; This is a temporary inclusion of the swagger UI until the dev portal is done.
         (ring-swagger-ui/swagger-ui "/swagger_ui"
