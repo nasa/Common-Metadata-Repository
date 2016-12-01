@@ -7,7 +7,6 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
-   [cmr.common-app.cache.humanizer-map-fetcher :as humanizer-map-fetcher]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.api.web-server :as web]
@@ -21,6 +20,7 @@
    [cmr.ingest.api.ingest :as ingest-api]
    [cmr.ingest.api.routes :as routes]
    [cmr.ingest.config :as config]
+   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.message-queue.config :as queue-config]
@@ -67,7 +67,7 @@
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
-                       humanizer-map-fetcher/humanizer-map-cache-key (humanizer-map-fetcher/create-cache)}
+                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)}
               :ingest-public-conf ingest-public-conf
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections

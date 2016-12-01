@@ -4,6 +4,7 @@
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.acl.acl-fetcher :as acl-fetcher]
+            [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.common.config :as cfg :refer [defconfig]]
@@ -113,6 +114,10 @@
     (cleanup-expired-collections context)))
 
 
+(defn RefreshHumanizerAliasCache
+  "Refresh the humanizer-alias-cache in a configurable time interval"
+  [context]
+  (humanizer-alias-cache/refresh-cache context)) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
@@ -122,6 +127,11 @@
 
 (defconfig partial-refresh-collection-granule-aggregation-cache-interval
   "Number of seconds between partial refreshes of the collection granule aggregation cache."
+  {:default 3600
+   :type Long})
+
+(defconfig refresh-humanizer-alias-cache-interval
+  "Number of seconds between refreshes of the humanizer alias cache."
   {:default 3600
    :type Long})
 
@@ -161,6 +171,9 @@
 
    {:job-type CleanupExpiredCollections
     :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}
+
+   {:job-type RefreshHumanizerAliasCache
+    :interval (refresh-humanizer-alias-cache-interval)}
 
    {:job-type TriggerPartialRefreshCollectionGranuleAggregationCacheJob
     :interval (partial-refresh-collection-granule-aggregation-cache-interval)}
