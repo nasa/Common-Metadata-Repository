@@ -57,49 +57,6 @@
                {:user_type (name user)}
                {:user_id user})))))
 
-(def granule-num
-  "An atom storing the next number used to generate unique granules."
-  (atom 0))
-
-(defn save-granule
-  "Saves a granule with given property map to metadata db and returns concept id."
-  ([parent-collection-id]
-   (save-granule parent-collection-id {}))
-  ([parent-collection-id attrs]
-   (let [short-name (str "gran" (swap! granule-num inc))
-         version-id "v1"
-         native-id short-name
-         entry-id (str short-name "_" version-id)
-         granule-ur (str short-name "ur")
-         parent-collection (mdb/get-latest-concept (u/conn-context) parent-collection-id)
-         parent-entry-title (:entry-title (:extra-fields parent-collection))
-         timestamps (umm-g/map->DataProviderTimestamps
-                     {:insert-time "2012-01-11T10:00:00.000Z"})
-         granule-umm (umm-g/map->UmmGranule
-                      {:granule-ur granule-ur
-                       :data-provider-timestamps timestamps
-                       :collection-ref (umm-g/map->CollectionRef
-                                        {:entry-title parent-entry-title})})
-         granule-umm (merge granule-umm attrs)]
-     ;; We don't want to publish messages in metadata db since different envs may or may not be running
-     ;; the indexer when we run this test.
-     (u/without-publishing-messages
-      (:concept-id
-       (mdb/save-concept (u/conn-context)
-                         {:format "application/echo10+xml"
-                          :metadata (umm-core/umm->xml granule-umm :echo10)
-                          :concept-type :granule
-                          :provider-id "PROV1"
-                          :native-id native-id
-                          :revision-id 1
-                          :extra-fields {:short-name short-name
-                                         :entry-title short-name
-                                         :entry-id entry-id
-                                         :granule-ur granule-ur
-                                         :version-id version-id
-                                         :parent-collection-id parent-collection-id
-                                         :parent-entry-title parent-entry-title}}))))))
-
 (deftest collection-simple-catalog-item-identity-permission-check-test
   ;; tests ACLs which grant access to collections based on provider id and/or entry title
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
@@ -115,7 +72,7 @@
         coll1 (save-prov1-collection "coll1")
         coll2 (save-prov1-collection "coll2")
         coll3 (save-prov1-collection "coll3")
-        gran1 (save-granule coll1)
+        gran1 (u/save-granule coll1)
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
@@ -400,7 +357,7 @@
                                                       :native-id %
                                                       :short-name %})
         coll1 (save-prov1-collection "coll1")
-        gran1 (save-granule coll1)
+        gran1 (u/save-granule coll1)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
 
@@ -466,8 +423,8 @@
                                                      :short-name %})
         coll1 (save-prov1-collection "coll1")
         coll2 (save-prov1-collection "coll2")
-        gran1 (save-granule coll1)
-        gran2 (save-granule coll2)
+        gran1 (u/save-granule coll1)
+        gran2 (u/save-granule coll2)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
 
@@ -562,11 +519,11 @@
                                                    :short-name %})
         coll1 (save-prov1-collection "coll1")
         ;; no access value
-        gran1 (save-granule coll1)
+        gran1 (u/save-granule coll1)
         ;; mid access value
-        gran2 (save-granule coll1 {:access-value 5})
+        gran2 (u/save-granule coll1 {:access-value 5})
         ;; high access value
-        gran3 (save-granule coll1 {:access-value 10})
+        gran3 (u/save-granule coll1 {:access-value 10})
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         ;; guest read coll1 granules with undefined access value
         acl1 (create-acl {:group_permissions [{:permissions [:read]
@@ -611,12 +568,12 @@
                                                    :short-name %})
         coll1 (save-prov1-collection "coll1")
         ;; no temporal
-        gran1 (save-granule coll1)
+        gran1 (u/save-granule coll1)
         ;; temporal range
-        gran2 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time "2002-01-01T00:00:00Z"
-                                                                :ending-date-time "2005-01-01T00:00:00Z"}}})
+        gran2 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time "2002-01-01T00:00:00Z"
+                                                                  :ending-date-time "2005-01-01T00:00:00Z"}}})
         ;; single date-time
-        gran3 (save-granule coll1 {:temporal {:single-date-time "1999-01-01T00:00:00Z"}})
+        gran3 (u/save-granule coll1 {:temporal {:single-date-time "1999-01-01T00:00:00Z"}})
 
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
 

@@ -691,9 +691,10 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-permitted-concept-id-temporal
+(deftest acl-search-permitted-concept-id-through-temporal
    ;; This test is for searching ACLs by permitted concept id.  For a given
-   ;; collection concept id, acls granting permission to this collection by temporal
+   ;; collection concept id or granule concept id,
+   ;; acls granting permission to this collection by temporal
    ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
 
@@ -751,20 +752,20 @@
                                   :provider-id "PROV1"
                                   :temporal-singles #{(t/date-time 2012 1 1 0 0 1)}})
 
-        gran1 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
-                                                                :ending-date-time (t/date-time 2011)}}})
-        gran2 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
-                                                                :ending-date-time (t/date-time 2010)}}})
-        gran3 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
-                                                                :ending-date-time (t/date-time 2012)}}})
-        gran4 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
-                                                                :ending-date-time (t/date-time 2012)}}})
-        gran5 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
-                                                                :ending-date-time (t/date-time 2009 12 31 12 59 59)}}})
-        gran6 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
-                                                                :ending-date-time (t/date-time 2012 1 1 0 0 1)}}})
-        gran7 (save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
-        gran8 (save-granule coll1 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
+        gran1 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
+                                                                  :ending-date-time (t/date-time 2011)}}})
+        gran2 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2010)}}})
+        gran3 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
+                                                                  :ending-date-time (t/date-time 2012)}}})
+        gran4 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
+                                                                  :ending-date-time (t/date-time 2012)}}})
+        gran5 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran6 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
+                                                                  :ending-date-time (t/date-time 2012 1 1 0 0 1)}}})
+        gran7 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran8 (u/save-granule coll1 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
 
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
@@ -816,6 +817,39 @@
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
+
+        "gran1 test"
+        {:permitted-concept-id gran1}
+        [acl2 acl4 acl5]
+
+        "gran2 test"
+        {:permitted-concept-id gran2}
+        [acl2 acl5]
+
+        "gran3 test"
+        {:permitted-concept-id gran3}
+        [acl2 acl5]
+
+        "gran4 test"
+        {:permitted-concept-id gran4}
+        [acl2 acl6]
+
+        "gran5 test"
+        {:permitted-concept-id gran5}
+        [acl2 acl6]
+
+        "gran6 test"
+        {:permitted-concept-id gran6}
+        [acl2 acl5]
+
+        "gran7 test"
+        {:permitted-concept-id gran7}
+        [acl2 acl5]
+
+        "gran8 test"
+        {:permitted-concept-id gran8}
+        [acl2 acl6]
+
         "coll1 test"
         {:permitted-concept-id coll1}
         [acl2 acl4 acl5]
@@ -848,9 +882,10 @@
         {:permitted-concept-id coll8}
         [acl2 acl6]))))
 
-(deftest acl-search-permitted-concept-id-access-value
+(deftest acl-search-permitted-concept-id-through-access-value
   ;; This test is for searching ACLs by permitted concept id.  For a given
-  ;; collection concept id, acls granting permission to this collection by access-value
+  ;; collection concept id or granule concept id,
+  ;; acls granting permission to this collection by access-value
   ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
         save-access-value-collection (fn [short-name access-value]
@@ -883,7 +918,7 @@
         gran2 (u/save-granule coll1 {:access-value 2})
         gran3 (u/save-granule coll1 {:access-value 3})
         gran4 (u/save-granule coll1 {:access-value nil})
-        gran5 (u/save-granule coll6 {:access-value 2 :provider "PROV2"})
+        gran5 (u/save-granule coll6 {:access-value 2 :provider-id "PROV2"})
 
         ;; For testing that a full range encompassing multiple collections will
         ;; properly match all collections
@@ -957,21 +992,6 @@
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
-        "coll1 test"
-        {:permitted-concept-id coll1}
-        [acl1 acl2 acl3 acl7]
-
-        "coll2 test"
-        {:permitted-concept-id coll2}
-        [acl1 acl3 acl4 acl7]
-
-        "coll3 test"
-        {:permitted-concept-id coll3}
-        [acl1 acl4 acl7]
-
-        "coll4 test"
-        {:permitted-concept-id coll4}
-        [acl6 acl7]
 
         "gran1 test"
         {:permitted-concept-id gran1}
@@ -993,11 +1013,92 @@
         {:permitted-concept-id gran5}
         [acl8]
 
-        ;; Will eventually also return acl6
+        "coll1 test"
+        {:permitted-concept-id coll1}
+        [acl1 acl2 acl3 acl7]
+
+        "coll2 test"
+        {:permitted-concept-id coll2}
+        [acl1 acl3 acl4 acl7]
+
+        "coll3 test"
+        {:permitted-concept-id coll3}
+        [acl1 acl4 acl7]
+
+        "coll4 test"
+        {:permitted-concept-id coll4}
+        [acl6 acl7]
+
         "coll5 test"
         {:permitted-concept-id coll5}
-        [acl7]
+        [acl7 acl9]
 
         "coll6 test"
         {:permitted-concept-id coll6}
         [acl8]))))
+
+
+(deftest acl-search-permitted-concept-id-through-entry-title
+  (let [token (e/login (u/conn-context) "user1")
+        coll1 (u/save-collection {:entry-title "EI1"
+                                  :short-name "coll1"
+                                  :native-id "coll1"
+                                  :provider-id "PROV1"})
+        coll2 (u/save-collection {:entry-title "ei2"
+                                  :short-name "coll2"
+                                  :native-id "coll2"
+                                  :provider-id "PROV1"})
+        coll3 (u/save-collection {:entry-title "EI3"
+                                  :short-name "coll3"
+                                  :native-id "coll3"
+                                  :provider-id "PROV1"})
+        coll4 (u/save-collection {:entry-title "EI1"
+                                  :short-name "coll4"
+                                  :native-id "coll4"
+                                  :provider-id "PROV2"})
+
+        acl1 (ingest-acl token (assoc (catalog-item-acl "PROV1 EI1")
+                                      :catalog_item_identity {:name "Entry title EI1"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["EI1"]}
+                                                              :provider_id "PROV1"}))
+        acl2 (ingest-acl token (assoc (catalog-item-acl "PROV1 ei2")
+                                      :catalog_item_identity {:name "Entry title ei2"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["ei2"]}
+                                                              :provider_id "PROV1"}))
+        acl3 (ingest-acl token (assoc (catalog-item-acl "PROV1 ei2 EI3")
+                                      :catalog_item_identity {:name "Entry title ei2 EI3"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["EI3" "ei2"]}
+                                                              :provider_id "PROV1"}))
+        acl4 (ingest-acl token (assoc (catalog-item-acl "PROV2 EI1")
+                                      :catalog_item_identity {:name "Entry title PROV2 EI1"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["EI1"]}
+                                                              :provider_id "PROV2"}))
+        ;; ACL references PROV1 with no collection identifier
+        acl5 (ingest-acl token (catalog-item-acl "No collection identifier"))]
+
+
+    (u/wait-until-indexed)
+    (testing "collection concept id search"
+      (are3 [params acls]
+        (let [response (ac/search-for-acls (u/conn-context) params)]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "coll1 test"
+        {:permitted-concept-id coll1}
+        [acl1 acl5]
+
+        "coll2 test"
+        {:permitted-concept-id coll2}
+        [acl2 acl3 acl5]
+
+        "coll3 test"
+        {:permitted-concept-id coll3}
+        [acl3 acl5]
+
+        "coll4 test"
+        {:permitted-concept-id coll4}
+        [acl4]))))
