@@ -165,13 +165,13 @@
    First validate against the original collection. If there's error, validate against the collection
    with platform aliases and see if it can help reduce the errors"
   [context collection granule]
-  (when-let [errors1 (seq (umm-spec-validation/validate-granule collection granule))]
-    (when-let [errors2 (seq (umm-spec-validation/validate-granule 
-                              (update-collection-with-platform-aliases context collection :Platforms :ShortName) 
-                              granule))]
-      (let [errors (if (< (count errors1) (count errors2))
-                     errors1
-                     errors2)]
+  (when-let [orig-err (seq (umm-spec-validation/validate-granule collection granule))]
+    (when-let [alias-err (seq (umm-spec-validation/validate-granule 
+                                (update-collection-with-platform-aliases context collection :Platforms :ShortName) 
+                                granule))]
+      (let [errors (if (< (count orig-err) (count alias-err))
+                     orig-err
+                     alias-err)]
         (if (config/return-umm-spec-validation-errors)
           (if-errors-throw :invalid-data errors)
           (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
@@ -182,13 +182,13 @@
    First validate against the original collection. If there's error, validate against the collection
    with platform aliases and see if it can help reduce the errors" 
   [context collection granule]
-  (when-let [errors1 (seq (umm-validation/validate-granule collection granule))]
-    (when-let [errors2 (seq (umm-validation/validate-granule
-                             (update-collection-with-platform-aliases context collection :platforms :short-name)
-                             granule))]
-      (let [errors (if (< (count errors1) (count errors2))
-                     errors1
-                     errors2)] 
+  (when-let [orig-err (seq (umm-validation/validate-granule collection granule))]
+    (when-let [alias-err (seq (umm-validation/validate-granule
+                                (update-collection-with-platform-aliases context collection :platforms :short-name)
+                                granule))]
+      (let [errors (if (< (count orig-err) (count alias-err))
+                     orig-err
+                     alias-err)] 
         (if-errors-throw :invalid-data errors))))) 
 
 (defn validate-business-rules

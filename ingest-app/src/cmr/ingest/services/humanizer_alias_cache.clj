@@ -31,10 +31,10 @@
 (defn refresh-cache
   "Refreshes the humanizer alias cache."
   [context]
-  (let [cache (cache/context->cache context humanizer-alias-cache-key)]
-    (println "refreshing the humanizer alias cache==========") 
+  (let [cache (cache/context->cache context humanizer-alias-cache-key)
+        humanizer (humanizer/get-humanizers context)]
     (cache/set-value cache humanizer-alias-cache-key
-                 (retrieve-humanizer-platform-alias-map context))))
+                 (retrieve-humanizer-platform-alias-map humanizer))))
 
 (defn get-humanizer-platform-alias-map
   "Returns the humanizer alias map"
