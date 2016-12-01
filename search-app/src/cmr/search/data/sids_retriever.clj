@@ -42,16 +42,18 @@
     [db token]
     (j/with-db-transaction
       [conn db]
-      (let [sql (format "select guest, user_guid, act_as_user_guid, expires, revoked
+      (let [sql (format "select guid, guest, user_guid, act_as_user_guid, expires, revoked
                         from %s.security_token where token = ?"
                         (echo-business-user))
             stmt [sql token]]
-        (when-let [{:keys [guest user_guid act_as_user_guid expires revoked]}
+        (when-let [{:keys [guid guest user_guid act_as_user_guid expires revoked]}
                    (first (sql-utils/query conn stmt))]
           (when (and (or (nil? expires)
                          (in-the-future? (oracle/oracle-timestamp->clj-time conn expires)))
                      (nil? revoked))
             {:is-guest? (= (long guest) 1)
+             ;; Added to support replicationg to CMR NGAP
+             :guid guid
              ;; Use the act as user guid if it's set
              :user-guid (or act_as_user_guid user_guid)})))))
 
@@ -77,9 +79,9 @@
   [context token]
   (let [start (System/currentTimeMillis)
         db (context->db context)
-        sids (when-let [{:keys [is-guest? user-guid]} (get-security-token db token)]
+        sids (when-let [{:keys [guid is-guest? user-guid]} (get-security-token db token)]
                (if is-guest?
-                 [:guest]
-                 (cons :registered (get-group-guids db user-guid))))]
+                 {:sids [:guest] :guid guid}
+                 {:sids (cons :registered (get-group-guids db user-guid)) :guid guid}))]
     (info "Fetched sids from business schema in" (- (System/currentTimeMillis) start) "ms")
     sids))
