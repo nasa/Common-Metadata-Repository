@@ -68,6 +68,7 @@
                         [pjstadig/humane-test-output "0.8.1"]
                         [debugger "0.2.0"]
                         [criterium "0.4.4"]
+                        [org.codehaus.groovy/groovy-all "2.4.0"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]
                         [proto-repl-charts "0.3.1"]

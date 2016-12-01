@@ -21,6 +21,10 @@
   [c]
   (extract-temporal-ranges-seq c))
 
+(defn contains-temporal-ranges?
+  [c]
+  (contains-temporal-range-condition? c))
+
 (extend-protocol ExtractTemporalRanges
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.Query
