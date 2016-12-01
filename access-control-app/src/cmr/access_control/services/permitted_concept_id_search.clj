@@ -25,7 +25,6 @@
 (defn- create-temporal-intersect-condition
   "Constructs query condition for intersect mask"
   [start-date stop-date concept-type]
-  (proto-repl.saved-values/save 1)
   (gc/and
     (common-qm/string-condition (make-keyword concept-type :temporal-mask) "intersect" true false)
     (gc/or
@@ -74,7 +73,6 @@
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
   [parsed-metadata concept-type]
-  (proto-repl.saved-values/save 2)
   (let [start-date (if (= concept-type :granule)
                      (umm-lib-time/start-date :granule (:temporal parsed-metadata))
                      (spec-time/collection-start-date parsed-metadata))
