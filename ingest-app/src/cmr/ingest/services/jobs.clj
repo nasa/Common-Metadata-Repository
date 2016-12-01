@@ -1,14 +1,15 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
-  (:require [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
-            [cmr.transmit.metadata-db :as mdb]
-            [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.acl.acl-fetcher :as acl-fetcher]
-            [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
-            [cmr.ingest.data.provider-acl-hash :as pah]
-            [cmr.ingest.data.ingest-events :as ingest-events]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common.log :refer (debug info warn error)]))
+  (:require 
+    [cmr.acl.acl-fetcher :as acl-fetcher]
+    [cmr.common.config :as cfg :refer [defconfig]]
+    [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.ingest.data.ingest-events :as ingest-events]
+    [cmr.ingest.data.provider-acl-hash :as pah]
+    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+    [cmr.transmit.echo.acls :as echo-acls]
+    [cmr.transmit.metadata-db :as mdb]))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
   "The number of seconds between jobs to check for ACL changes and reindex collections."
