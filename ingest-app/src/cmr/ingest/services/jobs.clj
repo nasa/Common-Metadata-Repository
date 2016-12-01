@@ -113,12 +113,10 @@
   (let [context {:system system}]
     (cleanup-expired-collections context)))
 
-
-(defn RefreshHumanizerAliasCache
-  "Refresh the humanizer-alias-cache in a configurable time interval"
-  [context]
-  (humanizer-alias-cache/refresh-cache context)) 
-
+(def-stateful-job RefreshHumanizerAliasCache
+  [_ system]
+  (let [context {:system system}]
+    (humanizer-alias-cache/refresh-cache context)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
 ;; and the indexer does not have a database so it's triggered from Ingest and sent via message.
