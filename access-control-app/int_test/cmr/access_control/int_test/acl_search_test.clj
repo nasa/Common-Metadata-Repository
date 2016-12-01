@@ -67,7 +67,8 @@
   {:group_permissions [{:user_type "guest" :permissions ["create"]}]
    :catalog_item_identity {:name "REPLACEME"
                            :provider_id "PROV1"
-                           :collection_applicable true}})
+                           :collection_applicable true
+                           :granule_applicable true}})
 
 (defn system-acl
   "Creates a system acl for testing with the given target."
@@ -849,6 +850,9 @@
                                   :access-value 2
                                   :provider-id "PROV2"})
 
+        gran1 (u/save-granule coll1 {:provider-id "PROV1"})
+        gran2 (u/save-granule coll6 {:provider-id "PROV2"})
+
         ;; For testing that a full range encompassing multiple collections will
         ;; properly match all collections
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-3")
@@ -925,11 +929,84 @@
         {:permitted-concept-id coll4}
         [acl6 acl7]
 
-        ;; Will eventually also return acl6
+        ;; Will eventually not return ACL9 once CMR-3614 is fixed
         "coll5 test"
         {:permitted-concept-id coll5}
-        [acl7]
+        [acl7 acl9]
 
         "coll6 test"
         {:permitted-concept-id coll6}
+        [acl8]
+
+        "gran1 test"
+        {:permitted-concept-id gran1}
+        [acl7]
+
+        "gran2 test"
+        {:permitted-concept-id gran2}
         [acl8]))))
+
+(deftest acl-search-permitted-concept-id-through-entry-title
+  (let [token (e/login (u/conn-context) "user1")
+        coll1 (u/save-collection {:entry-title "EI1"
+                                  :short-name "coll1"
+                                  :native-id "coll1"
+                                  :provider-id "PROV1"})
+        coll2 (u/save-collection {:entry-title "ei2"
+                                  :short-name "coll2"
+                                  :native-id "coll2"
+                                  :provider-id "PROV1"})
+        coll3 (u/save-collection {:entry-title "EI3"
+                                  :short-name "coll3"
+                                  :native-id "coll3"
+                                  :provider-id "PROV1"})
+        coll4 (u/save-collection {:entry-title "EI1"
+                                  :short-name "coll4"
+                                  :native-id "coll4"
+                                  :provider-id "PROV2"})
+
+        acl1 (ingest-acl token (assoc (catalog-item-acl "PROV1 EI1")
+                                      :catalog_item_identity {:name "Entry title EI1"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["EI1"]}
+                                                              :provider_id "PROV1"}))
+        acl2 (ingest-acl token (assoc (catalog-item-acl "PROV1 ei2")
+                                      :catalog_item_identity {:name "Entry title ei2"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["ei2"]}
+                                                              :provider_id "PROV1"}))
+        acl3 (ingest-acl token (assoc (catalog-item-acl "PROV1 ei2 EI3")
+                                      :catalog_item_identity {:name "Entry title ei2 EI3"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["EI3" "ei2"]}
+                                                              :provider_id "PROV1"}))
+        acl4 (ingest-acl token (assoc (catalog-item-acl "PROV2 EI1")
+                                      :catalog_item_identity {:name "Entry title PROV2 EI1"
+                                                              :collection_applicable true
+                                                              :collection_identifier {:entry_titles ["EI1"]}
+                                                              :provider_id "PROV2"}))
+        ;; ACL references PROV1 with no collection identifier
+        acl5 (ingest-acl token (catalog-item-acl "No collection identifier"))]
+
+
+    (u/wait-until-indexed)
+    (testing "collection concept id search"
+      (are3 [params acls]
+        (let [response (ac/search-for-acls (u/conn-context) params)]
+          (is (= (acls->search-response (count acls) acls)
+                 (dissoc response :took))))
+        "coll1 test"
+        {:permitted-concept-id coll1}
+        [acl1 acl5]
+
+        "coll2 test"
+        {:permitted-concept-id coll2}
+        [acl2 acl3 acl5]
+
+        "coll3 test"
+        {:permitted-concept-id coll3}
+        [acl3 acl5]
+
+        "coll4 test"
+        {:permitted-concept-id coll4}
+        [acl4]))))
