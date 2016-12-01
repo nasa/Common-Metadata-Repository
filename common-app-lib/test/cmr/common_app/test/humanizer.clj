@@ -112,7 +112,8 @@
                 {:type "alias" :field "processing_level" :replacement_value "level-human"}
                 {:type "alias" :field "project" :replacement_value "proj-human"}
                 {:type "alias" :field "science_keyword" :replacement_value "sk-human"}
-                {:type "alias" :field "organization" :replacement_value "org-human"}]
+                {:type "alias" :field "organization" :replacement_value "org-human"}
+                {:type "alias" :field "tiling_system_name" :replacement_value "tiling-human"}]
 
                {:ProcessingLevel {:Id "level-A"}
                 :Platforms [{:ShortName "plat-A"
@@ -130,7 +131,9 @@
                                     :VariableLevel3 "sk-F"
                                     :DetailedVariable "sk-G"}]
                 :DataCenters [{:ShortName "org-A"}
-                              {:ShortName "org-B"}]}
+                              {:ShortName "org-B"}]
+                :TilingIdentificationSystems [{:TilingIdentificationSystemName "tis-A"}
+                                              {:TilingIdentificationSystemName "tis-B"}]}
 
                {:ProcessingLevel {:Id "level-A"
                                   :cmr.humanized/Id {:value "level-human" :priority 0}}
@@ -163,9 +166,13 @@
                                     :DetailedVariable "sk-G"
                                     :cmr.humanized/DetailedVariable {:value "sk-human" :priority 0}}]
                 :DataCenters [{:ShortName "org-A"
-                                 :cmr.humanized/ShortName {:value "org-human" :priority 0}},
-                                {:ShortName "org-B"
-                                 :cmr.humanized/ShortName {:value "org-human" :priority 0}}]}))
+                               :cmr.humanized/ShortName {:value "org-human" :priority 0}},
+                              {:ShortName "org-B"
+                               :cmr.humanized/ShortName {:value "org-human" :priority 0}}]
+                :TilingIdentificationSystems [{:TilingIdentificationSystemName "tis-A"
+                                               :cmr.humanized/TilingIdentificationSystemName {:value "tiling-human" :priority 0}}
+                                              {:TilingIdentificationSystemName "tis-B"
+                                               :cmr.humanized/TilingIdentificationSystemName {:value "tiling-human" :priority 0}}]}))
 
   (testing "humanize with source value selection"
     (humanizes [{:type "alias" :field "platform" :source_value "plat-X" :replacement_value "plat-Y"}
@@ -173,7 +180,8 @@
                 {:type "alias" :field "processing_level" :source_value "level-X" :replacement_value "level-Y"}
                 {:type "alias" :field "project" :source_value "proj-X" :replacement_value "proj-Y"}
                 {:type "alias" :field "science_keyword" :source_value "sk-X" :replacement_value "sk-Y"}
-                {:type "alias" :field "organization" :source_value "org-X" :replacement_value "org-Y"}]
+                {:type "alias" :field "organization" :source_value "org-X" :replacement_value "org-Y"}
+                {:type "alias" :field "tiling_system_name" :source-value "tis-A" :replacement_value "tis-B"}]
 
                {:ProcessingLevel {:Id "level-X"}
                 :Platforms [{:ShortName "plat-A"
@@ -191,7 +199,8 @@
                                     :VariableLevel3 "sk-F"
                                     :DetailedVariable "sk-X"}]
                 :DataCenters [{:ShortName "org-X"}
-                              {:ShortName "org-X"}]}
+                              {:ShortName "org-X"}]
+                :TilingIdentificationSystems [{:TilingIdentificationSystemName "tis-A"}]}
 
                {:ProcessingLevel {:Id "level-X"
                                   :cmr.humanized/Id {:value "level-Y" :priority 0}}
@@ -226,7 +235,9 @@
                 :DataCenters [{:ShortName "org-X"
                                  :cmr.humanized/ShortName {:value "org-Y" :priority 0}}
                               {:ShortName "org-X"
-                                 :cmr.humanized/ShortName {:value "org-Y" :priority 0}}]}))
+                                 :cmr.humanized/ShortName {:value "org-Y" :priority 0}}]
+                :TilingIdentificationSystems [{:TilingIdentificationSystemName "tis-A"
+                                               :cmr.humanized/TilingIdentificationSystemName {:value "tis-B" :priority 0}}]}))
 
   (testing "humanize with sort order"
     (humanizes [{:type "alias" :field "organization" :source_value "A" :replacement_value "X" :order 0}
