@@ -2,6 +2,7 @@
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
    [clj-time.coerce :as time-coerce]
+   [clj-time.core :as time]
    [clojure.string :as str]
    [clojure.set :as set]
    [clojurewerkz.elastisch.query :as eq]
@@ -33,6 +34,10 @@
   so keyword search will not be broken"
   {:type Boolean
    :default true})
+
+(def default-temporal-start-date-time
+  "The default date-time to use for relevancy calculations when one is not specified in the temporal range"
+  (time-coerce/to-long (time/date-time 1970 1 1)))
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
@@ -182,6 +187,7 @@
         {:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (q2e/condition->elastic condition concept-type)]
     (if-let [keywords (keywords-in-query query)]
+      ;; Forces score to be returned even if not sorting by score.
       {:track_scores true
        ;; function_score query allows us to compute a custom relevance score for each document
        ;; matched by the primary query. The final document relevance is given by multiplying
@@ -191,8 +197,9 @@
                                 :query {:filtered {:query (eq/match-all)
                                                    :filter core-query}}}}}
       (if boosts
-        (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])))))
-
+        (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
+        {:query {:filtered {:query (eq/match-all)
+                              :filter core-query}}}))))
 
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
@@ -261,22 +268,40 @@
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
 (defn- temporal-range->elastic-param
-  "Convert a temporal range to the right format for elastic. Change the dates to longs, populate
-   the start/end dates with nil as needed, and change the keys to snake case"
+  "Convert a temporal range to the right format for the elastic script. Change the dates to longs, populate
+   the start/end dates with defaults as needed, and change the keys to snake case. Do whatever
+   processing can be done here rather than the script for performance considerations."
   [temporal-range]
   (let [{:keys [start-date end-date]} temporal-range
-        temporal-range {:start-date (when start-date
-                                      (time-coerce/to-long start-date))
-                        :end-date (when end-date
-                                    (time-coerce/to-long end-date))}]
+        temporal-range {:start-date (if start-date
+                                      (time-coerce/to-long start-date)
+                                      default-temporal-start-date-time)
+                        :end-date (if end-date
+                                    (time-coerce/to-long end-date)
+                                    (time-coerce/to-long (time/today)))}
+        temporal-range (assoc temporal-range :range (- (:end-date temporal-range) (:start-date temporal-range)))]
     (util/map-keys->snake_case temporal-range)))
 
 (def script
-  "def overlapStartDate = temporalRanges[0].start_date;
-   if (doc['start-date'].value > overlapStartDate) { overlapStartDate = doc['start-date'].value; }
-   def overlapEndDate = temporalRanges[0].end_date;
-   if (doc['end-date'].value < overlapEndDate) { overlapEndDate = doc['end-date'].value; }
-   ((overlapEndDate - overlapStartDate) / (temporalRanges[0].end_date - temporalRanges[0].start_date)) * 100")
+  "def totalSpan = 0;
+   def totalOverlap = 0;
+   for (range in temporalRanges)
+   {
+     def overlapStartDate = range.start_date;
+     if (doc['start-date'].value != 0 && doc['start-date'].value > overlapStartDate)
+      { overlapStartDate = doc['start-date'].value; }
+     def overlapEndDate = range.end_date;
+     if (doc['end-date'].value != 0 && doc['end-date'].value < overlapEndDate)
+      { overlapEndDate = doc['end-date'].value; }
+     totalOverlap += overlapEndDate - overlapStartDate;
+     totalSpan += range.range;
+   }
+   if (totalSpan > 0)
+   {
+     totalOverlap / totalSpan;
+   }
+   else { 0; }")
+
 
 (defn- temporal-overlap-sort-script
  "Create the script to sort by temporal overlap percent in descending order. Get the temporal ranges
