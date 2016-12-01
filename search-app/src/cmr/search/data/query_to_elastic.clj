@@ -360,7 +360,7 @@
         sub-sort-fields (if (:all-revisions? query)
                           collection-all-revision-sub-sort-fields
                           collection-latest-sub-sort-fields)]
-    (concat (or specified-sort keyword-sort temporal-sort default-sort) sub-sort-fields)))
+    (concat (or specified-sort keyword-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
