@@ -20,6 +20,7 @@
   (format "CREATE TABLE %s.SECURITY_TOKEN (
           token VARCHAR2(200 CHAR),
           guest NUMBER(10),
+          guid VARCHAR2(50 CHAR),
           user_guid VARCHAR2(50 CHAR),
           act_as_user_guid VARCHAR2(50 CHAR),
           expires TIMESTAMP(6),
