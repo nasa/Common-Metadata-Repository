@@ -7,3 +7,7 @@ http.cors.allow-headers : X-Requested-With,X-Auth-Token,Content-Type, Content-Le
 script.inline : on
 script.file : on
 script.indexed : on
+
+script.groovy.sandbox.enabled: false
+script.engine.groovy.inline.search: on
+script.search: on
