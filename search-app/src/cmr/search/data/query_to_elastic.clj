@@ -283,8 +283,7 @@
     (util/map-keys->snake_case temporal-range)))
 
 (def script
-  "def totalSpan = 0;
-   def totalOverlap = 0;
+  "def totalOverlap = 0;
    for (range in temporalRanges)
    {
      def overlapStartDate = range.start_date;
@@ -293,15 +292,11 @@
      def overlapEndDate = range.end_date;
      if (doc['end-date'].value != 0 && doc['end-date'].value < overlapEndDate)
       { overlapEndDate = doc['end-date'].value; }
-     totalOverlap += overlapEndDate - overlapStartDate;
-     totalSpan += range.range;
+     if (overlapEndDate > overlapStartDate)
+      { totalOverlap += overlapEndDate - overlapStartDate; }
    }
-   if (totalSpan > 0)
-   {
-     totalOverlap / totalSpan;
-   }
+   if (rangeSpan > 0) { totalOverlap / rangeSpan; }
    else { 0; }")
-
 
 (defn- temporal-overlap-sort-script
  "Create the script to sort by temporal overlap percent in descending order. Get the temporal ranges
@@ -311,7 +306,8 @@
        temporal-ranges (map temporal-range->elastic-param temporal-ranges)]
    {:script script
     :type :number
-    :params {:temporalRanges temporal-ranges}
+    :params {:temporalRanges temporal-ranges
+             :rangeSpan (apply + (map :range temporal-ranges))}
     :order :desc}))
 
 (defn- keyword-sort-order

@@ -48,7 +48,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
-                           [org.clojure/tools.nrepl "0.2.12"]]
+                           [org.clojure/tools.nrepl "0.2.12"]
+                           [org.codehaus.groovy/groovy-all "2.4.0"]]
                          project-dependencies)
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
@@ -68,7 +69,6 @@
                         [pjstadig/humane-test-output "0.8.1"]
                         [debugger "0.2.0"]
                         [criterium "0.4.4"]
-                        [org.codehaus.groovy/groovy-all "2.4.0"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]
                         [proto-repl-charts "0.3.1"]

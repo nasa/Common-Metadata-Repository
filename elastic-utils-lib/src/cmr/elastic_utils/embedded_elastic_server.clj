@@ -43,10 +43,6 @@
       (put "scipt.inline" "on")
       (put "script.indexed" "on")
       (put "script.search" "on")
-      (put "script.plugin" "off")
-      (put "script.aggs" "off")
-      (put "script.mapping" "off")
-      (put "script.update" "off")
       build))
 
 (defn- build-node

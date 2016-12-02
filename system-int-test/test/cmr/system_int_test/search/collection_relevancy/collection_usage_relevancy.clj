@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.collection-usage-relevancy
+(ns cmr.system-int-test.search.collection-relevancy.collection-usage-relevancy
   "This tests the CMR Search API's community usage relevancy scoring and ranking
   capabilities"
   (:require
