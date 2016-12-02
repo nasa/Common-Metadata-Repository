@@ -52,7 +52,7 @@
                          (in-the-future? (oracle/oracle-timestamp->clj-time conn expires)))
                      (nil? revoked))
             {:is-guest? (= (long guest) 1)
-             ;; Added to support replicationg to CMR NGAP
+             ;; Added to support replicating to CMR NGAP
              :guid guid
              ;; Use the act as user guid if it's set
              :user-guid (or act_as_user_guid user_guid)})))))
