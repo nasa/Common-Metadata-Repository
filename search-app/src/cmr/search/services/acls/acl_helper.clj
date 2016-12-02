@@ -16,7 +16,7 @@
     (let [sids (cache/get-value (cache/context->cache context token-sid-cache-name)
                                 token
                                 #(or (sids-retriever/get-sids context (:token context))
-                                     (acl/context->sids context)))
+                                     {:sids (acl/context->sids context)}))
           token-guid (:guid sids)
           sids (:sids sids)]
       (when token-guid (info (format "Client token GUID: [%s]" token-guid)))
