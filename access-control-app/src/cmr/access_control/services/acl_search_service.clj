@@ -159,7 +159,7 @@
   "Validates include-legacy-group-guid parameters."
   [_ params]
   (when (and (= "true" (:include-legacy-group-guid params))
-             (not (= "true" (:include-full-acl params))))
+             (not= "true" (:include-full-acl params)))
     ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]))
 
 (defmethod cp/always-case-sensitive-fields :acl

@@ -19,9 +19,9 @@
   [context]
   (let [groups (group-service/search-for-groups
                 context {"page-size" parameter-validation/max-page-size})]
-    (reduce into {} (for [group (get-in groups [:results :items])
-                          :let [legacy-guid (:legacy_guid group)]]
-                      {(:concept_id group) (if (nil? legacy-guid) "" legacy-guid)}))))
+    (into {} (for [group (get-in groups [:results :items])
+                   :let [legacy-guid (:legacy_guid group)]]
+               [(:concept_id group) (if (nil? legacy-guid) "" legacy-guid)]))))
 
 (defn refresh-cache
   "Refreshes the group id to group legacy guid map in the cache."
@@ -38,7 +38,7 @@
                                      cache group-cache-key
                                      ;; This retrieve is added to make dev repl work
                                      (partial retrieve-group-id-to-legacy-guid-map context))]
-    (if-let [legacy-guid (group-id-to-legacy-guid-map group-id)]
+    (if-let [legacy-guid (get group-id-to-legacy-guid-map group-id)]
       (when (seq legacy-guid) legacy-guid)
       ;; legacy-guid does not exist in cache, we retrieve it and add it to the cache.
       ;; We can do this because once created, group's concept-id and legacy guid will never change.

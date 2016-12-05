@@ -1,14 +1,15 @@
 (ns cmr.access-control.data.acl-json-results-handler
   "Handles extracting elasticsearch acl results and converting them into a JSON search response."
-  (:require [cmr.access-control.data.group-fetcher :as gf]
-            [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.common.util :as util]
-            [cmr.transmit.config :as tconfig]
-            [clojure.edn :as edn]
-            [clojure.set :as set]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.edn :as edn]
+   [clojure.set :as set]
+   [cmr.access-control.data.group-fetcher :as gf]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common.util :as util]
+   [cmr.transmit.config :as tconfig]))
 
 (defn- reference-root
   "Returns the url root for reference location"
