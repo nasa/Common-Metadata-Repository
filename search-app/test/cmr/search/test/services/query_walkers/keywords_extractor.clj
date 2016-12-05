@@ -1,8 +1,9 @@
 (ns cmr.search.test.services.query-walkers.keywords-extractor
-  (require [clojure.test :refer :all]
-           [cmr.search.services.query-walkers.keywords-extractor :as ke]
-           [cmr.common-app.services.search.query-model :as qm]
-           [cmr.search.test.models.helpers :as h :refer :all]))
+ (:require
+  [clojure.test :refer :all]
+  [cmr.common-app.services.search.query-model :as qm]
+  [cmr.search.services.query-walkers.keywords-extractor :as ke]
+  [cmr.search.test.models.helpers :as h :refer :all]))
 
 (defn keyword-cond
   [text]
@@ -50,8 +51,3 @@
   (testing "Does not work for other scoring conditions"
     (is (not (ke/contains-keyword-condition? (query (qm/string-condition :platform "foo")))))
     (is (not (ke/contains-keyword-condition? (query (qm/string-condition :science-keywords.any "foo")))))))
-
-
-
-
-

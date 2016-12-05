@@ -31,7 +31,9 @@
   (extract-temporal-ranges-seq
    [query]
    (when-let [ranges (extract-temporal-ranges-seq (:condition query))]
-     (flatten ranges)))
+     (if (map? ranges)
+       [ranges]
+       (flatten ranges))))
   (contains-temporal-range-condition?
    [query]
    (contains-temporal-range-condition? (:condition query)))
