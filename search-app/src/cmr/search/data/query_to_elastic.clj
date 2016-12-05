@@ -21,6 +21,15 @@
   {:type Boolean
    :default true})
 
+(defconfig sort-use-relevancy-score
+  "Indicates whether in keyword search sorting if the community usage relevancy score should be used
+  to sort collections. If true, consider the usage score as a tie-breaker when keyword relevancy
+  scores or the same. If false, no tie-breaker is applied.
+  This config is here to allow for the usage score to be turned off until elastic indexes are updated-since
+  so keyword search will not be broken"
+  {:type Boolean
+   :default true})
+
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
   [field]
@@ -249,6 +258,14 @@
    {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
+(defn- keyword-sort-order
+  "Determine the keyword sort order based on the sort-use-relevancy-score config"
+  []
+  (if (sort-use-relevancy-score)
+    [{:_score {:order :desc}}
+     {:usage-relevancy-score {:order :desc}}]
+    [{:_score {:order :desc}}]))
+
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
   [{(q2e/query-field->elastic-field :concept-seq-id :granule) {:order "asc"}}])
@@ -259,8 +276,7 @@
   (let [{:keys [concept-type sort-keys]} query
         ;; If the sort keys are given as parameters then keyword-sort will not be used.
         keyword-sort (when (keywords-extractor/contains-keyword-condition? query)
-                       [{:_score {:order :desc}}
-                        {:usage-relevancy-score {:order :desc}}])
+                       (keyword-sort-order))
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
         sub-sort-fields (if (:all-revisions? query)

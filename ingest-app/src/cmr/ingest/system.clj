@@ -20,6 +20,7 @@
    [cmr.ingest.api.ingest :as ingest-api]
    [cmr.ingest.api.routes :as routes]
    [cmr.ingest.config :as config]
+   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.message-queue.config :as queue-config]
@@ -65,7 +66,8 @@
                                           [:catalog-item :system-object :provider-object])
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
-                       common-health/health-cache-key (common-health/create-health-cache)}
+                       common-health/health-cache-key (common-health/create-health-cache)
+                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)}
               :ingest-public-conf ingest-public-conf
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections
