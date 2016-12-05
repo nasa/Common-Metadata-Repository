@@ -28,7 +28,7 @@
   This config is here to allow for the usage score to be turned off until elastic indexes are updated-since
   so keyword search will not be broken"
   {:type Boolean
-   :default false})
+   :default true})
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
