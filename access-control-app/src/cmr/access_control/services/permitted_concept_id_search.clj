@@ -79,7 +79,7 @@
         stop-date (if (= concept-type :granule)
                     (umm-lib-time/end-date :granule (:temporal parsed-metadata))
                     (spec-time/collection-end-date parsed-metadata))
-        stop-date (if (or (= :present stop-date) (not stop-date))
+        stop-date (if (or (= :present stop-date) (nil? stop-date))
                     (t/now)
                     stop-date)]
     (gc/and
