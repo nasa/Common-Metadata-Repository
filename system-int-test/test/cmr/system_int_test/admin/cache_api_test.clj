@@ -77,7 +77,7 @@
         (url/mdb-read-caches-url) ["token-imp" "health"]
         (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"
                                       "health" "humanizer-alias-cache"]
-        (url/access-control-read-caches-url) ["acls" "health" "groups"]
+        (url/access-control-read-caches-url) ["acls" "health" "group-ids-guids"]
         (url/search-read-caches-url) ["acls" "collections-for-gran-acls" "has-granules-map"
                                       "index-names" "token-imp" "token-sid" "health"
                                       "xsl-transformer-templates" "metadata-cache" "kms"])

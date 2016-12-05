@@ -1046,9 +1046,8 @@
                               [fixtures/*fixture-provider-acl*]
                               [acl1 acl2 acl3 acl4 acl5])
 
-        expected-acl1-with-legacy-guid (assoc-in acl1
-                                                 [:group_permissions 0]
-                                                 {:permissions ["read"] :group_id group1-legacy-guid})
+        expected-acl1-with-legacy-guid (assoc-in
+                                        acl1 [:group_permissions 0 :group_id] group1-legacy-guid)
         expected-acl3-with-legacy-guid (-> acl3
                                            ;; name is added to generate the correct ACL name for
                                            ;; comparison which is based on group concept id
