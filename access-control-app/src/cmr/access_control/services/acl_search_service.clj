@@ -2,29 +2,32 @@
   "Contains ACL search functions, including parameter
    validation and user visibility permission checks"
   (:require
-    [camel-snake-kebab.core :as csk]
-    [clojure.string :as str]
-    [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.services.auth-util :as auth-util]
-    [cmr.access-control.services.group-service :as groups]
-    [cmr.access-control.services.permitted-concept-id-search :as pcs]
-    [cmr.common-app.services.search :as cs]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.parameter-validation :as cpv]
-    [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-    [cmr.common-app.services.search.params :as cp]
-    [cmr.common-app.services.search.query-model :as common-qm]
-    [cmr.common.log :refer [info debug]]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.transmit.metadata-db2 :as mdb2]
-    [cmr.umm.collection.product-specific-attribute :as psa]))
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
+   [cmr.access-control.data.acl-schema :as schema]
+   [cmr.access-control.services.auth-util :as auth-util]
+   [cmr.access-control.services.group-service :as groups]
+   [cmr.access-control.services.permitted-concept-id-search :as pcs]
+   [cmr.common-app.services.search :as cs]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.parameter-validation :as cpv]
+   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
+   [cmr.common-app.services.search.params :as cp]
+   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.common.log :refer [info debug]]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.transmit.metadata-db2 :as mdb2]
+   [cmr.umm.collection.product-specific-attribute :as psa])
+  ;; Must be required to be available at runtime
+  (:require
+   cmr.access-control.data.acl-json-results-handler))
 
 (defmethod cpv/params-config :acl
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{:include-full-acl :legacy-guid}
+    {:single-value #{:include-full-acl :legacy-guid :include-legacy-group-guid}
      :multiple-value #{:permitted-group :identity-type :provider}
      :always-case-sensitive #{}
      :disallow-pattern #{:identity-type :permitted-user :group-permission :legacy-guid}
@@ -32,7 +35,7 @@
 
 (defmethod cpv/valid-query-level-params :acl
   [_]
-  #{:include-full-acl :legacy-guid})
+  #{:include-full-acl :legacy-guid :include-legacy-group-guid})
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
@@ -152,6 +155,13 @@
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
                (str/join ", " invalid-types))])))
 
+(defn- include-legacy-group-guid-validation
+  "Validates include-legacy-group-guid parameters."
+  [_ params]
+  (when (and (= "true" (:include-legacy-group-guid params))
+             (not (= "true" (:include-full-acl params))))
+    ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]))
+
 (defmethod cp/always-case-sensitive-fields :acl
   [_]
   #{:concept-id :identity-type})
@@ -173,10 +183,12 @@
 (defmethod cp/parse-query-level-params :acl
   [concept-type params]
   (let [[params query-attribs] (cp/default-parse-query-level-params :acl params)]
-    [(dissoc params :include-full-acl)
+    [(dissoc params :include-full-acl :include-legacy-group-guid)
      (merge query-attribs
-            (when (= (:include-full-acl params) "true")
-              {:result-features [:include-full-acl]}))]))
+            (when (= "true" (:include-full-acl params))
+              {:result-features [:include-full-acl]})
+            (when (= "true" (:include-legacy-group-guid params))
+              {:result-features [:include-full-acl :include-legacy-group-guid]}))]))
 
 (defmethod cp/parameter->condition :permitted-concept-id
  [context concept-type param value options]
@@ -221,9 +233,9 @@
       (nf/parse-nested-condition target-field value case-sensitive? pattern?))))
 
 (defn validate-acl-search-params
- "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
- [context params]
- (let [[safe-params type-errors] (cpv/apply-type-validations
+  "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
+  [context params]
+  (let [[safe-params type-errors] (cpv/apply-type-validations
                                    params
                                    [(partial cpv/validate-map [:options])
                                     (partial cpv/validate-map [:options :permitted-group])
@@ -231,29 +243,31 @@
                                     (partial cpv/validate-map [:options :provider])
                                     (partial cpv/validate-map [:options :permitted-user])
                                     (partial cpv/validate-map [:group_permission])])]
-   (cpv/validate-parameters
+    (cpv/validate-parameters
      :acl safe-params
      (concat cpv/common-validations
              [permitted-concept-id-validation
               permitted-group-validation
               identity-type-validation
               group-permission-validation
-              (partial cpv/validate-boolean-param :include-full-acl)])
+              (partial cpv/validate-boolean-param :include-full-acl)
+              (partial cpv/validate-boolean-param :include-legacy-group-guid)
+              include-legacy-group-guid-validation])
      type-errors))
- params)
+  params)
 
 (defn search-for-acls
   "Searches for ACLs using given parameters. Returns result map from find-concepts
    including total time taken."
   [context params]
   (let [[query-creation-time query] (util/time-execution
-                                      (->> params
-                                           cp/sanitize-params
-                                           (validate-acl-search-params :acl)
-                                           (cp/parse-parameter-query context :acl)))
+                                     (->> params
+                                          cp/sanitize-params
+                                          (validate-acl-search-params :acl)
+                                          (cp/parse-parameter-query context :acl)))
         [find-concepts-time results] (util/time-execution
-                                       (cs/find-concepts context :acl query))
+                                      (cs/find-concepts context :acl query))
         total-took (+ query-creation-time find-concepts-time)]
-   (info (format "Found %d acls in %d ms in format %s with params %s."
-                 (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
-   (assoc results :took total-took)))
+    (info (format "Found %d acls in %d ms in format %s with params %s."
+                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
+    (assoc results :took total-took)))

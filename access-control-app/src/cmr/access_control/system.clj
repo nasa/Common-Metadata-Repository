@@ -6,6 +6,7 @@
    [cmr.access-control.api.routes :as routes]
    [cmr.access-control.config :as config]
    [cmr.access-control.data.access-control-index :as access-control-index]
+   [cmr.access-control.data.group-fetcher :as gf]
    [cmr.access-control.services.event-handler :as event-handler]
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.acl.acl-fetcher :as af]
@@ -68,6 +69,7 @@
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
+                      gf/group-cache-key (gf/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
 
              :public-conf (public-conf)

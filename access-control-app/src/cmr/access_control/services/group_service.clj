@@ -4,6 +4,7 @@
     [cheshire.core :as json]
     [clojure.edn :as edn]
     [clojure.string :as str]
+    [cmr.access-control.data.access-control-index :as index]
     [cmr.access-control.services.auth-util :as auth]
     [cmr.access-control.services.group-service-messages :as g-msg]
     [cmr.access-control.services.messages :as msg]
@@ -24,9 +25,7 @@
     [cmr.transmit.urs :as urs])
   ;; Must be required to be available at runtime
   (:require
-    cmr.access-control.data.group-json-results-handler
-    cmr.access-control.data.acl-json-results-handler
-    [cmr.access-control.data.access-control-index :as index])
+    cmr.access-control.data.group-json-results-handler)
   (:import
     (java.util UUID)))
 
@@ -199,10 +198,15 @@
     (not (:deleted concept))
     false))
 
+(defn get-group-by-concept-id
+  "Retrieves a group with the given concept id, returns its parsed metadata."
+  [context concept-id]
+  (edn/read-string (:metadata (fetch-group-concept context concept-id))))
+
 (defn get-group
   "Retrieves a group with the given concept id."
   [context concept-id]
-  (let [group (edn/read-string (:metadata (fetch-group-concept context concept-id)))]
+  (let [group (get-group-by-concept-id context concept-id)]
     (auth/verify-can-read-group context group)
     ;; Group response includes the number of members and not the actual members
     (-> group

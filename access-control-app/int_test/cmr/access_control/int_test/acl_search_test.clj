@@ -104,14 +104,15 @@
         expected-location (format "%s://%s:%s%s/acls/%s"
                                   protocol host port context (:concept-id acl))]
     (util/remove-nil-keys
-     {:name (access-control-index/acl->display-name acl)
+     {:name (or (:name acl) ;; only SingleInstanceIdentity ACLs with legacy guid will set the name
+                (access-control-index/acl->display-name acl))
       :revision_id (:revision-id acl),
       :concept_id (:concept-id acl)
       :identity_type (access-control-index/acl->identity-type acl)
       :location expected-location
       :acl (when include-full-acl?
              (-> acl
-                 (dissoc :concept-id :revision-id)
+                 (dissoc :concept-id :revision-id :name)
                  util/map-keys->snake_case))})))
 
 (defn acls->search-response
@@ -1010,3 +1011,75 @@
         "coll4 test"
         {:permitted-concept-id coll4}
         [acl4]))))
+
+(deftest acl-search-with-legacy-group-guid-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1-legacy-guid "group1-legacy-guid"
+        group1 (u/ingest-group token
+                               {:name "group1"
+                                :legacy_guid group1-legacy-guid}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "group2"}
+                               ["user1"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+
+        ;; ACL associated with a group that has legacy guid
+        acl1 (ingest-acl token (assoc-in (system-acl "INGEST_MANAGEMENT_ACL")
+                                         [:group_permissions 0]
+                                         {:permissions ["read"] :group_id group1-concept-id}))
+        ;; ACL associated with a group that does not have legacy guid
+        acl2 (ingest-acl token (assoc-in (system-acl "ARCHIVE_RECORD")
+                                         [:group_permissions 0]
+                                         {:permissions ["delete"] :group_id group2-concept-id}))
+        ;; SingleInstanceIdentity ACL with a group that has legacy guid
+        acl3 (ingest-acl token (single-instance-acl group1-concept-id))
+        ;; SingleInstanceIdentity ACL with a group that does not have legacy guid
+        acl4 (ingest-acl token (single-instance-acl group2-concept-id))
+        ;; ACL without group_id
+        acl5 (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
+
+        expected-acls (concat [fixtures/*fixture-system-acl*]
+                              [fixtures/*fixture-provider-acl*]
+                              [acl1 acl2 acl3 acl4 acl5])
+
+        expected-acl1-with-legacy-guid (assoc-in acl1
+                                                 [:group_permissions 0]
+                                                 {:permissions ["read"] :group_id group1-legacy-guid})
+        expected-acl3-with-legacy-guid (-> acl3
+                                           ;; name is added to generate the correct ACL name for
+                                           ;; comparison which is based on group concept id
+                                           (assoc :name (str "Group - " group1-concept-id))
+                                           (assoc-in [:single_instance_identity :target_id]
+                                                     group1-legacy-guid))
+        expected-acls-with-legacy-guids (concat [fixtures/*fixture-system-acl*]
+                                                [fixtures/*fixture-provider-acl*]
+                                                [expected-acl1-with-legacy-guid acl2
+                                                 expected-acl3-with-legacy-guid acl4 acl5])]
+    (u/wait-until-indexed)
+
+    (testing "Find acls without legacy group guid"
+      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20})]
+        (is (= (acls->search-response (count expected-acls) expected-acls {:include-full-acl true})
+               (dissoc response :took)))))
+
+    (testing "Find acls with legacy group guid"
+      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true
+                                                           :include-legacy-group-guid true
+                                                           :page_size 20})]
+        (is (= (acls->search-response
+                (count expected-acls)
+                expected-acls-with-legacy-guids {:include-full-acl true
+                                                 :include-legacy-group-guid true})
+               (dissoc response :took)))))
+
+    (testing "Find acls with include-legacy-group-guid but without include-full-acl"
+      (let [{:keys [status body]} (ac/search-for-acls
+                                   (u/conn-context) {:include-legacy-group-guid true} {:raw? true})
+            errors (:errors body)]
+        (is (= 400 status))
+        (is (= ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]
+               errors))))))
