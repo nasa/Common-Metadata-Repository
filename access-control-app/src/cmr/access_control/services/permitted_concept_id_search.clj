@@ -5,6 +5,7 @@
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
+    [cmr.transmit.metadata-db2 :as mdb2]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm.start-end-date :as umm-lib-time]
@@ -77,9 +78,9 @@
                      (umm-lib-time/start-date :granule (:temporal parsed-metadata))
                      (spec-time/collection-start-date parsed-metadata))
         stop-date (if (= concept-type :granule)
-                    (umm-lib-time/start-date :granule (:temporal parsed-metadata))
+                    (umm-lib-time/end-date :granule (:temporal parsed-metadata))
                     (spec-time/collection-end-date parsed-metadata))
-        stop-date (if (= :present stop-date)
+        stop-date (if (or (= :present stop-date) (nil? stop-date))
                     (t/now)
                     stop-date)]
     (gc/and
@@ -117,13 +118,20 @@
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
   (let [concept-type (:concept-type concept)
+        _ (proto-repl.saved-values/save 1)
         parsed-metadata (if (= concept-type :collection)
                           (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
-                          (umm-lib/parse-concept concept))]
-    (gc/and
-      (common-qm/string-condition :provider (:provider-id concept))
-      (gc/or
-        (create-generic-applicable-condition concept-type)
-        (create-access-value-condition parsed-metadata concept-type)
-        (create-temporal-condition parsed-metadata concept-type)
-        (create-entry-title-condition parsed-metadata)))))
+                          (umm-lib/parse-concept concept))
+        parent-collection-conds (if (= concept-type :granule)
+                                  (let [parent-collection (mdb2/get-latest-concept context (get-in concept [:extra-fields :parent-collection-id]))]
+                                    (get-permitted-concept-id-conditions context parent-collection))
+                                  common-qm/match-none)]
+    (gc/or
+      parent-collection-conds
+      (gc/and
+        (common-qm/string-condition :provider (:provider-id concept))
+        (gc/or
+          (create-generic-applicable-condition concept-type)
+          (create-access-value-condition parsed-metadata concept-type)
+          (create-temporal-condition parsed-metadata concept-type)
+          (create-entry-title-condition parsed-metadata))))))
