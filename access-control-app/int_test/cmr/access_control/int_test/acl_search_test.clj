@@ -104,7 +104,7 @@
         expected-location (format "%s://%s:%s%s/acls/%s"
                                   protocol host port context (:concept-id acl))]
     (util/remove-nil-keys
-     {:name (or (:name acl) ;; only SingleInstanceIdentity ACLs with legacy guid will set the name
+     {:name (or (:single-instance-name acl) ;; only SingleInstanceIdentity ACLs with legacy guid will set single-instance-name
                 (access-control-index/acl->display-name acl))
       :revision_id (:revision-id acl),
       :concept_id (:concept-id acl)
@@ -112,7 +112,7 @@
       :location expected-location
       :acl (when include-full-acl?
              (-> acl
-                 (dissoc :concept-id :revision-id :name)
+                 (dissoc :concept-id :revision-id :single-instance-name)
                  util/map-keys->snake_case))})))
 
 (defn acls->search-response
@@ -1049,9 +1049,9 @@
         expected-acl1-with-legacy-guid (assoc-in
                                         acl1 [:group_permissions 0 :group_id] group1-legacy-guid)
         expected-acl3-with-legacy-guid (-> acl3
-                                           ;; name is added to generate the correct ACL name for
-                                           ;; comparison which is based on group concept id
-                                           (assoc :name (str "Group - " group1-concept-id))
+                                           ;; single-instance-name is added to generate the correct
+                                           ;; ACL name for comparison which is based on group concept id
+                                           (assoc :single-instance-name (str "Group - " group1-concept-id))
                                            (assoc-in [:single_instance_identity :target_id]
                                                      group1-legacy-guid))
         expected-acls-with-legacy-guids (concat [fixtures/*fixture-system-acl*]
