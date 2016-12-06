@@ -786,8 +786,8 @@
                                                                                                  :mask "contains"}}
                                                               :granule_applicable true
                                                               :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
-                                                                                                 :stop_date "2011-01-01T00:00:00Z"
-                                                                                                 :mask "contains"}}
+                                                                                              :stop_date "2011-01-01T00:00:00Z"
+                                                                                              :mask "contains"}}
                                                               :provider_id "PROV1"}))
         acl5 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
                                       :catalog_item_identity {:name "Temporal intersect"
