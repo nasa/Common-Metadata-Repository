@@ -27,19 +27,9 @@
        "AG_MAPSS,2,30\n"
        "AST_05,B,8\n"))
 
-(defn- ingest-community-usage-metrics
- "Ingest sample metrics to use in tests"
- ([]
-  (ingest-community-usage-metrics sample-usage-csv))
- ([csv-data]
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])]
-    (hu/update-community-usage-metrics admin-update-token csv-data)
-    (index/wait-until-indexed))))
-
 (deftest community-usage-relevancy-scoring
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (ingest-community-usage-metrics)
+  (hu/ingest-community-usage-metrics sample-usage-csv)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
                                     :version-id "3"}))
@@ -71,7 +61,7 @@
 
 (deftest keyword-relevancy-takes-precedence
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (ingest-community-usage-metrics)
+  (hu/ingest-community-usage-metrics sample-usage-csv)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
                                     :version-id "3"
@@ -109,14 +99,14 @@
                                     :entry-title "Relevancy 3"
                                     :version-id "2"}))
   (index/wait-until-indexed)
-  (ingest-community-usage-metrics)
+  (hu/ingest-community-usage-metrics sample-usage-csv)
 
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
     (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
 (deftest change-metrics
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (ingest-community-usage-metrics)
+  (hu/ingest-community-usage-metrics sample-usage-csv)
 
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "Relevancy 1"
@@ -130,10 +120,10 @@
   (index/wait-until-indexed)
 
   ;; Ingest new community usage metrics and check that results change
-  (ingest-community-usage-metrics (str "Product,Version,Hosts\n"
-                                       "AMSR-L1A,3,40\n"
-                                       "AG_VIRTUAL,1,12\n"
-                                       "AG_MAPSS,2,58\n"))
+  (hu/ingest-community-usage-metrics (str "Product,Version,Hosts\n"
+                                          "AMSR-L1A,3,40\n"
+                                          "AG_VIRTUAL,1,12\n"
+                                          "AG_MAPSS,2,58\n"))
 
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
     (is (= ["Relevancy 3" "Relevancy 1" "Relevancy 2"] (map :name results)))))
@@ -141,7 +131,7 @@
 ;; Outside of keyword search, allow the user to sort by community usage
 (deftest sort-by-community-usage
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (ingest-community-usage-metrics)
+  (hu/ingest-community-usage-metrics sample-usage-csv)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A" ;10
                                     :entry-title "Relevancy 1"
                                     :version-id "3"}))
@@ -173,7 +163,7 @@
 
 (deftest community-usage-not-provided-versions
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (ingest-community-usage-metrics sample-csv-not-provided-versions)
+  (hu/ingest-community-usage-metrics sample-csv-not-provided-versions)
   (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
                                     :entry-title "AMSR-L1A V3 Relevancy"
                                     :version-id "3"}))

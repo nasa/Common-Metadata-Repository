@@ -1,8 +1,6 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
-   [clj-time.coerce :as time-coerce]
-   [clj-time.core :as time]
    [clojure.string :as str]
    [clojure.set :as set]
    [clojurewerkz.elastisch.query :as eq]
@@ -14,6 +12,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.data.keywords-to-elastic :as k2e]
+   [cmr.search.data.temporal-ranges-to-elastic :as temporal-to-elastic]
    ;; require it so it will be available
    [cmr.search.data.query-order-by-expense]
    [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
@@ -34,10 +33,6 @@
   so keyword search will not be broken"
   {:type Boolean
    :default true})
-
-(def default-temporal-start-date-time
-  "The default date-time to use for relevancy calculations when one is not specified in the temporal range"
-  (time-coerce/to-long (time/date-time 1970 1 1)))
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
@@ -267,49 +262,6 @@
    {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
-(defn- temporal-range->elastic-param
-  "Convert a temporal range to the right format for the elastic script. Change the dates to longs, populate
-   the start/end dates with defaults as needed, and change the keys to snake case. Do whatever
-   processing can be done here rather than the script for performance considerations."
-  [temporal-range]
-  (let [{:keys [start-date end-date]} temporal-range
-        temporal-range {:start-date (if start-date
-                                      (time-coerce/to-long start-date)
-                                      default-temporal-start-date-time)
-                        :end-date (if end-date
-                                    (time-coerce/to-long end-date)
-                                    (time-coerce/to-long (time/today)))}
-        temporal-range (assoc temporal-range :range (- (:end-date temporal-range) (:start-date temporal-range)))]
-    (util/map-keys->snake_case temporal-range)))
-
-(def script
-  "def totalOverlap = 0;
-   for (range in temporalRanges)
-   {
-     def overlapStartDate = range.start_date;
-     if (doc['start-date'].value != 0 && doc['start-date'].value > overlapStartDate)
-      { overlapStartDate = doc['start-date'].value; }
-     def overlapEndDate = range.end_date;
-     if (doc['end-date'].value != 0 && doc['end-date'].value < overlapEndDate)
-      { overlapEndDate = doc['end-date'].value; }
-     if (overlapEndDate > overlapStartDate)
-      { totalOverlap += overlapEndDate - overlapStartDate; }
-   }
-   if (rangeSpan > 0) { totalOverlap / rangeSpan; }
-   else { 0; }")
-
-(defn- temporal-overlap-sort-script
- "Create the script to sort by temporal overlap percent in descending order. Get the temporal ranges
-  from the query, format them for elastic, and send them as params for the script."
- [query]
- (let [temporal-ranges (temporal-range-extractor/extract-temporal-ranges query)
-       temporal-ranges (map temporal-range->elastic-param temporal-ranges)]
-   {:script script
-    :type :number
-    :params {:temporalRanges temporal-ranges
-             :rangeSpan (apply + (map :range temporal-ranges))}
-    :order :desc}))
-
 (defn- keyword-sort-order
   "Determine the keyword sort order based on the sort-use-relevancy-score config and the presence
    of temporal range parameters in the query"
@@ -318,11 +270,11 @@
     (and (temporal-range-extractor/contains-temporal-ranges? query)
          (sort-use-relevancy-score))
     [{:_score {:order :desc}}
-     {:_script (temporal-overlap-sort-script query)}
+     {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
      {:usage-relevancy-score {:order :desc}}]
     (temporal-range-extractor/contains-temporal-ranges? query)
     [{:_score {:order :desc}}
-     {:_script (temporal-overlap-sort-script query)}]
+     {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}]
     (sort-use-relevancy-score)
     [{:_score {:order :desc}}
      {:usage-relevancy-score {:order :desc}}]
@@ -335,9 +287,9 @@
   [query]
   (when (temporal-range-extractor/contains-temporal-ranges? query)
     (if (sort-use-relevancy-score)
-      [{:_script (temporal-overlap-sort-script query)}
+      [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
        {:usage-relevancy-score {:order :desc}}]
-      [{:_script (temporal-overlap-sort-script query)}])))
+      [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])))
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]

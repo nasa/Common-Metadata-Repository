@@ -1,4 +1,5 @@
 (ns cmr.search.test.services.query-walkers.temporal-range-extractor
+  "Tests for extracting temporal ranges from queries"
  (:require
   [clojure.test :refer :all]
   [clj-time.core :as time]
