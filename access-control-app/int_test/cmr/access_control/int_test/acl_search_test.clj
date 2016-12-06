@@ -67,8 +67,8 @@
   {:group_permissions [{:user_type "guest" :permissions ["create"]}]
    :catalog_item_identity {:name "REPLACEME"
                            :provider_id "PROV1"
-                           :collection_applicable true
-                           :granule_applicable true}})
+                           :granule_applicable true
+                           :collection_applicable true}})
 
 (defn system-acl
   "Creates a system acl for testing with the given target."
@@ -691,9 +691,10 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-permitted-concept-id-temporal
+(deftest acl-search-permitted-concept-id-through-temporal
    ;; This test is for searching ACLs by permitted concept id.  For a given
-   ;; collection concept id, acls granting permission to this collection by temporal
+   ;; collection concept id or granule concept id,
+   ;; acls granting permission to this collection by temporal
    ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
 
@@ -751,10 +752,27 @@
                                   :provider-id "PROV1"
                                   :temporal-singles #{(t/date-time 2012 1 1 0 0 1)}})
 
+        gran1 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
+                                                                  :ending-date-time (t/date-time 2011)}}})
+        gran2 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2010)}}})
+        gran3 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
+                                                                  :ending-date-time (t/date-time 2012)}}})
+        gran4 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
+                                                                  :ending-date-time (t/date-time 2012)}}})
+        gran5 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran6 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
+                                                                  :ending-date-time (t/date-time 2012 1 1 0 0 1)}}})
+        gran7 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran8 (u/save-granule coll1 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
+
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 10}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 10}}
                                                               :provider_id "PROV1"}))
         acl2 (ingest-acl token (catalog-item-acl "No collection identifier"))
         acl3 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
@@ -766,11 +784,19 @@
                                                               :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
                                                                                                  :stop_date "2011-01-01T00:00:00Z"
                                                                                                  :mask "contains"}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                              :stop_date "2011-01-01T00:00:00Z"
+                                                                                              :mask "contains"}}
                                                               :provider_id "PROV1"}))
         acl5 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
                                       :catalog_item_identity {:name "Temporal intersect"
                                                               :collection_applicable true
                                                               :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                                                                 :mask "intersect"}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
                                                                                                  :stop_date "2011-01-01T00:00:00Z"
                                                                                                  :mask "intersect"}}
                                                               :provider_id "PROV1"}))
@@ -780,6 +806,10 @@
                                                               :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
                                                                                                  :stop_date "2011-01-01T00:00:00Z"
                                                                                                  :mask "disjoint"}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                                                                 :mask "disjoint"}}
                                                               :provider_id "PROV1"}))]
     (u/wait-until-indexed)
     (testing "collection concept id search"
@@ -787,6 +817,39 @@
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
+
+        "gran1 test"
+        {:permitted-concept-id gran1}
+        [acl2 acl4 acl5]
+
+        "gran2 test"
+        {:permitted-concept-id gran2}
+        [acl2 acl5]
+
+        "gran3 test"
+        {:permitted-concept-id gran3}
+        [acl2 acl5]
+
+        "gran4 test"
+        {:permitted-concept-id gran4}
+        [acl2 acl6]
+
+        "gran5 test"
+        {:permitted-concept-id gran5}
+        [acl2 acl6]
+
+        "gran6 test"
+        {:permitted-concept-id gran6}
+        [acl2 acl5]
+
+        "gran7 test"
+        {:permitted-concept-id gran7}
+        [acl2 acl5]
+
+        "gran8 test"
+        {:permitted-concept-id gran8}
+        [acl2 acl6]
+
         "coll1 test"
         {:permitted-concept-id coll1}
         [acl2 acl4 acl5]
@@ -819,9 +882,10 @@
         {:permitted-concept-id coll8}
         [acl2 acl6]))))
 
-(deftest acl-search-permitted-concept-id-access-value
+(deftest acl-search-permitted-concept-id-through-access-value
   ;; This test is for searching ACLs by permitted concept id.  For a given
-  ;; collection concept id, acls granting permission to this collection by access-value
+  ;; collection concept id or granule concept id,
+  ;; acls granting permission to this collection by access-value
   ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
         save-access-value-collection (fn [short-name access-value]
@@ -850,13 +914,18 @@
                                   :access-value 2
                                   :provider-id "PROV2"})
 
-        gran1 (u/save-granule coll1 {:provider-id "PROV1"})
-        gran2 (u/save-granule coll6 {:provider-id "PROV2"})
+        gran1 (u/save-granule coll1 {:access-value 1})
+        gran2 (u/save-granule coll1 {:access-value 2})
+        gran3 (u/save-granule coll1 {:access-value 3})
+        gran4 (u/save-granule coll1 {:access-value nil})
+        gran5 (u/save-granule coll6 {:access-value 2 :provider-id "PROV2"})
 
         ;; For testing that a full range encompassing multiple collections will
         ;; properly match all collections
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-3")
                                       :catalog_item_identity {:name "Access value 1-3"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 3}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 3}}
                                                               :provider_id "PROV1"}))
@@ -864,30 +933,40 @@
         ;; For testing a single access value, instead of a range of multiple access values
         acl2 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
                                       :catalog_item_identity {:name "Access value 1"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :provider_id "PROV1"}))
         ;; For testing a range, but one that doesn't include all posssible collections, with min value checked
         acl3 (ingest-acl token (assoc (catalog-item-acl "Access value 1-2")
                                       :catalog_item_identity {:name "Access value 1-2"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 2}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 2}}
                                                               :provider_id "PROV1"}))
         ;; For testing a range, but one that doesn't include all posssible collections, with max value checked
         acl4 (ingest-acl token (assoc (catalog-item-acl "Access value 2-3")
                                       :catalog_item_identity {:name "Access value 2-3"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 2 :max_value 3}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 2 :max_value 3}}
                                                               :provider_id "PROV1"}))
         ;; For testing an access value which will match no collections
         acl5 (ingest-acl token (assoc (catalog-item-acl "Access value 4")
                                       :catalog_item_identity {:name "Access value 4"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 4 :max_value 4}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 4 :max_value 4}}
                                                               :provider_id "PROV1"}))
         ;; For testing on undefined access values
         acl6 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
                                       :catalog_item_identity {:name "include undefined value"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:include_undefined_value true}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:include_undefined_value true}}
                                                               :provider_id "PROV1"}))
@@ -913,6 +992,27 @@
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
+
+        "gran1 test"
+        {:permitted-concept-id gran1}
+        [acl1 acl2 acl3 acl7]
+
+        "gran2 test"
+        {:permitted-concept-id gran2}
+        [acl1 acl3 acl4 acl7]
+
+        "gran3 test"
+        {:permitted-concept-id gran3}
+        [acl1 acl4 acl7]
+
+        "gran4 test"
+        {:permitted-concept-id gran4}
+        [acl6 acl7]
+
+        "gran5 test"
+        {:permitted-concept-id gran5}
+        [acl8]
+
         "coll1 test"
         {:permitted-concept-id coll1}
         [acl1 acl2 acl3 acl7]
@@ -929,22 +1029,14 @@
         {:permitted-concept-id coll4}
         [acl6 acl7]
 
-        ;; Will eventually not return ACL9 once CMR-3614 is fixed
         "coll5 test"
         {:permitted-concept-id coll5}
         [acl7 acl9]
 
         "coll6 test"
         {:permitted-concept-id coll6}
-        [acl8]
-
-        "gran1 test"
-        {:permitted-concept-id gran1}
-        [acl7]
-
-        "gran2 test"
-        {:permitted-concept-id gran2}
         [acl8]))))
+
 
 (deftest acl-search-permitted-concept-id-through-entry-title
   (let [token (e/login (u/conn-context) "user1")
