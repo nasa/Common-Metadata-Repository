@@ -59,8 +59,7 @@
 
 (defn echo10-temporal
   [c]
-  ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
-  ;; address questions about temporal mappings.
+  ;; ECHO10 only supports one temporal extent
   (when-let [temporal (first (:TemporalExtents c))]
     [:Temporal
      (elements-from temporal
