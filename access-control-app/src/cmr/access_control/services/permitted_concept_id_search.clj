@@ -21,7 +21,8 @@
   [concept-type]
   (gc/and
     (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
-    (common-qm/boolean-condition (make-keyword concept-type :identifier) false)))
+    (common-qm/boolean-condition :granule-identifier false)
+    (common-qm/boolean-condition :collection-identifier false)))
 
 (defn- create-temporal-intersect-condition
   "Constructs query condition for intersect mask"
@@ -118,13 +119,16 @@
   "Returns query to search for ACLs that could permit given concept"
   [context concept]
   (let [concept-type (:concept-type concept)
-        _ (proto-repl.saved-values/save 1)
         parsed-metadata (if (= concept-type :collection)
                           (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
                           (umm-lib/parse-concept concept))
         parent-collection-conds (if (= concept-type :granule)
                                   (let [parent-collection (mdb2/get-latest-concept context (get-in concept [:extra-fields :parent-collection-id]))]
-                                    (get-permitted-concept-id-conditions context parent-collection))
+                                    (gc/and
+                                      (common-qm/boolean-condition :granule-identifier false)
+                                      (common-qm/boolean-condition :collection-applicable true)
+                                      (common-qm/boolean-condition :granule-applicable true)
+                                      (get-permitted-concept-id-conditions context parent-collection)))
                                   common-qm/match-none)]
     (gc/or
       parent-collection-conds
