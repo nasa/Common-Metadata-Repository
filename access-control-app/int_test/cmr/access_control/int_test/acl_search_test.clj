@@ -752,7 +752,6 @@
                                   :provider-id "PROV1"
                                   :temporal-singles #{(t/date-time 2012 1 1 0 0 1)}})
 
-
         gran1 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
                                                                   :ending-date-time (t/date-time 2011)}}})
         gran2 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
@@ -1119,7 +1118,7 @@
                                    :provider-id "PROV1"})
 
          gran1 (u/save-granule coll1 {:provider-id "PROV1"})
-         
+
          acl1 (ingest-acl token (assoc (catalog-item-acl "Temporal contains")
                                        :catalog_item_identity {:name "Temporal contains"
                                                                :collection_applicable true
