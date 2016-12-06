@@ -77,9 +77,9 @@
                      (umm-lib-time/start-date :granule (:temporal parsed-metadata))
                      (spec-time/collection-start-date parsed-metadata))
         stop-date (if (= concept-type :granule)
-                    (umm-lib-time/start-date :granule (:temporal parsed-metadata))
+                    (umm-lib-time/end-date :granule (:temporal parsed-metadata))
                     (spec-time/collection-end-date parsed-metadata))
-        stop-date (if (= :present stop-date)
+        stop-date (if (or (= :present stop-date) (nil? stop-date))
                     (t/now)
                     stop-date)]
     (gc/and
