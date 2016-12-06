@@ -25,9 +25,9 @@
 
 (defn- cache-value->legacy-guid
   "Returns the legacy guid from the stored cache value."
-  [legacy-guid]
-  ;; retuns nil if legacy guid is an empty string
-  (when (seq legacy-guid) legacy-guid))
+  [cache-value]
+  ;; retuns nil if cached value is an empty string
+  (when (seq cache-value) cache-value))
 
 (defn- retrieve-group-id-to-legacy-guid-map
   [context]
