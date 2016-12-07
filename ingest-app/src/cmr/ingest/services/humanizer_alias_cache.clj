@@ -51,17 +51,20 @@
    Note: if the shortname of a platform alias already exists in the collection's platforms, this
    alias won't be added to the platform-aliases."
   [platforms plat-sn-key plat-alias-map]
-  (let [platform-shortnames (map plat-sn-key platforms)
+  (let [platform-shortnames-set (set (map plat-sn-key platforms))
         platform-aliases (for [coll-plat platforms
                                :let [coll-plat-sn (get coll-plat plat-sn-key)
-                                     aliases (get plat-alias-map (str/upper-case coll-plat-sn))]
-                               alias (set/difference (set aliases) (set platform-shortnames))]
+                                     aliases-set (set (get plat-alias-map (str/upper-case coll-plat-sn)))]
+                               alias (set/difference aliases-set platform-shortnames-set)]
                            (assoc coll-plat plat-sn-key alias))]
     platform-aliases)) 
 
 (defn update-collection-with-aliases
   "Returns the collection with all the platform aliases added.
-   Given plat-alias-map being {\"TERRA\" [\"AM-1\" \"am-1\"]} 
+   Given plat-alias-map being {\"TERRA\" [\"AM-1\" \"am-1\"]}, 
+   which indicates AM-1 and am-1 are aliases of TERRA. That means that granules referring to 
+   a collection through AM-1 or am-1 would be permitted if the collection had TERRA.
+   Here is one example:  
    Original collection platforms: [{:ShortName \"Terra\" :Otherfields \"other-terra-values\"}
                                    {:ShortName \"AM-1\" :Otherfields \"other-am-1-values\"}]
    updated collection platforms: [{:ShortName \"Terra\" :Otherfields \"other-terra-values\"}
