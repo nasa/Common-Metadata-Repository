@@ -123,7 +123,7 @@
      [:InsertTime (dates/with-default (dates/data-create-date c))]
      [:LastUpdate (dates/with-default (dates/data-update-date c))]
      [:DeleteTime (dates/data-delete-date c)]
-     [:LongName "dummy-long-name"]
+     [:LongName spec-util/not-provided]
      [:DataSetId (:EntryTitle c)]
      [:Description (if-let [abstract (:Abstract c)]
                      (util/trunc abstract 12000)
