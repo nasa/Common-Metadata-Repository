@@ -538,16 +538,67 @@
                             (ac/create-acl (u/conn-context) catalog-item-acl {:token token}))))))
 
 (deftest get-acl-test
-  (let [token (e/login (u/conn-context) "admin")
-        concept-id (:concept_id (ac/create-acl (u/conn-context) system-acl {:token token}))]
-    ;; Acceptance criteria: A created ACL can be retrieved after it is created.
-    (is (= system-acl (ac/get-acl (u/conn-context) concept-id {:token token})))
-    (let [resp (ac/get-acl (u/conn-context) "NOTACONCEPTID" {:token token :raw? true})]
-      (is (= 400 (:status resp)))
-      (is (= ["Concept-id [NOTACONCEPTID] is not valid."] (:errors (:body resp)))))
-    (let [resp (ac/get-acl (u/conn-context) "ACL999999-CMR" {:token token :raw? true})]
-      (is (= 404 (:status resp)))
-      (is (= ["ACL could not be found with concept id [ACL999999-CMR]"] (:errors (:body resp)))))))
+  (testing "get acl general case"
+    (let [token (e/login (u/conn-context) "admin")
+          concept-id (:concept_id (ac/create-acl (u/conn-context) system-acl {:token token}))]
+      ;; Acceptance criteria: A created ACL can be retrieved after it is created.
+      (is (= system-acl (ac/get-acl (u/conn-context) concept-id {:token token})))
+      (let [resp (ac/get-acl (u/conn-context) "NOTACONCEPTID" {:token token :raw? true})]
+        (is (= 400 (:status resp)))
+        (is (= ["Concept-id [NOTACONCEPTID] is not valid."] (:errors (:body resp)))))
+      (let [resp (ac/get-acl (u/conn-context) "ACL999999-CMR" {:token token :raw? true})]
+        (is (= 404 (:status resp)))
+        (is (= ["ACL could not be found with concept id [ACL999999-CMR]"]
+               (:errors (:body resp)))))))
+
+  (testing "get acl with group id"
+    (let [token (e/login (u/conn-context) "admin")
+          group1-legacy-guid "group1-legacy-guid"
+          group1 (u/ingest-group token
+                                 {:name "group1"
+                                  :legacy_guid group1-legacy-guid}
+                                 ["user1"])
+          group2 (u/ingest-group token
+                                 {:name "group2"}
+                                 ["user1"])
+          group1-concept-id (:concept_id group1)
+          group2-concept-id (:concept_id group2)
+
+          ;; ACL associated with a group that has legacy guid
+          acl1 (assoc-in (u/system-acl "TAG_GROUP")
+                         [:group_permissions 0]
+                         {:permissions ["create"] :group_id group1-concept-id})
+
+          ;; ACL associated with a group that does not have legacy guid
+          acl2 (assoc-in (u/system-acl "ARCHIVE_RECORD")
+                         [:group_permissions 0]
+                         {:permissions ["delete"] :group_id group2-concept-id})
+          ;; SingleInstanceIdentity ACL with a group that has legacy guid
+          acl3 (u/single-instance-acl group1-concept-id)
+          ;; SingleInstanceIdentity ACL with a group that does not have legacy guid
+          acl4 (u/single-instance-acl group2-concept-id)]
+
+      (are3 [expected-acl acl]
+        (let [concept-id (:concept_id (ac/create-acl (u/conn-context) acl {:token token}))]
+          (is (= expected-acl (ac/get-acl (u/conn-context) concept-id
+                                          {:token token
+                                           :http-options {:query-params {:include_legacy_group_guid true}}}))))
+
+        "ACL associated with a group that has legacy guid"
+        (assoc-in acl1 [:group_permissions 0 :group_id] group1-legacy-guid)
+        acl1
+
+        "ACL associated with a group that does not have legacy guid"
+        acl2
+        acl2
+
+        "SingleInstanceIdentity ACL with a group that has legacy guid"
+        (assoc-in acl3 [:single_instance_identity :target_id] group1-legacy-guid)
+        acl3
+
+        "SingleInstanceIdentity ACL with a group that does not have legacy guid"
+        acl4
+        acl4))))
 
 (deftest update-acl-test
   (let [token (e/login (u/conn-context) "admin")
