@@ -27,6 +27,7 @@
        "Usage-30,2,30\n"))
 
 (deftest relevancy-temporal-ranges
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "Usage-30"
                                                 :version-id "2"
                                                 :entry-title "Elevation coll1"

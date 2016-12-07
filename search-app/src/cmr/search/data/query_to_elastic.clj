@@ -271,13 +271,13 @@
          (sort-use-relevancy-score))
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
-     {:usage-relevancy-score {:order :desc}}]
+     {:usage-relevancy-score {:order :desc :missing 0}}]
     (temporal-range-extractor/contains-temporal-ranges? query)
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}]
     (sort-use-relevancy-score)
     [{:_score {:order :desc}}
-     {:usage-relevancy-score {:order :desc}}]
+     {:usage-relevancy-score {:order :desc :missing 0}}]
     :else
     [{:_score {:order :desc}}]))
 
@@ -288,7 +288,7 @@
   (when (temporal-range-extractor/contains-temporal-ranges? query)
     (if (sort-use-relevancy-score)
       [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
-       {:usage-relevancy-score {:order :desc}}]
+       {:usage-relevancy-score {:order :desc :missing 0}}]
       [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])))
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
