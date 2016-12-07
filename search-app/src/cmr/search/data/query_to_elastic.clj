@@ -12,9 +12,9 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.data.keywords-to-elastic :as k2e]
-   [cmr.search.data.temporal-ranges-to-elastic :as temporal-to-elastic]
    ;; require it so it will be available
    [cmr.search.data.query-order-by-expense]
+   [cmr.search.data.temporal-ranges-to-elastic :as temporal-to-elastic]
    [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
    [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor]))
 
@@ -31,6 +31,13 @@
   scores or the same. If false, no tie-breaker is applied.
   This config is here to allow for the usage score to be turned off until elastic indexes are updated-since
   so keyword search will not be broken"
+  {:type Boolean
+   :default true})
+
+(defconfig sort-use-temporal-relevancy
+  "Indicates whether when searching using a temporal range if we should use temporal overlap
+  relevancy to sort. If true, use the temporal overlap script in elastic. This config allows
+  temporal overlap calculations to be turned off if needed for performance."
   {:type Boolean
    :default true})
 
@@ -268,11 +275,13 @@
   [query]
   (cond
     (and (temporal-range-extractor/contains-temporal-ranges? query)
+         (sort-use-temporal-relevancy)
          (sort-use-relevancy-score))
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
      {:usage-relevancy-score {:order :desc :missing 0}}]
-    (temporal-range-extractor/contains-temporal-ranges? query)
+    (and (temporal-range-extractor/contains-temporal-ranges? query)
+         (sort-use-temporal-relevancy))
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}]
     (sort-use-relevancy-score)
@@ -282,10 +291,12 @@
     [{:_score {:order :desc}}]))
 
 (defn- temporal-sort-order
-  "If there are temporal ranges in the query, define the temporal sort order based on the
-  sort-usage-relevancy-score config"
+  "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
+  define the temporal sort order based on the sort-usage-relevancy-score. If sort-use-temporal-relevancy
+  is turned off, return nil so the default sorting gets used."
   [query]
-  (when (temporal-range-extractor/contains-temporal-ranges? query)
+  (when (and (temporal-range-extractor/contains-temporal-ranges? query)
+             (sort-use-temporal-relevancy))
     (if (sort-use-relevancy-score)
       [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
        {:usage-relevancy-score {:order :desc :missing 0}}]

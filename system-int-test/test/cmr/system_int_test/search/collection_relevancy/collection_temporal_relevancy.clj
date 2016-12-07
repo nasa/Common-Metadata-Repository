@@ -33,6 +33,7 @@
 ;;   * Single date time
 
 (deftest relevancy-temporal-ranges
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
                                                 :temporal (dc/temporal {:beginning-date-time "2003-08-01T00:00:00Z"
                                                                         :ending-date-time "2005-10-01T00:00:00Z"})}))

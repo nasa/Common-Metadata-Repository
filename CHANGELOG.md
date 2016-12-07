@@ -138,3 +138,8 @@ Items to include in each issue
   * Client Impacts
     * Provider ACLs will now only be searchable by users or user-types which are given permission to by a system ACL targeting ANY_ACL, by the provider ACL itself, or by a provider ACL targeting PROVIDER_OBJECT_ACL.
     * Read permission is special. A user with create, read, update, or delete permissions granted by an ACL will automatically be able to read that ACL.  This does not apply when the user is instead granted permission to an ACL via the governing management ACLs, where only explicit read permission applies.
+
+## 1.64
+* CMR-1354 - Implement temporal relevancy using a custom elastic groovy sort script.
+  * Requires updates changes to elasticsearch.yml
+  * Config sort-use-temporal-relevancy turns temporal relevancy on and off

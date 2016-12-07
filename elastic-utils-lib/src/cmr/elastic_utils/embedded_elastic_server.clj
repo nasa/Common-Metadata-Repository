@@ -39,9 +39,7 @@
       (put "transport.tcp.port" (str transport-port))
       (put "index.store.type" "memory")
       ;; dynamic scripting configurations
-      (put "script.file" "on")
       (put "scipt.inline" "on")
-      (put "script.indexed" "on")
       (put "script.search" "on")
       build))
 
