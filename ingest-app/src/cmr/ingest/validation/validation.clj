@@ -146,7 +146,7 @@
    updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
   (when-let [errors (seq (umm-spec-validation/validate-granule 
-                           (humanizer-alias-cache/update-collection-with-platform-aliases 
+                           (humanizer-alias-cache/update-collection-with-aliases 
                              context collection :Platforms :ShortName)
                            granule))]
     (if (config/return-umm-spec-validation-errors)
@@ -159,7 +159,7 @@
    updated with platform aliases whoes shortnames don't exist in the platforms." 
   [context collection granule]
     (if-errors-throw :invalid-data (umm-validation/validate-granule 
-                                     (humanizer-alias-cache/update-collection-with-platform-aliases 
+                                     (humanizer-alias-cache/update-collection-with-aliases 
                                        context collection :platforms :short-name)
                                      granule))) 
 
