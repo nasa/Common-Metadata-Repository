@@ -218,8 +218,8 @@
           []
           gran-AM-1-coll2
 
-          "gran-AM-1-InstrumentA-coll2 success test"
-          []
+          "gran-AM-1-InstrumentA-coll2 failure test-platform alias is not added if its shortname exists in the platforms"
+          ["The following list of Instrument short names did not exist in the referenced parent collection: [instrumentA]."]
           gran-AM-1-InstrumentA-coll2
 
           "gran-AM-1-InstrumentB-coll2 success test"

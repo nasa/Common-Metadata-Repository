@@ -1,23 +1,23 @@
 (ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require
-   [clojure.string :as str]
-   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-   [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [cmr.common.log :as log :refer (warn)]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.validations.core :as v]
-   [cmr.ingest.config :as config]
-   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
-   [cmr.ingest.services.messages :as msg]
-   [cmr.ingest.validation.business-rule-validation :as bv]
-   [cmr.umm-spec.json-schema :as json-schema]
-   [cmr.umm-spec.umm-json :as umm-json]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
-   [cmr.umm.umm-core :as umm]
-   [cmr.umm.validation.validation-core :as umm-validation]))
+    [clojure.string :as str]
+    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+    [cmr.common-app.services.kms-lookup :as kms-lookup]
+    [cmr.common.log :as log :refer (warn)]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.validations.core :as v]
+    [cmr.ingest.config :as config]
+    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+    [cmr.ingest.services.messages :as msg]
+    [cmr.ingest.validation.business-rule-validation :as bv]
+    [cmr.umm-spec.json-schema :as json-schema]
+    [cmr.umm-spec.umm-json :as umm-json]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
+    [cmr.umm.umm-core :as umm]
+    [cmr.umm.validation.validation-core :as umm-validation]))
 
 (def ^:private
   valid-concept-mime-types
@@ -141,55 +141,27 @@
   (seq (concat (validate-collection-umm-spec-schema collection validation-options)
                (umm-spec-validate-collection collection validation-options context))))
 
-(defn- update-collection-with-platform-aliases
-  "Returns the collection with all the platform aliases. The original platforms are removed. 
-   plat-key/plat-sn-key can be :Platforms/:ShortName or :platforms/:short-name
-   depending on if the collection is UMM-SPEC or UMM"
-  [context collection plat-key plat-sn-key]
-  ;; Original collection platforms: [{:ShortName "Terra" :Otherfields "other values"}]
-  ;; updated collection platforms: [{:ShortName "AM-1" :Otherfileds "other values"}
-  ;;                                {:ShortName "am-1" :Otherfields "other values"}]
-  ;; Note for each collection platform, the for loop is looping through all the aliases. 
-  (let [plat-alias-map (humanizer-alias-cache/get-humanizer-platform-alias-map context)
-        platform-aliases (for [coll-plat (plat-key collection)
-                               :let [coll-plat-sn (plat-sn-key coll-plat)]
-                               alias (get plat-alias-map (str/upper-case coll-plat-sn))]
-                           (assoc coll-plat plat-sn-key alias))
-        updated-collection (-> collection
-                               (dissoc plat-key)
-                               (update plat-key concat platform-aliases))]
-    updated-collection ))
-
 (defn validate-granule-umm-spec
-  "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record.
-   First validate against the original collection. If there's error, validate against the collection
-   with platform aliases and see if it can help reduce the errors"
+  "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
+   updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
-  (when-let [orig-err (seq (umm-spec-validation/validate-granule collection granule))]
-    (when-let [alias-err (seq (umm-spec-validation/validate-granule 
-                                (update-collection-with-platform-aliases context collection :Platforms :ShortName) 
-                                granule))]
-      (let [errors (if (< (count orig-err) (count alias-err))
-                     orig-err
-                     alias-err)]
-        (if (config/return-umm-spec-validation-errors)
-          (if-errors-throw :invalid-data errors)
-          (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
-                        (:granule-ur granule) (pr-str (vec errors)))))))))
+  (when-let [errors (seq (umm-spec-validation/validate-granule 
+                           (humanizer-alias-cache/update-collection-with-aliases 
+                             context collection :Platforms :ShortName)
+                           granule))]
+    (if (config/return-umm-spec-validation-errors)
+      (if-errors-throw :invalid-data errors)
+      (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
+                        (:granule-ur granule) (pr-str (vec errors)))))))
 
 (defn validate-granule-umm
-  "Validates a UMM granule record using rules defined in UMM with a UMM collection record.
-   First validate against the original collection. If there's error, validate against the collection
-   with platform aliases and see if it can help reduce the errors" 
+  "Validates a UMM granule record using rules defined in UMM with a UMM collection record,
+   updated with platform aliases whoes shortnames don't exist in the platforms." 
   [context collection granule]
-  (when-let [orig-err (seq (umm-validation/validate-granule collection granule))]
-    (when-let [alias-err (seq (umm-validation/validate-granule
-                                (update-collection-with-platform-aliases context collection :platforms :short-name)
-                                granule))]
-      (let [errors (if (< (count orig-err) (count alias-err))
-                     orig-err
-                     alias-err)] 
-        (if-errors-throw :invalid-data errors))))) 
+    (if-errors-throw :invalid-data (umm-validation/validate-granule 
+                                     (humanizer-alias-cache/update-collection-with-aliases 
+                                       context collection :platforms :short-name)
+                                     granule))) 
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
