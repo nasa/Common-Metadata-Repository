@@ -1,5 +1,8 @@
 (ns cmr.access-control.data.group-fetcher
-  "Stores the group id to group legacy guid mapping in a consistent cache."
+  "Stores the group concept id to group legacy guid mapping in a consistent cache.
+   We can cache Group's concept-id and legacy guid because they will never change.
+   Group will get a new concept id if it is deleted and recreated;
+   Group's legacy guid is not allowed to change when group is updated."
   (:require
    [cmr.access-control.services.group-service :as group-service]
    [cmr.common.cache :as c]
@@ -19,7 +22,7 @@
   [context group-id]
   (:legacy-guid (group-service/get-group-by-concept-id context group-id)))
 
-(defn group-id->legacy-guid
+(defn group-concept-id->legacy-guid
   "Returns the group legacy guid for the given group concept id."
   [context group-id]
   (let [cache (c/context->cache context group-cache-key)]

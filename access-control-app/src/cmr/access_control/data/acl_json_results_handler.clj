@@ -28,11 +28,11 @@
     fields-with-full-acl
     base-fields))
 
-(defn- group-id->legacy-guid
+(defn- group-concept-id->legacy-guid
   "Returns the group legacy guid for the given group concept id if applicable;
    Otherwise, returns the group concept id."
   [context group-id]
-  (if-let [legacy-guid (gf/group-id->legacy-guid context group-id)]
+  (if-let [legacy-guid (gf/group-concept-id->legacy-guid context group-id)]
     legacy-guid
     group-id))
 
@@ -40,7 +40,7 @@
   "Returns the given group Permission with group id replaced with legacy group guid if applicable"
   [context group-permission]
   (if-let [group-id (:group-id group-permission)]
-    (update group-permission :group-id #(group-id->legacy-guid context %))
+    (update group-permission :group-id #(group-concept-id->legacy-guid context %))
     group-permission))
 
 (defn- update-acl-legacy-group-guid
@@ -51,7 +51,8 @@
   (let [acl (update acl :group-permissions
                     #(map (partial update-group-permission-legacy-group-guid context) %))]
     (if-let [single-instance-identity (:single-instance-identity acl)]
-      (update-in acl [:single-instance-identity :target-id] #(group-id->legacy-guid context %))
+      (update-in acl [:single-instance-identity :target-id]
+                 #(group-concept-id->legacy-guid context %))
       acl)))
 
 (defn- apply-legacy-group-guid-feature
