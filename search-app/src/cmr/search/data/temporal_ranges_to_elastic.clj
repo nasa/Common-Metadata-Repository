@@ -16,7 +16,12 @@
 (defn temporal-range->elastic-param
   "Convert a temporal range to the right format for the elastic script. Change the dates to longs, populate
    the start/end dates with defaults as needed, and change the keys to snake case. Do whatever
-   processing can be done here rather than the script for performance considerations."
+   processing can be done here rather than the script for performance considerations.
+
+   Will return:
+   {:start_date start-date or default}
+    :end_date end-date or today
+    :range adjusted end-date - adjusted start-date"
   [temporal-range]
   (let [{:keys [start-date end-date]} temporal-range
         temporal-range {:start-date (if start-date

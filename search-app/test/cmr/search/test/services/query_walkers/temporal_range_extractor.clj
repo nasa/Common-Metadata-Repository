@@ -17,7 +17,6 @@
                            (query-helper/or-conds
                             (qm/exist-condition :end-date)
                             (qm/date-range-condition :end-date (time/date-time 2014 01 01) nil))))})]
-   (def query query)
    (is (range-extractor/contains-temporal-ranges? query))
    (is (= [{:start-date (time/date-time 2014 01 01) :end-date (time/date-time 2016 01 01)}]
           (range-extractor/extract-temporal-ranges query)))))
@@ -84,4 +83,4 @@
                  (qm/string-condition :instrument "instrument")
                  (qm/string-condition :sensor "sensor"))))]
    (is (= false (range-extractor/contains-temporal-ranges? query)))
-   (is (nil? (range-extractor/extract-temporal-ranges query)))))
+   (is (empty? (range-extractor/extract-temporal-ranges query)))))

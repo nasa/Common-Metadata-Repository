@@ -8,8 +8,9 @@
    [cmr.search.models.query :as qm]))
 
 (defprotocol ExtractTemporalRanges
-  "Defines a function to extract temporal ranges"
-  (extract-temporal-ranges-seq
+  "Defines a function to extract temporal ranges. Temporal ranges are returned in the format
+  {:start-date :end-date}. Start date or end date can be nil and missing from the map."
+  (extract-temporal-ranges
     [c]
     "Extracts temporal ranges from conditions.")
   (contains-temporal-range-condition?
@@ -19,7 +20,7 @@
 (defn extract-temporal-ranges
   "Extracts temporal ranges from Date Range conditions"
   [c]
-  (extract-temporal-ranges-seq c))
+  (extract-temporal-ranges c))
 
 (defn contains-temporal-ranges?
   [c]
@@ -28,9 +29,9 @@
 (extend-protocol ExtractTemporalRanges
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.Query
-  (extract-temporal-ranges-seq
+  (extract-temporal-ranges
    [query]
-   (when-let [ranges (extract-temporal-ranges-seq (:condition query))]
+   (when-let [ranges (extract-temporal-ranges (:condition query))]
      (if (map? ranges)
        [ranges]
        (flatten ranges))))
@@ -40,9 +41,9 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.ConditionGroup
-  (extract-temporal-ranges-seq
+  (extract-temporal-ranges
    [{:keys [conditions]}]
-   (when-let [ranges (seq (remove nil? (map extract-temporal-ranges-seq conditions)))]
+   (when-let [ranges (seq (keep extract-temporal-ranges conditions))]
      ;; If a DateRangeCondition exists at the top level of the condition group, merge
      ;; the conditions together to get both start and end date, if applicable
      (if (some #{cmr.common_app.services.search.query_model.DateRangeCondition}
@@ -51,15 +52,11 @@
        ranges)))
   (contains-temporal-range-condition?
    [{:keys [conditions]}]
-   (reduce (fn [_ condition]
-             (when (contains-temporal-range-condition? condition)
-               (reduced true)))
-           false
-           conditions))
+   (some contains-temporal-range-condition? conditions))
 
   ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.DateRangeCondition
-  (extract-temporal-ranges-seq
+  (extract-temporal-ranges
    [{:keys [start-date end-date]}]
    (util/remove-nil-keys
     {:start-date start-date
@@ -71,7 +68,7 @@
   ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ; ;; catch all extractor
   java.lang.Object
-  (extract-temporal-ranges-seq
+  (extract-temporal-ranges
    [this]
    nil)
   (contains-temporal-range-condition?

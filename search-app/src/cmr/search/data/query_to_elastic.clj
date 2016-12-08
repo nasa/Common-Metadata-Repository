@@ -1,8 +1,8 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
-   [clojure.string :as str]
    [clojure.set :as set]
+   [clojure.string :as str]
    [clojurewerkz.elastisch.query :as eq]
    [cmr.common-app.services.search.complex-to-simple :as c2s]
    [cmr.common-app.services.search.query-model :as q]
@@ -12,11 +12,12 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.data.keywords-to-elastic :as k2e]
-   ;; require it so it will be available
-   [cmr.search.data.query-order-by-expense]
    [cmr.search.data.temporal-ranges-to-elastic :as temporal-to-elastic]
    [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
-   [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor]))
+   [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor])
+  (:require
+   ;; require it so it will be available
+   [cmr.search.data.query-order-by-expense]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -280,13 +281,16 @@
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
      {:usage-relevancy-score {:order :desc :missing 0}}]
+
     (and (temporal-range-extractor/contains-temporal-ranges? query)
          (sort-use-temporal-relevancy))
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}]
+
     (sort-use-relevancy-score)
     [{:_score {:order :desc}}
      {:usage-relevancy-score {:order :desc :missing 0}}]
+
     :else
     [{:_score {:order :desc}}]))
 
@@ -314,6 +318,7 @@
         keyword-sort (when (keywords-extractor/contains-keyword-condition? query)
                        (keyword-sort-order query))
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        ;; Keyword-sort contains temporal, this is for the case of temporal but no keyword
         temporal-sort (temporal-sort-order query)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
         sub-sort-fields (if (:all-revisions? query)
