@@ -454,6 +454,7 @@ The following parameters are supported when searching for ACLs.
 * page_num
 * pretty
 * include_full_acl - boolean parameter that indicates if the full acl details should be included in the search response.
+* include_legacy_group_guid - boolean parameter that indicates if legacy group guid should be returned in place of group concept id in full acl search response. It can only be used when include_full_acl parameter is true.
 
 ##### ACL Matching Parameters
 
@@ -753,6 +754,8 @@ CMR-Request-Id: b3e38b33-eaf3-46ac-9f04-fa62eabb2c11
 ### <a name="retrieve-acl"></a> Retrieve ACL
 
 A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+
+Search parameter `include_legacy_group_guid`, which is a boolean parameter, can be used to indicate if legacy group guid should be returned in place of group concept id in the returned ACL.
 
 ```
 curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true

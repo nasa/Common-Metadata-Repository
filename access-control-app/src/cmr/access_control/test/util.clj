@@ -167,7 +167,6 @@
             :concept_id concept_id
             :revision_id revision_id))))
 
-
 (defn disable-publishing-messages
   "Configures metadata db to not publish messages for new data."
   []
@@ -294,6 +293,51 @@
             :concept-id concept-id
             :revision-id revision-id}
            (dissoc concept :revision-date :transaction-id :native-id)))))
+
+(def sample-system-acl
+  "A sample system ACL."
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
+   :system_identity {:target "REPLACME"}})
+
+(def sample-provider-acl
+  "A sample provider ACL."
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
+   :provider_identity {:target "REPLACME"
+                       :provider_id "PROV1"}})
+
+(def sample-single-instance-acl
+  "A sample single instance ACL."
+  {:group_permissions [{:user_type "guest" :permissions ["update"]}]
+   :single_instance_identity {:target "GROUP_MANAGEMENT"
+                              :target_id "REPLACEME"}})
+
+(def sample-catalog-item-acl
+  "A sample catalog item ACL."
+  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
+   :catalog_item_identity {:name "REPLACEME"
+                           :provider_id "PROV1"
+                           :granule_applicable true
+                           :collection_applicable true}})
+
+(defn system-acl
+  "Creates a system acl for testing with the given target."
+  [target]
+  (assoc-in sample-system-acl [:system_identity :target] target))
+
+(defn provider-acl
+  "Creates a provider acl for testing with the given target."
+  [target]
+  (assoc-in sample-provider-acl [:provider_identity :target] target))
+
+(defn single-instance-acl
+  "Creates a single instance acl for testing with the given group concept id as the target."
+  [group-concept-id]
+  (assoc-in sample-single-instance-acl [:single_instance_identity :target_id] group-concept-id))
+
+(defn catalog-item-acl
+  "Creates a catalog item acl for testing with the given name."
+  [name]
+  (assoc-in sample-catalog-item-acl [:catalog_item_identity :name] name))
 
 (defn create-acl
   "Creates an acl."

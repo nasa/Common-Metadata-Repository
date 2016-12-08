@@ -86,3 +86,11 @@
             :concept-id concept-id
             :revision-id revision-id}
            (dissoc concept :revision-date :transaction-id)))))
+
+(defn ingest-community-usage-metrics
+  "Ingest sample metrics to use in tests"
+  [csv-data]
+  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
+  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])]
+    (update-community-usage-metrics admin-update-token csv-data)
+    (index/wait-until-indexed)))

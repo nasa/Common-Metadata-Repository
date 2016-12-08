@@ -1121,6 +1121,8 @@ For temporal range search, the default is inclusive on the range boundaries. Thi
 
 The collection's temporal range or the temporal range of the granules in the collection can be searched. `options[temporal][limit_to_granules]=true` will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range. If a collection does not have any granules it will search the collection's temporal range.
 
+If a temporal range search is performed, the search results will be sorted by the temporal overlap across all ranges provided, with usage score being the tie-breaker. If a keyword search is performed in conjunction with the temporal range search, search results are first sorted by relevancy score, then by temporal overlap, then usage score.
+
 #### <a name="c-project"></a> Find collections by project
 
 Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
@@ -1427,7 +1429,11 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
-Collection results are sorted by ascending entry title by default when a search does not result in a score. If a keyword search is performed then the search results will be sorted by relevance (score descending) with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+Collection results are sorted by ascending entry title by default when a search does not result in a score.
+
+If a keyword search is performed then the search results will be sorted by relevance (score descending), then by temporal overlap if one or more temporal ranges are provided with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+
+If a temporal range search is performed, the search results will be sorted by temporal overlap percentage over all ranges provided.
 
 One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` (Note: `+` must be URL encoded as %2B) can be used to explicitly request ascending.
 

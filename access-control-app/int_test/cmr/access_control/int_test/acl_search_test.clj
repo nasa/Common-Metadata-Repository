@@ -45,51 +45,6 @@
             :content-type :json}
            (ac/search-for-acls (u/conn-context) {:permitted-concept-id "C1200000001-PROV1"} {:raw? true})))))
 
-(def sample-system-acl
-  "A sample system ACL."
-  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
-   :system_identity {:target "REPLACME"}})
-
-(def sample-provider-acl
-  "A sample provider ACL."
-  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
-   :provider_identity {:target "REPLACME"
-                       :provider_id "PROV1"}})
-
-(def sample-single-instance-acl
-  "A sample single instance ACL."
-  {:group_permissions [{:user_type "guest" :permissions ["update"]}]
-   :single_instance_identity {:target "GROUP_MANAGEMENT"
-                              :target_id "REPLACEME"}})
-
-(def sample-catalog-item-acl
-  "A sample catalog item ACL."
-  {:group_permissions [{:user_type "guest" :permissions ["create"]}]
-   :catalog_item_identity {:name "REPLACEME"
-                           :provider_id "PROV1"
-                           :collection_applicable true
-                           :granule_applicable true}})
-
-(defn system-acl
-  "Creates a system acl for testing with the given target."
-  [target]
-  (assoc-in sample-system-acl [:system_identity :target] target))
-
-(defn provider-acl
-  "Creates a provider acl for testing with the given target."
-  [target]
-  (assoc-in sample-provider-acl [:provider_identity :target] target))
-
-(defn single-instance-acl
-  "Creates a single instance acl for testing with the given group concept id as the target."
-  [group-concept-id]
-  (assoc-in sample-single-instance-acl [:single_instance_identity :target_id] group-concept-id))
-
-(defn catalog-item-acl
-  "Creates a catalog item acl for testing with the given name."
-  [name]
-  (assoc-in sample-catalog-item-acl [:catalog_item_identity :name] name))
-
 (defn ingest-acl
   "Ingests the acl. Returns the ACL with the concept id and revision id."
   [token acl]
@@ -104,14 +59,15 @@
         expected-location (format "%s://%s:%s%s/acls/%s"
                                   protocol host port context (:concept-id acl))]
     (util/remove-nil-keys
-     {:name (access-control-index/acl->display-name acl)
+     {:name (or (:single-instance-name acl) ;; only SingleInstanceIdentity ACLs with legacy guid will set single-instance-name
+                (access-control-index/acl->display-name acl))
       :revision_id (:revision-id acl),
       :concept_id (:concept-id acl)
       :identity_type (access-control-index/acl->identity-type acl)
       :location expected-location
       :acl (when include-full-acl?
              (-> acl
-                 (dissoc :concept-id :revision-id)
+                 (dissoc :concept-id :revision-id :single-instance-name)
                  util/map-keys->snake_case))})))
 
 (defn acls->search-response
@@ -163,23 +119,23 @@
 
         ;; remove ANY_ACL read to all users
         _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*)
-                         (assoc-in (system-acl "ANY_ACL")
+                         (assoc-in (u/system-acl "ANY_ACL")
                                    [:group_permissions 0]
                                    {:permissions ["read" "create"] :group_id group1-concept-id}))
         _ (u/wait-until-indexed)
 
-        acl1 (ingest-acl token (assoc-in (system-acl "INGEST_MANAGEMENT_ACL")
+        acl1 (ingest-acl token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
                                          [:group_permissions 0]
                                          {:permissions ["read"] :group_id group1-concept-id}))
-        acl2 (ingest-acl token (assoc-in (system-acl "ARCHIVE_RECORD")
+        acl2 (ingest-acl token (assoc-in (u/system-acl "ARCHIVE_RECORD")
                                          [:group_permissions 0]
                                          {:permissions ["delete"] :group_id group2-concept-id}))
-        acl3 (ingest-acl token (system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
-        acl4 (ingest-acl token (assoc (provider-acl "PROVIDER_OBJECT_ACL")
+        acl3 (ingest-acl token (u/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
+        acl4 (ingest-acl token (assoc (u/provider-acl "PROVIDER_OBJECT_ACL")
                                       :group_permissions
                                       [{:group_id group3-concept-id :permissions ["read"]}]))
-        acl5 (ingest-acl token (provider-acl "OPTION_DEFINITION"))
-        acl6 (ingest-acl token (assoc-in (provider-acl "OPTION_DEFINITION")
+        acl5 (ingest-acl token (u/provider-acl "OPTION_DEFINITION"))
+        acl6 (ingest-acl token (assoc-in (u/provider-acl "OPTION_DEFINITION")
                                          [:provider_identity :provider_id] "PROV2"))
         ;; Create an ACL with a catalog item identity for PROV1
         acl7 (ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
@@ -218,26 +174,26 @@
                                ["user1"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
-        acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+        acl1 (ingest-acl token (assoc (u/system-acl "SYSTEM_AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
-        acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+        acl2 (ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
-        acl3 (ingest-acl token (system-acl "SYSTEM_INITIALIZER"))
-        acl4 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+        acl3 (ingest-acl token (u/system-acl "SYSTEM_INITIALIZER"))
+        acl4 (ingest-acl token (assoc (u/system-acl "ARCHIVE_RECORD")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["delete"]}]))
 
-        acl5 (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
+        acl5 (ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
 
-        acl6 (ingest-acl token (single-instance-acl group1-concept-id))
-        acl7 (ingest-acl token (single-instance-acl group2-concept-id))
+        acl6 (ingest-acl token (u/single-instance-acl group1-concept-id))
+        acl7 (ingest-acl token (u/single-instance-acl group2-concept-id))
 
-        acl8 (ingest-acl token (catalog-item-acl "All Collections"))
-        acl9 (ingest-acl token (catalog-item-acl "All Granules"))
+        acl8 (ingest-acl token (u/catalog-item-acl "All Collections"))
+        acl9 (ingest-acl token (u/catalog-item-acl "All Granules"))
 
         system-acls [fixtures/*fixture-system-acl* acl1 acl2 acl3 acl4]
         provider-acls [fixtures/*fixture-provider-acl* acl5]
@@ -278,28 +234,28 @@
 
 (deftest acl-search-permitted-group-test
   (let [token (e/login (u/conn-context) "user1")
-        acl1 (ingest-acl token (assoc (system-acl "SYSTEM_AUDIT_REPORT")
+        acl1 (ingest-acl token (assoc (u/system-acl "SYSTEM_AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
-        acl2 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+        acl2 (ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["read"]}]))
-        acl3 (ingest-acl token (assoc (system-acl "GROUP")
+        acl3 (ingest-acl token (assoc (u/system-acl "GROUP")
                                       :group_permissions
                                       [{:group_id "AG12345-PROV" :permissions ["create" "read"]}
                                        {:user_type "guest" :permissions ["read"]}]))
-        acl4 (ingest-acl token (assoc (provider-acl "AUDIT_REPORT")
+        acl4 (ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
-        acl5 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+        acl5 (ingest-acl token (assoc (u/provider-acl "OPTION_DEFINITION")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["create"]}]))
-        acl6 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
+        acl6 (ingest-acl token (assoc (u/provider-acl "OPTION_ASSIGNMENT")
                                       :group_permissions
                                       [{:group_id "AG12345-PROV" :permissions ["delete"]}]))
 
-        acl7 (ingest-acl token (catalog-item-acl "All Collections"))
-        acl8 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+        acl7 (ingest-acl token (u/catalog-item-acl "All Collections"))
+        acl8 (ingest-acl token (assoc (u/catalog-item-acl "All Granules")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["read" "order"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
@@ -448,8 +404,8 @@
                                {:name "group1"}
                                ["user1"])
         group1-concept-id (:concept_id group1)
-        acl-single-instance (ingest-acl token (single-instance-acl group1-concept-id))
-        acl-catalog-item (ingest-acl token (catalog-item-acl "All Collections"))
+        acl-single-instance (ingest-acl token (u/single-instance-acl group1-concept-id))
+        acl-catalog-item (ingest-acl token (u/catalog-item-acl "All Collections"))
         all-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-single-instance acl-catalog-item]]
     (u/wait-until-indexed)
 
@@ -493,20 +449,20 @@
         group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
         group3 (u/ingest-group token {:name "group3"} nil)
         ;; No user should match this since all users are registered
-        acl-registered-1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+        acl-registered-1 (ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
                                                   :group_permissions
                                                   [{:user_type "registered" :permissions ["read"]}]))
-        acl-group1 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+        acl-group1 (ingest-acl token (assoc (u/system-acl "ARCHIVE_RECORD")
                                             :group_permissions
                                             [{:group_id (:concept_id group1) :permissions ["delete"]}]))
-        acl-registered-2 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+        acl-registered-2 (ingest-acl token (assoc (u/provider-acl "OPTION_DEFINITION")
                                                   :group_permissions
                                                   [{:user_type "registered" :permissions ["create"]}]))
-        acl-group2 (ingest-acl token (assoc (provider-acl "OPTION_ASSIGNMENT")
+        acl-group2 (ingest-acl token (assoc (u/provider-acl "OPTION_ASSIGNMENT")
                                             :group_permissions
                                             [{:group_id (:concept_id group2) :permissions ["create"]}]))
         ;; No user should match this acl since group3 has no members
-        acl-group3 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+        acl-group3 (ingest-acl token (assoc (u/catalog-item-acl "All Granules")
                                             :group_permissions
                                             [{:group_id (:concept_id group3) :permissions ["create"]}]))
 
@@ -551,28 +507,28 @@
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
-        acl1 (ingest-acl token (assoc-in (assoc-in (provider-acl "CATALOG_ITEM_ACL")
+        acl1 (ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 0] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV2"))
-        acl2 (ingest-acl token (assoc-in (assoc-in (provider-acl "CATALOG_ITEM_ACL")
+        acl2 (ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 0] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV3"))
-        acl3 (ingest-acl token (assoc-in (assoc-in (provider-acl "CATALOG_ITEM_ACL")
+        acl3 (ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 0] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV4"))
         ;; required to create catalog item acls
         _ (u/wait-until-indexed)
-        acl4 (ingest-acl token (catalog-item-acl "Catalog_Item1_PROV1"))
-        acl5 (ingest-acl token (catalog-item-acl "Catalog_Item2_PROV1"))
-        acl6 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item3_PROV2")
+        acl4 (ingest-acl token (u/catalog-item-acl "Catalog_Item1_PROV1"))
+        acl5 (ingest-acl token (u/catalog-item-acl "Catalog_Item2_PROV1"))
+        acl6 (ingest-acl token (assoc-in (u/catalog-item-acl "Catalog_Item3_PROV2")
                                          [:catalog_item_identity :provider_id] "PROV2"))
-        acl7 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item5_PROV2")
+        acl7 (ingest-acl token (assoc-in (u/catalog-item-acl "Catalog_Item5_PROV2")
                                          [:catalog_item_identity :provider_id] "PROV2"))
 
-        acl8 (ingest-acl token (assoc-in (catalog-item-acl "Catalog_Item6_PROV4")
+        acl8 (ingest-acl token (assoc-in (u/catalog-item-acl "Catalog_Item6_PROV4")
                                          [:catalog_item_identity :provider_id] "PROV4"))
         prov1-acls [fixtures/*fixture-provider-acl* acl4 acl5]
         prov1-and-2-acls [fixtures/*fixture-provider-acl* acl1 acl4 acl5 acl6 acl7]
@@ -629,29 +585,29 @@
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group2 (u/ingest-group token {:name "group2"} ["user2"])
-        acl1 (ingest-acl token (assoc (system-acl "METRIC_DATA_POINT_SAMPLE")
+        acl1 (ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["read"]}]))
-        acl2 (ingest-acl token (assoc (system-acl "ARCHIVE_RECORD")
+        acl2 (ingest-acl token (assoc (u/system-acl "ARCHIVE_RECORD")
                                       :group_permissions
                                       [{:group_id (:concept_id group1) :permissions ["delete"]}]))
-        acl3 (ingest-acl token (assoc (provider-acl "OPTION_DEFINITION")
+        acl3 (ingest-acl token (assoc (u/provider-acl "OPTION_DEFINITION")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["create"]}]))
-        acl4 (ingest-acl token (assoc-in (assoc-in (provider-acl "CATALOG_ITEM_ACL")
+        acl4 (ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 1] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV2"))
         ;; required to create catalog item acls
         _ (u/wait-until-indexed)
-        acl5 (ingest-acl token (assoc (catalog-item-acl "All Collection")
+        acl5 (ingest-acl token (assoc (u/catalog-item-acl "All Collection")
                                       :group_permissions
                                       [{:group_id (:concept_id group1) :permissions ["create"]}
                                        {:user_type "registered" :permissions ["create"]}]))
-        acl6 (ingest-acl token (assoc (catalog-item-acl "All Granules")
+        acl6 (ingest-acl token (assoc (u/catalog-item-acl "All Granules")
                                       :group_permissions
                                       [{:group_id (:concept_id group1) :permissions ["create"]}]))
-        acl7 (ingest-acl token (assoc-in (assoc (catalog-item-acl "All Granules PROV2")
+        acl7 (ingest-acl token (assoc-in (assoc (u/catalog-item-acl "All Granules PROV2")
                                                 :group_permissions
                                                 [{:group_id (:concept_id group2) :permissions ["create"]}])
                                          [:catalog_item_identity :provider_id] "PROV2"))]
@@ -691,9 +647,10 @@
          :permitted-user "user2"}
         [acl3 fixtures/*fixture-provider-acl* acl5 acl7]))))
 
-(deftest acl-search-permitted-concept-id-temporal
+(deftest acl-search-permitted-concept-id-through-temporal
    ;; This test is for searching ACLs by permitted concept id.  For a given
-   ;; collection concept id, acls granting permission to this collection by temporal
+   ;; collection concept id or granule concept id,
+   ;; acls granting permission to this collection by temporal
    ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
 
@@ -751,33 +708,62 @@
                                   :provider-id "PROV1"
                                   :temporal-singles #{(t/date-time 2012 1 1 0 0 1)}})
 
-        acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
+        gran1 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
+                                                                  :ending-date-time (t/date-time 2011)}}})
+        gran2 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2010)}}})
+        gran3 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
+                                                                  :ending-date-time (t/date-time 2012)}}})
+        gran4 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
+                                                                  :ending-date-time (t/date-time 2012)}}})
+        gran5 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran6 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
+                                                                  :ending-date-time (t/date-time 2012 1 1 0 0 1)}}})
+        gran7 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran8 (u/save-granule coll1 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
+
+        acl1 (ingest-acl token (assoc (u/catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 10}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 10}}
                                                               :provider_id "PROV1"}))
-        acl2 (ingest-acl token (catalog-item-acl "No collection identifier"))
-        acl3 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
+        acl2 (ingest-acl token (u/catalog-item-acl "No collection identifier"))
+        acl3 (ingest-acl token (assoc-in (u/catalog-item-acl "No collection identifier PROV2")
                                          [:catalog_item_identity :provider_id] "PROV2"))
 
-        acl4 (ingest-acl token (assoc (catalog-item-acl "Temporal contains")
+        acl4 (ingest-acl token (assoc (u/catalog-item-acl "Temporal contains")
                                       :catalog_item_identity {:name "Temporal contains"
                                                               :collection_applicable true
                                                               :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
                                                                                                  :stop_date "2011-01-01T00:00:00Z"
                                                                                                  :mask "contains"}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                              :stop_date "2011-01-01T00:00:00Z"
+                                                                                              :mask "contains"}}
                                                               :provider_id "PROV1"}))
-        acl5 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
+        acl5 (ingest-acl token (assoc (u/catalog-item-acl "Temporal intersect")
                                       :catalog_item_identity {:name "Temporal intersect"
                                                               :collection_applicable true
                                                               :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
                                                                                                  :stop_date "2011-01-01T00:00:00Z"
                                                                                                  :mask "intersect"}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                                                                 :mask "intersect"}}
                                                               :provider_id "PROV1"}))
-        acl6 (ingest-acl token (assoc (catalog-item-acl "Temporal disjoint")
+        acl6 (ingest-acl token (assoc (u/catalog-item-acl "Temporal disjoint")
                                       :catalog_item_identity {:name "Temporal disjoint"
                                                               :collection_applicable true
                                                               :collection_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
+                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                                                                 :mask "disjoint"}}
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
                                                                                                  :stop_date "2011-01-01T00:00:00Z"
                                                                                                  :mask "disjoint"}}
                                                               :provider_id "PROV1"}))]
@@ -787,6 +773,39 @@
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
+
+        "gran1 test"
+        {:permitted-concept-id gran1}
+        [acl2 acl4 acl5]
+
+        "gran2 test"
+        {:permitted-concept-id gran2}
+        [acl2 acl5]
+
+        "gran3 test"
+        {:permitted-concept-id gran3}
+        [acl2 acl5]
+
+        "gran4 test"
+        {:permitted-concept-id gran4}
+        [acl2 acl6]
+
+        "gran5 test"
+        {:permitted-concept-id gran5}
+        [acl2 acl6]
+
+        "gran6 test"
+        {:permitted-concept-id gran6}
+        [acl2 acl5]
+
+        "gran7 test"
+        {:permitted-concept-id gran7}
+        [acl2 acl5]
+
+        "gran8 test"
+        {:permitted-concept-id gran8}
+        [acl2 acl6]
+
         "coll1 test"
         {:permitted-concept-id coll1}
         [acl2 acl4 acl5]
@@ -819,9 +838,10 @@
         {:permitted-concept-id coll8}
         [acl2 acl6]))))
 
-(deftest acl-search-permitted-concept-id-access-value
+(deftest acl-search-permitted-concept-id-through-access-value
   ;; This test is for searching ACLs by permitted concept id.  For a given
-  ;; collection concept id, acls granting permission to this collection by access-value
+  ;; collection concept id or granule concept id,
+  ;; acls granting permission to this collection by access-value
   ;; are returned.
   (let [token (e/login (u/conn-context) "user1")
         save-access-value-collection (fn [short-name access-value]
@@ -850,57 +870,72 @@
                                   :access-value 2
                                   :provider-id "PROV2"})
 
-        gran1 (u/save-granule coll1 {:provider-id "PROV1"})
-        gran2 (u/save-granule coll6 {:provider-id "PROV2"})
+        gran1 (u/save-granule coll1 {:access-value 1})
+        gran2 (u/save-granule coll1 {:access-value 2})
+        gran3 (u/save-granule coll1 {:access-value 3})
+        gran4 (u/save-granule coll1 {:access-value nil})
+        gran5 (u/save-granule coll6 {:access-value 2 :provider-id "PROV2"})
 
         ;; For testing that a full range encompassing multiple collections will
         ;; properly match all collections
-        acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-3")
+        acl1 (ingest-acl token (assoc (u/catalog-item-acl "Access value 1-3")
                                       :catalog_item_identity {:name "Access value 1-3"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 3}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 3}}
                                                               :provider_id "PROV1"}))
 
         ;; For testing a single access value, instead of a range of multiple access values
-        acl2 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
+        acl2 (ingest-acl token (assoc (u/catalog-item-acl "Access value 1")
                                       :catalog_item_identity {:name "Access value 1"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :provider_id "PROV1"}))
         ;; For testing a range, but one that doesn't include all posssible collections, with min value checked
-        acl3 (ingest-acl token (assoc (catalog-item-acl "Access value 1-2")
+        acl3 (ingest-acl token (assoc (u/catalog-item-acl "Access value 1-2")
                                       :catalog_item_identity {:name "Access value 1-2"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 1 :max_value 2}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 2}}
                                                               :provider_id "PROV1"}))
         ;; For testing a range, but one that doesn't include all posssible collections, with max value checked
-        acl4 (ingest-acl token (assoc (catalog-item-acl "Access value 2-3")
+        acl4 (ingest-acl token (assoc (u/catalog-item-acl "Access value 2-3")
                                       :catalog_item_identity {:name "Access value 2-3"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 2 :max_value 3}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 2 :max_value 3}}
                                                               :provider_id "PROV1"}))
         ;; For testing an access value which will match no collections
-        acl5 (ingest-acl token (assoc (catalog-item-acl "Access value 4")
+        acl5 (ingest-acl token (assoc (u/catalog-item-acl "Access value 4")
                                       :catalog_item_identity {:name "Access value 4"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:min_value 4 :max_value 4}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:min_value 4 :max_value 4}}
                                                               :provider_id "PROV1"}))
         ;; For testing on undefined access values
-        acl6 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
+        acl6 (ingest-acl token (assoc (u/catalog-item-acl "Access value undefined")
                                       :catalog_item_identity {:name "include undefined value"
+                                                              :granule_applicable true
+                                                              :granule_identifier {:access_value {:include_undefined_value true}}
                                                               :collection_applicable true
                                                               :collection_identifier {:access_value {:include_undefined_value true}}
                                                               :provider_id "PROV1"}))
 
         ;; For testing that an ACL with no collection identifier will still match collections with
         ;; access values
-        acl7 (ingest-acl token (catalog-item-acl "No collection identifier"))
+        acl7 (ingest-acl token (u/catalog-item-acl "No collection identifier"))
         ;; Same as above, but with a different provider.
-        acl8 (ingest-acl token (assoc-in (catalog-item-acl "No collection identifier PROV2")
+        acl8 (ingest-acl token (assoc-in (u/catalog-item-acl "No collection identifier PROV2")
                                          [:catalog_item_identity :provider_id] "PROV2"))
         ;; For testing that an ACL with a collection identifier other than access values
         ;; does not match
-        acl9 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
+        acl9 (ingest-acl token (assoc (u/catalog-item-acl "Entry titles FOO")
                                       :catalog_item_identity {:name "Entry titles FOO"
                                                               :collection_applicable true
                                                               :collection_identifier {:entry_titles ["FOO"]}
@@ -913,6 +948,27 @@
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
                  (dissoc response :took))))
+
+        "gran1 test"
+        {:permitted-concept-id gran1}
+        [acl1 acl2 acl3 acl7]
+
+        "gran2 test"
+        {:permitted-concept-id gran2}
+        [acl1 acl3 acl4 acl7]
+
+        "gran3 test"
+        {:permitted-concept-id gran3}
+        [acl1 acl4 acl7]
+
+        "gran4 test"
+        {:permitted-concept-id gran4}
+        [acl6 acl7]
+
+        "gran5 test"
+        {:permitted-concept-id gran5}
+        [acl8]
+
         "coll1 test"
         {:permitted-concept-id coll1}
         [acl1 acl2 acl3 acl7]
@@ -929,22 +985,14 @@
         {:permitted-concept-id coll4}
         [acl6 acl7]
 
-        ;; Will eventually not return ACL9 once CMR-3614 is fixed
         "coll5 test"
         {:permitted-concept-id coll5}
         [acl7 acl9]
 
         "coll6 test"
         {:permitted-concept-id coll6}
-        [acl8]
-
-        "gran1 test"
-        {:permitted-concept-id gran1}
-        [acl7]
-
-        "gran2 test"
-        {:permitted-concept-id gran2}
         [acl8]))))
+
 
 (deftest acl-search-permitted-concept-id-through-entry-title
   (let [token (e/login (u/conn-context) "user1")
@@ -965,28 +1013,28 @@
                                   :native-id "coll4"
                                   :provider-id "PROV2"})
 
-        acl1 (ingest-acl token (assoc (catalog-item-acl "PROV1 EI1")
+        acl1 (ingest-acl token (assoc (u/catalog-item-acl "PROV1 EI1")
                                       :catalog_item_identity {:name "Entry title EI1"
                                                               :collection_applicable true
                                                               :collection_identifier {:entry_titles ["EI1"]}
                                                               :provider_id "PROV1"}))
-        acl2 (ingest-acl token (assoc (catalog-item-acl "PROV1 ei2")
+        acl2 (ingest-acl token (assoc (u/catalog-item-acl "PROV1 ei2")
                                       :catalog_item_identity {:name "Entry title ei2"
                                                               :collection_applicable true
                                                               :collection_identifier {:entry_titles ["ei2"]}
                                                               :provider_id "PROV1"}))
-        acl3 (ingest-acl token (assoc (catalog-item-acl "PROV1 ei2 EI3")
+        acl3 (ingest-acl token (assoc (u/catalog-item-acl "PROV1 ei2 EI3")
                                       :catalog_item_identity {:name "Entry title ei2 EI3"
                                                               :collection_applicable true
                                                               :collection_identifier {:entry_titles ["EI3" "ei2"]}
                                                               :provider_id "PROV1"}))
-        acl4 (ingest-acl token (assoc (catalog-item-acl "PROV2 EI1")
+        acl4 (ingest-acl token (assoc (u/catalog-item-acl "PROV2 EI1")
                                       :catalog_item_identity {:name "Entry title PROV2 EI1"
                                                               :collection_applicable true
                                                               :collection_identifier {:entry_titles ["EI1"]}
                                                               :provider_id "PROV2"}))
         ;; ACL references PROV1 with no collection identifier
-        acl5 (ingest-acl token (catalog-item-acl "No collection identifier"))]
+        acl5 (ingest-acl token (u/catalog-item-acl "No collection identifier"))]
 
 
     (u/wait-until-indexed)
@@ -1010,3 +1058,74 @@
         "coll4 test"
         {:permitted-concept-id coll4}
         [acl4]))))
+
+(deftest acl-search-with-legacy-group-guid-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1-legacy-guid "group1-legacy-guid"
+        group1 (u/ingest-group token
+                               {:name "group1"
+                                :legacy_guid group1-legacy-guid}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "group2"}
+                               ["user1"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+
+        ;; ACL associated with a group that has legacy guid
+        acl1 (ingest-acl token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
+                                         [:group_permissions 0]
+                                         {:permissions ["read"] :group_id group1-concept-id}))
+        ;; ACL associated with a group that does not have legacy guid
+        acl2 (ingest-acl token (assoc-in (u/system-acl "ARCHIVE_RECORD")
+                                         [:group_permissions 0]
+                                         {:permissions ["delete"] :group_id group2-concept-id}))
+        ;; SingleInstanceIdentity ACL with a group that has legacy guid
+        acl3 (ingest-acl token (u/single-instance-acl group1-concept-id))
+        ;; SingleInstanceIdentity ACL with a group that does not have legacy guid
+        acl4 (ingest-acl token (u/single-instance-acl group2-concept-id))
+        ;; ACL without group_id
+        acl5 (ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
+                                      :group_permissions
+                                      [{:user_type "guest" :permissions ["read"]}]))
+
+        expected-acls (concat [fixtures/*fixture-system-acl*]
+                              [fixtures/*fixture-provider-acl*]
+                              [acl1 acl2 acl3 acl4 acl5])
+
+        expected-acl1-with-legacy-guid (assoc-in
+                                        acl1 [:group_permissions 0 :group_id] group1-legacy-guid)
+        expected-acl3-with-legacy-guid (-> acl3
+                                           ;; single-instance-name is added to generate the correct
+                                           ;; ACL name for comparison which is based on group concept id
+                                           (assoc :single-instance-name (str "Group - " group1-concept-id))
+                                           (assoc-in [:single_instance_identity :target_id]
+                                                     group1-legacy-guid))
+        expected-acls-with-legacy-guids (concat [fixtures/*fixture-system-acl*]
+                                                [fixtures/*fixture-provider-acl*]
+                                                [expected-acl1-with-legacy-guid acl2
+                                                 expected-acl3-with-legacy-guid acl4 acl5])]
+    (u/wait-until-indexed)
+
+    (testing "Find acls without legacy group guid"
+      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20})]
+        (is (= (acls->search-response (count expected-acls) expected-acls {:include-full-acl true})
+               (dissoc response :took)))))
+
+    (testing "Find acls with legacy group guid"
+      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true
+                                                           :include-legacy-group-guid true
+                                                           :page_size 20})]
+        (is (= (acls->search-response
+                (count expected-acls)
+                expected-acls-with-legacy-guids {:include-full-acl true
+                                                 :include-legacy-group-guid true})
+               (dissoc response :took)))))
+
+    (testing "Find acls with include-legacy-group-guid but without include-full-acl"
+      (let [{:keys [status body]} (ac/search-for-acls
+                                   (u/conn-context) {:include-legacy-group-guid true} {:raw? true})
+            errors (:errors body)]
+        (is (= 400 status))
+        (is (= ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]
+               errors))))))

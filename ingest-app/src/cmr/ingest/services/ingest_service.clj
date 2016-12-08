@@ -69,7 +69,6 @@
                                                                              validation-options)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
-
     ;; Validate ingest business rule through umm-spec-lib
     (v/validate-business-rules
      context (assoc coll-concept :umm-concept collection))
@@ -167,13 +166,18 @@
     {:concept-id concept-id, :revision-id revision-id}))
 
 (defn-timed save-collection
-  "Store a concept in mdb and indexer and return concept-id, revision-id, and warnings."
+  "Store a concept in mdb and indexer.   
+   Return entry-titile, concept-id, revision-id, and warnings."
   [context concept validation-options]
   (let [{:keys [concept warnings]} (validate-and-prepare-collection context
                                                                     concept
                                                                     validation-options)]
-    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-      {:concept-id concept-id, :revision-id revision-id :warnings warnings})))
+    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
+          entry-title (get-in concept [:extra-fields :entry-title])]
+      {:entry-title entry-title 
+       :concept-id concept-id 
+       :revision-id revision-id 
+       :warnings warnings})))
 
 (defn-timed delete-concept
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
