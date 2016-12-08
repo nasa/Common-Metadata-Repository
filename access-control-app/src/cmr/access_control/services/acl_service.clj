@@ -1,26 +1,28 @@
 (ns cmr.access-control.services.acl-service
   (:require
-    [clojure.edn :as edn]
-    [clojure.set :as set]
-    [clojure.string :as str]
-    [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.data.acls :as acls]
-    [cmr.access-control.services.acl-service-messages :as acl-msg]
-    [cmr.access-control.services.acl-validation :as v]
-    [cmr.access-control.services.auth-util :as auth-util]
-    [cmr.access-control.services.messages :as msg]
-    [cmr.access-control.services.acl-authorization :as acl-auth]
-    [cmr.acl.core :as acl]
-    [cmr.common.concepts :as concepts]
-    [cmr.common.date-time-parser :as dtp]
-    [cmr.common.log :refer [info debug]]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.transmit.echo.tokens :as tokens]
-    [cmr.transmit.metadata-db :as mdb1]
-    [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm.acl-matchers :as acl-matchers]))
+   [clojure.edn :as edn]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.access-control.data.acl-json-results-handler :as result-handler]
+   [cmr.access-control.data.acl-schema :as schema]
+   [cmr.access-control.data.acls :as acls]
+   [cmr.access-control.services.acl-authorization :as acl-auth]
+   [cmr.access-control.services.acl-service-messages :as acl-msg]
+   [cmr.access-control.services.acl-validation :as v]
+   [cmr.access-control.services.auth-util :as auth-util]
+   [cmr.access-control.services.messages :as msg]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.services.search.params :as cp]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.log :refer [info debug]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.metadata-db :as mdb1]
+   [cmr.transmit.metadata-db2 :as mdb]
+   [cmr.umm.acl-matchers :as acl-matchers]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -144,8 +146,12 @@
 
 (defn get-acl
   "Returns the parsed metadata of the latest revision of the ACL concept by id."
-  [context concept-id]
-  (edn/read-string (:metadata (fetch-acl-concept context concept-id))))
+  [context concept-id params]
+  (let [acl (edn/read-string (:metadata (fetch-acl-concept context concept-id)))
+        params (cp/sanitize-params params)]
+    (if (= "true" (:include-legacy-group-guid params))
+      (result-handler/update-acl-legacy-group-guid context acl)
+      acl)))
 
 (defn get-all-acl-concepts
   "Returns all ACLs in metadata db."

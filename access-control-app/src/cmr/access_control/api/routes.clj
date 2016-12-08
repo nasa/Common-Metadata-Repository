@@ -251,8 +251,8 @@
 
 (defn get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
-  [request-context headers concept-id]
-  (-> (acl-service/get-acl request-context concept-id)
+  [request-context headers concept-id params]
+  (-> (acl-service/get-acl request-context concept-id params)
       (util/map-keys->snake_case)
       api-response))
 
@@ -401,7 +401,7 @@
 
           ;; Retrieve an ACL
           (GET "/" {:keys [request-context headers params]}
-            (get-acl request-context headers concept-id))))
+            (get-acl request-context headers concept-id params))))
 
       (context "/permissions" []
         (OPTIONS "/" [] common-routes/options-response)
