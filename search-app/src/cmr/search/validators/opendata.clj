@@ -15,12 +15,10 @@
 
 (def opendata-schemas
   {:catalog (load-opendata-schema "catalog")
-   :dataset (load-opendata-schema "dataset")
-   :distribution (load-opendata-schema "distribution")
-   :organization (load-opendata-schema "organization")
-   :vcard (load-opendata-schema "vcard")})
+   :dataset (load-opendata-schema "dataset")})
 
 (defn validate-dataset
   "Validate a given opendata record"
   [dataset]
-  (json-schema/validate-json (load-opendata-schema "catalog") dataset))
+  ;; A catalog refers to a collection of datasets, which is what we're dealing with
+  (json-schema/validate-json (:catalog opendata-schemas) dataset))
