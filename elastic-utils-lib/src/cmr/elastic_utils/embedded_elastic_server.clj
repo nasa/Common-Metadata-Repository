@@ -39,11 +39,8 @@
       (put "transport.tcp.port" (str transport-port))
       (put "index.store.type" "memory")
       ;; dynamic scripting configurations
-      (put "script.file" "off")
-      (put "script.plugin" "off")
-      (put "script.aggs" "off")
-      (put "script.mapping" "off")
-      (put "script.update" "off")
+      (put "scipt.inline" "on")
+      (put "script.search" "on")
       build))
 
 (defn- build-node
@@ -111,4 +108,3 @@
   (def stopped-server (lifecycle/stop started-server nil))
 
   )
-

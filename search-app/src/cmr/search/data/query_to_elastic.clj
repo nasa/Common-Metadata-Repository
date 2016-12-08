@@ -1,18 +1,23 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
-  (:require [clojure.string :as str]
-            [clojure.set :as set]
-            ;; require it so it will be available
-            [cmr.search.data.query-order-by-expense]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.data.keywords-to-elastic :as k2e]
-            [clojurewerkz.elastisch.query :as eq]
-            [cmr.common-app.services.search.query-model :as q]
-            [cmr.common-app.services.search.query-order-by-expense :as query-expense]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
-            [cmr.common.config :refer [defconfig]]))
+  (:require
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojurewerkz.elastisch.query :as eq]
+   [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.common-app.services.search.query-model :as q]
+   [cmr.common-app.services.search.query-order-by-expense :as query-expense]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.search.data.keywords-to-elastic :as k2e]
+   [cmr.search.data.temporal-ranges-to-elastic :as temporal-to-elastic]
+   [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
+   [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor])
+  (:require
+   ;; require it so it will be available
+   [cmr.search.data.query-order-by-expense]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
@@ -29,6 +34,13 @@
   so keyword search will not be broken"
   {:type Boolean
    :default true})
+
+(defconfig sort-use-temporal-relevancy
+  "Indicates whether when searching using a temporal range if we should use temporal overlap
+  relevancy to sort. If true, use the temporal overlap script in elastic. This config allows
+  temporal overlap calculations to be turned off if needed for performance."
+  {:type Boolean
+   :default false})
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
@@ -178,18 +190,18 @@
         {:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (q2e/condition->elastic condition concept-type)]
     (if-let [keywords (keywords-in-query query)]
-        ;; Forces score to be returned even if not sorting by score.
-        {:track_scores true
-         ;; function_score query allows us to compute a custom relevance score for each document
-         ;; matched by the primary query. The final document relevance is given by multiplying
-         ;; a boosting term for each matching filter in a set of filters.
-         :query {:function_score {:score_mode :multiply
-                                  :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                                  :query {:filtered {:query (eq/match-all)
-                                                     :filter core-query}}}}}
-        (if boosts
-          (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
-          {:query {:filtered {:query (eq/match-all)
+      ;; Forces score to be returned even if not sorting by score.
+      {:track_scores true
+       ;; function_score query allows us to compute a custom relevance score for each document
+       ;; matched by the primary query. The final document relevance is given by multiplying
+       ;; a boosting term for each matching filter in a set of filters.
+       :query {:function_score {:score_mode :multiply
+                                :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
+                                :query {:filtered {:query (eq/match-all)
+                                                   :filter core-query}}}}}
+      (if boosts
+        (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
+        {:query {:filtered {:query (eq/match-all)
                               :filter core-query}}}))))
 
 (defmethod q2e/concept-type->sort-key-map :collection
@@ -259,12 +271,40 @@
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
 (defn- keyword-sort-order
-  "Determine the keyword sort order based on the sort-use-relevancy-score config"
-  []
-  (if (sort-use-relevancy-score)
+  "Determine the keyword sort order based on the sort-use-relevancy-score config and the presence
+   of temporal range parameters in the query"
+  [query]
+  (cond
+    (and (temporal-range-extractor/contains-temporal-ranges? query)
+         (sort-use-temporal-relevancy)
+         (sort-use-relevancy-score))
     [{:_score {:order :desc}}
-     {:usage-relevancy-score {:order :desc}}]
+     {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
+     {:usage-relevancy-score {:order :desc :missing 0}}]
+
+    (and (temporal-range-extractor/contains-temporal-ranges? query)
+         (sort-use-temporal-relevancy))
+    [{:_score {:order :desc}}
+     {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}]
+
+    (sort-use-relevancy-score)
+    [{:_score {:order :desc}}
+     {:usage-relevancy-score {:order :desc :missing 0}}]
+
+    :else
     [{:_score {:order :desc}}]))
+
+(defn- temporal-sort-order
+  "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
+  define the temporal sort order based on the sort-usage-relevancy-score. If sort-use-temporal-relevancy
+  is turned off, return nil so the default sorting gets used."
+  [query]
+  (when (and (temporal-range-extractor/contains-temporal-ranges? query)
+             (sort-use-temporal-relevancy))
+    (if (sort-use-relevancy-score)
+      [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
+       {:usage-relevancy-score {:order :desc :missing 0}}]
+      [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])))
 
 (defmethod q2e/concept-type->sub-sort-fields :granule
   [_]
@@ -276,13 +316,15 @@
   (let [{:keys [concept-type sort-keys]} query
         ;; If the sort keys are given as parameters then keyword-sort will not be used.
         keyword-sort (when (keywords-extractor/contains-keyword-condition? query)
-                       (keyword-sort-order))
+                       (keyword-sort-order query))
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        ;; Keyword-sort contains temporal, this is for the case of temporal but no keyword
+        temporal-sort (temporal-sort-order query)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
         sub-sort-fields (if (:all-revisions? query)
                           collection-all-revision-sub-sort-fields
                           collection-latest-sub-sort-fields)]
-    (concat (or specified-sort keyword-sort default-sort) sub-sort-fields)))
+    (concat (or specified-sort keyword-sort temporal-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
