@@ -2,10 +2,7 @@
  "Validate Opendata formatted collections against JSON schema in /resources/schema"
  (:require
   [clojure.java.io :as io]
-  [cheshire.core :as cheshire]
-  [cmr.common.validations.json-schema :as json-schema]
-  [cmr.common.mime-types :as mime-types]
-  [cmr.search.models.query :as query-model]))
+  [cmr.common.validations.json-schema :as json-schema]))
 
 (defn- load-opendata-schema
   "Load and parse named opendata schema from resources"
