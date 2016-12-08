@@ -24,5 +24,3 @@
   "Validate a given opendata record"
   [dataset]
   (json-schema/validate-json (load-opendata-schema "catalog") dataset))
-
-; (empty? (validate-dataset (slurp (io/resource "problem_collection.json"))))

@@ -140,20 +140,6 @@
             :archive-center archive-center}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
-(defn- generate-end-date
-  "Format the start of the current day if given end-date is nil"
-  [end-date]
-  (if end-date
-   end-date
-   (f/unparse (f/formatters :date-time-no-ms) (clj-time.core/today-at 0 0))))
-
-(defn- modified-at
-  "If no modified date exists, assume that the end-date is it"
-  [modified end-date]
-  (if (empty? modified)
-    (generate-end-date end-date)
-    modified))
-
 (defn temporal
   "Get the temporal field from the start-date and end-date"
   ;; NOTE: Eventually this should handle peridoc-date-times as well, but opendata only allows one
@@ -161,7 +147,9 @@
   ;; a decision is made about how to resolve multiple periodic-date-time entries.
   [start-date end-date]
   (when start-date
-    (let [end-date (generate-end-date end-date)]
+    (let [end-date (if end-date
+                     end-date
+                     (f/unparse (f/formatters :date-time-no-ms) (clj-time.core/today-at 0 0)))]
       (str start-date "/" end-date))))
 
 (defn spatial
@@ -198,8 +186,7 @@
   [provider-id archive-center]
   (let [hierarchy (if (= provider-id "USGS_EROS")
                     USGS_EROS_PUBLISHER_HIERARCHY
-                    NASA_PUBLISHER_HIERARCHY)
-        archive-center (or archive-center "undefined")]
+                    NASA_PUBLISHER_HIERARCHY)]
     {:name archive-center
      :subOrganizationOf hierarchy}))
 
@@ -223,7 +210,7 @@
     (util/remove-nil-keys {:title entry-title
                            :description (not-empty summary)
                            :keyword (keywords science-keywords-flat)
-                           :modified (modified-at update-time end-date)
+                           :modified (not-empty update-time)
                            :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)
                            :identifier id
@@ -236,7 +223,7 @@
                            :distribution (distribution related-urls)
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
-                           :references (not-empty (distinct (map :url related-urls)))
+                           :references (not-empty (map :url related-urls))
                            :issued (not-empty insert-time)})))
 
 (defn- results->opendata
