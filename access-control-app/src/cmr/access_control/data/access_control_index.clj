@@ -359,6 +359,17 @@
                   acl-type-name
                   concept-id))
 
+(defn-timed reindex-acls
+  "Fetches and indexes all acls"
+  [context]
+  (info "Reindexing all acls")
+  (doseq [acl-batch (mdb-legacy/find-in-batches context :acl 100 {:latest true})
+          acl acl-batch]
+    (if (:deleted acl)
+      (unindex-acl context (:concept-id acl))
+      (index-acl context acl)))
+  (info "Reindexing all acls complete"))
+
 (defmethod esi/concept-type->index-info :acl
   [context _ _]
   {:index-name acl-index-name
