@@ -74,7 +74,7 @@
 
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
-  [parsed-metadata concept-type]
+  [parsed-metadata concept-type applicable]
   (let [start-date (if (= concept-type :granule)
                      (umm-lib-time/start-date :granule (:temporal parsed-metadata))
                      (spec-time/collection-start-date parsed-metadata))
@@ -85,7 +85,7 @@
                     (t/now)
                     stop-date)]
     (gc/and
-      (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
+      (common-qm/boolean-condition (make-keyword applicable :applicable) true)
       (gc/or
          (create-temporal-contains-condition start-date stop-date concept-type)
          (create-temporal-intersect-condition start-date stop-date concept-type)
@@ -93,7 +93,7 @@
 
 (defn- create-access-value-condition
   "Constructs query condition for searching permitted_concept_ids by access-value."
-  [parsed-metadata concept-type]
+  [parsed-metadata concept-type applicable]
   (gc/and
     ;; If there are no access values present in the concept then the include undefined
     ;; value is used.
@@ -104,38 +104,49 @@
         access-value
         access-value)
       (common-qm/boolean-condition (make-keyword concept-type :access-value-include-undefined-value) true))
-    (common-qm/boolean-condition (make-keyword concept-type :applicable) true)))
+    (common-qm/boolean-condition (make-keyword applicable :applicable) true)))
 
 (defn- create-entry-title-condition
   "Constructs query condition for searching permitted_concept_ids by entry_titles"
-  [parsed-metadata]
+  [parsed-metadata applicable]
   (if-let [entry-title (:EntryTitle parsed-metadata)]
     (gc/and
       (common-qm/string-condition :entry-title entry-title true false)
-      (common-qm/boolean-condition :collection-applicable true))
+      (common-qm/boolean-condition (make-keyword applicable :applicable) true))
     common-qm/match-none))
 
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
-  [context concept]
-  (let [concept-type (:concept-type concept)
-        parsed-metadata (if (= concept-type :collection)
-                          (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
-                          (umm-lib/parse-concept concept))
-        parent-collection-conds (if (= concept-type :granule)
-                                  (let [parent-collection (mdb2/get-latest-concept context (get-in concept [:extra-fields :parent-collection-id]))]
-                                    (gc/and
-                                      (common-qm/boolean-condition :granule-identifier false)
-                                      (common-qm/boolean-condition :collection-applicable true)
-                                      (common-qm/boolean-condition :granule-applicable true)
-                                      (get-permitted-concept-id-conditions context parent-collection)))
-                                  common-qm/match-none)]
-    (gc/or
-      parent-collection-conds
-      (gc/and
-        (common-qm/string-condition :provider (:provider-id concept))
-        (gc/or
-          (create-generic-applicable-condition concept-type)
-          (create-access-value-condition parsed-metadata concept-type)
-          (create-temporal-condition parsed-metadata concept-type)
-          (create-entry-title-condition parsed-metadata))))))
+  ([context concept]
+   (get-permitted-concept-id-conditions context concept nil))
+  ([context concept applicable]
+   (let [concept-type (:concept-type concept)
+         parsed-metadata (if (= concept-type :collection)
+                           (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
+                           (umm-lib/parse-concept concept))
+         ;; If the concept-type is granule, we want to construct conditions that will
+         ;; match ACLs through the parent collection.  This means that we want all the conditions
+         ;; to have granule-applicable but we also want to match against the collection-identifier values
+         ;; To do this, we need to pass in the applicable override argument as granule to make sure all
+         ;; "applicable" conditions are the granule version, but keep passing a collection concept type
+         ;; to make sure all the values matched against are the collection identifier values.
+         parent-collection-conds (if (= concept-type :granule)
+                                   (let [parent-collection (mdb2/get-latest-concept context (get-in concept [:extra-fields :parent-collection-id]))]
+                                     (gc/and
+                                       (common-qm/boolean-condition :granule-identifier false)
+                                       (get-permitted-concept-id-conditions context parent-collection :granule)))
+                                   ;; If concept-type is collection, the parent-collection-conds need to match-none
+                                   ;; because the max conditions count validation cannot handle a nil value.
+                                   common-qm/match-none)
+         applicable (if (nil? applicable)
+                      concept-type
+                      applicable)]
+     (gc/or
+       parent-collection-conds
+       (gc/and
+         (common-qm/string-condition :provider (:provider-id concept))
+         (gc/or
+           (create-generic-applicable-condition applicable)
+           (create-access-value-condition parsed-metadata concept-type applicable)
+           (create-temporal-condition parsed-metadata concept-type applicable)
+           (create-entry-title-condition parsed-metadata applicable)))))))
