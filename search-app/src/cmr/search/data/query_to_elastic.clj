@@ -40,7 +40,7 @@
   relevancy to sort. If true, use the temporal overlap script in elastic. This config allows
   temporal overlap calculations to be turned off if needed for performance."
   {:type Boolean
-   :default true})
+   :default false})
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
@@ -277,15 +277,16 @@
   (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
         use-temporal-sort? (and (temporal-range-extractor/contains-temporal-ranges? query)
                                 (sort-use-temporal-relevancy))]
-    (concat
-     (when use-keyword-sort?
-       [{:_score {:order :desc}}])
-     (when use-temporal-sort?
-       [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
-     ;; We only include this if one of the others is present
-     (when (and (or use-temporal-sort? use-keyword-sort?)
-                (sort-use-relevancy-score))
-       [{:usage-relevancy-score {:order :desc :missing 0}}]))))
+    (seq
+     (concat
+      (when use-keyword-sort?
+        [{:_score {:order :desc}}])
+      (when use-temporal-sort?
+        [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
+      ;; We only include this if one of the others is present
+      (when (and (or use-temporal-sort? use-keyword-sort?)
+                 (sort-use-relevancy-score))
+        [{:usage-relevancy-score {:order :desc :missing 0}}])))))
 
 (defn- temporal-sort-order
   "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
