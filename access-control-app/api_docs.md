@@ -454,6 +454,7 @@ The following parameters are supported when searching for ACLs.
 * page_num
 * pretty
 * include_full_acl - boolean parameter that indicates if the full acl details should be included in the search response.
+* include_legacy_group_guid - boolean parameter that indicates if legacy group guid should be returned in place of group concept id in full acl search response. It can only be used when include_full_acl parameter is true.
 
 ##### ACL Matching Parameters
 
