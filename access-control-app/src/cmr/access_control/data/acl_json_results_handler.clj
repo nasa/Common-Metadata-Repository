@@ -43,7 +43,7 @@
     (update group-permission :group-id #(group-concept-id->legacy-guid context %))
     group-permission))
 
-(defn- update-acl-legacy-group-guid
+(defn update-acl-legacy-group-guid
   "Returns the given acl with group id replaced with legacy group guid if applicable.
    Group id only appears in the group_id field in group_permissions of an ACL or target_id field
    of a SingleInstanceIdentity ACL."

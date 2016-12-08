@@ -755,6 +755,8 @@ CMR-Request-Id: b3e38b33-eaf3-46ac-9f04-fa62eabb2c11
 
 A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
 
+Search parameter `include_legacy_group_guid`, which is a boolean parameter, can be used to indicate if legacy group guid should be returned in place of group concept id in the returned ACL.
+
 ```
 curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
 

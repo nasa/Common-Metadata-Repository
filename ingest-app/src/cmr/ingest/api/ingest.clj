@@ -246,14 +246,18 @@
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (let [concept (body->concept :collection provider-id native-id body content-type headers)
-          validation-options (get-validation-options headers)]
+          validation-options (get-validation-options headers)
+          save-collection-result (ingest/save-collection
+                                   request-context
+                                   (set-user-id concept request-context headers)
+                                   validation-options)]
       (info (format "Ingesting collection %s from client %s"
-                    (concept->loggable-string concept) (:client-id request-context)))
+              (concept->loggable-string (assoc concept :entry-title (:entry-title save-collection-result))) 
+              (:client-id request-context)))
       (generate-ingest-response headers (contextualize-warnings
-                                          (ingest/save-collection
-                                           request-context
-                                           (set-user-id concept request-context headers)
-                                           validation-options))))))
+                                          ;; entry-title is added just for the logging above.
+                                          ;; dissoc it so that it remains the same as the original code.
+                                          (dissoc save-collection-result :entry-title))))))
 
 (defn delete-collection
   [provider-id native-id request]
