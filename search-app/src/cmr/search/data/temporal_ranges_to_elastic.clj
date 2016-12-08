@@ -17,6 +17,7 @@
   "Convert a temporal range to the right format for the elastic script. Change the dates to longs, populate
    the start/end dates with defaults as needed, and change the keys to snake case. Do whatever
    processing can be done here rather than the script for performance considerations.
+   Input is a map of {:start-date :end-date} with one of those possibly nil.
 
    Will return:
    {:start_date start-date or default}

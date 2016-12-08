@@ -40,7 +40,7 @@
   relevancy to sort. If true, use the temporal overlap script in elastic. This config allows
   temporal overlap calculations to be turned off if needed for performance."
   {:type Boolean
-   :default true})
+   :default false})
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
