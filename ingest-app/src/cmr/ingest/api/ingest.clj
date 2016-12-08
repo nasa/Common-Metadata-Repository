@@ -250,13 +250,13 @@
           save-collection-result (ingest/save-collection
                                    request-context
                                    (set-user-id concept request-context headers)
-                                   validation-options)
-          entry-title (get save-collection-result :entry-title)
-          logging-concept (assoc concept :entry-title entry-title)]
+                                   validation-options)]
       (info (format "Ingesting collection %s from client %s"
-              (concept->loggable-string logging-concept) 
+              (concept->loggable-string (assoc concept :entry-title (:entry-title save-collection-result))) 
               (:client-id request-context)))
       (generate-ingest-response headers (contextualize-warnings
+                                          ;; entry-title is added just for the logging above.
+                                          ;; dissoc it so that it remains the same as the original code.
                                           (dissoc save-collection-result :entry-title))))))
 
 (defn delete-collection
