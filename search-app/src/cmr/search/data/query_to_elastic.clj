@@ -315,6 +315,8 @@
         sub-sort-fields (if (:all-revisions? query)
                           collection-all-revision-sub-sort-fields
                           collection-latest-sub-sort-fields)
+        ;; We want the specified sort then to sub-sort by the score.
+        ;; Only if neither is present should it then go to the default sort.
         specified-score-combined (seq (concat specified-sort score-sort-order))]
     (concat (or specified-score-combined default-sort) sub-sort-fields)))
 
