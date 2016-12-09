@@ -285,6 +285,12 @@
   (index/reindex-groups context)
   {:status 200})
 
+(defn reindex-acls
+  "Processes a request to reindex all acls"
+  [context]
+  (index/reindex-acls context)
+  {:status 200})
+
 ;;; Various Admin Route Functions
 
 (defn reset
@@ -328,6 +334,12 @@
         (acl/verify-ingest-management-permission request-context :update)
         (validate-standard-params params)
         (reindex-groups request-context))
+
+      ;; Reindex all acls
+      (POST "/reindex-acls" {:keys [request-context headers params]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (validate-standard-params params)
+        (reindex-acls request-context))
 
       (context "/groups" []
         (OPTIONS "/" req
