@@ -1,5 +1,6 @@
 (ns cmr.search.services.query-walkers.temporal-range-extractor
-  "Defines protocols and functions to extract keywords from a query."
+  "Defines protocols and functions to extract keywords from a query. The extraction is done
+  during pre-processing of the query to get the temporal conditions result feature."
   (:require
    [clojure.string :as str]
    [cmr.common-app.services.search.query-model :as cqm]
@@ -31,10 +32,7 @@
   cmr.common_app.services.search.query_model.Query
   (extract-temporal-ranges
    [query]
-   (when-let [ranges (extract-temporal-ranges (:condition query))]
-     (if (map? ranges)
-       [ranges]
-       (flatten ranges))))
+   (extract-temporal-ranges (:condition query)))
   (contains-temporal-range-condition?
    [query]
    (contains-temporal-range-condition? (:condition query)))
@@ -43,24 +41,18 @@
   cmr.common_app.services.search.query_model.ConditionGroup
   (extract-temporal-ranges
    [{:keys [conditions]}]
-   (when-let [ranges (seq (keep extract-temporal-ranges conditions))]
-     ;; If a DateRangeCondition exists at the top level of the condition group, merge
-     ;; the conditions together to get both start and end date, if applicable
-     (if (some #{cmr.common_app.services.search.query_model.DateRangeCondition}
-               (map type conditions))
-       (apply merge ranges)
-       ranges)))
+   (mapcat extract-temporal-ranges conditions))
   (contains-temporal-range-condition?
    [{:keys [conditions]}]
    (some contains-temporal-range-condition? conditions))
 
   ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.DateRangeCondition
+  cmr.search.models.query.TemporalCondition
   (extract-temporal-ranges
    [{:keys [start-date end-date]}]
-   (util/remove-nil-keys
-    {:start-date start-date
-     :end-date end-date}))
+   [(util/remove-nil-keys
+     {:start-date start-date
+      :end-date end-date})])
   (contains-temporal-range-condition?
    [_]
    true)
