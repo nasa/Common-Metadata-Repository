@@ -58,31 +58,40 @@
              [:OperationMode mode])]])]])])
 
 (defn echo10-temporal
+  "Create the ECHO10 TemporalExtent. ECHO10 supports only one temoral extent, but for now
+  we put multiple dates within the temporal extent. Set the ends at present flag if any
+  UMM temporal ends at present. Only one date type can go into echo, so put either all
+  of the range date times, single date times, or periodic date times in."
   [c]
-  ;; ECHO10 only supports one temporal extent
-  (when-let [temporal (first (:TemporalExtents c))]
+  (when-let [temporals (seq (:TemporalExtents c))]
     [:Temporal
-     (elements-from temporal
+     (elements-from (first temporals)
                     :TemporalRangeType
-                    :PrecisionOfSeconds
-                    :EndsAtPresentFlag)
+                    :PrecisionOfSeconds)
+     [:EndsAtPresentFlag (some true? (map :EndsAtPresentFlag temporals))]
+     (let [range-date-times (mapcat :RangeDateTimes temporals)
+           single-date-times (mapcat :SingleDateTimes temporals)
+           periodic-date-times (mapcat :PeriodicDateTimes temporals)]
+       (cond
+        (seq range-date-times)
+        (for [r range-date-times]
+         [:RangeDateTime (elements-from r :BeginningDateTime :EndingDateTime)])
 
-     (for [r (:RangeDateTimes temporal)]
-       [:RangeDateTime (elements-from r :BeginningDateTime :EndingDateTime)])
+        (seq single-date-times)
+        (for [date single-date-times]
+         [:SingleDateTime (str date)])
 
-     (for [date (:SingleDateTimes temporal)]
-       [:SingleDateTime (str date)])
-
-     (for [pdt (:PeriodicDateTimes temporal)]
-       [:PeriodicDateTime
-        (elements-from pdt
-                       :Name
-                       :StartDate
-                       :EndDate
-                       :DurationUnit
-                       :DurationValue
-                       :PeriodCycleDurationUnit
-                       :PeriodCycleDurationValue)])]))
+        :else
+        (for [pdt periodic-date-times]
+         [:PeriodicDateTime
+          (elements-from pdt
+                           :Name
+                           :StartDate
+                           :EndDate
+                           :DurationUnit
+                           :DurationValue
+                           :PeriodCycleDurationUnit
+                           :PeriodCycleDurationValue)])))]))
 
 (defn echo10-sciencekeywords
   "Generates ECHO 10 XML structure for science-keywords"
