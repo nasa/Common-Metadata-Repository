@@ -183,13 +183,19 @@
        :SouthBoundingCoordinate (apply min lats)}))))
 
 (defn- point->bounding-rectangle
-  "Create a bounding rectangle from a point"
+  "Create a bounding rectangle from a point. Take into account special bounding box for the poles."
   [point]
-  (cmn/map->BoundingRectangleType
-    {:WestBoundingCoordinate (:Longitude point)
-     :NorthBoundingCoordinate (:Latitude point)
-     :EastBoundingCoordinate (:Longitude point)
-     :SouthBoundingCoordinate (:Latitude point)}))
+  (let [{:keys [Latitude Longitude]} point
+        pole? (or (= Latitude 90.0) (= Latitude -90.0))]
+   (cmn/map->BoundingRectangleType
+     {:WestBoundingCoordinate (if pole?
+                                -180.0
+                                Longitude)
+      :NorthBoundingCoordinate Latitude
+      :EastBoundingCoordinate (if pole?
+                                180.0
+                                Longitude)
+      :SouthBoundingCoordinate Latitude})))
 
 (defn- get-bounding-rectangles-for-geometry
   "Get a bounding rectangle for each polygon, line, point."
@@ -209,7 +215,7 @@
                          (interleave bounding-rects bounding-rects)
                          nil)]
     (-> umm
-        (assoc-in conversion-util/bounding-rectangles-path (concat bounding-rects geom-rects))
+        (assoc-in conversion-util/bounding-rectangles-path (concat geom-rects bounding-rects))
         fix-bounding-rectangles)))
 
 (defn- expected-iso19115-additional-attribute
