@@ -13,8 +13,8 @@
    [cmr.common.util :as util]
    [cmr.search.data.keywords-to-elastic :as k2e]
    [cmr.search.data.temporal-ranges-to-elastic :as temporal-to-elastic]
-   [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor]
-   [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor])
+   [cmr.search.services.query-execution.temporal-conditions-results-feature :as temporal-conditions]
+   [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor])
   (:require
    ;; require it so it will be available
    [cmr.search.data.query-order-by-expense]))
@@ -275,14 +275,14 @@
    of temporal range parameters in the query"
   [query]
   (cond
-    (and (temporal-range-extractor/contains-temporal-ranges? query)
+    (and (temporal-conditions/contains-temporal-conditions? query)
          (sort-use-temporal-relevancy)
          (sort-use-relevancy-score))
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
      {:usage-relevancy-score {:order :desc :missing 0}}]
 
-    (and (temporal-range-extractor/contains-temporal-ranges? query)
+    (and (temporal-conditions/contains-temporal-conditions? query)
          (sort-use-temporal-relevancy))
     [{:_score {:order :desc}}
      {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}]
@@ -299,7 +299,7 @@
   define the temporal sort order based on the sort-usage-relevancy-score. If sort-use-temporal-relevancy
   is turned off, return nil so the default sorting gets used."
   [query]
-  (when (and (temporal-range-extractor/contains-temporal-ranges? query)
+  (when (and (temporal-conditions/contains-temporal-conditions? query)
              (sort-use-temporal-relevancy))
     (if (sort-use-relevancy-score)
       [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
