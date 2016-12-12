@@ -68,7 +68,7 @@
      (elements-from (first temporals)
                     :TemporalRangeType
                     :PrecisionOfSeconds)
-     [:EndsAtPresentFlag (some true? (map :EndsAtPresentFlag temporals))]
+     [:EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporals))]
      (let [range-date-times (mapcat :RangeDateTimes temporals)
            single-date-times (mapcat :SingleDateTimes temporals)
            periodic-date-times (mapcat :PeriodicDateTimes temporals)]
