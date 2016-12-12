@@ -24,6 +24,11 @@ Reindexing all groups can be accomplished by sending a post request to /reindex-
 
     curl -i -XPOST http://localhost:3011/access-control/reindex-groups?token=XXXX
 
+## Reindexing All Acls
+
+Reindexing all acls can be accomplished by sending a post request to /reindex-acls
+
+    curl -i -XPOST http://localhost:3011/access-control/reindex-acls?token=XXXX
 
 
 ***

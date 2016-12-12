@@ -40,7 +40,7 @@
   relevancy to sort. If true, use the temporal overlap script in elastic. This config allows
   temporal overlap calculations to be turned off if needed for performance."
   {:type Boolean
-   :default false})
+   :default true})
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
@@ -270,29 +270,23 @@
    {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
-(defn- keyword-sort-order
+(defn- score-sort-order
   "Determine the keyword sort order based on the sort-use-relevancy-score config and the presence
    of temporal range parameters in the query"
   [query]
-  (cond
-    (and (temporal-range-extractor/contains-temporal-ranges? query)
-         (sort-use-temporal-relevancy)
-         (sort-use-relevancy-score))
-    [{:_score {:order :desc}}
-     {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}
-     {:usage-relevancy-score {:order :desc :missing 0}}]
-
-    (and (temporal-range-extractor/contains-temporal-ranges? query)
-         (sort-use-temporal-relevancy))
-    [{:_score {:order :desc}}
-     {:_script (temporal-to-elastic/temporal-overlap-sort-script query)}]
-
-    (sort-use-relevancy-score)
-    [{:_score {:order :desc}}
-     {:usage-relevancy-score {:order :desc :missing 0}}]
-
-    :else
-    [{:_score {:order :desc}}]))
+  (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
+        use-temporal-sort? (and (temporal-range-extractor/contains-temporal-ranges? query)
+                                (sort-use-temporal-relevancy))]
+    (seq
+     (concat
+       (when use-keyword-sort?
+         [{:_score {:order :desc}}])
+       (when use-temporal-sort?
+         [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
+       ;; We only include this if one of the others is present
+       (when (and (or use-temporal-sort? use-keyword-sort?)
+                  (sort-use-relevancy-score))
+         [{:usage-relevancy-score {:order :desc :missing 0}}])))))
 
 (defn- temporal-sort-order
   "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
@@ -315,16 +309,16 @@
   [query]
   (let [{:keys [concept-type sort-keys]} query
         ;; If the sort keys are given as parameters then keyword-sort will not be used.
-        keyword-sort (when (keywords-extractor/contains-keyword-condition? query)
-                       (keyword-sort-order query))
+        score-sort-order (score-sort-order query)
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
-        ;; Keyword-sort contains temporal, this is for the case of temporal but no keyword
-        temporal-sort (temporal-sort-order query)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
         sub-sort-fields (if (:all-revisions? query)
                           collection-all-revision-sub-sort-fields
-                          collection-latest-sub-sort-fields)]
-    (concat (or specified-sort keyword-sort temporal-sort default-sort) sub-sort-fields)))
+                          collection-latest-sub-sort-fields)
+        ;; We want the specified sort then to sub-sort by the score.
+        ;; Only if neither is present should it then go to the default sort.
+        specified-score-combined (seq (concat specified-sort score-sort-order))]
+    (concat (or specified-score-combined default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition

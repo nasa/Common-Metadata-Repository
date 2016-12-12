@@ -450,3 +450,8 @@
   "URL to read the access-control-caches."
   []
   (format "http://localhost:%s/caches" (transmit-config/access-control-port)))
+
+(defn access-control-reindex-acls-url
+  "URL to reindex acls."
+  []
+  (format "http://localhost:%s/reindex-acls" (transmit-config/access-control-port)))
