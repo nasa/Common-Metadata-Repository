@@ -211,9 +211,8 @@
   [umm]
   (let [geom-rects (get-bounding-rectangles-for-geometry umm)
         bounding-rects (get-in umm conversion-util/bounding-rectangles-path)
-        bounding-rects (if (and (seq bounding-rects))
-                         (interleave bounding-rects bounding-rects)
-                         nil)]
+        bounding-rects (when (and (seq bounding-rects))
+                         (interleave bounding-rects bounding-rects))]
     (-> umm
         (assoc-in conversion-util/bounding-rectangles-path (concat geom-rects bounding-rects))
         fix-bounding-rectangles)))
