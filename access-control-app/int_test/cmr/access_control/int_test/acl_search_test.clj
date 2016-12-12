@@ -1129,3 +1129,42 @@
         (is (= 400 status))
         (is (= ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]
                errors))))))
+
+(deftest acl-reindexing-test
+  (u/without-publishing-messages
+   (let [token (e/login (u/conn-context) "user1")
+         acl1 (ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
+                                       :group_permissions
+                                       [{:user_type "guest" :permissions ["read"]}]))
+         acl1-concept-id (:concept-id acl1)
+         acl2 (ingest-acl token (assoc (u/system-acl "ARCHIVE_RECORD")
+                                       :group_permissions
+                                       [{:user_type "guest" :permissions ["delete"]}]))
+         acl3 (ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
+                                       :group_permissions
+                                       [{:user_type "guest" :permissions ["read"]}]))
+         search-for-all-acls (fn []
+                               (dissoc (ac/search-for-acls (u/conn-context) {}) :took))
+         fixture-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl*]
+         expected-acls-after-reindexing (concat fixture-acls [acl2 acl3])]
+
+     ;; Delete the acl so we can test with a tombstone.
+     (is (=  {:concept-id acl1-concept-id :revision-id 2}
+             (ac/delete-acl (u/conn-context) acl1-concept-id {:token token})))
+     (u/wait-until-indexed)
+
+     ;; Before reindexing, only the existing fixture acls are found
+     (is (= (acls->search-response 2 fixture-acls)
+            (search-for-all-acls))
+         "Found user acls before re-indexing")
+
+     ;; reindex the acls
+     (ac/reindex-acls (u/conn-context))
+     (u/wait-until-indexed)
+
+     ;; After reindexing, both fixture acls and un-deleted user acls are found.
+     (let [actual-response (search-for-all-acls)]
+       (is (= (count expected-acls-after-reindexing) (:hits actual-response)))
+       (is (= (set (:items (acls->search-response
+                            (count expected-acls-after-reindexing) expected-acls-after-reindexing)))
+              (set (:items actual-response))))))))

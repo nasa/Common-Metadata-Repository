@@ -138,6 +138,23 @@
   [ctx]
   (str (conn/root-url ctx) "/permissions/"))
 
+(defn- reindex-acls-url
+  [conn]
+  (format "%s/reindex-acls" (conn/root-url conn)))
+
+(defn reindex-acls
+  "Sends a request to call the reindex acls
+   * :raw - set to true to indicate the raw response should be returned. See
+   cmr.transmit.http-helper for more info. Default false."
+  ([context]
+   (reindex-acls context nil))
+  ([context {:keys [raw?]}]
+   (h/request context :access-control
+              {:url-fn reindex-acls-url
+               :method :post
+               :raw? raw?
+               :use-system-token? true})))
+
 (h/defcreator create-acl :access-control acl-root-url)
 (h/defupdater update-acl :access-control acl-concept-id-url)
 (h/defsearcher search-for-acls :access-control acl-root-url)
