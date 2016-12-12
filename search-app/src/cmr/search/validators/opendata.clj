@@ -2,10 +2,7 @@
  "Validate Opendata formatted collections against JSON schema in /resources/schema"
  (:require
   [clojure.java.io :as io]
-  [cheshire.core :as cheshire]
-  [cmr.common.validations.json-schema :as json-schema]
-  [cmr.common.mime-types :as mime-types]
-  [cmr.search.models.query :as query-model]))
+  [cmr.common.validations.json-schema :as json-schema]))
 
 (defn- load-opendata-schema
   "Load and parse named opendata schema from resources"
@@ -15,12 +12,10 @@
 
 (def opendata-schemas
   {:catalog (load-opendata-schema "catalog")
-   :dataset (load-opendata-schema "dataset")
-   :distribution (load-opendata-schema "distribution")
-   :organization (load-opendata-schema "organization")
-   :vcard (load-opendata-schema "vcard")})
+   :dataset (load-opendata-schema "dataset")})
 
 (defn validate-dataset
   "Validate a given opendata record"
   [dataset]
-  (json-schema/validate-json (load-opendata-schema "catalog") dataset))
+  ;; A catalog refers to a collection of datasets, which is what we're dealing with
+  (json-schema/validate-json (:catalog opendata-schemas) dataset))

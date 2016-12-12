@@ -251,8 +251,8 @@
 
 (defn get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
-  [request-context headers concept-id]
-  (-> (acl-service/get-acl request-context concept-id)
+  [request-context headers concept-id params]
+  (-> (acl-service/get-acl request-context concept-id params)
       (util/map-keys->snake_case)
       api-response))
 
@@ -283,6 +283,12 @@
   "Processes a request to reindex all groups"
   [context]
   (index/reindex-groups context)
+  {:status 200})
+
+(defn reindex-acls
+  "Processes a request to reindex all acls"
+  [context]
+  (index/reindex-acls context)
   {:status 200})
 
 ;;; Various Admin Route Functions
@@ -328,6 +334,12 @@
         (acl/verify-ingest-management-permission request-context :update)
         (validate-standard-params params)
         (reindex-groups request-context))
+
+      ;; Reindex all acls
+      (POST "/reindex-acls" {:keys [request-context headers params]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (validate-standard-params params)
+        (reindex-acls request-context))
 
       (context "/groups" []
         (OPTIONS "/" req
@@ -401,7 +413,7 @@
 
           ;; Retrieve an ACL
           (GET "/" {:keys [request-context headers params]}
-            (get-acl request-context headers concept-id))))
+            (get-acl request-context headers concept-id params))))
 
       (context "/permissions" []
         (OPTIONS "/" [] common-routes/options-response)
