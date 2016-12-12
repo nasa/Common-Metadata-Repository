@@ -16,10 +16,10 @@
     "Extracts temporal ranges from conditions.")
   (contains-temporal-range-condition?
    [c]
-   "Returns true if the query contains a date range condition"))
+   "Returns true if the query contains a temporal condition"))
 
-(defn extract-temporal-ranges
-  "Extracts temporal ranges from Date Range conditions"
+(defn extract-query-temporal-ranges
+  "Extracts temporal ranges from Temporal conditions"
   [c]
   (extract-temporal-ranges c))
 

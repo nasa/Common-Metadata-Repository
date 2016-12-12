@@ -15,21 +15,21 @@
                                                         :end-date (time/date-time 2016 01 01)})})]
    (is (range-extractor/contains-temporal-ranges? query))
    (is (= [{:start-date (time/date-time 2014 01 01) :end-date (time/date-time 2016 01 01)}]
-          (range-extractor/extract-temporal-ranges query)))))
+          (range-extractor/extract-query-temporal-ranges query)))))
 
 (deftest extract-temporal-range-test-no-start
  (let [query (qm/query {:condition
                         (query/map->TemporalCondition {:end-date (time/date-time 2016 01 01)})})]
    (is (range-extractor/contains-temporal-ranges? query))
    (is (= [{:end-date (time/date-time 2016 01 01)}]
-          (range-extractor/extract-temporal-ranges query)))))
+          (range-extractor/extract-query-temporal-ranges query)))))
 
 (deftest extract-temporal-range-test-no-end
   (let [query (qm/query {:condition
                          (query/map->TemporalCondition {:start-date (time/date-time 2014 01 01)})})]
    (is (range-extractor/contains-temporal-ranges? query))
    (is (= [{:start-date (time/date-time 2014 01 01)}]
-          (range-extractor/extract-temporal-ranges query)))))
+          (range-extractor/extract-query-temporal-ranges query)))))
 
 (deftest extract-temporal-range-test-multiple
   (let [query (qm/query {:condition
@@ -43,7 +43,7 @@
     (is (= [{:start-date (time/date-time 2014 01 01) :end-date (time/date-time 2016 01 01)}
             {:start-date (time/date-time 1993 01 01) :end-date (time/date-time 1994 01 01)}
             {:start-date (time/date-time 2016 10 01)}]
-           (range-extractor/extract-temporal-ranges query)))))
+           (range-extractor/extract-query-temporal-ranges query)))))
 
 (deftest no-temporal-range
   (let [query (qm/query
@@ -56,4 +56,4 @@
                  (qm/string-condition :instrument "instrument")
                  (qm/string-condition :sensor "sensor"))))]
    (is (= false (range-extractor/contains-temporal-ranges? query)))
-   (is (empty? (range-extractor/extract-temporal-ranges query)))))
+   (is (empty? (range-extractor/extract-query-temporal-ranges query)))))

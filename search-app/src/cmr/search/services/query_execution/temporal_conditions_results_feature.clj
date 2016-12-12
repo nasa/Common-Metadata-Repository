@@ -12,7 +12,7 @@
 
 (defmethod query-execution/pre-process-query-result-feature :temporal-conditions
   [_ query _]
-  (if-let [temporal-ranges (temporal-range-extractor/extract-temporal-ranges query)]
+  (if-let [temporal-ranges (temporal-range-extractor/extract-query-temporal-ranges query)]
     (assoc query ::temporal-ranges temporal-ranges)
     query))
 
