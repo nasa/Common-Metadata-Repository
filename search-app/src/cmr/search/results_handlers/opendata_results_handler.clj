@@ -55,6 +55,9 @@
 (def DEFAULT_CONTACT_NAME
   "undefined")
 
+(def VALUE_NOT_PROVIDED
+  "Not provided")
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
   (let [opendata-fields ["entry-title"
@@ -230,7 +233,7 @@
                             :language  [LANGUAGE_CODE]
                             :references (not-empty (map :url related-urls))
                             :issued (not-empty insert-time)}
-                           "Not Found")))
+                           VALUE_NOT_PROVIDED)))
 
 (defn- results->opendata
   "Convert search results to opendata."
