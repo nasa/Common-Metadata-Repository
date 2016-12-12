@@ -8,6 +8,7 @@
    [clojure.test :refer [is]]
    [clojure.test]
    [cmr.common.util :as util]
+   [cmr.search.validators.opendata :as opendata-json]
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
@@ -97,26 +98,26 @@
         personnel (person-with-email personnel)
         contact-point (contact-point personnel)
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
-    (util/remove-nil-keys {:title entry-title
-                           :description summary
-                           :keyword (conj (flatten-science-keywords collection)
-                                          "NGDA"
-                                          "National Geospatial Data Asset")
-                           :modified (when update-time (str update-time))
-                           :publisher (odrh/publisher provider-id archive-center)
-                           :contactPoint contact-point
-                           :identifier concept-id
-                           :accessLevel "public"
-                           :bureauCode [odrh/BUREAU_CODE]
-                           :programCode [odrh/PROGRAM_CODE]
-                           :spatial (odrh/spatial shapes)
-                           :temporal (odrh/temporal start-date end-date)
-                           :theme (conj project-sn "geospatial")
-                           :distribution distribution
-                           :landingPage (odrh/landing-page concept-id)
-                           :language [odrh/LANGUAGE_CODE]
-                           :references (not-empty (map :url related-urls))
-                           :issued (when insert-time (str insert-time))})))
+    (util/inflate-nil-keys {:title entry-title
+                            :description summary
+                            :keyword (conj (flatten-science-keywords collection)
+                                           "NGDA"
+                                           "National Geospatial Data Asset")
+                            :modified (when update-time (str update-time))
+                            :publisher (odrh/publisher provider-id archive-center)
+                            :contactPoint contact-point
+                            :identifier concept-id
+                            :accessLevel "public"
+                            :bureauCode [odrh/BUREAU_CODE]
+                            :programCode [odrh/PROGRAM_CODE]
+                            :spatial (odrh/spatial shapes)
+                            :temporal (odrh/temporal start-date end-date)
+                            :theme (conj project-sn "geospatial")
+                            :distribution distribution
+                            :landingPage (odrh/landing-page concept-id)
+                            :language [odrh/LANGUAGE_CODE]
+                            :references (not-empty (map :url related-urls))
+                            :issued (when insert-time (str insert-time))})))
 
 (defn collections->expected-opendata
   [collections]
@@ -136,6 +137,8 @@
 (defn assert-collection-opendata-results-match
   "Returns true if the opendata results are for the expected items"
   [collections actual-result]
-  (is (= (opendata-results-map->opendata-results-map-using-sets
+  (and
+   (empty? (opendata-json/validate-dataset (json/generate-string (:body actual-result))))
+   (is (= (opendata-results-map->opendata-results-map-using-sets
            (collections->expected-opendata collections))
-         (opendata-results-map->opendata-results-map-using-sets actual-result))))
+         (opendata-results-map->opendata-results-map-using-sets actual-result)))))

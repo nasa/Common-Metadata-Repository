@@ -140,6 +140,13 @@
             :archive-center archive-center}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
+(defn- generate-end-date
+  "Format today's date if the given end-date is nil"
+  [end-date]
+  (if end-date
+   end-date
+   (f/unparse (f/formatters :date-time-no-ms) (clj-time.core/today-at 0 0))))
+
 (defn temporal
   "Get the temporal field from the start-date and end-date"
   ;; NOTE: Eventually this should handle peridoc-date-times as well, but opendata only allows one
@@ -147,9 +154,7 @@
   ;; a decision is made about how to resolve multiple periodic-date-time entries.
   [start-date end-date]
   (when start-date
-    (let [end-date (if end-date
-                     end-date
-                     (f/unparse (f/formatters :date-time-no-ms) (clj-time.core/today-at 0 0)))]
+    (let [end-date (generate-end-date end-date)]
       (str start-date "/" end-date))))
 
 (defn spatial
@@ -207,24 +212,25 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls personnel shapes archive-center]} item]
-    (util/remove-nil-keys {:title entry-title
-                           :description (not-empty summary)
-                           :keyword (keywords science-keywords-flat)
-                           :modified (not-empty update-time)
-                           :publisher (publisher provider-id archive-center)
-                           :contactPoint (contact-point personnel)
-                           :identifier id
-                           :accessLevel ACCESS_LEVEL
-                           :bureauCode [BUREAU_CODE]
-                           :programCode [PROGRAM_CODE]
-                           :spatial (spatial shapes)
-                           :temporal (temporal start-date end-date)
-                           :theme (theme project-sn)
-                           :distribution (distribution related-urls)
-                           :landingPage (landing-page related-urls)
-                           :language  [LANGUAGE_CODE]
-                           :references (not-empty (map :url related-urls))
-                           :issued (not-empty insert-time)})))
+    (util/inflate-nil-keys {:title entry-title
+                            :description (not-empty summary)
+                            :keyword (keywords science-keywords-flat)
+                            :modified (or update-time (generate-end-date end-date))
+                            :publisher (publisher provider-id archive-center)
+                            :contactPoint (contact-point personnel)
+                            :identifier id
+                            :accessLevel ACCESS_LEVEL
+                            :bureauCode [BUREAU_CODE]
+                            :programCode [PROGRAM_CODE]
+                            :spatial (spatial shapes)
+                            :temporal (temporal start-date end-date)
+                            :theme (theme project-sn)
+                            :distribution (distribution related-urls)
+                            :landingPage (landing-page related-urls)
+                            :language  [LANGUAGE_CODE]
+                            :references (not-empty (map :url related-urls))
+                            :issued (not-empty insert-time)}
+                           "Not Found")))
 
 (defn- results->opendata
   "Convert search results to opendata."

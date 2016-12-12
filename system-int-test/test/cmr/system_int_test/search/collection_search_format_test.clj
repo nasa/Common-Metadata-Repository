@@ -2,6 +2,7 @@
   "This tests ingesting and searching for collections in different formats."
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -18,6 +19,7 @@
             [cmr.umm.umm-core :as umm]
             [cmr.umm-spec.umm-spec-core :as umm-spec]
             [cmr.umm-spec.versioning :as umm-version]
+            [cmr.search.validators.opendata :as opendata-json]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -598,7 +600,8 @@
                (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
 
     (testing "opendata"
-      (let [results (search/find-concepts-opendata :collection {})]
+      (let [results (search/find-concepts-opendata :collection {})
+            known-problem-collections (slurp (io/resource "problem_collection_opendata.json"))]
         (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] results))
       (testing "as extension"
@@ -609,6 +612,9 @@
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
                (search/find-concepts-opendata :granule {})))))
+
+    (testing "json schema validation catches invalid collections"
+      (is (not-empty (opendata-json/validate-dataset (slurp (io/resource "problem_collection_opendata.json"))))))
 
     (testing "ATOM XML"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")
