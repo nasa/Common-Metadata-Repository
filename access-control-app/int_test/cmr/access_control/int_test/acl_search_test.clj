@@ -755,18 +755,18 @@
 
         gran1 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
                                                                   :ending-date-time (t/date-time 2011)}}})
-        gran2 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+        gran2 (u/save-granule coll2 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
                                                                   :ending-date-time (t/date-time 2010)}}})
-        gran3 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
+        gran3 (u/save-granule coll3 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
                                                                   :ending-date-time (t/date-time 2012)}}})
-        gran4 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
+        gran4 (u/save-granule coll4 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
                                                                   :ending-date-time (t/date-time 2012)}}})
-        gran5 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+        gran5 (u/save-granule coll5 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
                                                                   :ending-date-time (t/date-time 2009 12 31 12 59 59)}}})
-        gran6 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
+        gran6 (u/save-granule coll6 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
                                                                   :ending-date-time (t/date-time 2012 1 1 0 0 1)}}})
-        gran7 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
-        gran8 (u/save-granule coll1 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
+        gran7 (u/save-granule coll7 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran8 (u/save-granule coll8 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
 
         acl1 (ingest-acl token (assoc (catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
@@ -916,9 +916,9 @@
                                   :provider-id "PROV2"})
 
         gran1 (u/save-granule coll1 {:access-value 1})
-        gran2 (u/save-granule coll1 {:access-value 2})
-        gran3 (u/save-granule coll1 {:access-value 3})
-        gran4 (u/save-granule coll1 {:access-value nil})
+        gran2 (u/save-granule coll2 {:access-value 2})
+        gran3 (u/save-granule coll3 {:access-value 3})
+        gran4 (u/save-granule coll4 {:access-value nil})
         gran5 (u/save-granule coll6 {:access-value 2 :provider-id "PROV2"})
 
         ;; For testing that a full range encompassing multiple collections will
@@ -1121,9 +1121,27 @@
                                   :native-id "coll5"
                                   :provider-id "PROV1"})
 
-        gran1 (u/save-granule coll1 {:provider-id "PROV1"})
+        gran1 (u/save-granule coll1 {:access-value nil
+                                     :provider-id "PROV1"
+                                     :temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2010)}}})
 
-        acl1 (ingest-acl token (assoc (catalog-item-acl "Temporal contains")
+        acl1 (ingest-acl token (assoc (catalog-item-acl "Combined granule collection identifier")
+                                      :catalog_item_identity {:name "Combined granule collection identifier"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "contains"}
+                                                                                   :access_value {:include_undefined_value true}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}
+                                                                                      :entry_titles ["coll1 entry title"]
+                                                                                      :access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        acl2 (ingest-acl token (assoc (catalog-item-acl "Temporal contains")
                                       :catalog_item_identity {:name "Temporal contains"
                                                               :collection_applicable true
                                                               :granule_applicable true
@@ -1131,53 +1149,53 @@
                                                                                                  :stop_date "2010-01-01T00:00:00Z"
                                                                                                  :mask "contains"}}
                                                               :provider_id "PROV1"}))
-        acl2 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
+        acl3 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
                                       :catalog_item_identity {:name "Temporal intersect"
                                                               :granule_applicable true
-                                                              :collection_identifier {:temporal {:start_date "2009-06-01T00:00:00Z"
-                                                                                                 :stop_date "2010-06-01T00:00:00Z"
+                                                              :collection_identifier {:temporal {:start_date "2014-01-01T00:00:00Z"
+                                                                                                 :stop_date "2015-01-01T00:00:00Z"
                                                                                                  :mask "intersect"}}
                                                               :provider_id "PROV1"}))
-        acl3 (ingest-acl token (assoc (catalog-item-acl "Temporal disjoint")
+        acl4 (ingest-acl token (assoc (catalog-item-acl "Temporal disjoint")
                                       :catalog_item_identity {:name "Temporal disjoint"
                                                               :collection_applicable true
                                                               :granule_applicable true
-                                                              :collection_identifier {:temporal {:start_date "2010-01-02T00:00:00Z"
-                                                                                                 :stop_date "2011-01-01T00:00:00Z"
+                                                              :collection_identifier {:temporal {:start_date "1970-01-01T00:00:00Z"
+                                                                                                 :stop_date "2017-01-01T00:00:00Z"
                                                                                                  :mask "disjoint"}}
                                                               :provider_id "PROV1"}))
-        acl4 (ingest-acl token (assoc (catalog-item-acl "PROV1 coll1 entry title")
+        acl5 (ingest-acl token (assoc (catalog-item-acl "PROV1 coll1 entry title")
                                       :catalog_item_identity {:name "Entry title coll1 entry title"
                                                               :granule_applicable true
                                                               :collection_identifier {:entry_titles ["coll1 entry title"]}
                                                               :provider_id "PROV1"}))
 
-        acl5 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
+        acl6 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
                                       :catalog_item_identity {:name "Entry titles FOO"
                                                               :granule_applicable true
                                                               :collection_identifier {:entry_titles ["FOO"]}
                                                               :provider_id "PROV1"}))
 
-        acl6 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
+        acl7 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
                                       :catalog_item_identity {:name "Access value 1"
                                                               :collection_applicable true
                                                               :granule_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :provider_id "PROV1"}))
 
-        acl7 (ingest-acl token (assoc (catalog-item-acl "Access value 4")
+        acl8 (ingest-acl token (assoc (catalog-item-acl "Access value 4")
                                       :catalog_item_identity {:name "Access value 4"
                                                               :collection_applicable true
                                                               :granule_applicable true
                                                               :collection_identifier {:access_value {:min_value 4 :max_value 4}}
                                                               :provider_id "PROV1"}))
 
-        acl8 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
+        acl9 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
                                       :catalog_item_identity {:name "include undefined value"
                                                               :granule_applicable true
                                                               :collection_identifier {:access_value {:include_undefined_value true}}
-                                                              :provider_id "PROV1"}))
-        expected-acls [acl1 acl2 acl3 acl4 acl6]]
+                                                              :provider_id "PROV2"}))
+        expected-acls [acl1 acl2 acl5 acl7]]
    (u/wait-until-indexed)
    (testing "collection concept id search parent collection"
      (let [response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]
