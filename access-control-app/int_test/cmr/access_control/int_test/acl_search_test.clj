@@ -710,18 +710,18 @@
 
         gran1 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2010)
                                                                   :ending-date-time (t/date-time 2011)}}})
-        gran2 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+        gran2 (u/save-granule coll2 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
                                                                   :ending-date-time (t/date-time 2010)}}})
-        gran3 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
+        gran3 (u/save-granule coll3 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011)
                                                                   :ending-date-time (t/date-time 2012)}}})
-        gran4 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
+        gran4 (u/save-granule coll4 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2011 1 1 0 0 1)
                                                                   :ending-date-time (t/date-time 2012)}}})
-        gran5 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+        gran5 (u/save-granule coll5 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
                                                                   :ending-date-time (t/date-time 2009 12 31 12 59 59)}}})
-        gran6 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
+        gran6 (u/save-granule coll6 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)
                                                                   :ending-date-time (t/date-time 2012 1 1 0 0 1)}}})
-        gran7 (u/save-granule coll1 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
-        gran8 (u/save-granule coll1 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
+        gran7 (u/save-granule coll7 {:temporal {:range-date-time {:beginning-date-time (t/date-time 2009 12 31 12 59 59)}}})
+        gran8 (u/save-granule coll8 {:temporal {:single-date-time (t/date-time 2012 1 1 0 0 1)}})
 
         acl1 (ingest-acl token (assoc (u/catalog-item-acl "Access value 1-10")
                                       :catalog_item_identity {:name "Access value 1-10"
@@ -753,8 +753,8 @@
                                                                                                  :mask "intersect"}}
                                                               :granule_applicable true
                                                               :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
-                                                                                                 :stop_date "2011-01-01T00:00:00Z"
-                                                                                                 :mask "intersect"}}
+                                                                                              :stop_date "2011-01-01T00:00:00Z"
+                                                                                              :mask "intersect"}}
                                                               :provider_id "PROV1"}))
         acl6 (ingest-acl token (assoc (u/catalog-item-acl "Temporal disjoint")
                                       :catalog_item_identity {:name "Temporal disjoint"
@@ -764,11 +764,11 @@
                                                                                                  :mask "disjoint"}}
                                                               :granule_applicable true
                                                               :granule_identifier {:temporal {:start_date "2010-01-01T00:00:00Z"
-                                                                                                 :stop_date "2011-01-01T00:00:00Z"
-                                                                                                 :mask "disjoint"}}
+                                                                                              :stop_date "2011-01-01T00:00:00Z"
+                                                                                              :mask "disjoint"}}
                                                               :provider_id "PROV1"}))]
     (u/wait-until-indexed)
-    (testing "collection concept id search"
+    (testing "collection concept id search temporal"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
@@ -871,9 +871,9 @@
                                   :provider-id "PROV2"})
 
         gran1 (u/save-granule coll1 {:access-value 1})
-        gran2 (u/save-granule coll1 {:access-value 2})
-        gran3 (u/save-granule coll1 {:access-value 3})
-        gran4 (u/save-granule coll1 {:access-value nil})
+        gran2 (u/save-granule coll2 {:access-value 2})
+        gran3 (u/save-granule coll3 {:access-value 3})
+        gran4 (u/save-granule coll4 {:access-value nil})
         gran5 (u/save-granule coll6 {:access-value 2 :provider-id "PROV2"})
 
         ;; For testing that a full range encompassing multiple collections will
@@ -943,7 +943,7 @@
 
 
     (u/wait-until-indexed)
-    (testing "collection concept id search"
+    (testing "collection concept id search access value"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
@@ -1038,7 +1038,7 @@
 
 
     (u/wait-until-indexed)
-    (testing "collection concept id search"
+    (testing "collection concept id search entry title"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
           (is (= (acls->search-response (count acls) acls)
@@ -1058,6 +1058,162 @@
         "coll4 test"
         {:permitted-concept-id coll4}
         [acl4]))))
+
+(deftest acl-search-permitted-concept-id-through-parent-collection
+  ;; If an ACL is granule applicable, has a collection identifier
+  ;; but doesn't have a granule identifier, then all granules associated with a collection
+  ;; matching this ACL are also matched in the permitted-concept-id search
+  (let [token (e/login (u/conn-context) "user1")
+        coll1 (u/save-collection {:entry-title "coll1 entry title"
+                                  :short-name "coll1"
+                                  :native-id "coll1"
+                                  :provider-id "PROV1"
+                                  :access-value 1
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009)
+                                                   :EndingDateTime (t/date-time 2010)}})
+
+        ;; Needs to exist to create FOO entry title ACL
+        coll2 (u/save-collection {:entry-title "FOO"
+                                  :short-name "coll5"
+                                  :native-id "coll5"
+                                  :provider-id "PROV1"})
+
+        ;; Needs to exist to create PROV2 ACL with "coll1 entry title"
+        coll3 (u/save-collection {:entry-title "coll1 entry title"
+                                  :short-name "coll1-prov2"
+                                  :native-id "coll1-prov2"
+                                  :provider-id "PROV2"})
+
+        gran1 (u/save-granule coll1 {:access-value nil
+                                     :provider-id "PROV1"
+                                     :temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                                  :ending-date-time (t/date-time 2010)}}})
+
+        ;; Tests combination of granule and collection identifier for granule and its parent collection, should match
+        acl1 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier")
+                                      :catalog_item_identity {:name "Combined granule collection identifier"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "contains"}
+                                                                                   :access_value {:include_undefined_value true}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}
+                                                                                      :entry_titles ["coll1 entry title"]
+                                                                                      :access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        ;; Tests combination of granule and collection identifier for granule and its parent collection, shouldn't match
+        ;; granule temporal
+        acl2 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier2")
+                                      :catalog_item_identity {:name "Combined granule collection identifier2"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "disjoint"}
+                                                                                   :access_value {:include_undefined_value true}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}
+                                                                                      :entry_titles ["coll1 entry title"]
+                                                                                      :access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        ;; Tests combination of granule and collection identifier for granule and its parent collection, shouldn't match
+        ;; granule access value
+        acl3 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier3")
+                                      :catalog_item_identity {:name "Combined granule collection identifier3"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "contains"}
+                                                                                   :access_value {:min_value 1 :max_value 1}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}
+                                                                                      :entry_titles ["coll1 entry title"]
+                                                                                      :access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        ;; Tests combination of granule and collection identifier for granule and its parent collection, shouldn't match
+        ;; parent collection temporal
+        acl4 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier4")
+                                      :catalog_item_identity {:name "Combined granule collection identifier4"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "contains"}
+                                                                                   :access_value {:include_undefined_value true}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "disjoint"}
+                                                                                      :entry_titles ["coll1 entry title"]
+                                                                                      :access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        ;; Tests combination of granule and collection identifier for granule and its parent collection, shouldn't match
+        ;; parent collection access value
+        acl5 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier5")
+                                      :catalog_item_identity {:name "Combined granule collection identifier5"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "contains"}
+                                                                                   :access_value {:include_undefined_value true}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}
+                                                                                      :entry_titles ["coll1 entry title"]
+                                                                                      :access_value {:min_value 2 :max_value 2}}
+                                                              :provider_id "PROV1"}))
+
+        ;; Tests combination of granule and collection identifier for granule and its parent collection, shouldn't match
+        ;; parent collection entry-title
+        acl6 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier6")
+                                      :catalog_item_identity {:name "Combined granule collection identifier6"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "contains"}
+                                                                                   :access_value {:include_undefined_value true}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}
+                                                                                      :entry_titles ["FOO"]
+                                                                                      :access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV1"}))
+
+        ;; Tests combination of granule and collection identifier for granule and its parent collection, shouldn't match
+        ;; provider
+        acl7 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier7")
+                                      :catalog_item_identity {:name "Combined granule collection identifier7"
+                                                              :collection_applicable true
+                                                              :granule_applicable true
+                                                              :granule_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                              :stop_date "2010-01-01T00:00:00Z"
+                                                                                              :mask "contains"}
+                                                                                   :access_value {:include_undefined_value true}}
+                                                              :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                                                 :stop_date "2010-01-01T00:00:00Z"
+                                                                                                 :mask "contains"}
+                                                                                      :entry_titles ["coll1 entry title"]
+                                                                                      :access_value {:min_value 1 :max_value 1}}
+                                                              :provider_id "PROV2"}))
+
+
+        expected-acls [acl1]]
+   (u/wait-until-indexed)
+   (testing "collection concept id search parent collection"
+     (let [response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]
+       (is (= (acls->search-response (count expected-acls) expected-acls)
+              (dissoc response :took)))))))
 
 (deftest acl-search-with-legacy-group-guid-test
   (let [token (e/login (u/conn-context) "user1")

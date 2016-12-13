@@ -5,6 +5,7 @@
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
+    [cmr.transmit.metadata-db2 :as mdb2]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm.start-end-date :as umm-lib-time]
@@ -15,12 +16,12 @@
   [concept-type k]
   (keyword (str (name concept-type) "-" (name k))))
 
-(defn- create-generic-applicable-condition
-  "Constructs query condition for collection-applicable acls without a collection identifier"
-  [concept-type]
+(defn- create-generic-condition
+  "Constructs query condition for acls without an identifier"
+  []
   (gc/and
-    (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
-    (common-qm/boolean-condition (make-keyword concept-type :identifier) false)))
+    (common-qm/boolean-condition :granule-identifier false)
+    (common-qm/boolean-condition :collection-identifier false)))
 
 (defn- create-temporal-intersect-condition
   "Constructs query condition for intersect mask"
@@ -82,36 +83,77 @@
         stop-date (if (or (= :present stop-date) (nil? stop-date))
                     (t/now)
                     stop-date)]
-    (gc/and
-      (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
-      (gc/or
-         (create-temporal-contains-condition start-date stop-date concept-type)
-         (create-temporal-intersect-condition start-date stop-date concept-type)
-         (create-temporal-disjoint-condition start-date stop-date concept-type)))))
+    (gc/or
+       (create-temporal-contains-condition start-date stop-date concept-type)
+       (create-temporal-intersect-condition start-date stop-date concept-type)
+       (create-temporal-disjoint-condition start-date stop-date concept-type))))
 
 (defn- create-access-value-condition
   "Constructs query condition for searching permitted_concept_ids by access-value."
   [parsed-metadata concept-type]
-  (gc/and
-    ;; If there are no access values present in the concept then the include undefined
-    ;; value is used.
-    (if-let [access-value (or (:access-value parsed-metadata) (:Value (:AccessConstraints parsed-metadata)))]
-      (common-qm/numeric-range-intersection-condition
-        (make-keyword concept-type :access-value-min)
-        (make-keyword concept-type :access-value-max)
-        access-value
-        access-value)
-      (common-qm/boolean-condition (make-keyword concept-type :access-value-include-undefined-value) true))
-    (common-qm/boolean-condition (make-keyword concept-type :applicable) true)))
+  ;; If there are no access values present in the concept then the include undefined
+  ;; value is used.
+  (if-let [access-value (or (:access-value parsed-metadata) (:Value (:AccessConstraints parsed-metadata)))]
+    (common-qm/numeric-range-intersection-condition
+      (make-keyword concept-type :access-value-min)
+      (make-keyword concept-type :access-value-max)
+      access-value
+      access-value)
+    (common-qm/boolean-condition (make-keyword concept-type :access-value-include-undefined-value) true)))
 
 (defn- create-entry-title-condition
   "Constructs query condition for searching permitted_concept_ids by entry_titles"
   [parsed-metadata]
   (if-let [entry-title (:EntryTitle parsed-metadata)]
-    (gc/and
-      (common-qm/string-condition :entry-title entry-title true false)
-      (common-qm/boolean-condition :collection-applicable true))
+    (common-qm/string-condition :entry-title entry-title true false)
     common-qm/match-none))
+
+(defn- get-collection-conditions
+  "Constructs permitted_concept_id search conditions for given collection"
+  [collection-metadata]
+  (gc/or
+    (create-generic-condition)
+    (create-access-value-condition collection-metadata :collection)
+    (create-temporal-condition collection-metadata :collection)
+    (create-entry-title-condition collection-metadata)))
+
+(defn- get-granule-conditions
+  "Constructs permitted_concept-id search conditions
+   for given granule and parent collection"
+  [granule-metadata parent-collection-metadata]
+  (gc/or
+    (create-generic-condition)
+    ;; For granules, the conditions for the granule and the conditons for its parent collection
+    ;; must work in combination with each other.
+    (gc/and
+      ;; ACL either matches the granule temporal conditions or the temporal values are absent
+      (gc/or
+        (gc/and
+          (common-qm/negated-condition (common-qm/exist-condition :granule-temporal-range-start-date))
+          (common-qm/negated-condition (common-qm/exist-condition :granule-temporal-range-stop-date)))
+        (create-temporal-condition granule-metadata :granule))
+      ;; ACL either matches the granule access value conditions or the access values are absent
+      (gc/or
+        (gc/and
+          (common-qm/negated-condition (common-qm/exist-condition :granule-access-value-include-undefined-value))
+          (common-qm/negated-condition (common-qm/exist-condition :granule-access-value-min)))
+        (create-access-value-condition granule-metadata :granule))
+      ;; ACL either matches the granule's parent collection temporal conditions or the temporal values are absent
+      (gc/or
+        (gc/and
+          (common-qm/negated-condition (common-qm/exist-condition :collection-temporal-range-start-date))
+          (common-qm/negated-condition (common-qm/exist-condition :collection-temporal-range-stop-date)))
+        (create-temporal-condition parent-collection-metadata :collection))
+      ;; ACL either matches the granule's parent collection access value conditions or the access values are absent
+      (gc/or
+        (gc/and
+          (common-qm/negated-condition (common-qm/exist-condition :collection-access-value-include-undefined-value))
+          (common-qm/negated-condition (common-qm/exist-condition :collection-access-value-min)))
+        (create-access-value-condition parent-collection-metadata :collection))
+      ;; ACL matches the granule's parent collection entry titles or the entry title value is sabsent
+      (gc/or
+        (common-qm/negated-condition (common-qm/exist-condition :entry-title))
+        (create-entry-title-condition parent-collection-metadata)))))
 
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
@@ -119,11 +161,14 @@
   (let [concept-type (:concept-type concept)
         parsed-metadata (if (= concept-type :collection)
                           (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
-                          (umm-lib/parse-concept concept))]
+                          (umm-lib/parse-concept concept))
+        parent-collection (when (= concept-type :granule)
+                            (mdb2/get-latest-concept context (get-in concept [:extra-fields :parent-collection-id])))
+        parsed-parent-collection-metadata (when parent-collection
+                                            (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) parent-collection))]
     (gc/and
       (common-qm/string-condition :provider (:provider-id concept))
-      (gc/or
-        (create-generic-applicable-condition concept-type)
-        (create-access-value-condition parsed-metadata concept-type)
-        (create-temporal-condition parsed-metadata concept-type)
-        (create-entry-title-condition parsed-metadata)))))
+      (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
+      (if (= concept-type :collection)
+        (get-collection-conditions parsed-metadata)
+        (get-granule-conditions parsed-metadata parsed-parent-collection-metadata)))))
