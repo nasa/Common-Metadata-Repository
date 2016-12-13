@@ -5,6 +5,7 @@
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
+    [cmr.transmit.metadata-db2 :as mdb2]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm.start-end-date :as umm-lib-time]
@@ -14,6 +15,13 @@
   "Merges concept-type and keyword into one keyword."
   [concept-type k]
   (keyword (str (name concept-type) "-" (name k))))
+
+(defn- create-generic-applicable-condition
+  "Constructs query condition for collection-applicable acls without a collection identifier"
+  [concept-type]
+  (gc/and
+    (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
+    (common-qm/boolean-condition (make-keyword concept-type :identifier) false)))
 
 (defn- create-temporal-intersect-condition
   "Constructs query condition for intersect mask"
@@ -113,6 +121,7 @@
 (defmulti create-entry-tite-condition
   (fn [concept-type parsed-metadata]
    concept-type))
+    (common-qm/boolean-condition (make-keyword concept-type :access-value-include-undefined-value) true)))
 
 (defmethod create-entry-tite-condition :collection
  [_ parsed-metadata]
@@ -134,7 +143,11 @@
   (let [concept-type (:concept-type concept)
         parsed-metadata (if (= concept-type :collection)
                           (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
-                          (umm-lib/parse-concept concept))]
+                          (umm-lib/parse-concept concept))
+        parent-collection (when (= concept-type :granule)
+                            (mdb2/get-latest-concept context (get-in concept [:extra-fields :parent-collection-id])))
+        parsed-parent-collection-metadata (when parent-collection
+                                            (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) parent-collection))]
     (gc/and
      (common-qm/string-condition :provider (:provider-id concept))
      (common-qm/boolean-condition (make-keyword concept-type :applicable) true)

@@ -33,7 +33,6 @@
     (is (= {:status 400
             :body {:errors ["Parameter [foo] was not recognized."]}
             :content-type :json}
-           (ac/search-for-acls (u/conn-context) {:foo "bar"} {:raw? true})))))
 
 (defn- generate-query-map-for-group-permissions
   "Returns a query map generated from group permission pairs.
