@@ -750,13 +750,13 @@
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-provider-permissions (fn [user provider-id provider-object]
                                    (json/parse-string
-                                     (ac/get-permissions
-                                       (u/conn-context)
-                                       (merge {:target provider-object
-                                               :provider provider-id}
-                                              (if (keyword? user)
-                                                {:user_type (name user)}
-                                                {:user_id user})))))]
+                                    (ac/get-permissions
+                                     (u/conn-context)
+                                     (merge {:target provider-object
+                                             :provider provider-id}
+                                            (if (keyword? user)
+                                              {:user_type (name user)}
+                                              {:user_id user})))))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -801,15 +801,15 @@
 
       (testing "granted to specific groups"
         (update-acl acl-concept-id
-                    {:group_permissions [{:permissions [:read]
+                    {:group_permissions [{:permissions [:create :read :update :delete]
                                           :group_id created-group-concept-id}]
                      :provider_identity {:provider_id "PROV1"
-                                         :target "PROVIDER_HOLDINGS"}})
+                                         :target "PROVIDER_OBJECT_ACL"}})
 
         (are [user permissions]
-          (= {"PROVIDER_HOLDINGS" permissions}
-             (get-provider-permissions user "PROV1" "PROVIDER_HOLDINGS"))
+          (= {"PROVIDER_OBJECT_ACL" (set permissions)}
+             (update (get-provider-permissions user "PROV1" "PROVIDER_OBJECT_ACL") "PROVIDER_OBJECT_ACL" set))
           :guest []
           :registered []
-          "user1" ["read"]
+          "user1" ["create" "read" "update" "delete"]
           "user2" [])))))

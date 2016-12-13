@@ -188,6 +188,27 @@
     science-keywords
     su/not-provided-science-keywords))
 
+(defn- expected-temporal-extents
+  "ECHO10 only has 1 temporal extent so all of the data is in that, so on conversion to UMM we will
+  return one extent with either all range date times, all single date times, or all periodic
+  date times respectively. ECHO10 only allows for 1 date time type in a Temporal."
+  [temporal-extents]
+  (let [range-date-times (mapcat :RangeDateTimes temporal-extents)
+        single-date-times (mapcat :SingleDateTimes temporal-extents)
+        periodic-date-times (mapcat :PeriodicDateTimes temporal-extents)
+        temporal-extent {:TemporalRangeType (:TemporalRangeType (first temporal-extents))
+                         :PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
+                         :EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporal-extents))}]
+    (cond
+      (seq range-date-times)
+      [(cmn/map->TemporalExtentType (assoc temporal-extent :RangeDateTimes range-date-times))]
+
+      (seq single-date-times)
+      [(cmn/map->TemporalExtentType (assoc temporal-extent :SingleDateTimes single-date-times))]
+
+      (seq periodic-date-times)
+      [(cmn/map->TemporalExtentType (assoc temporal-extent :PeriodicDateTimes periodic-date-times))])))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -196,8 +217,8 @@
       ;; access urls first, resource urls second, browse urls last - which is
       ;; the order used when umm is converted to echo10.
       (assoc :RelatedUrls (expected-echo10-reorder-related-urls umm-coll))
-      (update-in [:TemporalExtents] (comp seq (partial take 1)))
-      (update-in [:DataDates] fixup-echo10-data-dates)
+      (update :TemporalExtents expected-temporal-extents)
+      (update :DataDates fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
       (assoc :UseConstraints nil)

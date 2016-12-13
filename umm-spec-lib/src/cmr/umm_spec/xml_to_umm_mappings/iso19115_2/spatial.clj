@@ -52,24 +52,10 @@
   [el]
   (empty? (select el "gmd:EX_GeographicDescription")))
 
-(defn- spatial-elems
-  "Returns the spatial elements from parsed ISO19115 document. ISO includes a redundant bounding box
-  geographicElement for each spatial type (point, polygon, etc.) in the spatial extent metadata.
-  We can discard the redundant bounding boxes. There are also existing ISO collections that only
-  uses one geographicElement without the duplicate bounding box. So here we apply a band aid
-  fix to assume all ISO collections without the duplicate bounding box geographicElement
-  only has one spatial area. This might change depending on the outcome of the discussion on this
-  matter as documented in CMR-3173."
-  [doc]
-  (let [geo-elems (filter shape-el? (select doc geographic-element-xpath))]
-    (if (= 1 (count geo-elems))
-      geo-elems
-      (map second (partition 2 geo-elems)))))
-
 (defn parse-geometry
   "Returns UMM GeometryType map from ISO XML document."
   [doc sanitize?]
-  (let [shape-elems    (spatial-elems doc)
+  (let [shape-elems    (filter shape-el? (select doc geographic-element-xpath))
         shapes         (keep gmd/decode shape-elems)
         shapes-by-type (group-by #(.getName (class %)) shapes)
         get-shapes     (fn [k]
