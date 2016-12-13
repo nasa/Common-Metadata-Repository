@@ -1081,7 +1081,8 @@
                                      :temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
                                                                   :ending-date-time (t/date-time 2010)}}})
 
-        acl1 (ingest-acl token (assoc (catalog-item-acl "Combined granule collection identifier")
+        ;; Tests combination of granule and collection identifier for granule and its parent collection
+        acl1 (ingest-acl token (assoc (u/catalog-item-acl "Combined granule collection identifier")
                                       :catalog_item_identity {:name "Combined granule collection identifier"
                                                               :collection_applicable true
                                                               :granule_applicable true
@@ -1095,8 +1096,8 @@
                                                                                       :entry_titles ["coll1 entry title"]
                                                                                       :access_value {:min_value 1 :max_value 1}}
                                                               :provider_id "PROV1"}))
-
-        acl2 (ingest-acl token (assoc (catalog-item-acl "Temporal contains")
+        ;; Tests parent collection against temporal contains
+        acl2 (ingest-acl token (assoc (u/catalog-item-acl "Temporal contains")
                                       :catalog_item_identity {:name "Temporal contains"
                                                               :collection_applicable true
                                                               :granule_applicable true
@@ -1104,14 +1105,16 @@
                                                                                                  :stop_date "2010-01-01T00:00:00Z"
                                                                                                  :mask "contains"}}
                                                               :provider_id "PROV1"}))
-        acl3 (ingest-acl token (assoc (catalog-item-acl "Temporal intersect")
+        ;; Tests parent collection against temporal intersect, should not match
+        acl3 (ingest-acl token (assoc (u/catalog-item-acl "Temporal intersect")
                                       :catalog_item_identity {:name "Temporal intersect"
                                                               :granule_applicable true
                                                               :collection_identifier {:temporal {:start_date "2014-01-01T00:00:00Z"
                                                                                                  :stop_date "2015-01-01T00:00:00Z"
                                                                                                  :mask "intersect"}}
                                                               :provider_id "PROV1"}))
-        acl4 (ingest-acl token (assoc (catalog-item-acl "Temporal disjoint")
+        ;; Tests parent collection against temporal disjoint, should not match
+        acl4 (ingest-acl token (assoc (u/catalog-item-acl "Temporal disjoint")
                                       :catalog_item_identity {:name "Temporal disjoint"
                                                               :collection_applicable true
                                                               :granule_applicable true
@@ -1119,37 +1122,38 @@
                                                                                                  :stop_date "2017-01-01T00:00:00Z"
                                                                                                  :mask "disjoint"}}
                                                               :provider_id "PROV1"}))
-        acl5 (ingest-acl token (assoc (catalog-item-acl "PROV1 coll1 entry title")
+        ;; Tests parent collection against entry title
+        acl5 (ingest-acl token (assoc (u/catalog-item-acl "PROV1 coll1 entry title")
                                       :catalog_item_identity {:name "Entry title coll1 entry title"
                                                               :granule_applicable true
                                                               :collection_identifier {:entry_titles ["coll1 entry title"]}
                                                               :provider_id "PROV1"}))
-
-        acl6 (ingest-acl token (assoc (catalog-item-acl "Entry titles FOO")
+        ;; Tests parent collection against disjoint, should not match
+        acl6 (ingest-acl token (assoc (u/catalog-item-acl "Entry titles FOO")
                                       :catalog_item_identity {:name "Entry titles FOO"
                                                               :granule_applicable true
                                                               :collection_identifier {:entry_titles ["FOO"]}
                                                               :provider_id "PROV1"}))
-
-        acl7 (ingest-acl token (assoc (catalog-item-acl "Access value 1")
+        ;; Tests parent collection against access value
+        acl7 (ingest-acl token (assoc (u/catalog-item-acl "Access value 1")
                                       :catalog_item_identity {:name "Access value 1"
                                                               :collection_applicable true
                                                               :granule_applicable true
                                                               :collection_identifier {:access_value {:min_value 1 :max_value 1}}
                                                               :provider_id "PROV1"}))
-
-        acl8 (ingest-acl token (assoc (catalog-item-acl "Access value 4")
+        ;; Tests parent collection against access value, should not match
+        acl8 (ingest-acl token (assoc (u/catalog-item-acl "Access value 4")
                                       :catalog_item_identity {:name "Access value 4"
                                                               :collection_applicable true
                                                               :granule_applicable true
                                                               :collection_identifier {:access_value {:min_value 4 :max_value 4}}
                                                               :provider_id "PROV1"}))
-
-        acl9 (ingest-acl token (assoc (catalog-item-acl "Access value undefined")
+        ;; Tests parent collection against access value, should not match
+        acl9 (ingest-acl token (assoc (u/catalog-item-acl "Access value undefined")
                                       :catalog_item_identity {:name "include undefined value"
                                                               :granule_applicable true
                                                               :collection_identifier {:access_value {:include_undefined_value true}}
-                                                              :provider_id "PROV2"}))
+                                                              :provider_id "PROV1"}))
         expected-acls [acl1 acl2 acl5 acl7]]
    (u/wait-until-indexed)
    (testing "collection concept id search parent collection"

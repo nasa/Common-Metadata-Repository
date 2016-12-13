@@ -123,27 +123,34 @@
   [granule-metadata parent-collection-metadata]
   (gc/or
     (create-generic-condition)
+    ;; For granules, the conditions for the granule and the conditons for its parent collection
+    ;; must work in combination with each other.
     (gc/and
+      ;; ACL either matches the granule temporal conditions or the temporal values are absent
       (gc/or
         (gc/and
           (common-qm/negated-condition (common-qm/exist-condition :granule-temporal-range-start-date))
           (common-qm/negated-condition (common-qm/exist-condition :granule-temporal-range-stop-date)))
         (create-temporal-condition granule-metadata :granule))
+      ;; ACL either matches the granule access value conditions or the access values are absent
       (gc/or
         (gc/and
           (common-qm/negated-condition (common-qm/exist-condition :granule-access-value-include-undefined-value))
           (common-qm/negated-condition (common-qm/exist-condition :granule-access-value-min)))
         (create-access-value-condition granule-metadata :granule))
+      ;; ACL either matches the granule's parent collection temporal conditions or the temporal values are absent
       (gc/or
         (gc/and
           (common-qm/negated-condition (common-qm/exist-condition :collection-temporal-range-start-date))
           (common-qm/negated-condition (common-qm/exist-condition :collection-temporal-range-stop-date)))
         (create-temporal-condition parent-collection-metadata :collection))
+      ;; ACL either matches the granule's parent collection access value conditions or the access values are absent
       (gc/or
         (gc/and
           (common-qm/negated-condition (common-qm/exist-condition :collection-access-value-include-undefined-value))
           (common-qm/negated-condition (common-qm/exist-condition :collection-access-value-min)))
         (create-access-value-condition parent-collection-metadata :collection))
+      ;; ACL matches the granule's parent collection entry titles or the entry title value is sabsent
       (gc/or
         (common-qm/negated-condition (common-qm/exist-condition :entry-title))
         (create-entry-title-condition parent-collection-metadata)))))
