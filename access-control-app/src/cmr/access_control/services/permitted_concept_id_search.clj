@@ -15,13 +15,6 @@
   [concept-type k]
   (keyword (str (name concept-type) "-" (name k))))
 
-(defn- create-generic-applicable-condition
-  "Constructs query condition for collection-applicable acls without a collection identifier"
-  [concept-type]
-  (gc/and
-    (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
-    (common-qm/boolean-condition (make-keyword concept-type :identifier) false)))
-
 (defn- create-temporal-intersect-condition
   "Constructs query condition for intersect mask"
   [start-date stop-date concept-type]
@@ -72,7 +65,7 @@
 
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
-  [parsed-metadata concept-type]
+  [concept-type parsed-metadata]
   (let [start-date (if (= concept-type :granule)
                      (umm-lib-time/start-date :granule (:temporal parsed-metadata))
                      (spec-time/collection-start-date parsed-metadata))
@@ -82,36 +75,58 @@
         stop-date (if (or (= :present stop-date) (nil? stop-date))
                     (t/now)
                     stop-date)]
-    (gc/and
-      (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
-      (gc/or
+    ;; Temporal condition finds ACLs when one of the temporal mask ranges match or
+    ;; there is no temporal specified at all.
+   (gc/or
          (create-temporal-contains-condition start-date stop-date concept-type)
          (create-temporal-intersect-condition start-date stop-date concept-type)
-         (create-temporal-disjoint-condition start-date stop-date concept-type)))))
+         (create-temporal-disjoint-condition start-date stop-date concept-type)
+         ;; no temporal specified
+         (common-qm/not-exist-condition (make-keyword concept-type :temporal-mask)))))
 
 (defn- create-access-value-condition
   "Constructs query condition for searching permitted_concept_ids by access-value."
-  [parsed-metadata concept-type]
-  (gc/and
-    ;; If there are no access values present in the concept then the include undefined
-    ;; value is used.
-    (if-let [access-value (or (:access-value parsed-metadata) (:Value (:AccessConstraints parsed-metadata)))]
-      (common-qm/numeric-range-intersection-condition
-        (make-keyword concept-type :access-value-min)
-        (make-keyword concept-type :access-value-max)
-        access-value
-        access-value)
-      (common-qm/boolean-condition (make-keyword concept-type :access-value-include-undefined-value) true))
-    (common-qm/boolean-condition (make-keyword concept-type :applicable) true)))
+  [concept-type parsed-metadata]
+  ;; Access value condition finds the ACL when:
+  ;; access value match through range if there is access value in the concept;
+  ;; or through matching undefined value if there is no access value in the concept;
+  ;; or there is no access value filters at all.
+  (gc/or
+   (if-let [access-value (or (:access-value parsed-metadata)
+                             (:Value (:AccessConstraints parsed-metadata)))]
+     (common-qm/numeric-range-intersection-condition
+      (make-keyword concept-type :access-value-min)
+      (make-keyword concept-type :access-value-max)
+      access-value
+      access-value)
+     ;; If there are no access values in the concept then it can match through include-undefined-value
+     (common-qm/boolean-condition
+      (make-keyword concept-type :access-value-include-undefined-value) true))
+   ;; there is no access value filters at all
+   (gc/and
+    (common-qm/not-exist-condition (make-keyword concept-type :access-value-min))
+    (common-qm/not-exist-condition (make-keyword concept-type :access-value-max))
+    (common-qm/not-exist-condition
+     (make-keyword concept-type :access-value-include-undefined-value)))))
 
-(defn- create-entry-title-condition
-  "Constructs query condition for searching permitted_concept_ids by entry_titles"
-  [parsed-metadata]
-  (if-let [entry-title (:EntryTitle parsed-metadata)]
-    (gc/and
+
+(defmulti create-entry-tite-condition
+  (fn [concept-type parsed-metadata]
+   concept-type))
+
+(defmethod create-entry-tite-condition :collection
+ [_ parsed-metadata]
+ ;; Entry title condition finds ACLs when entry title match
+ ;; or there is no entry title specified at all
+ (let [entry-title (:EntryTitle parsed-metadata)]
+    (gc/or
       (common-qm/string-condition :entry-title entry-title true false)
-      (common-qm/boolean-condition :collection-applicable true))
-    common-qm/match-none))
+      (common-qm/not-exist-condition :entry-title))))
+
+(defmethod create-entry-tite-condition :default
+ [_ parsed-metadata]
+  ;; there is no entry title condition for concept types other than collection, so we match all
+  common-qm/match-all)
 
 (defn get-permitted-concept-id-conditions
   "Returns query to search for ACLs that could permit given concept"
@@ -121,9 +136,12 @@
                           (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
                           (umm-lib/parse-concept concept))]
     (gc/and
-      (common-qm/string-condition :provider (:provider-id concept))
-      (gc/or
-        (create-generic-applicable-condition concept-type)
-        (create-access-value-condition parsed-metadata concept-type)
-        (create-temporal-condition parsed-metadata concept-type)
-        (create-entry-title-condition parsed-metadata)))))
+     (common-qm/string-condition :provider (:provider-id concept))
+     (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
+     ;; there is no collection/granule identifier or the collection identifier condition matches
+     (gc/or
+      (common-qm/boolean-condition (make-keyword concept-type :identifier) false)
+      (gc/and
+       (create-access-value-condition concept-type parsed-metadata)
+       (create-temporal-condition concept-type parsed-metadata)
+       (create-entry-tite-condition concept-type parsed-metadata))))))
