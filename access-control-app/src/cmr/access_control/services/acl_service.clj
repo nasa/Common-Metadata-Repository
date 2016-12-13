@@ -172,7 +172,7 @@
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."
-  #{:read :order :update :delete})
+  #{:create :read :order :update :delete})
 
 (defn- collect-permissions
   "Returns seq of any permissions where (grants-permission? acl permission) returns true for any acl in acls."

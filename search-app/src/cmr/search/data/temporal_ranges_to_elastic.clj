@@ -6,7 +6,7 @@
   [clj-time.core :as time]
   [clojure.java.io :as io]
   [cmr.common.util :as util]
-  [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor]))
+  [cmr.search.services.query-execution.temporal-conditions-results-feature :as temporal-conditions]))
 
 (def default-temporal-start-date-time
   "The default date-time to use for relevancy calculations when one is not specified in the
@@ -46,7 +46,7 @@
  "Create the script to sort by temporal overlap percent in descending order. Get the temporal ranges
   from the query, format them for elastic, and send them as params for the script."
  [query]
- (let [temporal-ranges (temporal-range-extractor/extract-temporal-ranges query)
+ (let [temporal-ranges (temporal-conditions/get-query-temporal-conditions query)
        temporal-ranges (map temporal-range->elastic-param temporal-ranges)]
    {:script script
     :type :number
