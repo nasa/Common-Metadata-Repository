@@ -282,7 +282,10 @@
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
                                 (when-not (str/blank? (:include-tags params))
-                                  [:tags]))
+                                  [:tags])
+                                ;; Always include temporal, the processor will see if any temporal conditions exist
+                                ;; Not specific to relevancy, but currently used for temporal relevancy
+                                [:temporal-conditions])
         keywords (when (:keyword params)
                    (str/split (str/lower-case (:keyword params)) #" "))
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)]
