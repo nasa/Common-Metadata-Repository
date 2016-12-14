@@ -195,13 +195,10 @@
         acl8 (ingest-acl token (u/catalog-item-acl "All Collections"))
         acl9 (ingest-acl token (u/catalog-item-acl "All Granules"))
 
-        acl10 (ingest-acl token (assoc (u/catalog-item-acl "Some More Collections")
-                                       :legacy_guid "acl10-legacy-guid"))
-
         system-acls [fixtures/*fixture-system-acl* acl1 acl2 acl3 acl4]
         provider-acls [fixtures/*fixture-provider-acl* acl5]
         single-instance-acls [acl6 acl7]
-        catalog-item-acls [acl8 acl9 acl10]
+        catalog-item-acls [acl8 acl9]
         all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls)]
     (u/wait-until-indexed)
 
@@ -217,7 +214,6 @@
                   (str "Group - " group2-concept-id)
                   "Provider - PROV1 - AUDIT_REPORT"
                   "Provider - PROV1 - CATALOG_ITEM_ACL"
-                  "Some More Collections"
                   "System - ANY_ACL"
                   "System - ARCHIVE_RECORD"
                   "System - METRIC_DATA_POINT_SAMPLE"
@@ -234,27 +230,33 @@
                (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4}) :took))))
       (testing "Page Number"
         (is (= (acls->search-response (count all-acls) all-acls {:page-size 4 :page-num 2})
-               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))
+               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))))
 
-    (testing "Find ACLs by ID"
-      (are3 [names params]
-        (is (= (set names)
-               (set
-                 (map :name
-                      (:items
-                        (ac/search-for-acls (u/conn-context) params))))))
+(deftest acl-search-by-any-id-test
+  (let [token (e/login (u/conn-context) "user1")
+        acl1 (ingest-acl token (u/catalog-item-acl "All Collections"))
+        acl2 (ingest-acl token (u/catalog-item-acl "All Granules"))
+        acl3 (ingest-acl token (assoc (u/catalog-item-acl "Some More Collections")
+                                      :legacy_guid "acl3-legacy-guid"))]
+    (u/wait-until-indexed)
+    (are3 [names params]
+      (is (= (set names)
+             (set
+               (map :name
+                    (:items
+                      (ac/search-for-acls (u/conn-context) params))))))
 
-        "by concept ID"
-        ["All Collections" "All Granules"] {:id [(:concept-id acl8) (:concept-id acl9)]}
+      "by concept ID"
+      ["All Collections" "All Granules"] {:id [(:concept-id acl1) (:concept-id acl2)]}
 
-        "by legacy guid"
-        ["Some More Collections"] {:id "acl10-legacy-guid"}
+      "by legacy guid"
+      ["Some More Collections"] {:id "acl3-legacy-guid"}
 
-        "by both"
-        ["All Collections" "All Granules" "Some More Collections"]
-        {:id [(:concept-id acl8)
-              (:concept-id acl9)
-              "acl10-legacy-guid"]}))))
+      "by both"
+      ["All Collections" "All Granules" "Some More Collections"]
+      {:id [(:concept-id acl1)
+            (:concept-id acl2)
+            "acl3-legacy-guid"]})))
 
 (deftest acl-search-permitted-group-test
   (let [token (e/login (u/conn-context) "user1")
