@@ -478,7 +478,8 @@ The following parameters are supported when searching for ACLs.
 * permitted_concept_id
   * Matches ACLs that grant permission to the collection through access value.
 * id
-  * Matches either concept ID or legacy GUID
+  * options: none (case-sensitive)
+  * Matches either ACL concept ID or ACL legacy GUID
 
 ##### ACL Search Response
 
