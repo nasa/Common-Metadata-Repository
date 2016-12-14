@@ -111,6 +111,7 @@
      (make-keyword concept-type :access-value-include-undefined-value)))))
 
 (defn- create-entry-tite-condition
+  "Returns the entry title query condition for the given parsed collection metadata"
   [parsed-metadata]
   ;; Entry title condition finds ACLs when entry title match
   ;; or there is no entry title specified at all
@@ -136,7 +137,7 @@
 (defmethod get-permitted-concept-id-conditions :collection
   [context concept]
   (let [parsed-metadata (umm-spec/parse-metadata
-                         (merge context {:ignore-kms-keywords true}) concept)]
+                         (assoc context :ignore-kms-keywords true) concept)]
     (gc/and
      (common-qm/string-condition :provider (:provider-id concept))
      (common-qm/boolean-condition :collection-applicable true)
@@ -151,7 +152,7 @@
         parent-collection (mdb2/get-latest-concept
                            context (get-in concept [:extra-fields :parent-collection-id]))
         parsed-collection-metadata (umm-spec/parse-metadata
-                                    (merge context {:ignore-kms-keywords true}) parent-collection)]
+                                    (assoc context :ignore-kms-keywords true) parent-collection)]
     (gc/and
      (common-qm/string-condition :provider (:provider-id concept))
      (common-qm/boolean-condition :granule-applicable true)

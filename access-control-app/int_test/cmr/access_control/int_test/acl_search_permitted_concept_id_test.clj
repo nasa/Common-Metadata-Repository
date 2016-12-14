@@ -628,7 +628,7 @@
                             :provider_id "PROV2"}))
         expected-acls [acl1 acl2 acl3 acl4 acl5 acl6]]
     (u/wait-until-indexed)
-    (testing "collection concept id search parent collection"
+    (testing "granule concept id search parent collection"
       (let [response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took)))))))
