@@ -153,7 +153,6 @@
                                                                                                 :stop_date "2011-01-01T00:00:00Z"
                                                                                                 :mask "disjoint"}}
                                                                 :provider_id "PROV1"}))]
-    (u/wait-until-indexed)
     (testing "collection concept id search temporal"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
@@ -341,7 +340,6 @@
                                                    :provider_id "PROV1"}))]
 
 
-    (u/wait-until-indexed)
     (testing "collection concept id search access value"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
@@ -436,7 +434,6 @@
         acl5 (u/ingest-acl token (u/catalog-item-acl "No collection identifier"))]
 
 
-    (u/wait-until-indexed)
     (testing "collection concept id search entry title"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
@@ -640,7 +637,6 @@
                             :collection_identifier {:entry_titles ["coll1 entry title"]}
                             :provider_id "PROV2"}))
         expected-acls [acl1 acl2 acl3 acl4 acl5 acl6]]
-    (u/wait-until-indexed)
     (testing "granule concept id search parent collection"
       (let [response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
@@ -704,7 +700,6 @@
                                                  :temporal {:start_date "2010-01-01T00:00:00Z"
                                                             :stop_date "2011-01-01T00:00:00Z"
                                                             :mask "contains"}})]
-    (u/wait-until-indexed)
     (testing "collection identifier multiple filters search"
       (let [expected-acls [acl1 acl2 acl3 acl4]
             response (ac/search-for-acls (u/conn-context) {:permitted-concept-id coll1})]

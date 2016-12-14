@@ -180,11 +180,10 @@
 
 (deftest acl-search-by-any-id-test
   (let [token (e/login (u/conn-context) "user1")
-        acl1 (ingest-acl token (u/catalog-item-acl "All Collections"))
-        acl2 (ingest-acl token (u/catalog-item-acl "All Granules"))
-        acl3 (ingest-acl token (assoc (u/catalog-item-acl "Some More Collections")
-                                      :legacy_guid "acl3-legacy-guid"))]
-    (u/wait-until-indexed)
+        acl1 (u/ingest-acl token (u/catalog-item-acl "All Collections"))
+        acl2 (u/ingest-acl token (u/catalog-item-acl "All Granules"))
+        acl3 (u/ingest-acl token (assoc (u/catalog-item-acl "Some More Collections")
+                                        :legacy_guid "acl3-legacy-guid"))]
     (are3 [names params]
       (is (= (set names)
              (set
