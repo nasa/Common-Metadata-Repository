@@ -231,6 +231,32 @@
         (is (= (acls->search-response (count all-acls) all-acls {:page-size 4 :page-num 2})
                (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))))
 
+(deftest acl-search-by-any-id-test
+  (let [token (e/login (u/conn-context) "user1")
+        acl1 (ingest-acl token (u/catalog-item-acl "All Collections"))
+        acl2 (ingest-acl token (u/catalog-item-acl "All Granules"))
+        acl3 (ingest-acl token (assoc (u/catalog-item-acl "Some More Collections")
+                                      :legacy_guid "acl3-legacy-guid"))]
+    (u/wait-until-indexed)
+    (are3 [names params]
+      (is (= (set names)
+             (set
+               (map :name
+                    (:items
+                      (ac/search-for-acls (u/conn-context) params))))))
+
+      "by concept ID"
+      ["All Collections" "All Granules"] {:id [(:concept-id acl1) (:concept-id acl2)]}
+
+      "by legacy guid"
+      ["Some More Collections"] {:id "acl3-legacy-guid"}
+
+      "by both"
+      ["All Collections" "All Granules" "Some More Collections"]
+      {:id [(:concept-id acl1)
+            (:concept-id acl2)
+            "acl3-legacy-guid"]})))
+
 (deftest acl-search-permitted-group-test
   (let [token (e/login (u/conn-context) "user1")
         acl1 (ingest-acl token (assoc (u/system-acl "SYSTEM_AUDIT_REPORT")
