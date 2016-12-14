@@ -137,8 +137,7 @@
 (defn assert-collection-opendata-results-match
   "Returns true if the opendata results are for the expected items"
   [collections actual-result]
-  (and
-   (empty? (opendata-json/validate-dataset (json/generate-string (:body actual-result))))
-   (is (= (opendata-results-map->opendata-results-map-using-sets
-           (collections->expected-opendata collections))
-         (opendata-results-map->opendata-results-map-using-sets actual-result)))))
+  (is (empty? (opendata-json/validate-dataset (json/generate-string (:body actual-result)))))
+  (is (= (opendata-results-map->opendata-results-map-using-sets
+          (collections->expected-opendata collections))
+         (opendata-results-map->opendata-results-map-using-sets actual-result))))
