@@ -341,15 +341,20 @@
                                       (str/lower-case legacy-guid))))))
 
 (defn index-acl
-  "Indexes ACL concept map."
-  [context concept-map]
-  (info "Indexing ACL concept:" (pr-str concept-map))
-  (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
-        {:keys [concept-id revision-id]} concept-map
-        elastic-store (esi/context->search-index context)]
-    (m/save-elastic-doc
-      elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
-      {:ignore-conflict? true})))
+  "Indexes ACL concept map. options is an optional map of options. Only :synchronous? is currently supported."
+  ([context concept-map]
+   (index-acl context concept-map {}))
+  ([context concept-map options]
+   (info "Indexing ACL concept:" (pr-str concept-map) "with options:" (pr-str options))
+   (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
+         {:keys [concept-id revision-id]} concept-map
+         elastic-store (esi/context->search-index context)]
+     (m/save-elastic-doc
+       elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
+       (merge
+         {:ignore-conflict? true}
+         (when (:synchronous? options)
+           {:refresh? true}))))))
 
 (defn unindex-acl
   "Removes ACL from index by concept ID."
@@ -357,7 +362,9 @@
   (m/delete-by-id (esi/context->search-index context)
                   acl-index-name
                   acl-type-name
-                  concept-id))
+                  concept-id
+                  ;; refresh by default because unindexing is rare, and this keeps things simpler
+                  {:refresh? true}))
 
 (defn-timed reindex-acls
   "Fetches and indexes all acls"

@@ -1,14 +1,15 @@
 (ns cmr.access-control.int-test.acl-search-test
   (:require
+    [clj-http.client :as client]
     [clj-time.core :as t]
     [clojure.test :refer :all]
     [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
     [cmr.access-control.test.util :as u]
     [cmr.common.util :as util :refer [are3]]
+    [cmr.elastic-utils.config :as elastic-config]
     [cmr.mock-echo.client.echo-util :as e]
-    [cmr.transmit.access-control :as ac]
-    [cmr.umm.umm-collection :as c]))
+    [cmr.transmit.access-control :as ac]))
 
 (use-fixtures :each
   (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2", "prov3guid" "PROV3",
@@ -69,7 +70,6 @@
                          (assoc-in (u/system-acl "ANY_ACL")
                                    [:group_permissions 0]
                                    {:permissions ["read" "create"] :group_id group1-concept-id}))
-        _ (u/wait-until-indexed)
 
         acl1 (u/ingest-acl token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
                                          [:group_permissions 0]
@@ -89,7 +89,7 @@
                                 :catalog_item_identity {:provider_id "PROV1"
                                                         :name "PROV1 All Collections ACL"
                                                         :collection_applicable true}})]
-    (u/wait-until-indexed)
+
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:provider "PROV1"})]
@@ -147,7 +147,6 @@
         single-instance-acls [acl6 acl7]
         catalog-item-acls [acl8 acl9]
         all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls)]
-    (u/wait-until-indexed)
 
     (testing "Find all ACLs"
       (let [response (ac/search-for-acls (u/conn-context) {:page_size 20})]
@@ -181,11 +180,10 @@
 
 (deftest acl-search-by-any-id-test
   (let [token (e/login (u/conn-context) "user1")
-        acl1 (ingest-acl token (u/catalog-item-acl "All Collections"))
-        acl2 (ingest-acl token (u/catalog-item-acl "All Granules"))
-        acl3 (ingest-acl token (assoc (u/catalog-item-acl "Some More Collections")
-                                      :legacy_guid "acl3-legacy-guid"))]
-    (u/wait-until-indexed)
+        acl1 (u/ingest-acl token (u/catalog-item-acl "All Collections"))
+        acl2 (u/ingest-acl token (u/catalog-item-acl "All Granules"))
+        acl3 (u/ingest-acl token (assoc (u/catalog-item-acl "Some More Collections")
+                                        :legacy_guid "acl3-legacy-guid"))]
     (are3 [names params]
       (is (= (set names)
              (set
@@ -240,7 +238,6 @@
         read-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl8]
         create-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl3 acl5 acl7 acl8]
         all-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
-    (u/wait-until-indexed)
 
     (testing "Search ACLs by permitted group"
       (are [permitted-groups acls]
@@ -380,7 +377,6 @@
         acl-single-instance (u/ingest-acl token (u/single-instance-acl group1-concept-id))
         acl-catalog-item (u/ingest-acl token (u/catalog-item-acl "All Collections"))
         all-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-single-instance acl-catalog-item]]
-    (u/wait-until-indexed)
 
     (testing "Search with invalid identity type returns error"
       (is (= {:status 400
@@ -441,8 +437,6 @@
 
         registered-acls [acl-registered-1 acl-registered-2 fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl*]]
 
-    (u/wait-until-indexed)
-
     (testing "Search with non-existent user returns error"
       (are3 [user]
         (is (= {:status 400
@@ -492,8 +486,6 @@
                                                    [:group_permissions 0] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV4"))
-        ;; required to create catalog item acls
-        _ (u/wait-until-indexed)
         acl4 (u/ingest-acl token (u/catalog-item-acl "Catalog_Item1_PROV1"))
         acl5 (u/ingest-acl token (u/catalog-item-acl "Catalog_Item2_PROV1"))
         acl6 (u/ingest-acl token (assoc-in (u/catalog-item-acl "Catalog_Item3_PROV2")
@@ -506,7 +498,7 @@
         prov1-acls [fixtures/*fixture-provider-acl* acl4 acl5]
         prov1-and-2-acls [fixtures/*fixture-provider-acl* acl1 acl4 acl5 acl6 acl7]
         prov3-acls [acl2]]
-    (u/wait-until-indexed)
+
     (testing "Search ACLs that grant permissions to objects owned by a single provider
               or by any provider where multiple are specified"
       (are3 [provider-ids acls]
@@ -571,8 +563,6 @@
                                                    [:group_permissions 1] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV2"))
-        ;; required to create catalog item acls
-        _ (u/wait-until-indexed)
         acl5 (u/ingest-acl token (assoc (u/catalog-item-acl "All Collection")
                                       :group_permissions
                                       [{:group_id (:concept_id group1) :permissions ["create"]}
@@ -584,7 +574,6 @@
                                                 :group_permissions
                                                 [{:group_id (:concept_id group2) :permissions ["create"]}])
                                          [:catalog_item_identity :provider_id] "PROV2"))]
-    (u/wait-until-indexed)
     (testing "Search with every criteria"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
@@ -666,7 +655,6 @@
                                                 [fixtures/*fixture-provider-acl*]
                                                 [expected-acl1-with-legacy-guid acl2
                                                  expected-acl3-with-legacy-guid acl4 acl5])]
-    (u/wait-until-indexed)
 
     (testing "Find acls without legacy group guid"
       (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20})]
@@ -709,13 +697,15 @@
          fixture-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl*]
          expected-acls-after-reindexing (concat fixture-acls [acl2 acl3])]
 
-     ;; Delete the acl so we can test with a tombstone.
-     (is (=  {:concept-id acl1-concept-id :revision-id 2}
-             (ac/delete-acl (u/conn-context) acl1-concept-id {:token token})))
-     (u/wait-until-indexed)
+     ;; Unindex acl1 directly through elastic to simulate an inconsistent state
+     (client/delete (format "http://%s:%s/acls/acl/%s"
+                            (elastic-config/elastic-host)
+                            (elastic-config/elastic-port)
+                            (:concept-id acl1))
+                    {:query-params {:refresh true}})
 
-     ;; Before reindexing, only the existing fixture acls are found
-     (is (= (u/acls->search-response 2 fixture-acls)
+     ;; Before reindexing, every ACL but acl1 is returned
+     (is (= (u/acls->search-response 4 (conj fixture-acls acl2 acl3))
             (search-for-all-acls))
          "Found user acls before re-indexing")
 

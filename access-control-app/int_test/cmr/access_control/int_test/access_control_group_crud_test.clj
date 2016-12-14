@@ -83,7 +83,6 @@
       (is (= 1 revision_id))
       (u/assert-group-saved group "user1" concept_id revision_id)
 
-      (u/wait-until-indexed)
       (testing "Creation with an already existing name"
         (testing "Is rejected for another system group"
           (is (= {:status 409
@@ -125,8 +124,6 @@
       (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
       (is (= 1 revision_id))
       (u/assert-group-saved group "user1" concept_id revision_id)
-
-      (u/wait-until-indexed)
 
       (testing "Creation with an already existing name"
         (testing "Is rejected for the same provider"
@@ -209,7 +206,6 @@
         token (e/login (u/conn-context) "user1")
         {:keys [concept_id revision_id]} (u/create-group token group1)
         group2-concept-id (:concept_id (u/create-group token group2))]
-    (u/wait-until-indexed)
     (testing "Delete without token"
       (is (= {:status 401
               :errors ["Valid user token required."]}
@@ -219,7 +215,6 @@
       (is (= 3 (:hits (u/search-for-groups token nil))))
       (is (= {:status 200 :concept_id concept_id :revision_id 2}
              (u/delete-group token concept_id)))
-      (u/wait-until-indexed)
       (u/assert-group-deleted group1 "user1" concept_id 2)
       (is (= [group2-concept-id]
              (map :concept_id (:items (u/search-for-groups token {:name "*other*"
@@ -245,7 +240,6 @@
   (let [token (e/login (u/conn-context) "user")
         ;; group 1 will be deleted
         group-1-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 1" :provider_id "PROV1"})))
-        _ (u/wait-until-indexed)
         acl-1-concept-id (:concept_id
                            (u/create-acl token {:group_permissions [{:user_type :registered
                                                                      :permissions ["update"]}]
@@ -253,13 +247,11 @@
                                                                            :target_id group-1-concept-id}}))
         ;; group 2 won't be deleted
         group-2-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 2" :provider_id "PROV1"})))
-        _ (u/wait-until-indexed)
         acl-2-concept-id (:concept_id
                            (u/create-acl token {:group_permissions [{:user_type :registered
                                                                      :permissions ["update"]}]
                                                 :single_instance_identity {:target "GROUP_MANAGEMENT"
                                                                            :target_id group-2-concept-id}}))]
-    (u/wait-until-indexed)
     (is (= [acl-1-concept-id acl-2-concept-id]
            (sort
              (map :concept_id
@@ -350,13 +342,10 @@
 
         token (e/login (u/conn-context) "user1")
         concept-id (:concept_id (u/create-group token group1))
-        _ (u/wait-until-indexed)
 
         response-no-legacy (u/update-group token concept-id no-legacy-group)
         response-same-legacy (u/update-group token concept-id same-legacy-group)
         response-diff-legacy (u/update-group token concept-id diff-legacy-group)]
-
-    (u/wait-until-indexed)
 
     (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group"
       (is (= {:status 200 :concept_id concept-id :revision_id 2}
