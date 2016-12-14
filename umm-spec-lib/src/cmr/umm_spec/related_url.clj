@@ -39,7 +39,7 @@
 (defn- documentation-url?
   "Returns true if the related-url is documentation url"
   [related-url]
-  (some DOCUMENTATION_MIME_TYPES (:Relation related-url)))
+  (contains? DOCUMENTATION_MIME_TYPES (:MimeType related-url)))
 
 (defn resource-url?
   "Returns true if the related-url is resource url"
