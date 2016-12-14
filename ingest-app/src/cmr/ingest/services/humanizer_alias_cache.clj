@@ -63,45 +63,55 @@
                      aliases-set (set (get field-alias-map (str/upper-case coll-field-name)))]
                 alias (set/difference aliases-set field-names-set)]
            (assoc coll-field field-name-key alias))]
-    field-aliases)) 
+    field-aliases))
 
-(defn update-collection-with-aliases
-  "Returns the collection with all the platform and tile aliases added.
-   Using platform aliases as an example:
-   Given plat-alias-map being {\"TERRA\" [\"AM-1\" \"am-1\"]}, 
-   which indicates AM-1 and am-1 are aliases of TERRA. That means that granules referring to 
+(defn update-collection-with-platform-aliases
+  "Returns the collection with humanizer platform aliases added.
+   Given plat-alias-map being {\"TERRA\" [\"AM-1\" \"am-1\"]},
+   which indicates AM-1 and am-1 are aliases of TERRA. That means that granules referring to
    a collection through AM-1 or am-1 would be permitted if the collection had TERRA.
-   Here is one example:  
+   Here is one example:
    Original collection platforms: [{:ShortName \"Terra\" :Otherfields \"other-terra-values\"}
                                    {:ShortName \"AM-1\" :Otherfields \"other-am-1-values\"}]
    updated collection platforms: [{:ShortName \"Terra\" :Otherfields \"other-terra-values\"}
                                   {:ShortName \"AM-1\" :Otherfields \"other-am-1-values\"}
                                   {:ShortName \"am-1\" :Otherfields \"other-terra-values\"}]
-   Note: If the ShortName of a platform alias already exists in the original collection platforms 
-   We will keep the original one and not add the alias to the updated collection platforms. 
+   Note: If the ShortName of a platform alias already exists in the original collection platforms
+   We will keep the original one and not add the alias to the updated collection platforms.
    In the above example, alias {:ShortName \"AM-1\" :Otherfields \"other-terra-values\"} is not added.
-   This is a conscious decision, not a bug." 
-  [context collection umm-spec-collection?]
+   This is a conscious decision, not a bug."
+  [collection umm-spec-collection? humanizer-alias-map]
   (let [plat-key (if umm-spec-collection?
                    :Platforms
                    :platforms)
         plat-name-key (if umm-spec-collection?
                         :ShortName
                         :short-name)
-        tile-key (if umm-spec-collection?
+        platforms (get collection plat-key)
+        plat-alias-map (get humanizer-alias-map "platform")
+        platform-aliases (get-field-aliases platforms plat-name-key plat-alias-map)]
+    (-> collection
+        (update plat-key concat platform-aliases))))
+
+(defn update-collection-with-tile-aliases
+  "Returns the collection with humanizer tile aliases added"
+  [collection umm-spec-collection? humanizer-alias-map]
+  (let [tile-key (if umm-spec-collection?
                    :TilingIdentificationSystems
                    :two-d-coordinate-systems)
         tile-name-key (if umm-spec-collection?
                         :TilingIdentificationSystemName
                         :name)
-        alias-map (get-humanizer-alias-map context) 
-        platforms (get collection plat-key)
-        plat-alias-map (get alias-map "platform")
-        platform-aliases (get-field-aliases platforms plat-name-key plat-alias-map)
         tiles (get collection tile-key)
-        tile-alias-map (get alias-map "tiling_system_name")
-        tile-aliases (get-field-aliases tiles tile-name-key tile-alias-map)
-        updated-collection (-> collection
-                               (update plat-key concat platform-aliases)
-                               (update tile-key concat tile-aliases))]
-    updated-collection))
+        tile-alias-map (get humanizer-alias-map "tiling_system_name")
+        tile-aliases (get-field-aliases tiles tile-name-key tile-alias-map)]
+    (-> collection      
+        (update tile-key concat tile-aliases))))  
+
+(defn update-collection-with-aliases
+  "Returns the collection with humanizer platform and tile aliases added."
+  [context collection umm-spec-collection?]
+  (let [humanizer-alias-map (get-humanizer-alias-map context)]
+    (-> collection
+        (update-collection-with-platform-aliases umm-spec-collection? humanizer-alias-map) 
+        (update-collection-with-tile-aliases umm-spec-collection? humanizer-alias-map)))) 
