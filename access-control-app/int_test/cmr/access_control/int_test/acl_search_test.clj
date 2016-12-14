@@ -1,11 +1,13 @@
 (ns cmr.access-control.int-test.acl-search-test
   (:require
+    [clj-http.client :as client]
     [clj-time.core :as t]
     [clojure.test :refer :all]
     [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
     [cmr.access-control.test.util :as u]
     [cmr.common.util :as util :refer [are3]]
+    [cmr.elastic-utils.config :as elastic-config]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.transmit.access-control :as ac]))
 
@@ -1286,10 +1288,12 @@
          fixture-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl*]
          expected-acls-after-reindexing (concat fixture-acls [acl2 acl3])]
 
-     ;; Unindex acl1
-     ;; TODO double check about this method of getting a system with elastic indexes
-     (access-control-index/unindex-acl {:system @cmr.access-control.system/system-holder}
-                        (:concept-id acl1))
+     ;; Unindex acl1 directly through elastic to simulate an inconsistent state
+     (client/delete (format "http://%s:%s/acls/acl/%s"
+                            (elastic-config/elastic-host)
+                            (elastic-config/elastic-port)
+                            (:concept-id acl1))
+                    {:query-params {:refresh true}})
 
      ;; Before reindexing, every ACL but acl1 is returned
      (is (= (acls->search-response 4 (conj fixture-acls acl2 acl3))

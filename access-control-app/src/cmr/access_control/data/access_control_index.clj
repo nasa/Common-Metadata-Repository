@@ -363,6 +363,7 @@
                   acl-index-name
                   acl-type-name
                   concept-id
+                  ;; refresh by default because unindexing is rare, and this keeps things simpler
                   {:refresh? true}))
 
 (defn-timed reindex-acls
