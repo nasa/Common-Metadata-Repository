@@ -270,15 +270,14 @@
         token2 (e/login (u/conn-context) "user2")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        _ (ac/update-acl (u/conn-context)
-                         (:concept-id fixtures/*fixture-system-acl*)
-                         {:system_identity {:target "ANY_ACL"}
-                          :group_permissions [{:user_type "guest" :permissions ["read"]}]})
         _ (ac/create-acl (u/conn-context) {:group_permissions [{:group_id group1-concept-id
                                                                 :permissions ["create"]}]
                                            :provider_identity {:provider_id "PROV2"
                                                                :target "CATALOG_ITEM_ACL"}})
-        _ (u/wait-until-indexed)
+        _ (ac/update-acl (u/conn-context)
+                         (:concept-id fixtures/*fixture-system-acl*)
+                         {:system_identity {:target "ANY_ACL"}
+                          :group_permissions [{:user_type "guest" :permissions ["read"]}]})
         resp1 (ac/create-acl (merge {:token token} (u/conn-context)) (assoc-in catalog-item-acl
                                                                                [:catalog_item_identity :provider_id] "PROV2"))]
 
