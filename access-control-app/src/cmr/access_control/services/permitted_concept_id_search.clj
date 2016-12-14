@@ -50,7 +50,7 @@
    (common-qm/string-condition (make-keyword concept-type :temporal-mask) "disjoint" true false)
    (gc/or
     ;; The ACL start date is greater than the collection's stop date or
-    ;; THE ACL stop date is less than the collection's start date
+    ;; The ACL stop date is less than the collection's start date
     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) stop-date nil true)
     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) nil start-date true))))
 
@@ -161,6 +161,9 @@
      (gc/or
       (common-qm/boolean-condition :granule-identifier false)
       (gc/and
+       ;; granule identifier access value condition, i.e. access value either match or not exist
        (create-access-value-condition :granule parsed-metadata)
+       ;; granule identifier temporal condition, i.e. temporal either match or not exist
        (create-temporal-condition :granule parsed-metadata)
+       ;; collection identifier condition that matches on collection identifiers in the ACL
        (collection-identifier-match-condition parsed-collection-metadata))))))
