@@ -156,14 +156,13 @@
     (gc/and
      (common-qm/string-condition :provider (:provider-id concept))
      (common-qm/boolean-condition :granule-applicable true)
-     ;; there is no granule identifier or both the granule identifier conditions
-     ;; and the collection identifier conditions match
+     ;; collection identifier condition that matches on collection identifiers in the ACL
+     (collection-identifier-match-condition parsed-collection-metadata)
+     ;; there is no granule identifier or the granule identifier conditions match
      (gc/or
       (common-qm/boolean-condition :granule-identifier false)
       (gc/and
        ;; granule identifier access value condition, i.e. access value either match or not exist
        (create-access-value-condition :granule parsed-metadata)
        ;; granule identifier temporal condition, i.e. temporal either match or not exist
-       (create-temporal-condition :granule parsed-metadata)
-       ;; collection identifier condition that matches on collection identifiers in the ACL
-       (collection-identifier-match-condition parsed-collection-metadata))))))
+       (create-temporal-condition :granule parsed-metadata))))))
