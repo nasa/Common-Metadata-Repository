@@ -112,6 +112,13 @@
         "replacement_value": "NSIDC",
         "order": 0
       },
+      {
+        "type": "alias",
+        "field": "tiling_system_name",
+        "source_value": "SOURCE_TILE",
+        "replacement_value": "REPLACEMENT_TILE",
+        "order": 0
+      },
 
       {"type": "capitalize", "field": "platform", "source_value": "TERRA", "order": 0},
       {"type": "capitalize", "field": "platform", "source_value": "AQUA", "order": 0},
