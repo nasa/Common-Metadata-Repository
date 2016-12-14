@@ -267,18 +267,18 @@
   "Returns map for identifier and applicable booleans"
   [acl]
   (merge
-    (if (get-in acl [:catalog-item-identity :collection-identifier])
-      {:collection-identifier true}
-      {:collection-identifier false})
-    (if (get-in acl [:catalog-item-identity :collection-applicable])
-      {:collection-applicable true}
-      {:collection-applicable false})
-    (if (get-in acl [:catalog-item-identity :granule-identifier])
-      {:granule-identifier true}
-      {:granule-identifier false})
-    (if (get-in acl [:catalog-item-identity :granule-applicable])
-      {:granule-applicable true}
-      {:granule-applicable false})))
+   (if (seq (get-in acl [:catalog-item-identity :collection-identifier]))
+     {:collection-identifier true}
+     {:collection-identifier false})
+   (if (get-in acl [:catalog-item-identity :collection-applicable])
+     {:collection-applicable true}
+     {:collection-applicable false})
+   (if (seq (get-in acl [:catalog-item-identity :granule-identifier]))
+     {:granule-identifier true}
+     {:granule-identifier false})
+   (if (get-in acl [:catalog-item-identity :granule-applicable])
+     {:granule-applicable true}
+     {:granule-applicable false})))
 
 (defn- access-value-elastic-doc-map
   "Returns map for access value to be merged into full elasic doc"
