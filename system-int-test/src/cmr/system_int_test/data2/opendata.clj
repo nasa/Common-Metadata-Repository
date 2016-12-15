@@ -117,7 +117,8 @@
                             :landingPage (odrh/landing-page concept-id)
                             :language [odrh/LANGUAGE_CODE]
                             :references (not-empty (map :url related-urls))
-                            :issued (when insert-time (str insert-time))})))
+                            :issued (when insert-time (str insert-time))}
+                           odrh/VALUE_NOT_PROVIDED)))
 
 (defn collections->expected-opendata
   [collections]
