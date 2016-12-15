@@ -8,13 +8,15 @@
 
 (deftest parse-json-query-test
   (testing "Empty JSON is valid"
-    (is (= (q/query {:concept-type :collection})
+    (is (= (q/query {:concept-type :collection
+                     :result-features [:temporal-conditions]})
            (jp/parse-json-query :collection {} "{}"))))
 
   (testing "Combination of query and JSON parameters"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "ET")
-                     :page-size 15})
+                     :page-size 15
+                     :result-features [:temporal-conditions]})
            (jp/parse-json-query :collection {:page-size 15, :include-facets true}
                                 (json/generate-string {:condition {:entry_title "ET"}})))))
   (testing "Multiple nested JSON parameter conditions"
@@ -25,7 +27,8 @@
                                    (gc/and-conds [(q/string-condition :provider "soap")
                                                   (q/string-condition :entry-title "ET")
                                                   (q/negated-condition
-                                                    (q/string-condition :provider "alpha"))])])})
+                                                    (q/string-condition :provider "alpha"))])])
+                     :result-features [:temporal-conditions]})
            (jp/parse-json-query
              :collection
              {}
@@ -37,7 +40,8 @@
   (testing "Implicit ANDing of conditions"
     (is (= (q/query {:concept-type :collection
                      :condition (gc/and-conds [(q/string-condition :entry-title "foo")
-                                               (q/string-condition :provider "bar")])})
+                                               (q/string-condition :provider "bar")])
+                     :result-features [:temporal-conditions]})
            (jp/parse-json-query :collection {} (json/generate-string {:condition {:entry_title "foo"
                                                                                   :provider "bar"}}))))))
 

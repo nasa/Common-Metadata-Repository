@@ -160,5 +160,4 @@
           provider-acl (grant-provider-acl-permissions-to-all)]
       (binding [*fixture-system-acl* system-acl
                 *fixture-provider-acl* provider-acl]
-        (test-util/wait-until-indexed)
         (f)))))

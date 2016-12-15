@@ -430,9 +430,7 @@
   [umm-coll _]
   (let [original-brs (get-in umm-coll conversion-util/bounding-rectangles-path)
         umm-coll (umm->expected-convert umm-coll :iso19115)
-        umm-coll (if (seq original-brs)
-                   (assoc-in umm-coll conversion-util/bounding-rectangles-path original-brs)
-                   umm-coll)]
+        umm-coll (assoc-in umm-coll conversion-util/bounding-rectangles-path original-brs)]
    (iso-smap/umm-expected-conversion-iso-smap umm-coll original-brs)))
 
 ;;; Unimplemented Fields
