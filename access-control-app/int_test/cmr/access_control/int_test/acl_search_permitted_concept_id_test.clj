@@ -642,7 +642,7 @@
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took)))))))
 
-(deftest acl-search-permitted-concept-id-through-multiple-filters
+(deftest acl-search-permitted-concept-id-through-multiple-collection-identifier-filters
   (let [token (e/login (u/conn-context) "user1")
         coll1 (u/save-collection {:entry-title "EI1"
                                   :short-name "coll1"
@@ -703,5 +703,57 @@
     (testing "collection identifier multiple filters search"
       (let [expected-acls [acl1 acl2 acl3 acl4]
             response (ac/search-for-acls (u/conn-context) {:permitted-concept-id coll1})]
+        (is (= (u/acls->search-response (count expected-acls) expected-acls)
+               (dissoc response :took)))))))
+
+(deftest acl-search-permitted-concept-id-through-multiple-granule-identifier-filters
+  (let [token (e/login (u/conn-context) "user1")
+        coll1 (u/save-collection {:entry-title "EI1"
+                                  :short-name "coll1"
+                                  :native-id "coll1"
+                                  :provider-id "PROV1"
+                                  :access-value 1
+                                  :temporal-range {:BeginningDateTime (t/date-time 2009)
+                                                   :EndingDateTime (t/date-time 2011)}})
+        gran1 (u/save-granule
+               coll1 {:access-value 1
+                      :provider-id "PROV1"
+                      :temporal {:range-date-time {:beginning-date-time (t/date-time 2009)
+                                                   :ending-date-time (t/date-time 2010)}}})
+
+        ingest-granule-identifier-acl (fn [name granule-identifier]
+                                        (u/ingest-acl
+                                         token (assoc (u/catalog-item-acl name)
+                                                      :catalog_item_identity
+                                                      {:name name
+                                                       :collection_applicable false
+                                                       :collection_identifier {}
+                                                       :granule_applicable true
+                                                       :granule_identifier granule-identifier
+                                                       :provider_id "PROV1"})))
+        ;; ACL matches gran1 on all filters
+        acl1 (ingest-granule-identifier-acl "ACL1" {:access_value {:min_value 1 :max_value 3}
+                                                    :temporal {:start_date "2009-01-01T00:00:00Z"
+                                                               :stop_date "2010-01-01T00:00:00Z"
+                                                               :mask "contains"}})
+        ;; ACL matches gran1 on acccess value, no temporal filter
+        acl2 (ingest-granule-identifier-acl "ACL2" {:access_value {:min_value 1 :max_value 3}})
+        ;; ACL matches gran1 on temporal, no access value filter
+        acl3 (ingest-granule-identifier-acl "ACL3" {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                               :stop_date "2010-01-01T00:00:00Z"
+                                                               :mask "contains"}})
+        ;; ACL matches gran1 on access value, but not temporal filter
+        acl4 (ingest-granule-identifier-acl "ACL4" {:access_value {:min_value 1 :max_value 3}
+                                                    :temporal {:start_date "2011-01-01T00:00:00Z"
+                                                               :stop_date "2012-01-01T00:00:00Z"
+                                                               :mask "contains"}})
+        ;; ACL matches gran1 on temporal, but not access value filter
+        acl5 (ingest-granule-identifier-acl "ACL5" {:access_value {:min_value 2 :max_value 3}
+                                                    :temporal {:start_date "2009-01-01T00:00:00Z"
+                                                               :stop_date "2010-01-01T00:00:00Z"
+                                                               :mask "contains"}})]
+    (testing "granule identifier multiple filters search"
+      (let [expected-acls [acl1 acl2 acl3]
+            response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
                (dissoc response :took)))))))
