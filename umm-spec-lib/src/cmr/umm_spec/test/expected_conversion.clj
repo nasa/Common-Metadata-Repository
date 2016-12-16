@@ -106,6 +106,7 @@
     :VersionDescription "Best version ever"
     :DataLanguage "eng"
     :CollectionDataType "SCIENCE_QUALITY"
+    :CollectionProgress "COMPLETE"
     :Projects [{:ShortName "project short_name"}]
     :Quality "Pretty good quality"
     :PublicationReferences [{:PublicationDate (t/date-time 2015)

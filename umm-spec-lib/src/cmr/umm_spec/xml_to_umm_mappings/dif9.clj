@@ -101,7 +101,7 @@
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})
      :DirectoryNames (dif-util/parse-idn-node doc)
-     :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
+     :CollectionProgress (su/with-default (value-of doc "/DIF/Data_Set_Progress") sanitize?)
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
                             {:Category (value-of lk "Location_Category")
