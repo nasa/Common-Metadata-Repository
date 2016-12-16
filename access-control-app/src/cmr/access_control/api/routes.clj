@@ -104,15 +104,16 @@
 
 (defn system_object-concept_id-provider-target-validation
   "Validates presence and combinations of system_object, concept_id, provider, and target parameters."
-  [{:keys [system_object concept_id provider target]}]
+  [{:keys [system_object concept_id provider target target_group_id]}]
   (let [present? #(if (string? %)
                    (not (str/blank? %))
                    (seq %))]
     (when-not (util/xor (present? system_object)
                         (present? concept_id)
+                        (present? target_group_id)
                         (and (present? provider)
                              (present? target)))
-      ["One of [concept_id], [system_object], or [provider] and [target] are required."])))
+      ["One of [concept_id], [system_object], [target_group_id], or [provider] and [target] are required."])))
 
 (defn system_object-validation
   "Validates that system_object parameter has a valid value, if present."
@@ -120,6 +121,18 @@
   (when system_object
     (when-not (some #{system_object} acl-schema/system-object-targets)
       [(str "Parameter [system_object] must be one of: " (pr-str acl-schema/system-object-targets))])))
+
+(defn target-group-id-validation
+  "Validates the given target group id is a valid group concept id
+   and returns errors if it's invalid. Returns nil if valid."
+  [group-id]
+  (when-not (re-matches #"(AG|ag|Ag|aG)\d+-[A-Za-z0-9_]+" group-id)
+    [(format "Target group id [%s] is not valid." group-id)]))
+
+(defn target-group-ids-validation
+  "Validates that all values in the multi-valued target_group_id param are valid group concept ids"
+  [{:keys [target_group_id]}]
+  (mapcat target-group-id-validation target_group_id))
 
 (defn concept_ids-validation
   "Validates that all values in the multi-valued concept_id param are valid concept IDs"
@@ -143,12 +156,14 @@
    provider-target-validation
    user_id-user_type-validation
    system_object-validation
+   target-group-ids-validation
    concept_ids-validation])
 
 (defn- validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
-  (validate-params params :system_object :concept_id :user_id :user_type :provider :target)
+  (validate-params
+   params :system_object :concept_id :user_id :user_type :provider :target :target_group_id)
   (when-let [errors (seq (mapcat #(% params) get-permissions-validations))]
     (errors/throw-service-errors :bad-request errors)))
 
@@ -266,16 +281,23 @@
 (defn get-permissions
   "Returns a Ring response with the requested permission check results."
   [request-context params]
-  (let [params (update-in params [:concept_id] util/seqify)]
+  (let [params (-> params
+                   (update-in [:concept_id] util/seqify)
+                   (update-in [:target_group_id] util/seqify))]
     (validate-get-permission-params params)
-    (let [{:keys [user_id user_type concept_id system_object provider target]} params
+    (let [{:keys [user_id user_type concept_id system_object provider target target_group_id]} params
           username-or-type (if user_type
                              (keyword user_type)
                              user_id)
           result (cond
-                   system_object (acl-service/get-system-permissions request-context username-or-type system_object)
-                   target (acl-service/get-provider-permissions request-context username-or-type provider target)
-                   :else (acl-service/get-catalog-item-permissions request-context username-or-type concept_id))]
+                   system_object (acl-service/get-system-permissions
+                                  request-context username-or-type system_object)
+                   target (acl-service/get-provider-permissions
+                           request-context username-or-type provider target)
+                   target_group_id (acl-service/get-group-permissions
+                           request-context username-or-type target_group_id)
+                   :else (acl-service/get-catalog-item-permissions
+                          request-context username-or-type concept_id))]
       {:status 200
        :body (json/generate-string result)})))
 

@@ -326,3 +326,22 @@
   (let [sids (auth-util/get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
+
+(defn- group-permissions-granted-by-acls
+  "Returns all permissions granted to a single instance identity target group id for the given sids and acls."
+  [group-id sids acls]
+  (collect-permissions (fn [acl permission]
+                         (and (= group-id (get-in acl [:single-instance-identity :target-id]))
+                              (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
+                       acls))
+
+(defn get-group-permissions
+  "Returns a map of the target group concept ids to the set of permissions
+   granted to the given username or user type."
+  [context username-or-type target-group-ids]
+  (let [sids (auth-util/get-sids context username-or-type)
+        acls (get-echo-style-acls context)]
+    (into {}
+          (for [group-id target-group-ids]
+            [group-id
+             (group-permissions-granted-by-acls group-id sids acls)]))))
