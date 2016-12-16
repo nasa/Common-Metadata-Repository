@@ -412,6 +412,20 @@
         "Identity type searches are always case-insensitive"
         ["PrOvIdEr"] [fixtures/*fixture-provider-acl*]))))
 
+(deftest acl-search-by-target-test
+  (let [token (e/login (u/conn-context) "user1")]
+
+    (are3 [target expected-acls]
+      (let [response (ac/search-for-acls (u/conn-context) {:target target})]
+        (is (= (u/acls->search-response (count expected-acls) expected-acls)
+               (dissoc response :took))))
+
+      "System target"
+      ["ANY_ACL"] [fixtures/*fixture-system-acl*]
+
+      "Provider target"
+      ["CATALOG_ITEM_ACL"] [fixtures/*fixture-provider-acl*])))
+
 (deftest acl-search-by-permitted-user-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token {:name "group1"} ["user1"])

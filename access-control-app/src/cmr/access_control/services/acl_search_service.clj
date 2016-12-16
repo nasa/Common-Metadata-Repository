@@ -28,14 +28,14 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:include-full-acl :legacy-guid :include-legacy-group-guid}
-     :multiple-value #{:permitted-group :identity-type :provider :id}
+     :multiple-value #{:permitted-group :identity-type :provider :id :target}
      :always-case-sensitive #{}
-     :disallow-pattern #{:identity-type :permitted-user :group-permission :legacy-guid}
+     :disallow-pattern #{:identity-type :permitted-user :group-permission :legacy-guid :target}
      :allow-or #{}}))
 
 (defmethod cpv/valid-query-level-params :acl
   [_]
-  #{:include-full-acl :legacy-guid :include-legacy-group-guid :id})
+  #{:include-full-acl :legacy-guid :include-legacy-group-guid :id :target})
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
@@ -43,6 +43,7 @@
    :permitted-group cpv/string-param-options
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
+   :target cpv/string-param-options
    :legacy-guid cpv/string-param-options
    :id #{}
    :permitted-user #{}
@@ -176,6 +177,7 @@
   {:permitted-concept-id :permitted-concept-id
    :permitted-group :string
    :identity-type :acl-identity-type
+   :target ::target
    :provider :string
    :permitted-user :acl-permitted-user
    :group-permission :acl-group-permission
@@ -205,6 +207,10 @@
                    (map #(cp/parameter->condition context concept-type param % options) value))
    (let [value (get acl-identity-type->search-value (str/lower-case value))]
      (cp/string-parameter->condition concept-type param value options))))
+
+(defmethod cp/parameter->condition ::target
+  [context concept-type param value options]
+  (cp/string-parameter->condition concept-type :target value options))
 
 (defmethod cp/parameter->condition :acl-permitted-user
   [context concept-type param value options]
