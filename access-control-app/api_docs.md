@@ -476,7 +476,9 @@ The following parameters are supported when searching for ACLs.
   * options: none (always case-insensitive)
   * This is a nested parameter that has subfields 'permitted_group' and 'permission'. It can contain both subfields or just one.
 * permitted_concept_id
-  * Matches ACLs that grant permission to the collection through access value.
+  * Matches ACLs that grant permission to the collection or granule with the given concept id.
+  * For an ACL to grant permission to a collection, the collection_applicable field of the ACL should be true and all the collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the collection; no collection identifier defined in the ACL makes the ACL match all collections when its collection_applicable field is true.
+  * For an ACL to grant permission to a granule, the granule_applicable field of the ACL should be true and both the granule identifier filters (temporal and access value), and collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the granule and its parent collection.
 * id
   * options: none (case-sensitive)
   * Matches either ACL concept ID or ACL legacy GUID
