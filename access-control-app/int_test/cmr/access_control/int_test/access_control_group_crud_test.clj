@@ -4,15 +4,14 @@
     [clojure.test :refer :all]
     [cmr.access-control.int-test.fixtures :as fixtures]
     [cmr.access-control.test.util :as u]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.config :as tc]))
+    [cmr.mock-echo.client.echo-util :as e]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-acl-fixture))
 
 ;; CMR-2134, CMR-2133 test creating groups without various permissions
 
@@ -239,9 +238,6 @@
   ;; Two groups will be created along with two ACLs referencing each respective group. After one
   ;; group is deleted, the ACL referencing it should also be deleted, and the other ACL should
   ;; still exist.
-  (u/create-acl tc/mock-echo-system-token {:group_permissions [{:permissions [:create :read]
-                                                                :user_type :registered}]
-                                           :system_identity {:target "ANY_ACL"}})
   (let [token (e/login (u/conn-context) "user")
         ;; group 1 will be deleted
         group-1-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 1" :provider_id "PROV1"})))
@@ -258,17 +254,48 @@
                            (u/create-acl token {:group_permissions [{:user_type :registered
                                                                      :permissions ["update"]}]
                                                 :single_instance_identity {:target "GROUP_MANAGEMENT"
-                                                                           :target_id group-2-concept-id}}))]
+                                                                           :target_id group-2-concept-id}}))
+        acl1 {:group_permissions [{:user_type :registered :permissions ["read"]}
+                                  {:group_id group-1-concept-id :permissions ["read"]}
+                                  {:group_id group-2-concept-id :permissions ["read"]}]
+              :system_identity {:target "METRIC_DATA_POINT_SAMPLE"}}
+
+        acl2 {:group_permissions [{:group_id group-1-concept-id :permissions ["delete"]}]
+              :system_identity {:target "ARCHIVE_RECORD"}}
+        resp1 (u/create-acl token acl1)
+        resp2 (u/create-acl token acl2)]
+
     (u/wait-until-indexed)
     (is (= [acl-1-concept-id acl-2-concept-id]
            (sort
              (map :concept_id
                   (:items (u/search-for-acls token {:identity-type "single_instance"}))))))
+
     (u/delete-group token group-1-concept-id)
     (u/wait-until-indexed)
-    (is (= [acl-2-concept-id]
-           (map :concept_id
-                (:items (u/search-for-acls token {:identity-type "single_instance"})))))))
+    (testing "Single instance ACL group delete cascade"
+      (is (= [acl-2-concept-id]
+             (map :concept_id
+                  (:items (u/search-for-acls token {:identity-type "single_instance"}))))))
+
+    (testing "No ACLs should be deleted beside group 1 single instance ACL"
+      (is (= (set [(:concept_id resp1) (:concept_id resp2) (:concept-id fixtures/*fixture-system-acl*)
+                   (:concept-id fixtures/*fixture-provider-acl*) acl-2-concept-id])
+             (set (map :concept_id
+                       (:items (u/search-for-acls token {})))))))
+
+    (testing "group 2 shouldn't be removed from group permissions"
+      (is (= (set [(:concept_id resp1)])
+             (set (map :concept_id
+                       (:items (u/search-for-acls token {:permitted_group group-2-concept-id})))))))
+
+    (testing "registered shouldn't be removed from group permissions"
+      (is (= (set [(:concept_id resp1) acl-2-concept-id (:concept-id fixtures/*fixture-system-acl*) (:concept-id fixtures/*fixture-provider-acl*)])
+             (set (map :concept_id
+                       (:items (u/search-for-acls token {:permitted_group "registered"})))))))
+
+    (testing "NO ACLS should have group 1 after delete"
+      (is (empty? (set (:items (u/search-for-acls token {:permitted_group group-1-concept-id}))))))))
 
 (deftest update-group-test
   (let [group (u/make-group {:members ["user1" "user2"]})

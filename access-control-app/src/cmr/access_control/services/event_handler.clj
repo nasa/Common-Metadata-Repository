@@ -41,10 +41,19 @@
 (defmethod handle-event [:concept-delete :access-group]
   [context {:keys [concept-id]}]
   ;; When access control groups are deleted, all ACLs referencing the group should be cleaned up.
+  ;; and any ACLs with group permissions for the group should be updated
   (doseq [acl-concept (acl-service/get-all-acl-concepts context)
           :let [parsed-acl (acl-service/get-parsed-acl acl-concept)]
           :when (= concept-id (get-in parsed-acl [:single-instance-identity :target-id]))]
     (acl-service/delete-acl context (:concept-id acl-concept)))
+  (doseq [acl-concept (acl-service/get-all-acl-concepts context)
+          :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
+                group-permissions (:group-permissions parsed-acl)]
+          :when (contains? (set (map :group-id group-permissions)) concept-id)]
+    (acl-service/update-acl context (:concept-id acl-concept)
+                                    (assoc parsed-acl
+                                           :group-permissions
+                                           (remove #(= (:group-id %) concept-id) group-permissions))))
   (index/unindex-group context concept-id))
 
 (defmethod handle-event [:concept-delete :acl]
