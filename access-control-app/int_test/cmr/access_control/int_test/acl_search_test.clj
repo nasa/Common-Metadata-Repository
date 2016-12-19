@@ -424,7 +424,10 @@
       ["ANY_ACL"] [fixtures/*fixture-system-acl*]
 
       "Provider target"
-      ["CATALOG_ITEM_ACL"] [fixtures/*fixture-provider-acl*])))
+      ["CATALOG_ITEM_ACL"] [fixtures/*fixture-provider-acl*]
+
+      "Provider target, case insensitive"
+      ["catalog_item_acl"] [fixtures/*fixture-provider-acl*])))
 
 (deftest acl-search-by-permitted-user-test
   (let [token (e/login (u/conn-context) "user1")
