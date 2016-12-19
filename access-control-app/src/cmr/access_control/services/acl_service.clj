@@ -336,7 +336,7 @@
                               (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
                        acls))
 
-(defn get-group-permissions
+(defn- get-group-permissions
   "Returns a map of the target group concept ids to the set of permissions
    granted to the given username or user type."
   [context username-or-type target-group-ids]
