@@ -12,7 +12,7 @@
     [cmr.umm-spec.models.umm-collection-models :as um]
     [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3" "provguid4" "PROV4" "provguid5" "PROV5"}))
 
 (deftest search-by-keywords
   (let [short-name-boost (k2e/get-boost nil :short-name)
@@ -86,6 +86,8 @@
                                      :variable-level-2 "boost"
                                      :variable-level-3 "boost"
                                      :detailed-variable "boost"})
+        personnel1 (dc/personnel "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
+        personnel2 (dc/personnel "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
         tdcs1 (dc/two-d "XYZ")
         tdcs2 (dc/two-d "twoduniq")
         org (dc/org :archive-center "Some&Place")
@@ -131,8 +133,9 @@
         coll-boost (d/ingest "PROV2" (dc/collection {:entry-title "boost"
                                                      :short-name "boost"
                                                      :platforms [pboost]
-                                                     :science-keywords [skboost]}))]
-
+                                                     :science-keywords [skboost]}))
+        coll26 (d/ingest "PROV4" (dc/collection-dif10 {:entry-title "coll26" :personnel [personnel1]}) {:format :dif10})
+        coll27 (d/ingest "PROV5" (dc/collection-dif10 {:entry-title "coll27" :personnel [personnel2]}) {:format :dif10})]
 
     (index/wait-until-indexed)
 
@@ -151,6 +154,12 @@
             (println "Expected:" (map :entry-title items))
             (println "Actual:" (map :name (:refs json-refs))))
           (and parameter-matches? json-matches?))
+
+        ;; search by personnel
+        "Bob Hope" [coll26]
+        "bob.hope@nasa.gov" [coll26]
+        "Victor" [coll27]
+        "victor.fries@nsidc.gov" [coll27]
 
         "ABC" [coll2]
         "place" [coll6]
@@ -271,7 +280,7 @@
         ;; Related URLs
         "earthdata" [coll25]
         "cmr" [coll25]
-        "nsidc" [coll25]
+        "nsidc" [coll25 coll27]
 
         ;; Special characters are escaped before sending to Elastic
         "ABC~ZYX" []

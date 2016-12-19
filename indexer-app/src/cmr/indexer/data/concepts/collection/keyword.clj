@@ -40,7 +40,8 @@
          directory-names :DirectoryNames
          iso-topic-categories :ISOTopicCategories
          version-description :VersionDescription
-         related-urls :RelatedUrls} collection
+         related-urls :RelatedUrls
+         contacts :ContactPersons} collection
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -56,6 +57,10 @@
         project-short-names (map :short-name projects)
         directory-long-names (map :LongName directory-names)
         directory-short-names (map :ShortName directory-names)
+        personnel-first-names (map :FirstName contacts)
+        personnel-last-names (map :LastName contacts)
+        ;; The (map #(get-in returns the vector of contacts inside of a list, hence the use of (first
+        contact-mechanisms (map :Value (first (map #(get-in % [:ContactInformation :ContactMechanisms]) contacts)))
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
@@ -94,6 +99,9 @@
                                   attrib-keywords
                                   spatial-keywords
                                   temporal-keywords
+                                  personnel-first-names
+                                  personnel-last-names
+                                  contact-mechanisms
                                   project-long-names
                                   project-short-names
                                   platform-short-names
