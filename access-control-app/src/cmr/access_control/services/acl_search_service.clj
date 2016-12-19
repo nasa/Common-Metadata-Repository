@@ -28,14 +28,14 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:include-full-acl :legacy-guid :include-legacy-group-guid}
-     :multiple-value #{:permitted-group :identity-type :provider}
+     :multiple-value #{:permitted-group :identity-type :provider :id :target}
      :always-case-sensitive #{}
-     :disallow-pattern #{:identity-type :permitted-user :group-permission :legacy-guid}
+     :disallow-pattern #{:identity-type :permitted-user :group-permission :legacy-guid :target}
      :allow-or #{}}))
 
 (defmethod cpv/valid-query-level-params :acl
   [_]
-  #{:include-full-acl :legacy-guid :include-legacy-group-guid})
+  #{:include-full-acl :legacy-guid :include-legacy-group-guid :id :target})
 
 (defmethod cpv/valid-parameter-options :acl
   [_]
@@ -43,7 +43,9 @@
    :permitted-group cpv/string-param-options
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
-   :legacy-guid cpv/string-param-options
+   :target #{}
+   :legacy-guid #{}
+   :id #{}
    :permitted-user #{}
    :group-permission #{}})
 
@@ -175,10 +177,12 @@
   {:permitted-concept-id :permitted-concept-id
    :permitted-group :string
    :identity-type :acl-identity-type
+   :target :string
    :provider :string
    :permitted-user :acl-permitted-user
    :group-permission :acl-group-permission
-   :legacy-guid :string})
+   :legacy-guid :string
+   :id ::id})
 
 (defmethod cp/parse-query-level-params :acl
   [concept-type params]
@@ -216,6 +220,12 @@
 (defmethod cp/parameter->condition :legacy-guid
   [context concept-type param value options]
   (cp/string-parameter->condition concept-type :legacy-guid value options))
+
+(defmethod cp/parameter->condition ::id
+  [context concept-type param value options]
+  (gc/or
+    (cp/string-parameter->condition concept-type :concept-id value options)
+    (cp/string-parameter->condition concept-type :legacy-guid value options)))
 
 (defmethod cp/parameter->condition :acl-group-permission
   [context concept-type param value options]

@@ -16,64 +16,57 @@
   [concept-type k]
   (keyword (str (name concept-type) "-" (name k))))
 
-(defn- create-generic-condition
-  "Constructs query condition for acls without an identifier"
-  []
-  (gc/and
-    (common-qm/boolean-condition :granule-identifier false)
-    (common-qm/boolean-condition :collection-identifier false)))
-
 (defn- create-temporal-intersect-condition
   "Constructs query condition for intersect mask"
   [start-date stop-date concept-type]
   (gc/and
-    (common-qm/string-condition (make-keyword concept-type :temporal-mask) "intersect" true false)
-    (gc/or
-      (gc/and
-        ;; The ACL start date must be greater than the collection's start date and
-        ;; less than the collection's stop date
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) nil stop-date)
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) start-date nil))
-      (gc/and
-        ;; The ACL stop date must be less than the collection's stop date and
-        ;; greater than the collection's start date
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) start-date nil)
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) nil stop-date))
-      (gc/and
-        ;; The ACL stop date must be greater than the collection stop date and
-        ;; the ACL start date must be less than the collection start date
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) nil start-date)
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) stop-date nil))
-      (gc/and
-        ;; The ACL stop date must be less than the collection's stop date and
-        ;; the ACL start date must be greater than the collection's start date
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) nil stop-date)
-        (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) start-date nil)))))
+   (common-qm/string-condition (make-keyword concept-type :temporal-mask) "intersect" true false)
+   (gc/or
+    (gc/and
+     ;; The ACL start date must be greater than the collection's start date and
+     ;; less than the collection's stop date
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) nil stop-date)
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) start-date nil))
+    (gc/and
+     ;; The ACL stop date must be less than the collection's stop date and
+     ;; greater than the collection's start date
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) start-date nil)
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) nil stop-date))
+    (gc/and
+     ;; The ACL stop date must be greater than the collection stop date and
+     ;; the ACL start date must be less than the collection start date
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) nil start-date)
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) stop-date nil))
+    (gc/and
+     ;; The ACL stop date must be less than the collection's stop date and
+     ;; the ACL start date must be greater than the collection's start date
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) nil stop-date)
+     (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) start-date nil)))))
 
 (defn- create-temporal-disjoint-condition
   "Constructs query condition for disjoint mask"
   [start-date stop-date concept-type]
   (gc/and
-    (common-qm/string-condition (make-keyword concept-type :temporal-mask) "disjoint" true false)
-    (gc/or
-      ;; The ACL start date is greater than the collection's stop date or
-      ;; THE ACL stop date is less than the collection's start date
-      (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) stop-date nil true)
-      (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) nil start-date true))))
+   (common-qm/string-condition (make-keyword concept-type :temporal-mask) "disjoint" true false)
+   (gc/or
+    ;; The ACL start date is greater than the collection's stop date or
+    ;; The ACL stop date is less than the collection's start date
+    (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) stop-date nil true)
+    (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) nil start-date true))))
 
 (defn create-temporal-contains-condition
   "Constructs query condiiton for contains mask"
   [start-date stop-date concept-type]
   (gc/and
-    ;; The ACL start date must be less than the collection's start date and
-    ;; the ACL stop date must be greater than the collection's stop date
-    (common-qm/string-condition (make-keyword concept-type :temporal-mask) "contains" true false)
-    (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) nil start-date)
-    (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) stop-date nil)))
+   ;; The ACL start date must be less than the collection's start date and
+   ;; the ACL stop date must be greater than the collection's stop date
+   (common-qm/string-condition (make-keyword concept-type :temporal-mask) "contains" true false)
+   (common-qm/date-range-condition (make-keyword concept-type :temporal-range-start-date) nil start-date)
+   (common-qm/date-range-condition (make-keyword concept-type :temporal-range-stop-date) stop-date nil)))
 
 (defn- create-temporal-condition
   "Constructs query condition for searching permitted_concept_ids by temporal"
-  [parsed-metadata concept-type]
+  [concept-type parsed-metadata]
   (let [start-date (if (= concept-type :granule)
                      (umm-lib-time/start-date :granule (:temporal parsed-metadata))
                      (spec-time/collection-start-date parsed-metadata))
@@ -83,92 +76,93 @@
         stop-date (if (or (= :present stop-date) (nil? stop-date))
                     (t/now)
                     stop-date)]
+    ;; Temporal condition finds ACLs when one of the temporal mask ranges match or
+    ;; there is no temporal specified at all.
     (gc/or
-       (create-temporal-contains-condition start-date stop-date concept-type)
-       (create-temporal-intersect-condition start-date stop-date concept-type)
-       (create-temporal-disjoint-condition start-date stop-date concept-type))))
+     (create-temporal-contains-condition start-date stop-date concept-type)
+     (create-temporal-intersect-condition start-date stop-date concept-type)
+     (create-temporal-disjoint-condition start-date stop-date concept-type)
+     ;; no temporal specified
+     (common-qm/not-exist-condition (make-keyword concept-type :temporal-mask)))))
 
 (defn- create-access-value-condition
   "Constructs query condition for searching permitted_concept_ids by access-value."
-  [parsed-metadata concept-type]
-  ;; If there are no access values present in the concept then the include undefined
-  ;; value is used.
-  (if-let [access-value (or (:access-value parsed-metadata) (:Value (:AccessConstraints parsed-metadata)))]
-    (common-qm/numeric-range-intersection-condition
+  [concept-type parsed-metadata]
+  ;; Access value condition finds the ACL when:
+  ;; access value match through range if there is access value in the concept;
+  ;; or through matching undefined value if there is no access value in the concept;
+  ;; or there is no access value filters at all.
+  (gc/or
+   (if-let [access-value (or (:access-value parsed-metadata)
+                             (:Value (:AccessConstraints parsed-metadata)))]
+     (common-qm/numeric-range-intersection-condition
       (make-keyword concept-type :access-value-min)
       (make-keyword concept-type :access-value-max)
       access-value
       access-value)
-    (common-qm/boolean-condition (make-keyword concept-type :access-value-include-undefined-value) true)))
+     ;; If there are no access values in the concept then it can match through include-undefined-value
+     (common-qm/boolean-condition
+      (make-keyword concept-type :access-value-include-undefined-value) true))
+   ;; there is no access value filters at all
+   (gc/and
+    (common-qm/not-exist-condition (make-keyword concept-type :access-value-min))
+    (common-qm/not-exist-condition (make-keyword concept-type :access-value-max))
+    (common-qm/not-exist-condition
+     (make-keyword concept-type :access-value-include-undefined-value)))))
 
-(defn- create-entry-title-condition
-  "Constructs query condition for searching permitted_concept_ids by entry_titles"
+(defn- create-entry-tite-condition
+  "Returns the entry title query condition for the given parsed collection metadata"
   [parsed-metadata]
-  (if-let [entry-title (:EntryTitle parsed-metadata)]
-    (common-qm/string-condition :entry-title entry-title true false)
-    common-qm/match-none))
+  ;; Entry title condition finds ACLs when entry title match
+  ;; or there is no entry title specified at all
+  (let [entry-title (:EntryTitle parsed-metadata)]
+    (gc/or
+     (common-qm/string-condition :entry-title entry-title true false)
+     (common-qm/not-exist-condition :entry-title))))
 
-(defn- get-collection-conditions
-  "Constructs permitted_concept_id search conditions for given collection"
-  [collection-metadata]
-  (gc/or
-    (create-generic-condition)
-    (create-access-value-condition collection-metadata :collection)
-    (create-temporal-condition collection-metadata :collection)
-    (create-entry-title-condition collection-metadata)))
+(defn- collection-identifier-match-condition
+  "Returns the query condition when collection identifier matches the given concept type
+   and parsed metadata"
+  [parsed-metadata]
+  (gc/and
+   (create-access-value-condition :collection parsed-metadata)
+   (create-temporal-condition :collection parsed-metadata)
+   (create-entry-tite-condition parsed-metadata)))
 
-(defn- get-granule-conditions
-  "Constructs permitted_concept-id search conditions
-   for given granule and parent collection"
-  [granule-metadata parent-collection-metadata]
-  (gc/or
-    (create-generic-condition)
-    ;; For granules, the conditions for the granule and the conditons for its parent collection
-    ;; must work in combination with each other.
-    (gc/and
-      ;; ACL either matches the granule temporal conditions or the temporal values are absent
-      (gc/or
-        (gc/and
-          (common-qm/negated-condition (common-qm/exist-condition :granule-temporal-range-start-date))
-          (common-qm/negated-condition (common-qm/exist-condition :granule-temporal-range-stop-date)))
-        (create-temporal-condition granule-metadata :granule))
-      ;; ACL either matches the granule access value conditions or the access values are absent
-      (gc/or
-        (gc/and
-          (common-qm/negated-condition (common-qm/exist-condition :granule-access-value-include-undefined-value))
-          (common-qm/negated-condition (common-qm/exist-condition :granule-access-value-min)))
-        (create-access-value-condition granule-metadata :granule))
-      ;; ACL either matches the granule's parent collection temporal conditions or the temporal values are absent
-      (gc/or
-        (gc/and
-          (common-qm/negated-condition (common-qm/exist-condition :collection-temporal-range-start-date))
-          (common-qm/negated-condition (common-qm/exist-condition :collection-temporal-range-stop-date)))
-        (create-temporal-condition parent-collection-metadata :collection))
-      ;; ACL either matches the granule's parent collection access value conditions or the access values are absent
-      (gc/or
-        (gc/and
-          (common-qm/negated-condition (common-qm/exist-condition :collection-access-value-include-undefined-value))
-          (common-qm/negated-condition (common-qm/exist-condition :collection-access-value-min)))
-        (create-access-value-condition parent-collection-metadata :collection))
-      ;; ACL matches the granule's parent collection entry titles or the entry title value is sabsent
-      (gc/or
-        (common-qm/negated-condition (common-qm/exist-condition :entry-title))
-        (create-entry-title-condition parent-collection-metadata)))))
+(defmulti get-permitted-concept-id-conditions
+  "Returns the query to search for ACLs that could permit the given concept"
+  (fn [context concept]
+    (:concept-type concept)))
 
-(defn get-permitted-concept-id-conditions
-  "Returns query to search for ACLs that could permit given concept"
+(defmethod get-permitted-concept-id-conditions :collection
   [context concept]
-  (let [concept-type (:concept-type concept)
-        parsed-metadata (if (= concept-type :collection)
-                          (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) concept)
-                          (umm-lib/parse-concept concept))
-        parent-collection (when (= concept-type :granule)
-                            (mdb2/get-latest-concept context (get-in concept [:extra-fields :parent-collection-id])))
-        parsed-parent-collection-metadata (when parent-collection
-                                            (umm-spec/parse-metadata (merge {:ignore-kms-keywords true} context) parent-collection))]
+  (let [parsed-metadata (umm-spec/parse-metadata
+                         (assoc context :ignore-kms-keywords true) concept)]
     (gc/and
-      (common-qm/string-condition :provider (:provider-id concept))
-      (common-qm/boolean-condition (make-keyword concept-type :applicable) true)
-      (if (= concept-type :collection)
-        (get-collection-conditions parsed-metadata)
-        (get-granule-conditions parsed-metadata parsed-parent-collection-metadata)))))
+     (common-qm/string-condition :provider (:provider-id concept))
+     (common-qm/boolean-condition :collection-applicable true)
+     ;; there is no collection identifier or the collection identifier conditions match
+     (gc/or
+      (common-qm/boolean-condition :collection-identifier false)
+      (collection-identifier-match-condition parsed-metadata)))))
+
+(defmethod get-permitted-concept-id-conditions :granule
+  [context concept]
+  (let [parsed-metadata (umm-lib/parse-concept concept)
+        parent-collection (mdb2/get-latest-concept
+                           context (get-in concept [:extra-fields :parent-collection-id]))
+        parsed-collection-metadata (umm-spec/parse-metadata
+                                    (assoc context :ignore-kms-keywords true) parent-collection)]
+    (gc/and
+     (common-qm/string-condition :provider (:provider-id concept))
+     (common-qm/boolean-condition :granule-applicable true)
+     ;; collection identifier condition that matches on collection identifiers in the ACL
+     (collection-identifier-match-condition parsed-collection-metadata)
+     ;; there is no granule identifier or the granule identifier conditions match
+     (gc/or
+      (common-qm/boolean-condition :granule-identifier false)
+      (gc/and
+       ;; granule identifier access value condition, i.e. access value either match or not exist
+       (create-access-value-condition :granule parsed-metadata)
+       ;; granule identifier temporal condition, i.e. temporal either match or not exist
+       (create-temporal-condition :granule parsed-metadata))))))

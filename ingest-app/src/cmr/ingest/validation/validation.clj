@@ -147,7 +147,7 @@
   [context collection granule]
   (when-let [errors (seq (umm-spec-validation/validate-granule 
                            (humanizer-alias-cache/update-collection-with-aliases 
-                             context collection :Platforms :ShortName)
+                             context collection true)
                            granule))]
     (if (config/return-umm-spec-validation-errors)
       (if-errors-throw :invalid-data errors)
@@ -160,7 +160,7 @@
   [context collection granule]
     (if-errors-throw :invalid-data (umm-validation/validate-granule 
                                      (humanizer-alias-cache/update-collection-with-aliases 
-                                       context collection :platforms :short-name)
+                                       context collection false)
                                      granule))) 
 
 (defn validate-business-rules
