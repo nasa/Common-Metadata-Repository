@@ -43,8 +43,8 @@
    :permitted-group cpv/string-param-options
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
-   :target cpv/string-param-options
-   :legacy-guid cpv/string-param-options
+   :target #{}
+   :legacy-guid #{}
    :id #{}
    :permitted-user #{}
    :group-permission #{}})
@@ -177,7 +177,7 @@
   {:permitted-concept-id :permitted-concept-id
    :permitted-group :string
    :identity-type :acl-identity-type
-   :target ::target
+   :target :string
    :provider :string
    :permitted-user :acl-permitted-user
    :group-permission :acl-group-permission
@@ -207,10 +207,6 @@
                    (map #(cp/parameter->condition context concept-type param % options) value))
    (let [value (get acl-identity-type->search-value (str/lower-case value))]
      (cp/string-parameter->condition concept-type param value options))))
-
-(defmethod cp/parameter->condition ::target
-  [context concept-type param value options]
-  (cp/string-parameter->condition concept-type :target value options))
 
 (defmethod cp/parameter->condition :acl-permitted-user
   [context concept-type param value options]
