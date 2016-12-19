@@ -319,7 +319,8 @@
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)
         target (:target (or (:system-identity acl)
-                            (:provider-identity acl)))]
+                            (:provider-identity acl)
+                            (:single-instance-identity acl)))]
     (merge
       (access-value-elastic-doc-map acl)
       (temporal-elastic-doc-map acl)
