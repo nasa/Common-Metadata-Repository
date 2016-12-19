@@ -93,7 +93,6 @@
                                         :catalog_item_identity {:name "coll1 read and order"
                                                                 :collection_applicable true
                                                                 :provider_id "PROV1"}})]
-        (u/wait-until-indexed)
 
         (testing "for guest users"
           (are [user permissions]
@@ -137,7 +136,6 @@
           (testing "with a complex ACL distributing permissions across multiple groups"
             (let [user2-group1 (create-group {:name "group1withuser2" :members ["user2"]})
                   user2-group2 (create-group {:name "group2withuser1and2" :members ["user1" "user2"]})]
-              (u/wait-until-indexed)
               (create-acl {:group_permissions [{:permissions [:read] :group_id user1-group}
                                                {:permissions [:read] :group_id user2-group1}
                                                {:permissions [:order] :group_id user2-group2}]
@@ -199,8 +197,6 @@
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
-
-    (u/wait-until-indexed)
 
     (testing "no permissions granted"
       (is (= {coll1 []
@@ -290,7 +286,6 @@
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)]
 
-    (u/wait-until-indexed)
     (is (= {coll1 []
             coll2 []
             coll3 []
@@ -350,8 +345,6 @@
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
         created-group-concept-id (:concept_id (u/create-group token group))
-        ;; required for ACLs that will reference this group
-        _ (u/wait-until-indexed)
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                       :entry-title (str % " entry title")
                                                       :native-id %
@@ -415,8 +408,6 @@
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
         created-group-concept-id (:concept_id (u/create-group token group))
-        ;; required for ACLs that will reference this group
-        _ (u/wait-until-indexed)
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                      :entry-title (str % " entry title")
                                                      :native-id %
@@ -427,8 +418,6 @@
         gran2 (u/save-granule coll2)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
-
-    (u/wait-until-indexed)
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -511,8 +500,6 @@
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
         created-group-concept-id (:concept_id (u/create-group token group))
-        ;; required for ACLs that will reference this group
-        _ (u/wait-until-indexed)
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                    :entry-title (str % " entry title")
                                                    :native-id %
@@ -546,7 +533,6 @@
                                                   :granule_applicable true
                                                   :granule_identifier {:access_value {:min_value 7}}
                                                   :provider_id "PROV1"}})]
-    (u/wait-until-indexed)
     (are [user result]
       (= result (get-permissions user gran1 gran2 gran3))
       :guest {gran1 ["read"]
@@ -560,8 +546,6 @@
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
         created-group-concept-id (:concept_id (u/create-group token group))
-        ;; required for ACLs that will reference this group
-        _ (u/wait-until-indexed)
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                    :entry-title (str % " entry title")
                                                    :native-id %
@@ -594,7 +578,6 @@
                                                                                   :stop_date "2000-01-01T00:00:00Z"
                                                                                   :mask "contains"}}
                                                   :provider_id "PROV1"}})]
-    (u/wait-until-indexed)
     (are [user result]
       (= result (get-permissions user gran1 gran2 gran3))
       :guest {gran1 []
@@ -635,7 +618,6 @@
                  :provider_identity {:provider_id "PROV1"
                                      :target "INGEST_MANAGEMENT_ACL"}}
             acl-concept-id (:concept_id (create-acl acl))]
-        (u/wait-until-indexed)
 
         (are [user permissions]
           (= {coll1 permissions}
@@ -702,7 +684,6 @@
                                     :user_type :guest}]
                :system_identity {:target "GROUP"}}
           acl-concept-id (:concept_id (create-acl acl))]
-      (u/wait-until-indexed)
 
       (testing "granted to registered users"
         (update-acl acl-concept-id
@@ -771,7 +752,6 @@
                :provider_identity {:provider_id "PROV1"
                                    :target "PROVIDER_HOLDINGS"}}
           acl-concept-id (:concept_id (create-acl acl))]
-      (u/wait-until-indexed)
 
       (testing "granted to registered users"
         (update-acl acl-concept-id

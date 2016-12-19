@@ -139,7 +139,7 @@
 (defn- catalog-item-identity-granule-applicable-validation
   "Validates the relationship between granule_applicable and granule_identifier."
   [key-path cat-item-id]
-  (when (and (:granule-identifier cat-item-id)
+  (when (and (seq (:granule-identifier cat-item-id))
              (not (:granule-applicable cat-item-id)))
     {key-path ["granule_applicable must be true when granule_identifier is specified"]}))
 

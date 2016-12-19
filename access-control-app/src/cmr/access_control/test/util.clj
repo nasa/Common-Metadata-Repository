@@ -339,6 +339,49 @@
   [name]
   (assoc-in sample-catalog-item-acl [:catalog_item_identity :name] name))
 
+(defn ingest-acl
+  "Ingests the acl. Returns the ACL with the concept id and revision id."
+  [token acl]
+  (let [{:keys [concept_id revision_id]} (ac/create-acl (conn-context) acl {:token token})]
+    (assoc acl :concept-id concept_id :revision-id revision_id)))
+
+(defn- acl->search-response-item
+  "Returns the expected search response item for an ACL."
+  [include-full-acl? acl]
+  (let [acl (util/map-keys->kebab-case acl)
+        {:keys [protocol host port context]} (get-in (conn-context) [:system :access-control-connection])
+        expected-location (format "%s://%s:%s%s/acls/%s"
+                                  protocol host port context (:concept-id acl))]
+    (util/remove-nil-keys
+     {:name (or (:single-instance-name acl) ;; only SingleInstanceIdentity ACLs with legacy guid will set single-instance-name
+                (access-control-index/acl->display-name acl))
+      :revision_id (:revision-id acl),
+      :concept_id (:concept-id acl)
+      :identity_type (access-control-index/acl->identity-type acl)
+      :location expected-location
+      :acl (when include-full-acl?
+             (-> acl
+                 (dissoc :concept-id :revision-id :single-instance-name)
+                 util/map-keys->snake_case))})))
+
+(defn acls->search-response
+  "Returns the expected search response for a given number of hits and the acls."
+  ([hits acls]
+   (acls->search-response hits acls nil))
+  ([hits acls options]
+   (let [{:keys [page-size page-num include-full-acl]} (merge {:page-size 20 :page-num 1}
+                                                              options)
+         all-items (->> acls
+                        (map #(acl->search-response-item include-full-acl %))
+                        (sort-by :name)
+                        vec)
+         start (* (dec page-num) page-size)
+         end (+ start page-size)
+         end (if (> end hits) hits end)
+         items (subvec all-items start end)]
+     {:hits hits
+      :items items})))
+
 (defn create-acl
   "Creates an acl."
   ([token acl]
