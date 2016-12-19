@@ -90,7 +90,6 @@
           deleted-group (u/ingest-group token {:name "deleted-group"})
           prov-group (u/ingest-group token {:name "prov-group" :provider_id "PROV1"} ["user1"])
           all-groups [existing-admin-group cmr-group prov-group]]
-      (u/wait-until-indexed)
 
       ;; Delete the group so we can test with a tombstone.
       (is (= 200 (:status (u/delete-group token (:concept_id deleted-group)))))
@@ -168,7 +167,6 @@
         prov2-groups [prov2-group1 prov2-group2]
         prov-groups (concat prov1-groups prov2-groups)
         all-groups (concat cmr-groups prov1-groups prov2-groups)]
-    (u/wait-until-indexed)
 
     (testing "Search by concept id"
       (are3 [expected-groups params]

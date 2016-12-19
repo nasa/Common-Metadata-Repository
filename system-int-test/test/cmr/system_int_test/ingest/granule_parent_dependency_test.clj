@@ -41,7 +41,7 @@
 ;; must fall within bounds defined in parent collection
 
 ;; This test demonstrates how granule's platform references the collection's platform and
-;; the platform aliases defined in the humanizer.
+;; the platform aliases defined in the humanizer: "AM-1" is the alias for "Terra"
 (deftest granule-match-parent-collection-platform-alias-test
   (let [psa1 (dc/psa {:name "a-float" :data-type :float :min-value 1.0 :max-value 10.0})
         gpsa (dg/psa "a-float" [7.0])
@@ -237,6 +237,112 @@
           "gran-Foo-coll2 failure test"
           ["The following list of Platform short names did not exist in the referenced parent collection: [Foo]."]
           gran-Foo-coll2)))
+
+;; This test demonstrates how granule's tile references the collection's tile and
+;; the tile aliases defined in the humanizer: "SOURCE_TILE" is the alias for "REPLACEMENT_TILE"
+(deftest granule-match-parent-collection-tile-alias-test
+  (let [psa1 (dc/psa {:name "a-float" :data-type :float :min-value 1.0 :max-value 10.0})
+        gpsa (dg/psa "a-float" [7.0])
+        i1 (dc/instrument {:short-name "instrument-Sn A"})
+        ir1 (dg/instrument-ref {:short-name "instrument-Sn A"})
+        p1 (dc/platform {:short-name "platform-Sn A" :instruments [i1]})
+        pr1 (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [ir1]})
+        projects (dc/projects "proj")
+        mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
+        gran-spatial-rep (apply dg/spatial [mbr1])
+        c-two-d-cs-A {:name "SOURCE_TILE"
+                      :coordinate-1 {:min-value 100
+                                     :max-value 200}
+                      :coordinate-2 {:min-value 300
+                                     :max-value 400}}
+        c-two-d-cs-B {:name "REPLACEMENT_TILE"
+                      :coordinate-1 {:min-value 100
+                                     :max-value 200}
+                      :coordinate-2 {:min-value 300
+                                     :max-value 400}}
+        g-two-d-cs-A (dg/two-d-coordinate-system
+                       {:name "SOURCE_TILE"
+                        :start-coordinate-1 110
+                        :end-coordinate-1 130
+                        :start-coordinate-2 300
+                        :end-coordinate-2 328})
+        g-two-d-cs-B (dg/two-d-coordinate-system
+                       {:name "REPLACEMENT_TILE"
+                        :start-coordinate-1 110
+                        :end-coordinate-1 130
+                        :start-coordinate-2 300
+                        :end-coordinate-2 328})
+        coll-data-A {:entry-title "short_name_A_version"
+                     :short-name "short_name_A"
+                     :version-id "version"
+                     :product-specific-attributes [psa1]
+                     :platforms [p1]
+                     :organizations [(dc/org :distribution-center "Larc")]
+                     :science-keywords [(dc/science-keyword {:category "upcase"
+                                                             :topic "Cool"
+                                                             :term "Mild"})]
+                     :projects projects
+                     :spatial-coverage (dc/spatial {:gsr :geodetic})
+                     :two-d-coordinate-systems [c-two-d-cs-A]
+                     :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                     :beginning-date-time "1965-12-12T07:00:00.000-05:00"
+                     :ending-date-time "1967-12-12T07:00:00.000-05:00"}
+        coll-data-B {:entry-title "short_name_B_version"
+                     :short-name "short_name_B"
+                     :version-id "version"
+                     :product-specific-attributes [psa1]
+                     :platforms [p1]
+                     :organizations [(dc/org :distribution-center "Larc")]
+                     :science-keywords [(dc/science-keyword {:category "upcase"
+                                                             :topic "Cool"
+                                                             :term "Mild"})]
+                     :projects projects
+                     :spatial-coverage (dc/spatial {:gsr :geodetic})
+                     :two-d-coordinate-systems [c-two-d-cs-B]
+                     :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                     :beginning-date-time "1965-12-12T07:00:00.000-05:00"
+                     :ending-date-time "1967-12-12T07:00:00.000-05:00"}
+        gran-data-A {:platform-refs [pr1]
+                     :spatial-coverage gran-spatial-rep
+                     :two-d-coordinate-system g-two-d-cs-A
+                     :product-specific-attributes [gpsa]
+                     :beginning-date-time "1966-12-12T07:00:00.000-05:00"
+                     :ending-date-time "1967-10-12T07:00:00.000-05:00"}
+        gran-data-B {:platform-refs [pr1]
+                     :spatial-coverage gran-spatial-rep
+                     :two-d-coordinate-system g-two-d-cs-B
+                     :product-specific-attributes [gpsa]
+                     :beginning-date-time "1966-12-12T07:00:00.000-05:00"
+                     :ending-date-time "1967-10-12T07:00:00.000-05:00"}
+        echo10-coll-A (dc/collection coll-data-A)
+        _ (d/ingest "PROV1" echo10-coll-A {:format :echo10})
+        echo10-coll-B (dc/collection coll-data-B)
+        _ (d/ingest "PROV1" echo10-coll-B {:format :echo10})
+        gran-A-for-echo10-coll-A (dg/granule echo10-coll-A gran-data-A)
+        gran-B-for-echo10-coll-A (dg/granule echo10-coll-A gran-data-B)
+        gran-A-for-echo10-coll-B (dg/granule echo10-coll-B gran-data-A)
+        gran-B-for-echo10-coll-B (dg/granule echo10-coll-B gran-data-B)]
+
+    (are3 [exp-errors gran]
+          (is (= exp-errors
+                 (flatten (map (fn [error] (:errors error))
+                               (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true}))))))
+
+          "A granule ingested in collection A with OldName is permitted"
+          []
+          gran-A-for-echo10-coll-A 
+
+          "A granule ingested in collection A with NewName is rejected"
+          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [REPLACEMENT_TILE]."]
+          gran-B-for-echo10-coll-A
+
+          "A granule ingested in collection B with OldName is permitted"
+          []
+          gran-A-for-echo10-coll-B
+
+          "A granule ingested in collection B with NewName is permitted"
+          []
+          gran-B-for-echo10-coll-B)))
 
 ;; This tests demonstrates limitations of various collection formats because they do not support
 ;; fields referenced by a child granule.

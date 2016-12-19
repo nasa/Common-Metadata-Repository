@@ -365,6 +365,11 @@
   [field]
   (->ExistCondition field))
 
+(defn not-exist-condition
+  "Returns a query condition that checks that field does not exist."
+  [field]
+  (negated-condition (exist-condition field)))
+
 (defn string-condition
   ([field value]
    (string-condition field value false false))
