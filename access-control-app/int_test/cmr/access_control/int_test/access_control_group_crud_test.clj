@@ -12,7 +12,8 @@
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-acl-fixture))
 
 ;; CMR-2134, CMR-2133 test creating groups without various permissions
 
