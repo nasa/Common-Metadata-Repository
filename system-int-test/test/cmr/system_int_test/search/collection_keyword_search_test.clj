@@ -88,7 +88,7 @@
                                      :detailed-variable "boost"})
         personnel1 (dc/personnel "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
         personnel2 (dc/personnel "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
-        personnel3 (dc/personnel "Otto" "Octavious" "otto.octavious@noaa.gov" "TECHNICAL CONTACT")
+        personnel3 (dc/personnel "Otto" "Octavious" "otto.octavious@noaa.gov")
         tdcs1 (dc/two-d "XYZ")
         tdcs2 (dc/two-d "twoduniq")
         org (dc/org :archive-center "Some&Place")
@@ -130,13 +130,13 @@
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME" :short-name "Mixed"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :short-name "\"Quoted\" collection"}))
         coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
-        coll25 (d/ingest "PROV2" (dc/collection {:entry-title "coll25" :related-urls [url1 url2] :personnel [personnel1]}))
+        coll25 (d/ingest "PROV2" (dc/collection {:entry-title "coll25" :related-urls [url1 url2] :personnel [personnel3]}))
         coll-boost (d/ingest "PROV2" (dc/collection {:entry-title "boost"
                                                      :short-name "boost"
                                                      :platforms [pboost]
                                                      :science-keywords [skboost]}))
         coll26 (d/ingest "PROV4" (dc/collection-dif10 {:entry-title "coll26" :personnel [personnel1]}) {:format :dif10})
-        coll27 (d/ingest "PROV5" (dc/collection-dif10 {:entry-title "coll27" :personnel [personnel2 personnel3]}) {:format :dif10})]
+        coll27 (d/ingest "PROV5" (dc/collection-dif10 {:entry-title "coll27" :personnel [personnel2]}) {:format :dif10})]
 
     (index/wait-until-indexed)
 
@@ -156,11 +156,14 @@
             (println "Actual:" (map :name (:refs json-refs))))
           (and parameter-matches? json-matches?))
 
-        ;; search by personnel
-        "Bob Hope" [coll26 coll25]
+        ;; search by contact persons
+        "Bob Hope" [coll26]
         "bob.hope@nasa.gov" [coll26]
         "Victor" [coll27]
         "victor.fries@nsidc.gov" [coll27]
+
+        ;; search by data center contact
+        "Octavious" [coll25]
 
         "ABC" [coll2]
         "place" [coll6]

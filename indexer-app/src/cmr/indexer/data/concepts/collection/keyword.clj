@@ -5,7 +5,7 @@
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
     [cmr.indexer.data.concepts.attribute :as attrib]
-    [cmr.indexer.data.concepts.collection.opendata :as opendata]
+    [cmr.indexer.data.concepts.collection.data-center :as data-center]
     [cmr.indexer.data.concepts.collection.science-keyword :as sk]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
@@ -28,6 +28,14 @@
   (when field-value
     (let [field-value (str/lower-case field-value)]
       (into [field-value] (str/split field-value keywords-separator-regex)))))
+
+(defn get-contact-persons
+  "Return a collection of personnel names and contact mechanisms out of:
+  ContactPersons, ContactGroups, and DataCenters"
+  [collection]
+  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
+        contacts (concat ContactPersons ContactGroups (mapcat data-center/data-center-contacts DataCenters))]
+   (filter #(not= (:FirstName %) nil) contacts)))
 
 (defn create-keywords-field
   [concept-id collection other-fields]
@@ -57,11 +65,12 @@
         project-short-names (map :short-name projects)
         directory-long-names (map :LongName directory-names)
         directory-short-names (map :ShortName directory-names)
-        contact-personnel (opendata/get-contact-personnel collection)
-        contact-personnel-first-names (map :FirstName contact-personnel)
-        contact-personnel-last-names (map :LastName contact-personnel)
+        contact-persons (get-contact-persons collection)
+        contact-personnel-first-names (map :FirstName contact-persons)
+        contact-personnel-last-names (map :LastName contact-persons)
+        contact-group-names (map :GroupName contact-persons)
         contact-mechanisms (map #(:Value (first %))
-                                (map #(get-in % [:ContactInformation :ContactMechanisms]) contact-personnel))
+                                (map #(get-in % [:ContactInformation :ContactMechanisms]) contact-persons))
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
@@ -92,6 +101,7 @@
                                   collection-data-type
                                   contact-personnel-first-names
                                   contact-personnel-last-names
+                                  contact-group-names
                                   contact-mechanisms
                                   data-centers
                                   directory-long-names

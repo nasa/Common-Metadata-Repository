@@ -1,5 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.opendata
-  "Contains functions to convert collection into opendata related elasticsearch documents")
+  "Contains functions to convert collection into opendata related elasticsearch documents"
+  (require
+   [cmr.indexer.data.concepts.collection.data-center :as data-center]))
 
 (defn- email-contact?
   "Return true if the given person has an email as contact info."
@@ -7,32 +9,12 @@
   (some #(= "Email" (:Type %))
         (get-in person [:ContactInformation :ContactMechanisms])))
 
-(defn- data-center-contacts
-  "Returns the data center contacts with ContactInformation added if it doesn't have contact info"
-  [data-center]
-  (let [contacts (concat (:ContactPersons data-center) (:ContactGroups data-center))]
-    (map (fn [contact]
-           (if (:ContactInformation contact)
-             contact
-             (assoc contact :ContactInformation (:ContactInformation data-center))))
-         contacts)))
-
-(defn get-contact-personnel
-  "Return a collection of personnel names and contact mechanisms out of:
-  ContactPersons, ContactGroups, and DataCenters"
-  [collection]
-  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
-        contacts (concat ContactPersons ContactGroups (mapcat data-center-contacts DataCenters))]
-   (filter #(not= (:FirstName %) nil) contacts)))
-
-
-
 (defn opendata-email-contact
   "Returns the opendata email contact info for the given collection, it is just the first email
   contact info found in the ContactPersons, ContactGroups or DataCenters."
   [collection]
   (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
-        contacts (concat ContactPersons ContactGroups (mapcat data-center-contacts DataCenters))
+        contacts (concat ContactPersons ContactGroups (mapcat data-center/data-center-contacts DataCenters))
         email-contact (some #(when (email-contact? %) %) contacts)]
     (when email-contact
       (let [email (some #(when (= "Email" (:Type %)) (:Value %))
