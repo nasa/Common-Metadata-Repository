@@ -6,7 +6,6 @@
     [clojure.java.io :as io]
     [clojure.string :as string]
     [clojure.test :refer :all]
-    [cmr.access-control.int-test.fixtures :as fixtures]
     [cmr.access-control.test.util :as ac]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
@@ -26,9 +25,7 @@
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
-(use-fixtures :each
-              (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-              (fixtures/grant-all-acl-fixture))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (def test-context (lkt/setup-context-for-test))
 

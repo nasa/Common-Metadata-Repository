@@ -44,7 +44,8 @@
   (doseq [acl-concept (acl-service/get-all-acl-concepts context)
           :let [parsed-acl (acl-service/get-parsed-acl acl-concept)]
           :when (= concept-id (get-in parsed-acl [:single-instance-identity :target-id]))]
-    (acl-service/delete-acl context (:concept-id acl-concept)))
+    ;; We don't check delete ACL permission in the event handler
+    (acl-service/delete-acl* context (:concept-id acl-concept)))
   (index/unindex-group context concept-id))
 
 (defmethod handle-event [:concept-delete :acl]
@@ -73,7 +74,7 @@
                        (some #{entry-title} acl-entry-titles))]
       (if (= 1 (count acl-entry-titles))
         ;; the ACL only references the collection being deleted, and therefore the ACL should be deleted
-        (acl-service/delete-acl context (:concept-id acl-concept))
+        (acl-service/delete-acl* context (:concept-id acl-concept))
         ;; otherwise the ACL references other collections, and will be updated
         (let [new-acl (update-in parsed-acl
                                  [:catalog-item-identity :collection-identifier :entry-titles]

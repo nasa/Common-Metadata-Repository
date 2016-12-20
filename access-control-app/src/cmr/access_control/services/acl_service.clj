@@ -140,10 +140,9 @@
       (info (acl-log-message context new-concept existing-concept :update))
       resp)))
 
-(defn delete-acl
+(defn delete-acl*
   "Saves a tombstone for the ACL with the given concept id."
   [context concept-id]
-  (acl-auth/authorize-acl-action context :delete nil)
   (let [acl-concept (fetch-acl-concept context concept-id)]
     (let [tombstone {:concept-id (:concept-id acl-concept)
                        :revision-id (inc (:revision-id acl-concept))
@@ -153,6 +152,12 @@
       (index/unindex-acl context concept-id)
       (info (acl-log-message context tombstone acl-concept :delete))
       resp)))
+
+(defn delete-acl
+  "Check delete ACL permission, then delete the ACL."
+  [context concept-id]
+  (acl-auth/authorize-acl-action context :delete nil)
+  (delete-acl* context concept-id))
 
 ;; Member Functions
 
