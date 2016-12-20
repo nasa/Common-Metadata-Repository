@@ -155,3 +155,8 @@
                                            :additionalProperties false
                                            :properties {:access_value (ref-def :AccessValueType)
                                                         :temporal (ref-def :TemporalIdentifierType)}}}}))
+
+(defn validate-acl-json
+  "Validates the acl JSON string against the schema. Throws a service error if it is invalid."
+  [json-str]
+  (js/validate-json! acl-schema json-str))
