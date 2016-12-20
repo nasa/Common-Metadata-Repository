@@ -17,6 +17,16 @@
              (assoc contact :ContactInformation (:ContactInformation data-center))))
          contacts)))
 
+(defn get-contact-personnel
+  "Return a collection of personnel names and contact mechanisms out of:
+  ContactPersons, ContactGroups, and DataCenters"
+  [collection]
+  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
+        contacts (concat ContactPersons ContactGroups (mapcat data-center-contacts DataCenters))]
+   (filter #(not= (:FirstName %) nil) contacts)))
+
+
+
 (defn opendata-email-contact
   "Returns the opendata email contact info for the given collection, it is just the first email
   contact info found in the ContactPersons, ContactGroups or DataCenters."

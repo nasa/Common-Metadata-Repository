@@ -5,6 +5,7 @@
     [cmr.common.concepts :as concepts]
     [cmr.common.util :as util]
     [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.collection.opendata :as opendata]
     [cmr.indexer.data.concepts.collection.science-keyword :as sk]
     [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.util :as su]))
@@ -40,8 +41,7 @@
          directory-names :DirectoryNames
          iso-topic-categories :ISOTopicCategories
          version-description :VersionDescription
-         related-urls :RelatedUrls
-         contacts :ContactPersons} collection
+         related-urls :RelatedUrls} collection
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -57,10 +57,11 @@
         project-short-names (map :short-name projects)
         directory-long-names (map :LongName directory-names)
         directory-short-names (map :ShortName directory-names)
-        personnel-first-names (map :FirstName contacts)
-        personnel-last-names (map :LastName contacts)
-        ;; The (map #(get-in returns the vector of contacts inside of a list, hence the use of (first
-        contact-mechanisms (map :Value (first (map #(get-in % [:ContactInformation :ContactMechanisms]) contacts)))
+        contact-personnel (opendata/get-contact-personnel collection)
+        contact-personnel-first-names (map :FirstName contact-personnel)
+        contact-personnel-last-names (map :LastName contact-personnel)
+        contact-mechanisms (map #(:Value (first %))
+                                (map #(get-in % [:ContactInformation :ContactMechanisms]) contact-personnel))
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
@@ -84,42 +85,42 @@
         related-url-titles (map :Title related-urls)
         related-url-descriptions (map :Description related-urls)
         all-fields (flatten (conj [concept-id]
-                                  provider-id
-                                  entry-title
-                                  collection-data-type
-                                  short-name
-                                  entry-id
-                                  two-d-coord-names
-                                  summary
-                                  version-id
-                                  version-description
-                                  processing-level-id
-                                  data-centers
-                                  science-keywords
-                                  attrib-keywords
-                                  spatial-keywords
-                                  temporal-keywords
-                                  personnel-first-names
-                                  personnel-last-names
-                                  contact-mechanisms
-                                  project-long-names
-                                  project-short-names
-                                  platform-short-names
-                                  platform-long-names
-                                  instrument-short-names
-                                  instrument-long-names
-                                  instrument-techiques
-                                  sensor-short-names
-                                  sensor-long-names
-                                  sensor-techniques
-                                  char-names
-                                  char-descs
                                   ancillary-keywords
+                                  attrib-keywords
+                                  char-descs
+                                  char-names
+                                  collection-data-type
+                                  contact-personnel-first-names
+                                  contact-personnel-last-names
+                                  contact-mechanisms
+                                  data-centers
                                   directory-long-names
                                   directory-short-names
+                                  entry-id
+                                  entry-title
+                                  instrument-long-names
+                                  instrument-short-names
+                                  instrument-techiques
                                   iso-topic-categories
-                                  related-url-urls
+                                  platform-long-names
+                                  platform-short-names
+                                  processing-level-id
+                                  project-long-names
+                                  project-short-names
+                                  provider-id
+                                  related-url-descriptions
                                   related-url-titles
-                                  related-url-descriptions))
+                                  related-url-urls
+                                  science-keywords
+                                  sensor-long-names
+                                  sensor-short-names
+                                  sensor-techniques
+                                  short-name
+                                  spatial-keywords
+                                  summary
+                                  temporal-keywords
+                                  two-d-coord-names
+                                  version-description
+                                  version-id))
         split-fields (set (mapcat prepare-keyword-field all-fields))]
     (str/join " " split-fields)))
