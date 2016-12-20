@@ -55,11 +55,11 @@
   (let [token (e/login (u/conn-context) "user1")
         acl1 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
                                   :catalog_item_identity {:provider_id "PROV1"
-                                                          :name "b Lowercase B"
+                                                          :name "B Uppercase B"
                                                           :collection_applicable true}})
         acl2 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
                                   :catalog_item_identity {:provider_id "PROV1"
-                                                          :name "A Uppercase A"
+                                                          :name "a lowercase A"
                                                           :collection_applicable true}})
         acl3 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
                                   :catalog_item_identity {:provider_id "PROV1"
@@ -69,7 +69,7 @@
     (proto-repl.saved-values/save 1)
     (is (= [(get-name acl3) (get-name acl2) (get-name acl1)
             "Provider - PROV1 - CATALOG_ITEM_ACL"
-            "System - ANY_ACL"]           
+            "System - ANY_ACL"]
            (map :name (:items (ac/search-for-acls (merge {:token token} (u/conn-context)) {})))))))
 
 (deftest acl-search-permission-test
