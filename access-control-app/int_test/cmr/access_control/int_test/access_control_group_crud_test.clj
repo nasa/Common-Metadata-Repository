@@ -266,10 +266,6 @@
 
     (u/delete-group token group-1-concept-id)
     (u/wait-until-indexed)
-    (testing "Single instance ACL group delete cascade"
-      (is (= [acl-2-concept-id]
-             (map :concept_id
-                  (:items (u/search-for-acls token {:identity-type "single_instance"}))))))
 
     (testing "No ACLs should be deleted beside group 1 single instance ACL"
       (is (= (set [(:concept_id resp1) (:concept_id resp2) (:concept-id fixtures/*fixture-system-acl*)
@@ -287,7 +283,7 @@
              (set (map :concept_id
                        (:items (u/search-for-acls token {:permitted_group "registered"})))))))
 
-    (testing "NO ACLS should have group 1 after delete"
+    (testing "No ACLs should have group 1 after delete"
       (is (empty? (set (:items (u/search-for-acls token {:permitted_group group-1-concept-id}))))))))
 
 (deftest update-group-test

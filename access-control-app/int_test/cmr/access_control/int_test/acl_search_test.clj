@@ -86,9 +86,9 @@
                                          [:provider_identity :provider_id] "PROV2"))
         ;; Create an ACL with a catalog item identity for PROV1
         acl7 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
-                                :catalog_item_identity {:provider_id "PROV1"
-                                                        :name "PROV1 All Collections ACL"
-                                                        :collection_applicable true}})]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "PROV1 All Collections ACL"
+                                                          :collection_applicable true}})]
 
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
