@@ -145,7 +145,7 @@
    :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_MAX sanitize?)
-   :CollectionProgress (value-of doc "/Collection/CollectionState")
+   :CollectionProgress (u/with-default (value-of doc "/Collection/CollectionState") sanitize?)
    :AccessConstraints (parse-access-constraints doc sanitize?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]

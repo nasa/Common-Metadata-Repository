@@ -164,7 +164,7 @@
      :VersionDescription version-description
      :Abstract abstract
      :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
-     :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
+     :CollectionProgress (su/with-default (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
      :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
      :AccessConstraints (parse-access-constraints doc sanitize?)

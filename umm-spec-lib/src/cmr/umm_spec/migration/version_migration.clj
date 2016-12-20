@@ -165,7 +165,8 @@
 
 (defmethod migrate-umm-version [:collection "1.7" "1.8"]
   [context c & _]
-  c)
+  (-> c
+     (update :CollectionProgress u/with-default)))
 
 (defmethod migrate-umm-version [:collection "1.8" "1.7"]
   [context c & _]

@@ -485,8 +485,9 @@
 (deftest migrate-1_7-up-to-1_8
   (let [result (vm/migrate-umm {} :collection "1.7" "1.8"
                                {:Version "003"})]
-    ;; Nothing changed, VersionDescription is nil
-    (is (= nil (:VersionDescription result)))))
+    ;; VersionDescription is nil, CollectionProgress has default
+    (is (= nil (:VersionDescription result)))
+    (is (= u/not-provided (:CollectionProgress result)))))
 
 (deftest migrate-1_8-down-to-1_7
   (let [result (vm/migrate-umm {} :collection "1.8" "1.7"

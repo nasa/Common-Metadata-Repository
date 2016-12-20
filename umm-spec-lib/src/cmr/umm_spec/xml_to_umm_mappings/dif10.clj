@@ -141,7 +141,7 @@
    :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (dif-util/parse-iso-topic-categories doc sanitize?)
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
-   :CollectionProgress (value-of doc "/DIF/Dataset_Progress")
+   :CollectionProgress (u/with-default (value-of doc "/DIF/Dataset_Progress") sanitize?)
    :LocationKeywords (for [lk (select doc "/DIF/Location")]
                        {:Category (value-of lk "Location_Category")
                         :Type (value-of lk "Location_Type")
