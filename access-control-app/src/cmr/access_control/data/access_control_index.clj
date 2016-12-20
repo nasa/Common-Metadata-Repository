@@ -199,7 +199,9 @@
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
    :display-name (m/stored m/string-field-mapping)
+   :display-name.lowercase m/string-field-mapping
    :identity-type (m/stored m/string-field-mapping)
+
    ;; Store the full ACL metadata for quick retrieval.
    :acl-gzip-b64 (m/stored (m/not-indexed m/string-field-mapping))})
 
@@ -316,8 +318,10 @@
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
+        display-name (acl->display-name acl)
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)
+
         target (:target (or (:system-identity acl)
                             (:provider-identity acl)))]
     (merge
@@ -326,7 +330,8 @@
       (entry-title-elastic-doc-map acl)
       (identifier-applicable-elastic-doc-map acl)
       (assoc (select-keys concept-map [:concept-id :revision-id])
-             :display-name (acl->display-name acl)
+             :display-name display-name
+             :display-name.lowercase (str/lower-case display-name)
              :identity-type (acl->identity-type acl)
              :permitted-group permitted-groups
              :permitted-group.lowercase (map str/lower-case permitted-groups)
