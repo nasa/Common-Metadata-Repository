@@ -217,7 +217,8 @@
    :Projects (parse-projects doc sanitize?)
    :MetadataDates (parse-data-dates doc)
    :ServiceKeywords (parse-service-keywords doc)
-   :ScienceKeywords (parse-science-keywords doc)})
+   :ScienceKeywords (parse-science-keywords doc)
+   :CollectionProgress su/not-provided})
 
 (defn serf-xml-to-umm-s
   "Returns UMM-S service record from a SERF XML document. The :sanitize? option

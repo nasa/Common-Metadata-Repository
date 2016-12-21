@@ -84,7 +84,7 @@
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
-       :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
+       :CollectionProgress (u/with-default (value-of data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")

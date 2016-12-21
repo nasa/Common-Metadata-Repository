@@ -142,4 +142,5 @@
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
       (assoc :Platforms nil)
       (dissoc :DataCenters)
-      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))))
+      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
+      (assoc :CollectionProgress su/not-provided)))
