@@ -45,10 +45,12 @@
     (if (= concept-id (get-in parsed-acl [:single-instance-identity :target-id]))
       ;; When access control groups are deleted, any SingleInstanceIdentity ACL has the group as
       ;; target_id should be deleted;
-      (acl-service/delete-acl* context (:concept-id acl-concept))
+      (acl-service/delete-acl (transmit-config/with-echo-system-token context)
+                              (:concept-id acl-concept))
       ;; Any ACL that has the group in group permissions should be updated.
       (when (contains? (set (map :group-id group-permissions)) concept-id)
-        (acl-service/update-acl context (:concept-id acl-concept)
+        (acl-service/update-acl (transmit-config/with-echo-system-token context)
+                                (:concept-id acl-concept)
                                 (assoc parsed-acl :group-permissions
                                        (remove #(= (:group-id %) concept-id) group-permissions))))))
   (index/unindex-group context concept-id))
@@ -79,12 +81,14 @@
                        (some #{entry-title} acl-entry-titles))]
       (if (= 1 (count acl-entry-titles))
         ;; the ACL only references the collection being deleted, and therefore the ACL should be deleted
-        (acl-service/delete-acl* context (:concept-id acl-concept))
+        (acl-service/delete-acl (transmit-config/with-echo-system-token context)
+                                (:concept-id acl-concept))
         ;; otherwise the ACL references other collections, and will be updated
         (let [new-acl (update-in parsed-acl
                                  [:catalog-item-identity :collection-identifier :entry-titles]
                                  #(remove #{entry-title} %))]
-          (acl-service/update-acl (transmit-config/with-echo-system-token context) (:concept-id acl-concept) new-acl))))))
+          (acl-service/update-acl (transmit-config/with-echo-system-token context)
+                                  (:concept-id acl-concept) new-acl))))))
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"
