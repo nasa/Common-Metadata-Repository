@@ -46,8 +46,8 @@
       ;; When access control groups are deleted, any SingleInstanceIdentity ACL has the group as
       ;; target_id should be deleted;
       (acl-service/delete-acl context (:concept-id acl-concept))
+      ;; Any ACL that has the group in group permissions should be updated.
       (when (contains? (set (map :group-id group-permissions)) concept-id)
-        ;; Any ACL that has the group in group permissions should be updated.
         (acl-service/update-acl context (:concept-id acl-concept)
                                 (assoc parsed-acl :group-permissions
                                        (remove #(= (:group-id %) concept-id) group-permissions))))))
