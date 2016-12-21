@@ -36,7 +36,7 @@
   (clojure.set/map-invert iso-date-type-codes))
 
 (def iso-metadata-type-definitions
- "A map off UMM date type enums to ISO metadata date definitions"
+ "A map of UMM date type enums to ISO metadata date definitions"
  {"CREATE" "Create Date"
   "UPDATE" "Update Date"
   "REVIEW" "Review Date"
