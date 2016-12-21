@@ -74,14 +74,13 @@
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        ;; See ECSE-158. DIF9 doesn't support DataDates in umm-spec-lib.
-        ;; DIF10 DataDates is parsed differently umm-spec-lib vs umm-lib.
-        ;; Here we set the update-time and insert-time to nil to make the test pass.
-        ;; We should fix the next two lines once ECSE-158 is resolved
-        update-time (when (not (#{:dif :dif10} format-key))
+        ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.  
+        ;; DIF9 doesn't support DataDates in umm-spec-lib:
+        ;;  So its insert-time and update-time are nil.
+        update-time (when-not (= :dif format-key)
                       (get-in collection [:data-provider-timestamps :update-time]))
-        insert-time (when (not (#{:dif :dif10} format-key))
-                      (get-in collection [:data-provider-timestamps :insert-time]))
+        insert-time (when-not (= :dif format-key)
+                      (get-in collection [:data-provider-timestamps :insert-time])) 
         temporal (:temporal collection)
         start-date  (if temporal
                       (sed/start-date :collection temporal)
@@ -97,6 +96,7 @@
         personnel (person-with-email personnel)
         contact-point (contact-point personnel)
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
+    
     (util/remove-nil-keys {:title entry-title
                            :description summary
                            :keyword (conj (flatten-science-keywords collection)

@@ -41,13 +41,13 @@
 (defn- xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
   [collection-content]
-  (let [insert-time (cx/string-at-path collection-content [:Metadata_Dates :Metadata_Creation])
-        update-time (cx/string-at-path collection-content [:Metadata_Dates :Metadata_Last_Revision])
+  (let [insert-time (cx/string-at-path collection-content [:Metadata_Dates :Data_Creation])
+        update-time (cx/string-at-path collection-content [:Metadata_Dates :Data_Last_Revision])
         delete-time (cx/string-at-path collection-content [:Metadata_Dates :Metadata_Delete])]
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
-        {:insert-time (dtp/try-parse-datetime insert-time)
-         :update-time (dtp/try-parse-datetime update-time)
+        {:insert-time (dtp/try-parse-datetime insert-time) 
+         :update-time (dtp/try-parse-datetime update-time) 
          :revision-date-time (dtp/try-parse-datetime update-time)
          :delete-time (dtp/try-parse-datetime delete-time)}))))
 
@@ -148,15 +148,13 @@
                    (x/element :Metadata_Name {} "CEOS IDN DIF")
                    (x/element :Metadata_Version {} "VERSION 10.2")
                    (x/element :Metadata_Dates {}
-                              (x/element :Metadata_Creation {} (str insert-time))
-                              (x/element :Metadata_Last_Revision {} (str update-time))
+                              ;; No equivalent UMM fields exist for the next two elements.
+                              (x/element :Metadata_Creation {} "1970-01-01T00:00:00")
+                              (x/element :Metadata_Last_Revision {} "1970-01-01T00:00:00")
                               (when delete-time
                                 (x/element :Metadata_Delete {} (str delete-time)))
-                              ;; No equivalent UMM fields exist for the next two elements which are
-                              ;; required elements in DIF 10.1. Currently adding a dummy date. This
-                              ;; needs to be reviewed as and when DIF 10 is updated.CMRIN-79
-                              (x/element :Data_Creation {} "1970-01-01T00:00:00")
-                              (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
+                              (x/element :Data_Creation {} (str insert-time))
+                              (x/element :Data_Last_Revision {} (str update-time)))
                    (psa/generate-product-specific-attributes product-specific-attributes)
                    (let [processing-level-id
                          (dif10-product-level-id (get-in collection [:product :processing-level-id]))]
