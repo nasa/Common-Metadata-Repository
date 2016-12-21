@@ -33,11 +33,11 @@
   "Return a collection of personnel names and contact mechanisms out of:
   ContactPersons, ContactGroups, and DataCenters"
   [collection]
-  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
-        contacts (concat ContactPersons ContactGroups
-                         (mapcat #(:ContactGroups %) DataCenters)
-                         (mapcat #(:ContactPersons %) DataCenters))]
-   (filter #(not= (:GroupName %) (:LastName %) "Not provided") contacts)))
+  (let [{:keys [ContactPersons ContactGroups DataCenters]} collection]
+   (concat ContactPersons ContactGroups
+    (mapcat :ContactGroups DataCenters)
+    (mapcat :ContactPersons DataCenters))))
+
 
 (defn create-keywords-field
   [concept-id collection other-fields]
@@ -69,8 +69,8 @@
         directory-short-names (map :ShortName directory-names)
         contact-persons (get-contact-persons collection)
         contact-personnel-first-names (map :FirstName contact-persons)
-        contact-personnel-last-names (map :LastName contact-persons)
-        contact-group-names (map :GroupName contact-persons)
+        contact-personnel-last-names (filter #(not= % su/not-provided) (map :LastName contact-persons))
+        contact-group-names (filter #(not= % su/not-provided) (map :GroupName contact-persons))
         contact-mechanisms (map #(:Value (first %))
                                 (map #(get-in % [:ContactInformation :ContactMechanisms]) contact-persons))
         platforms (map util/map-keys->kebab-case

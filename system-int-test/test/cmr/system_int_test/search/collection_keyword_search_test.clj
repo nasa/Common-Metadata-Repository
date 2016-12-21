@@ -130,6 +130,7 @@
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME" :short-name "Mixed"}))
         coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :short-name "\"Quoted\" collection"}))
         coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
+        ;; Adding personnel here to test keyword search using DataCenter contacts
         coll25 (d/ingest "PROV2" (dc/collection {:entry-title "coll25" :related-urls [url1 url2] :personnel [personnel3]}))
         coll-boost (d/ingest "PROV2" (dc/collection {:entry-title "boost"
                                                      :short-name "boost"
