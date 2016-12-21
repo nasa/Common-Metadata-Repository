@@ -34,6 +34,6 @@
     "Nil start date"
     {:start-date nil
      :end-date (time/date-time 2016 01 01)}
-    {:range 1451606400000
+    {:range 3660595200000
      :end_date (time-coerce/to-long (time/date-time 2016 01 01))
-     :start_date (time-coerce/to-long (time/date-time 1970 01 01))}))
+     :start_date (time-coerce/to-long (time/date-time 1900 01 01))}))
