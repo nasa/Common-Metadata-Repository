@@ -467,16 +467,25 @@ The following parameters are supported when searching for ACLs.
     * provider
     * single_instance
     * catalog_item
+* target
+  * options: none (always case-insensitive)
+  * Matches ACLs which have the given object identity target
 * permitted_user
   * options: none (always case-insensitive)
-  * user is a URS user name corresponding to a member of a group that has access to an ACL.
-* provider - Matches ACLs which reference a provider through a catalog item identity or a provider identity.
+  * user is a URS user name corresponding to a member of a group that has access to an ACL
+* provider
   * options: ignore_case
+  * Matches ACLs which reference a provider through a catalog item identity or a provider identity
 * group_permission
   * options: none (always case-insensitive)
-  * This is a nested parameter that has subfields 'permitted_group' and 'permission'. It can contain both subfields or just one.
+  * This is a nested parameter that has subfields 'permitted_group' and 'permission'; it can contain both subfields or just one
 * permitted_concept_id
-  * Matches ACLs that grant permission to the collection through access value.
+  * Matches ACLs that grant permission to the collection or granule with the given concept id
+  * For an ACL to grant permission to a collection, the collection_applicable field of the ACL should be true and all the collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the collection; no collection identifier defined in the ACL makes the ACL match all collections when its collection_applicable field is true.
+  * For an ACL to grant permission to a granule, the granule_applicable field of the ACL should be true and both the granule identifier filters (temporal and access value), and collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the granule and its parent collection.
+* id
+  * options: none (case-sensitive)
+  * Matches either ACL concept ID or ACL legacy GUID
 
 ##### ACL Search Response
 
@@ -843,6 +852,7 @@ Content-Type: application/json;charset=ISO-8859-1
 ** `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
 ** `system_object` - A system object identity target, e.g. "GROUP"
 ** `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
+** `target_group_id` - A single instance object identity target id, i.e. group concept id
 * And one of:
 ** `user_id` - The user whose permissions will be computed.
 ** `user_type` - Either "guest" or "registered".

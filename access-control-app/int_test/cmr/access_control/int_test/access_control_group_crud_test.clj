@@ -4,15 +4,14 @@
     [clojure.test :refer :all]
     [cmr.access-control.int-test.fixtures :as fixtures]
     [cmr.access-control.test.util :as u]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.config :as tc]))
+    [cmr.mock-echo.client.echo-util :as e]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"]))
+              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-acl-fixture))
 
 ;; CMR-2134, CMR-2133 test creating groups without various permissions
 
@@ -83,7 +82,6 @@
       (is (= 1 revision_id))
       (u/assert-group-saved group "user1" concept_id revision_id)
 
-      (u/wait-until-indexed)
       (testing "Creation with an already existing name"
         (testing "Is rejected for another system group"
           (is (= {:status 409
@@ -125,8 +123,6 @@
       (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
       (is (= 1 revision_id))
       (u/assert-group-saved group "user1" concept_id revision_id)
-
-      (u/wait-until-indexed)
 
       (testing "Creation with an already existing name"
         (testing "Is rejected for the same provider"
@@ -209,7 +205,6 @@
         token (e/login (u/conn-context) "user1")
         {:keys [concept_id revision_id]} (u/create-group token group1)
         group2-concept-id (:concept_id (u/create-group token group2))]
-    (u/wait-until-indexed)
     (testing "Delete without token"
       (is (= {:status 401
               :errors ["Valid user token required."]}
@@ -219,7 +214,6 @@
       (is (= 3 (:hits (u/search-for-groups token nil))))
       (is (= {:status 200 :concept_id concept_id :revision_id 2}
              (u/delete-group token concept_id)))
-      (u/wait-until-indexed)
       (u/assert-group-deleted group1 "user1" concept_id 2)
       (is (= [group2-concept-id]
              (map :concept_id (:items (u/search-for-groups token {:name "*other*"
@@ -239,13 +233,9 @@
   ;; Two groups will be created along with two ACLs referencing each respective group. After one
   ;; group is deleted, the ACL referencing it should also be deleted, and the other ACL should
   ;; still exist.
-  (u/create-acl tc/mock-echo-system-token {:group_permissions [{:permissions [:create :read]
-                                                                :user_type :registered}]
-                                           :system_identity {:target "ANY_ACL"}})
   (let [token (e/login (u/conn-context) "user")
         ;; group 1 will be deleted
         group-1-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 1" :provider_id "PROV1"})))
-        _ (u/wait-until-indexed)
         acl-1-concept-id (:concept_id
                            (u/create-acl token {:group_permissions [{:user_type :registered
                                                                      :permissions ["update"]}]
@@ -253,22 +243,48 @@
                                                                            :target_id group-1-concept-id}}))
         ;; group 2 won't be deleted
         group-2-concept-id (:concept_id (u/create-group token (u/make-group {:name "group 2" :provider_id "PROV1"})))
-        _ (u/wait-until-indexed)
         acl-2-concept-id (:concept_id
                            (u/create-acl token {:group_permissions [{:user_type :registered
                                                                      :permissions ["update"]}]
                                                 :single_instance_identity {:target "GROUP_MANAGEMENT"
-                                                                           :target_id group-2-concept-id}}))]
+                                                                           :target_id group-2-concept-id}}))
+        acl1 {:group_permissions [{:user_type :registered :permissions ["read"]}
+                                  {:group_id group-1-concept-id :permissions ["read"]}
+                                  {:group_id group-2-concept-id :permissions ["read"]}]
+              :system_identity {:target "METRIC_DATA_POINT_SAMPLE"}}
+
+        acl2 {:group_permissions [{:group_id group-1-concept-id :permissions ["delete"]}]
+              :system_identity {:target "ARCHIVE_RECORD"}}
+        resp1 (u/create-acl token acl1)
+        resp2 (u/create-acl token acl2)]
+
     (u/wait-until-indexed)
     (is (= [acl-1-concept-id acl-2-concept-id]
            (sort
              (map :concept_id
                   (:items (u/search-for-acls token {:identity-type "single_instance"}))))))
+
     (u/delete-group token group-1-concept-id)
     (u/wait-until-indexed)
-    (is (= [acl-2-concept-id]
-           (map :concept_id
-                (:items (u/search-for-acls token {:identity-type "single_instance"})))))))
+
+    (testing "No ACLs should be deleted beside group 1 single instance ACL"
+      (is (= (set [(:concept_id resp1) (:concept_id resp2) (:concept-id fixtures/*fixture-system-acl*)
+                   (:concept-id fixtures/*fixture-provider-acl*) acl-2-concept-id])
+             (set (map :concept_id
+                       (:items (u/search-for-acls token {})))))))
+
+    (testing "group 2 shouldn't be removed from group permissions"
+      (is (= (set [(:concept_id resp1)])
+             (set (map :concept_id
+                       (:items (u/search-for-acls token {:permitted_group group-2-concept-id})))))))
+
+    (testing "registered shouldn't be removed from group permissions"
+      (is (= (set [(:concept_id resp1) acl-2-concept-id (:concept-id fixtures/*fixture-system-acl*) (:concept-id fixtures/*fixture-provider-acl*)])
+             (set (map :concept_id
+                       (:items (u/search-for-acls token {:permitted_group "registered"})))))))
+
+    (testing "No ACLs should have group 1 after delete"
+      (is (empty? (set (:items (u/search-for-acls token {:permitted_group group-1-concept-id}))))))))
 
 (deftest update-group-test
   (let [group (u/make-group {:members ["user1" "user2"]})
@@ -350,13 +366,10 @@
 
         token (e/login (u/conn-context) "user1")
         concept-id (:concept_id (u/create-group token group1))
-        _ (u/wait-until-indexed)
 
         response-no-legacy (u/update-group token concept-id no-legacy-group)
         response-same-legacy (u/update-group token concept-id same-legacy-group)
         response-diff-legacy (u/update-group token concept-id diff-legacy-group)]
-
-    (u/wait-until-indexed)
 
     (testing "We should now successfully update groups with a legacy_guid, without specifying the legacy_guid in the updated group"
       (is (= {:status 200 :concept_id concept-id :revision_id 2}

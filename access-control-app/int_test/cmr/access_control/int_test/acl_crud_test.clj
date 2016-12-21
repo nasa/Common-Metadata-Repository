@@ -100,7 +100,6 @@
                    (:concept-id fixtures/*fixture-system-acl*)
                    {:system_identity {:target "ANY_ACL"}
                     :group_permissions [{:user_type "registered" :permissions ["read"]}]})
-    (u/wait-until-indexed)
     (is (thrown-with-msg? Exception #"Permission to create ACL is denied"
                           (ac/create-acl (u/conn-context)
                                          {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
@@ -113,7 +112,6 @@
                     :provider_identity {:target "PROVIDER_OBJECT_ACL"
                                         :provider_id "PROV1"}}
                    {:token tc/mock-echo-system-token})
-    (u/wait-until-indexed)
     (is (= 1 (:revision_id
                (ac/create-acl (u/conn-context)
                               {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
@@ -140,7 +138,6 @@
                    (:concept-id fixtures/*fixture-system-acl*)
                    {:system_identity {:target "ANY_ACL"}
                     :group_permissions [{:user_type "guest" :permissions ["create" "update"]}]})
-    (u/wait-until-indexed)
 
     (testing "Without permissions"
       (are3 [token acl]
@@ -174,7 +171,6 @@
                      {:provider_identity {:provider_id "PROV2" :target "PROVIDER_OBJECT_ACL"}
                       :group_permissions [{:user_type "guest" :permissions ["create"]}
                                           {:group_id prov-obj-acl-group-id :permissions ["create"]}]})
-      (u/wait-until-indexed)
 
       (are3 [token acl]
         (let [resp (ac/create-acl (merge {:token token} (u/conn-context)) acl)]
@@ -210,7 +206,6 @@
                                           [:system_identity :target] "ANY_ACL")
                                 :group_permissions [{:group_id group1-concept-id :permissions ["read" "create"]},
                                                     {:user_type :guest :permissions ["read"]}]))
-        _ (u/wait-until-indexed)
         resp1 (ac/create-acl (merge {:token token-user1} (u/conn-context)) system-acl)]
 
     (is (re-find #"^ACL.*" (:concept_id resp1)))
@@ -234,7 +229,6 @@
                                                      :description "a group"
                                                      :legacy_guid "normal-group-guid"
                                                      :members ["user1"]}))]
-    (u/wait-until-indexed)
 
     ;; Update the system-level ANY_ACL to avoid granting ACL creation permission to "user1", since it normally
     ;; grants this permission to all registered users.
@@ -251,7 +245,6 @@
                                          :permissions [:create :read :update :delete]}]
                     :provider_identity {:provider_id "PROV1"
                                         :target "CATALOG_ITEM_ACL"}})
-    (u/wait-until-indexed)
 
     ;; As "user1" try to create a catalog item ACL for PROV1.
     (let [user-token (e/login (u/conn-context) "user1" ["normal-group-guid"])]
@@ -270,15 +263,14 @@
         token2 (e/login (u/conn-context) "user2")
         group1 (u/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        _ (ac/update-acl (u/conn-context)
-                         (:concept-id fixtures/*fixture-system-acl*)
-                         {:system_identity {:target "ANY_ACL"}
-                          :group_permissions [{:user_type "guest" :permissions ["read"]}]})
         _ (ac/create-acl (u/conn-context) {:group_permissions [{:group_id group1-concept-id
                                                                 :permissions ["create"]}]
                                            :provider_identity {:provider_id "PROV2"
                                                                :target "CATALOG_ITEM_ACL"}})
-        _ (u/wait-until-indexed)
+        _ (ac/update-acl (u/conn-context)
+                         (:concept-id fixtures/*fixture-system-acl*)
+                         {:system_identity {:target "ANY_ACL"}
+                          :group_permissions [{:user_type "guest" :permissions ["read"]}]})
         resp1 (ac/create-acl (merge {:token token} (u/conn-context)) (assoc-in catalog-item-acl
                                                                                [:catalog_item_identity :provider_id] "PROV2"))]
 
@@ -497,7 +489,6 @@
                           :short-name "coll1"
                           :version "v1"
                           :provider-id "PROV1"})
-      (u/wait-until-indexed)
       (is (= {:revision_id 1 :status 200}
              (select-keys
                (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
@@ -514,7 +505,6 @@
                           :short-name "coll2"
                           :version "v1"
                           :provider-id "PROV1"})
-      (u/wait-until-indexed)
       (let [result (u/create-acl token {:group_permissions [{:user_type "guest" :permissions ["read"]}]
                                         :catalog_item_identity {:name "Catalog item ACL with a long entry title"
                                                                 :provider_id "PROV1"

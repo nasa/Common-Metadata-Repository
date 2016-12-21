@@ -1,28 +1,29 @@
 (ns cmr.access-control.services.acl-service
   (:require
-   [clojure.edn :as edn]
-   [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.access-control.data.acl-json-results-handler :as result-handler]
-   [cmr.access-control.data.acl-schema :as schema]
-   [cmr.access-control.data.acls :as acls]
-   [cmr.access-control.services.acl-authorization :as acl-auth]
-   [cmr.access-control.services.acl-service-messages :as acl-msg]
-   [cmr.access-control.services.acl-validation :as v]
-   [cmr.access-control.services.auth-util :as auth-util]
-   [cmr.access-control.services.messages :as msg]
-   [cmr.acl.core :as acl]
-   [cmr.common-app.services.search.params :as cp]
-   [cmr.common.concepts :as concepts]
-   [cmr.common.date-time-parser :as dtp]
-   [cmr.common.log :refer [info debug]]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
-   [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.metadata-db :as mdb1]
-   [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.umm.acl-matchers :as acl-matchers]))
+    [clojure.edn :as edn]
+    [clojure.set :as set]
+    [clojure.string :as str]
+    [cmr.access-control.data.access-control-index :as index]
+    [cmr.access-control.data.acl-json-results-handler :as result-handler]
+    [cmr.access-control.data.acl-schema :as schema]
+    [cmr.access-control.data.acls :as acls]
+    [cmr.access-control.services.acl-authorization :as acl-auth]
+    [cmr.access-control.services.acl-service-messages :as acl-msg]
+    [cmr.access-control.services.acl-validation :as v]
+    [cmr.access-control.services.auth-util :as auth-util]
+    [cmr.access-control.services.messages :as msg]
+    [cmr.access-control.services.parameter-validation :as pv]
+    [cmr.acl.core :as acl]
+    [cmr.common-app.services.search.params :as cp]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer [info debug]]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
+    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.metadata-db :as mdb1]
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.umm.acl-matchers :as acl-matchers]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -100,12 +101,16 @@
   [context acl]
   (v/validate-acl-save! context acl :create)
   (acl-auth/authorize-acl-action context :create acl)
-  (let [resp (mdb/save-concept context (merge (acl->base-concept context acl)
-                                              {:revision-id 1
-                                               :native-id (str (java.util.UUID/randomUUID))}))]
-       (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
-       resp))
-
+  (let [acl-concept (merge (acl->base-concept context acl)
+                           {:revision-id 1
+                            :native-id (str (java.util.UUID/randomUUID))})
+        resp (mdb/save-concept context acl-concept)]
+    ;; index the saved ACL here to make ingest synchronous
+    (index/index-acl context
+                     (merge acl-concept (select-keys resp [:concept-id :revision-id]))
+                     {:synchronous? true})
+    (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
+    resp))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
@@ -128,8 +133,12 @@
                            {:concept-id concept-id
                             :native-id (:native-id existing-concept)})
           resp (mdb/save-concept context new-concept)]
-         (info (acl-log-message context new-concept existing-concept :update))
-         resp)))
+      ;; index the saved ACL synchronously
+      (index/index-acl context
+                       (merge new-concept (select-keys resp [:concept-id :revision-id]))
+                       {:synchronous? true})
+      (info (acl-log-message context new-concept existing-concept :update))
+      resp)))
 
 (defn delete-acl
   "Saves a tombstone for the ACL with the given concept id."
@@ -139,8 +148,10 @@
                        :revision-id (inc (:revision-id acl-concept))
                        :deleted true}
           resp (mdb/save-concept context tombstone)]
-         (info (acl-log-message context tombstone acl-concept :delete))
-         resp)))
+      ;; unindexing is synchronous
+      (index/unindex-acl context concept-id)
+      (info (acl-log-message context tombstone acl-concept :delete))
+      resp)))
 
 ;; Member Functions
 
@@ -315,3 +326,39 @@
   (let [sids (auth-util/get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
+
+(defn- group-permissions-granted-by-acls
+  "Returns all permissions granted to the single instance identity target group id
+   for the given sids and acls."
+  [group-id sids acls]
+  (collect-permissions (fn [acl permission]
+                         (and (= group-id (get-in acl [:single-instance-identity :target-id]))
+                              (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
+                       acls))
+
+(defn- get-group-permissions
+  "Returns a map of the target group concept ids to the set of permissions
+   granted to the given username or user type."
+  [context username-or-type target-group-ids]
+  (let [sids (auth-util/get-sids context username-or-type)
+        acls (get-echo-style-acls context)]
+    (into {}
+          (for [group-id target-group-ids]
+            [group-id (group-permissions-granted-by-acls group-id sids acls)]))))
+
+(defn get-permissions
+  "Returns result of permissions check for the given parameters."
+  [context params]
+  (let [params (-> params
+                   (update-in [:concept_id] util/seqify)
+                   (update-in [:target_group_id] util/seqify))]
+    (pv/validate-get-permission-params params)
+    (let [{:keys [user_id user_type concept_id system_object provider target target_group_id]} params
+          username-or-type (if user_type
+                             (keyword user_type)
+                             user_id)]
+      (cond
+        system_object (get-system-permissions context username-or-type system_object)
+        target (get-provider-permissions context username-or-type provider target)
+        target_group_id (get-group-permissions context username-or-type target_group_id)
+        :else (get-catalog-item-permissions context username-or-type concept_id)))))

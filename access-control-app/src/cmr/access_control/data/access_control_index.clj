@@ -199,7 +199,9 @@
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
    :display-name (m/stored m/string-field-mapping)
+   :display-name.lowercase m/string-field-mapping
    :identity-type (m/stored m/string-field-mapping)
+
    ;; Store the full ACL metadata for quick retrieval.
    :acl-gzip-b64 (m/stored (m/not-indexed m/string-field-mapping))})
 
@@ -267,18 +269,18 @@
   "Returns map for identifier and applicable booleans"
   [acl]
   (merge
-    (if (get-in acl [:catalog-item-identity :collection-identifier])
-      {:collection-identifier true}
-      {:collection-identifier false})
-    (if (get-in acl [:catalog-item-identity :collection-applicable])
-      {:collection-applicable true}
-      {:collection-applicable false})
-    (if (get-in acl [:catalog-item-identity :granule-identifier])
-      {:granule-identifier true}
-      {:granule-identifier false})
-    (if (get-in acl [:catalog-item-identity :granule-applicable])
-      {:granule-applicable true}
-      {:granule-applicable false})))
+   (if (seq (get-in acl [:catalog-item-identity :collection-identifier]))
+     {:collection-identifier true}
+     {:collection-identifier false})
+   (if (get-in acl [:catalog-item-identity :collection-applicable])
+     {:collection-applicable true}
+     {:collection-applicable false})
+   (if (seq (get-in acl [:catalog-item-identity :granule-identifier]))
+     {:granule-identifier true}
+     {:granule-identifier false})
+   (if (get-in acl [:catalog-item-identity :granule-applicable])
+     {:granule-applicable true}
+     {:granule-applicable false})))
 
 (defn- access-value-elastic-doc-map
   "Returns map for access value to be merged into full elasic doc"
@@ -316,8 +318,10 @@
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
   (let [acl (edn/read-string (:metadata concept-map))
+        display-name (acl->display-name acl)
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)
+
         target (:target (or (:system-identity acl)
                             (:provider-identity acl)))]
     (merge
@@ -326,7 +330,8 @@
       (entry-title-elastic-doc-map acl)
       (identifier-applicable-elastic-doc-map acl)
       (assoc (select-keys concept-map [:concept-id :revision-id])
-             :display-name (acl->display-name acl)
+             :display-name display-name
+             :display-name.lowercase (str/lower-case display-name)
              :identity-type (acl->identity-type acl)
              :permitted-group permitted-groups
              :permitted-group.lowercase (map str/lower-case permitted-groups)
@@ -341,15 +346,20 @@
                                       (str/lower-case legacy-guid))))))
 
 (defn index-acl
-  "Indexes ACL concept map."
-  [context concept-map]
-  (info "Indexing ACL concept:" (pr-str concept-map))
-  (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
-        {:keys [concept-id revision-id]} concept-map
-        elastic-store (esi/context->search-index context)]
-    (m/save-elastic-doc
-      elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
-      {:ignore-conflict? true})))
+  "Indexes ACL concept map. options is an optional map of options. Only :synchronous? is currently supported."
+  ([context concept-map]
+   (index-acl context concept-map {}))
+  ([context concept-map options]
+   (info "Indexing ACL concept:" (pr-str concept-map) "with options:" (pr-str options))
+   (let [elastic-doc (acl-concept-map->elastic-doc concept-map)
+         {:keys [concept-id revision-id]} concept-map
+         elastic-store (esi/context->search-index context)]
+     (m/save-elastic-doc
+       elastic-store acl-index-name acl-type-name concept-id elastic-doc revision-id
+       (merge
+         {:ignore-conflict? true}
+         (when (:synchronous? options)
+           {:refresh? true}))))))
 
 (defn unindex-acl
   "Removes ACL from index by concept ID."
@@ -357,7 +367,9 @@
   (m/delete-by-id (esi/context->search-index context)
                   acl-index-name
                   acl-type-name
-                  concept-id))
+                  concept-id
+                  ;; refresh by default because unindexing is rare, and this keeps things simpler
+                  {:refresh? true}))
 
 (defn-timed reindex-acls
   "Fetches and indexes all acls"

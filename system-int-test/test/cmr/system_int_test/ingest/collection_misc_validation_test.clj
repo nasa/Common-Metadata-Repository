@@ -46,7 +46,7 @@
       {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})
     (assert-valid
       {:entry-title "ET-1" :concept-id "C1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
-  
+
   (testing "entry-title must be unique for a provider"
     (assert-conflict
       {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
@@ -62,10 +62,11 @@
 
 (deftest field-exceeding-maxlength-warnings
   (testing "Multiple warnings returned for the fields exceeding maxlength allowed"
-    (let [collection (dc/collection-dif10 
+    (let [collection (dc/collection-dif10
                        {:platforms [(dc/platform {:short-name (apply str (repeat 81 "x"))})]
                         :purpose (apply str (repeat 12000 "y"))
-                        :product (dc/product {:processing-level-id "1"})})
+                        :product (dc/product {:processing-level-id "1"})
+                        :collection-progress :complete})
           ingest-response (d/ingest "PROV1" collection {:format :dif10})
           validation-response (ingest/validate-concept (dc/collection-concept collection :dif10))]
       (is (some? (re-find #"/Platforms/0/ShortName string.*is too long \(length: 81, maximum allowed: 80\)" (:warnings ingest-response))))
