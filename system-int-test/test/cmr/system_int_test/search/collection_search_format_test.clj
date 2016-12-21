@@ -33,7 +33,6 @@
     [cmr.umm-spec.test.expected-conversion :as exp-conv]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.versioning :as umm-version]
-    [cmr.umm.umm-collection :as umm-collection]
     [cmr.umm.umm-core :as umm]
     [cmr.umm.umm-spatial :as umm-s]))
 
@@ -578,24 +577,13 @@
                                                                               (m/mbr -10 20 30 -40)]})}))
         coll9 (d/ingest "PROV1"
                         (dc/collection-dif10 {:entry-title "Dataset9"})
-                        {:format :dif10})
+                        {:format :dif10})]
     
-        coll10 (d/ingest
-                 "PROV1"
-                 (-> (dc/collection-dif10 {:entry-title "Dataset10"
-                                           :summary "Summary of coll10"})
-                     (assoc :data-provider-timestamps
-                            (let [default-timestamps {:insert-time (d/make-time 0 false)
-                                                      :update-time (d/make-time 0 false)
-                                                      :revision-date-time (d/make-time 0 false)}]
-                              (umm-collection/map->DataProviderTimestamps default-timestamps))))
-                 {:format :dif10})]
-
     (index/wait-until-indexed)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
-        (dk/assert-collection-kml-results-match [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
+        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                  coll8 coll9] results))
       (testing "kml by concept-id"
         (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
@@ -612,11 +600,11 @@
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
-          (od/assert-collection-opendata-results-match [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
+          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                         coll8 coll9] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
@@ -629,7 +617,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
 
-      (let [coll-atom (da/collections->expected-atom [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] "collections.atom")
             response (search/find-concepts-atom :collection {})
             {:keys [status results]} response]
@@ -656,7 +644,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]

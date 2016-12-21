@@ -271,8 +271,6 @@
         ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
         ;; DIF9 doesn't support DataDates in umm-spec-lib:
         ;;  So its insert-time and update-time are nil.
-        ;; DIF10 DataDates in umm-spec-lib is derived from Data dates vs MetadataDates in umm-lib:
-        ;;  Modified dif10_collection.clj to get insert-time/update-time from Data date fields.
         update-time (when-not (= :dif format-key)
                       (get-in collection [:data-provider-timestamps :update-time])) 
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
