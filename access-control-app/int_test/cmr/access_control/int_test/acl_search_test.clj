@@ -66,7 +66,6 @@
                                                           :name "1 numbered"
                                                           :collection_applicable true}})
         get-name #(get-in % [:catalog_item_identity :name])]
-    (proto-repl.saved-values/save 1)
     (is (= [(get-name acl3) (get-name acl2) (get-name acl1)
             "Provider - PROV1 - CATALOG_ITEM_ACL"
             "System - ANY_ACL"]
