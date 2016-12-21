@@ -1,39 +1,41 @@
 (ns cmr.system-int-test.search.collection-search-format-test
   "This tests ingesting and searching for collections in different formats."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.atom-json :as dj]
-            [cmr.system-int-test.data2.umm-json :as du]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.system :as s]
-            [cheshire.core :as json]
-            [clj-http.client :as client]
-            [cmr.umm.umm-core :as umm]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.versioning :as umm-version]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.codec :as codec]
-            [cmr.umm.umm-spatial :as umm-s]
-            [clojure.data.xml :as x]
-            [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.common.util :as util :refer [are2 are3]]
-            [cmr.common.xml :as cx]
-            [cmr.common.mime-types :as mt]
-            [cmr.system-int-test.data2.kml :as dk]
-            [cmr.system-int-test.data2.opendata :as od]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.umm-spec.test.expected-conversion :as exp-conv]))
+  (:require 
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clojure.data.xml :as x]
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :as util :refer [are2 are3]]
+    [cmr.common.xml :as cx]
+    [cmr.spatial.codec :as codec]
+    [cmr.spatial.line-string :as l]
+    [cmr.spatial.mbr :as m]
+    [cmr.spatial.point :as p]
+    [cmr.spatial.polygon :as poly]
+    [cmr.spatial.ring-relations :as rr]
+    [cmr.system-int-test.data2.atom :as da]
+    [cmr.system-int-test.data2.atom-json :as dj]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.kml :as dk]
+    [cmr.system-int-test.data2.opendata :as od]
+    [cmr.system-int-test.data2.umm-json :as du]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.fast-xml :as fx]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.umm-spec.test.expected-conversion :as exp-conv]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm-spec.versioning :as umm-version]
+    [cmr.umm.umm-collection :as umm-collection]
+    [cmr.umm.umm-core :as umm]
+    [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (ingest/reset-fixture
                       {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
@@ -576,13 +578,24 @@
                                                                               (m/mbr -10 20 30 -40)]})}))
         coll9 (d/ingest "PROV1"
                         (dc/collection-dif10 {:entry-title "Dataset9"})
-                        {:format :dif10})]
+                        {:format :dif10})
+    
+        coll10 (d/ingest
+                 "PROV1"
+                 (-> (dc/collection-dif10 {:entry-title "Dataset10"
+                                           :summary "Summary of coll10"})
+                     (assoc :data-provider-timestamps
+                            (let [default-timestamps {:insert-time (d/make-time 0 false)
+                                                      :update-time (d/make-time 0 false)
+                                                      :revision-date-time (d/make-time 0 false)}]
+                              (umm-collection/map->DataProviderTimestamps default-timestamps))))
+                 {:format :dif10})]
 
     (index/wait-until-indexed)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
-        (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+        (dk/assert-collection-kml-results-match [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
                                                  coll8 coll9] results))
       (testing "kml by concept-id"
         (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
@@ -599,11 +612,11 @@
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+        (od/assert-collection-opendata-results-match [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
-          (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+          (od/assert-collection-opendata-results-match [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
                                                         coll8 coll9] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
@@ -616,7 +629,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
 
-      (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-atom (da/collections->expected-atom [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] "collections.atom")
             response (search/find-concepts-atom :collection {})
             {:keys [status results]} response]
@@ -643,7 +656,7 @@
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))
 
-      (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
+      (let [coll-json (da/collections->expected-atom [coll1 coll10 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]

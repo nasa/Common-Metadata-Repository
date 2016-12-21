@@ -405,10 +405,10 @@
     <Metadata_Name>CEOS IDN DIF</Metadata_Name>
     <Metadata_Version>VERSION 10.2</Metadata_Version>
     <Metadata_Dates>
-      <Metadata_Creation>2000-03-24T22:20:41-05:00</Metadata_Creation>
-      <Metadata_Last_Revision>2000-03-24T22:20:41-05:00</Metadata_Last_Revision>
-      <Data_Creation>1970-01-01T00:00:00</Data_Creation>
-      <Data_Last_Revision>1970-01-01T00:00:00</Data_Last_Revision>
+      <Metadata_Creation>2000-02-24T22:20:41-05:00</Metadata_Creation>
+      <Metadata_Last_Revision>2000-02-24T22:20:41-05:00</Metadata_Last_Revision>
+      <Data_Creation>2000-03-24T22:20:41-05:00</Data_Creation>
+      <Data_Last_Revision>2000-03-24T22:20:41-05:00</Data_Last_Revision>
     </Metadata_Dates>
     <Additional_Attributes>
       <Name>String add attrib</Name>

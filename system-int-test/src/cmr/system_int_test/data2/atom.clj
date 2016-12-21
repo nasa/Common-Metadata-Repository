@@ -8,6 +8,7 @@
    [clojure.string :as str]
    [cmr.common.concepts :as cu]
    [cmr.common.util :as util]
+   [cmr.common.joda-time :as joda-time]
    [cmr.common.xml :as cx]
    [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
    [cmr.spatial.line-string :as l]
@@ -267,12 +268,13 @@
          :keys [concept-id format-key]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
-        ;; See ECSE-158. DIF9 doesn't support DataDates in umm-spec-lib.
-        ;; DIF10 DataDates is parsed differently umm-spec-lib vs umm-lib.
-        ;; Here we set the update-time and insert-time to nil to make the test pass.
-        ;; We should fix the next line once ECSE-158 is resolved
-        update-time (when (not (#{:dif :dif10} format-key))
-                      (get-in collection [:data-provider-timestamps :update-time]))
+        ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
+        ;; DIF9 doesn't support DataDates in umm-spec-lib:
+        ;;  So its insert-time and update-time are nil.
+        ;; DIF10 DataDates in umm-spec-lib is derived from Data dates vs MetadataDates in umm-lib:
+        ;;  Modified dif10_collection.clj to get insert-time/update-time from Data date fields.
+        update-time (when-not (= :dif format-key)
+                      (get-in collection [:data-provider-timestamps :update-time])) 
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         coordinate-system (when spatial-representation
                             (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
