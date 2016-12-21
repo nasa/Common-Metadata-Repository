@@ -34,8 +34,10 @@
   ContactPersons, ContactGroups, and DataCenters"
   [collection]
   (let [{:keys [ContactPersons ContactGroups DataCenters]} collection
-        contacts (concat ContactPersons ContactGroups (mapcat data-center/data-center-contacts DataCenters))]
-   (filter #(not= (:FirstName %) nil) contacts)))
+        contacts (concat ContactPersons ContactGroups
+                         (mapcat #(:ContactGroups %) DataCenters)
+                         (mapcat #(:ContactPersons %) DataCenters))]
+   (filter #(not= (:GroupName %) (:LastName %) "Not provided") contacts)))
 
 (defn create-keywords-field
   [concept-id collection other-fields]
