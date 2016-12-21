@@ -1,9 +1,11 @@
 (ns cmr.umm-spec.iso19115-2-util
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
-  (:require [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select]]
-            clojure.set
-            [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select]])
+  (:require
+   clojure.set))
 
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
@@ -32,6 +34,24 @@
 (def umm-date-type-codes
   "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
   (clojure.set/map-invert iso-date-type-codes))
+
+(def iso-metadata-type-definitions
+ "A map off UMM date type enums to ISO metadata date definitions"
+ {"CREATE" "Create Date"
+  "UPDATE" "Update Date"
+  "REVIEW" "Review Date"
+  "DELETE" "Delete Date"})
+
+(defn get-iso-metadata-type-name
+ "Get the ISO metadata date name for the UMM date type enum - name is the type definition prefixed
+ with 'Metadata'"
+ [metadata-type]
+ (when-let [type-definition (get iso-metadata-type-definitions metadata-type)]
+  (str "Metadata " type-definition)))
+
+(def umm-metadata-date-types
+ "A map of ISO metadata date definitions to UMM date type enum"
+ (clojure.set/map-invert iso-metadata-type-definitions))
 
 (def eos-echo-attributes-info
   [:eos:otherPropertyType
