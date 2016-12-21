@@ -8,7 +8,6 @@
    [clojure.string :as str]
    [cmr.common.concepts :as cu]
    [cmr.common.util :as util]
-   [cmr.common.joda-time :as joda-time]
    [cmr.common.xml :as cx]
    [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
    [cmr.spatial.line-string :as l]
