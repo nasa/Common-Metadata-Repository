@@ -603,39 +603,39 @@
 
         ;; Only access value collection identifier present and not match Should not be found.
         acl10 (u/ingest-acl
-              token (assoc (u/catalog-item-acl "access value collection identifier not match")
-                           :catalog_item_identity
-                           {:name "access value collection identifier not match"
-                            :collection_applicable false
-                            :granule_applicable true
-                            :granule_identifier {}
-                            :collection_identifier {:access_value {:min_value 2 :max_value 2}}
-                            :provider_id "PROV1"}))
+               token (assoc (u/catalog-item-acl "access value collection identifier not match")
+                            :catalog_item_identity
+                            {:name "access value collection identifier not match"
+                             :collection_applicable false
+                             :granule_applicable true
+                             :granule_identifier {}
+                             :collection_identifier {:access_value {:min_value 2 :max_value 2}}
+                             :provider_id "PROV1"}))
 
         ;; one of collection identifiers not match, some match. Should not be found.
         acl11 (u/ingest-acl
-              token (assoc (u/catalog-item-acl "collection applicable false")
-                           :catalog_item_identity
-                           {:name "collection applicable false"
-                            :collection_applicable false
-                            :granule_applicable true
-                            :granule_identifier {:access_value {:include_undefined_value true}}
-                            :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
-                                                               :stop_date "2010-01-01T00:00:00Z"
-                                                               :mask "contains"}
-                                                    :entry_titles ["FOO"]}
-                            :provider_id "PROV1"}))
+               token (assoc (u/catalog-item-acl "collection applicable false")
+                            :catalog_item_identity
+                            {:name "collection applicable false"
+                             :collection_applicable false
+                             :granule_applicable true
+                             :granule_identifier {:access_value {:include_undefined_value true}}
+                             :collection_identifier {:temporal {:start_date "2009-01-01T00:00:00Z"
+                                                                :stop_date "2010-01-01T00:00:00Z"
+                                                                :mask "contains"}
+                                                     :entry_titles ["FOO"]}
+                             :provider_id "PROV1"}))
         ;; entry title collection identifier present and match but ACL on a different provider.
         ;; Should not be found.
         acl12 (u/ingest-acl
-              token (assoc (u/catalog-item-acl "PROV2 entry title collection identifier")
-                           :catalog_item_identity
-                           {:name "PROV2 entry title collection identifier"
-                            :collection_applicable false
-                            :granule_applicable true
-                            :granule_identifier {}
-                            :collection_identifier {:entry_titles ["coll1 entry title"]}
-                            :provider_id "PROV2"}))
+               token (assoc (u/catalog-item-acl "PROV2 entry title collection identifier")
+                            :catalog_item_identity
+                            {:name "PROV2 entry title collection identifier"
+                             :collection_applicable false
+                             :granule_applicable true
+                             :granule_identifier {}
+                             :collection_identifier {:entry_titles ["coll1 entry title"]}
+                             :provider_id "PROV2"}))
         expected-acls [acl1 acl2 acl3 acl4 acl5 acl6]]
     (testing "granule concept id search parent collection"
       (let [response (ac/search-for-acls (u/conn-context) {:permitted-concept-id gran1})]

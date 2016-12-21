@@ -373,7 +373,7 @@
                                                               options)
          all-items (->> acls
                         (map #(acl->search-response-item include-full-acl %))
-                        (sort-by :name)
+                        (sort-by #(str/lower-case (:name %)))
                         vec)
          start (* (dec page-num) page-size)
          end (+ start page-size)
