@@ -133,7 +133,6 @@
                                                      :platforms [pboost]
                                                      :science-keywords [skboost]}))]
 
-
     (index/wait-until-indexed)
 
     (testing "search by keywords."
