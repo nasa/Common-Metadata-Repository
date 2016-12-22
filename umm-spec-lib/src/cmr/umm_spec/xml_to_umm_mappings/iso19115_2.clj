@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2
   "Defines mappings from ISO19115-2 XML to UMM records"
   (:require
+   [clj-time.format :as f]
    [clojure.data :as data]
    [clojure.string :as str]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -65,6 +66,10 @@
 
 (def personnel-xpath
   "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
+
+(def metadata-extended-element-xpath
+  (str "/gmi:MI_Metadata/gmd:metadataExtensionInfo/gmd:MD_MetadataExtensionInformation"
+       "/gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation"))
 
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
@@ -150,6 +155,18 @@
       [(su/truncate-with-default abstract su/ABSTRACT_MAX sanitize?) version-description])
     [(su/with-default nil sanitize?)]))
 
+(defn- parse-metadata-dates
+ "Parse the metadata dates from the ISO doc if they exist. The metadata dates come from the extended-metadata
+ metadata in the ISO doc. Extended metadata isn't necessarily the metadata dates so check the definition
+ to see if it's metadata dates and filter those out in the for."
+ [doc]
+ (for [metadata-date (select doc metadata-extended-element-xpath)
+       :let [date-definition (char-string-value metadata-date "gmd:definition")
+             metadata-date-type (get iso-util/umm-metadata-date-types date-definition)]
+       :when (some? metadata-date-type)]
+   {:Type metadata-date-type
+    :Date (f/parse (char-string-value metadata-date "gmd:domainValue"))}))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc {:keys [sanitize?]}]
@@ -224,7 +241,8 @@
      :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161
-     :DataCenters (when sanitize? [su/not-provided-data-center])}))
+     :DataCenters (when sanitize? [su/not-provided-data-center])
+     :MetadataDates (parse-metadata-dates doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option
