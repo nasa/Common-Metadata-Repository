@@ -133,7 +133,7 @@
      value)))
 
 (defn default-value?
-  "Does the given value match umm-lib default?"
+  "Does the given value match umm-spec-lib default?"
   [value]
   (= value not-provided))
 
