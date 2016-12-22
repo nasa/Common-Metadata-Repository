@@ -43,12 +43,6 @@
         "source_value": "Not provided",
         "order": 0
       },
-      ;; retrieve-humanizer-alias-map works with the assumption that
-      ;; We can't have multiple replacement_value that only differ in upper/lower cases.
-      ;; see the following two instrument aliases.
-      ;; I modified the code to upper-case the replacement_value
-      ;; before group-by to take care of this case even though this is supposed to be 
-      ;; invalid based on my conversation with Kathy
       {
         "type": "alias",
         "field": "instrument",
