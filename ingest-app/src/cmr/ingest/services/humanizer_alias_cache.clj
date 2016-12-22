@@ -22,7 +22,7 @@
   "Returns the alias map like 
    {\"platform\" {\"TERRA\" [\"AM-1\" \"am-1\" \"AM 1\"] \"OTHERPLATFORMS\" [\"otheraliases\"]}
     \"tiling_system_name\" {\"TILE\" [\"tile_1\" \"tile_2\"] \"OTHERTILES\" [\"otheraliases\"]}
-    \"instrument\" {\"INSTRUMENT\" [\"instr1\" \"instr2\"] \"OTHERTILES\" [\"otheraliases\"]}}"
+    \"instrument\" {\"INSTRUMENT\" [\"instr1\" \"instr2\"] \"OTHERINSTRUMENTS\" [\"otheraliases\"]}}"
   [humanizer]
   (into {}
         (for [[k1 v1] 
@@ -81,8 +81,7 @@
   (let [subelements (get element subelement-key)
         subelement-aliases (get-field-aliases 
                              subelements subelement-name-key subelement-alias-map)]
-    (-> element
-        (update subelement-key concat subelement-aliases)))) 
+    (update element subelement-key concat subelement-aliases))) 
 
 (defn update-collection-with-platform-aliases
   "Returns the collection with humanizer platform aliases added.
@@ -138,13 +137,9 @@
                          :short-name)
         instr-alias-map (get humanizer-alias-map "instrument")
         plats (get collection plat-key)
-        updated-plats (for [plat plats
-                            :let [updated-plat 
-                                  (update-element-with-subelement-aliases
-                                    plat instr-key instr-name-key instr-alias-map)]]
-                        updated-plat)]
+        updated-plats (map #(update-element-with-subelement-aliases 
+                              % instr-key instr-name-key instr-alias-map) plats)]
     (-> collection
-        (dissoc plat-key)
         (assoc plat-key updated-plats)))) 
 
 (defn update-collection-with-aliases
