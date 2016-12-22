@@ -63,16 +63,16 @@
   (testing "UMM-C JSON-Schema validation through config settings"
     (testing "schema validation errors returned"
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
-      (let [response (d/ingest "PROV1" 
+      (let [response (d/ingest "PROV1"
                                (dc/collection {:product-specific-attributes
                                                [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                                {:allow-failure? true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
 
-    (testing "schema validation errors not returned" 
+    (testing "schema validation errors not returned"
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
       (assert-valid {:product-specific-attributes [(dc/psa {:name "bool1" :data-type :boolean :value true})
                                                    (dc/psa {:name "bool2" :data-type :boolean :value true})]})))
@@ -84,10 +84,10 @@
                                                         (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                                {:allow-failure? true :validate-umm-c true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
 
-    (testing "schema validation error returns is controlled by config setting when Cmr-Validate-Umm-C header is NOT true" 
+    (testing "schema validation error returns is controlled by config setting when Cmr-Validate-Umm-C header is NOT true"
       (let [coll-attr {:product-specific-attributes
                        [(dc/psa {:name "bool1" :data-type :boolean :value true})
                         (dc/psa {:name "bool2" :data-type :boolean :value true})]}]
@@ -117,6 +117,7 @@
                                   :instruments [{:short-name "inst"}]}]
                      :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                      :ending-date-time "1967-12-12T07:00:00.000-05:00"
+                     :collection-progress :complete
                      :product-specific-attributes
                      [(dc/psa {:name "bool" :data-type :boolean :value true})
                       (dc/psa {:name "bool" :data-type :boolean :value true})]}]
@@ -142,7 +143,7 @@
             ["ProductSpecificAttributes"]
             ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
             nil)))
-  
+
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
   (testing "Additional Attribute validation"
@@ -207,7 +208,7 @@
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
 
 (deftest umm-spec-validation-warnings
-  ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection. 
+  ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection.
   (testing "Ingest and Ingest Validation with warning messages for all formats"
     (are3 [format collection warning-message]
           (do
@@ -219,20 +220,20 @@
               (is (= warning-message (:warnings response)))))
 
           "ECHO10 Ingest and Ingest Validation"
-          :echo10 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :echo10 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "DIF10 Ingest and Ingest Validation"
-          :dif10 (dc/collection-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"ProcessingLevel\"])"
+          :dif10 (dc/collection-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"ProcessingLevel\"])"
 
           "DIF9 Ingest and Ingest Validation"
-          :dif (dc/collection-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :dif (dc/collection-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO19115 Ingest and Ingest Validation"
-          :iso19115 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso19115 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO SMAP Ingest and Ingest Validation"
-          :iso-smap (dc/collection-smap {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso-smap (dc/collection-smap {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc-in (dc/collection-dif {}) [:product :version-id] nil)
-          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))
+          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))

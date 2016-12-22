@@ -50,6 +50,27 @@
                  [{} 0]
                  (partition 2 group-permissions))))
 
+(deftest acl-search-order-test
+  ;; Conforms to requirements set out in CMR-3590, alphabetical order regardless of case
+  (let [token (e/login (u/conn-context) "user1")
+        acl1 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "B Uppercase B"
+                                                          :collection_applicable true}})
+        acl2 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "a lowercase A"
+                                                          :collection_applicable true}})
+        acl3 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "1 numbered"
+                                                          :collection_applicable true}})
+        get-name #(get-in % [:catalog_item_identity :name])]
+    (is (= [(get-name acl3) (get-name acl2) (get-name acl1)
+            "Provider - PROV1 - CATALOG_ITEM_ACL"
+            "System - ANY_ACL"]
+           (map :name (:items (ac/search-for-acls (merge {:token token} (u/conn-context)) {})))))))
+
 (deftest acl-search-permission-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token
@@ -86,9 +107,9 @@
                                          [:provider_identity :provider_id] "PROV2"))
         ;; Create an ACL with a catalog item identity for PROV1
         acl7 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
-                                :catalog_item_identity {:provider_id "PROV1"
-                                                        :name "PROV1 All Collections ACL"
-                                                        :collection_applicable true}})]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "PROV1 All Collections ACL"
+                                                          :collection_applicable true}})]
 
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
@@ -411,6 +432,23 @@
 
         "Identity type searches are always case-insensitive"
         ["PrOvIdEr"] [fixtures/*fixture-provider-acl*]))))
+
+(deftest acl-search-by-target-test
+  (let [token (e/login (u/conn-context) "user1")]
+
+    (are3 [target expected-acls]
+      (let [response (ac/search-for-acls (u/conn-context) {:target target})]
+        (is (= (u/acls->search-response (count expected-acls) expected-acls)
+               (dissoc response :took))))
+
+      "System target"
+      ["ANY_ACL"] [fixtures/*fixture-system-acl*]
+
+      "Provider target"
+      ["CATALOG_ITEM_ACL"] [fixtures/*fixture-provider-acl*]
+
+      "Provider target, case insensitive"
+      ["catalog_item_acl"] [fixtures/*fixture-provider-acl*])))
 
 (deftest acl-search-by-permitted-user-test
   (let [token (e/login (u/conn-context) "user1")

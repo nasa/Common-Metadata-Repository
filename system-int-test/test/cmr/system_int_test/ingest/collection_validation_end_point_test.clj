@@ -14,7 +14,7 @@
     (let [concept (dc/collection-concept {})
           {:keys [status errors]} (ingest/validate-concept concept)]
       (is (= [200 nil] [status errors]))))
- 
+
  (testing "invalid collection xml fails validation with appropriate message"
     (let [concept (dc/collection-concept {})
           {:keys [status errors]}
@@ -27,7 +27,8 @@
 (deftest successful-validation-with-accept-header-test
   (testing "successful validation requests do not get an xml or json response body"
     (are [accept]
-         (let [collection (dc/collection-dif10 {:processing-level-id "Level 1"})
+         (let [collection (dc/collection-dif10 {:processing-level-id "Level 1"
+                                                :collection-progress :complete})
                concept (dc/collection-concept collection :dif10)
                response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
                                          [:status :body])]
@@ -40,4 +41,3 @@
           {:keys [status body]} (ingest/validate-concept concept {:raw? true})]
       (is (= [400 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only.</error><error>Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected.</error></errors>"]
              [status body])))))
-

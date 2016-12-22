@@ -26,6 +26,7 @@
      :ShortName "short"
      :Version "V1"
      :EntryTitle "The entry title V5"
+     :CollectionProgress "COMPLETE"
      :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
@@ -55,6 +56,7 @@
      :ShortName "short"
      :Version "V1"
      :EntryTitle "The entry title V5"
+     :CollectionProgress "COMPLETE"
      :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"

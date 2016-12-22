@@ -277,7 +277,7 @@
       (assoc :DataCenters [su/not-provided-data-center])
       (assoc :ContactGroups nil)
       (assoc :ContactPersons nil)
-      (assoc :MetadataDates nil)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
+      (update :CollectionProgress su/with-default)
       js/parse-umm-c))

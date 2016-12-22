@@ -95,4 +95,5 @@
         (update-in [:Platforms] normalize-smap-instruments)
         (assoc :LocationKeywords nil)
         (assoc :PaleoTemporalCoverages nil)
-        (assoc :MetadataDates nil)))
+        (assoc :MetadataDates nil)
+        (update :CollectionProgress su/with-default)))

@@ -1,19 +1,21 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
-            [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :as su :refer [char-string]]
-            [cmr.umm-spec.date-util :as date-util]
-            [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
-            [cmr.umm-spec.location-keywords :as lk]))
+  (:require
+   [clj-time.format :as f]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.date-util :as date-util]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
+   [cmr.umm-spec.util :as su :refer [char-string]]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -68,6 +70,46 @@
          [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
                                 :codeListValue type-code} type-code]]]])))
 
+(defn- generate-datestamp
+ "Return the ISO datestamp from metadata dates. Use update date if available, then creation date
+ if available, or a default if neither are populated."
+ [c]
+ (when-let [datestamp (or (date-util/metadata-update-date c)
+                          (date-util/metadata-create-date c)
+                          date-util/parsed-default-date)]
+  [:gmd:dateStamp
+   [:gco:DateTime (f/unparse (f/formatters :date-time) datestamp)]]))
+
+(defn- generate-metadata-dates
+  "Returns ISO datestamp and XML elements for Metadata Dates of the given UMM collection.
+  ParentEntity, rule, and source are required under MD_ExtendedElementInformation, but are just
+  populated with empty since they are not needed for the Metadata Dates"
+  [c]
+  (for [date (:MetadataDates c)]
+   [:gmd:metadataExtensionInfo
+    [:gmd:MD_MetadataExtensionInformation
+     [:gmd:extendedElementInformation
+      [:gmd:MD_ExtendedElementInformation
+       [:gmd:name
+        [:gco:CharacterString (iso/get-iso-metadata-type-name (:Type date))]]
+       [:gmd:definition
+        [:gco:CharacterString (get iso/iso-metadata-type-definitions (:Type date))]]
+       [:gmd:dataType
+        [:gmd:MD_DatatypeCode
+         {:codeList ""
+          :codeListValue ""} "Date"]]
+       [:gmd:domainValue
+        [:gco:CharacterString (f/unparse (f/formatters :date-time) (:Date date))]]
+       [:gmd:parentEntity
+        [:gco:CharacterString ""]]
+       [:gmd:rule
+        [:gco:CharacterString ""]]
+       [:gmd:source
+        [:gmd:CI_ResponsibleParty
+         [:gmd:role
+          [:gmd:CI_RoleCode
+            {:codeList ""
+             :codeListValue ""} "Role"]]]]]]]]))
 
 (defn iso-topic-value->sanitized-iso-topic-category
   "Ensures an uncontrolled IsoTopicCategory value is on the schema-defined list or substitues a
@@ -183,6 +225,7 @@
           [:gmd:otherConstraints
             [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
 
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -202,11 +245,11 @@
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
        [:gmd:contact {:gco:nilReason "missing"}]
-       [:gmd:dateStamp
-        [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
+       (generate-datestamp c)
        [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
        [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
        (spatial/coordinate-system-element c)
+       (generate-metadata-dates c)
        [:gmd:identificationInfo
         [:gmd:MD_DataIdentification
          [:gmd:citation
