@@ -10,8 +10,8 @@
 
 (def default-temporal-start-date-time
   "The default date-time to use for relevancy calculations when one is not specified in the
-  temporal range. This is the same default used by umm-spec."
-  (time-coerce/to-long (time/date-time 1970 1 1)))
+  temporal range. Use an early date to get all collections."
+  (time-coerce/to-long (time/date-time 1900 1 1)))
 
 (defn temporal-range->elastic-param
   "Convert a temporal range to the right format for the elastic script. Change the dates to longs, populate

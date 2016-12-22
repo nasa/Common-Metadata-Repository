@@ -8,12 +8,12 @@ def totalOverlap = 0;
 for (range in temporalRanges)
 {
  def overlapStartDate = range.start_date;
- if (doc['start-date'].value != 0 && doc['start-date'].value > overlapStartDate)
+ if (doc['start-date'].empty == false && doc['start-date'].value > overlapStartDate)
  {
    overlapStartDate = doc['start-date'].value;
  }
  def overlapEndDate = range.end_date;
- if (doc['end-date'].value != 0 && doc['end-date'].value < overlapEndDate)
+ if (doc['end-date'].empty == false && doc['end-date'].value < overlapEndDate)
  {
    overlapEndDate = doc['end-date'].value;
  }
