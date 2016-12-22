@@ -132,6 +132,11 @@
        not-provided)
      value)))
 
+(defn default-value?
+  "Does the given value match umm-lib default?"
+  [value]
+  (= value not-provided))
+
 (defn without-default
   "DEPRECATED: We will no longer remove default values.
   Returns nil if x is the not-provided placeholder value, else returns x."

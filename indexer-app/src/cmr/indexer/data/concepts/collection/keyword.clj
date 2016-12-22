@@ -69,8 +69,8 @@
         directory-short-names (map :ShortName directory-names)
         contact-persons (get-contact-persons collection)
         contact-personnel-first-names (map :FirstName contact-persons)
-        contact-personnel-last-names (filter #(not= % su/not-provided) (map :LastName contact-persons))
-        contact-group-names (filter #(not= % su/not-provided) (map :GroupName contact-persons))
+        contact-personnel-last-names (remove su/default-value? (map :LastName contact-persons))
+        contact-group-names (remove su/default-value? (map :GroupName contact-persons))
         contact-mechanisms (map #(:Value (first %))
                                 (map #(get-in % [:ContactInformation :ContactMechanisms]) contact-persons))
         platforms (map util/map-keys->kebab-case
