@@ -92,7 +92,7 @@
       (is (= contact-group-example-umm-c-record parsed)))))
 
 (deftest all-umm-c-records
-  (checking "all umm-c records" 1
+  (checking "all umm-c records" 100
     [umm-c-record (gen/no-shrink umm-gen/umm-c-generator)]
     (let [json (uj/umm->json umm-c-record)
           _ (is (empty? (js/validate-umm-json json :collection)))
