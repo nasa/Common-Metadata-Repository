@@ -127,11 +127,11 @@
         legacy-guid (:legacy-guid acl)]
     (when-not (= existing-legacy-guid legacy-guid)
       (errors/throw-service-error
-        :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
-                              existing-legacy-guid legacy-guid)))
+       :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                             existing-legacy-guid legacy-guid)))
     (let [new-concept (merge (acl->base-concept context acl)
-                           {:concept-id concept-id
-                            :native-id (:native-id existing-concept)})
+                             {:concept-id concept-id
+                              :native-id (:native-id existing-concept)})
           resp (mdb/save-concept context new-concept)]
       ;; index the saved ACL synchronously
       (index/index-acl context
@@ -141,12 +141,13 @@
       resp)))
 
 (defn delete-acl
-  "Saves a tombstone for the ACL with the given concept id."
+  "Delete the ACL with the given concept id."
   [context concept-id]
+  (acl-auth/authorize-acl-action context :delete nil)
   (let [acl-concept (fetch-acl-concept context concept-id)]
     (let [tombstone {:concept-id (:concept-id acl-concept)
-                       :revision-id (inc (:revision-id acl-concept))
-                       :deleted true}
+                     :revision-id (inc (:revision-id acl-concept))
+                     :deleted true}
           resp (mdb/save-concept context tombstone)]
       ;; unindexing is synchronous
       (index/unindex-acl context concept-id)

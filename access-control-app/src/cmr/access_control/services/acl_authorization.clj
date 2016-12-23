@@ -152,4 +152,4 @@
    Actions include create and update."
   [context action acl]
   (when-not (action-permitted-on-acl? context action acl)
-    (errors/throw-service-error :bad-request (permission-denied-message action))))
+    (errors/throw-service-error :unauthorized (permission-denied-message action))))

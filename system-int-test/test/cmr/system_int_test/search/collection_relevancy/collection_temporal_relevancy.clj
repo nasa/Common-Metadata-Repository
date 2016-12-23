@@ -31,6 +31,8 @@
 ;;   * Start and end dates
 ;;   * Ends at present
 ;;   * Single date time
+;;   * Start at Unix epoch time
+;;   * Start and end before unix epoch time
 
 (deftest relevancy-temporal-ranges
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
@@ -44,8 +46,13 @@
                                                 :temporal (dc/temporal {:beginning-date-time "2009-10-15T12:00:00Z"
                                                                         :ends-at-present? true})}))
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll4"
-                                                :temporal (dc/temporal {:single-date-time "2008-5-15T12:00:00Z"})}))]
-
+                                                :temporal (dc/temporal {:single-date-time "2008-5-15T12:00:00Z"})}))
+        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll5"
+                                                :temporal (dc/temporal {:beginning-date-time "1970-01-01T00:00:00Z"
+                                                                        :ending-date-time "1996-10-01T00:00:00Z"})}))
+        coll6 (d/ingest "PROV1" (dc/collection {:entry-title "coll6"
+                                                :temporal (dc/temporal {:beginning-date-time "1910-05-01T00:00:00Z"
+                                                                        :ending-date-time "1968-10-01T00:00:00Z"})}))]
     (index/wait-until-indexed)
 
     (are3 [temporal-search-ranges expected-collections]
@@ -55,20 +62,24 @@
       ["2000-01-01T10:00:00Z,2010-03-01T0:00:00Z"] [coll1 coll2 coll3 coll4]
 
       "Range with start and end, earlier"
-      ["1996-01-01T10:00:00Z,2010-03-01T0:00:00Z"] [coll2 coll1 coll3 coll4]
+      ["1996-01-01T10:00:00Z,2010-03-01T0:00:00Z"] [coll2 coll1 coll5 coll3 coll4]
 
-     "Temporal range with no end date"
-     ["2004-06-01T10:00:00Z"] [coll3 coll1 coll4]
+      "Temporal range with no end date"
+      ["2004-06-01T10:00:00Z"] [coll3 coll1 coll4]
 
-     "Temporal range with no start date"
-     [",2010-01-01T10:00:00Z"] [coll2 coll1 coll3 coll4]
+      "Temporal range with no start date"
+      [",2010-01-01T10:00:00Z"] [coll6 coll5 coll2 coll1 coll3 coll4]
 
-     "Temporal range with span"
-     ["2000-01-01T10:00:00Z/P10Y2M10DT2H"] [coll1 coll2 coll3 coll4]
+      "Temporal range with span"
+      ["2000-01-01T10:00:00Z/P10Y2M10DT2H"] [coll1 coll2 coll3 coll4]
 
-     "Multiple temporal ranges"
-     ["2001-01-01T10:00:00Z,2006-01-01T10:00:00Z" "1996-01-01T10:00:00Z,1997-01-01T10:00:00Z"] [coll1 coll2]
+      "Multiple temporal ranges"
+      ["2001-01-01T10:00:00Z,2006-01-01T10:00:00Z" "1996-01-01T10:00:00Z,1997-01-01T10:00:00Z"]
+      [coll1 coll2 coll5]
 
-     "Multiple temporal ranges, no end date"
-     ["2001-01-01T10:00:00Z,2006-01-01T10:00:00Z" "1996-01-01T10:00:00Z,1997-01-01T10:00:00Z" "2008-01-01T12:00:00Z"]
-     [coll3 coll1 coll2 coll4])))
+      "Multiple temporal ranges, no end date"
+      ["2001-01-01T10:00:00Z,2006-01-01T10:00:00Z" "1996-01-01T10:00:00Z,1997-01-01T10:00:00Z" "2008-01-01T12:00:00Z"]
+      [coll3 coll1 coll2 coll5 coll4]
+
+      "Date range including collection with early ranges"
+      ["1955-01-01T10:00:00Z,1999-03-01T0:00:00Z"] [coll5 coll6 coll2])))
