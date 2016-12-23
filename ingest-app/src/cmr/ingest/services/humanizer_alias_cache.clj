@@ -36,7 +36,7 @@
                             ;; case in humanizers.json where there are multiple :replacement_value 
                             ;; that only differ in upper-lower cases. 
                             (->> (map #(select-keys % [:replacement_value :source_value]) v1)
-                                 (map #(update-in % [:replacement_value] str/upper-case))))]
+                                 (map #(update % :replacement_value str/upper-case))))]
                       [k2 (map :source_value v2)]))])))    
 
 (defn refresh-cache
@@ -139,8 +139,7 @@
         plats (get collection plat-key)
         updated-plats (map #(update-element-with-subelement-aliases 
                               % instr-key instr-name-key instr-alias-map) plats)]
-    (-> collection
-        (assoc plat-key updated-plats)))) 
+    (assoc collection plat-key updated-plats))) 
 
 (defn update-collection-with-aliases
   "Returns the collection with humanizer aliases added."
