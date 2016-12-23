@@ -15,7 +15,8 @@
             [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
-            [cmr.umm.related-url-helper :as ru]))
+            [cmr.umm.related-url-helper :as ru]
+            [cmr.umm-spec.util :as umm-spec-util]))
 
 (def OPENDATA_SCHEMA
   "Location of the the opendata schema to which the results conform"
@@ -54,9 +55,6 @@
 
 (def DEFAULT_CONTACT_NAME
   "undefined")
-
-(def VALUE_NOT_PROVIDED
-  "Not provided")
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
@@ -182,11 +180,13 @@
 (defn landing-page
   "Creates the landingPage field for the collection with the given related-urls."
   [related-urls]
-  (some (fn [related-url]
-          (let [{:keys [url type]} related-url]
+  (if (empty? related-urls)
+    umm-spec-util/not-provided-url
+    (some (fn [related-url]
+           (let [{:keys [url type]} related-url]
             (when (= "VIEW PROJECT HOME PAGE" type)
-              url)))
-        related-urls))
+               url)))
+         related-urls)))
 
 (defn publisher
   "Creates the publisher field for the collection based on the archive-center.  Note for the
@@ -195,7 +195,7 @@
   (let [hierarchy (if (= provider-id "USGS_EROS")
                     USGS_EROS_PUBLISHER_HIERARCHY
                     NASA_PUBLISHER_HIERARCHY)]
-    {:name archive-center
+    {:name (or archive-center umm-spec-util/not-provided)
      :subOrganizationOf hierarchy}))
 
 (defn keywords
@@ -215,7 +215,7 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls personnel shapes archive-center]} item]
-    (util/inflate-nil-keys {:title entry-title
+    (util/remove-nil-keys {:title entry-title
                             :description (not-empty summary)
                             :keyword (keywords science-keywords-flat)
                             :modified (or update-time (generate-end-date end-date))
@@ -232,8 +232,7 @@
                             :landingPage (landing-page related-urls)
                             :language  [LANGUAGE_CODE]
                             :references (not-empty (map :url related-urls))
-                            :issued (not-empty insert-time)}
-                           VALUE_NOT_PROVIDED)))
+                            :issued (not-empty insert-time)})))
 
 (defn- results->opendata
   "Convert search results to opendata."

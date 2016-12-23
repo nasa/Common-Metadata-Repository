@@ -601,8 +601,7 @@
                (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
 
     (testing "opendata"
-      (let [results (search/find-concepts-opendata :collection {})
-            known-problem-collections (slurp (io/resource "problem_collection_opendata.json"))]
+      (let [results (search/find-concepts-opendata :collection {})]
         (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                       coll8 coll9] results))
       (testing "as extension"

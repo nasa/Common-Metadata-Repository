@@ -18,6 +18,7 @@
    [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.umm-spec.date-util :as date-util]
+   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
@@ -118,7 +119,7 @@
                             :language [odrh/LANGUAGE_CODE]
                             :references (not-empty (map :url related-urls))
                             :issued (when insert-time (str insert-time))}
-                           odrh/VALUE_NOT_PROVIDED)))
+                           umm-spec-util/not-provided)))
 
 (defn collections->expected-opendata
   [collections]
@@ -138,7 +139,7 @@
 (defn assert-collection-opendata-results-match
   "Returns true if the opendata results are for the expected items"
   [collections actual-result]
-  (is (empty? (opendata-json/validate-dataset (json/generate-string (:body actual-result)))))
+  (is (empty? (opendata-json/validate-dataset (json/generate-string (:results actual-result)))))
   (is (= (opendata-results-map->opendata-results-map-using-sets
           (collections->expected-opendata collections))
          (opendata-results-map->opendata-results-map-using-sets actual-result))))
