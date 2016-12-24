@@ -21,7 +21,8 @@
 (defn- retrieve-humanizer-alias-map
   "Returns the alias map like 
    {\"platform\" {\"TERRA\" [\"AM-1\" \"am-1\" \"AM 1\"] \"OTHERPLATFORMS\" [\"otheraliases\"]}
-    \"tiling_system_name\" {\"TILE\" [\"tile_1\" \"tile_2\"] \"OTHERTILES\" [\"otheraliases\"]}}"
+    \"tiling_system_name\" {\"TILE\" [\"tile_1\" \"tile_2\"] \"OTHERTILES\" [\"otheraliases\"]}
+    \"instrument\" {\"INSTRUMENT\" [\"instr1\" \"instr2\"] \"OTHERINSTRUMENTS\" [\"otheraliases\"]}}"
   [humanizer]
   (into {}
         (for [[k1 v1] 
@@ -31,8 +32,12 @@
           [k1 (into {}
                     (for [[k2 v2] 
                           (group-by :replacement_value
-                            (map #(select-keys % [:replacement_value :source_value]) v1))]
-                      [(str/upper-case k2) (map :source_value v2)]))])))    
+                            ;; upper-case the :replacement_value before group-by to cover the
+                            ;; case in humanizers.json where there are multiple :replacement_value 
+                            ;; that only differ in upper-lower cases. 
+                            (->> (map #(select-keys % [:replacement_value :source_value]) v1)
+                                 (map #(update % :replacement_value str/upper-case))))]
+                      [k2 (map :source_value v2)]))])))    
 
 (defn refresh-cache
   "Refreshes the humanizer alias cache."
@@ -52,8 +57,8 @@
                  #(retrieve-humanizer-alias-map humanizer))))
 
 (defn- get-field-aliases
-  "Returns field aliases for a given collection's fields, field-name-key and a field-alias-map.
-   Note: if the field-name of a field alias already exists in the collection's fields, this
+  "Returns field aliases for a given element's fields, field-name-key and a field-alias-map.
+   Note: if the field-name of a field alias already exists in the element's fields, this
    alias won't be added to the field-aliases."
   [fields field-name-key field-alias-map]
   (let [field-names-set (set (map field-name-key fields))
@@ -64,6 +69,19 @@
                 alias (set/difference aliases-set field-names-set)]
            (assoc coll-field field-name-key alias))]
     field-aliases))
+
+(defn update-element-with-subelement-aliases
+  "Returns the element with subelement aliases added.
+   The element could be collection, platform, instrument, 
+   and the aliases would be added one level below:
+   for collection: platform and tile aliases will be added.
+       platform: instrument aliases will be added.
+       instrument: sensor aliases will be added(not implemented)"
+  [element subelement-key subelement-name-key subelement-alias-map]
+  (let [subelements (get element subelement-key)
+        subelement-aliases (get-field-aliases 
+                             subelements subelement-name-key subelement-alias-map)]
+    (update element subelement-key concat subelement-aliases))) 
 
 (defn update-collection-with-platform-aliases
   "Returns the collection with humanizer platform aliases added.
@@ -87,11 +105,9 @@
         plat-name-key (if umm-spec-collection?
                         :ShortName
                         :short-name)
-        platforms (get collection plat-key)
-        plat-alias-map (get humanizer-alias-map "platform")
-        platform-aliases (get-field-aliases platforms plat-name-key plat-alias-map)]
-    (-> collection
-        (update plat-key concat platform-aliases))))
+        plat-alias-map (get humanizer-alias-map "platform")]
+    (update-element-with-subelement-aliases
+      collection plat-key plat-name-key plat-alias-map)))
 
 (defn update-collection-with-tile-aliases
   "Returns the collection with humanizer tile aliases added"
@@ -102,16 +118,36 @@
         tile-name-key (if umm-spec-collection?
                         :TilingIdentificationSystemName
                         :name)
-        tiles (get collection tile-key)
-        tile-alias-map (get humanizer-alias-map "tiling_system_name")
-        tile-aliases (get-field-aliases tiles tile-name-key tile-alias-map)]
-    (-> collection      
-        (update tile-key concat tile-aliases))))  
+        tile-alias-map (get humanizer-alias-map "tiling_system_name")]
+     (update-element-with-subelement-aliases
+       collection tile-key tile-name-key tile-alias-map))) 
+
+(defn update-collection-with-instrument-aliases
+  "Returns the collection with humanizer instrument aliases added.
+   Go through each platform and update the platform with all the instrument aliases"
+  [collection umm-spec-collection? humanizer-alias-map]
+  (let [plat-key (if umm-spec-collection?
+                   :Platforms
+                   :platforms)
+        instr-key (if umm-spec-collection?
+                    :Instruments
+                    :instruments)
+        instr-name-key (if umm-spec-collection?
+                         :ShortName
+                         :short-name)
+        instr-alias-map (get humanizer-alias-map "instrument")
+        plats (get collection plat-key)
+        updated-plats (map #(update-element-with-subelement-aliases 
+                              % instr-key instr-name-key instr-alias-map) plats)]
+    (assoc collection plat-key updated-plats))) 
 
 (defn update-collection-with-aliases
-  "Returns the collection with humanizer platform and tile aliases added."
+  "Returns the collection with humanizer aliases added."
   [context collection umm-spec-collection?]
   (let [humanizer-alias-map (get-humanizer-alias-map context)]
     (-> collection
         (update-collection-with-platform-aliases umm-spec-collection? humanizer-alias-map) 
+        ;; instrument alias update needs to be after the platform as we want to add them
+        ;; to all the platform instruments, including the alias platform's instruments.
+        (update-collection-with-instrument-aliases umm-spec-collection? humanizer-alias-map) 
         (update-collection-with-tile-aliases umm-spec-collection? humanizer-alias-map)))) 
