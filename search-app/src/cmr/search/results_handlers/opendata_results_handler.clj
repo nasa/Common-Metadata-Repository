@@ -1,22 +1,23 @@
 (ns cmr.search.results-handlers.opendata-results-handler
   "Handles the opendata results format and related functions"
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
-            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
-            [clojure.walk :as walk]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [clj-time.core :as time]
-            [clj-time.format :as f]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.common-app.services.search.results-model :as r]
-            [cmr.spatial.serialize :as srl]
-            [cmr.search.services.url-helper :as url]
-            [cmr.umm.related-url-helper :as ru]
-            [cmr.umm-spec.util :as umm-spec-util]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.core :as time]
+   [clj-time.format :as f]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.walk :as walk]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.util :as util]
+   [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.url-helper :as url]
+   [cmr.spatial.serialize :as srl]
+   [cmr.umm-spec.util :as umm-spec-util]
+   [cmr.umm.related-url-helper :as ru]))
 
 (def OPENDATA_SCHEMA
   "Location of the the opendata schema to which the results conform"
@@ -178,7 +179,8 @@
                   related-urls)))
 
 (defn landing-page
-  "Creates the landingPage field for the collection with the given related-urls."
+  "Creates the landingPage field for the collection with the given related-urls.
+  Returns umm-spec-lib default if none is present."
   [related-urls]
   (if (empty? related-urls)
     umm-spec-util/not-provided-url

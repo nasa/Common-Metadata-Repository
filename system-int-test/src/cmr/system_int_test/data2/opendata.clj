@@ -136,7 +136,8 @@
                            (util/map-values #(if (sequential? %) (set %) %) field))))))
 
 (defn assert-collection-opendata-results-match
-  "Returns true if the opendata results are for the expected items"
+  "Returns true if the opendata results are for the expected items.
+  Also validates the dataset against the Opendata v1.1 json schema."
   [collections actual-result]
   (is (empty? (opendata-json/validate-dataset (json/generate-string (:results actual-result)))))
   (is (= (opendata-results-map->opendata-results-map-using-sets
