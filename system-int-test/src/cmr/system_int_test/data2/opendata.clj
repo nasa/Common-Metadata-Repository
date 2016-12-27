@@ -99,12 +99,12 @@
         contact-point (contact-point personnel)
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
 
-    (util/inflate-nil-keys {:title entry-title
+    (util/remove-nil-keys {:title entry-title
                             :description summary
                             :keyword (conj (flatten-science-keywords collection)
                                            "NGDA"
                                            "National Geospatial Data Asset")
-                            :modified (when update-time (str update-time))
+                            :modified (str (or update-time (odrh/generate-end-date end-date)))
                             :publisher (odrh/publisher provider-id archive-center)
                             :contactPoint contact-point
                             :identifier concept-id
@@ -115,11 +115,10 @@
                             :temporal (odrh/temporal start-date end-date)
                             :theme (conj project-sn "geospatial")
                             :distribution distribution
-                            :landingPage (odrh/landing-page concept-id)
+                            :landingPage (odrh/landing-page related-urls)
                             :language [odrh/LANGUAGE_CODE]
                             :references (not-empty (map :url related-urls))
-                            :issued (when insert-time (str insert-time))}
-                           umm-spec-util/not-provided)))
+                            :issued (when insert-time (str insert-time))})))
 
 (defn collections->expected-opendata
   [collections]

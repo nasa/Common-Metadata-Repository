@@ -602,8 +602,7 @@
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                      coll8 coll9] results))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
           (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7

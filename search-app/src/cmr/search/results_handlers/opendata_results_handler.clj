@@ -141,7 +141,7 @@
             :archive-center archive-center}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
-(defn- generate-end-date
+(defn generate-end-date
   "Format today's date if the given end-date is nil"
   [end-date]
   (if end-date
@@ -215,7 +215,8 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls personnel shapes archive-center]} item]
-    (util/remove-nil-keys {:title entry-title
+    ;; All fields are required unless otherwise noted
+    (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
                             :description (not-empty summary)
                             :keyword (keywords science-keywords-flat)
                             :modified (or update-time (generate-end-date end-date))
@@ -225,9 +226,9 @@
                             :accessLevel ACCESS_LEVEL
                             :bureauCode [BUREAU_CODE]
                             :programCode [PROGRAM_CODE]
-                            :spatial (spatial shapes)
-                            :temporal (temporal start-date end-date)
-                            :theme (theme project-sn)
+                            :spatial (spatial shapes) ;; required if applicable
+                            :temporal (temporal start-date end-date) ;; required if applicable
+                            :theme (theme project-sn) ;; not required
                             :distribution (distribution related-urls)
                             :landingPage (landing-page related-urls)
                             :language  [LANGUAGE_CODE]
