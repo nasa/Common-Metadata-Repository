@@ -247,9 +247,7 @@
 
 (defmethod element->condition :dif-entry-id
   [concept-type element]
-  (gc/or-conds
-    [(element->condition concept-type (assoc element :tag :entry-id))
-     (element->condition concept-type (assoc element :tag :associated-difs))]))
+  (errors/throw-service-error :bad-options (format "Searching by dif-entry-id is no longer supported.")))
 
 (defmethod element->condition :date-range
   [concept-type element]
