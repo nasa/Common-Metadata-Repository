@@ -24,6 +24,11 @@
   [params]
   (validate-params params :pretty :token :group-id))
 
+(defn validate-create-group-route-params
+  "Validate params for create group route. Throws exception for un-supported params."
+  [params]
+  (validate-params params :pretty :token :group-id :managing-group-id :managing_group_id))
+
 (defn- system_object-concept_id-provider-target-validation
   "Validates presence and combinations of system_object, concept_id, provider, and target parameters."
   [{:keys [system_object concept_id provider target target_group_id]}]

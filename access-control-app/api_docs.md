@@ -92,7 +92,7 @@ Groups are used to identify sets of users for the assignment of access privilege
 
 ### <a name="create-group"></a> Create Group
 
-Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. The response will contain a concept id identifying the group along with the group revision id. Creating and updating a group is synchronous and the group will be visible in search immediately after the ingest response is returned.
+Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. Optionally, a `managing_group_id` parameter can be used to specify the managing group of the newly created group; Its value is the concept id of the existing group that will able to update or delete the new group. The response will contain a concept id identifying the group along with the group revision id. Creating and updating a group is synchronous and the group will be visible in search immediately after the ingest response is returned.
 
 #### Creating a System Level Group
 

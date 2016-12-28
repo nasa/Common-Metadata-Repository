@@ -44,14 +44,19 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
+(defn- create-group-with-managing-group
+  "Helper function to invoke group service create-group function to pass in a managing group id."
+  [context managing-group-id group]
+  (group-service/create-group context group {:managing-group-id managing-group-id}))
+
 (defn- create-group
   "Processes a create group request."
-  [context headers body]
+  [context headers body managing-group-id]
   (validate-content-type headers)
   (group-schema/validate-group-json body)
   (->> (json/parse-string body true)
        (util/map-keys->kebab-case)
-       (group-service/create-group context)
+       (create-group-with-managing-group context managing-group-id)
        (util/map-keys->snake_case)
        api-response))
 
@@ -233,8 +238,9 @@
 
         ;; Create a group
         (POST "/" {:keys [request-context headers body params]}
-          (pv/validate-standard-params params)
-          (create-group request-context headers (slurp body)))
+          (pv/validate-create-group-route-params params)
+          (create-group request-context headers (slurp body)
+                        (or (:managing-group-id params) (:managing_group_id params))))
 
         (context "/:group-id" [group-id]
           (OPTIONS "/" req common-routes/options-response)

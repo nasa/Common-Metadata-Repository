@@ -1,7 +1,7 @@
-(ns cmr.access-control.test.services.acl-service
+(ns cmr.access-control.test.services.acl-util
   (:require
     [clojure.test :refer :all]
-    [cmr.access-control.services.acl-service :as acl-service]
+    [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.test.util :as u]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as e]))
@@ -10,7 +10,9 @@
   (let [token (e/login (u/conn-context) "admin")]
     (testing "Create, update, and delete ACL log message function"
       (are3 [new-acl existing-acl action expected-message]
-            (is (= expected-message (acl-service/acl-log-message (merge (u/conn-context) {:token token}) new-acl existing-acl action)))
+            (is (= expected-message
+                   (acl-util/acl-log-message
+                    (merge (u/conn-context) {:token token}) new-acl existing-acl action)))
 
             "Create ACL log message"
             {:group-permissions [{:user-type "guest", :permissions ["create" "delete"]}], :system-identity {:target "TAG_GROUP"}}
