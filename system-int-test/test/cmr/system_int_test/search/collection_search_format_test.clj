@@ -1,14 +1,16 @@
 (ns cmr.system-int-test.search.collection-search-format-test
   "This tests ingesting and searching for collections in different formats."
-  (:require 
+  (:require
     [cheshire.core :as json]
     [clj-http.client :as client]
     [clojure.data.xml :as x]
     [clojure.string :as str]
     [clojure.test :refer :all]
+    [clojure.java.io :as io]
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as util :refer [are2 are3]]
     [cmr.common.xml :as cx]
+    [cmr.search.validators.opendata :as opendata-json]
     [cmr.spatial.codec :as codec]
     [cmr.spatial.line-string :as l]
     [cmr.spatial.mbr :as m]
@@ -578,7 +580,7 @@
         coll9 (d/ingest "PROV1"
                         (dc/collection-dif10 {:entry-title "Dataset9"})
                         {:format :dif10})]
-    
+
     (index/wait-until-indexed)
 
     (testing "kml"
@@ -600,8 +602,7 @@
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
-        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                      coll8 coll9] results))
+        (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
           (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
@@ -610,6 +611,9 @@
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
                (search/find-concepts-opendata :granule {})))))
+
+    (testing "json schema validation catches invalid collections"
+      (is (not-empty (opendata-json/validate-dataset (slurp (io/resource "problem_collection_opendata.json"))))))
 
     (testing "ATOM XML"
       (let [coll-atom (da/collections->expected-atom [coll1] "collections.atom?dataset_id=Dataset1")

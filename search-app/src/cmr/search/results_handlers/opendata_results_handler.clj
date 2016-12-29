@@ -1,21 +1,23 @@
 (ns cmr.search.results-handlers.opendata-results-handler
   "Handles the opendata results format and related functions"
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
-            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
-            [clojure.walk :as walk]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [clj-time.core :as time]
-            [clj-time.format :as f]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.common-app.services.search.results-model :as r]
-            [cmr.spatial.serialize :as srl]
-            [cmr.search.services.url-helper :as url]
-            [cmr.umm.related-url-helper :as ru]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.core :as time]
+   [clj-time.format :as f]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.walk :as walk]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.util :as util]
+   [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.url-helper :as url]
+   [cmr.spatial.serialize :as srl]
+   [cmr.umm-spec.util :as umm-spec-util]
+   [cmr.umm.related-url-helper :as ru]))
 
 (def OPENDATA_SCHEMA
   "Location of the the opendata schema to which the results conform"
@@ -140,6 +142,13 @@
             :archive-center archive-center}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
+(defn generate-end-date
+  "Format today's date if the given end-date is nil"
+  [end-date]
+  (if end-date
+   end-date
+   (f/unparse (f/formatters :date-time-no-ms) (clj-time.core/today-at 0 0))))
+
 (defn temporal
   "Get the temporal field from the start-date and end-date"
   ;; NOTE: Eventually this should handle peridoc-date-times as well, but opendata only allows one
@@ -147,9 +156,7 @@
   ;; a decision is made about how to resolve multiple periodic-date-time entries.
   [start-date end-date]
   (when start-date
-    (let [end-date (if end-date
-                     end-date
-                     (f/unparse (f/formatters :date-time-no-ms) (clj-time.core/today-at 0 0)))]
+    (let [end-date (generate-end-date end-date)]
       (str start-date "/" end-date))))
 
 (defn spatial
@@ -172,13 +179,16 @@
                   related-urls)))
 
 (defn landing-page
-  "Creates the landingPage field for the collection with the given related-urls."
+  "Creates the landingPage field for the collection with the given related-urls.
+  Returns umm-spec-lib default if none is present."
   [related-urls]
-  (some (fn [related-url]
-          (let [{:keys [url type]} related-url]
+  (if (empty? related-urls)
+    umm-spec-util/not-provided-url
+    (some (fn [related-url]
+           (let [{:keys [url type]} related-url]
             (when (= "VIEW PROJECT HOME PAGE" type)
-              url)))
-        related-urls))
+               url)))
+         related-urls)))
 
 (defn publisher
   "Creates the publisher field for the collection based on the archive-center.  Note for the
@@ -187,7 +197,7 @@
   (let [hierarchy (if (= provider-id "USGS_EROS")
                     USGS_EROS_PUBLISHER_HIERARCHY
                     NASA_PUBLISHER_HIERARCHY)]
-    {:name archive-center
+    {:name (or archive-center umm-spec-util/not-provided)
      :subOrganizationOf hierarchy}))
 
 (defn keywords
@@ -207,24 +217,25 @@
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls personnel shapes archive-center]} item]
-    (util/remove-nil-keys {:title entry-title
-                           :description (not-empty summary)
-                           :keyword (keywords science-keywords-flat)
-                           :modified (not-empty update-time)
-                           :publisher (publisher provider-id archive-center)
-                           :contactPoint (contact-point personnel)
-                           :identifier id
-                           :accessLevel ACCESS_LEVEL
-                           :bureauCode [BUREAU_CODE]
-                           :programCode [PROGRAM_CODE]
-                           :spatial (spatial shapes)
-                           :temporal (temporal start-date end-date)
-                           :theme (theme project-sn)
-                           :distribution (distribution related-urls)
-                           :landingPage (landing-page related-urls)
-                           :language  [LANGUAGE_CODE]
-                           :references (not-empty (map :url related-urls))
-                           :issued (not-empty insert-time)})))
+    ;; All fields are required unless otherwise noted
+    (util/remove-nil-keys {:title (or entry-title umm-spec-util/not-provided)
+                            :description (not-empty summary)
+                            :keyword (keywords science-keywords-flat)
+                            :modified (or update-time (generate-end-date end-date))
+                            :publisher (publisher provider-id archive-center)
+                            :contactPoint (contact-point personnel)
+                            :identifier id
+                            :accessLevel ACCESS_LEVEL
+                            :bureauCode [BUREAU_CODE]
+                            :programCode [PROGRAM_CODE]
+                            :spatial (spatial shapes) ;; required if applicable
+                            :temporal (temporal start-date end-date) ;; required if applicable
+                            :theme (theme project-sn) ;; not required
+                            :distribution (distribution related-urls)
+                            :landingPage (landing-page related-urls)
+                            :language  [LANGUAGE_CODE]
+                            :references (not-empty (map :url related-urls))
+                            :issued (not-empty insert-time)})))
 
 (defn- results->opendata
   "Convert search results to opendata."

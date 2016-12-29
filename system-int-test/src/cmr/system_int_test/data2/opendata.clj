@@ -8,6 +8,7 @@
    [clojure.test :refer [is]]
    [clojure.test]
    [cmr.common.util :as util]
+   [cmr.search.validators.opendata :as opendata-json]
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
@@ -17,6 +18,7 @@
    [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.umm-spec.date-util :as date-util]
+   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
@@ -74,13 +76,13 @@
         {:keys [short-name keywords projects related-urls summary entry-title organizations
                 access-value personnel]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
-        ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.  
+        ;; ECSE-158 - We will use UMM-C's DataDates to get insert-time, update-time for DIF9/DIF10.
         ;; DIF9 doesn't support DataDates in umm-spec-lib:
         ;;  So its insert-time and update-time are nil.
         update-time (when-not (= :dif format-key)
                       (get-in collection [:data-provider-timestamps :update-time]))
         insert-time (when-not (= :dif format-key)
-                      (get-in collection [:data-provider-timestamps :insert-time])) 
+                      (get-in collection [:data-provider-timestamps :insert-time]))
         temporal (:temporal collection)
         start-date  (if temporal
                       (sed/start-date :collection temporal)
@@ -96,27 +98,27 @@
         personnel (person-with-email personnel)
         contact-point (contact-point personnel)
         archive-center (:org-name (first (filter #(= :archive-center (:type %)) organizations)))]
-    
+
     (util/remove-nil-keys {:title entry-title
-                           :description summary
-                           :keyword (conj (flatten-science-keywords collection)
-                                          "NGDA"
-                                          "National Geospatial Data Asset")
-                           :modified (when update-time (str update-time))
-                           :publisher (odrh/publisher provider-id archive-center)
-                           :contactPoint contact-point
-                           :identifier concept-id
-                           :accessLevel "public"
-                           :bureauCode [odrh/BUREAU_CODE]
-                           :programCode [odrh/PROGRAM_CODE]
-                           :spatial (odrh/spatial shapes)
-                           :temporal (odrh/temporal start-date end-date)
-                           :theme (conj project-sn "geospatial")
-                           :distribution distribution
-                           :landingPage (odrh/landing-page concept-id)
-                           :language [odrh/LANGUAGE_CODE]
-                           :references (not-empty (map :url related-urls))
-                           :issued (when insert-time (str insert-time))})))
+                            :description summary
+                            :keyword (conj (flatten-science-keywords collection)
+                                           "NGDA"
+                                           "National Geospatial Data Asset")
+                            :modified (str (or update-time (odrh/generate-end-date end-date)))
+                            :publisher (odrh/publisher provider-id archive-center)
+                            :contactPoint contact-point
+                            :identifier concept-id
+                            :accessLevel "public"
+                            :bureauCode [odrh/BUREAU_CODE]
+                            :programCode [odrh/PROGRAM_CODE]
+                            :spatial (odrh/spatial shapes)
+                            :temporal (odrh/temporal start-date end-date)
+                            :theme (conj project-sn "geospatial")
+                            :distribution distribution
+                            :landingPage (odrh/landing-page related-urls)
+                            :language [odrh/LANGUAGE_CODE]
+                            :references (not-empty (map :url related-urls))
+                            :issued (when insert-time (str insert-time))})))
 
 (defn collections->expected-opendata
   [collections]
@@ -134,8 +136,10 @@
                            (util/map-values #(if (sequential? %) (set %) %) field))))))
 
 (defn assert-collection-opendata-results-match
-  "Returns true if the opendata results are for the expected items"
+  "Returns true if the opendata results are for the expected items.
+  Also validates the dataset against the Opendata v1.1 json schema."
   [collections actual-result]
+  (is (empty? (opendata-json/validate-dataset (json/generate-string (:results actual-result)))))
   (is (= (opendata-results-map->opendata-results-map-using-sets
-           (collections->expected-opendata collections))
+          (collections->expected-opendata collections))
          (opendata-results-map->opendata-results-map-using-sets actual-result))))

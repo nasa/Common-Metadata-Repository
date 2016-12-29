@@ -136,6 +136,7 @@
                                                      :short-name "boost"
                                                      :platforms [pboost]
                                                      :science-keywords [skboost]}))
+
         coll26 (d/ingest "PROV4" (dc/collection-dif10 {:entry-title "coll26" :personnel [personnel1]}) {:format :dif10})
         coll27 (d/ingest "PROV5" (dc/collection-dif10 {:entry-title "coll27" :personnel [personnel2]}) {:format :dif10})]
 
