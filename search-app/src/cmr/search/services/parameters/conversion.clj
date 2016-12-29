@@ -242,11 +242,6 @@
            (cqm/map->MissingCondition {:field :collection-data-type})])
         (cqm/string-condition :collection-data-type value case-sensitive pattern)))))
 
-;; dif-entry-id matches on entry-id or associated-difs
-(defmethod common-params/parameter->condition :dif-entry-id
-  [context concept-type param value options]
-  (errors/throw-service-error :bad-options (format "Searching by dif-entry-id is no longer supported.")))
-
 (defn- reverse-has-granules-sort
   "The has-granules sort is the opposite of natural sorting. Collections with granules are first then
    collections without sorting. This reverses the order of that sort key in the query attributes if
