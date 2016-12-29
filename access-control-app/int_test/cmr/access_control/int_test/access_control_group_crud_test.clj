@@ -8,9 +8,8 @@
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
 
-(use-fixtures :once (fixtures/int-test-fixtures))
-
 (use-fixtures :each
+              (fixtures/int-test-fixtures)
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
               (fixtures/grant-all-acl-fixture))
@@ -213,6 +212,14 @@
                                      "group2" [managing-group-id "AG10000-PROV1"])]
         (is (= 400 status))
         (is (= ["Parameter managing_group_id must have a single value."]
+               errors))))
+    (testing "Attempt to create group with a deleted managing group id"
+      ;; delete the managing group
+      (u/delete-group (transmit-config/echo-system-token) managing-group-id)
+      (let [{:keys [status errors]} (create-group-with-managing-group "group2" managing-group-id)]
+        (is (= 400 status))
+        (is (= [(format "Managing group id [%s] is invalid, no group with this concept id can be found."
+                        managing-group-id)]
                errors))))))
 
 (deftest get-group-test

@@ -169,7 +169,7 @@
     (not (:deleted concept))
     false))
 
-(defn validate-managing-group-id
+(defn- validate-managing-group-id
   "Validates that the given managing group id exist. Throws an exception if it does not."
   [context managing-group-id]
   (when managing-group-id
