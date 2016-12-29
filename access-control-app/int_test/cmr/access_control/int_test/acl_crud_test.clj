@@ -10,8 +10,7 @@
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.transmit.access-control :as ac]
     [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.transmit.config :as tc]))
+    [cmr.transmit.metadata-db2 :as mdb]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -100,7 +99,7 @@
                    (:concept-id fixtures/*fixture-system-acl*)
                    {:system_identity {:target "ANY_ACL"}
                     :group_permissions [{:user_type "registered" :permissions ["read"]}]}
-                   {:token tc/mock-echo-system-token})
+                   {:token transmit-config/mock-echo-system-token})
     (let [{:keys [status body]} (ac/create-acl
                                  (u/conn-context)
                                  {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
@@ -114,7 +113,7 @@
                    {:group_permissions [{:user_type "registered" :permissions ["create"]}]
                     :provider_identity {:target "PROVIDER_OBJECT_ACL"
                                         :provider_id "PROV1"}}
-                   {:token tc/mock-echo-system-token})
+                   {:token transmit-config/mock-echo-system-token})
     (is (= 1 (:revision_id
               (ac/create-acl (u/conn-context)
                              {:group_permissions [{:user_type "registered" :permissions ["update" "delete"]}]
@@ -637,7 +636,7 @@
                    (:concept-id fixtures/*fixture-system-acl*)
                    {:system_identity {:target "ANY_ACL"}
                     :group_permissions [{:user_type "guest" :permissions ["read"]}]}
-                   {:token tc/mock-echo-system-token})
+                   {:token transmit-config/mock-echo-system-token})
     (let [token (e/login (u/conn-context) "user1")
           {:keys [status body]} (ac/update-acl
                                  (u/conn-context)

@@ -12,3 +12,8 @@
 (defn users-do-not-exist
   [usernames]
   (format "The following users do not exist [%s]" (str/join ", " usernames)))
+
+(defn managing-group-does-not-exist
+  [managing-group-id]
+  (format "Managing group id [%s] is invalid, no group with this concept id can be found." 
+          managing-group-id))

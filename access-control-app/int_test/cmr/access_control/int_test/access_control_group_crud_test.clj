@@ -1,14 +1,15 @@
 (ns cmr.access-control.int-test.access-control-group-crud-test
   (:require
-    [clojure.string :as str]
-    [clojure.test :refer :all]
-    [cmr.access-control.int-test.fixtures :as fixtures]
-    [cmr.access-control.test.util :as u]
-    [cmr.mock-echo.client.echo-util :as e]))
-
-(use-fixtures :once (fixtures/int-test-fixtures))
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.access-control.test.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
+              (fixtures/int-test-fixtures)
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
               (fixtures/grant-all-acl-fixture))
@@ -163,6 +164,63 @@
       (let [{:keys [status errors]} (create-group-with-members ["user1" "user3"])]
         (is (= 400 status))
         (is (= ["The following users do not exist [user3]"] errors))))))
+
+(deftest create-group-with-managing-group-id-test
+  (let [token-user1 (e/login (u/conn-context) "user1")
+        token-user2 (e/login (u/conn-context) "user2")
+        managing-group (u/ingest-group token-user1 {:name "managing group"} ["user1"])
+        managing-group-id (:concept_id managing-group)
+        create-group-with-managing-group
+        (fn [group-name managing-group-id]
+          (u/create-group (transmit-config/echo-system-token)
+                          (u/make-group {:name group-name})
+                          {:http-options {:query-params {:managing_group_id managing-group-id}}
+                           :allow-failure? true}))]
+    (testing "Successful create with managing group id"
+      ;; search for ACLs related to managing group and found none
+      (let [{:keys [hits]} (ac/search-for-acls (u/conn-context) {:permitted-group [managing-group-id]})]
+        (is (= 0 hits)))
+
+      ;; create a new group with the managing group
+      (let [{:keys [status concept_id]} (create-group-with-managing-group
+                                         "group1" managing-group-id)]
+        ;; verify group creation is successful
+        (is (= 200 status))
+        ;; verify a new ACL is now created on the managing group
+        (is (= 1 (:hits (ac/search-for-acls (u/conn-context)
+                                            {:permitted-group [managing-group-id]}))))
+
+        ;; the group starts with no members
+        (is (= {:status 200 :body []} (u/get-members token-user1 concept_id)))
+
+        ;; TODO: Once we add support to update group in ECHO and refresh access control cache,
+        ;; We can verify that user not in managing group does not have permission to add member to the group.
+        ; (is (= 401 (:status (u/add-members token-user2 concept_id ["user2"]))))
+
+        ;; Add members to the group as a user in the managing group
+        (is (= 200 (:status (u/add-members token-user1 concept_id ["user2"]))))
+        ;; verify that the group now has a member added
+        (is (= {:status 200 :body ["user2"]} (u/get-members token-user1 concept_id)))))
+
+    (testing "Attempt to create group with non-existent managing group id"
+      (let [{:keys [status errors]} (create-group-with-managing-group "group2" "AG10000-PROV1")]
+        (is (= 400 status))
+        (is (= ["Managing group id [AG10000-PROV1] is invalid, no group with this concept id can be found."]
+               errors))))
+    (testing "Attempt to create group with more than one managing group id"
+      (let [{:keys [status errors]} (create-group-with-managing-group
+                                     "group2" [managing-group-id "AG10000-PROV1"])]
+        (is (= 400 status))
+        (is (= ["Parameter managing_group_id must have a single value."]
+               errors))))
+    (testing "Attempt to create group with a deleted managing group id"
+      ;; delete the managing group
+      (u/delete-group (transmit-config/echo-system-token) managing-group-id)
+      (let [{:keys [status errors]} (create-group-with-managing-group "group2" managing-group-id)]
+        (is (= 400 status))
+        (is (= [(format "Managing group id [%s] is invalid, no group with this concept id can be found."
+                        managing-group-id)]
+               errors))))))
 
 (deftest get-group-test
   (let [group (u/make-group)
