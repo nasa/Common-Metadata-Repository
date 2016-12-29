@@ -46,7 +46,6 @@
    :two-d-coordinate-system :two-d-coordinate-system
    :science-keywords :science-keywords
    :science-keywords-h :science-keywords
-   :dif-entry-id :dif-entry-id
    :downloadable :boolean
    :browsable :boolean
    :polygon :polygon
@@ -242,14 +241,6 @@
           [(cqm/string-condition :collection-data-type value case-sensitive pattern)
            (cqm/map->MissingCondition {:field :collection-data-type})])
         (cqm/string-condition :collection-data-type value case-sensitive pattern)))))
-
-;; dif-entry-id matches on entry-id or associated-difs
-(defmethod common-params/parameter->condition :dif-entry-id
-  [context concept-type param value options]
-  (gc/or-conds
-    [(common-params/parameter->condition context concept-type :entry-id value (set/rename-keys options {:dif-entry-id :entry-id}))
-     (common-params/string-parameter->condition concept-type  :associated-difs value
-                                                (set/rename-keys options {:dif-entry-id :associated-difs}))]))
 
 (defn- reverse-has-granules-sort
   "The has-granules sort is the opposite of natural sorting. Collections with granules are first then
