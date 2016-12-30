@@ -397,10 +397,11 @@
 
     ;; wait for the collections to be indexed so that ACLs will be valid
     (index/wait-until-indexed)
-    (ac/create-acl (transmit-config/echo-system-token) {:group_permissions [{:user_type "guest"
-                                                                             :permissions ["create"]}]
-                                                        :provider_identity {:provider_id "PROV1"
-                                                                            :target "CATALOG_ITEM_ACL"}})
+    (ac/create-acl (transmit-config/echo-system-token)
+                   {:group_permissions [{:user_type "guest"
+                                         :permissions ["read" "create"]}]
+                    :provider_identity {:provider_id "PROV1"
+                                        :target "CATALOG_ITEM_ACL"}})
     (index/wait-until-indexed)
     ;; Ingest some ACLs that reference the collection by concept id.
     (ac/create-acl token {:group_permissions [{:user_type "guest"
