@@ -834,14 +834,35 @@
               (ac/get-permissions (u/conn-context)
                                   {:concept_id coll1 :user_type "guest"}
                                   {:token token})))))
-    (testing "delete ACL without permission."
-      ;; update system ANY_ACL to not allow guest to delete ACLs
-      (ac/update-acl (u/conn-context)
-                     (:concept-id fixtures/*fixture-system-acl*)
-                     {:system_identity {:target "ANY_ACL"}
-                      :group_permissions [{:user_type "guest" :permissions ["read" "update"]}]}
-                     {:token token})
+    (testing "delete an ACL that is already deleted."
       (let [{:keys [status body]} (ac/delete-acl
+                                   (u/conn-context) acl-concept-id {:token token :raw? true})]
+        (is (= 404 status))
+        (is (= [(format "ACL with concept id [%s] was deleted." acl-concept-id)] (:errors body)))))
+    (testing "delete ACL without permission."
+      (let [acl-concept-id (:concept_id
+                            (ac/create-acl (u/conn-context)
+                                           {:group_permissions [{:permissions [:read]
+                                                                 :user_type :guest}]
+                                            :catalog_item_identity {:name "PROV1 guest read"
+                                                                    :collection_applicable true
+                                                                    :provider_id "PROV1"}}
+                                           {:token token}))
+            ;; update system ANY_ACL to not allow guest to delete ACLs
+            _ (ac/update-acl (u/conn-context)
+                             (:concept-id fixtures/*fixture-system-acl*)
+                             {:system_identity {:target "ANY_ACL"}
+                              :group_permissions [{:user_type "guest" :permissions ["read" "update"]}]}
+                             {:token token})
+            ;; update *fixture-provider-acl* to not allow guest to delete PROV1 ACLs
+            _ (ac/update-acl (u/conn-context)
+                             (:concept-id fixtures/*fixture-provider-acl*)
+                             {:provider_identity {:provider_id "PROV1"
+                                                  :target "CATALOG_ITEM_ACL"}
+                              :group_permissions [{:user_type "guest"
+                                                   :permissions ["read" "update"]}]}
+                             {:token token})
+            {:keys [status body]} (ac/delete-acl
                                    (u/conn-context) acl-concept-id {:token token :raw? true})]
         (is (= 401 status))
         (is (= ["Permission to delete ACL is denied"] (:errors body)))))))

@@ -83,8 +83,9 @@
 (defn delete-acl
   "Delete the ACL with the given concept id."
   [context concept-id]
-  (acl-auth/authorize-acl-action context :delete nil)
-  (let [acl-concept (fetch-acl-concept context concept-id)]
+  (let [acl-concept (fetch-acl-concept context concept-id)
+        acl (edn/read-string (:metadata acl-concept))]
+    (acl-auth/authorize-acl-action context :delete acl)
     (let [tombstone {:concept-id (:concept-id acl-concept)
                      :revision-id (inc (:revision-id acl-concept))
                      :deleted true}
