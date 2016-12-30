@@ -93,24 +93,27 @@
                                    {:permissions ["read" "create"] :group_id group1-concept-id}))
 
         acl1 (u/ingest-acl token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
-                                         [:group_permissions 0]
-                                         {:permissions ["read"] :group_id group1-concept-id}))
+                                           [:group_permissions 0]
+                                           {:permissions ["read"] :group_id group1-concept-id}))
         acl2 (u/ingest-acl token (assoc-in (u/system-acl "ARCHIVE_RECORD")
-                                         [:group_permissions 0]
-                                         {:permissions ["delete"] :group_id group2-concept-id}))
+                                           [:group_permissions 0]
+                                           {:permissions ["delete"] :group_id group2-concept-id}))
         acl3 (u/ingest-acl token (u/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
         acl4 (u/ingest-acl token (assoc (u/provider-acl "PROVIDER_OBJECT_ACL")
-                                      :group_permissions
-                                      [{:group_id group3-concept-id :permissions ["read"]}]))
+                                        :group_permissions
+                                        [{:group_id group3-concept-id :permissions ["read"]}]))
         acl5 (u/ingest-acl token (u/provider-acl "OPTION_DEFINITION"))
         acl6 (u/ingest-acl token (assoc-in (u/provider-acl "OPTION_DEFINITION")
-                                         [:provider_identity :provider_id] "PROV2"))
+                                           [:provider_identity :provider_id] "PROV2"))
         ;; Create an ACL with a catalog item identity for PROV1
         acl7 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
                                   :catalog_item_identity {:provider_id "PROV1"
                                                           :name "PROV1 All Collections ACL"
+                                                          :collection_applicable true}})
+        acl8 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV2"
+                                                          :name "PROV2 All Collections ACL"
                                                           :collection_applicable true}})]
-
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:provider "PROV1"})]
@@ -119,16 +122,20 @@
     (testing "Guest search permission"
       (let [token (e/login-guest (u/conn-context))
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        ;; Fixture *fixture-provider-acl* granted permission to guest to see CATALOG_ITEM_ACL on PROV1
         (is (= (u/acls->search-response 1 [acl7])
                (dissoc response :took)))))
     (testing "User search permission"
       (let [token (e/login (u/conn-context) "user1")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (u/acls->search-response 9 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3 acl4 acl5 acl6 acl7])
+        (is (= (u/acls->search-response 10 [fixtures/*fixture-provider-acl*
+                                            (assoc fixtures/*fixture-system-acl* :revision_id 2)
+                                            acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8])
                (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
       (let [token (e/login (u/conn-context) "user2")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        ;; Fixture *fixture-provider-acl* granted permission to registered user to see CATALOG_ITEM_ACL on PROV1
         (is (= (u/acls->search-response 1 [acl7])
                (dissoc response :took)))))))
 
