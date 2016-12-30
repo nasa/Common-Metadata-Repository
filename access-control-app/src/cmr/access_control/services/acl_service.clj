@@ -102,6 +102,7 @@
   [context concept-id params]
   (let [acl (edn/read-string (:metadata (fetch-acl-concept context concept-id)))
         params (cp/sanitize-params params)]
+    (acl-auth/authorize-acl-action context :read acl)
     (if (= "true" (:include-legacy-group-guid params))
       (result-handler/update-acl-legacy-group-guid context acl)
       acl)))

@@ -617,6 +617,147 @@
         acl4
         acl4))))
 
+(deftest get-acl-permission-test
+  (let [user1-token (e/login (u/conn-context) "user1")
+        user2-token (e/login (u/conn-context) "user2")
+        user3-token (e/login (u/conn-context) "user3")
+        guest-token (e/login-guest (u/conn-context))
+        group1 (u/ingest-group user1-token
+                               {:name "any acl read"}
+                               ["user1"])
+        group2 (u/ingest-group user1-token
+                               {:name "without any acl read"}
+                               ["user2"])
+        group3 (u/ingest-group user1-token
+                               {:name "provider object prov1 read"}
+                               ["user3"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+        group3-concept-id (:concept_id group3)
+
+        ;; remove ANY_ACL read to all users except user1
+        _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*)
+                         (assoc-in (u/system-acl "ANY_ACL")
+                                   [:group_permissions 0]
+                                   {:permissions ["read" "create"] :group_id group1-concept-id}))
+
+        acl1 (u/ingest-acl user1-token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
+                                                 [:group_permissions 0]
+                                                 {:permissions ["read"] :group_id group1-concept-id}))
+        acl2 (u/ingest-acl user1-token (assoc-in (u/system-acl "ARCHIVE_RECORD")
+                                                 [:group_permissions 0]
+                                                 {:permissions ["delete"] :group_id group2-concept-id}))
+        acl3 (u/ingest-acl user1-token (u/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
+        acl4 (u/ingest-acl user1-token (assoc (u/provider-acl "PROVIDER_OBJECT_ACL")
+                                              :group_permissions
+                                              [{:group_id group3-concept-id :permissions ["read"]}]))
+        acl5 (u/ingest-acl user1-token (u/provider-acl "OPTION_DEFINITION"))
+        acl6 (u/ingest-acl user1-token (assoc-in (u/provider-acl "OPTION_DEFINITION")
+                                                 [:provider_identity :provider_id] "PROV2"))
+        ;; Create an ACL with a catalog item identity for PROV1
+        acl7 (u/ingest-acl user1-token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                        :catalog_item_identity {:provider_id "PROV1"
+                                                                :name "PROV1 All Collections ACL"
+                                                                :collection_applicable true}})
+        acl8 (u/ingest-acl user1-token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                        :catalog_item_identity {:provider_id "PROV2"
+                                                                :name "PROV2 All Collections ACL"
+                                                                :collection_applicable true}})
+        permission-granted? (fn [token acl granted?]
+                              (let [{:keys [status]} (ac/get-acl (u/conn-context)
+                                                                 (:concept-id acl)
+                                                                 {:token token :raw? true})]
+                                (if granted?
+                                  (is (= 200 status))
+                                  (is (= 401 status)))))]
+    (testing "with fixture provider object acls"
+      (are [token acl granted?]
+        (permission-granted? token acl granted?)
+        ;; guest only has permission to retrieve acl7
+        guest-token acl1 false
+        guest-token acl2 false
+        guest-token acl3 false
+        guest-token acl4 false
+        guest-token acl5 false
+        guest-token acl6 false
+        guest-token acl7 true
+        guest-token acl8 false
+        ;; user1 has permission to retrieve all ACLs
+        user1-token acl1 true
+        user1-token acl2 true
+        user1-token acl3 true
+        user1-token acl4 true
+        user1-token acl5 true
+        user1-token acl6 true
+        user1-token acl7 true
+        user1-token acl8 true
+        ;; user2 only has permission to retrieve acl7
+        user2-token acl1 false
+        user2-token acl2 false
+        user2-token acl3 false
+        user2-token acl4 false
+        user2-token acl5 false
+        user2-token acl6 false
+        user2-token acl7 true
+        user2-token acl8 false
+        ;; user3 has permission to retrieve acl4, acl5, acl7
+        user3-token acl1 false
+        user3-token acl2 false
+        user3-token acl3 false
+        user3-token acl4 true
+        user3-token acl5 true
+        user3-token acl6 false
+        user3-token acl7 true
+        user3-token acl8 false))
+
+    (testing "without fixture provider object acls"
+      ;; grant only guest user permission to PROV1 CATALOG_ITEM_ACL
+      (ac/update-acl (u/conn-context)
+                     (:concept-id fixtures/*fixture-provider-acl*)
+                     {:provider_identity {:provider_id "PROV1"
+                                          :target "CATALOG_ITEM_ACL"}
+                      :group_permissions [{:user_type "guest"
+                                           :permissions ["read" "update"]}]}
+                     {:token user1-token})
+      (are [token acl granted?]
+        (permission-granted? token acl granted?)
+        ;; guest only has permission to retrieve acl7
+        guest-token acl1 false
+        guest-token acl2 false
+        guest-token acl3 false
+        guest-token acl4 false
+        guest-token acl5 false
+        guest-token acl6 false
+        guest-token acl7 true
+        guest-token acl8 false
+        ;; user1 has permission to retrieve all ACLs
+        user1-token acl1 true
+        user1-token acl2 true
+        user1-token acl3 true
+        user1-token acl4 true
+        user1-token acl5 true
+        user1-token acl6 true
+        user1-token acl7 true
+        user1-token acl8 true
+        ;; user2 has no permission to retrieve any ACLs
+        user2-token acl1 false
+        user2-token acl2 false
+        user2-token acl3 false
+        user2-token acl4 false
+        user2-token acl5 false
+        user2-token acl6 false
+        user2-token acl7 false
+        user2-token acl8 false
+        ;; user3 has permission to retrieve acl4, acl5
+        user3-token acl1 false
+        user3-token acl2 false
+        user3-token acl3 false
+        user3-token acl4 true
+        user3-token acl5 true
+        user3-token acl6 false
+        user3-token acl7 false
+        user3-token acl8 false))))
+
 (deftest update-acl-test
   (testing "update acl successful case"
     (let [token (e/login (u/conn-context) "admin")
