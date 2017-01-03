@@ -34,7 +34,7 @@
          </gml:LinearRing>
        </gml:exterior>
      </gml:Polygon>
-     <gml:Polygon srsName=\"http://www.opengis.net/def/crs/EPSG/4326\">
+     <gml:Polygon srsName=\"http://www.opengis.net/def/crs/EPSG/0/4326\">
        <gml:exterior>
          <gml:LinearRing>
            <gml:posList>
