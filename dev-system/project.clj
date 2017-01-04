@@ -73,7 +73,8 @@
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]
                         [proto-repl-charts "0.3.1"]
-                        [proto-repl "0.3.1"]]
+                        [proto-repl "0.3.1"]
+                        [proto-repl-sayid "0.1.3"]]
          ;; Use the following to enable JMX profiling with visualvm
          ;:jvm-opts ^:replace ["-server"
          ;                     "-Dcom.sun.management.jmxremote"
