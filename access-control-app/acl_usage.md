@@ -2,9 +2,9 @@
 
 ## Background
 
-Access Control Lists (ACLs) are the mechanism by which users are granted access to perform different operations in the CMR. CMR ACLs follow the same design as ECHO ACLs which in turn are derived from the common ACL design pattern used in many other systems. At a high level, an ACL is a mapping of actors (subjects) to resources (object) to operations(predicate). For instance, a CMR ACL might specify that all Registered users have READ access to ASTER data or all users in a provider operations group have permissions to ingest data for a particular provider.
+Access Control Lists (ACLs) are the mechanism by which users are granted access to perform different operations in the CMR. CMR ACLs follow the same design as ECHO ACLs which in turn are derived from the generic ACL design pattern used in many other systems. At a high level, an ACL is a mapping of actors (subjects) to resources (object) to operations (predicate). For instance, a CMR ACL might specify that all Registered users have READ access to ASTER data or all users in a provider operations group have permissions to ingest data for a particular provider.
 
-The full ACL JSON schema is documented at [schema](acl_schema.md).  Below is an overview of the concepts which make up an ACL.
+The full ACL JSON schema is documented [here](acl_schema.md).  Below is an overview of the concepts which make up an ACL.
 
 ### Subjects
 
@@ -21,8 +21,8 @@ The object specifies the resource on which access is being controlled by an ACL.
 
 - **System Identities**: Global CMR resources which are not associated with a specific provider. Generally, access to these resources is only granted to CMR operations staff (though there are some exceptions - e.g. partial user information access granted to the MERIS form tool user).
 - **Provider Identities**: Resources which belong to a provider. Permissions on provider resources are limited to the specified provider and do not transfer to another. Examples include access to ingest new data or view/modify order and service options for a provider's holdings.
-- **Single Instance Identities**: A single discrete resource as opposed to a class or resources. Currently, this is used only for specifying a specific group, for instance to grant members of one group the ability to manageme another group.
-- **Catalog Item Identities**: Collection and granule resources. Access to these resources is used to determine what results a user sees in search results.
+- **Single Instance Identities**: A single discrete resource as opposed to a class of resources. Currently, this is used only for specifying a specific group, for instance to grant members of one group the ability to manage another group.  This 'Group Management' Single Instance ACL grants members of the managing group the ability to update (e.g. add/remove users) or delete the managed group.
+- **Catalog Item Identities**: Collection and granule resources. ACLs on these resources is used to determine what results a user sees in search results.
 
 System and provider resources are specified as a single target string (e.g. `INGEST_MANAGEMENT_ACL`), and in the case of provider resources, a provider ID. The list of available targets can be found at <https://cmr.sit.earthdata.nasa.gov/access-control/site/access_control_api_docs.html> under 'Grantable Permissions'. Single instance resources are specified by a target string (currently only `GROUP_MANAGEMENT` is supported) and a target ID (i.e. group concept-id). Catalog Item resources have a more complex specification which is described below.
 
@@ -35,11 +35,11 @@ Unlike the other types of resource identities, catalog item identities contain a
 - **collection_applicable**: Flag indicating whether the filter matches collections
 - **granule_applicable**: Flag indicating whether the filter matches granules
 - **collection_identifier**: A filter defining the collections matched by this ACL.  This filter consists of a combination of Collection Entry Titles, a restriction flag range, and a temporal range (see [schema](acl_schema.md#-collectionidentifiertype-object-))
-- **granule_identifier**: A filter defining the granules matched by this ACL.  This filter consists of a combination of restriction flag range, and a temporal range and can be combined with a collection_identifier (see [schema](acl_schema.md#-granuleidentifiertype-object-))
+- **granule_identifier**: A filter defining the granules matched by this ACL.  This filter consists of a combination of restriction flag range, and a temporal range and can be combined with a collection_identifier (see the [schema](acl_schema.md#-granuleidentifiertype-object-))
 
 ### Predicates
 
-The predicate specifies what operations are permitted on a resource. The available predicates are `create`, `read`, `update`, `delete`, and `order`. The first 4 operations correspond to the expected CRUD operations on an object while `order` is a predicate specific to catalog item resources which allows users to order the specified resources, rather than simply view the metadata. Each ACL resource has a subset of these predicates which are valid for that resource (see <https://cmr.sit.earthdata.nasa.gov/access-control/site/access_control_api_docs.html> under 'Grantable Permissions'). The meaning of each predicate in relation to a given resource can usually be deduced, but ultimately, the CMR and ECHO code which performs access verification on each operation implicitly defines the meaning of each.
+The predicate specifies which operations are permitted on a resource. The available predicates are `create`, `read`, `update`, `delete`, and `order`. The first 4 operations correspond to the expected CRUD operations on an object while `order` is a predicate specific to catalog item resources which allows users to order the specified resources, rather than simply view the metadata. Each ACL resource has a subset of these predicates which are valid for that resource (see <https://cmr.sit.earthdata.nasa.gov/access-control/site/access_control_api_docs.html> under 'Grantable Permissions'). The meaning of each predicate in relation to a given resource can usually be deduced, but ultimately, the CMR and ECHO code which performs access verification on each operation implicitly defines the meaning of each.  An ACL's meaning ultimately depends only on the code which is performing checks against the ACL, so where there is any confusion about what an ACL does, ask CMR development.
 
 ## Built in ACLs
 
@@ -47,7 +47,7 @@ There are a set of ACLs which are expected to exist in any CMR environment and w
 
 ### Minimal ACLS for an empty system
 
-The ACLS below are preloaded before the CMR can start up. The JSON representation below comes from the CMR access-control endpoint with ACL summaries requested `http://localhost:3011/acls?include-full-acls=false`
+The ACLS below are preloaded before the CMR can start up. The JSON representation below comes from the CMR access-control endpoint with ACL summaries requested ( `http://localhost:3011/acls?include-full-acl=false`).  These ACLs can be populated in a fresh environment using `java -cp cmr-legacy-services-0.1.0-SNAPSHOT-standalone.jar cmr.db bootstrap-db-and-migrate`
 
 ```
 {
@@ -81,7 +81,7 @@ The ACLS below are preloaded before the CMR can start up. The JSON representatio
 
 ### ACLS bootstrapped in the system to allow normal legacy-services/CMR operation
 
-The ACLs below are loaded into a clean CMR system once it is started. These ACLs are required for normal CMR operations. The JSON representation below comes from the CMR access control endpoint with full ACL records requested `http://localhost:3011/acls?include-full-acls=true` (note that the full records for the summaries above are listed as the first three ACLs here.)
+The ACLs below are loaded into a clean CMR system once it is started. These ACLs are required for normal CMR operations. The JSON representation below comes from the CMR access control endpoint with full ACL records requested (http://localhost:3011/acls?include-full-acl=true) (note that the full records for the summaries above are listed as the first three ACLs here.)  These ACLs can be populated using `java -cp cmr-legacy-services-0.1.0-SNAPSHOT-standalone.jar cmr.db bootstrap-running-kernel`
 
 ```
 {
@@ -315,7 +315,7 @@ These ACLs are commonly added for normal operations, and may need to be added by
 
 ### Provider ACLs
 
-When a provider is created by a client, it is expected that certain provider object ACLs will also be created. Most of this is currently manual via PUMP or a script, but could be automated by MMT. The process is outlined at <***REMOVED***>. Note that the ACLs below grant permissions to the System Administrator group. In general, these should also be granted to the Provider Administrator group. These ACLs can be retrieved using e.g. `http://localhost:3011/acls?include-full-acl=true&identity_type=catalog_item&provider=CUKE_PROV1`.
+When a provider is created by a client, it is expected that certain provider object ACLs will also be created. Most of this is currently manual via PUMP or a script, but could be automated by MMT. The process is outlined at <***REMOVED***>. Note that the ACLs below grant permissions to the System Administrator group. In general, these should also be granted to the Provider Administrator group. These ACLs can be retrieved using e.g. http://localhost:3011/acls?include-full-acl=true&identity_type=catalog_item&provider=CUKE_PROV1.
 
 ```
 {
@@ -558,13 +558,179 @@ When a provider is created by a client, it is expected that certain provider obj
   ]
 }
 ```
+### Single Instance ACLs
+When a group is created, it will generally be assigned one or more 'management groups' which have the ability to update or delete the group.  Management access is managed via Single Instance ACLs as shown below.
+
+```
+      "revision_id": 17,
+      "concept_id": "ACL1200213959-CMR",
+      "identity_type": "Group",
+      "acl": {
+        "group_permissions": [
+          {
+            "permissions": [],
+            "group_id": "AG1200211475-CMR"
+          },
+          {
+            "permissions": [
+              "delete",
+              "update"
+            ],
+            "group_id": "AG1200211473-CMR"
+          },
+          {
+            "permissions": [
+              "delete",
+              "update"
+            ],
+            "group_id": "AG1200211474-CMR"
+          },
+          {
+            "permissions": [],
+            "group_id": "AG1200211483-CMR"
+          },
+          {
+            "permissions": [],
+            "group_id": "AG1200211477-CMR"
+          },
+          {
+            "permissions": [],
+            "group_id": "AG1200211479-CMR"
+          },
+          {
+            "permissions": [],
+            "group_id": "AG1200211480-CMR"
+          },
+          {
+            "permissions": [],
+            "group_id": "AG1200213192-CMR"
+          },
+          {
+            "permissions": [],
+            "group_id": "AG1200211482-CMR"
+          },
+          {
+            "permissions": [],
+            "group_id": "AG1200211476-CMR"
+          }
+        ],
+        "legacy_guid": "566C22AE-44C7-A060-560A-C054F8D3F134",
+        "single_instance_identity": {
+          "target": "GROUP_MANAGEMENT",
+          "target_id": "AG1200211475-CMR"
+        }
+      },
+      "name": "Group - AG1200211475-CMR",
+      "location": "https://cmr.sit.earthdata.nasa.gov:443/access-control/acls/ACL1200213959-CMR"
+    }
+```
 
 ### Catalog Item ACLs
 
-Every provider needs to have Catalog Item ACLs to manage access to its holdings. The ACL below grants view/order access to all collections and granules. In production environments, this is split into two ACLs 'All Collections' and 'All Granules'. These ACLS must not be removed and must always be granted to the System Administrator group. The Catalog item identity portion of the ACL must also not be modified. Changes to these ACLs (other than to the group_permissions) may cause the CMR/legacy-services applications to no longer have access to all holdings which will result in unexpected behavior. Note that this ACL (from a dev environment) grants the ACL to all users, registered and unregistered, as well as to the system administrator group. In an operational system, this ACL should be granted to the system and provider Administrator groups, and then additional ACLs created for public holdings and other required access control groupings.
+Every provider needs to have Catalog Item ACLs to manage access to its holdings. The ACLs below grant view/order access to all collections and granules.  These ACLS must not be removed and must always be granted to the System Administrator group. The Catalog item identity portion of the ACL must also not be modified. Changes to these ACLs (other than to the group_permissions) may cause the CMR/legacy-services applications to no longer have access to all holdings which will result in unexpected behavior.
 
 NOTE that the schema allows catalog item ACLs to grant Create, Read, Update, Delete, and Order permissions.  Only Read and Order are actually meaningful. Read permission allows users to see the affected catalog items in search results, and Order allows the user to order the items.  Ingest and delete permissions are managed by a separate `INGEST_MANAGEMENT_ACL` Provider ACL target.  Granting Create, Update, or Delete permissions on catalog item ACLs will have no effect.
 
+https://cmr.sit.earthdata.nasa.gov/access-control/acls?include-full-acl=true&identity_type=catalog_item&provider=DEMO_PROV
+```
+...
+    {
+      "revision_id": 5,
+      "concept_id": "ACL1200215231-CMR",
+      "identity_type": "Catalog Item",
+      "acl": {
+        "group_permissions": [
+          {
+            "permissions": [
+              "order",
+              "read"
+            ],
+            "group_id": "AG1200211474-CMR"
+          },
+          {
+            "permissions": [
+              "order",
+              "read"
+            ],
+            "group_id": "AG1200212873-DEMO_PROV"
+          },
+          {
+            "permissions": [
+              "order",
+              "read"
+            ],
+            "user_type": "registered"
+          },
+          {
+            "permissions": [
+              "read",
+              "order"
+            ],
+            "user_type": "guest"
+          }
+        ],
+        "legacy_guid": "4A8F942E-01D8-4CEC-AC5D-A1A5B9112614",
+        "catalog_item_identity": {
+          "name": "All Collections",
+          "provider_id": "DEMO_PROV",
+          "collection_applicable": true,
+          "granule_applicable": false
+        }
+      },
+      "name": "All Collections",
+      "location": "https://cmr.sit.earthdata.nasa.gov:443/access-control/acls/ACL1200215231-CMR"
+    },
+    {
+      "revision_id": 5,
+      "concept_id": "ACL1200215232-CMR",
+      "identity_type": "Catalog Item",
+      "acl": {
+        "group_permissions": [
+          {
+            "permissions": [
+              "order",
+              "read"
+            ],
+            "group_id": "AG1200212873-DEMO_PROV"
+          },
+          {
+            "permissions": [
+              "read",
+              "order"
+            ],
+            "group_id": "AG1200211474-CMR"
+          },
+          {
+            "permissions": [
+              "read",
+              "order"
+            ],
+            "user_type": "registered"
+          },
+          {
+            "permissions": [
+              "read",
+              "order"
+            ],
+            "user_type": "guest"
+          }
+        ],
+        "legacy_guid": "BE0C8766-CA6E-8AE6-12F5-7A2657760EEC",
+        "catalog_item_identity": {
+          "name": "All Granules",
+          "provider_id": "DEMO_PROV",
+          "collection_applicable": false,
+          "granule_applicable": true
+        }
+      },
+      "name": "All Granules",
+      "location": "https://cmr.sit.earthdata.nasa.gov:443/access-control/acls/ACL1200215232-CMR"
+    }
+...
+```
+
+
+While operational environments generally provide separate 'All Collections' and 'All Granules' ACLs, these can be combined for convenience in dev and ci environments as shown below.  
 
 ```
 {
