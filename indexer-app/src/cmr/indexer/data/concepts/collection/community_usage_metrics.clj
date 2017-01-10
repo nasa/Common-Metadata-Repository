@@ -16,15 +16,12 @@
   "Given a umm-spec collection, returns the community usage relevancy score.
   The score comes from the ingested EMS metrics, if available. The metrics are cached with the
   collection short name as the key and a list of version/access-count combos as the data.
-  The score is equal to:
-  the access count for that collection/version (if exists, should only be 1) + the access count for
-  that collection/'N/A' (if exists). This is temporary behavior and the 'N/A' version entries should
-  be applied to the highest version of the collection. See CMR-3594."
+  The score is the access count that matches that collection and version. Otherwise no score is
+  returned.
+  EMS metrics that have 'N/A' as the version are not used as part of the collection's metrics."
   [context collection]
   (let [metrics (metrics-fetcher/get-community-usage-metrics context)]
     (when (seq metrics)
       (let [{:keys [Version ShortName]} collection]
-        (when-let [usage-entries (seq (filter #(or (= (:version %) Version)
-                                                   (= (:version %) not-provided-version))
-                                              (get metrics ShortName)))]
+        (when-let [usage-entries (seq (filter #(= (:version %) Version) (get metrics ShortName)))]
           {:usage-relevancy-score (apply + (map :access-count usage-entries))})))))

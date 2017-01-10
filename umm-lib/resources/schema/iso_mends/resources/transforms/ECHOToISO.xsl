@@ -3252,7 +3252,7 @@
                     <gml:Point>
                       <xsl:attribute name="gml:id" select="generate-id()"/>
                       <gml:pos>
-                        <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                        <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/0/4326'"/>
                         <xsl:attribute name="srsDimension" select="'2'"/>
                         <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
                       </gml:pos>
@@ -3386,7 +3386,7 @@
             <gml:Point>
               <xsl:attribute name="gml:id" select="generate-id()"/>
               <gml:pos>
-                <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/0/4326'"/>
                 <xsl:attribute name="srsDimension" select="'2'"/>
                 <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
               </gml:pos>
@@ -3428,7 +3428,7 @@
             <gml:LineString>
               <xsl:attribute name="gml:id" select="generate-id()"/>
               <gml:posList>
-                <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/0/4326'"/>
                 <xsl:attribute name="srsDimension" select="'2'"/>
                 <xsl:for-each select="Point">
                   <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
@@ -3480,7 +3480,7 @@
                 <xsl:element name="gml:exterior">
                   <gml:LinearRing>
                     <gml:posList>
-                      <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                      <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/0/4326'"/>
                       <xsl:attribute name="srsDimension" select="'2'"/>
                       <xsl:for-each select="Point | Boundary/Point">
                         <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
@@ -3496,7 +3496,7 @@
                 <xsl:element name="gml:interior">
                   <gml:LinearRing>
                     <gml:posList>
-                      <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                      <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/0/4326'"/>
                       <xsl:attribute name="srsDimension" select="'2'"/>
                       <xsl:for-each select="Point | Boundary/Point">
                         <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
