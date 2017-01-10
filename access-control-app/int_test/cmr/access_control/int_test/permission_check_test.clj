@@ -6,6 +6,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]))
 
@@ -19,16 +20,34 @@
               (fixtures/grant-all-group-fixture ["prov1guid"])
               (fixtures/grant-all-acl-fixture))
 
+(deftest token-test
+  (let [params {:user_id "foobar" :provider "PROV1" :target "PROVIDER_HOLDINGS"}
+        token-missing-err "Valid user token required."
+        token-invalid-err #(str "Token " % " does not exist")]
+    (are3 [token errors]
+      (is (= {:status 401 :body {:errors errors} :content-type :json}
+             (ac/get-permissions (u/conn-context) params {:token token :raw? true})))
+
+      "An error should be returned if no user token is specified."
+      nil
+      [token-missing-err]
+
+      "An error should be returned if the user token does not exist."
+      "invalid token"
+      [(token-invalid-err "invalid token")])))
+
 (deftest invalid-params-test
   (let [target-required-err "One of [concept_id], [system_object], [target_group_id], or [provider] and [target] are required."
         user-required-err "One of parameters [user_type] or [user_id] are required."]
     (are [params errors]
       (= {:status 400 :body {:errors errors} :content-type :json}
-         (ac/get-permissions (u/conn-context) params {:raw? true}))
+         (ac/get-permissions (u/conn-context) params {:token "mock-echo-system-token" :raw? true}))
       {} [target-required-err user-required-err]
       {:target "PROVIDER_HOLDINGS"} [target-required-err user-required-err]
       {:user_id "" :concept_id []} [target-required-err user-required-err]
       {:user_id "foobar"} [target-required-err]
+      ;; Provider target and provider not both present
+      {:user_id "foobar" :target "PROVIDER_HOLDINGS"} [target-required-err]
       {:concept_id "C12345-ABC2" :system_object "GROUP" :user_id "bat"} [target-required-err]
       {:concept_id "C1200000-PROV1" :user_type "GROUP" :user_id "foo"} [user-required-err]
       {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
@@ -36,10 +55,12 @@
       {:user_id "foo" :target_group_id ["C1200000-PROV1"]} ["Target group id [C1200000-PROV1] is not valid."]))
   (are [params re]
     (some #(re-find re %)
-          (:errors (:body (ac/get-permissions (u/conn-context) params {:raw? true}))))
+          (:errors (:body (ac/get-permissions (u/conn-context) params {:token "mock-echo-system-token" :raw? true}))))
     {:user_id "foo" :system_object "GROUPE"} #"Parameter \[system_object\] must be one of: .*GROUP.*"
     {:user_id "foo" :system_object "group"} #"Parameter \[system_object\] must be one of: .*GROUP.*"
-    {:user_id "foo" :provider "PROV1" :target "PROVIDER_HOLDINGZ"} #"Parameter \[target\] must be one of: .*PROVIDER_HOLDINGS.*"))
+    {:user_id "foo" :provider "PROV1" :target "PROVIDER_HOLDINGZ"} #"Parameter \[target\] must be one of: .*PROVIDER_HOLDINGS.*"
+    ;; More than one kind of target is specified
+    {:user_id "foo" :provider "PROV1" :target ["PROVIDER_HOLDINGS" "AUDIT_REPORT"]} #"Parameter \[target\] must be one of: .*PROVIDER_HOLDINGS.*"))
 
 (defn get-permissions
   "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
@@ -50,7 +71,8 @@
       (merge {:concept_id concept-ids}
              (if (keyword? user)
                {:user_type (name user)}
-               {:user_id user})))))
+               {:user_id user}))
+      {:token "mock-echo-system-token"})))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
   ;; tests ACLs which grant access to collections based on provider id and/or entry title
@@ -660,12 +682,13 @@
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-system-permissions (fn [user system-object]
                                  (json/parse-string
-                                   (ac/get-permissions
-                                     (u/conn-context)
-                                     (merge {:system_object system-object}
-                                            (if (keyword? user)
-                                              {:user_type (name user)}
-                                              {:user_id user})))))]
+                                  (ac/get-permissions
+                                   (u/conn-context)
+                                   (merge {:system_object system-object}
+                                          (if (keyword? user)
+                                            {:user_type (name user)}
+                                            {:user_id user}))
+                                   {:token "mock-echo-system-token"})))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -732,7 +755,8 @@
                                              :provider provider-id}
                                             (if (keyword? user)
                                               {:user_type (name user)}
-                                              {:user_id user})))))]
+                                              {:user_id user}))
+                                     {:token "mock-echo-system-token"})))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -804,7 +828,8 @@
                                   (merge {:target_group_id target-group-ids}
                                          (if (keyword? user)
                                            {:user_type (name user)}
-                                           {:user_id user})))))]
+                                           {:user_id user}))
+                                  {:token "mock-echo-system-token"})))]
 
     (testing "no permissions granted"
       (are [user permissions]
