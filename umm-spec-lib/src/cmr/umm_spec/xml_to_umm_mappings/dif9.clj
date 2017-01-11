@@ -84,6 +84,8 @@
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [sanitize?]}]
+  (def doc doc)
+  (def sanitize? true)
   (let [entry-id (value-of doc "/DIF/Entry_ID")
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
@@ -163,9 +165,10 @@
                                              :Pages
                                              [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
-                                             [:RelatedUrl
-                                              {:URLs (seq
-                                                       (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                             [:OnlineResource
+                                              (when-let
+                                               [linkage (value-of pub-ref "Online_Resource")]
+                                               {:Linkage linkage})]
                                              :Other_Reference_Details])))
      :AncillaryKeywords (values-at doc "/DIF/Keyword")
      :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]

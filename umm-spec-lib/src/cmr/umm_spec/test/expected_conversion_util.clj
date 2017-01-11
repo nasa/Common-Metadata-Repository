@@ -97,17 +97,14 @@
   (-> pub-ref
       (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
       (update :ISBN su/format-isbn)
-      (update-in [:RelatedUrl]
+      (update-in [:OnlineResource]
                  (fn [related-url]
-                   (when related-url (assoc related-url
-                                            :URLs (seq (remove nil?
-                                                               [(url/format-url (first (:URLs related-url)) true)]))
-                                            :Description nil
-                                            :Relation nil
-                                            :Title nil
-                                            :MimeType nil
-                                            :FileSize nil))))))
-
+                   (when related-url (-> related-url
+                                         (dissoc :Description)
+                                         (dissoc :Protocol)
+                                         (dissoc :Name)
+                                         (dissoc :ApplicationProtocol)
+                                         (dissoc :Function)))))))
 
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"

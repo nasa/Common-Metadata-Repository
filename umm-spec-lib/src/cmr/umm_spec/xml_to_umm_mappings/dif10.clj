@@ -190,9 +190,9 @@
                                            [:ISBN (u/format-isbn (value-of pub-ref "ISBN"))]
                                            (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
                                              [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
-                                           [:RelatedUrl
-                                            {:URLs (seq
-                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                           ; [:RelatedUrl
+                                           ;  {:URLs (seq
+                                           ;           (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc "/DIF/Ancillary_Keyword")
    :RelatedUrls (ru/parse-related-urls doc sanitize?)

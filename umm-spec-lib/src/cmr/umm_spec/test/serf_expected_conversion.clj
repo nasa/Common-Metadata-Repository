@@ -140,6 +140,7 @@
       (update-in [:MetadataAssociations] fix-metadata-associations)
       (update-in-each [:PublicationReferences] fix-serf-doi)
       (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
+      (update-in-each [:PublicationReferences] #(dissoc % :OnlineResource))
       (assoc :Platforms nil)
       (dissoc :DataCenters)
       (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))

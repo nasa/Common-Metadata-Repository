@@ -494,8 +494,8 @@
    ;; The publisher of the publication.
    Publisher
 
-   ;; The URL of the website related to the bibliographic citation.
-   RelatedUrl
+   ;; The online resource related to the bibliographic citation.
+   OnlineResource
 
    ;; The ISBN of the publication.
    ISBN
@@ -656,6 +656,29 @@
    PeriodicDateTimes
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
+
+;; Describes the online resource pertaining to the data.
+(defrecord OnlineResourceType
+  [
+    ;; The URL of the website related to the online resource.
+    Linkage
+
+    ;; The protocol of the linkage for the online resource.
+    Protocol
+
+    ;; The application protocol of the online resource.
+    ApplicationProtocol
+
+    ;; The name of the online resource.
+    Name
+
+    ;; The description of the online resource.
+    Description
+
+    ;; The function of the online resource.
+    Function
+  ])
+(record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
 
 ;; Represents Internet sites that contain information related to the data, as well as related
 ;; Internet sites such as project home pages, related data archives/servers, metadata extensions,

@@ -83,6 +83,8 @@
 (defn- parse-publication-references
   "Parse SERF Publication References into UMM-S"
   [doc sanitize?]
+  (def doc doc)
+  (def sanitize? true)
   (for [pub-ref (select doc "/SERF/Reference")]
     (into {} (map (fn [x]
                     (if (keyword? x)
@@ -102,7 +104,8 @@
                    [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                    [:DOI {:DOI (value-of pub-ref "DOI")}]
                    [:RelatedUrl
-                    {:URLs (map #(url/format-url % sanitize?) (values-at pub-ref "Online_Resource"))}]
+                    (let [urls (map #(url/format-url % sanitize?) (values-at pub-ref "Online_Resource"))]
+                     (when-not (empty? urls) {:URLs urls}))]
                    :Other_Reference_Details]))))
 
 (defn- parse-actual-related-urls

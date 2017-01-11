@@ -120,7 +120,7 @@
                              :ReportNumber "25"
                              :Volume "volume"
                              :Publisher "publisher"
-                             :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
+                             :OnlineResource {:Linkage "www.foo.com"}
                              :ISBN "1234567789"
                              :Author "author"
                              :Issue "issue"

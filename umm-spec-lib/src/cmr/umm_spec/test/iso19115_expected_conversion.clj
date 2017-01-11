@@ -88,7 +88,7 @@
   (seq (for [pub-ref pub-refs
              :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
          (-> pub-ref
-             (assoc :ReportNumber nil :Volume nil :RelatedUrl nil :PublicationPlace nil)
+             (assoc :ReportNumber nil :Volume nil :OnlineResource nil :PublicationPlace nil)
              (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
              (update-in [:PublicationDate] conversion-util/date-time->date)
              (update :ISBN su/format-isbn)))))

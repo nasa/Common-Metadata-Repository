@@ -118,6 +118,7 @@
 (defn- create-publication-references
   "Creates a SERF Publication_References element from a UMM-S PublicationReferences object"
   [pub-refs]
+  (def pub-refs pub-refs)
   (for [pub-ref pub-refs]
     [:Reference
      [:Author (:Author pub-ref)]

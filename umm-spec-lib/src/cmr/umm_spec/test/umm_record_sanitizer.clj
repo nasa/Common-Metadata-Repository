@@ -109,6 +109,7 @@
 (defn sanitized-umm-record
   "Returns the sanitized version of the given umm record."
   [record]
+  (def record record)
   (-> record
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
       ;; so here we just replace the generated value to eng to make it through the validation.

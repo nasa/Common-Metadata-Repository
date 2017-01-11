@@ -257,12 +257,61 @@
         }
       }
     },
+    "RelatedUrlType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
+      "properties": {
+        "Title": {
+          "description": "The Title is a one-line description of the resource, could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
+          "$ref": "#/definitions/TitleType"
+        },
+        "Description": {
+          "description": "Description of the web page at this URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "Relation": {
+          "description": "An array of keywords describing the relation of the online resource to this resource.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "URLs": {
+          "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "minItems": 1
+        },
+        "MimeType": {
+          "description": "The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "FileSize": {
+          "description": "The estimated or average size of a file downloaded from this site.",
+          "$ref": "#/definitions/FileSizeType"
+        }
+      },
+      "required": ["URLs"]
+    },
     "OnlineResourceType": {
       "type": "object",
       "additionalProperties": false,
       "description": "Describes the online resource pertaining to the data.",
       "properties": {
-        "linkage": {
+        "Linkage": {
           "description": "The URL of the website related to the online resource.",
           "type": "string",
           "minLength": 1,
@@ -299,228 +348,6 @@
           "maxLength": 1024
         }
       }
-    },
-    "GetDataType": {
-        "description": "Represents a data file size.",
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-            "Format": {
-                "description": "The format of the data.",
-                "type": "string",
-                "enum": [
-                    "ascii",
-                    "binary",
-                    "GRIB",
-                    "BUFR",
-                    "HDF4",
-                    "HDF5",
-                    "HDF-EOS4",
-                    "HDF-EOS5",
-                    "jpeg",
-                    "png",
-                    "tiff",
-                    "geotiff",
-                    "kml"
-                ]
-            },
-            "Size": {
-                "description": "The size of the data.",
-                "$ref": "#/definitions/SizeType"
-            },
-            "Fees": {
-                "description": "The fee for ordering the collection data.  The fee is entered as a number, in US Dollars.",
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 80
-            },
-            "Checksum": {
-                "description": "The checksum, usually a SHA1 or md5 checksum for the data file.",
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 50
-            }
-        },
-        "required": [
-            "Format",
-            "Size"
-        ]
-    },
-    "GetServiceType": {
-        "description": "Represents a data file size.",
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-            "MimeType": {
-                "description": "The mime type of the service.",
-                "$ref": "#/definitions/RelatedUrlMimeTypeType"
-            },
-            "Protocol": {
-                "description": "The protocol of the service.",
-                "type": "string",
-                "enum": [
-                    "HTTP",
-                    "HTTPS",
-                    "FTP",
-                    "FTPS"
-                ]
-            },
-            "FullName": {
-                "description": "The full name of the service.",
-                "type": "string"
-            },
-            "DataID": {
-                "description": "The data identifier of the data provided by the service. Typically, this is a file name.",
-                "type": "string"
-            },
-            "DataType": {
-                "description": "The data type of the data provided by the service.",
-                "type": "string"
-            },
-            "URI": {
-                "description": "The URI of the data provided by the service.",
-                "type": "array",
-                "items": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 1024
-                },
-                "minItems": 1
-            }
-        },
-        "required": [
-            "MimeType",
-            "Protocol",
-            "FullName",
-            "DataID",
-            "DataType",
-            "URI"
-        ]
-    },
-    "RelatedURLContentTypeEnum": {
-        "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
-        "type": "string",
-        "enum": [
-            "CollectionURL",
-            "DistributionURL",
-            "PublicationURL",
-            "VisualizationURL",
-            "DataCenterURL",
-            "DataContactURL"
-        ]
-    },
-    "RelatedUrlTable": {
-        "DistributionURL": [
-            {"GET DATA": [
-                "",
-                "DATACAST URL",
-                "EARTHDATA SEARCH",
-                "ECHO",
-                "EDG",
-                "EOSDIS DATA POOL",
-                "GDS",
-                "GIOVANNI",
-                "KML",
-                "LAADS",
-                "LANCE",
-                "LAS",
-                "MIRADOR",
-                "MODAPS",
-                "NOAA CLASS",
-                "ON-LINE ARCHIVE",
-                "REVERB"
-            ]},
-            {"GET SERVICE": [
-                "",
-                "ACCESS MAP VIEWER",
-                "ACCESS MOBILE APP",
-                "ACCESS WEB SERVICE",
-                "DIF",
-                "MAP SERVICE",
-                "NOMADS",
-                "OPENDAP DATA",
-                "OPENDAP DATA (DODS)",
-                "OPENDAP DIRECTORY (DODS)",
-                "OpenSearch",
-                "SERF",
-                "SOFTWARE PACKAGE",
-                "SSW",
-                "SUBSETTER",
-                "THREDDS CATALOG",
-                "THREDDS DATA",
-                "THREDDS DIRECTORY",
-                "WEB COVERAGE SERVICE (WCS)",
-                "WEB FEATURE SERVICE (WFS)",
-                "WEB MAP FOR TIME SERIES",
-                "WEB MAP SERVICE (WMS)",
-                "WORKFLOW (SERVICE CHAIN)"
-            ]}
-        ],
-        "VisualizationURL": [{"GET RELATED VISUALIZATION": [
-            "",
-            "GIBS",
-            "GIOVANNI"
-        ]}],
-        "CollectionURL": [
-            {"DATA SET LANDING PAGE": [""]},
-            {"DOI":[""]},
-            {"EXTENDED METADATA": [""]},
-            {"PROFESSIONAL HOME PAGE": [""]},
-            {"PROJECT HOME PAGE": [""]}
-        ],
-        "PublicationURL": [{"VIEW RELATED INFORMATION": [
-            "ALGORITHM THEORETICAL BASIS DOCUMENT",
-            "CALIBRATION DATA DOCUMENTATION",
-            "CASE STUDY",
-            "DATA QUALITY",
-            "DATA USAGE",
-            "DELIVERABLES CHECKLIST"
-            "GENERAL DOCUMENTATION",
-            "HOW-TO",
-            "PI DOCUMENTATION",
-            "PROCESSING HISTORY",
-            "PRODUCT HISTORY",
-            "PRODUCT QUALITY ASSESSMENT",
-            "PRODUCT USAGE",
-            "PRODUCTION VERSION HISTORY",
-            "PUBLICATIONS",
-            "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS",
-            "READ-ME",
-            "RECIPE",
-            "REQUIREMENTS AND DESIGN",
-            "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
-            "SCIENCE DATA PRODUCT VALIDATION",
-            "USER FEEDBACK",
-            "USER'S GUIDE"
-        ]}],
-        "DataCenterURL": [{"HOME PAGE": [""]}],
-        "DataContactURL": [{"HOME PAGE": [""]}]
-    },
-    "RelatedUrlMimeTypeType": {
-        "description": "The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).",
-        "type": "string",
-        "enum": [
-            "application/json",
-            "application/pdf",
-            "application/xml",
-            "application/x-hdf",
-            "application/x-netcdf",
-            "application/x-hdf5",
-            "application/gml+xml",
-            "application/octet-stream",
-            "application/vnd.google-earth.kml+xml",
-            "application/vnd.google-earth.kmz",
-            "image/gif",
-            "image/jpeg",
-            "image/tiff",
-            "image/png",
-            "image/bmp",
-            "model/vnd.collada+xml",
-            "text/csv",
-            "text/html",
-            "text/xml",
-            "text/plain"
-        ]
     },
     "FileSizeType": {
       "description": "Represents a data file size.",
@@ -682,7 +509,25 @@
       "additionalProperties": false,
       "description": "Describes key bibliographic citations pertaining to the data.",
       "properties": {
-        "Authors": {
+        "OnlineResource": {
+          "description": "The URL of the website related to the bibliographic citation.",
+          "$ref": "#/definitions/OnlineResourceType"
+        },
+        "Title": {
+          "description": "The title of the publication in the bibliographic citation.",
+          "$ref": "#/definitions/TitleType"
+        },
+        "Publisher": {
+          "description": "The publisher of the publication.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "DOI": {
+          "description": "The Digital Object Identifier (DOI) of the publication.",
+          "$ref": "#/definitions/DoiType"
+        },
+        "Author": {
           "description": "The author of the publication.",
           "type": "string",
           "minLength": 1,
@@ -692,10 +537,6 @@
           "description": "The date of the publication.",
           "format": "date-time",
           "type": "string"
-        },
-        "Title": {
-          "description": "The title of the publication in the bibliographic citation.",
-          "$ref": "#/definitions/TitleType"
         },
         "Series": {
           "description": "The name of the series of the publication.",
@@ -733,12 +574,6 @@
           "minLength": 1,
           "maxLength": 1024
         },
-        "Publisher": {
-          "description": "The publisher of the publication.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        },
         "Pages": {
           "description": "The publication pages that are relevant.",
           "type": "string",
@@ -750,14 +585,6 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 13
-        },
-        "DOI": {
-          "description": "The Digital Object Identifier (DOI) of the publication.",
-          "$ref": "#/definitions/DoiType"
-        },
-        "OnlineResource": {
-          "description": "The URL of the website related to the bibliographic citation.",
-          "$ref": "#/definitions/OnlineResourceType"
         },
         "OtherReferenceDetails": {
           "description": "Additional free-text reference information about the publication.",
