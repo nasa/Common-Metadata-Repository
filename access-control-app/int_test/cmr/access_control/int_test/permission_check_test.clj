@@ -73,7 +73,8 @@
       {:user_id "foo" :system_object "group"} [system-target-err]
       {:user_id "foo" :provider "PROV1" :target "PROVIDER_HOLDINGZ"} [prov-target-err]
       ;; More than one kind of target is specified
-      {:user_id "foo" :provider "PROV1" :target ["PROVIDER_HOLDINGS" "AUDIT_REPORT"]} [prov-target-err])))
+      {:user_id "foo" :provider "PROV1" :target ["PROVIDER_HOLDINGS" "AUDIT_REPORT"]} ["Only one target can be specified."
+                                                                                       prov-target-err])))
 
 (defn get-permissions
   "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."

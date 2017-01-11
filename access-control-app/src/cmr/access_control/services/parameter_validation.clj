@@ -78,9 +78,18 @@
   (when (and provider (not (some #{target} acl-schema/provider-object-targets)))
     [(str "Parameter [target] must be one of: " (pr-str acl-schema/provider-object-targets))]))
 
+(defn- single-target-validation
+  "Validates that only one target is specified."
+  [{:keys [target]}]
+  (when (and
+         (vector? target)
+         (> (count target) 1))
+    [(str "Only one target can be specified.")]))
+
 (def ^:private get-permissions-validations
   "Defines validations for get permissions parameters and values"
-  [system_object-concept_id-provider-target-validation
+  [single-target-validation
+   system_object-concept_id-provider-target-validation
    provider-target-validation
    user_id-user_type-validation
    system_object-validation
