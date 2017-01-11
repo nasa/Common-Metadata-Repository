@@ -38,7 +38,22 @@
 
 (deftest invalid-params-test
   (let [target-required-err "One of [concept_id], [system_object], [target_group_id], or [provider] and [target] are required."
-        user-required-err "One of parameters [user_type] or [user_id] are required."]
+        user-required-err "One of parameters [user_type] or [user_id] are required."
+        system-target-err (str "Parameter [system_object] must be one of: [\"SYSTEM_AUDIT_REPORT\" "
+                               "\"METRIC_DATA_POINT_SAMPLE\" \"SYSTEM_INITIALIZER\" \"ARCHIVE_RECORD\" "
+                               "\"ERROR_MESSAGE\" \"TOKEN\" \"TOKEN_REVOCATION\" \"EXTENDED_SERVICE_ACTIVATION\" "
+                               "\"ORDER_AND_ORDER_ITEMS\" \"PROVIDER\" \"TAG_GROUP\" \"TAXONOMY\" "
+                               "\"TAXONOMY_ENTRY\" \"USER_CONTEXT\" \"USER\" \"GROUP\" \"ANY_ACL\" "
+                               "\"EVENT_NOTIFICATION\" \"EXTENDED_SERVICE\" \"SYSTEM_OPTION_DEFINITION\" "
+                               "\"SYSTEM_OPTION_DEFINITION_DEPRECATION\" \"INGEST_MANAGEMENT_ACL\" \"SYSTEM_CALENDAR_EVENT\"]")
+        prov-target-err (str "Parameter [target] must be one of: [\"AUDIT_REPORT\" "
+                             "\"OPTION_ASSIGNMENT\" \"OPTION_DEFINITION\" \"OPTION_DEFINITION_DEPRECATION\" "
+                             "\"DATASET_INFORMATION\" \"PROVIDER_HOLDINGS\" \"EXTENDED_SERVICE\" \"PROVIDER_ORDER\" "
+                             "\"PROVIDER_ORDER_RESUBMISSION\" \"PROVIDER_ORDER_ACCEPTANCE\" \"PROVIDER_ORDER_REJECTION\" "
+                             "\"PROVIDER_ORDER_CLOSURE\" \"PROVIDER_ORDER_TRACKING_ID\" \"PROVIDER_INFORMATION\" "
+                             "\"PROVIDER_CONTEXT\" \"AUTHENTICATOR_DEFINITION\" \"PROVIDER_POLICIES\" \"USER\" "
+                             "\"GROUP\" \"PROVIDER_OBJECT_ACL\" \"CATALOG_ITEM_ACL\" \"INGEST_MANAGEMENT_ACL\" "
+                             "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\"]")]
     (are [params errors]
       (= {:status 400 :body {:errors errors} :content-type :json}
          (ac/get-permissions (u/conn-context) params {:token "mock-echo-system-token" :raw? true}))
@@ -48,19 +63,17 @@
       {:user_id "foobar"} [target-required-err]
       ;; Provider target and provider not both present
       {:user_id "foobar" :target "PROVIDER_HOLDINGS"} [target-required-err]
+      {:user_id "foobar" :provider "PROV1"} [target-required-err prov-target-err]
       {:concept_id "C12345-ABC2" :system_object "GROUP" :user_id "bat"} [target-required-err]
       {:concept_id "C1200000-PROV1" :user_type "GROUP" :user_id "foo"} [user-required-err]
       {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
       {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."]
-      {:user_id "foo" :target_group_id ["C1200000-PROV1"]} ["Target group id [C1200000-PROV1] is not valid."]))
-  (are [params re]
-    (some #(re-find re %)
-          (:errors (:body (ac/get-permissions (u/conn-context) params {:token "mock-echo-system-token" :raw? true}))))
-    {:user_id "foo" :system_object "GROUPE"} #"Parameter \[system_object\] must be one of: .*GROUP.*"
-    {:user_id "foo" :system_object "group"} #"Parameter \[system_object\] must be one of: .*GROUP.*"
-    {:user_id "foo" :provider "PROV1" :target "PROVIDER_HOLDINGZ"} #"Parameter \[target\] must be one of: .*PROVIDER_HOLDINGS.*"
-    ;; More than one kind of target is specified
-    {:user_id "foo" :provider "PROV1" :target ["PROVIDER_HOLDINGS" "AUDIT_REPORT"]} #"Parameter \[target\] must be one of: .*PROVIDER_HOLDINGS.*"))
+      {:user_id "foo" :target_group_id ["C1200000-PROV1"]} ["Target group id [C1200000-PROV1] is not valid."]
+      {:user_id "foo" :system_object "GROUPE"} [system-target-err]
+      {:user_id "foo" :system_object "group"} [system-target-err]
+      {:user_id "foo" :provider "PROV1" :target "PROVIDER_HOLDINGZ"} [prov-target-err]
+      ;; More than one kind of target is specified
+      {:user_id "foo" :provider "PROV1" :target ["PROVIDER_HOLDINGS" "AUDIT_REPORT"]} [prov-target-err])))
 
 (defn get-permissions
   "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
