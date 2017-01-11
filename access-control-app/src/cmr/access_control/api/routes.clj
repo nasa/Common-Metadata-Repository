@@ -160,7 +160,7 @@
 
 (defn- get-permissions
   "Returns a Ring response with the requested permission check results."
-  [request-context headers params]
+  [request-context params]
   (let [result (acl-service/get-permissions request-context params)]
     {:status 200
      :body (json/generate-string result)}))
@@ -306,7 +306,7 @@
         (OPTIONS "/" [] common-routes/options-response)
 
         (GET "/" {:keys [request-context headers params]}
-          (get-permissions request-context headers params))))
+          (get-permissions request-context params))))
 
     (route/not-found "Not Found")))
 
