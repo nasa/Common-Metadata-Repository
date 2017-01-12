@@ -6,7 +6,8 @@
 # NGAP_CLI_DIR (Optional) - defaults to $WORKSPACE_HOME/ngap-cli
 
 apps=("metadata-db" "cubby" "index-set" "indexer" "virtual-product" "bootstrap" "access-control" "search" "ingest")
-environments=("sit")
+# apps=("metadata-db" "index-set" "indexer" "virtual-product" "bootstrap")
+environments=("sit" "wl")
 environment=$1
 
 printUsage() {
@@ -21,5 +22,6 @@ dir_to_script="$(dirname $0)"
 
 for i in "${apps[@]}"
 do
+  # $dir_to_script/ngap-deploy.sh $i $environment --skip-build
   $dir_to_script/ngap-deploy.sh $i $environment
 done

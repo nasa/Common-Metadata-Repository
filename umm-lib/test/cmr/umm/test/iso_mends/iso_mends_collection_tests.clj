@@ -8,10 +8,12 @@
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
    [cmr.common.joda-time]
-   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.common.test.test-check-ext :refer [defspec checking]]
    ;; this is not needed until the ECHO to ISO XSLT is fixed
    ;; [cmr.common.xml.xslt :as xslt]
    [cmr.spatial.derived :as d]
+   [cmr.spatial.encoding.gmd :as gmd]
+   [cmr.spatial.relations :as r]
    [cmr.umm.echo10.collection.personnel :as echo-pe]
    [cmr.umm.echo10.echo10-collection :as echo10-c]
    [cmr.umm.echo10.echo10-core :as echo10]
@@ -21,6 +23,46 @@
    [cmr.umm.test.generators.collection :as coll-gen]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-spatial :as umm-s]))
+
+(defn- fix-mbr
+  "The mbr creation in the functions below sometimes gets a rounding error when using
+  calculate-derived. This function fixes that since the rounding error occurs
+  in :center-point."
+  [mbr]
+  (cmr.spatial.mbr/mbr
+   (:west mbr) (:north mbr) (:east mbr) (:south mbr)))
+
+(defmulti create-bounding-box
+  (fn [geometry]
+    (type geometry)))
+
+(defmethod create-bounding-box cmr.spatial.mbr.Mbr
+  [geometry]
+  geometry)
+
+(defmethod create-bounding-box cmr.spatial.point.Point
+  [geometry]
+  (cmr.spatial.mbr/point->mbr geometry))
+
+(defmethod create-bounding-box cmr.spatial.line_string.LineString
+  [geometry]
+  (fix-mbr (:mbr (d/calculate-derived geometry))))
+
+(defmethod create-bounding-box cmr.spatial.polygon.Polygon
+  [geometry]
+  (fix-mbr (:mbr (d/calculate-derived geometry))))
+
+(defn- add-redundant-bounding-boxes
+  "ISO generates redundant bounding boxes. We are no longer removing them. In the
+  expected conversion we need to generate redundant bounding boxes for each geomtry
+  type."
+  [spatial-coverage]
+  (if-let [geometries (:geometries spatial-coverage)]
+    (assoc spatial-coverage :geometries
+      (interleave
+       (map create-bounding-box geometries)
+       geometries))
+    spatial-coverage))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed ISO MENDS SpatialCoverage from a UMM collection."
@@ -125,6 +167,7 @@
         ;; ISO-19115-1 will have a string which we can extract.
         (dissoc :quality)
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
+        (update :spatial-coverage add-redundant-bounding-boxes)
         (assoc :personnel personnel)
         ;; publication-reference will be added later
         (dissoc :publication-references)
@@ -147,15 +190,17 @@
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
-(defspec generate-and-parse-collection-test 100
-  (for-all [collection coll-gen/collections]
+(deftest generate-and-parse-collection-test
+  (checking "collection round tripping" 100
+    [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-iso collection)]
-      (= expected-parsed parsed))))
+      (is (= expected-parsed parsed)))))
 
-(defspec generate-and-parse-collection-between-formats-test 100
-  (for-all [collection coll-gen/collections]
+(deftest generate-and-parse-collection-between-formats-test
+  (checking "parse between formats" 100
+    [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)
           parsed-iso (c/parse-collection xml)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
@@ -165,10 +210,11 @@
           ;; geometries it contains...
           parsed-echo10 (update-in parsed-echo10 [:spatial-coverage] spatial-coverage->expected-parsed)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-iso collection))]
-      (and (= parsed-echo10 expected-parsed)
-           (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
+      (is (= parsed-echo10 expected-parsed))
+      (is (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 (comment
+
   ;; This test is currently failing pending an update to the XSLT file
   ;; to generate closed polygons per the GML spec
 

@@ -11,39 +11,16 @@
                  parameter name and the value as either a single value or a collection of values.
   field-name - the query-field that needs to be added to (or removed from) the current search.
   value - the value to apply (or remove) for the given field-name."
-  (:require [camel-snake-kebab.core :as csk]
-            [ring.util.codec :as codec]
-            [clojure.string :as str]))
-
-(defn- set-and-options-for-param
-  "If the provided field has more than one value applied in the query params, add in an options
-  query parameter to AND the multiple values together. If there is already an and options query
-  parameter, leave the value set as is. If the field is not present in the query params or there is
-  only one value, then remove the and option if it is present in the query parameters. Returns the
-  full updated query parameters."
-  [query-params field]
-  (let [param-snake-case (csk/->snake_case_string field)
-        values (remove nil?
-                       (flatten
-                        ;; Query parameters can contain either a sequence of values or a single
-                        ;; value. Wrap them in vectors and then flatten to handle both cases.
-                        (concat [(get query-params (str param-snake-case "[]"))]
-                                [(get query-params param-snake-case)])))
-        include-and-option-for-param? (< 1 (count values))
-        and-option (str "options[" param-snake-case "][and]")]
-    (if include-and-option-for-param?
-      (if (contains? query-params and-option)
-        query-params
-        (assoc query-params and-option true))
-      (dissoc query-params and-option))))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
+   [ring.util.codec :as codec]))
 
 (defn generate-query-string
   "Creates a query string from a root URL and a map of query params"
   [base-url query-params]
   (if (seq query-params)
-    (let [fields [:platform-h :instrument-h :data-center-h :project-h :processing-level-id-h]
-          query-params (reduce set-and-options-for-param query-params fields)]
-      (format "%s?%s" base-url (codec/form-encode query-params)))
+    (format "%s?%s" base-url (codec/form-encode query-params))
     base-url))
 
 (defn create-apply-link
