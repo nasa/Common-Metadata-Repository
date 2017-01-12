@@ -84,8 +84,6 @@
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [sanitize?]}]
-  (def doc doc)
-  (def sanitize? true)
   (let [entry-id (value-of doc "/DIF/Entry_ID")
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]

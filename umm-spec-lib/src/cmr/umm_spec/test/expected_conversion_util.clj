@@ -91,20 +91,28 @@
   (when (seq addresses)
     [(first addresses)]))
 
+(defn sanitize-online-resource
+  [online-resource]
+  (if (:Linkage online-resource)
+    (update online-resource :Linkage #(url/format-url % true))
+    online-resource))
+
+(defn dif-online-resource
+ "Sanitize the URL and dissoc unmapped fields (all excpet Linkage)"
+ [online-resource]
+ (when (:Linkage online-resource)
+  (cmn/map->OnlineResourceType
+    (-> online-resource
+        sanitize-online-resource
+        (select-keys [:Linkage])))))
+
 (defn dif-publication-reference
   "Returns the expected value of a parsed DIF 9 publication reference"
   [pub-ref]
   (-> pub-ref
       (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
       (update :ISBN su/format-isbn)
-      (update-in [:OnlineResource]
-                 (fn [related-url]
-                   (when related-url (-> related-url
-                                         (dissoc :Description)
-                                         (dissoc :Protocol)
-                                         (dissoc :Name)
-                                         (dissoc :ApplicationProtocol)
-                                         (dissoc :Function)))))))
+      (update :OnlineResource dif-online-resource)))
 
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
@@ -169,9 +177,3 @@
   (when language
     (let [dif-language (dif-util/umm-language->dif-language language)]
       (dif-util/dif-language->umm-language dif-language))))
-
-(defn sanitize-online-resource
-  [online-resource]
-  (if (and online-resource (:Linkage online-resource))
-    (update online-resource :Linkage #(url/format-url % true))
-    online-resource))

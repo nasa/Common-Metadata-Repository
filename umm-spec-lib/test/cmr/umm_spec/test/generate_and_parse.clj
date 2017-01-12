@@ -140,7 +140,6 @@
   (checking "service round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-s-generator)
      metadata-format (gen/elements tested-service-formats)]
-    (def umm-record umm-record)
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip :service metadata-format umm-record)))))
 

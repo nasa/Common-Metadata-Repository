@@ -83,8 +83,6 @@
 (defn- parse-publication-references
   "Parse SERF Publication References into UMM-S"
   [doc sanitize?]
-  (def doc doc)
-  (def sanitize? true)
   (for [pub-ref (select doc "/SERF/Reference")]
     (into {} (map (fn [x]
                     (if (keyword? x)

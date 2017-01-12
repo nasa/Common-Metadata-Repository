@@ -109,18 +109,12 @@
     (assoc-in pubref [:DOI :Authority] nil)
     pubref))
 
-(defn- expected-online-resource
-  "Sanitize the linkage in OnlineResource"
-  [online-resource]
-  (when-let [url (:Linkage online-resource)]
-    (cmn/map->OnlineResourceType {:Linkage url})))
-
 (defn- expected-publication-reference
  "Fix the DOI and Online Resouce linkage in Publication Reference"
  [pubref]
  (-> pubref
      fix-serf-doi
-     (update :OnlineResource expected-online-resource)))
+     (update :OnlineResource conversion-util/dif-online-resource)))
 
 (defn- fix-access-constraints
   [access-constraint]
