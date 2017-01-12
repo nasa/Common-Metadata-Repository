@@ -52,14 +52,15 @@
       (info "Database conn info" (db-conn-info-safe-for-logging oracle-store))
       {:ok? false :problem (.getMessage e)})
     (catch java.lang.NoClassDefFoundError e
-      (let [msg (.getMessage e)]
-        (error "tempoary logging:" e)
-        (if (re-matches #".*Could not initialize class oracle.security.*" msg)
-          ;; shut down the app so that it could be restarted by puppet
-          (do (error "Caught java.lang.NoClassDefFoundError" e)
-            (when (shutdown-on-oracle-class-error)
-              (System/exit 0)))
-          (throw e))))))
+      (error "temporary logging:" e)
+      (if (re-matches #".*Could not initialize class oracle.security.*" (.getMessage e))
+        ;; shut down the app so that it could be restarted by puppet
+        (do (error "Caught java.lang.NoClassDefFoundError" e)
+          (when (shutdown-on-oracle-class-error)
+            (System/exit 0)))
+        (throw e)))
+    (catch Throwable e
+      (error "temporary logging, caught throwable:" e))))
 
 (defn health
   "Returns the oracle health with timeout handling."
