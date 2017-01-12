@@ -4,9 +4,11 @@
    [clojure.set :as set]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
+   [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :refer [versions current-version]]))
 
@@ -172,6 +174,16 @@
   [context c & _]
   (-> c
     (dissoc :VersionDescription)))
+
+(defmethod migrate-umm-version [:collection "1.8" "1.9"]
+  [context c & _]
+  (-> c
+      (update-in-each [:PublicationReferences] related-url/migrate-publication-reference-to-online-resource)))
+
+(defmethod migrate-umm-version [:collection "1.9" "1.8"]
+  [context c & _]
+  (-> c
+      (update-in-each [:PublicationReferences] related-url/migrate-publication-reference-to-related-url)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

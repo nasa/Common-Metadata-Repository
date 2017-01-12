@@ -103,9 +103,9 @@
                    :Pages
                    [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                    [:DOI {:DOI (value-of pub-ref "DOI")}]
-                   [:RelatedUrl
-                    (let [urls (map #(url/format-url % sanitize?) (values-at pub-ref "Online_Resource"))]
-                     (when-not (empty? urls) {:URLs urls}))]
+                   [:OnlineResource
+                    (when-let [url (value-of pub-ref "Online_Resource")]
+                     {:Linkage (url/format-url url sanitize?)})]
                    :Other_Reference_Details]))))
 
 (defn- parse-actual-related-urls

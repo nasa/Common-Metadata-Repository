@@ -109,6 +109,19 @@
     (assoc-in pubref [:DOI :Authority] nil)
     pubref))
 
+(defn- expected-online-resource
+  "Sanitize the linkage in OnlineResource"
+  [online-resource]
+  (when-let [url (:Linkage online-resource)]
+    (cmn/map->OnlineResourceType {:Linkage url})))
+
+(defn- expected-publication-reference
+ "Fix the DOI and Online Resouce linkage in Publication Reference"
+ [pubref]
+ (-> pubref
+     fix-serf-doi
+     (update :OnlineResource expected-online-resource)))
+
 (defn- fix-access-constraints
   [access-constraint]
   (if access-constraint
@@ -138,9 +151,7 @@
       (update-in [:AccessConstraints] fix-access-constraints)
       (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil :Version nil)
       (update-in [:MetadataAssociations] fix-metadata-associations)
-      (update-in-each [:PublicationReferences] fix-serf-doi)
-      (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
-      (update-in-each [:PublicationReferences] #(dissoc % :OnlineResource))
+      (update-in-each [:PublicationReferences] expected-publication-reference)
       (assoc :Platforms nil)
       (dissoc :DataCenters)
       (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))

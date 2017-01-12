@@ -95,6 +95,13 @@
     (update-in-each collection [key] sanitize-related-url)
     collection))
 
+(defn- sanitize-online-resource
+  "Sanitize the OnlineResource Linkage (url)"
+  [c]
+  (if (get-in c [:OnlineResource :Linkage])
+   (assoc-in c [:OnlineResource :Linkage] (first (gen/sample test/file-url-string 1)))
+   c))
+
 (defn- sanitize-umm-record-urls
   "Sanitize all RelatedUrls throughout the collection by making them url strings."
   [record]
@@ -104,7 +111,8 @@
       (sanitize-umm-record-contacts :ContactPersons)
       (sanitize-umm-record-contacts :ContactGroups)
       (sanitize-umm-record-related-url :CollectionCitations)
-      (sanitize-umm-record-related-url :PublicationReferences)))
+      (sanitize-umm-record-related-url :PublicationReferences)
+      (update-in-each [:PublicationReferences] sanitize-online-resource)))
 
 (defn sanitized-umm-record
   "Returns the sanitized version of the given umm record."

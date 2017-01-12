@@ -169,3 +169,9 @@
   (when language
     (let [dif-language (dif-util/umm-language->dif-language language)]
       (dif-util/dif-language->umm-language dif-language))))
+
+(defn sanitize-online-resource
+  [online-resource]
+  (if (and online-resource (:Linkage online-resource))
+    (update online-resource :Linkage #(url/format-url % true))
+    online-resource))

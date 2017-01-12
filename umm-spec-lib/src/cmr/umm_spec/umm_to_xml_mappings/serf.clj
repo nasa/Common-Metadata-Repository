@@ -134,7 +134,7 @@
      [:Pages (:Pages pub-ref)]
      [:ISBN (:ISBN pub-ref)]
      [:DOI (:DOI (:DOI pub-ref))]
-     [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
+     [:Online_Resource (-> pub-ref :OnlineResource :Linkage)]
      [:Other_Reference_Details (:OtherReferenceDetails pub-ref)]]))
 
 (defn umm-s-to-serf-xml
