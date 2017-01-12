@@ -1,625 +1,626 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <xs:schema elementFormDefault="qualified"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <!-- spatial types -->
-  <xs:simpleType name="CoordinateSystem">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="CARTESIAN">
-        <xs:annotation>
-          <xs:documentation>Indicates a cartesian coordinate
-            system.</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="GEODETIC">
-        <xs:annotation>
-          <xs:documentation>Indicates a geodetic coordinate
-            system.</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="GranuleSpatialRepresentation">
-    <xs:annotation>
-      <xs:documentation>This entity contains the indication of
-        spatial coordinate system for all the granules in the
-        collection.</xs:documentation>
-    </xs:annotation>
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="CARTESIAN">
-        <xs:annotation>
-          <xs:documentation></xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="GEODETIC">
-        <xs:annotation>
-          <xs:documentation></xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="ORBIT">
-        <xs:annotation>
-          <xs:documentation></xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="NO_SPATIAL">
-        <xs:annotation>
-          <xs:documentation></xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:complexType name="Line">
-    <xs:annotation>
-      <xs:documentation>This entity holds the horizontal spatial
-        coverage of a line. A line area contains at lease two points
-        expressed with (PointLongitude, PointLatitude). A Line entity
-        forms with at least two Point entity. ECHO stores horizontal
-        spatial coverage Line type information using oracle spatial
-        type expression.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element minOccurs="2" maxOccurs="unbounded" name="Point"
-        type="Point" />
-      <xs:element minOccurs="0" name="CenterPoint" type="Point" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="BoundingRectangle">
-    <xs:annotation>
-      <xs:documentation>This entity holds the horizontal spatial
-        coverage of a line. ECHO stores horizontal spatial coverage
-        bounding rectangle type information using oracle spatial type
-        expression as a four points polygon. TODO possible merge with
-        collection but collection does not have
-        CenterPoint</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="WestBoundingCoordinate" type="Longitude">
-        <xs:annotation>
-          <xs:documentation>Western-most coordinate of the limit of
-            coverage expressed in longitude
-            (degree).</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="NorthBoundingCoordinate" type="Latitude">
-        <xs:annotation>
-          <xs:documentation>Northern-most coordinate of the limit
-            of coverage expressed in latitude
-            (degree).</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="EastBoundingCoordinate" type="Longitude">
-        <xs:annotation>
-          <xs:documentation>Eastern-most coordinate of the limit of
-            coverage expressed in longitude
-            (degree).</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="SouthBoundingCoordinate" type="Latitude">
-        <xs:annotation>
-          <xs:documentation>Southern-most coordinate of the limit
-            of coverage expressed in latitude
-            (degree).</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" name="CenterPoint" type="Point">
-        <xs:annotation>
-          <xs:documentation>The center point of the bounding
-            rectangle. This value is ignored for
-            collections.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="GPolygon">
-    <xs:annotation>
-      <xs:documentation>A GPolygon represents an area on the earth
-        represented by a main boundary with optional boundaries
-        excluded regions from the main boundary.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="Boundary" type="Boundary">
-        <xs:annotation>
-          <xs:documentation>The boundary representing the outer
-            ring of the GPolygon.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" name="ExclusiveZone" type="ExclusiveZone">
-        <xs:annotation>
-          <xs:documentation>Contains the excluded boundaries from
-            the GPolygon.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" name="CenterPoint" type="Point">
-        <xs:annotation>
-          <xs:documentation>The center point of the polygon. This
-            value is ignored for collections.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="Point">
-    <xs:annotation>
-      <xs:documentation>This entity holds the horizontal spatial
-        coverage of a point.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="PointLongitude" type="Longitude">
-        <xs:annotation>
-          <xs:documentation>The longitude value of a spatially
-            referenced pointer in degree.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="PointLatitude" type="Latitude">
-        <xs:annotation>
-          <xs:documentation>The latitude value of a spatially
-            referenced pointer in degree.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ExclusiveZone">
-    <xs:annotation>
-      <xs:documentation>Contains a list of boundaries to exclude
-        from some area.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element maxOccurs="unbounded" name="Boundary" type="Boundary">
-        <xs:annotation>
-          <xs:documentation></xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="Boundary">
-    <xs:annotation>
-      <xs:documentation>A boundary is set of points connected by
-        straight lines representing a polygon on the earth. It takes
-        a minimum of three points to make a boundary. Points must be
-        specified in clockwise order.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element minOccurs="3" maxOccurs="unbounded" name="Point"
-        type="Point" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ListOfVerticalSpatialDomains">
-    <xs:annotation>
-      <xs:documentation>This entity contains the domain value and
-        type for the granule's vertical spatial
-        domain.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded"
-        name="VerticalSpatialDomain" type="VerticalSpatialDomain" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="VerticalSpatialDomain">
-    <xs:annotation>
-      <xs:documentation>This entity contains the domain value and
-        type for the granule's vertical spatial domain. The reference
-        frame or system from which altitude or depths are measured.
-        The term 'altitude' is used instead of the common term
-        'elevation' to conform to the terminology in Federal
-        Information Processing Standards 70-1 and 173. The
-        information contains the datum name, distance units and
-        encoding method, which provide the definition for the
-        system.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="Type">
-        <xs:annotation>
-          <xs:documentation>This attribute describes the type of
-            the area of vertical space covered by the
-            locality.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="80" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element name="Value">
-        <xs:annotation>
-          <xs:documentation>This attribute describes the extent of
-            the area of vertical space covered by the granule. Must
-            be accompanied by an Altitude Encoding Method
-            description. The datatype for this attribute is the value
-            of the attribute VerticalSpatialDomainType. The unit for
-            this attribute is the value of either DepthDistanceUnits
-            or AltitudeDistanceUnits.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="80" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="RangeDateTime">
-    <xs:annotation>
-      <xs:documentation>This entity stores the start and end
-        date/time of a collection.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="BeginningDateTime" type="xs:dateTime">
-        <xs:annotation>
-          <xs:documentation>The time when the temporal coverage
-            period being described began.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element minOccurs="0" name="EndingDateTime" type="xs:dateTime">
-        <xs:annotation>
-          <xs:documentation>The time of the temporal coverage
-            period being described ended</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ListOfOnlineAccessURLs">
-    <xs:annotation>
-      <xs:documentation>This entity stores the online URL(s) for
-        the granule if there is any. Those URL either provides the
-        site that user can obtain granule data or give the further
-        instruction of obtaining the granule data.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="OnlineAccessURL"
-        type="OnlineAccessURL" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="OnlineAccessURL">
-    <xs:annotation>
-      <xs:documentation>This entity stores the online URL(s) for
-        the granule if there is any. Those URL either provides the
-        site that user can obtain granule data or give the further
-        instruction of obtaining the granule data.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="URL">
-        <xs:annotation>
-          <xs:documentation>If the granule data is available
-            online, then the URL will be provided and recorded
-            here.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="1024" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element minOccurs="0" name="URLDescription">
-        <xs:annotation>
-          <xs:documentation>Description about the URL or any
-            associated information.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="4000" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element minOccurs="0" name="MimeType">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="50" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ListOfOnlineResources">
-    <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="OnlineResource"
-        type="OnlineResource" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="OnlineResource">
-    <xs:annotation>
-      <xs:documentation>This entity records the documentation
-        information of the collection including documentation type
-        and documentation URL where apply etc.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="URL">
-        <xs:annotation>
-          <xs:documentation>The URL of the
-            resource.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="1024" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element minOccurs="0" name="Description">
-        <xs:annotation>
-          <xs:documentation>Comment about the online
-            resource.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="4000" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element name="Type">
-        <xs:annotation>
-          <xs:documentation>The type of the resource such as
-            'Collection Guide' or 'Campaign Guide'
-            etc.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="50" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element minOccurs="0" name="MimeType">
-        <xs:annotation>
-          <xs:documentation>The mime type of the online
-            resource.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="50" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ListOfOperationModes">
-    <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="OperationMode">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="20" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<!-- spatial types -->
+	<xs:simpleType name="CoordinateSystem">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CARTESIAN">
+				<xs:annotation>
+					<xs:documentation>Indicates a cartesian coordinate
+						system.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="GEODETIC">
+				<xs:annotation>
+					<xs:documentation>Indicates a geodetic coordinate
+						system.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="GranuleSpatialRepresentation">
+		<xs:annotation>
+			<xs:documentation>This entity contains the indication of
+				spatial coordinate system for all the granules in the
+				collection.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="CARTESIAN">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="GEODETIC">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="ORBIT">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="NO_SPATIAL">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="Line">
+		<xs:annotation>
+			<xs:documentation>This entity holds the horizontal spatial
+				coverage of a line. A line area contains at lease two points
+				expressed with (PointLongitude, PointLatitude). A Line entity
+				forms with at least two Point entity. ECHO stores horizontal
+				spatial coverage Line type information using oracle spatial
+				type expression.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="2" maxOccurs="unbounded" name="Point"
+				type="Point" />
+			<xs:element minOccurs="0" name="CenterPoint" type="Point" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BoundingRectangle">
+		<xs:annotation>
+			<xs:documentation>This entity holds the horizontal spatial
+				coverage of a line. ECHO stores horizontal spatial coverage
+				bounding rectangle type information using oracle spatial type
+				expression as a four points polygon. TODO possible merge with
+				collection but collection does not have
+				CenterPoint</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="WestBoundingCoordinate" type="Longitude">
+				<xs:annotation>
+					<xs:documentation>Western-most coordinate of the limit of
+						coverage expressed in longitude
+						(degree).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="NorthBoundingCoordinate" type="Latitude">
+				<xs:annotation>
+					<xs:documentation>Northern-most coordinate of the limit
+						of coverage expressed in latitude
+						(degree).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="EastBoundingCoordinate" type="Longitude">
+				<xs:annotation>
+					<xs:documentation>Eastern-most coordinate of the limit of
+						coverage expressed in longitude
+						(degree).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SouthBoundingCoordinate" type="Latitude">
+				<xs:annotation>
+					<xs:documentation>Southern-most coordinate of the limit
+						of coverage expressed in latitude
+						(degree).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="CenterPoint" type="Point">
+				<xs:annotation>
+					<xs:documentation>The center point of the bounding
+						rectangle. This value is ignored for
+						collections.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="GPolygon">
+		<xs:annotation>
+			<xs:documentation>A GPolygon represents an area on the earth
+				represented by a main boundary with optional boundaries
+				excluded regions from the main boundary.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Boundary" type="Boundary">
+				<xs:annotation>
+					<xs:documentation>The boundary representing the outer
+						ring of the GPolygon.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="ExclusiveZone" type="ExclusiveZone">
+				<xs:annotation>
+					<xs:documentation>Contains the excluded boundaries from
+						the GPolygon.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="CenterPoint" type="Point">
+				<xs:annotation>
+					<xs:documentation>The center point of the polygon. This
+						value is ignored for collections.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Point">
+		<xs:annotation>
+			<xs:documentation>This entity holds the horizontal spatial
+				coverage of a point.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PointLongitude" type="Longitude">
+				<xs:annotation>
+					<xs:documentation>The longitude value of a spatially
+						referenced pointer in degree.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PointLatitude" type="Latitude">
+				<xs:annotation>
+					<xs:documentation>The latitude value of a spatially
+						referenced pointer in degree.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ExclusiveZone">
+		<xs:annotation>
+			<xs:documentation>Contains a list of boundaries to exclude
+				from some area.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="Boundary" type="Boundary">
+				<xs:annotation>
+					<xs:documentation></xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Boundary">
+		<xs:annotation>
+			<xs:documentation>A boundary is set of points connected by
+				straight lines representing a polygon on the earth. It takes
+				a minimum of three points to make a boundary. Points must be
+				specified in clockwise order.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="3" maxOccurs="unbounded" name="Point"
+				type="Point" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfVerticalSpatialDomains">
+		<xs:annotation>
+			<xs:documentation>This entity contains the domain value and
+				type for the granule's vertical spatial
+				domain.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded"
+				name="VerticalSpatialDomain" type="VerticalSpatialDomain" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="VerticalSpatialDomain">
+		<xs:annotation>
+			<xs:documentation>This entity contains the domain value and
+				type for the granule's vertical spatial domain. The reference
+				frame or system from which altitude or depths are measured.
+				The term 'altitude' is used instead of the common term
+				'elevation' to conform to the terminology in Federal
+				Information Processing Standards 70-1 and 173. The
+				information contains the datum name, distance units and
+				encoding method, which provide the definition for the
+				system.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Type">
+				<xs:annotation>
+					<xs:documentation>This attribute describes the type of
+						the area of vertical space covered by the
+						locality.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="80" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Value">
+				<xs:annotation>
+					<xs:documentation>This attribute describes the extent of
+						the area of vertical space covered by the granule. Must
+						be accompanied by an Altitude Encoding Method
+						description. The datatype for this attribute is the value
+						of the attribute VerticalSpatialDomainType. The unit for
+						this attribute is the value of either DepthDistanceUnits
+						or AltitudeDistanceUnits.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="80" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RangeDateTime">
+		<xs:annotation>
+			<xs:documentation>This entity stores the start and end
+				date/time of a collection.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="BeginningDateTime" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>The time when the temporal coverage
+						period being described began.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="EndingDateTime" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>The time of the temporal coverage
+						period being described ended</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfOnlineAccessURLs">
+		<xs:annotation>
+			<xs:documentation>This entity stores the online URL(s) for
+				the granule if there is any. Those URL either provides the
+				site that user can obtain granule data or give the further
+				instruction of obtaining the granule data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="OnlineAccessURL"
+				type="OnlineAccessURL" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OnlineAccessURL">
+		<xs:annotation>
+			<xs:documentation>This entity stores the online URL(s) for
+				the granule if there is any. Those URL either provides the
+				site that user can obtain granule data or give the further
+				instruction of obtaining the granule data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="URL">
+				<xs:annotation>
+					<xs:documentation>If the granule data is available
+						online, then the URL will be provided and recorded
+						here.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1024" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="URLDescription">
+				<xs:annotation>
+					<xs:documentation>Description about the URL or any
+						associated information.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="4000" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="MimeType">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfOnlineResources">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="OnlineResource"
+				type="OnlineResource" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OnlineResource">
+		<xs:annotation>
+			<xs:documentation>This entity records the documentation
+				information of the collection including documentation type
+				and documentation URL where apply etc.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="URL">
+				<xs:annotation>
+					<xs:documentation>The URL of the
+						resource.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1024" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="Description">
+				<xs:annotation>
+					<xs:documentation>Comment about the online
+						resource.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="4000" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Type">
+				<xs:annotation>
+					<xs:documentation>The type of the resource such as
+						'Collection Guide' or 'Campaign Guide'
+						etc.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="MimeType">
+				<xs:annotation>
+					<xs:documentation>The mime type of the online
+						resource.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfOperationModes">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="OperationMode">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
   <xs:simpleType name="CommonEntryId">
-  <xs:restriction base="xs:string">
-    <xs:minLength value="1" />
-  </xs:restriction>
+	<xs:restriction base="xs:string">
+	  <xs:minLength value="1" />
+	  <xs:pattern value="[^\\/:\s]{1,255}"></xs:pattern>
+	</xs:restriction>
   </xs:simpleType>
-  <xs:complexType name="CollectionRef">
-    <xs:annotation>
-      <xs:documentation>A reference to a collection using one of
-        the unique keys in the collection. A collection can be
-        referenced using a combination of the short name and version
-        id or the dataset id. Setting only one of short name and
-        version id without the other is not a valid collection
-        reference.</xs:documentation>
-    </xs:annotation>
-    <xs:choice>
-      <xs:sequence>
-        <xs:element name="ShortName" type="CollectionShortName">
-          <xs:annotation>
-            <xs:documentation>The short name of the collection. The
-              short name can be used as a key for the collection when
-              combined with the version id.</xs:documentation>
-          </xs:annotation>
-        </xs:element>
-        <xs:element name="VersionId">
-          <xs:annotation>
-            <xs:documentation>The version id of the collection. The
-              version id can be used as a unique key for the
-              collection when combined with the short
-              name.</xs:documentation>
-          </xs:annotation>
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:maxLength value="80"></xs:maxLength>
-            </xs:restriction>
-          </xs:simpleType>
-        </xs:element>
-      </xs:sequence>
-      <xs:sequence>
-        <xs:element name="DataSetId">
-          <xs:annotation>
-            <xs:documentation>The data set id of the
-              collection.</xs:documentation>
-          </xs:annotation>
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:maxLength value="1030"></xs:maxLength>
-              <xs:minLength value="1"></xs:minLength>
-            </xs:restriction>
-          </xs:simpleType>
-        </xs:element>
-      </xs:sequence>
-      <xs:sequence>
-          <xs:element minOccurs="1" maxOccurs="unbounded" name="EntryId" type="CommonEntryId" />
-      </xs:sequence>
-    </xs:choice>
-  </xs:complexType>
-  <xs:complexType name="EmptyType">
-    <xs:annotation>
-      <xs:documentation>The element should contain no children. In
-        most cases, this is used when the presence of the element has
-        meaning, however the element itself does not required
-        data.</xs:documentation>
-    </xs:annotation>
-  </xs:complexType>
-  <!-- common simple types -->
-  <xs:complexType name="ProviderBrowseElement">
-    <xs:annotation>
-      <xs:documentation>The unique identifier for a browse image
-        from the provider.</xs:documentation>
-    </xs:annotation>
-    <xs:choice>
-      <xs:element name="ProviderBrowseId" type="ProviderBrowseId" />
-      <xs:element name="ProviderBrowseUrl" type="ProviderBrowseUrl" />
-    </xs:choice>
-  </xs:complexType>
-  <xs:simpleType name="ProviderBrowseId">
-    <xs:annotation>
-      <xs:documentation>The unique id for a browse image from the
-        provider.</xs:documentation>
-    </xs:annotation>
-    <xs:restriction base="xs:string">
-      <xs:maxLength value="255"></xs:maxLength>
-      <xs:minLength value="1"></xs:minLength>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:complexType name="ProviderBrowseUrl">
-    <xs:annotation>
-      <xs:documentation>The unique url for a browse image from the
-        provider.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="URL">
-        <xs:annotation>
-          <xs:documentation>The URL of the
-            browse.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="1024" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element name="FileSize" type="xs:long" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>The size of the browse
-            file.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="Description" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>The description of the browse
-            url.</xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="4000" />
-            <xs:minLength value="1"></xs:minLength>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-      <xs:element minOccurs="0" name="MimeType">
-        <xs:annotation>
-          <xs:documentation>
-            The mime type of the browse record.
-          </xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:maxLength value="50" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:simpleType name="GranuleUR">
-    <xs:annotation>
-      <xs:documentation>The Universal Reference ID of the granule
-        referred by the data provider. This ID is unique per data
-        provider.</xs:documentation>
-    </xs:annotation>
-    <xs:restriction base="xs:string">
-      <xs:maxLength value="250"></xs:maxLength>
-      <xs:minLength value="1"></xs:minLength>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="CollectionShortName">
-    <xs:restriction base="xs:string">
-      <xs:maxLength value="85" />
-      <xs:minLength value="1"></xs:minLength>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:complexType name="ListOfStrings">
-    <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="Item"
-        type="xs:string" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:simpleType name="Latitude">
-    <xs:restriction base="xs:decimal">
-      <xs:minInclusive value="-90.0" />
-      <xs:maxInclusive value="90.0" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="Longitude">
-    <xs:restriction base="xs:decimal">
-      <xs:minInclusive value="-180.0" />
-      <xs:maxInclusive value="180.0" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DollarAmount">
-    <xs:restriction base="xs:decimal">
-      <xs:totalDigits value="9" />
-      <xs:fractionDigits value="2" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:complexType name="ListOfCollectionRefs">
-    <xs:annotation>
-      <xs:documentation>A list of references to
-        collections.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="CollectionRef" type="CollectionRef"
-        minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>A single reference to a
-            collection.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ListOfGranuleURs">
-    <xs:annotation>
-      <xs:documentation>A list of references to
-        granules.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="GranuleUR" type="GranuleUR" minOccurs="0"
-        maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>A single reference to a
-            granule.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ListOfProviderBrowseIds">
-    <xs:annotation>
-      <xs:documentation>A list of references to browse
-        images.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="ProviderBrowseId" type="ProviderBrowseId"
-        minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>A single reference to a browse
-            image.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="ListOfProviderBrowseUrls">
-    <xs:annotation>
-      <xs:documentation>A list of urls to browse
-        images.</xs:documentation>
-    </xs:annotation>
-    <xs:sequence>
-      <xs:element name="ProviderBrowseUrl" type="ProviderBrowseUrl"
-        minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>A single url to a browse
-            image.</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-  </xs:complexType>
+	<xs:complexType name="CollectionRef">
+		<xs:annotation>
+			<xs:documentation>A reference to a collection using one of
+				the unique keys in the collection. A collection can be
+				referenced using a combination of the short name and version
+				id or the dataset id. Setting only one of short name and
+				version id without the other is not a valid collection
+				reference.</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:sequence>
+				<xs:element name="ShortName" type="CollectionShortName">
+					<xs:annotation>
+						<xs:documentation>The short name of the collection. The
+							short name can be used as a key for the collection when
+							combined with the version id.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="VersionId">
+					<xs:annotation>
+						<xs:documentation>The version id of the collection. The
+							version id can be used as a unique key for the
+							collection when combined with the short
+							name.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="80"></xs:maxLength>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+			<xs:sequence>
+				<xs:element name="DataSetId">
+					<xs:annotation>
+						<xs:documentation>The data set id of the
+							collection.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:maxLength value="1030"></xs:maxLength>
+							<xs:minLength value="1"></xs:minLength>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+			<xs:sequence>
+			  	<xs:element minOccurs="1" maxOccurs="unbounded" name="EntryId" type="CommonEntryId" />
+			</xs:sequence>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="EmptyType">
+		<xs:annotation>
+			<xs:documentation>The element should contain no children. In
+				most cases, this is used when the presence of the element has
+				meaning, however the element itself does not required
+				data.</xs:documentation>
+		</xs:annotation>
+	</xs:complexType>
+	<!-- common simple types -->
+	<xs:complexType name="ProviderBrowseElement">
+		<xs:annotation>
+			<xs:documentation>The unique identifier for a browse image
+				from the provider.</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="ProviderBrowseId" type="ProviderBrowseId" />
+			<xs:element name="ProviderBrowseUrl" type="ProviderBrowseUrl" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:simpleType name="ProviderBrowseId">
+		<xs:annotation>
+			<xs:documentation>The unique id for a browse image from the
+				provider.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="255"></xs:maxLength>
+			<xs:minLength value="1"></xs:minLength>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ProviderBrowseUrl">
+		<xs:annotation>
+			<xs:documentation>The unique url for a browse image from the
+				provider.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="URL">
+				<xs:annotation>
+					<xs:documentation>The URL of the
+						browse.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1024" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="FileSize" type="xs:long" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The size of the browse
+						file.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Description" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>The description of the browse
+						url.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="4000" />
+						<xs:minLength value="1"></xs:minLength>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="MimeType">
+				<xs:annotation>
+					<xs:documentation>
+						The mime type of the browse record.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="GranuleUR">
+		<xs:annotation>
+			<xs:documentation>The Universal Reference ID of the granule
+				referred by the data provider. This ID is unique per data
+				provider.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="250"></xs:maxLength>
+			<xs:minLength value="1"></xs:minLength>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="CollectionShortName">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="85" />
+			<xs:minLength value="1"></xs:minLength>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ListOfStrings">
+		<xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" name="Item"
+				type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="Latitude">
+		<xs:restriction base="xs:decimal">
+			<xs:minInclusive value="-90.0" />
+			<xs:maxInclusive value="90.0" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Longitude">
+		<xs:restriction base="xs:decimal">
+			<xs:minInclusive value="-180.0" />
+			<xs:maxInclusive value="180.0" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DollarAmount">
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="9" />
+			<xs:fractionDigits value="2" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ListOfCollectionRefs">
+		<xs:annotation>
+			<xs:documentation>A list of references to
+				collections.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CollectionRef" type="CollectionRef"
+				minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A single reference to a
+						collection.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfGranuleURs">
+		<xs:annotation>
+			<xs:documentation>A list of references to
+				granules.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="GranuleUR" type="GranuleUR" minOccurs="0"
+				maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A single reference to a
+						granule.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfProviderBrowseIds">
+		<xs:annotation>
+			<xs:documentation>A list of references to browse
+				images.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ProviderBrowseId" type="ProviderBrowseId"
+				minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A single reference to a browse
+						image.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfProviderBrowseUrls">
+		<xs:annotation>
+			<xs:documentation>A list of urls to browse
+				images.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ProviderBrowseUrl" type="ProviderBrowseUrl"
+				minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>A single url to a browse
+						image.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
     <xs:simpleType name="MetadataStandardName">
       <xs:restriction base="xs:string">
         <xs:minLength value="1" />
@@ -639,6 +640,34 @@
         <xs:enumeration value="SYSTEM/SPACECRAFT_FILE"/>
         <xs:enumeration value="EXTERNAL_DATA"/>
       </xs:restriction>
-    </xs:simpleType>
-
+    </xs:simpletype>
+    <xs:complexType name="DoiType">
+      <xs:annotation>
+        <xs:documentation>This entity describes the digital object identifier, and who created it.</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element name="DOI" minOccurs="1" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>This element describes the digital object identifier.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:maxLength value="1024"/>
+              <xs:minLength value="1"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+        <xs:element name="Authority" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>This element describes who created the digital object identifier. This is not the group who issues the DOI ID and registers it, but the group to which the identifier belongs i.e. a DAAC or a scientist team.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:maxLength value="80" />
+              <xs:minLength value="1"></xs:minLength>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
 </xs:schema>
