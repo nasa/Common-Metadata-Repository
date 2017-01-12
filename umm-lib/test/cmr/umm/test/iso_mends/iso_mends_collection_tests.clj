@@ -46,8 +46,6 @@
 
 (defmethod create-bounding-box cmr.spatial.line_string.LineString
   [geometry]
-  (proto-repl.saved-values/save 20)
-  ;(cmr.spatial.line-string/line-string->mbr geometry))
   (fix-mbr (:mbr (d/calculate-derived geometry))))
 
 (defmethod create-bounding-box cmr.spatial.polygon.Polygon
@@ -62,7 +60,7 @@
   (if-let [geometries (:geometries spatial-coverage)]
     (assoc spatial-coverage :geometries
       (interleave
-       (map #(create-bounding-box %) geometries)
+       (map create-bounding-box geometries)
        geometries))
     spatial-coverage))
 
