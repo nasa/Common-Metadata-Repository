@@ -493,3 +493,32 @@
   (let [result (vm/migrate-umm {} :collection "1.8" "1.7"
                                {:VersionDescription "description of the collection version"})]
     (is (= nil (:VersionDescription result)))))
+
+(deftest migrate-1_8-up-to-1_9
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
+                               {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=", 
+                                                       :DOI {:Authority ";'", :DOI "F19,L"}, :Publisher nil, :ReleaseDate nil, 
+                                                       :RelatedUrl nil, :IssueIdentification nil, :Editor nil, :DataPresentationForm nil, 
+                                                       :Version nil, :OtherCitationDetails nil}]})]
+    (println "result89 is: ===========" result)
+    ;; DOI is moved from :CollectionCitations to :DOI 
+    (is (= {:Authority ";'", :DOI "F19,L"} (:DOI result)))
+    (is (= [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+             :Publisher nil, :ReleaseDate nil, :RelatedUrl nil, :IssueIdentification nil, 
+             :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil}] 
+           (:CollectionCitations result)))))
+
+(deftest migrate-1_9-down-to-1_8
+  (let [result (vm/migrate-umm {} :collection "1.9" "1.8"
+                               {:DOI {:Authority ";'", :DOI "F19,L"}
+                                :CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                                       :Publisher nil, :ReleaseDate nil, :RelatedUrl nil, :IssueIdentification nil, 
+                                                       :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil}]})]
+    (println "result98 is: =====================" result)
+    ;; DOI is moved from :DOI to :CollectionCitations
+    (is (= nil (:DOI result)))
+    (is (= [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+             :DOI {:Authority ";'", :DOI "F19,L"},
+             :Publisher nil, :ReleaseDate nil, :RelatedUrl nil, :IssueIdentification nil, 
+             :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil}] 
+           (:CollectionCitations result)))))

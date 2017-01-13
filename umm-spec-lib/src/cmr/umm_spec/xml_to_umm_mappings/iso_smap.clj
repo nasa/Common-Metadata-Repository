@@ -15,6 +15,10 @@
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
        "/gmd:identificationInfo/gmd:MD_DataIdentification"))
 
+(def citation-base-xpath
+  (str md-identification-base-xpath 
+       "/gmd:citation/gmd:CI_Citation"))
+
 (def short-name-identification-xpath
   (str md-identification-base-xpath
        "[gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
@@ -72,6 +76,26 @@
      :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")
      :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))}))
 
+(defn- parse-doi
+  [doc]
+  ;; There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
+  ;; Each gmd:identifier could contain at most ONE DOI. The doi-list below will contain something like:
+  ;; [[nil] [nil {:DOI "doi1" :Authority nil} {:DOI "doi2" :Authority nil}] [{:DOI "doi3" :Authority nil]]
+  ;; We will pick the first DOI for now.
+  (let [orgname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:CitedResponsibleParty/"
+                          "gmd:CI_ResponsibleParty/gmd:organizationName/gco:CharacterString")
+        indname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:CitedResponsibleParty/"
+                          "gmd:CI_ResponsibleParty/gmd:individualName/gco:CharacterString")
+        doi-list (for [ci-ct (select doc citation-base-xpath)]
+                   (for [gmd-id (select ci-ct "gmd:identifier")]
+                     (when (and (= (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString") "DOI")
+                                (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString")
+                                   "gov.nasa.esdis.umm.doi"))
+                       {:DOI (value-of gmd-id "gmd:MD_Identifier/gmd:code/gco:CharacterString")
+                        :Authority (or (value-of gmd-id orgname-path)
+                                       (value-of gmd-id orgname-path))})))]
+    (first (first (remove empty? (map #(remove nil? %) doi-list))))))
+
 (defn iso-smap-xml-to-umm-c
   "Returns UMM-C collection record from ISO-SMAP collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
@@ -81,6 +105,7 @@
     (js/parse-umm-c
       {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
+       :DOI (parse-doi doc)
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)

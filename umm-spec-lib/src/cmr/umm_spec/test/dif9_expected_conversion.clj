@@ -236,7 +236,11 @@
 
 (defn umm-expected-conversion-dif9
   [umm-coll]
-  (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
+  (let [expected-contact-persons (expected-dif-contact-persons umm-coll)
+        ;; dif9 does not have :Authority field
+        umm-coll (if (get-in umm-coll [:DOI :Authority])
+                   (update-in umm-coll [:DOI] assoc :Authority nil)
+                   umm-coll)]
     (-> umm-coll
         ;; DIF 9 only supports entry-id in metadata associations
         (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)

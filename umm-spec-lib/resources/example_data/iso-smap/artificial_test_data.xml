@@ -81,6 +81,19 @@
 <gmd:identifier>
 <gmd:MD_Identifier>
 <gmd:code>
+<gco:CharacterString>10.7927/SMAPSAMPLE</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<gco:CharacterString>gov.nasa.esdis.umm.doi</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>DOI</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:identifier>
+<gmd:MD_Identifier>
+<gmd:code>
 <!-- This field provides the product Short Name.  This is the ECS Short Name rather than the SMAP Short Name.  -->
 <gco:CharacterString>SPL1AP</gco:CharacterString>
 </gmd:code>

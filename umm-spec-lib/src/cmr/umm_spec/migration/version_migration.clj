@@ -173,6 +173,38 @@
   (-> c
     (dissoc :VersionDescription)))
 
+(defn- migrate-doi-up
+  [c]
+  (if-let [doi-obj (first (remove nil? (map :DOI (:CollectionCitations c))))]
+    (let [updated-coll-citations (map #(dissoc % :DOI) (:CollectionCitations c))
+          updated-coll (assoc c :DOI doi-obj)]
+      (assoc updated-coll :CollectionCitations updated-coll-citations))
+    c))
+
+(defn- migrate-doi-down
+  [c]
+  (if-let [doi-obj (:DOI c)]
+    (let [updated-coll-citations (map #(assoc % :DOI doi-obj) (:CollectionCitations c))
+          ;; assign all :DOI to nil except for the first one i.e. only one DOI in not nil.
+          updated-coll-citations (if (< 1 (count updated-coll-citations)) 
+                                   (map #(assoc % :DOI nil) (rest updated-coll-citations))
+                                   updated-coll-citations)
+          updated-coll (dissoc c :DOI)]
+      (assoc updated-coll :CollectionCitations updated-coll-citations))
+    c))   
+
+(defmethod migrate-umm-version [:collection "1.8" "1.9"]
+  [context c & _]
+  ;; need to migrate :DOI from CollectionCitation level up to collection level
+  ;; It's possible that there's only one DOI that's not nil in all the CollectionCitations,
+  ;; all other DOIs are nil, so multiple CollectionCitations could map to one :DOI.
+  (-> c migrate-doi-up)) 
+
+(defmethod migrate-umm-version [:collection "1.9" "1.8"]
+  [context c & _]
+  ;; need to migrate :DOI from collection level down to CollectionCitation level.
+  (-> c migrate-doi-down)) 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 

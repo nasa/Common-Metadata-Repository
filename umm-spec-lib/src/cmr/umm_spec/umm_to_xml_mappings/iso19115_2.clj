@@ -260,7 +260,13 @@
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
-             [:gmd:version (char-string (:Version c))]]]]]
+             [:gmd:version (char-string (:Version c))]]]
+         (when-let [doi (:DOI c)]
+           [:gmd:identifier
+            [:gmd:MD_Identifier
+             [:gmd:code [:gco:CharacterString (:DOI doi)]]
+             [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+             [:gmd:description [:gco:CharacterString "DOI"]]]])]]
          [:gmd:abstract (char-string (if (or abstract version-description)
                                        (str abstract iso/version-description-separator version-description)
                                        su/not-provided))]

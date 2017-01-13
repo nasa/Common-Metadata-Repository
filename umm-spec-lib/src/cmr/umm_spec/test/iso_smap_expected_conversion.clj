@@ -54,7 +54,11 @@
 
 (defn umm-expected-conversion-iso-smap
   [umm-coll original-brs]
-  (-> umm-coll
+  ;; iso-smap does not support DOI :Authority field yet
+  (let [umm-coll (if (get-in umm-coll [:DOI :Authority])
+                   (update-in umm-coll [:DOI] assoc :Authority nil)
+                   umm-coll)] 
+    (-> umm-coll
         (assoc :DirectoryNames nil)
         (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
         (update-in [:DataDates] expected-smap-data-dates)
@@ -96,4 +100,4 @@
         (assoc :LocationKeywords nil)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
-        (update :CollectionProgress su/with-default)))
+        (update :CollectionProgress su/with-default))))

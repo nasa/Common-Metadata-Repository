@@ -249,7 +249,11 @@
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]
-  (-> umm-coll
+  ;; iso19115 does not support DOI :Authority field yet
+  (let [umm-coll (if (get-in umm-coll [:DOI :Authority])
+                   (update-in umm-coll [:DOI] assoc :Authority nil)
+                   umm-coll)] 
+    (-> umm-coll
       (assoc :DirectoryNames nil)
       update-bounding-rectangles
       (update :SpatialExtent update-iso-spatial)
@@ -280,4 +284,4 @@
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :CollectionProgress su/with-default)
-      js/parse-umm-c))
+      js/parse-umm-c)))
