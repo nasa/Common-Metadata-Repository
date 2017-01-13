@@ -223,7 +223,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
-      <xs:element name="DOI" type="DoiType" minOccurs="0" maxOccurs="1">
+      <xs:element name="DOI" type="DoiType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>This element describes the digital object identifier, and who created it.</xs:documentation>
         </xs:annotation>

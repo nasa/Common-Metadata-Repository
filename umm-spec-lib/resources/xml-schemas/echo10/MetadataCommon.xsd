@@ -646,7 +646,7 @@
         <xs:documentation>This entity describes the digital object identifier, and who created it.</xs:documentation>
       </xs:annotation>
       <xs:sequence>
-        <xs:element name="DOI" minOccurs="1" maxOccurs="1">
+        <xs:element name="DOI">
           <xs:annotation>
             <xs:documentation>This element describes the digital object identifier.</xs:documentation>
           </xs:annotation>
@@ -657,7 +657,7 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:element>
-        <xs:element name="Authority" minOccurs="0" maxOccurs="1">
+        <xs:element name="Authority" minOccurs="0">
           <xs:annotation>
             <xs:documentation>This element describes who created the digital object identifier. This is not the group who issues the DOI ID and registers it, but the group to which the identifier belongs i.e. a DAAC or a scientist team.</xs:documentation>
           </xs:annotation>
