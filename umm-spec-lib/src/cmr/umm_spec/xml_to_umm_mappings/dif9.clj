@@ -164,9 +164,8 @@
                                              [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
                                              [:OnlineResource
-                                              (when-let
-                                               [linkage (value-of pub-ref "Online_Resource")]
-                                               {:Linkage linkage})]
+                                              (when-let [linkage (value-of pub-ref "Online_Resource")]
+                                               {:Linkage (url/format-url linkage sanitize?)})]
                                              :Other_Reference_Details])))
      :AncillaryKeywords (values-at doc "/DIF/Keyword")
      :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]

@@ -252,7 +252,6 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
-      (update-in-each [:PublicationReferences] #(assoc % :OnlineResource nil))
       (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))

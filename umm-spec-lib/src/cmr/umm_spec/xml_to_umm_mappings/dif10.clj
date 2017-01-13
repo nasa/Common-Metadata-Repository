@@ -4,20 +4,21 @@
     [camel-snake-kebab.core :as csk]
     [clojure.string :as string]
     [cmr.common.date-time-parser :as dtp]
+    [cmr.common.util :as util]
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select]]
-    [cmr.common.util :as util]
-    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
     [cmr.umm-spec.date-util :as date]
     [cmr.umm-spec.dif-util :as dif-util]
     [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.url :as url]
+    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
-    [cmr.umm-spec.util :as u :refer [without-default-value-of]]))
+    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (defn- parse-characteristics
   [el]
@@ -190,9 +191,9 @@
                                            [:ISBN (u/format-isbn (value-of pub-ref "ISBN"))]
                                            (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
                                              [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
-                                           ; [:RelatedUrl
-                                           ;  {:URLs (seq
-                                           ;           (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                           [:OnlineResource
+                                            (when-let [linkage (value-of pub-ref "Online_Resource")]
+                                             {:Linkage (url/format-url linkage sanitize?)})]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc "/DIF/Ancillary_Keyword")
    :RelatedUrls (ru/parse-related-urls doc sanitize?)
