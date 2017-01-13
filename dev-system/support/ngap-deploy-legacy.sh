@@ -8,7 +8,7 @@
 # NGAP_CLI_DIR (Optional) - Where the NGAP command line utils are installed - defaults to $WORKSPACE_HOME/ngap-cli.
 # NGAP commands need to be run from this directory in order to work right due to gem dependencies from what we have seen.
 
-apps=("metadata-db" "cubby" "index-set" "indexer" "virtual-product" "bootstrap" "access-control" "search" "ingest")
+apps=("legacy-services")
 
 environments=("sit" "wl")
 app=$1
@@ -63,8 +63,7 @@ fi
 
 deployment_dir=${DEPLOYMENT_DIR:-"${WORKSPACE_HOME}/ngap-deployments/${environment}/${app}"}
 # Different app dir for legacy-services
-# app_dir=${WORKSPACE_HOME}/cmr/${app}-app && [[ "${app}" -eq "legacy-services" ]] && app_dir=${WORKSPACE_HOME}/cmr-heritage-services/legacy-services
-app_dir=${WORKSPACE_HOME}/cmr/${app}-app && [[ "${app}" -ne "legacy-services" ]] && app_dir=${WORKSPACE_HOME}/cmr-heritage-services/legacy-services
+app_dir=${WORKSPACE_HOME}/cmr/${app}-app && [[ "${app}" -eq "legacy-services" ]] && app_dir=${WORKSPACE_HOME}/cmr-heritage-services/legacy-services
 ngap_cli_dir=${NGAP_CLI_DIR:-"${WORKSPACE_HOME}/ngap-cli"}
 
 if [ ! -d "$deployment_dir" ]; then
