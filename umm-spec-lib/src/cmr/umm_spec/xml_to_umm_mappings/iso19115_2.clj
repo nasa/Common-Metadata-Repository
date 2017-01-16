@@ -171,11 +171,11 @@
   [doc]
   ;; There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
   ;; Each gmd:identifier could contain at most ONE DOI. The doi-list below will contain something like: 
-  ;; [[nil] [nil {:DOI "doi1" :Authority nil} {:DOI "doi2" :Authority nil}] [{:DOI "doi3" :Authority nil]]
+  ;; [[nil] [nil {:DOI "doi1" :Authority "auth1"} {:DOI "doi2" :Authority "auth2"}] [{:DOI "doi3" :Authority "auth3"]]
   ;; We will pick the first DOI for now.
-  (let [orgname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:CitedResponsibleParty/"
-                          "gmd:CI_ResponsibleParty/gmd:organizationName/gco:CharacterString")
-        indname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:CitedResponsibleParty/"
+  (let [orgname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"
+                          "gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString")
+        indname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"
                           "gmd:CI_ResponsibleParty/gmd:individualName/gco:CharacterString")
         doi-list (for [ci-ct (select doc citation-base-xpath)]
                    (for [gmd-id (select ci-ct "gmd:identifier")]

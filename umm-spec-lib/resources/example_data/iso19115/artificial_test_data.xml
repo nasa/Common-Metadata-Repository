@@ -162,6 +162,24 @@ Dissolved oxygen, nutrients, pH, phosphate, salinity, and temperature collected 
                     </gmd:identifier>
                     <gmd:identifier>
                        <gmd:MD_Identifier>
+                         <gmd:authority>
+                             <gmd:CI_Citation>
+                                <gmd:title>
+                                  <gco:CharacterString/>
+                                </gmd:title>
+                                <gmd:date/>
+                                <gmd:citedResponsibleParty>
+                                   <gmd:CI_ResponsibleParty>
+                                      <gmd:organisationName>
+                                         <gco:CharacterString>ISO-SMAP-Org</gco:CharacterString>
+                                      </gmd:organisationName>
+                                      <gmd:role>
+                                        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="">authority</gmd:CI_RoleCode>
+                                      </gmd:role>
+                                   </gmd:CI_ResponsibleParty>
+                                </gmd:citedResponsibleParty>
+                             </gmd:CI_Citation>
+                          </gmd:authority>
                           <gmd:code>
                              <gco:CharacterString>10.7927/ISOSAMPLE</gco:CharacterString>
                           </gmd:code>
