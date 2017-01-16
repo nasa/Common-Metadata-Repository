@@ -1,8 +1,11 @@
 (ns cmr.search.test.data.metadata-retrieval.revision-format-map
-  (require [clojure.test :refer :all]
-           [cmr.search.data.metadata-retrieval.revision-format-map :as r]
-           [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]
-           [cmr.common.util :as u]))
+  (require
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.search.data.metadata-retrieval.revision-format-map :as r]
+   [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]
+   [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (def all-metadata-formats
   #{:echo10 :iso19115 :dif :dif10 {:format :umm-json :version "1.3"}})
@@ -39,13 +42,22 @@
         (is (= revision-format-map-with-all-formats
                (dissoc decompressed :compressed?)))))))
 
+(defn- concept-match?
+  "Verify the given expected and actual concept matches,
+   for ISO19115 concept, we ignore the ids during comparison."
+  [expected actual]
+  (if (= mt/iso19115 (:format expected))
+    (is (= (update expected :metadata expected-conversion/ignore-ids)
+           (update actual :metadata expected-conversion/ignore-ids)))
+    (is (= expected actual))))
+
 (deftest revision-format-map-to-concept-test
   (testing "With Decompressed revision format maps"
     (doseq [metadata-format all-metadata-formats]
       (testing (str "To " metadata-format)
-        (is (= (tm/concept-in-format metadata-format)
+        (concept-match? (tm/concept-in-format metadata-format)
                (r/revision-format-map->concept
-                metadata-format revision-format-map-with-all-formats))))))
+                metadata-format revision-format-map-with-all-formats)))))
   (testing "With Compressed revision format map"
     (is (= tm/echo10-concept
            (r/revision-format-map->concept
@@ -84,7 +96,7 @@
   (testing "Compressed"
     (let [rfm (r/compress
                (r/concept->revision-format-map nil tm/dif-concept #{:native}))]
-      (= (assoc rfm :echo10 (u/string->lz4-bytes (:metadata tm/echo10-concept)))
+      (= (assoc rfm :echo10 (util/string->lz4-bytes (:metadata tm/echo10-concept)))
          (r/add-additional-format nil :echo10 rfm)))))
 
 (defn test-rfm
@@ -130,4 +142,3 @@
       (is (= {"C1-PROV1" rfm1
               "C2-PROV1" merged-rfm}
              (r/merge-into-cache-map existing-cache-map new-rfm))))))
-

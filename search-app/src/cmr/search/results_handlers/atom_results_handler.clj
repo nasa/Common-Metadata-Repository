@@ -14,7 +14,7 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
-            [cmr.umm.collection.entry-id :as eid]
+            [cmr.umm-spec.util :as spec-util]
             [cmr.common-app.services.search.results-model :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.models.query :as q]
@@ -133,8 +133,8 @@
         ;; DIF collection has a special case on associated-difs where it is set to its entry-id
         ;; For DIF collection, its entry-id is the same as its short-name
         associated-difs (case metadata-format
-                          "dif" [(eid/entry-id short-name version-id)]
-                          "dif10" [(eid/entry-id short-name version-id)]
+                          "dif" [(spec-util/entry-id short-name version-id)]
+                          "dif10" [(spec-util/entry-id short-name version-id)]
                           associated-difs)]
     (merge {:id concept-id
             :score (q/normalize-score score)

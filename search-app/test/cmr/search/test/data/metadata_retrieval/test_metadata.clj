@@ -1,7 +1,9 @@
 (ns cmr.search.test.data.metadata-retrieval.test-metadata
-  (require [clojure.java.io :as io]
-           [cmr.search.data.metadata-retrieval.metadata-transformer :as t]
-           [cmr.common.mime-types :as mt]))
+  (require
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [cmr.common.mime-types :as mt]
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as t]))
 
 ;; Define some test metadata
 (def dif-resource
