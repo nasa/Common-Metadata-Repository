@@ -640,7 +640,7 @@
         <xs:enumeration value="SYSTEM/SPACECRAFT_FILE"/>
         <xs:enumeration value="EXTERNAL_DATA"/>
       </xs:restriction>
-    </xs:simpletype>
+    </xs:simpleType>
     <xs:complexType name="DoiType">
       <xs:annotation>
         <xs:documentation>This entity describes the digital object identifier, and who created it.</xs:documentation>
