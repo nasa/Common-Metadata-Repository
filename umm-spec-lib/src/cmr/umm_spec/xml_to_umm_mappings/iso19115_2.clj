@@ -13,6 +13,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
@@ -63,6 +64,11 @@
   "Publication xpath relative to md-data-id-base-xpath"
   (str "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation"
        "[gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:role/gmd:CI_RoleCode='publication']"))
+
+(def online-resource-xpath
+ (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:aggregationInfo/"
+      "gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation/gmd:citedResponsibleParty/"
+      "gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:onlineResource/gmd:CI_OnlineResource"))
 
 (def personnel-xpath
   "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
@@ -167,6 +173,17 @@
    {:Type metadata-date-type
     :Date (f/parse (char-string-value metadata-date "gmd:domainValue"))}))
 
+(defn- parse-online-resource
+ [publication sanitize?]
+ (when-let [party (first (select publication "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']"))]
+  (when-let [online-resource (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
+   {:Linkage (url/format-url (value-of online-resource "gmd:linkage/gmd:URL") sanitize?)
+    :Protocol (char-string-value online-resource "gmd:protocol")
+    :ApplicationProtocol (char-string-value online-resource "gmd:applicationProfile")
+    :Name (su/with-default (char-string-value online-resource ":gmd:name") sanitize?)
+    :Description (su/with-default (char-string-value online-resource "gmd:description") sanitize?)
+    :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")})))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc {:keys [sanitize?]}]
@@ -231,6 +248,7 @@
                                :Publisher (select-party "publisher" "/gmd:organisationName")
                                :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
+                               :OnlineResource (parse-online-resource publication sanitize?)
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal

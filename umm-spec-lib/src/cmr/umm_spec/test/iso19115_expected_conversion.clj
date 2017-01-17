@@ -82,16 +82,25 @@
        sort-by-date-type-iso
        (#(or (seq %) su/not-provided-temporal-extents))))
 
+(defn- expected-online-resource
+ "Sanitize the values in online resource"
+ [online-resource]
+ (-> online-resource
+     (update :Linkage #(url/format-url % true))
+     (update :Name #(su/with-default % true))
+     (update :Description #(su/with-default % true))))
+
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
   [pub-refs]
   (seq (for [pub-ref pub-refs
              :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
          (-> pub-ref
-             (assoc :ReportNumber nil :Volume nil :OnlineResource nil :PublicationPlace nil)
+             (assoc :ReportNumber nil :Volume nil :PublicationPlace nil)
              (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
              (update-in [:PublicationDate] conversion-util/date-time->date)
-             (update :ISBN su/format-isbn)))))
+             (update :ISBN su/format-isbn)
+             (update :OnlineResource expected-online-resource)))))
 
 (defn- expected-iso-19115-2-distributions
   "Returns the expected ISO19115-2 distributions for comparison."

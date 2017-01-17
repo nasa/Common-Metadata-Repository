@@ -347,7 +347,8 @@
           "minLength": 1,
           "maxLength": 1024
         }
-      }
+      },
+      "required": ["Linkage", "Name", "Description"]
     },
     "FileSizeType": {
       "description": "Represents a data file size.",

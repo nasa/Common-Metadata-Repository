@@ -176,6 +176,8 @@
 (defn parse-publication-reference-online-resouce
  "Parse the Online Resource from the XML publication reference. Name and description are hardcoded."
  [pub-ref sanitize?]
- {:Linkage (url/format-url (value-of pub-ref "Online_Resource") sanitize?)
+ {:Linkage (util/with-default-url
+            (url/format-url (value-of pub-ref "Online_Resource") sanitize?)
+            sanitize?)
   :Name dif-online-resource-name
   :Description dif-online-resource-description})

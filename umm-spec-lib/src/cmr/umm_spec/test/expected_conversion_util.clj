@@ -104,6 +104,7 @@
   (cmn/map->OnlineResourceType
    (-> online-resource
        sanitize-online-resource
+       (update :Linkage #(su/with-default-url % true))
        (select-keys [:Linkage])
        (assoc :Name dif-util/dif-online-resource-name)
        (assoc :Description dif-util/dif-online-resource-description))))
