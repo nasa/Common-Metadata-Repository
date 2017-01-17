@@ -74,7 +74,9 @@
                       [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
                       x))
                   [[:Version (value-of service-citation "Edition")]
-                   [:RelatedUrl {:URLs [(url/format-url (value-of service-citation "URL") sanitize?)]}]
+                   [:OnlineResource
+                    (when-let [linkage (value-of service-citation "URL")]
+                     {:Linkage (url/format-url linkage sanitize?)})]
                    :Title
                    [:Creator (value-of service-citation "Originators")]
                    :ReleaseDate

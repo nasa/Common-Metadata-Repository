@@ -95,7 +95,7 @@
          :Editor nil
          :ReleaseDate nil
          :OtherCitationDetails nil
-         :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
+         :OnlineResource (conversion-util/dif-online-resource (:OnlineResource citation))))
 
 (defn- remove-empty-objects
   "Required to remove some extraneous mappings from ResourceCitation that are not used
@@ -114,7 +114,8 @@
  [pubref]
  (-> pubref
      fix-serf-doi
-     (update :OnlineResource conversion-util/dif-online-resource)))
+     (update :OnlineResource conversion-util/dif-online-resource)
+     (update :ISBN su/format-isbn)))
 
 (defn- fix-access-constraints
   [access-constraint]
@@ -148,5 +149,4 @@
       (update-in-each [:PublicationReferences] expected-publication-reference)
       (assoc :Platforms nil)
       (dissoc :DataCenters)
-      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
       (assoc :CollectionProgress su/not-provided)))

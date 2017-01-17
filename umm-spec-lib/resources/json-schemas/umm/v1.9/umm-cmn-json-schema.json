@@ -375,10 +375,6 @@
           "description": "The version of the collection.",
           "$ref": "#/definitions/VersionType"
         },
-        "RelatedUrl": {
-          "description": "The URL of the landing page for the collection.",
-          "$ref": "#/definitions/RelatedUrlType"
-        },
         "Title": {
           "description": "The title of the collection; this is the same as the collection Entry Title.",
           "$ref": "#/definitions/TitleType"
@@ -439,6 +435,10 @@
         "DOI": {
           "description": "The Digital Object Identifier (DOI) for the collection.  This is the registered DOI that resolves to a landing page for the collection.",
           "$ref": "#/definitions/DoiType"
+        },
+        "OnlineResource": {
+          "description": "The URL of the landing page for the collection.",
+          "$ref": "#/definitions/OnlineResourceType"
         }
       }
     },

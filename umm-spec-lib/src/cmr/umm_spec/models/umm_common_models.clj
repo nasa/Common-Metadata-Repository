@@ -242,8 +242,8 @@
    ;; The date when the collection was made available for release.
    ReleaseDate
 
-   ;; The URL of the landing page for the collection.
-   RelatedUrl
+   ;; The online resource related to the landing page of the collection.
+   OnlineResource
 
    ;; The volume or issue number of the publication (if applicable).
    IssueIdentification
