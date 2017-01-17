@@ -96,7 +96,6 @@
 (defn- expected-serf-service-citation
   [citation]
   (assoc citation
-         :DOI nil
          :ReleasePlace nil
          :SeriesName nil
          :DataPresentationForm nil

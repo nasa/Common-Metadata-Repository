@@ -470,3 +470,10 @@
    (-> umm-record
        (convert src)
        (convert dest))))
+
+(defn ignore-ids
+  "Returns the given string with ids replaced with place holder, e.g.
+   id=\"dd0b91b1b-da2d-4d8e-857e-0bb836ad2fbc\" is changed to id=\"placeholder\".
+   This is used to strip the randomly generated id strings from the ISO19115 metadata during comparison."
+  [x]
+  (str/replace x #"id=\".*?\">" "id=\"placeholder\""))

@@ -214,8 +214,7 @@
 ;; in professional scientific literature. The citation language constructed from these fields
 ;; references the collection itself, and is not designed for listing bibliographic references of
 ;; scientific research articles arising from search results. A list of references related to the
-;; research results should be in the Publication Reference element. A DOI that specifically
-;; identifies the collection is listed here.
+;; research results should be in the Publication Reference element.
 (defrecord ResourceCitationType
   [
    ;; The name of the data series, or aggregate data of which the data is a part.
@@ -231,10 +230,6 @@
 
    ;; The title of the collection; this is the same as the collection Entry Title.
    Title
-
-   ;; The Digital Object Identifier (DOI) for the collection. This is the registered DOI that
-   ;; resolves to a landing page for the collection.
-   DOI
 
    ;; The name of the individual or organization that made the collection available for release.
    Publisher

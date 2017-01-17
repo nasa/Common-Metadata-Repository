@@ -9,8 +9,7 @@
    ;; This element provides information for constructing a citation for the item itself, and is not
    ;; designed for listing bibliographic references of scientific research articles arising from
    ;; search results. A list of references related to the research results should be in the
-   ;; Publication Reference element. A DOI that specifically identifies the landing page for the
-   ;; collection is listed here.
+   ;; Publication Reference element.
    CollectionCitations
 
    ;; Controlled hierarchical keywords used to specify the spatial location of the collection. The
@@ -67,6 +66,9 @@
 
    ;; Describes key bibliographic citations pertaining to the collection.
    PublicationReferences
+
+   ;; This element describes the digital object identifier, and who created it.
+   DOI
 
    ;; This element describes any data/service related URLs that include project home pages,
    ;; services, related data archives/servers, metadata extensions, direct links to online software

@@ -131,6 +131,9 @@
   "Returns collection map from DIF10 collection XML document."
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
+   :DOI (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
+                              (when (= (value-of dsc "Persistent_Identifier/Type") "DOI") 
+                                {:DOI (value-of dsc "Persistent_Identifier/Identifier")})))) 
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
    :VersionDescription (value-of doc "/DIF/Version_Description")

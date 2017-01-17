@@ -128,7 +128,7 @@
         "minItems": 1
       },
       "ServiceCitation": {
-        "description": "This element permits the user to properly cite the service and specifies how the data should be cited in professional scientific literature. This element provides a citation for the item itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element. A DOI that specifically identifies the service is listed here.",
+        "description": "This element permits the user to properly cite the service and specifies how the data should be cited in professional scientific literature. This element provides a citation for the item itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element.",
         "type": "array",
         "items": {
           "$ref": "umm-cmn-json-schema.json#/definitions/ResourceCitationType"

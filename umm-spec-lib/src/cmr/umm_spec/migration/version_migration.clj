@@ -175,14 +175,34 @@
   (-> c
     (dissoc :VersionDescription)))
 
+(defn- migrate-doi-up
+  "Migrate :DOI from CollectionCitation level up to collection level."
+  [c]
+  (if-let [doi-obj (some :DOI (:CollectionCitations c))]
+    (-> c
+      (util/update-in-each [:CollectionCitations] dissoc :DOI)
+      (assoc :DOI doi-obj))
+    c))
+
+(defn- migrate-doi-down
+  "Migrate :DOI from collection level down to CollectionCitation level."
+  [c]
+  (if-let [doi-obj (:DOI c)]
+    (-> c
+      (util/update-in-each [:CollectionCitations] assoc :DOI doi-obj)
+      (dissoc :DOI))
+    c))
+
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
   (-> c
+      migrate-doi-up
       (update-in-each [:PublicationReferences] related-url/migrate-publication-reference-to-online-resource)))
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
   (-> c
+      migrate-doi-down
       (update-in-each [:PublicationReferences] related-url/migrate-publication-reference-to-related-url)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
