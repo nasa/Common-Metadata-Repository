@@ -145,8 +145,7 @@
   [pub-refs]
   (for [pub-ref pub-refs
         ;; Title and PublicationDate are required fields in ISO
-        :when (and (:Title pub-ref) (:PublicationDate pub-ref))
-        :let [_ (proto-repl.saved-values/save 3)]]
+        :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
     [:gmd:aggregationInfo
      [:gmd:MD_AggregateInformation
       [:gmd:aggregateDataSetName

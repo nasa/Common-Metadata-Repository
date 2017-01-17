@@ -85,10 +85,11 @@
 (defn- expected-online-resource
  "Sanitize the values in online resource"
  [online-resource]
- (-> online-resource
-     (update :Linkage #(url/format-url % true))
-     (update :Name #(su/with-default % true))
-     (update :Description #(su/with-default % true))))
+ (when online-resource
+  (-> online-resource
+      (update :Linkage #(url/format-url % true))
+      (update :Name #(su/with-default % true))
+      (update :Description #(su/with-default % true)))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
