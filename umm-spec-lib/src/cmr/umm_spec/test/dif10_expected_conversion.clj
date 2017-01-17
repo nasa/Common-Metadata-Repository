@@ -234,11 +234,8 @@
 
 (defn umm-expected-conversion-dif10
   [umm-coll]
-  ;; dif10 does not have :Authority field
-  (let [umm-coll (if (get-in umm-coll [:DOI :Authority]) 
-                   (update-in umm-coll [:DOI] assoc :Authority nil)
-                   umm-coll)]
-    (-> umm-coll
+  (-> umm-coll
+      (update :DOI conversion-util/expected-dif-doi)
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (update-in [:DataCenters] expected-dif10-data-centers)
@@ -265,4 +262,4 @@
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :DataLanguage conversion-util/dif-expected-data-language)
       (update :CollectionProgress su/with-default)
-      js/parse-umm-c)))
+      js/parse-umm-c))

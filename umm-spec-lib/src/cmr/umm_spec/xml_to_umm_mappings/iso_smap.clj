@@ -77,11 +77,13 @@
      :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))}))
 
 (defn- parse-doi
+  "There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
+   Each gmd:identifier could contain at most ONE DOI. The doi-list below will contain something like:
+   [[nil] 
+    [nil {:DOI \"doi1\" :Authority \"auth1\"} {:DOI \"doi2\" :Authority \"auth2\"}]
+    [{:DOI \"doi3\" :Authority \"auth3\"]]
+   We will pick the first DOI for now."
   [doc]
-  ;; There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
-  ;; Each gmd:identifier could contain at most ONE DOI. The doi-list below will contain something like:
-  ;; [[nil] [nil {:DOI "doi1" :Authority "auth1} {:DOI "doi2" :Authority "auth2"}] [{:DOI "doi3" :Authority "auth3"]]
-  ;; We will pick the first DOI for now.
   (let [orgname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"
                           "gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString")
         indname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"

@@ -4,6 +4,7 @@
    [clojure.set :as set]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
@@ -174,14 +175,16 @@
     (dissoc :VersionDescription)))
 
 (defn- migrate-doi-up
+  "Migrate :DOI from CollectionCitation level up to collection level."
   [c]
-  (if-let [doi-obj (first (remove nil? (map :DOI (:CollectionCitations c))))]
-    (let [updated-coll-citations (map #(dissoc % :DOI) (:CollectionCitations c))
-          updated-coll (assoc c :DOI doi-obj)]
-      (assoc updated-coll :CollectionCitations updated-coll-citations))
+  (if-let [doi-obj (some :DOI (:CollectionCitations c))]
+    (-> c
+      (util/update-in-each [:CollectionCitations] dissoc :DOI)
+      (assoc :DOI doi-obj))
     c))
 
 (defn- migrate-doi-down
+  "Migrate :DOI from collection level down to CollectionCitation level."
   [c]
   (if-let [doi-obj (:DOI c)]
     (let [updated-coll-citations (map #(assoc % :DOI doi-obj) (:CollectionCitations c))
@@ -195,14 +198,10 @@
 
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
-  ;; need to migrate :DOI from CollectionCitation level up to collection level
-  ;; It's possible that there's only one DOI that's not nil in all the CollectionCitations,
-  ;; all other DOIs are nil, so multiple CollectionCitations could map to one :DOI.
   (-> c migrate-doi-up)) 
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
-  ;; need to migrate :DOI from collection level down to CollectionCitation level.
   (-> c migrate-doi-down)) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
