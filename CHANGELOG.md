@@ -143,3 +143,7 @@ Items to include in each issue
 * CMR-1354 - Implement temporal relevancy using a custom elastic groovy sort script.
   * Requires updates changes to elasticsearch.yml
   * Config sort-use-temporal-relevancy turns temporal relevancy on and off
+
+## 1.66
+* CMR-3156 - Added auto shutdown of CMR app when the app encounters oracle class error during startup.
+  * Added configuration parameter CMR_SHUTDOWN_ON_ORACLE_CLASS_ERROR to control if the CMR app will be shut down if it encounters oracle class error during startup. It is default to true.
