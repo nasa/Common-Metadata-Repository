@@ -86,11 +86,27 @@
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
              [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]
-
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:Version c))]
-             [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
+             [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]
+         (when-let [doi (:DOI c)]
+           [:gmd:identifier
+            [:gmd:MD_Identifier
+           (when-let [authority (:Authority doi)]
+             [:gmd:authority
+              [:gmd:CI_Citation
+               [:gmd:title [:gco:CharacterString ""]]
+                [:gmd:date ""]
+               [:gmd:citedResponsibleParty
+                [:gmd:CI_ResponsibleParty
+                 [:gmd:organisationName [:gco:CharacterString authority]]
+                 [:gmd:role
+                  [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                     :codeListValue ""} "authority"]]]]]]) 
+             [:gmd:code [:gco:CharacterString (:DOI doi)]]
+             [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+             [:gmd:description [:gco:CharacterString "DOI"]]]])]]
          [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status (generate-collection-progress c)]

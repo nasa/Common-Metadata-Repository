@@ -32,8 +32,7 @@
    ;; be cited in professional scientific literature. This element provides a citation for the item
    ;; itself, and is not designed for listing bibliographic references of scientific research
    ;; articles arising from search results. A list of references related to the research results
-   ;; should be in the Publication Reference element. A DOI that specifically identifies the service
-   ;; is listed here.
+   ;; should be in the Publication Reference element.
    ServiceCitation
 
    ;; This element describes any data/service related URLs that include project home pages,
