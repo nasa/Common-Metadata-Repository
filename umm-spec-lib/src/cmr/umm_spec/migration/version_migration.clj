@@ -187,13 +187,9 @@
   "Migrate :DOI from collection level down to CollectionCitation level."
   [c]
   (if-let [doi-obj (:DOI c)]
-    (let [updated-coll-citations (map #(assoc % :DOI doi-obj) (:CollectionCitations c))
-          ;; assign all :DOI to nil except for the first one i.e. only one DOI in not nil.
-          updated-coll-citations (if (< 1 (count updated-coll-citations)) 
-                                   (map #(assoc % :DOI nil) (rest updated-coll-citations))
-                                   updated-coll-citations)
-          updated-coll (dissoc c :DOI)]
-      (assoc updated-coll :CollectionCitations updated-coll-citations))
+    (-> c
+      (util/update-in-each [:CollectionCitations] assoc :DOI doi-obj)
+      (dissoc :DOI)) 
     c))   
 
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
