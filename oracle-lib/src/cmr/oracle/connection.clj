@@ -5,6 +5,7 @@
    [clj-time.coerce :as cr]
    [clj-time.format :as f]
    [clojure.java.jdbc :as j]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -16,6 +17,10 @@
    (oracle.ucp.admin UniversalConnectionPoolManagerImpl)
    (oracle.ucp.jdbc PoolDataSourceFactory)))
 
+(defconfig shutdown-on-oracle-class-error
+  "Configuration to allow enabling and disabling of the shutdown of CMR app on oracle class error"
+  {:default true
+   :type Boolean})
 
 (defn db-spec
   [connection-pool-name db-url fcf-enabled ons-config user password]
@@ -45,7 +50,14 @@
       {:ok? false :problem "Could not select data from database."})
     (catch Exception e
       (info "Database conn info" (db-conn-info-safe-for-logging oracle-store))
-      {:ok? false :problem (.getMessage e)})))
+      {:ok? false :problem (.getMessage e)})
+    (catch java.lang.NoClassDefFoundError e
+      (if (and (shutdown-on-oracle-class-error)
+               (re-matches #".*Could not initialize class oracle.security.*" (.getMessage e)))
+        ;; shut down the app so that it could be restarted by puppet
+        (do (error "Caught java.lang.NoClassDefFoundError" e ", shutting down...")
+          (System/exit 0))
+        (throw e)))))
 
 (defn health
   "Returns the oracle health with timeout handling."
