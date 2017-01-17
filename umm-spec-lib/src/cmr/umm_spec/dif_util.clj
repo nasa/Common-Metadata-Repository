@@ -5,7 +5,14 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.common.util :as common-util]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as util]))
+
+(def dif-online-resource-name
+ "Reference Online Resource")
+
+(def dif-online-resource-description
+ "Reference Online Resource")
 
 ;; For now, we assume DIF9 and DIF10 contain the same IDN_Nodes structures
 ;; after confirming with the system engineer people - even though some of DIF10 files
@@ -165,3 +172,10 @@
   [doc sanitize?]
   (let [iso-topic-categories (values-at doc "DIF/ISO_Topic_Category")]
     (keep #(parse-iso-topic-category % sanitize?) iso-topic-categories)))
+
+(defn parse-publication-reference-online-resouce
+ "Parse the Online Resource from the XML publication reference. Name and description are hardcoded."
+ [pub-ref sanitize?]
+ {:Linkage (url/format-url (value-of pub-ref "Online_Resource") sanitize?)
+  :Name dif-online-resource-name
+  :Description dif-online-resource-description})

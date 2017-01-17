@@ -84,6 +84,15 @@
                                           (take 1)
                                           (map #(url/format-url % true)))})))
 
+(defn- expected-serf-online-resource
+ "Sanitize the linkage and remove unmapped fields"
+ [online-resource]
+ (when (:Linkage online-resource)
+  (cmn/map->OnlineResourceType
+   (-> online-resource
+       conversion-util/sanitize-online-resource
+       (select-keys [:Linkage])))))
+
 (defn- expected-serf-service-citation
   [citation]
   (assoc citation
@@ -95,7 +104,8 @@
          :Editor nil
          :ReleaseDate nil
          :OtherCitationDetails nil
-         :OnlineResource (conversion-util/dif-online-resource (:OnlineResource citation))))
+         :OnlineResource (expected-serf-online-resource (:OnlineResource citation))))
+
 
 (defn- remove-empty-objects
   "Required to remove some extraneous mappings from ResourceCitation that are not used
@@ -114,7 +124,7 @@
  [pubref]
  (-> pubref
      fix-serf-doi
-     (update :OnlineResource conversion-util/dif-online-resource)
+     (update :OnlineResource expected-serf-online-resource)
      (update :ISBN su/format-isbn)))
 
 (defn- fix-access-constraints

@@ -191,9 +191,7 @@
                                            [:ISBN (u/format-isbn (value-of pub-ref "ISBN"))]
                                            (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
                                              [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
-                                           [:OnlineResource
-                                            (when-let [linkage (value-of pub-ref "Online_Resource")]
-                                             {:Linkage (url/format-url linkage sanitize?)})]
+                                           [:OnlineResource (dif-util/parse-publication-reference-online-resouce pub-ref sanitize?)]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc "/DIF/Ancillary_Keyword")
    :RelatedUrls (ru/parse-related-urls doc sanitize?)
