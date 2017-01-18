@@ -133,10 +133,22 @@
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 
+(defn- parse-doi
+  "There could be multiple DOIs under Collection.
+   Each DOI contains ONE DOI. The doi-list below will contain something like:
+   [nil {:DOI \"doi1\" :Authority \"auth1\"} {:DOI \"doi2\" :Authority \"auth2\"}]
+   We will pick the first DOI for now."
+  [doc]
+  (let [doi-list (for [doi (select doc "Collection/DOI")]
+                   {:DOI (value-of doi "DOI")
+                    :Authority (value-of doi "Authority")})]
+    (first (filter :DOI doi-list))))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
+   :DOI (parse-doi doc)
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
    :VersionDescription (value-of doc "/Collection/VersionDescription")
