@@ -40,7 +40,7 @@
                              "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\"]")]
     (are [params errors]
       (= {:status 400 :body {:errors errors} :content-type :json}
-         (ac/get-permissions (u/conn-context) params {:token "mock-echo-system-token" :raw? true}))
+         (ac/get-permissions (u/conn-context) params {:raw? true}))
       {} [target-required-err user-required-err]
       {:target "PROVIDER_HOLDINGS"} [target-required-err user-required-err]
       {:user_id "" :concept_id []} [target-required-err user-required-err]
@@ -70,8 +70,7 @@
       (merge {:concept_id concept-ids}
              (if (keyword? user)
                {:user_type (name user)}
-               {:user_id user}))
-      {:token "mock-echo-system-token"})))
+               {:user_id user})))))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
   ;; tests ACLs which grant access to collections based on provider id and/or entry title
@@ -686,8 +685,7 @@
                                    (merge {:system_object system-object}
                                           (if (keyword? user)
                                             {:user_type (name user)}
-                                            {:user_id user}))
-                                   {:token "mock-echo-system-token"})))]
+                                            {:user_id user})))))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -754,8 +752,7 @@
                                              :provider provider-id}
                                             (if (keyword? user)
                                               {:user_type (name user)}
-                                              {:user_id user}))
-                                     {:token "mock-echo-system-token"})))]
+                                              {:user_id user})))))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -827,8 +824,7 @@
                                   (merge {:target_group_id target-group-ids}
                                          (if (keyword? user)
                                            {:user_type (name user)}
-                                           {:user_id user}))
-                                  {:token "mock-echo-system-token"})))]
+                                           {:user_id user})))))]
 
     (testing "no permissions granted"
       (are [user permissions]
