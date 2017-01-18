@@ -13,8 +13,6 @@
             [cmr.common.xml :as cx]
             [clojure.string :as str]
             [cheshire.core :as json]
-            [cmr.umm.dif.dif-collection :as dif-c]
-            [cmr.umm.iso-mends.iso-mends-collection]
             [cmr.common.util :as u]
             [cmr.common.log :refer (debug info warn error)]))
 

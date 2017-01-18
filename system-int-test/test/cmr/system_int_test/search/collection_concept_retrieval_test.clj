@@ -1,45 +1,46 @@
 (ns cmr.system-int-test.search.collection-concept-retrieval-test
   "Integration test for collection retrieval via the /concepts/:concept-id and
   /concepts/:concept-id/:revision-id endpoints."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.atom-json :as dj]
-            [cmr.common.xml :as cx]
-            [cmr.system-int-test.data2.kml :as dk]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.umm.echo10.echo10-collection :as c]
-            [cmr.common.util :refer [are3] :as util]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.mime-types :as mt]
-            [cheshire.core :as json]
-            [clj-http.client :as client]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.codec :as codec]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.umm-core :as umm]
-            [clojure.data.xml :as x]
-            [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
-            [clojure.string :as str]
-            [cmr.common.mime-types :as mt]
-            [clj-time.format :as f]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-time.format :as f]
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [are3] :as util]
+   [cmr.common.xml :as cx]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.spatial.codec :as codec]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.atom-json :as dj]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.kml :as dk]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.fast-xml :as fx]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.versioning :as ver]
+   [cmr.umm.echo10.echo10-collection :as c]
+   [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
+   [cmr.umm.umm-core :as umm]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures
   :each
@@ -64,7 +65,7 @@
 
 (defmulti result-matches?
   "Compare UMM record to the response from concept retrieval"
-  (fn [format-key umm response]
+  (fn [original-format format-key umm response]
     format-key))
 
 (defn- update-iso-entry-title
@@ -76,7 +77,7 @@
 ;; ISO-19115 must be handled separately from the other formats becaue it uses xslt to translate
 ;; ECHO10 and the resulting XML is not quite the same as what we get when going from UMM to XML.
 (defmethod result-matches? :iso19115
-  [format-key umm response]
+  [original-format format-key umm response]
   (let [metadata-xml (:body response)
         metadata-umm (-> (umm-c/parse-collection metadata-xml)
                          ;; Update entry-title to the correct value as the xslt is not generating
@@ -90,10 +91,13 @@
     (is (= umm metadata-umm))))
 
 (defmethod result-matches? :default
-  [format-key umm response]
-  (let [expected (umm/umm->xml umm format-key)
+  [original-format format-key umm response]
+  (let [expected (d/expected-metadata test-context :collection original-format format-key umm)
         metadata-xml (:body response)]
-    (is (= expected metadata-xml))))
+    (if (= :iso-smap format-key)
+      (is (= (expected-conversion/ignore-ids expected)
+             (expected-conversion/ignore-ids metadata-xml)))
+      (is (= expected metadata-xml)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -283,22 +287,22 @@
 
     (testing "Get by concept id in formats"
       (testing "XML Metadata formats"
-        (are [concept mime-type format-key url-extension]
-             (= (umm/umm->xml concept format-key)
+        (are [concept original-format mime-type format-key url-extension]
+             (= (d/expected-metadata test-context :collection original-format format-key concept)
                 (get-concept-by-id-helper concept {:url-extension url-extension :accept mime-type}))
-             c1-echo "application/dif+xml" :dif nil
-             c1-echo nil :dif "dif"
-             c1-echo "application/echo10+xml" :echo10 nil
-             c1-echo nil :echo10 "echo10"
-             c3-dif "application/dif+xml" :dif nil
-             c3-dif nil :dif "dif"
-             c5-iso "application/iso19115+xml" :iso19115 nil
-             c5-iso nil :iso19115 "iso19115"
-             c5-iso nil :iso19115 "iso"
-             c7-smap "application/iso:smap+xml" :iso-smap nil
-             c7-smap nil :iso-smap "iso_smap"
-             c8-dif10 "application/dif10+xml" :dif10 nil
-             c8-dif10 nil :dif10 "dif10"))
+             c1-echo :echo10 "application/dif+xml" :dif nil
+             c1-echo :echo10 nil :dif "dif"
+             c1-echo :echo10 "application/echo10+xml" :echo10 nil
+             c1-echo :echo10 nil :echo10 "echo10"
+             c3-dif :dif "application/dif+xml" :dif nil
+             c3-dif :dif nil :dif "dif"
+             c5-iso :iso19115 "application/iso19115+xml" :iso19115 nil
+             c5-iso :iso19115 nil :iso19115 "iso19115"
+             c5-iso :iso19115 nil :iso19115 "iso"
+             c7-smap :iso-smap "application/iso:smap+xml" :iso-smap nil
+             c7-smap :iso-smap nil :iso-smap "iso_smap"
+             c8-dif10 :dif10 "application/dif10+xml" :dif10 nil
+             c8-dif10 :dif10 nil :dif10 "dif10"))
 
       (testing "json"
         (are [concept options]
@@ -405,7 +409,7 @@
                                concept-id
                                revision-id
                                {:accept accept})]
-                (result-matches? format-key item response))
+                (result-matches? :echo10 format-key item response))
 
               "echo10 collection revision 1"
               umm-coll1-1 :echo10 mt/echo10 "C1200000001-PROV1" 1
