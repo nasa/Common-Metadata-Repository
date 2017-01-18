@@ -172,8 +172,11 @@
 (defn- parse-online-resource
  "Parse online resource from the publication XML"
  [publication sanitize?]
- (when-let [party (first (select publication "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']"))]
-  (when-let [online-resource (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
+ (when-let [party
+            (first (select publication (str "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty"
+                                            "[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']")))]
+  (when-let [online-resource
+             (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
     {:Linkage (url/format-url (value-of online-resource "gmd:linkage/gmd:URL") sanitize?)
      :Protocol (char-string-value online-resource "gmd:protocol")
      :ApplicationProtocol (char-string-value online-resource "gmd:applicationProfile")
