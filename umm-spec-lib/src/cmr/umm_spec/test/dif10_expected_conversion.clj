@@ -235,6 +235,7 @@
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
+      (update :DOI conversion-util/expected-dif-doi)
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (update-in [:DataCenters] expected-dif10-data-centers)

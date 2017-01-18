@@ -229,6 +229,11 @@
      [:Version (:Version c)]]
     [:Version_Description (:VersionDescription c)]
     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
+    (when-let [doi (get-in c [:DOI :DOI])]
+      [:Dataset_Citation
+        [:Persistent_Identifier
+          [:Type "DOI"]
+          [:Identifier doi]]])
     (contact/generate-collection-personnel c)
 
     (if-let [sks (:ScienceKeywords c)]

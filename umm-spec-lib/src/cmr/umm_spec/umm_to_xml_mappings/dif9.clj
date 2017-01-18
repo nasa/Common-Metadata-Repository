@@ -47,7 +47,8 @@
                   (str (:ShortName c) "_" (:Version c)))]
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
-      [:Version (:Version c)]]
+      [:Version (:Version c)]
+      [:Dataset_DOI (get-in c [:DOI :DOI])]]
      (contact/generate-personnel c)
      (if-let [sks (:ScienceKeywords c)]
        (for [sk sks]

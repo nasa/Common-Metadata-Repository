@@ -4,6 +4,7 @@
    [clojure.set :as set]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
@@ -172,6 +173,32 @@
   [context c & _]
   (-> c
     (dissoc :VersionDescription)))
+
+(defn- migrate-doi-up
+  "Migrate :DOI from CollectionCitation level up to collection level."
+  [c]
+  (if-let [doi-obj (some :DOI (:CollectionCitations c))]
+    (-> c
+      (util/update-in-each [:CollectionCitations] dissoc :DOI)
+      (assoc :DOI doi-obj))
+    c))
+
+(defn- migrate-doi-down
+  "Migrate :DOI from collection level down to CollectionCitation level."
+  [c]
+  (if-let [doi-obj (:DOI c)]
+    (-> c
+      (util/update-in-each [:CollectionCitations] assoc :DOI doi-obj)
+      (dissoc :DOI)) 
+    c))   
+
+(defmethod migrate-umm-version [:collection "1.8" "1.9"]
+  [context c & _]
+  (-> c migrate-doi-up)) 
+
+(defmethod migrate-umm-version [:collection "1.9" "1.8"]
+  [context c & _]
+  (-> c migrate-doi-down)) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

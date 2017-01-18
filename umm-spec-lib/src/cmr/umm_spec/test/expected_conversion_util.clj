@@ -172,3 +172,10 @@
   (when language
     (let [dif-language (dif-util/umm-language->dif-language language)]
       (dif-util/dif-language->umm-language dif-language))))
+
+(defn expected-dif-doi
+  "dif9 and dif10 don't have :Authority field, so assign nil to it"
+  [doi]
+  (if (get-in doi [:Authority])
+    (assoc doi :Authority nil)
+    doi))

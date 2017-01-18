@@ -8,6 +8,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :refer [is]]
+   [cmr.common.concepts :as concepts]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.system-int-test.system :as s]
@@ -146,6 +147,19 @@
           (dissoc :location))
       ref)))
 
+(defn expected-metadata
+  "Returns the expected metadata for the given parsed umm, concept type, original-format and format-key.
+   It uses umm-spec-lib to generate the metadata when original format and format key differ."
+  [context concept-type original-format format-key umm-record]
+  (if (or (= original-format format-key)
+          (= :granule concept-type))
+    (umm-legacy/generate-metadata context umm-record format-key)
+    (let [metadata (umm-legacy/generate-metadata context umm-record original-format)
+          umm-spec-parsed (umm-spec/parse-metadata
+                           context concept-type
+                           original-format metadata)]
+      (umm-spec/generate-metadata context umm-spec-parsed format-key))))
+
 (defmulti item->metadata-result
   "Converts an item into the expected metadata result"
   (fn [echo-compatible? format-key item]
@@ -154,6 +168,7 @@
 (defmethod item->metadata-result false
   [_ format-key item]
   (let [{:keys [concept-id revision-id collection-concept-id]} item
+        concept-type (concepts/concept-id->type concept-id)
         original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
         item (remove-ingest-associated-keys item)
@@ -161,11 +176,11 @@
         ;; when umm-json since that will translate to echo10
         parsed-item (mimic-ingest-retrieve-metadata-conversion item original-format)]
     (util/remove-nil-keys
-      {:revision-id revision-id
-       :concept-id concept-id
-       :format format-key
-       :collection-concept-id collection-concept-id
-       :metadata (umm-legacy/generate-metadata context parsed-item format-key)})))
+     {:revision-id revision-id
+      :concept-id concept-id
+      :format format-key
+      :collection-concept-id collection-concept-id
+      :metadata (expected-metadata context concept-type original-format format-key parsed-item)})))
 
 (defmethod item->metadata-result true
   [_ format-key item]
@@ -185,7 +200,7 @@
       (util/remove-nil-keys
        {:echo_dataset_id concept-id
         :format format-key
-        :metadata (umm-legacy/generate-metadata context parsed-item format-key)}))))
+        :metadata (expected-metadata context :collection original-format format-key parsed-item)}))))
 
 (defn- items-match?
   "Returns true if the search result items match the expected items. The argument echo-compatible?
