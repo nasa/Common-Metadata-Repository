@@ -7,6 +7,7 @@
     [cmr.ingest.services.helper :as h]
     [cmr.ingest.validation.additional-attribute-validation :as aa]
     [cmr.ingest.validation.collection-unique-ids-validation :as cui]
+    [cmr.ingest.validation.platform-validation :as platform-validation]
     [cmr.ingest.validation.project-validation :as pv]
     [cmr.ingest.validation.spatial-validation :as sv]
     [cmr.ingest.validation.temporal-validation :as tv]
@@ -52,6 +53,7 @@
    ;;  cui/short-name-version-id-searches
    aa/additional-attribute-searches
    pv/deleted-project-searches
+   platform-validation/deleted-platform-searches
    tv/out-of-range-temporal-searches
    sv/spatial-param-change-searches])
 
@@ -73,8 +75,9 @@
                                                                  :native-id native-id}))]
     (when prev-concept
       (let [prev-umm-concept (spec/parse-metadata context prev-concept)
-            has-granule-searches (mapcat #(% (:concept-id prev-concept) umm-concept prev-umm-concept)
-                                         collection-update-searches)
+            has-granule-searches (mapcat
+                                  #(% context (:concept-id prev-concept) umm-concept prev-umm-concept)
+                                  collection-update-searches)
             search-errors (->> has-granule-searches
                                (map (partial has-granule-search-error context))
                                (remove nil?))]

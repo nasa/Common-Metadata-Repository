@@ -90,7 +90,7 @@
   - additional attribute is removed but has existing granules referencing it
   - additional attribute type changed but has existing granules referencing it
   - additional attribute range changed but has existing granules outside of the new range"
-  [concept-id concept prev-concept]
+  [context concept-id concept prev-concept]
   (let [{aas :AdditionalAttributes} concept
         {prev-aas :AdditionalAttributes} prev-concept]
     (->> (concat (build-aa-deleted-searches aas prev-aas)
