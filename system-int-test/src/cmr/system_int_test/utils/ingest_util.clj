@@ -21,6 +21,16 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util])
   (:import [java.lang.NumberFormatException]))
 
+(defn disable-ingest
+  "Use the enable/disable endpoint on ingest to disable it."
+  []
+  (client/post (url/enable-ingest-url false)))
+
+(defn enable-ingest
+  "Use the enable/disable endpoint on ingest to enable it."
+  []
+  (client/post (url/enable-ingest-url true)))
+
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
   [provider endpoint-url]
