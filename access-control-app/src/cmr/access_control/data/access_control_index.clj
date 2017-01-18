@@ -195,6 +195,8 @@
    :target-provider-id (m/stored m/string-field-mapping)
    :target-provider-id.lowercase m/string-field-mapping
 
+   :target-group-id (m/stored m/string-field-mapping)
+
    ;; The name of the ACL for returning in the references response.
    ;; This will be the catalog item identity name or a string containing
    ;; "<identity type> - <target>". For example "System - PROVIDER"
@@ -321,9 +323,9 @@
         display-name (acl->display-name acl)
         permitted-groups (acl->permitted-groups acl)
         provider-id (acls/acl->provider-id acl)
-
         target (:target (or (:system-identity acl)
-                            (:provider-identity acl)))]
+                            (:provider-identity acl)))
+        target-group-id (get-in acl [:single-instance-identity :target-id])]
     (merge
       (access-value-elastic-doc-map acl)
       (temporal-elastic-doc-map acl)
@@ -338,6 +340,7 @@
              :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
              :target target
              :target.lowercase (util/safe-lowercase target)
+             :target-group-id target-group-id
              :target-provider-id provider-id
              :target-provider-id.lowercase (util/safe-lowercase provider-id)
              :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))

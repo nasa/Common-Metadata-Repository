@@ -2,6 +2,7 @@
   (:require
     [clj-http.client :as client]
     [clj-time.core :as t]
+    [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
@@ -764,3 +765,44 @@
        (is (= (set (:items (u/acls->search-response
                             (count expected-acls-after-reindexing) expected-acls-after-reindexing)))
               (set (:items actual-response))))))))
+
+(deftest acl-search-by-target-group-id-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token
+                               {:name "group1"}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "group2"}
+                               ["user1"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+        acl1 (u/ingest-acl token (u/single-instance-acl group1-concept-id))
+        acl2 (u/ingest-acl token (u/single-instance-acl group2-concept-id))]       
+    (are3 [target-group-id expected-acls]
+          (let [response (ac/search-for-acls (u/conn-context) {:target-group-id target-group-id})]
+            (is (= (u/acls->search-response (count expected-acls) expected-acls)
+                   (dissoc response :took))))
+
+          "Single target group id"
+          [group1-concept-id]
+          [acl1]
+
+          "Multiple target group id"
+          [group1-concept-id group2-concept-id]
+          [acl1 acl2]
+
+          "Non-existent target group id"
+          "AG10000-PROV1"
+          []
+
+          "Multiple target group id including non-existent id"
+          [group1-concept-id "AG10000-PROV1"]
+          [acl1]
+
+          "Case sensitivity"
+          [(str/lower-case group1-concept-id)]
+          []
+
+          "Null target-group-id"
+          []
+          [acl1 acl2 fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl*])))

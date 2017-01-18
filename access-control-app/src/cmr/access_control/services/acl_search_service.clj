@@ -28,7 +28,7 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:include-full-acl :legacy-guid :include-legacy-group-guid}
-     :multiple-value #{:permitted-group :identity-type :provider :id :target}
+     :multiple-value #{:permitted-group :identity-type :provider :id :target :target-group-id}
      :always-case-sensitive #{}
      :disallow-pattern #{:identity-type :permitted-user :group-permission :legacy-guid :target}
      :allow-or #{}}))
@@ -44,6 +44,7 @@
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
    :target #{}
+   :target-group-id #{}
    :legacy-guid #{}
    :id #{}
    :permitted-user #{}
@@ -166,7 +167,7 @@
 
 (defmethod cp/always-case-sensitive-fields :acl
   [_]
-  #{:concept-id :identity-type})
+  #{:concept-id :identity-type :target-group-id})
 
 (defmethod common-qm/default-sort-keys :acl
   [_]
@@ -178,6 +179,7 @@
    :permitted-group :string
    :identity-type :acl-identity-type
    :target :string
+   :target-group-id :string
    :provider :string
    :permitted-user :acl-permitted-user
    :group-permission :acl-group-permission
