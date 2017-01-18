@@ -91,10 +91,11 @@
   {:default #{} :type :edn})
 
 (defn fix-null-replicated-concepts-query-str
-  "Query to fix the NULL replicated concepts. Needs 4 parameters - replicated destination table,
-  source table, database link, revision date time."
+  "Query to fix the NULL replicated concepts. Takes the table name and revision date-time string."
   [table revision-datetime]
-  (format "update %s c1 set metadata = (select c2.metadata from %s@%s c2 where c2.id = c1.id) where c1.metadata is null and c1.deleted = 0 and c1.revision_date > to_timestamp ('%s', 'YYYY-MM-DD HH24:MI:SS.FF')"
+  (format (str "update %s c1 set metadata = (select c2.metadata from %s@%s c2 where c2.id = c1.id) "
+               "where c1.metadata is null and c1.deleted = 0 and c1.revision_date > to_timestamp "
+               "('%s', 'YYYY-MM-DD HH24:MI:SS.FF')")
           table
           table
           (source-database-link)
@@ -110,7 +111,8 @@
             stmt (fix-null-replicated-concepts-query-str table revision-datetime)]
         (debug "Fixing replicated BLOBs for:" table "starting with statement:" stmt)
         (j/db-do-commands db stmt)
-        (debug "Fixing replicated BLOBs for:" table "with revision-datetime" revision-datetime "took" (- (System/currentTimeMillis) curr-time)) "ms"))))
+        (debug "Fixing replicated BLOBs for:" table "with revision-datetime" revision-datetime
+               "took" (- (System/currentTimeMillis) curr-time)) "ms"))))
 
 (defn index-replicated-concepts
   "Indexes recently replicated concepts."
