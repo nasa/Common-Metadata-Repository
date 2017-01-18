@@ -325,28 +325,29 @@
         provider-id (acls/acl->provider-id acl)
         target (:target (or (:system-identity acl)
                             (:provider-identity acl)))
-        target-group-id (get-in acl [:single-instance-identity :target-id])]
+        target-group-id (when (= "GROUP_MANAGEMENT" (get-in acl [:single-instance-identity :target]))
+                          (get-in acl [:single-instance-identity :target-id]))]
     (merge
-      (access-value-elastic-doc-map acl)
-      (temporal-elastic-doc-map acl)
-      (entry-title-elastic-doc-map acl)
-      (identifier-applicable-elastic-doc-map acl)
-      (assoc (select-keys concept-map [:concept-id :revision-id])
-             :display-name display-name
-             :display-name.lowercase (str/lower-case display-name)
-             :identity-type (acl->identity-type acl)
-             :permitted-group permitted-groups
-             :permitted-group.lowercase (map str/lower-case permitted-groups)
-             :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
-             :target target
-             :target.lowercase (util/safe-lowercase target)
-             :target-group-id target-group-id
-             :target-provider-id provider-id
-             :target-provider-id.lowercase (util/safe-lowercase provider-id)
-             :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
-             :legacy-guid (:legacy-guid acl)
-             :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
-                                      (str/lower-case legacy-guid))))))
+     (access-value-elastic-doc-map acl)
+     (temporal-elastic-doc-map acl)
+     (entry-title-elastic-doc-map acl)
+     (identifier-applicable-elastic-doc-map acl)
+     (assoc (select-keys concept-map [:concept-id :revision-id])
+            :display-name display-name
+            :display-name.lowercase (str/lower-case display-name)
+            :identity-type (acl->identity-type acl)
+            :permitted-group permitted-groups
+            :permitted-group.lowercase (map str/lower-case permitted-groups)
+            :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
+            :target target
+            :target.lowercase (util/safe-lowercase target)
+            :target-group-id target-group-id
+            :target-provider-id provider-id
+            :target-provider-id.lowercase (util/safe-lowercase provider-id)
+            :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
+            :legacy-guid (:legacy-guid acl)
+            :legacy-guid.lowercase (when-let [legacy-guid (:legacy-guid acl)]
+                                     (str/lower-case legacy-guid))))))
 
 (defn index-acl
   "Indexes ACL concept map. options is an optional map of options. Only :synchronous? is currently supported."
