@@ -38,7 +38,6 @@
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
   [c]
-  (def c c)
   (xml
     [:DIF
      dif9-xml-namespaces

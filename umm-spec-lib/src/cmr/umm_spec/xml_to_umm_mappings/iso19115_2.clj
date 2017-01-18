@@ -65,11 +65,6 @@
   (str "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation"
        "[gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:role/gmd:CI_RoleCode='publication']"))
 
-(def online-resource-xpath
- (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:aggregationInfo/"
-      "gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation/gmd:citedResponsibleParty/"
-      "gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:onlineResource/gmd:CI_OnlineResource"))
-
 (def personnel-xpath
   "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
 
@@ -175,6 +170,7 @@
 
 
 (defn- parse-online-resource
+ "Parse online resource from the publication XML"
  [publication sanitize?]
  (when-let [party (first (select publication "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']"))]
   (when-let [online-resource (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
@@ -205,7 +201,7 @@
                        {:DOI (value-of gmd-id "gmd:MD_Identifier/gmd:code/gco:CharacterString")
                         :Authority (or (value-of gmd-id orgname-path)
                                        (value-of gmd-id orgname-path))})))]
-    (first (first (remove empty? (map #(remove nil? %) doi-list)))))) 
+    (first (first (remove empty? (map #(remove nil? %) doi-list))))))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
