@@ -84,7 +84,7 @@
   (when (and
          (vector? target)
          (> (count target) 1))
-    [(str "Only one target can be specified.")]))
+    ["Only one target can be specified."]))
 
 (def ^:private get-permissions-validations
   "Defines validations for get permissions parameters and values"
