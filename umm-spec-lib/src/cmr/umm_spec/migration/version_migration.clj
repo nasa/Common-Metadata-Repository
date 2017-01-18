@@ -180,7 +180,7 @@
   [c]
   (if-let [doi-obj (some :DOI (:CollectionCitations c))]
     (-> c
-      (util/update-in-each [:CollectionCitations] dissoc :DOI)
+      (update-in-each [:CollectionCitations] dissoc :DOI)
       (assoc :DOI doi-obj))
     c))
 
@@ -189,7 +189,7 @@
   [c]
   (if-let [doi-obj (:DOI c)]
     (-> c
-      (util/update-in-each [:CollectionCitations] assoc :DOI doi-obj)
+      (update-in-each [:CollectionCitations] assoc :DOI doi-obj)
       (dissoc :DOI))
     c))
 
