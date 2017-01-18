@@ -305,7 +305,7 @@
       (context "/permissions" []
         (OPTIONS "/" [] common-routes/options-response)
 
-        (GET "/" {:keys [request-context headers params]}
+        (GET "/" {:keys [request-context params]}
           (get-permissions request-context params))))
 
     (route/not-found "Not Found")))

@@ -295,8 +295,6 @@
   (let [params (-> params
                    (update-in [:concept_id] util/seqify)
                    (update-in [:target_group_id] util/seqify))]
-    ;;Check validity of token in context
-    (context->user-id context)
     (pv/validate-get-permission-params params)
     (let [{:keys [user_id user_type concept_id system_object provider target target_group_id]} params
           username-or-type (if user_type

@@ -20,22 +20,6 @@
               (fixtures/grant-all-group-fixture ["prov1guid"])
               (fixtures/grant-all-acl-fixture))
 
-(deftest token-test
-  (let [params {:user_id "foobar" :provider "PROV1" :target "PROVIDER_HOLDINGS"}
-        token-missing-err "Valid user token required."
-        token-invalid-err #(str "Token " % " does not exist")]
-    (are3 [token errors]
-      (is (= {:status 401 :body {:errors errors} :content-type :json}
-             (ac/get-permissions (u/conn-context) params {:token token :raw? true})))
-
-      "An error should be returned if no user token is specified."
-      nil
-      [token-missing-err]
-
-      "An error should be returned if the user token does not exist."
-      "invalid token"
-      [(token-invalid-err "invalid token")])))
-
 (deftest invalid-params-test
   (let [target-required-err "One of [concept_id], [system_object], [target_group_id], or [provider] and [target] are required."
         user-required-err "One of parameters [user_type] or [user_id] are required."
@@ -60,6 +44,7 @@
       {} [target-required-err user-required-err]
       {:target "PROVIDER_HOLDINGS"} [target-required-err user-required-err]
       {:user_id "" :concept_id []} [target-required-err user-required-err]
+      {:user_type "" :concept_id []} [target-required-err user-required-err]
       {:user_id "foobar"} [target-required-err]
       ;; Provider target and provider not both present
       {:user_id "foobar" :target "PROVIDER_HOLDINGS"} [target-required-err]
