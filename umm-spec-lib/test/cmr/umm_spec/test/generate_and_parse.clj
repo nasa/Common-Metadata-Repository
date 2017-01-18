@@ -1,26 +1,27 @@
 (ns cmr.umm-spec.test.generate-and-parse
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
-  (:require [clojure.test :refer :all]
-            [clojure.java.io :as io]
-            [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.clojure-test :as ct :refer [for-all]]
-            [cmr.common.util :refer [update-in-each are2]]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]]
-            [cmr.common.xml.simple-xpath :refer [select context]]
-            [cmr.umm-spec.umm-spec-core :as core]
-            [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation]
-            [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.iso19115-2-util :as iu]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.test.umm-record-sanitizer :as sanitize]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext :refer [checking]]
+   [cmr.common.util :refer [update-in-each are2]]
+   [cmr.common.xml.simple-xpath :refer [select context]]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.iso19115-2-util :as iu]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.test.umm-generators :as umm-gen]
+   [cmr.umm-spec.test.umm-record-sanitizer :as sanitize]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as core]
+   [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
+   [com.gfredericks.test.chuck.clojure-test :as ct :refer [for-all]]))
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."

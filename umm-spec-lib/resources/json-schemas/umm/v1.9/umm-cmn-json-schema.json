@@ -306,6 +306,50 @@
       },
       "required": ["URLs"]
     },
+    "OnlineResourceType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Describes the online resource pertaining to the data.",
+      "properties": {
+        "Linkage": {
+          "description": "The URL of the website related to the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Protocol": {
+          "description": "The protocol of the linkage for the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ApplicationProtocol": {
+          "description": "The application protocol of the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Name": {
+          "description": "The name of the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Description": {
+          "description": "The description of the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Function": {
+          "description": "The function of the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["Linkage", "Name", "Description"]
+    },
     "FileSizeType": {
       "description": "Represents a data file size.",
       "type": "object",
@@ -331,10 +375,6 @@
         "Version": {
           "description": "The version of the collection.",
           "$ref": "#/definitions/VersionType"
-        },
-        "RelatedUrl": {
-          "description": "The URL of the landing page for the collection.",
-          "$ref": "#/definitions/RelatedUrlType"
         },
         "Title": {
           "description": "The title of the collection; this is the same as the collection Entry Title.",
@@ -392,6 +432,10 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
+        },
+        "OnlineResource": {
+          "description": "The URL of the landing page for the collection.",
+          "$ref": "#/definitions/OnlineResourceType"
         }
       }
     },
@@ -462,9 +506,9 @@
       "additionalProperties": false,
       "description": "Describes key bibliographic citations pertaining to the data.",
       "properties": {
-        "RelatedUrl": {
+        "OnlineResource": {
           "description": "The URL of the website related to the bibliographic citation.",
-          "$ref": "#/definitions/RelatedUrlType"
+          "$ref": "#/definitions/OnlineResourceType"
         },
         "Title": {
           "description": "The title of the publication in the bibliographic citation.",

@@ -95,6 +95,12 @@
     record
     nil))
 
+(defn with-default-url
+ [url sanitize?]
+ (if sanitize?
+  (or url not-provided-url)
+  url))
+
 (defn remove-empty-records
   "Returns the given records with empty records removed from it."
   [records]
