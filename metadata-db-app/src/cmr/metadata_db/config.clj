@@ -9,10 +9,6 @@
   "The database username"
   {:default "METADATA_DB"})
 
-(defconfig metadata-db-password
-  "The database password"
-  {:default "METADATA_DB"})
-
 (defconfig catalog-rest-db-username
   "The catalog rest db username"
   {:default "DEV_52_CATALOG_REST"})

@@ -147,6 +147,19 @@ _Note the absence of provider-id for tags, tag associations and humanizer. These
 
 ### Setting up the database
 
+First, create the temporary config file in the metadata_db source directory.  This is needed to set up the METADATA_DB user password.  Be sure to change the password from CHANGE_ME to the desired password.
+
+```
+cat > metadata-db-app/src/cmr/metadata_db/temp_config.clj << EOF
+(ns cmr.metadata-db.temp-config
+  (:require [cmr.common.config :as cfg :refer [defconfig]]))
+
+(defconfig metadata-db-password
+  "The database password"
+  {:default "CHANGE_ME"})
+EOF
+```
+
 There are two ways database operations can be done. It can happen through leiningen commands for local development or using the built uberjar.
 
 #### leiningen commands
