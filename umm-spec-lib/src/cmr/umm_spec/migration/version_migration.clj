@@ -197,13 +197,15 @@
   [context c & _]
   (-> c
       migrate-doi-up
-      (update-in-each [:PublicationReferences] related-url/migrate-publication-reference-to-online-resource)))
+      (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
+      (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)))
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
   (-> c
       migrate-doi-down
-      (update-in-each [:PublicationReferences] related-url/migrate-publication-reference-to-related-url)))
+      (update-in-each [:PublicationReferences] related-url/migrate-online-resource-to-related-url)
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
