@@ -28,7 +28,7 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:include-full-acl :legacy-guid :include-legacy-group-guid}
-     :multiple-value #{:permitted-group :identity-type :provider :id :target :target-group-id}
+     :multiple-value #{:permitted-group :identity-type :provider :id :target :target-id}
      :always-case-sensitive #{}
      :disallow-pattern #{:identity-type :permitted-user :group-permission :legacy-guid :target}
      :allow-or #{}}))
@@ -44,7 +44,7 @@
    :provider cpv/string-param-options
    :identity-type cpv/string-param-options
    :target #{}
-   :target-group-id #{}
+   :target-id #{}
    :legacy-guid #{}
    :id #{}
    :permitted-user #{}
@@ -165,9 +165,19 @@
              (not= "true" (:include-full-acl params)))
     ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]))
 
+(defn- target-id-validation
+  "Validates that when target-id parameter is specified,
+  identity-type=single_instance is also specified"
+  [context params]
+  (let [target-ids (util/seqify (:target-id params))
+        identity-types (util/seqify (:identity-type params))]
+    (when (and target-ids
+               (not (some #(= "single_instance" %) identity-types)))
+      ["Parameter identity_type=single_instance is required to search by target-id"])))
+
 (defmethod cp/always-case-sensitive-fields :acl
   [_]
-  #{:concept-id :identity-type :target-group-id})
+  #{:concept-id :identity-type :target-id})
 
 (defmethod common-qm/default-sort-keys :acl
   [_]
@@ -179,7 +189,7 @@
    :permitted-group :string
    :identity-type :acl-identity-type
    :target :string
-   :target-group-id :string
+   :target-id :string
    :provider :string
    :permitted-user :acl-permitted-user
    :group-permission :acl-group-permission
@@ -262,6 +272,7 @@
               permitted-group-validation
               identity-type-validation
               group-permission-validation
+              target-id-validation
               (partial cpv/validate-boolean-param :include-full-acl)
               (partial cpv/validate-boolean-param :include-legacy-group-guid)
               include-legacy-group-guid-validation])
