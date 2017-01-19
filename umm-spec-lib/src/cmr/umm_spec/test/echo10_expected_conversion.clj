@@ -212,8 +212,6 @@
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
-      ;; echo10 is not supporting DOI yet. :DOI nil is added to the UMM-C record by parse-umm-c
-      (assoc :DOI nil)
       (assoc :DirectoryNames nil)
       ;; CMR 3523. DIF10 data makes the order inside the :RelatedUrls important:
       ;; access urls first, resource urls second, browse urls last - which is
