@@ -1,0 +1,163 @@
+{
+  "conformsTo": "https://project-open-data.cio.gov/v1.1/schema",
+  "dataset": [
+    {
+      "description": "This data set contains eddy covariance met tower data from severely burned site in the Anaktuvuk River burn.",
+      "accessLevel": "public",
+      "bureauCode": [
+        "026:00"
+      ],
+      "publisher": {
+        "name": "ACADIS",
+        "subOrganizationOf": {
+          "name": "National Aeronautics and Space Administration",
+          "subOrganizationOf": {
+            "name": "U.S. Government"
+          }
+        }
+      },
+      "spatial": "-150.3 69.0 -150.3 69.0",
+      "references": [
+        "http://www.aoncadis.org/dataset/id/79c2ab3b-374b-11df-9717-00c0f03d5b7c.html"
+      ],
+      "contactPoint": {
+        "fn": "undefined",
+        "hasEmail": "mailto:support@earthdata.nasa.gov"
+      },
+      "title": "2008 carbon, water, energy balance severely burned site",
+      "theme": [
+        "geospatial"
+      ],
+      "keyword": [
+        "EARTH SCIENCE",
+        "BIOSPHERE",
+        "ECOSYSTEMS",
+        "NGDA",
+        "National Geospatial Data Asset"
+      ],
+      "language": [
+        "en-US"
+      ],
+      "programCode": [
+        "026:001"
+      ],
+      "identifier": "C1214601124-SCIOPS",
+      "distribution": [
+        {
+          "downloadURL": "http://www.aoncadis.org/dataset/id/79c2ab3b-374b-11df-9717-00c0f03d5b7c.html",
+          "mediaType": "application/octet-stream"
+        }
+      ],
+      "temporal": "2008-06-01T00:00:00Z/2008-08-31T23:59:59Z"
+    },
+    {
+      "description": "This project will involve the measurement of methane and other trace gases in firn air collected at South Pole, Antarctica.  The analyses will include: methane isotopes, light non-methane hydrocarbons (ethane, propane, and n-butane), sulfur gases (OCS, CS2), and methyl halides (CH3Cl and CH3Br).  The atmospheric burdens of these trace gases reflect changes in atmospheric OH, biomass burning, biogenic activity in terrestrial, oceanic, and wetland ecosystems, and industrial/agricultural activity.  The goal of this project is to develop atmospheric histories for these trace gases over the last century through examination of depth profiles of these gases in South Pole firn air.  The project will involve two phases:  1) a field campaign at South Pole, Antarctica to drill two firn holes and fill a total of ~200 flasks from depths reaching 120 m, 2) analysis of firn air at UCI, Penn State University, and several other collaborating laboratories.  Atmospheric histories will be inferred from the measurements using a one dimensional advective/diffusive model of firn air transport.",
+      "accessLevel": "public",
+      "bureauCode": [
+        "026:00"
+      ],
+      "publisher": {
+        "name": "NSIDC",
+        "subOrganizationOf": {
+          "name": "National Aeronautics and Space Administration",
+          "subOrganizationOf": {
+            "name": "U.S. Government"
+          }
+        }
+      },
+      "references": [
+        "http://nsidc.org/data/nsidc-0502.html"
+      ],
+      "contactPoint": {
+        "fn": "TODD SOWERS",
+        "hasEmail": "mailto:todd.sowers5@gmail.com, sowers@geosc.psu.edu"
+      },
+      "title": "2008 South Pole Firn Air Methane Isotopes",
+      "theme": [
+        "geospatial"
+      ],
+      "keyword": [
+        "EARTH SCIENCE",
+        "CRYOSPHERE",
+        "GLACIERS/ICE SHEETS",
+        "SNOW/ICE",
+        "PALEOCLIMATE",
+        "ICE CORE RECORDS",
+        "NGDA",
+        "National Geospatial Data Asset"
+      ],
+      "language": [
+        "en-US"
+      ],
+      "programCode": [
+        "026:001"
+      ],
+      "identifier": "C1214597995-SCIOPS",
+      "distribution": [
+        {
+          "downloadURL": "http://nsidc.org/data/nsidc-0502.html",
+          "mediaType": "application/octet-stream"
+        }
+      ],
+      "temporal": "2008-12-01T00:00:00Z/2009-01-31T23:59:59Z"
+    },
+    {
+      "description": "The last interglacial period (about 125,000 years ago) is thought to have been\nat least as warm as the present climate. Owing to changes in the Earth's orbit\naround the Sun, it is thought that insolation in the Northern Hemisphere varied\nmore strongly than today on seasonal timescales, which would have led to\ncorresponding changes in the seasonal temperature cycle. Here we present\nseasonally resolved proxy records using corals from the northernmost Red Sea,\nwhich record climate during the last interglacial period, the late Holocene\nepoch and the present. We find an increased seasonality in the temperature\nrecorded in the last interglacial coral. Today, climate in the northern Red Sea\nis sensitive to the North Atlantic Oscillation, a climate oscillation that\nstrongly influences winter temperatures and precipitation in the North Atlantic\nregion.  From our coral records and simulations with a coupled atmosphere-ocean\ncirculation model, we conclude that a tendency towards the high-index state of\nthe North Atlantic Oscillation during the last interglacial period, which is\nconsistent with European proxy records, contributed to the larger amplitude of\nthe seasonal cycle in the Middle East.",
+      "accessLevel": "public",
+      "bureauCode": [
+        "026:00"
+      ],
+      "publisher": {
+        "name": "WDC/PALEOCLIMATOLOGY, BOULDER",
+        "subOrganizationOf": {
+          "name": "National Aeronautics and Space Administration",
+          "subOrganizationOf": {
+            "name": "U.S. Government"
+          }
+        }
+      },
+      "spatial": "34.97 29.459 34.97 29.459",
+      "references": [
+        "http://www.ncdc.noaa.gov/paleo/pubs/felis2004/felis2004.html",
+        "http://www.ncdc.noaa.gov/paleo/pubs/felis2004/felis2004.html"
+      ],
+      "contactPoint": {
+        "fn": "WDC/PALEOCLIMATOLOGY, BOULDER",
+        "hasEmail": "mailto:paleo@noaa.gov"
+      },
+      "title": "Northern Gulf of Aqaba Modern and Fossil Coral Oxygen Isotope and Sr/Ca Data",
+      "theme": [
+        "PAGES",
+        "geospatial"
+      ],
+      "keyword": [
+        "EARTH SCIENCE",
+        "PALEOCLIMATE",
+        "LAND RECORDS",
+        "OCEAN/LAKE RECORDS",
+        "CLIMATE INDICATORS",
+        "ATMOSPHERIC/OCEAN INDICATORS",
+        "NGDA",
+        "National Geospatial Data Asset"
+      ],
+      "language": [
+        "en-US"
+      ],
+      "programCode": [
+        "026:001"
+      ],
+      "identifier": "C1215197048-NOAA_NCEI",
+      "distribution": [
+        {
+          "downloadURL": "http://www.ncdc.noaa.gov/paleo/pubs/felis2004/felis2004.html",
+          "mediaType": "application/octet-stream"
+        },
+        {
+          "accessURL": "http://www.ncdc.noaa.gov/paleo/pubs/felis2004/felis2004.html",
+          "mediaType": "application/octet-stream"
+        }
+      ],
+      "temporal": "1988-01-01T00:00:00Z/1996-12-31T23:59:59Z"
+    }
+  ]
+}

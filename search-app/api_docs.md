@@ -37,7 +37,6 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Provider short name](#c-provider-short-name)
     * [Entry title](#c-entry-title)
     * [Entry id](#c-entry-id)
-    * [Dif entry id](#c-dif-entry-id)
     * [Archive center](#c-archive-center)
     * [Data center](#c-data-center)
     * [Temporal](#c-temporal)
@@ -1074,14 +1073,6 @@ with a entry title pattern
 One entry id
 
     curl "%CMR-ENDPOINT%/collections?entry_id\[\]=SHORT_V5"
-
-#### <a name="c-dif-entry-id"></a> Find collections by dif entry id
-
-This searches for matches on either entry id or associated difs
-
-One dif\_entry\_id
-
-    curl "%CMR-ENDPOINT%/collections?dif_entry_id\[\]=SHORT_V5"
 
 #### <a name="c-archive-center"></a> Find collections by archive center
 

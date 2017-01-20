@@ -7,7 +7,7 @@
   "Returns granule searches for deleted projects. We should not delete projects in a collection
   that are still referenced by existing granules. This function builds the search parameters
   for identifying such invalid deletions."
-  [concept-id concept prev-concept]
+  [context concept-id concept prev-concept]
   (let [deleted-project-names (s/difference
                                 (set (map :ShortName (:Projects prev-concept)))
                                 (set (map :ShortName (:Projects concept))))]

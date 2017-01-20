@@ -5,6 +5,7 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.access-control.data.access-control-index :as index]
+    [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.auth-util :as auth]
     [cmr.access-control.services.group-service-messages :as g-msg]
     [cmr.access-control.services.messages :as msg]
@@ -19,6 +20,7 @@
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as u]
     [cmr.common.validations.core :as v]
+    [cmr.transmit.config :as transmit-config]
     [cmr.transmit.echo.rest :as rest]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db2 :as mdb]
@@ -157,6 +159,27 @@
   (when-let [non-existent-users (non-existent-users context usernames)]
     (errors/throw-service-error :bad-request (msg/users-do-not-exist non-existent-users))))
 
+(defn group-exists?
+  "Returns true if group exists."
+  [context concept-id]
+  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+    (when (not= :access-group concept-type)
+      (errors/throw-service-error :bad-request (g-msg/bad-group-concept-id concept-id))))
+  (if-let [concept (mdb/get-latest-concept context concept-id false)]
+    (not (:deleted concept))
+    false))
+
+(defn- validate-managing-group-id
+  "Validates that the given managing group id exist. Throws an exception if it does not."
+  [context managing-group-id]
+  (when managing-group-id
+    (when (sequential? managing-group-id)
+      (errors/throw-service-error
+       :bad-request "Parameter managing_group_id must have a single value."))
+    (when (not (group-exists? context managing-group-id))
+      (errors/throw-service-error
+       :bad-request (msg/managing-group-does-not-exist managing-group-id)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service level functions
 
@@ -165,13 +188,16 @@
   the created group."
   ([context group]
    (create-group context group nil))
-  ([context group {:keys [skip-acls?]}]
+  ([context group {:keys [skip-acls? managing-group-id]}]
    (validate-create-group context group)
    (when-not skip-acls?
      (auth/verify-can-create-group context group))
 
-   (if-let [concept-id (->> (search-for-groups context {:name (:name group)
-                                                        :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
+   (validate-managing-group-id (transmit-config/with-echo-system-token context) managing-group-id)
+
+   (if-let [concept-id (->> (search-for-groups
+                             context {:name (:name group)
+                                      :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
                             :results
                             :items
                             (some :concept_id))]
@@ -186,17 +212,15 @@
            {:keys [concept-id revision-id] :as result} (mdb/save-concept context new-concept)]
        ;; Index the group here. Group indexing is synchronous.
        (index/index-group context (assoc new-concept :concept-id concept-id :revision-id revision-id))
+       ;; If managing group id exists, create the ACL to grant permission to the managing group
+       ;; to update/delete the group.
+       (when managing-group-id
+         (acl-util/create-acl context
+                              {:group-permissions [{:group-id managing-group-id
+                                                    :permissions ["update" "delete"]}]
+                               :single-instance-identity {:target-id concept-id
+                                                          :target "GROUP_MANAGEMENT"}}))
        result))))
-
-(defn group-exists?
-  "Returns true if group exists."
-  [context concept-id]
-  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
-    (when (not= :access-group concept-type)
-      (errors/throw-service-error :bad-request (g-msg/bad-group-concept-id concept-id))))
-  (if-let [concept (mdb/get-latest-concept context concept-id false)]
-    (not (:deleted concept))
-    false))
 
 (defn get-group-by-concept-id
   "Retrieves a group with the given concept id, returns its parsed metadata."

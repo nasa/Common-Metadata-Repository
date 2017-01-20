@@ -106,6 +106,7 @@
     :VersionDescription "Best version ever"
     :DataLanguage "eng"
     :CollectionDataType "SCIENCE_QUALITY"
+    :CollectionProgress "COMPLETE"
     :Projects [{:ShortName "project short_name"}]
     :Quality "Pretty good quality"
     :PublicationReferences [{:PublicationDate (t/date-time 2015)
@@ -119,7 +120,12 @@
                              :ReportNumber "25"
                              :Volume "volume"
                              :Publisher "publisher"
-                             :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
+                             :OnlineResource {:Linkage "www.foo.com"
+                                              :Protocol "http"
+                                              :ApplicationProtocol "http"
+                                              :Name "Resource Name"
+                                              :Description "Resource Desc"
+                                              :Function "function"}
                              :ISBN "1234567789"
                              :Author "author"
                              :Issue "issue"
@@ -464,3 +470,10 @@
    (-> umm-record
        (convert src)
        (convert dest))))
+
+(defn ignore-ids
+  "Returns the given string with ids replaced with place holder, e.g.
+   id=\"dd0b91b1b-da2d-4d8e-857e-0bb836ad2fbc\" is changed to id=\"placeholder\".
+   This is used to strip the randomly generated id strings from the ISO19115 metadata during comparison."
+  [x]
+  (str/replace x #"id=\".*?\">" "id=\"placeholder\""))

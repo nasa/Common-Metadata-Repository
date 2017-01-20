@@ -214,8 +214,7 @@
 ;; in professional scientific literature. The citation language constructed from these fields
 ;; references the collection itself, and is not designed for listing bibliographic references of
 ;; scientific research articles arising from search results. A list of references related to the
-;; research results should be in the Publication Reference element. A DOI that specifically
-;; identifies the collection is listed here.
+;; research results should be in the Publication Reference element.
 (defrecord ResourceCitationType
   [
    ;; The name of the data series, or aggregate data of which the data is a part.
@@ -232,18 +231,14 @@
    ;; The title of the collection; this is the same as the collection Entry Title.
    Title
 
-   ;; The Digital Object Identifier (DOI) for the collection. This is the registered DOI that
-   ;; resolves to a landing page for the collection.
-   DOI
-
    ;; The name of the individual or organization that made the collection available for release.
    Publisher
 
    ;; The date when the collection was made available for release.
    ReleaseDate
 
-   ;; The URL of the landing page for the collection.
-   RelatedUrl
+   ;; The online resource related to the landing page of the collection.
+   OnlineResource
 
    ;; The volume or issue number of the publication (if applicable).
    IssueIdentification
@@ -494,8 +489,8 @@
    ;; The publisher of the publication.
    Publisher
 
-   ;; The URL of the website related to the bibliographic citation.
-   RelatedUrl
+   ;; The online resource related to the bibliographic citation.
+   OnlineResource
 
    ;; The ISBN of the publication.
    ISBN
@@ -656,6 +651,29 @@
    PeriodicDateTimes
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
+
+;; Describes the online resource pertaining to the data.
+(defrecord OnlineResourceType
+  [
+    ;; The URL of the website related to the online resource.
+    Linkage
+
+    ;; The protocol of the linkage for the online resource.
+    Protocol
+
+    ;; The application protocol of the online resource.
+    ApplicationProtocol
+
+    ;; The name of the online resource.
+    Name
+
+    ;; The description of the online resource.
+    Description
+
+    ;; The function of the online resource.
+    Function
+  ])
+(record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
 
 ;; Represents Internet sites that contain information related to the data, as well as related
 ;; Internet sites such as project home pages, related data archives/servers, metadata extensions,

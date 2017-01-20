@@ -8,6 +8,10 @@
 			<DataSetId>2008 Environmental Performance Index (EPI)</DataSetId>
 			<Description>No Related URLs, Phone instead of Telephone, no access constraint descr
 		               description, No science keywords</Description>
+                        <DOI>
+                          <DOI>DOI</DOI>
+                          <Authority>Authority</Authority>
+                        </DOI> 
 			<Orderable>false</Orderable>
 			<Visible>true</Visible>
 			<SuggestedUsage>To provide quantitative metrics for evaluating a country's environmental performance in different policy categories relative to clearly defined

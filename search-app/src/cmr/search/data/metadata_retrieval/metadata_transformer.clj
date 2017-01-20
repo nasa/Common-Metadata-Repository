@@ -76,15 +76,12 @@
       (= :html target-format)
       :html
 
-      ;; UMM JSON is the desired response or it's coming from UMM JSON
-      (or (mt/umm-json? concept-mime-type)
-          (= :umm-json (qm/base-result-format target-format)))
-      :umm-spec
+      ;; only granule uses umm-lib
+      (= :granule (:concept-type concept))
+      :umm-lib
 
-      ;; Going from XML metadata to some otner XML metadata.
-      ;; Use UMM lib (for now for collections)
       :else
-      :umm-lib)))
+      :umm-spec)))
 
 (defmulti transform-with-strategy
   "Transforms the concept into the set of target formats specified using the given strategy"

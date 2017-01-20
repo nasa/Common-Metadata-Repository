@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.umm-json
   (:require [clojure.test :refer :all]
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
-            [cmr.common.test.test-check-ext :as ext :refer [defspec]]
+            [cmr.common.test.test-check-ext :as ext :refer [checking]]
             [cmr.umm-spec.umm-json :as uj]
             [cmr.umm-spec.models.umm-collection-models :as umm-c]
             [cmr.umm-spec.models.umm-service-models :as umm-s]
@@ -9,7 +9,8 @@
             [clj-time.core :as t]
             [cmr.umm-spec.util :as u]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]))
+            [cmr.umm-spec.test.umm-generators :as umm-gen]
+            [clojure.test.check.generators :as gen]))
 
 (def minimal-example-umm-c-record
   "This is the minimum valid UMM-C."
@@ -26,6 +27,7 @@
      :ShortName "short"
      :Version "V1"
      :EntryTitle "The entry title V5"
+     :CollectionProgress "COMPLETE"
      :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
@@ -55,6 +57,7 @@
      :ShortName "short"
      :Version "V1"
      :EntryTitle "The entry title V5"
+     :CollectionProgress "COMPLETE"
      :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
@@ -88,15 +91,17 @@
           parsed (uj/json->umm {} :collection json)]
       (is (= contact-group-example-umm-c-record parsed)))))
 
-(defspec all-umm-c-records 100
-  (for-all [umm-c-record umm-gen/umm-c-generator]
+(deftest all-umm-c-records
+  (checking "all umm-c records" 100
+    [umm-c-record (gen/no-shrink umm-gen/umm-c-generator)]
     (let [json (uj/umm->json umm-c-record)
           _ (is (empty? (js/validate-umm-json json :collection)))
           parsed (uj/json->umm {} :collection json)]
       (is (= umm-c-record parsed)))))
 
-(defspec all-umm-s-records 100
-  (for-all [umm-s-record umm-gen/umm-s-generator]
+(deftest all-umm-s-records
+  (checking "all umm-s records" 100
+    [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
     (let [json (uj/umm->json umm-s-record)
           _ (is (empty? (js/validate-umm-json json :service)))
           parsed (uj/json->umm {} :service json)]

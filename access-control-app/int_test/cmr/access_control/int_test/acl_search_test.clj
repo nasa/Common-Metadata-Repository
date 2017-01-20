@@ -2,6 +2,7 @@
   (:require
     [clj-http.client :as client]
     [clj-time.core :as t]
+    [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
@@ -50,6 +51,27 @@
                  [{} 0]
                  (partition 2 group-permissions))))
 
+(deftest acl-search-order-test
+  ;; Conforms to requirements set out in CMR-3590, alphabetical order regardless of case
+  (let [token (e/login (u/conn-context) "user1")
+        acl1 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "B Uppercase B"
+                                                          :collection_applicable true}})
+        acl2 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "a lowercase A"
+                                                          :collection_applicable true}})
+        acl3 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "1 numbered"
+                                                          :collection_applicable true}})
+        get-name #(get-in % [:catalog_item_identity :name])]
+    (is (= [(get-name acl3) (get-name acl2) (get-name acl1)
+            "Provider - PROV1 - CATALOG_ITEM_ACL"
+            "System - ANY_ACL"]
+           (map :name (:items (ac/search-for-acls (merge {:token token} (u/conn-context)) {})))))))
+
 (deftest acl-search-permission-test
   (let [token (e/login (u/conn-context) "user1")
         group1 (u/ingest-group token
@@ -72,24 +94,27 @@
                                    {:permissions ["read" "create"] :group_id group1-concept-id}))
 
         acl1 (u/ingest-acl token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
-                                         [:group_permissions 0]
-                                         {:permissions ["read"] :group_id group1-concept-id}))
+                                           [:group_permissions 0]
+                                           {:permissions ["read"] :group_id group1-concept-id}))
         acl2 (u/ingest-acl token (assoc-in (u/system-acl "ARCHIVE_RECORD")
-                                         [:group_permissions 0]
-                                         {:permissions ["delete"] :group_id group2-concept-id}))
+                                           [:group_permissions 0]
+                                           {:permissions ["delete"] :group_id group2-concept-id}))
         acl3 (u/ingest-acl token (u/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
         acl4 (u/ingest-acl token (assoc (u/provider-acl "PROVIDER_OBJECT_ACL")
-                                      :group_permissions
-                                      [{:group_id group3-concept-id :permissions ["read"]}]))
+                                        :group_permissions
+                                        [{:group_id group3-concept-id :permissions ["read"]}]))
         acl5 (u/ingest-acl token (u/provider-acl "OPTION_DEFINITION"))
         acl6 (u/ingest-acl token (assoc-in (u/provider-acl "OPTION_DEFINITION")
-                                         [:provider_identity :provider_id] "PROV2"))
+                                           [:provider_identity :provider_id] "PROV2"))
         ;; Create an ACL with a catalog item identity for PROV1
         acl7 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
-                                :catalog_item_identity {:provider_id "PROV1"
-                                                        :name "PROV1 All Collections ACL"
-                                                        :collection_applicable true}})]
-
+                                  :catalog_item_identity {:provider_id "PROV1"
+                                                          :name "PROV1 All Collections ACL"
+                                                          :collection_applicable true}})
+        acl8 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                  :catalog_item_identity {:provider_id "PROV2"
+                                                          :name "PROV2 All Collections ACL"
+                                                          :collection_applicable true}})]
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:provider "PROV1"})]
@@ -98,16 +123,20 @@
     (testing "Guest search permission"
       (let [token (e/login-guest (u/conn-context))
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        ;; Fixture *fixture-provider-acl* granted permission to guest to see CATALOG_ITEM_ACL on PROV1
         (is (= (u/acls->search-response 1 [acl7])
                (dissoc response :took)))))
     (testing "User search permission"
       (let [token (e/login (u/conn-context) "user1")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (u/acls->search-response 9 [fixtures/*fixture-provider-acl* (assoc fixtures/*fixture-system-acl* :revision_id 2) acl1 acl2 acl3 acl4 acl5 acl6 acl7])
+        (is (= (u/acls->search-response 10 [fixtures/*fixture-provider-acl*
+                                            (assoc fixtures/*fixture-system-acl* :revision_id 2)
+                                            acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8])
                (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
       (let [token (e/login (u/conn-context) "user2")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
+        ;; Fixture *fixture-provider-acl* granted permission to registered user to see CATALOG_ITEM_ACL on PROV1
         (is (= (u/acls->search-response 1 [acl7])
                (dissoc response :took)))))))
 
@@ -742,3 +771,66 @@
        (is (= (set (:items (u/acls->search-response
                             (count expected-acls-after-reindexing) expected-acls-after-reindexing)))
               (set (:items actual-response))))))))
+
+(deftest acl-search-by-target-group-id-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token
+                               {:name "group1"}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "group2"}
+                               ["user1"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+        acl1 (u/ingest-acl token (u/single-instance-acl group1-concept-id))
+        acl2 (u/ingest-acl token (u/single-instance-acl group2-concept-id))]
+
+    (testing "Invalid target-id search"
+      (testing "No identity-type specified"
+        (is (= {:status 400
+                :body {:errors ["Parameter identity_type=single_instance is required to search by target-id"]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) {:target-id group1-concept-id} {:raw? true}))))
+      (testing "All but single_instance identity-type specified"
+        (is (= {:status 400
+                :body {:errors ["Parameter identity_type=single_instance is required to search by target-id"]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) {:target-id group1-concept-id :identity_type ["provider" "system" "catalog_item"]} {:raw? true})))))
+
+    (testing "Valid target-id search where only single_instance identity-type is specified"
+      (are3 [target-group-id expected-acls]
+            (let [response (ac/search-for-acls (u/conn-context) {:target-id target-group-id
+                                                                 :identity-type ["single_instance"]})]
+              (is (= (u/acls->search-response (count expected-acls) expected-acls)
+                     (dissoc response :took))))
+
+            "Single target-id"
+            [group1-concept-id]
+            [acl1]
+
+            "Multiple target-id"
+            [group1-concept-id group2-concept-id]
+            [acl1 acl2]
+
+            "Non-existent target-id"
+            "AG10000-PROV1"
+            []
+
+            "Multiple target-id including non-existent id"
+            [group1-concept-id "AG10000-PROV1"]
+            [acl1]
+
+            "Case sensitivity"
+            [(str/lower-case group1-concept-id)]
+            []
+
+            "Null target-id"
+            []
+            [acl1 acl2]))
+
+    (testing "Valid target-id search where multiple identity-types including single_instance is specified"
+      (let [response (ac/search-for-acls (u/conn-context) {:target-id [group1-concept-id group2-concept-id]
+                                                           :identity-type ["single_instance" "system" "provider" "catalog_item"]})
+            expected-acls [acl1 acl2]]
+        (is (= (u/acls->search-response (count expected-acls) expected-acls)
+               (dissoc response :took)))))))

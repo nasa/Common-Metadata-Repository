@@ -12,6 +12,16 @@
   (zipmap [:level-0 :level-1 :level-2 :level-3 :long-name]
           (repeat kf/FIELD_NOT_PRESENT)))
 
+(defn data-center-contacts
+  "Returns the data center contacts with ContactInformation added if it doesn't have contact info"
+  [data-center]
+  (let [contacts (concat (:ContactPersons data-center) (:ContactGroups data-center))]
+    (map (fn [contact]
+           (if (:ContactInformation contact)
+             contact
+             (assoc contact :ContactInformation (:ContactInformation data-center))))
+         contacts)))
+
 (defn- ordered-data-centers
   "Returns the given data centers in the order of archive centers first, then distribution centers,
   then the rest."

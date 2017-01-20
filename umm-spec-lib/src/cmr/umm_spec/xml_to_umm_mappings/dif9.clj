@@ -88,6 +88,8 @@
         version-id (value-of doc "/DIF/Data_Set_Citation/Version")
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
+     :DOI (first (remove nil? (for [dsc (select doc "DIF/Data_Set_Citation")]
+                                {:DOI (value-of dsc "Dataset_DOI")}))) 
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
@@ -101,7 +103,7 @@
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})
      :DirectoryNames (dif-util/parse-idn-node doc)
-     :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
+     :CollectionProgress (su/with-default (value-of doc "/DIF/Data_Set_Progress") sanitize?)
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
                             {:Category (value-of lk "Location_Category")
@@ -163,9 +165,7 @@
                                              :Pages
                                              [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                                              [:DOI {:DOI (value-of pub-ref "DOI")}]
-                                             [:RelatedUrl
-                                              {:URLs (seq
-                                                       (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                             [:OnlineResource (dif-util/parse-publication-reference-online-resouce pub-ref sanitize?)]
                                              :Other_Reference_Details])))
      :AncillaryKeywords (values-at doc "/DIF/Keyword")
      :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]

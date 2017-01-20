@@ -485,10 +485,69 @@
 (deftest migrate-1_7-up-to-1_8
   (let [result (vm/migrate-umm {} :collection "1.7" "1.8"
                                {:Version "003"})]
-    ;; Nothing changed, VersionDescription is nil
-    (is (= nil (:VersionDescription result)))))
+    ;; VersionDescription is nil, CollectionProgress has default
+    (is (= nil (:VersionDescription result)))
+    (is (= u/not-provided (:CollectionProgress result)))))
 
 (deftest migrate-1_8-down-to-1_7
   (let [result (vm/migrate-umm {} :collection "1.8" "1.7"
                                {:VersionDescription "description of the collection version"})]
     (is (= nil (:VersionDescription result)))))
+
+(deftest migrate-1_8-up-to-1_9
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
+                               {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                                       :DOI {:Authority ";'", :DOI "F19,L"}, :Publisher nil, :ReleaseDate nil,
+                                                       :IssueIdentification nil, :Editor nil, :DataPresentationForm nil,
+                                                       :Version nil, :OtherCitationDetails nil,
+                                                       :RelatedUrl {:URLs ["www.google.com" "www.foo.com"]
+                                                                    :Title "URL Title"
+                                                                    :Description "URL Description"}}]
+                                :PublicationReferences [{:RelatedUrl {:URLs ["www.google.com" "www.foo.com"]
+                                                                      :Title "URL Title"
+                                                                      :Description "URL Description"}}
+                                                        {:RelatedUrl {:URLs ["www.foo.com"]}}]})]
+    ;; DOI is moved from :CollectionCitations to :DOI
+    ;; RelatedUrl is moved to :OnlineResource
+    (is (= {:Authority ";'", :DOI "F19,L"} (:DOI result)))
+    (is (= [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+             :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+             :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+             :OnlineResource {:Linkage "www.google.com" :Name "URL Title" :Description "URL Description"}}]
+           (:CollectionCitations result)))
+    ;; PublicationReferences Related URL migrates to Online Resource
+    (is (= [{:OnlineResource {:Linkage "www.google.com" :Name "URL Title" :Description "URL Description"}}
+            {:OnlineResource {:Linkage "www.foo.com" :Name u/not-provided :Description u/not-provided}}]
+           (:PublicationReferences result)))))
+
+(deftest migrate-1_9-down-to-1_8
+  (let [result (vm/migrate-umm {} :collection "1.9" "1.8"
+                               {:DOI {:Authority ";'", :DOI "F19,L"}
+                                :CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                                                       :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+                                                       :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+                                                       :OnlineResource {:Linkage "www.google.com"
+                                                                        :Name "URL Title"
+                                                                        :Description "URL Description"}}]
+                                :PublicationReferences [{:OnlineResource {:Linkage "www.google.com"
+                                                                          :Name "URL Title"
+                                                                          :Description "URL Description"}}]})]
+    ;; DOI is moved from :DOI to :CollectionCitations
+    (is (= nil (:DOI result)))
+    (is (= [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+             :DOI {:Authority ";'", :DOI "F19,L"},
+             :Publisher nil, :ReleaseDate nil, :IssueIdentification nil,
+             :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
+             :RelatedUrl {:URLs ["www.google.com"]
+                          :Title "URL Title"
+                          :Description "URL Description"
+                          :Relation ["VIEW RELATED INFORMATION" "Citation"]
+                          :MimeType "text/html"}}]
+           (:CollectionCitations result)))
+    ;; PublicationReferences Online Resource migrates to RelatedUrl
+    (is (= [{:RelatedUrl {:URLs ["www.google.com"]
+                          :Title "URL Title"
+                          :Description "URL Description"
+                          :Relation ["VIEW RELATED INFORMATION" "Citation"]
+                          :MimeType "text/html"}}]
+           (:PublicationReferences result)))))

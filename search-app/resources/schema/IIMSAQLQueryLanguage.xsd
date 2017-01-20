@@ -86,9 +86,6 @@
       <xs:element name='archiveCenter' type='ListValueOrPattern'>
         <xs:annotation><xs:documentation>Select collections with the given archive center(s).</xs:documentation></xs:annotation>
       </xs:element>
-      <xs:element name='difEntryId' type='ListValueOrPattern'>
-        <xs:annotation><xs:documentation>Select collections with the given DIF entry ID(s).</xs:documentation></xs:annotation>
-      </xs:element>
       <xs:element name='scienceKeywords' type='scienceKeywords'>
         <xs:annotation><xs:documentation>Select collections with the given science keyword(s).</xs:documentation></xs:annotation>
       </xs:element>

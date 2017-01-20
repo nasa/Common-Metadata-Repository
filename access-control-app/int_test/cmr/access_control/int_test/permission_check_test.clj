@@ -1,18 +1,13 @@
 (ns cmr.access-control.int-test.permission-check-test
   "Tests the access control permission check routes."
-  (require [clojure.test :refer :all]
-           [cheshire.core :as json]
-           [cmr.transmit.access-control :as ac]
-           [cmr.transmit.metadata-db2 :as mdb]
-           [cmr.mock-echo.client.echo-util :as e]
-           [cmr.common.util :refer [are2]]
-           [cmr.access-control.int-test.fixtures :as fixtures]
-           [cmr.access-control.test.util :as u]
-           [cmr.umm.umm-core :as umm-core]
-           [cmr.umm.umm-granule :as umm-g]
-           [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
-           [clj-time.core :as t]
-           [cmr.common.util :as util]))
+  (require
+   [cheshire.core :as json]
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.access-control.test.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.transmit.access-control :as ac]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 
@@ -25,26 +20,45 @@
               (fixtures/grant-all-acl-fixture))
 
 (deftest invalid-params-test
-  (are [params errors]
-    (= {:status 400 :body {:errors errors} :content-type :json}
-       (ac/get-permissions (u/conn-context) params {:raw? true}))
-    {} ["One of [concept_id], [system_object], or [provider] and [target] are required."
-        "One of parameters [user_type] or [user_id] are required."]
-    {:target "PROVIDER_HOLDINGS"} ["One of [concept_id], [system_object], or [provider] and [target] are required."
-                                   "One of parameters [user_type] or [user_id] are required."]
-    {:user_id "" :concept_id []} ["One of [concept_id], [system_object], or [provider] and [target] are required."
-                                  "One of parameters [user_type] or [user_id] are required."]
-    {:user_id "foobar"} ["One of [concept_id], [system_object], or [provider] and [target] are required."]
-    {:concept_id "C12345-ABC2" :system_object "GROUP" :user_id "bat"} ["One of [concept_id], [system_object], or [provider] and [target] are required."]
-    {:concept_id "C1200000-PROV1" :user_type "GROUP" :user_id "foo"} ["One of parameters [user_type] or [user_id] are required."]
-    {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
-    {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."])
-  (are [params re]
-    (some #(re-find re %)
-          (:errors (:body (ac/get-permissions (u/conn-context) params {:raw? true}))))
-    {:user_id "foo" :system_object "GROUPE"} #"Parameter \[system_object\] must be one of: .*GROUP.*"
-    {:user_id "foo" :system_object "group"} #"Parameter \[system_object\] must be one of: .*GROUP.*"
-    {:user_id "foo" :provider "PROV1" :target "PROVIDER_HOLDINGZ"} #"Parameter \[target\] must be one of: .*PROVIDER_HOLDINGS.*"))
+  (let [target-required-err "One of [concept_id], [system_object], [target_group_id], or [provider] and [target] are required."
+        user-required-err "One of parameters [user_type] or [user_id] are required."
+        system-target-err (str "Parameter [system_object] must be one of: [\"SYSTEM_AUDIT_REPORT\" "
+                               "\"METRIC_DATA_POINT_SAMPLE\" \"SYSTEM_INITIALIZER\" \"ARCHIVE_RECORD\" "
+                               "\"ERROR_MESSAGE\" \"TOKEN\" \"TOKEN_REVOCATION\" \"EXTENDED_SERVICE_ACTIVATION\" "
+                               "\"ORDER_AND_ORDER_ITEMS\" \"PROVIDER\" \"TAG_GROUP\" \"TAXONOMY\" "
+                               "\"TAXONOMY_ENTRY\" \"USER_CONTEXT\" \"USER\" \"GROUP\" \"ANY_ACL\" "
+                               "\"EVENT_NOTIFICATION\" \"EXTENDED_SERVICE\" \"SYSTEM_OPTION_DEFINITION\" "
+                               "\"SYSTEM_OPTION_DEFINITION_DEPRECATION\" \"INGEST_MANAGEMENT_ACL\" \"SYSTEM_CALENDAR_EVENT\"]")
+        prov-target-err (str "Parameter [target] must be one of: [\"AUDIT_REPORT\" "
+                             "\"OPTION_ASSIGNMENT\" \"OPTION_DEFINITION\" \"OPTION_DEFINITION_DEPRECATION\" "
+                             "\"DATASET_INFORMATION\" \"PROVIDER_HOLDINGS\" \"EXTENDED_SERVICE\" \"PROVIDER_ORDER\" "
+                             "\"PROVIDER_ORDER_RESUBMISSION\" \"PROVIDER_ORDER_ACCEPTANCE\" \"PROVIDER_ORDER_REJECTION\" "
+                             "\"PROVIDER_ORDER_CLOSURE\" \"PROVIDER_ORDER_TRACKING_ID\" \"PROVIDER_INFORMATION\" "
+                             "\"PROVIDER_CONTEXT\" \"AUTHENTICATOR_DEFINITION\" \"PROVIDER_POLICIES\" \"USER\" "
+                             "\"GROUP\" \"PROVIDER_OBJECT_ACL\" \"CATALOG_ITEM_ACL\" \"INGEST_MANAGEMENT_ACL\" "
+                             "\"DATA_QUALITY_SUMMARY_DEFINITION\" \"DATA_QUALITY_SUMMARY_ASSIGNMENT\" \"PROVIDER_CALENDAR_EVENT\"]")]
+    (are [params errors]
+      (= {:status 400 :body {:errors errors} :content-type :json}
+         (ac/get-permissions (u/conn-context) params {:raw? true}))
+      {} [target-required-err user-required-err]
+      {:target "PROVIDER_HOLDINGS"} [target-required-err user-required-err]
+      {:user_id "" :concept_id []} [target-required-err user-required-err]
+      {:user_type "" :concept_id []} [target-required-err user-required-err]
+      {:user_id "foobar"} [target-required-err]
+      ;; Provider target and provider not both present
+      {:user_id "foobar" :target "PROVIDER_HOLDINGS"} [target-required-err]
+      {:user_id "foobar" :provider "PROV1"} [target-required-err prov-target-err]
+      {:concept_id "C12345-ABC2" :system_object "GROUP" :user_id "bat"} [target-required-err]
+      {:concept_id "C1200000-PROV1" :user_type "GROUP" :user_id "foo"} [user-required-err]
+      {:not_a_valid_param "foo"} ["Parameter [not_a_valid_param] was not recognized."]
+      {:user_id "foo" :concept_id ["XXXXX"]} ["Concept-id [XXXXX] is not valid."]
+      {:user_id "foo" :target_group_id ["C1200000-PROV1"]} ["Target group id [C1200000-PROV1] is not valid."]
+      {:user_id "foo" :system_object "GROUPE"} [system-target-err]
+      {:user_id "foo" :system_object "group"} [system-target-err]
+      {:user_id "foo" :provider "PROV1" :target "PROVIDER_HOLDINGZ"} [prov-target-err]
+      ;; More than one kind of target is specified
+      {:user_id "foo" :provider "PROV1" :target ["PROVIDER_HOLDINGS" "AUDIT_REPORT"]} ["Only one target can be specified."
+                                                                                       prov-target-err])))
 
 (defn get-permissions
   "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
@@ -665,12 +679,12 @@
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-system-permissions (fn [user system-object]
                                  (json/parse-string
-                                   (ac/get-permissions
-                                     (u/conn-context)
-                                     (merge {:system_object system-object}
-                                            (if (keyword? user)
-                                              {:user_type (name user)}
-                                              {:user_id user})))))]
+                                  (ac/get-permissions
+                                   (u/conn-context)
+                                   (merge {:system_object system-object}
+                                          (if (keyword? user)
+                                            {:user_type (name user)}
+                                            {:user_id user})))))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -793,3 +807,97 @@
           :registered []
           "user1" ["create" "read" "update" "delete"]
           "user2" [])))))
+
+(deftest single-instance-identity-group-permission-check
+  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
+        group1 (u/make-group {:name "group1" :members ["user1"]})
+        group1-id (:concept_id (u/create-group token group1))
+        group2 (u/make-group {:name "group2" :members ["user2"]})
+        group2-id (:concept_id (u/create-group token group2))
+        create-acl #(ac/create-acl (u/conn-context) % {:token token})
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        get-group-permissions (fn [user target-group-ids]
+                                (json/parse-string
+                                 (ac/get-permissions
+                                  (u/conn-context)
+                                  (merge {:target_group_id target-group-ids}
+                                         (if (keyword? user)
+                                           {:user_type (name user)}
+                                           {:user_id user})))))]
+
+    (testing "no permissions granted"
+      (are [user permissions]
+        (= permissions
+           (get-group-permissions user [group1-id]))
+        :guest {group1-id []}
+        :registered {group1-id []}
+        "user1" {group1-id []}
+        "user2" {group1-id []}))
+
+    (let [acl {:group_permissions [{:permissions [:update]
+                                    :user_type :guest}]
+               :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                          :target_id group1-id}}
+          acl-concept-id (:concept_id (create-acl acl))]
+
+      (testing "granted to guest users"
+        (are [user permissions]
+          (= permissions
+             (get-group-permissions user [group1-id]))
+          :guest {group1-id ["update"]}
+          :registered {group1-id []}
+          "user1" {group1-id []}
+          "user2" {group1-id []}))
+
+      (testing "granted to registered users"
+        (update-acl acl-concept-id
+                    {:group_permissions [{:permissions [:delete]
+                                          :user_type :registered}]
+                     :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                :target_id group1-id}})
+
+        (are [user permissions]
+          (= permissions
+             (get-group-permissions user [group1-id]))
+          :guest {group1-id []}
+          :registered {group1-id ["delete"]}
+          "user1" {group1-id ["delete"]}
+          "user2" {group1-id ["delete"]}))
+
+      (testing "granted to specific groups"
+        (update-acl acl-concept-id
+                    {:group_permissions [{:permissions [:update :delete]
+                                          :group_id group1-id}]
+                     :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                :target_id group1-id}})
+
+        (are [user permissions]
+          (= permissions
+             (get-group-permissions user [group1-id]))
+          :guest {group1-id []}
+          :registered {group1-id []}
+          "user1" {group1-id ["update" "delete"]}
+          "user2" {group1-id []})
+
+        (testing "search for multiple target group ids"
+          (are [user permissions]
+            (= permissions
+               (get-group-permissions user [group1-id group2-id]))
+            :guest {group1-id [] group2-id []}
+            :registered {group1-id [] group2-id []}
+            "user1" {group1-id ["update" "delete"] group2-id []}
+            "user2" {group1-id [] group2-id []})
+
+          (testing "search for multiple target group ids, both target group id have granted permissions"
+            ;; create anohter ACL grant user2 group2 update permission
+            (create-acl {:group_permissions [{:permissions [:update]
+                                              :group_id group2-id}]
+                         :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                    :target_id group2-id}})
+            (are [user permissions]
+              (= permissions
+                 (get-group-permissions user [group1-id group2-id]))
+              :guest {group1-id [] group2-id []}
+              :registered {group1-id [] group2-id []}
+              "user1" {group1-id ["update" "delete"] group2-id []}
+              "user2" {group1-id [] group2-id ["update"]})))))))

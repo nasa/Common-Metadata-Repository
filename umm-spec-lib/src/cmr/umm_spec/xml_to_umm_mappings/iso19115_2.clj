@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2
   "Defines mappings from ISO19115-2 XML to UMM records"
   (:require
+   [clj-time.format :as f]
    [clojure.data :as data]
    [clojure.string :as str]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -12,6 +13,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
@@ -65,6 +67,10 @@
 
 (def personnel-xpath
   "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
+
+(def metadata-extended-element-xpath
+  (str "/gmi:MI_Metadata/gmd:metadataExtensionInfo/gmd:MD_MetadataExtensionInformation"
+       "/gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation"))
 
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
@@ -150,6 +156,56 @@
       [(su/truncate-with-default abstract su/ABSTRACT_MAX sanitize?) version-description])
     [(su/with-default nil sanitize?)]))
 
+(defn- parse-metadata-dates
+ "Parse the metadata dates from the ISO doc if they exist. The metadata dates come from the extended-metadata
+ metadata in the ISO doc. Extended metadata isn't necessarily the metadata dates so check the definition
+ to see if it's metadata dates and filter those out in the for."
+ [doc]
+ (for [metadata-date (select doc metadata-extended-element-xpath)
+       :let [date-definition (char-string-value metadata-date "gmd:definition")
+             metadata-date-type (get iso-util/umm-metadata-date-types date-definition)]
+       :when (some? metadata-date-type)]
+   {:Type metadata-date-type
+    :Date (f/parse (char-string-value metadata-date "gmd:domainValue"))}))
+
+
+(defn- parse-online-resource
+ "Parse online resource from the publication XML"
+ [publication sanitize?]
+ (when-let [party
+            (first (select publication (str "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty"
+                                            "[gmd:role/gmd:CI_RoleCode/@codeListValue='resourceProvider']")))]
+  (when-let [online-resource
+             (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
+    {:Linkage (url/format-url (value-of online-resource "gmd:linkage/gmd:URL") sanitize?)
+     :Protocol (char-string-value online-resource "gmd:protocol")
+     :ApplicationProtocol (char-string-value online-resource "gmd:applicationProfile")
+     :Name (su/with-default (char-string-value online-resource ":gmd:name") sanitize?)
+     :Description (su/with-default (char-string-value online-resource "gmd:description") sanitize?)
+     :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")})))
+
+(defn- parse-doi
+  "There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
+   Each gmd:identifier could contain at most ONE DOI. The doi-list below will contain something like:
+   [[nil]
+    [nil {:DOI \"doi1\" :Authority \"auth1\"} {:DOI \"doi2\" :Authority \"auth2\"}]
+    [{:DOI \"doi3\" :Authority \"auth3\"]]
+   We will pick the first DOI for now."
+  [doc]
+  (let [orgname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"
+                          "gmd:CI_ResponsibleParty/gmd:organisationName/gco:CharacterString")
+        indname-path (str "gmd:MD_Identifier/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty/"
+                          "gmd:CI_ResponsibleParty/gmd:individualName/gco:CharacterString")
+        doi-list (for [ci-ct (select doc citation-base-xpath)]
+                   (for [gmd-id (select ci-ct "gmd:identifier")]
+                     (when (and (= (value-of gmd-id "gmd:MD_Identifier/gmd:description/gco:CharacterString") "DOI")
+                                (= (value-of gmd-id "gmd:MD_Identifier/gmd:codeSpace/gco:CharacterString")
+                                   "gov.nasa.esdis.umm.doi"))
+                       {:DOI (value-of gmd-id "gmd:MD_Identifier/gmd:code/gco:CharacterString")
+                        :Authority (or (value-of gmd-id orgname-path)
+                                       (value-of gmd-id orgname-path))})))]
+    (first (first (remove empty? (map #(remove nil? %) doi-list))))))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc {:keys [sanitize?]}]
@@ -160,11 +216,12 @@
         [abstract version-description] (parse-abstract-version-description md-data-id-el sanitize?)]
     {:ShortName (char-string-value id-el "gmd:code")
      :EntryTitle (char-string-value citation-el "gmd:title")
+     :DOI (parse-doi doc)
      :Version (char-string-value citation-el "gmd:edition")
      :VersionDescription version-description
      :Abstract abstract
      :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
-     :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
+     :CollectionProgress (su/with-default (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
      :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
      :AccessConstraints (parse-access-constraints doc sanitize?)
@@ -214,6 +271,7 @@
                                :Publisher (select-party "publisher" "/gmd:organisationName")
                                :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
+                               :OnlineResource (parse-online-resource publication sanitize?)
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal
@@ -224,7 +282,8 @@
      :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161
-     :DataCenters (when sanitize? [su/not-provided-data-center])}))
+     :DataCenters (when sanitize? [su/not-provided-data-center])
+     :MetadataDates (parse-metadata-dates doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option

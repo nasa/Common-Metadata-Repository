@@ -35,7 +35,6 @@
                 :additionalAttributeNames {:name :attribute-name :type :attribute-name}
                 :temporal {:name :temporal :type :temporal}
                 :additionalAttributes {:name :attribute :type :attribute}
-                :difEntryId {:name :dif-entry-id :type :dif-entry-id}
                 :entry-id {:name :entry-id :type :string}
                 :associated-difs {:name :associated-difs :type :string}
                 :scienceKeywords {:name :science-keywords :type :science-keywords}
@@ -244,12 +243,6 @@
 (defmethod element->condition :string
   [concept-type element]
   (string-element->condition concept-type element))
-
-(defmethod element->condition :dif-entry-id
-  [concept-type element]
-  (gc/or-conds
-    [(element->condition concept-type (assoc element :tag :entry-id))
-     (element->condition concept-type (assoc element :tag :associated-difs))]))
 
 (defmethod element->condition :date-range
   [concept-type element]

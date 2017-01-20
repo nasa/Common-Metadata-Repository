@@ -49,6 +49,11 @@
   [attribs]
   (g/map->PlatformRef attribs))
 
+(defn platform-refs
+  "Return a list of platform-ref based on given short names"
+  [& short-names]
+  (map #(g/map->PlatformRef {:short-name %}) short-names))
+
 (defn data-granule
   "Returns a data-granule with the given attributes"
   [attribs]

@@ -238,6 +238,7 @@
   [umm-coll]
   (let [expected-contact-persons (expected-dif-contact-persons umm-coll)]
     (-> umm-coll
+        (update :DOI conversion-util/expected-dif-doi)
         ;; DIF 9 only supports entry-id in metadata associations
         (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
         ;; DIF 9 does not support tiling identification system
@@ -267,4 +268,5 @@
         ;; DIF 9 does not support VersionDescription
         (assoc :VersionDescription nil)
         (update :DataLanguage conversion-util/dif-expected-data-language)
+        (update :CollectionProgress su/with-default)
         js/parse-umm-c)))

@@ -36,7 +36,7 @@
                      :include-facets :hierarchical-facets :include-highlights :include-tags
                      :all-revisions}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
-                       :dif-entry-id :collection-data-type :project :project-h :entry-id :version :provider
+                       :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :platform :platform-h :processing-level-id :processing-level-id-h
                        :sensor :data-center-h}
      :always-case-sensitive #{:echo-collection-id}
@@ -102,7 +102,6 @@
    :science-keywords cpv/string-plus-or-options
    :science-keywords-h cpv/string-plus-or-options
    :spatial-keyword cpv/string-plus-and-options
-   :dif-entry-id cpv/string-plus-and-options
    :provider cpv/string-param-options
    :attribute exclude-plus-or-option
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)

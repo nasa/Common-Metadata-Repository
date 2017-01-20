@@ -133,10 +133,18 @@
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 
+(defn- parse-doi
+  "There could be multiple DOIs under Collection, just take the first one for now."
+  [doc]
+  (let [doi (first (select doc "Collection/DOI"))]
+    {:DOI (value-of doi "DOI")
+     :Authority (value-of doi "Authority")}))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
+   :DOI (parse-doi doc)
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
    :VersionDescription (value-of doc "/Collection/VersionDescription")
@@ -145,7 +153,7 @@
    :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_MAX sanitize?)
-   :CollectionProgress (value-of doc "/Collection/CollectionState")
+   :CollectionProgress (u/with-default (value-of doc "/Collection/CollectionState") sanitize?)
    :AccessConstraints (parse-access-constraints doc sanitize?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]

@@ -6,28 +6,23 @@
     [cmr.access-control.data.access-control-index :as index]
     [cmr.access-control.data.acl-json-results-handler :as result-handler]
     [cmr.access-control.data.acl-schema :as schema]
-    [cmr.access-control.data.acls :as acls]
     [cmr.access-control.services.acl-authorization :as acl-auth]
     [cmr.access-control.services.acl-service-messages :as acl-msg]
+    [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.acl-validation :as v]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.messages :as msg]
+    [cmr.access-control.services.parameter-validation :as pv]
     [cmr.acl.core :as acl]
     [cmr.common-app.services.search.params :as cp]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer [info debug]]
-    [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.transmit.metadata-db2 :as mdb]
     [cmr.umm.acl-matchers :as acl-matchers]))
-
-(def acl-provider-id
-  "The provider ID for all ACLs. Since ACLs are not owned by individual
-  providers, they fall under the CMR system provider ID."
-  "CMR")
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -36,7 +31,7 @@
     (tokens/get-user-id context (:token context))
     (errors/throw-service-error :unauthorized msg/token-required)))
 
-(defn fetch-acl-concept
+(defn- fetch-acl-concept
   "Fetches the latest version of ACL concept by concept id. Handles unknown concept ids by
   throwing a service error."
   [context concept-id]
@@ -50,67 +45,12 @@
       concept)
     (errors/throw-service-error :not-found (acl-msg/acl-does-not-exist concept-id))))
 
-
-(defn acl-identity
-  "Returns a string value representing the ACL's identity field."
-  [acl]
-  (str/lower-case
-    (let [{:keys [system-identity provider-identity single-instance-identity catalog-item-identity]} acl]
-      (cond
-        system-identity          (str "system:" (:target system-identity))
-        single-instance-identity (format "single-instance:%s:%s"
-                                         (:target-id single-instance-identity)
-                                         (:target single-instance-identity))
-        provider-identity        (format "provider:%s:%s"
-                                         (:provider-id provider-identity)
-                                         (:target provider-identity))
-        catalog-item-identity    (format "catalog-item:%s:%s"
-                                         (:provider-id catalog-item-identity)
-                                         (:name catalog-item-identity))
-        :else                    (errors/throw-service-error
-                                   :bad-request "malformed ACL")))))
-
-(defn- acl->base-concept
-  "Returns a basic concept map for the given request context and ACL map."
-  [context acl]
-  {:concept-type :acl
-   :metadata (pr-str acl)
-   :format mt/edn
-   :provider-id acl-provider-id
-   :user-id (when-let [token (:token context)]
-              (tokens/get-user-id context token))
-   ;; ACL-specific fields
-   :extra-fields {:acl-identity (acl-identity acl)
-                  :target-provider-id (acls/acl->provider-id acl)}})
-
-(defn acl-log-message
-  "Creates appropriate message for given action. Actions include :create, :update and :delete."
-  ([context acl action]
-   (acl-log-message context acl nil action))
-  ([context new-acl existing-acl action]
-   (let [user (if (:token context) (tokens/get-user-id context (:token context)) "guest")]
-     (case action
-           :create (format "User: [%s] Created ACL [%s]" user (pr-str new-acl))
-           :update (format "User: [%s] Updated ACL,\n before: [%s]\n after: [%s]"
-                           user (pr-str existing-acl) (pr-str new-acl))
-           :delete (format "User: [%s] Deleted ACL [%s]" user (pr-str existing-acl))))))
-
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
   (v/validate-acl-save! context acl :create)
   (acl-auth/authorize-acl-action context :create acl)
-  (let [acl-concept (merge (acl->base-concept context acl)
-                           {:revision-id 1
-                            :native-id (str (java.util.UUID/randomUUID))})
-        resp (mdb/save-concept context acl-concept)]
-    ;; index the saved ACL here to make ingest synchronous
-    (index/index-acl context
-                     (merge acl-concept (select-keys resp [:concept-id :revision-id]))
-                     {:synchronous? true})
-    (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
-    resp))
-
+  (acl-util/create-acl context acl))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
@@ -127,30 +67,32 @@
         legacy-guid (:legacy-guid acl)]
     (when-not (= existing-legacy-guid legacy-guid)
       (errors/throw-service-error
-        :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
-                              existing-legacy-guid legacy-guid)))
-    (let [new-concept (merge (acl->base-concept context acl)
-                           {:concept-id concept-id
-                            :native-id (:native-id existing-concept)})
+       :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                             existing-legacy-guid legacy-guid)))
+    (let [new-concept (merge (acl-util/acl->base-concept context acl)
+                             {:concept-id concept-id
+                              :native-id (:native-id existing-concept)})
           resp (mdb/save-concept context new-concept)]
       ;; index the saved ACL synchronously
       (index/index-acl context
                        (merge new-concept (select-keys resp [:concept-id :revision-id]))
                        {:synchronous? true})
-      (info (acl-log-message context new-concept existing-concept :update))
+      (info (acl-util/acl-log-message context new-concept existing-concept :update))
       resp)))
 
 (defn delete-acl
-  "Saves a tombstone for the ACL with the given concept id."
+  "Delete the ACL with the given concept id."
   [context concept-id]
-  (let [acl-concept (fetch-acl-concept context concept-id)]
+  (let [acl-concept (fetch-acl-concept context concept-id)
+        acl (edn/read-string (:metadata acl-concept))]
+    (acl-auth/authorize-acl-action context :delete acl)
     (let [tombstone {:concept-id (:concept-id acl-concept)
-                       :revision-id (inc (:revision-id acl-concept))
-                       :deleted true}
+                     :revision-id (inc (:revision-id acl-concept))
+                     :deleted true}
           resp (mdb/save-concept context tombstone)]
       ;; unindexing is synchronous
       (index/unindex-acl context concept-id)
-      (info (acl-log-message context tombstone acl-concept :delete))
+      (info (acl-util/acl-log-message context tombstone acl-concept :delete))
       resp)))
 
 ;; Member Functions
@@ -160,6 +102,7 @@
   [context concept-id params]
   (let [acl (edn/read-string (:metadata (fetch-acl-concept context concept-id)))
         params (cp/sanitize-params params)]
+    (acl-auth/authorize-acl-action context :read acl)
     (if (= "true" (:include-legacy-group-guid params))
       (result-handler/update-acl-legacy-group-guid context acl)
       acl)))
@@ -326,3 +269,39 @@
   (let [sids (auth-util/get-sids context username-or-type)
         acls (get-echo-style-acls context)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
+
+(defn- group-permissions-granted-by-acls
+  "Returns all permissions granted to the single instance identity target group id
+   for the given sids and acls."
+  [group-id sids acls]
+  (collect-permissions (fn [acl permission]
+                         (and (= group-id (get-in acl [:single-instance-identity :target-id]))
+                              (acl/acl-matches-sids-and-permission? sids (name permission) acl)))
+                       acls))
+
+(defn- get-group-permissions
+  "Returns a map of the target group concept ids to the set of permissions
+   granted to the given username or user type."
+  [context username-or-type target-group-ids]
+  (let [sids (auth-util/get-sids context username-or-type)
+        acls (get-echo-style-acls context)]
+    (into {}
+          (for [group-id target-group-ids]
+            [group-id (group-permissions-granted-by-acls group-id sids acls)]))))
+
+(defn get-permissions
+  "Returns result of permissions check for the given parameters."
+  [context params]
+  (let [params (-> params
+                   (update-in [:concept_id] util/seqify)
+                   (update-in [:target_group_id] util/seqify))]
+    (pv/validate-get-permission-params params)
+    (let [{:keys [user_id user_type concept_id system_object provider target target_group_id]} params
+          username-or-type (if user_type
+                             (keyword user_type)
+                             user_id)]
+      (cond
+        system_object (get-system-permissions context username-or-type system_object)
+        target (get-provider-permissions context username-or-type provider target)
+        target_group_id (get-group-permissions context username-or-type target_group_id)
+        :else (get-catalog-item-permissions context username-or-type concept_id)))))

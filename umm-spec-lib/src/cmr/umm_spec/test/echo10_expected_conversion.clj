@@ -246,4 +246,5 @@
       (assoc :PaleoTemporalCoverages nil)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :ScienceKeywords expected-science-keywords)
-      (update :AccessConstraints conversion-util/expected-access-constraints)))
+      (update :AccessConstraints conversion-util/expected-access-constraints)
+      (update :CollectionProgress su/with-default)))

@@ -235,6 +235,11 @@
           m
           m))
 
+(defn inflate-nil-keys
+  "Occupy nil values with a given default value."
+  [m filler]
+  (w/postwalk-replace {nil filler} m))
+
 (defn remove-empty-maps
   "Recursively removes maps with only nil values."
   [x]

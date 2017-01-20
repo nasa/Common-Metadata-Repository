@@ -74,7 +74,9 @@
                       [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
                       x))
                   [[:Version (value-of service-citation "Edition")]
-                   [:RelatedUrl {:URLs [(url/format-url (value-of service-citation "URL") sanitize?)]}]
+                   [:OnlineResource
+                    (when-let [linkage (value-of service-citation "URL")]
+                     {:Linkage (url/format-url linkage sanitize?)})]
                    :Title
                    [:Creator (value-of service-citation "Originators")]
                    :ReleaseDate
@@ -101,8 +103,9 @@
                    :Pages
                    [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                    [:DOI {:DOI (value-of pub-ref "DOI")}]
-                   [:RelatedUrl
-                    {:URLs (map #(url/format-url % sanitize?) (values-at pub-ref "Online_Resource"))}]
+                   [:OnlineResource
+                    (when-let [url (value-of pub-ref "Online_Resource")]
+                     {:Linkage (url/format-url url sanitize?)})]
                    :Other_Reference_Details]))))
 
 (defn- parse-actual-related-urls
@@ -217,7 +220,8 @@
    :Projects (parse-projects doc sanitize?)
    :MetadataDates (parse-data-dates doc)
    :ServiceKeywords (parse-service-keywords doc)
-   :ScienceKeywords (parse-science-keywords doc)})
+   :ScienceKeywords (parse-science-keywords doc)
+   :CollectionProgress su/not-provided})
 
 (defn serf-xml-to-umm-s
   "Returns UMM-S service record from a SERF XML document. The :sanitize? option

@@ -153,11 +153,11 @@
              (map :name results))))))
 
 ;; More complicated example/test with entries with version N/A - N/A version entries are
-;; currently added to all collection versions. See CMR-3594.
+;; not used as part of the access count
 (def sample-csv-not-provided-versions
   (str "Product,Version,Hosts\n"
        "AMSR-L1A,3,10\n"
-       "AMSR-L1A,N/A,50\n"
+       "AMSR-L1A,N/A,50\n" ;; Essentially access count of 0, since 'N/A' version
        "AG_VIRTUAL,1,100\n"
        "AG_MAPSS,2,30\n"))
 
@@ -178,5 +178,5 @@
                                     :version-id "2"}))
   (index/wait-until-indexed)
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-    (is (= ["AG_VIRTUAL Relevancy" "AMSR-L1A V3 Relevancy" "AMSR-L1A V2 Relevancy" "AG_MAPSS Relevancy"]
+    (is (= ["AG_VIRTUAL Relevancy" "AG_MAPSS Relevancy" "AMSR-L1A V3 Relevancy" "AMSR-L1A V2 Relevancy"]
            (map :name results)))))

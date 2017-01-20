@@ -137,6 +137,10 @@
      [:Description (if-let [abstract (:Abstract c)]
                      (util/trunc abstract 12000)
                      spec-util/not-provided)]
+   (when-let [doi (:DOI c)]
+     [:DOI 
+      [:DOI (:DOI doi)]
+      [:Authority (:Authority doi)]])
      [:CollectionDataType (:CollectionDataType c)]
      [:Orderable "true"]
      [:Visible "true"]

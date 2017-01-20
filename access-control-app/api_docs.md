@@ -92,7 +92,7 @@ Groups are used to identify sets of users for the assignment of access privilege
 
 ### <a name="create-group"></a> Create Group
 
-Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. The response will contain a concept id identifying the group along with the group revision id. Creating and updating a group is synchronous and the group will be visible in search immediately after the ingest response is returned.
+Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. Optionally, a `managing_group_id` parameter can be used to specify the managing group of the newly created group; Its value is the concept id of the existing group that will able to update or delete the new group. The response will contain a concept id identifying the group along with the group revision id. Creating and updating a group is synchronous and the group will be visible in search immediately after the ingest response is returned.
 
 #### Creating a System Level Group
 
@@ -470,6 +470,10 @@ The following parameters are supported when searching for ACLs.
 * target
   * options: none (always case-insensitive)
   * Matches ACLs which have the given object identity target
+* target_id
+  * options: none (case-sensitive)
+  * Matches single_instance ACLs through specified group target_id.  Only applies when the single_instance target is GROUP_MANAGEMENT
+  * identity_type=single_instance parameter is required alongside this parameter
 * permitted_user
   * options: none (always case-insensitive)
   * user is a URS user name corresponding to a member of a group that has access to an ACL
@@ -852,6 +856,7 @@ Content-Type: application/json;charset=ISO-8859-1
 ** `concept_id` - Must be a valid concept id, or else use `concept_id[]=...&concept_id[]=...` to specify multiple concepts.
 ** `system_object` - A system object identity target, e.g. "GROUP"
 ** `provider` AND `target` - A provider id and a provider object identity target, e.g. "PROVIDER_HOLDINGS"
+** `target_group_id` - A single instance object identity target id, i.e. group concept id
 * And one of:
 ** `user_id` - The user whose permissions will be computed.
 ** `user_type` - Either "guest" or "registered".

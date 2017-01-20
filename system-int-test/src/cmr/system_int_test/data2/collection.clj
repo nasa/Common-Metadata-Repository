@@ -108,6 +108,14 @@
                            :long-name (d/unique-str "long-name")
                            :type (d/unique-str "Type")}
                           attribs)))
+(defn platforms
+  "Return a sequence of platforms with the given short names"
+  [& short-names]
+  (map #(c/map->Platform
+          {:short-name %
+           :long-name (d/unique-str "long-name")
+           :type (d/unique-str "Type")})
+       short-names))
 
 (defn projects
   "Return a sequence of projects with the given short names"
@@ -153,14 +161,16 @@
 
 (defn personnel
   "Creates a Personnel record for the opendata tests."
-  [first-name last-name email]
-  (let [contacts (when email
-                   [(c/map->Contact {:type :email
-                                     :value email})])]
-    (c/map->Personnel {:first-name first-name
-                       :last-name last-name
-                       :contacts contacts
-                       :roles ["dummy"]})))
+  ([first-name last-name email]
+   (personnel first-name last-name email "dummy"))
+  ([first-name last-name email role]
+   (let [contacts (when email
+                    [(c/map->Contact {:type :email
+                                      :value email})])]
+     (c/map->Personnel {:first-name first-name
+                        :last-name last-name
+                        :contacts contacts
+                        :roles [role]}))))
 
 (defn collection
   "Returns a UmmCollection from the given attribute map. Various attribute keys are processed by

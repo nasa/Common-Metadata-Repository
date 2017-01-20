@@ -47,7 +47,8 @@
                   (str (:ShortName c) "_" (:Version c)))]
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
-      [:Version (:Version c)]]
+      [:Version (:Version c)]
+      [:Dataset_DOI (get-in c [:DOI :DOI])]]
      (contact/generate-personnel c)
      (if-let [sks (:ScienceKeywords c)]
        (for [sk sks]
@@ -147,7 +148,7 @@
               :Pages
               [:ISBN (:ISBN pub-ref)]
               [:DOI (get-in pub-ref [:DOI :DOI])]
-              [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
+              [:Online_Resource (get-in pub-ref [:OnlineResource :Linkage])]
               :Other_Reference_Details])])
      [:Summary
       [:Abstract (:Abstract c)]
@@ -163,7 +164,7 @@
         [:Description (:Description related-url)]])
      (for [ma (:MetadataAssociations c)]
        [:Parent_DIF (:EntryId ma)])
-     (dif-util/generate-idn-nodes c) 
+     (dif-util/generate-idn-nodes c)
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
      (when-let [creation-date (date/metadata-create-date c)]
