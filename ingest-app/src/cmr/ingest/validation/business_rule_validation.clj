@@ -42,10 +42,10 @@
                    concept-id mdb-concept-id native-id)])))))
 
 (def collection-update-searches
-  "Defines a list of functions that take the concept-id, updated UMM concept and the previous UMM
-  concept and return search maps used to validate that a collection was not updated in a way that
-  invalidates granules. Each search map contains a :params key of the parameters to use to execute
-  the search and an :error-msg to return if the search finds any hits."
+  "Defines a list of functions that take the context, concept-id, updated UMM concept and the
+   previous UMM concept, and return search maps used to validate that a collection was not updated
+   in a way that invalidates granules. Each search map contains a :params key of the parameters to
+   use to execute the search and an :error-msg to return if the search finds any hits."
   [
    ;; For CMR-2403 we decided to disable these validations. We will re-enable them after
    ;; implementing CMR-2485.
