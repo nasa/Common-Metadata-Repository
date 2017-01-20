@@ -442,8 +442,11 @@
         ["PrOvIdEr"] [fixtures/*fixture-provider-acl*]))))
 
 (deftest acl-search-by-target-test
-  (let [token (e/login (u/conn-context) "user1")]
-
+  (let [token (e/login (u/conn-context) "user1")
+        single-instance-acl (u/ingest-acl token
+                                          {:group_permissions [{:permissions ["update"] :user_type "registered"}]
+                                           :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                                      :target_id "AG1200000000-CMR"}})]
     (are3 [target expected-acls]
       (let [response (ac/search-for-acls (u/conn-context) {:target target})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
@@ -454,6 +457,9 @@
 
       "Provider target"
       ["CATALOG_ITEM_ACL"] [fixtures/*fixture-provider-acl*]
+
+      "Single Istance ACL"
+      ["GROUP_MANAGEMENT"] [single-instance-acl]
 
       "Provider target, case insensitive"
       ["catalog_item_acl"] [fixtures/*fixture-provider-acl*])))
