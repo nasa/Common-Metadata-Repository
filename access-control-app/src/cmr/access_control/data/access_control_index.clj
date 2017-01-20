@@ -325,7 +325,7 @@
         provider-id (acls/acl->provider-id acl)
         target (:target (or (:system-identity acl)
                             (:provider-identity acl)
-                            (:single-instance-identity acl)))]
+                            (:single-instance-identity acl)))
         ;;Currently only group ids are supported when searching by target-id
         target-id (when (= "GROUP_MANAGEMENT"
                            (get-in acl [:single-instance-identity :target]))
