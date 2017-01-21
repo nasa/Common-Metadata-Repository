@@ -129,6 +129,8 @@
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
          related-urls :RelatedUrls} collection
+        doi (get-in collection [:DOI :DOI])
+        doi-lowercase (when doi (str/lower-case doi))
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords
                            (:LocationKeywords collection))
@@ -189,6 +191,8 @@
                                                        :Geometry :CoordinateSystem])
         permitted-group-ids (get-coll-permitted-group-ids context provider-id umm-lib-collection)]
     (merge {:concept-id concept-id
+            :doi doi
+            :doi.lowercase doi-lowercase 
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id

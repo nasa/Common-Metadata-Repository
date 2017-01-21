@@ -209,6 +209,7 @@
   {:short-name :short-name.lowercase
    :version-id :version-id.lowercase
    :entry-title :entry-title.lowercase
+   :doi :doi.lowercase
    :entry-id :entry-id.lowercase
    :provider :provider-id.lowercase
    :platform :platform-sn.lowercase
@@ -228,6 +229,7 @@
                           :provider-id :provider-id.lowercase
                           :data-size :size
                           :entry-title :entry-title.lowercase
+                          :doi :doi.lowercase
                           :short-name :short-name.lowercase
                           :version :version-id.lowercase
                           :granule-ur :granule-ur.lowercase2
@@ -250,6 +252,7 @@
                                :end-date :end-date-doc-values
                                :revision-date :revision-date-doc-values
                                :entry-title :entry-title.lowercase-doc-values
+                               :doi :doi.lowercase-doc-values
                                :short-name :short-name.lowercase-doc-values
                                :version :version-id.lowercase-doc-values
                                :version-id :version-id.lowercase-doc-values

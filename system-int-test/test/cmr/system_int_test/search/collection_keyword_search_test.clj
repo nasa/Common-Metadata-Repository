@@ -10,6 +10,7 @@
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.umm-spec.models.umm-collection-models :as um]
+    [cmr.umm-spec.models.umm-common-models :as cm]
     [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3" "provguid4" "PROV4" "provguid5" "PROV5"}))
@@ -548,6 +549,8 @@
   (let [coll1 (d/ingest "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :AncillaryKeywords ["CMR2652AKW1" "CMR2652AKW2"])
+                            (assoc :DOI (cm/map->DoiType
+                                         {:DOI "doi" :Authority "auth"}))
                             (assoc :DirectoryNames
                                    [(um/map->DirectoryNameType
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
@@ -582,6 +585,10 @@
 
         "testing parameter search by existing ancillary keywords"
         "CMR2652AKW1"
+        [coll1]
+
+        "testing parameter search by existing DOI value"
+        "dOI"
         [coll1]
 
         "testing parameter search by existing DirectoryNames keywords"

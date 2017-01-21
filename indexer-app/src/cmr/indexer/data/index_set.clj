@@ -247,6 +247,8 @@
           :concept-seq-id m/int-field-mapping
           :entry-id           (m/stored m/string-field-mapping)
           :entry-id.lowercase m/string-field-mapping
+          :doi           m/string-field-mapping 
+          :doi.lowercase m/string-field-mapping 
           :entry-title           (m/stored m/string-field-mapping)
           :entry-title.lowercase m/string-field-mapping
           :provider-id           (m/stored m/string-field-mapping)
