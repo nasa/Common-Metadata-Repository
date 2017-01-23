@@ -70,7 +70,7 @@
   (when (or granule-spatial-representation (seq geometries))
     (umm-c/map->SpatialCoverage
       {:spatial-representation spatial-representation
-       :granule-spatial-representation (or granule-spatial-representation "NO_SPATIAL")
+       :granule-spatial-representation (or granule-spatial-representation :no-spatial)
        :geometries (seq (map #(umm-s/set-coordinate-system spatial-representation %) geometries))})))
 
 (defn- related-urls->expected-parsed
@@ -403,6 +403,6 @@
   "Check that defaults are being added correctly to create valid umm"
   (let [umm (c/parse-collection real-data-collection-xml)]
     (testing "default granule spatial represetation"
-      (is (= "NO_SPATIAL" (get-in umm [:spatial-coverage :granule-spatial-representation]))))
+      (is (= :no-spatial (get-in umm [:spatial-coverage :granule-spatial-representation]))))
     (testing "default ScienceKeywords Term"
       (is (= umm-c/not-provided (->> umm :science-keywords first :term))))))
