@@ -634,7 +634,7 @@
              (is (= 201 status)))))
 
 ;; Test specific to an issue ingesting an echo10 granule with a polygon in spatial data with
-;; a parent collection with a nil Granule Spatial representation
+;; an iso-19115 parent collection with a nil Granule Spatial representation
 ;; An exception would be seen when ingesting the granule and processing the polygon with a default
 ;; GSR
 (deftest no-spatial-test
