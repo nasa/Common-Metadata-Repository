@@ -15,8 +15,18 @@
 (deftest search-by-doi
   (let [coll1 (d/ingest "PROV1"
                         (-> exp-conv/example-collection-record
+                            (assoc :ShortName "CMR3674SN1")
+                            (assoc :EntryTitle "CMR3674ET1")
                             (assoc :DOI (cm/map->DoiType
-                                         {:DOI "doi" :Authority "auth"})))
+                                         {:DOI "doi1" :Authority "auth1"})))
+                        {:format :umm-json
+                         :accept-format :json})
+        coll2 (d/ingest "PROV1"
+                        (-> exp-conv/example-collection-record
+                            (assoc :ShortName "CMR3674SN2")
+                            (assoc :EntryTitle "CMR3674ET2")
+                            (assoc :DOI (cm/map->DoiType
+                                         {:DOI "doi2" :Authority "auth2"})))
                         {:format :umm-json
                          :accept-format :json})] 
     (index/wait-until-indexed)
@@ -27,6 +37,17 @@
                                 (when options
                                   {"options[doi]" options}))]
               (d/refs-match? items (search/find-refs :collection params)))
-       "search with doi"
-       [coll1] "DoI" {}))))
+       "search collections with doi1"
+       [coll1] "DoI1" {}
 
+       "search collections with auth1 returns nothing"
+       [] "auth1" {}
+
+       "search for collections with either doi1 or doi2" 
+       [coll1 coll2] ["Doi1" "doI2"] {}
+
+       "search for collections with either doi1 or doi2"
+       [coll1 coll2] ["Doi*"] {:pattern true}
+
+       "search for collections with both doi1 and doi2 returns nothing" 
+       [] ["Doi1" "doI2"] {:and true}))))

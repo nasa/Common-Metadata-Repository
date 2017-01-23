@@ -130,7 +130,7 @@
          temporal-keywords :TemporalKeywords platforms :Platforms
          related-urls :RelatedUrls} collection
         doi (get-in collection [:DOI :DOI])
-        doi-lowercase (when doi (str/lower-case doi))
+        doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords
                            (:LocationKeywords collection))
