@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.ingest.granule-parent-dependency-test
   "CMR granule ingest with validation against parent collection integration tests"
-  (:require 
+  (:require
     [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.test :refer :all]
@@ -8,6 +8,7 @@
     [cmr.common.util :as u :refer [are3]]
     [cmr.indexer.system :as indexer-system]
     [cmr.spatial.mbr :as m]
+    [cmr.spatial.polygon :as poly]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -109,7 +110,7 @@
                    :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
                    :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-12-12T07:00:00.000-05:00"}
-        
+
        gran-data1 {:platform-refs [g-pr1]
                    :spatial-coverage gran-spatial-rep
                    :two-d-coordinate-system g-two-d-cs
@@ -158,19 +159,19 @@
                    :product-specific-attributes [gpsa]
                    :beginning-date-time "1966-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-10-12T07:00:00.000-05:00"}
-     
+
         gran-data8 {:platform-refs [g-pr8]
                    :spatial-coverage gran-spatial-rep
                    :two-d-coordinate-system g-two-d-cs
                    :product-specific-attributes [gpsa]
                    :beginning-date-time "1966-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-10-12T07:00:00.000-05:00"}
- 
+
         echo10-coll1 (dc/collection coll-data1)
         _ (d/ingest "PROV1" echo10-coll1 {:format :echo10})
         echo10-coll2 (dc/collection coll-data2)
         _ (d/ingest "PROV1" echo10-coll2 {:format :echo10})
- 
+
         gran-Terra-coll1 (dg/granule echo10-coll1 gran-data1)
         gran-AM-1-coll1 (dg/granule echo10-coll1 gran-data5)
         gran-Foo-coll1 (dg/granule echo10-coll1 gran-data4)
@@ -205,10 +206,10 @@
           "gran-AM-1-InstrumentA-coll1 success test"
           []
           gran-AM-1-InstrumentA-coll1
- 
+
           "gran-Bar-coll1 failure test"
           ["The following list of Platform short names did not exist in the referenced parent collection: [Bar]."]
-          gran-Bar-coll1 
+          gran-Bar-coll1
 
           "gran-Terra-coll2 success test"
           []
@@ -330,7 +331,7 @@
 
           "A granule ingested in collection A with OldName is permitted"
           []
-          gran-A-for-echo10-coll-A 
+          gran-A-for-echo10-coll-A
 
           "A granule ingested in collection A with NewName is rejected"
           ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [REPLACEMENT_TILE]."]
@@ -345,9 +346,9 @@
           gran-B-for-echo10-coll-B)))
 
 ;; This test demonstrates how granule's instrument references the collection's instrument and its aliases
-;; The instrument aliases defined in the humanizer as following:  
+;; The instrument aliases defined in the humanizer as following:
 ;; "source_value": "GPS"
-;; "replacement_value": "GPS RECEIVERS" 
+;; "replacement_value": "GPS RECEIVERS"
 ;; "source_value": "GPS RECEIVERS"
 ;; "replacement_value": "GPS Receivers"
 ;; Note: this one also covers tile reference successful cases.
@@ -362,7 +363,7 @@
         irA (dg/instrument-ref {:short-name "GPS RECEIVERS"})
         pA (dc/platform {:short-name "platform-Sn A" :instruments [iA]})
         prA (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [irA]})
- 
+
         iB (dc/instrument {:short-name "GPS Receivers"})
         irB (dg/instrument-ref {:short-name "GPS Receivers"})
         pB (dc/platform {:short-name "platform-Sn A" :instruments [iB]})
@@ -631,3 +632,39 @@
                  {:keys [status]} (ingest/ingest-concept
                                     (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
              (is (= 201 status)))))
+
+;; Test specific to an issue ingesting an echo10 granule with a polygon in spatial data with
+;; an iso-19115 parent collection with a nil Granule Spatial representation
+;; An exception would be seen when ingesting the granule and processing the polygon with a default
+;; GSR
+(deftest no-spatial-test
+  (let [coll-data1 {:entry-title "short_name1_version"
+                    :short-name "short_name1"
+                    :version-id "version"
+                    :organizations [(dc/org :distribution-center "Larc")]
+                    :science-keywords [(dc/science-keyword {:category "upcase"
+                                                            :topic "Cool"
+                                                            :term "Mild"})]
+                    :spatial-coverage (dc/spatial {:sr :cartesian, :geometries [m/whole-world]})
+                    :beginning-date-time "1965-12-12T07:00:00.000-05:00"
+                    :ending-date-time "1967-12-12T07:00:00.000-05:00"}
+
+        gran-data1 {:spatial-coverage
+                      (dg/spatial
+                        (umm-s/set-coordinate-system
+                          :geodetic
+                          (poly/polygon
+                            [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
+                             (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])))
+                    :beginning-date-time "1966-12-12T07:00:00.000-05:00"
+                    :ending-date-time "1967-10-12T07:00:00.000-05:00"}
+
+        coll1 (dc/collection coll-data1)
+        _ (d/ingest "PROV1" coll1 {:format :iso19115})
+        gran1 (dg/granule coll1 gran-data1)
+        granule-result (d/ingest "PROV1" gran1 {:format :echo10 :allow-failure? true})]
+     ;; The test is checking that the exception does not occur
+     ;; 422 status is the expected behavior
+     (is (= 422 (:status granule-result)))
+     (is (= ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
+            (:errors (first (:errors granule-result)))))))

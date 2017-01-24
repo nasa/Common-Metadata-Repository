@@ -67,7 +67,7 @@
     (when (or gran-spatial-rep (seq geometries))
       (c/map->SpatialCoverage
         {:spatial-representation coord-sys
-         :granule-spatial-representation (or gran-spatial-rep "NO_SPATIAL")
+         :granule-spatial-representation (or gran-spatial-rep :no-spatial)
          :geometries (seq (map #(umm-s/set-coordinate-system coord-sys %) geometries))}))))
 
 (defn spatial-coverage->coordinate-system-xml
