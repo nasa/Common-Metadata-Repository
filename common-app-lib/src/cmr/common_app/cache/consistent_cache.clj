@@ -89,16 +89,20 @@
 
   (get-value
     [this key]
-    (when-let [mem-value (c/get-value memory-cache key)]
-      (when (= (hash mem-value) (c/get-value hash-cache (key->hash-cache-key key)))
+    (let [mem-value (c/get-value memory-cache key)]
+      (when (and (not (nil? mem-value))
+                 (= (hash mem-value) 
+                    (c/get-value hash-cache (key->hash-cache-key key))))
         mem-value)))
 
   (get-value
     [this key lookup-fn]
-    (or (c/get-value this key)
+    (let [c-value (c/get-value this key)]
+      (if (nil? c-value)
         (when-let [value (lookup-fn)]
           (c/set-value this key value)
-          value)))
+          value)
+        c-value)))
 
   (reset
     [this]

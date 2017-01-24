@@ -73,7 +73,8 @@
       (common-health/health-api-routes ingest/health)
 
       ;; add routes for enabling/disabling application
-      (common-enabled/enabled-api-routes))
+      (common-enabled/enabled-api-routes 
+       #(acl/verify-ingest-management-permission % :update)))
 
     (route/not-found "Not Found")))
 
