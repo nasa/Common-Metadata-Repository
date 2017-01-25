@@ -29,13 +29,6 @@
   (stl-cache/create-single-thread-lookup-cache
     (consistent-cache/create-consistent-cache {:hash-timeout-seconds (enabled-cache-time-seconds)})))
 
-; (defn expire-consistent-cache-hashes
-;   "Forces the cached hash codes of a consistent cache to expire so that subsequent requests for
-;    enabled state will check cubby for consistency."
-;   [context]
-;   (let [cache (cache/context->cache context enabled-cache-key)]
-;     (consistent-cache/expire-hash-cache-timeouts (:delegate-cache cache))))
-
 (defn service-disabled-message
   "Creates a message indicating that the given service is disabled."
   [service]
@@ -48,7 +41,7 @@
 
 (defn app-enabled?
   "Returns true if the application is enabled, false otherwise. We use a cache to prevent enabled?
-  check calls. Enabled can mean different things for different apps. Disabled ingest prevents 
+  check calls. Enabled can mean different things for different apps. Disabled ingest prevents
   writes, but otherwise allows operations to proceed."
   [context]
   (if-let [cache (cache/context->cache context enabled-cache-key)]
@@ -61,7 +54,7 @@
 (defn- app-enabled-response
   "Creates an appropriate response for /enabled queries."
   [request-context]
-  {:status 200 
+  {:status 200
    :headers {"Content-Type" (mt/with-utf-8 mt/json)}
    :body (json/generate-string (if (app-enabled? request-context) "Enabled" "Disabled"))})
 
@@ -71,12 +64,12 @@
   (if-let [cache (cache/context->cache context enabled-cache-key)]
     (do (cache/set-value cache enabled-cache-key false)
         ;; (expire-consistent-cache-hashes context)
-        {:status 200 
+        {:status 200
          :headers {"Content-Type" (mt/with-utf-8 mt/json)}
          :body (json/generate-string "Application successfully disabled.")})
     (do
       (error "Application enabled state is not being cached. Could not disable application.")
-      {:status 500 
+      {:status 500
        :headers {"Content-Type" (mt/with-utf-8 mt/json)}
        :body (json/generate-string "'Enabled' cache is not available.")})))
 
@@ -86,12 +79,12 @@
   (if-let [cache (cache/context->cache context enabled-cache-key)]
     (do (cache/set-value cache enabled-cache-key true)
         ;; (expire-consistent-cache-hashes context)
-        {:status 200 
+        {:status 200
          :headers {"Content-Type" (mt/with-utf-8 mt/json)}
          :body (json/generate-string "Application successfully enabled.")})
     (do
       (error "Application enabled state is not being cached. Could not enable application.")
-      {:statud 500 
+      {:statud 500
        :headers {"Content-Type" (mt/with-utf-8 mt/json)}
        :body (json/generate-string "'Enabled' cache is not available.")})))
 
