@@ -19,7 +19,7 @@
 
 (defconfig enabled-cache-time-seconds
   "The number of seconds to cache the health of the application."
-  {:default 50
+  {:default 5
    :type Long})
 
 (defn create-enabled-cache
