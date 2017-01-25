@@ -1,9 +1,11 @@
 (ns cmr.metadata-db.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.oracle.connection :as conn]
-            [cmr.message-queue.config :as rmq-conf]))
+  (:require
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as conn]
+   [cmr.message-queue.config :as rmq-conf]
+   [cmr.metadata-db.temp-config :as mdb-temp-config]))
 
 (defconfig metadata-db-username
   "The database username"
@@ -17,12 +19,12 @@
   "Returns a db spec populated with config information that can be used to connect to oracle"
   [connection-pool-name]
   (conn/db-spec
-    connection-pool-name
-    (oracle-config/db-url)
-    (oracle-config/db-fcf-enabled)
-    (oracle-config/db-ons-config)
-    (metadata-db-username)
-    (metadata-db-password)))
+   connection-pool-name
+   (oracle-config/db-url)
+   (oracle-config/db-fcf-enabled)
+   (oracle-config/db-ons-config)
+   (metadata-db-username)
+   (mdb-temp-config/metadata-db-password)))
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."
