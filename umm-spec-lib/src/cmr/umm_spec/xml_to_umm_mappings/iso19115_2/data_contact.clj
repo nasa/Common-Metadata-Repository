@@ -99,7 +99,8 @@
                       (value-of street-address "gco:CharacterString"))
    :City (char-string-value address "gmd:city")
    :StateProvince (char-string-value address "gmd:administrativeArea")
-   :PostalCode (char-string-value address "gmd:postalCode")}))
+   :PostalCode (char-string-value address "gmd:postalCode")
+   :Country (char-string-value address "gmd:country")}))
 
 (defn- parse-online-resource
  "Parse related url from online resource in gmd:contactInfo/gmd:CI_Contact"
@@ -114,7 +115,7 @@
  {:ContactMechanisms (remove nil? (concat
                                          (parse-phone-contact-info contact-info-xml)
                                          (parse-email-contact contact-info-xml)))
-  :Addresses (parse-addresses contact-info-xml)
+  :Addresses [(parse-addresses contact-info-xml)]
   :RelatedUrls [(parse-online-resource contact-info-xml)]
   :ServiceHours (char-string-value contact-info-xml "gmd:hoursOfService")
   :ContactInstruction (char-string-value contact-info-xml "gmd:ContactInstructions")})
