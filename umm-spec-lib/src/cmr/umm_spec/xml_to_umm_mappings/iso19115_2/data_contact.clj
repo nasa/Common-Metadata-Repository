@@ -70,6 +70,7 @@
  (first (select xml "gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact")))
 
 (defn- parse-phone-contact-info
+ "Parse phone and fax contact mechanisms from gmd:contactInfo/gmd:CI_Contact"
  [contact-info-xml]
  (when-let [phone (first (select contact-info-xml "gmd:phone/gmd:CI_Telephone"))]
   (seq
@@ -83,13 +84,15 @@
           :Value (value-of fax "gco:CharacterString")}))))))
 
 (defn- parse-email-contact
+ "Parse contact email addresses from address in gmd:contactInfo/gmd:CI_Contact"
  [contact-info-xml]
- (for [address (select contact-info-xml "gmd:address/gmd:CI_Address")]
-  (when-let [email (char-string-value address "gmd:electronicMailAddress")]
+ (when-let [address (first (select contact-info-xml "gmd:address/gmd:CI_Address"))]
+  (for [email (select address "gmd:electronicMailAddress")]
    {:Type "Email"
-    :Value email})))
+    :Value (value-of email "gco:CharacterString")})))
 
 (defn- parse-addresses
+ "Parse address from gmd:contactInfo/gmd:CI_Contact xml"
  [contact-info-xml]
  (when-let [address (first (select contact-info-xml "gmd:address/gmd:CI_Address"))]
   {:StreetAddresses (for [street-address (select address "gmd:deliveryPoint")]
@@ -98,19 +101,21 @@
    :StateProvince (char-string-value address "gmd:administrativeArea")
    :PostalCode (char-string-value address "gmd:postalCode")}))
 
-(defn- parse-online-resources
+(defn- parse-online-resource
+ "Parse related url from online resource in gmd:contactInfo/gmd:CI_Contact"
  [contact-info-xml]
  (when-let [online-resource (first (select contact-info-xml "gmd:onlineResource/gmd:CI_OnlineResource"))]
   {:URLs [(value-of online-resource "gmd:linkage/gmd:URL")]
    :Description (char-string-value online-resource "gmd:description")}))
 
 (defn- parse-contact-information
+ "Parse contact information from XML"
  [contact-info-xml]
  {:ContactMechanisms (remove nil? (concat
                                          (parse-phone-contact-info contact-info-xml)
                                          (parse-email-contact contact-info-xml)))
   :Addresses (parse-addresses contact-info-xml)
-  :RelatedUrls (parse-online-resources contact-info-xml)
+  :RelatedUrls [(parse-online-resource contact-info-xml)]
   :ServiceHours (char-string-value contact-info-xml "gmd:hoursOfService")
   :ContactInstruction (char-string-value contact-info-xml "gmd:ContactInstructions")})
 
