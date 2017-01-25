@@ -108,6 +108,14 @@
                                   :end-coordinate-1 end-coordinate-1
                                   :start-coordinate-2 start-coordinate-2
                                   :end-coordinate-2 end-coordinate-2})))
+(defn two-d
+  [name]
+  (let [attribs {:name name
+                 :start-coordinate-1 0.0
+                 :end-coordinate-1 0.0
+                 :start-coordinate-2 0.0
+                 :end-coordinate-2 0.0}]
+    (two-d-coordinate-system attribs)))
 
 (defn data-provider-timestamps
   "Create the data providers time stamps record for granules"
