@@ -18,6 +18,7 @@
 (defmethod common-params/param-mappings :collection
   [_]
   {:entry-title :string
+   :doi :string
    :entry-id :string
    :native-id :string
    :provider :string

@@ -75,7 +75,7 @@
      [:Title (:Title service-citation)]
      [:Provider (:Publisher service-citation)]
      [:Edition (:Version service-citation)]
-     [:URL (first (:URLs (:RelatedUrl service-citation)))]]))
+     [:URL (:Linkage (:OnlineResource service-citation))]]))
 
 (defn- create-sensors
   "Creates SERF Sensor Elements from a UMM-S Instruments mapping"
@@ -133,7 +133,7 @@
      [:Pages (:Pages pub-ref)]
      [:ISBN (:ISBN pub-ref)]
      [:DOI (:DOI (:DOI pub-ref))]
-     [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
+     [:Online_Resource (-> pub-ref :OnlineResource :Linkage)]
      [:Other_Reference_Details (:OtherReferenceDetails pub-ref)]]))
 
 (defn umm-s-to-serf-xml

@@ -32,10 +32,14 @@
    [clj-time.coerce :as cr]
    [clj-time.core :as t]
    [clojure.java.jdbc :as j]
+   [clojure.string :as str]
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.date-time-parser :as p]
    [cmr.common.jobs :refer [def-stateful-job]]
+   [cmr.common.log :refer [debug info warn error]]
+   [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
+   [cmr.metadata-db.data.oracle.providers :as providers]
+   [cmr.metadata-db.services.concept-service :as s]
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su :refer [select from]]))
 
@@ -53,26 +57,97 @@
   inserted into the database in chronological order."
   20)
 
+(defconfig source-database-link
+  "Database link used for retrieving metadata from the source database to correct replication errors
+  caused by DMS in the target database."
+  {:default "localhost" :type String})
+
+(defconfig tables-with-null-blobs
+  "Configuration with additional tables that contain NULL BLOBs."
+  {:default #{} :type :edn})
+
+;; ----------------------------
+;; Helper for querying the METADATA_DB tables
+;; Code taken from mdb-migrate-helper
+
+(defn get-concept-tablenames
+  "Returns a sequence of table names for the given concept types, or all concept types
+  if none are specified, for all the existing providers."
+  ([db]
+   ;; use all concept types
+   (apply get-concept-tablenames db (keys s/num-revisions-to-keep-per-concept-type)))
+  ([db & concept-types]
+   (distinct
+    (->
+     (for [provider (map providers/dbresult->provider
+                         (j/query db [(format "SELECT * FROM providers@%s" (source-database-link))]))
+           concept-type concept-types]
+       (concept-tables/get-table-name provider concept-type))
+      ;; Ensure that we return the small provider tables even if there are no providers in our
+      ;; system yet.
+     (into (when (contains? (set concept-types) :collection) ["small_prov_collections"]))
+     (into (when (contains? (set concept-types) :granule) ["small_prov_granules"]))
+     (into (when (contains? (set concept-types) :service) ["small_prov_services"]))
+     (into (when (contains? (set concept-types) :access-group) ["cmr_groups"]))
+     (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))))))
+
+
+(defn fix-null-replicated-concepts-query-str
+  "Query to fix the NULL replicated concepts. Takes the table name and revision date-time string."
+  [table revision-datetime]
+  (format (str "update %s c1 set metadata = (select c2.metadata from %s@%s c2 where c2.id = c1.id) "
+               "where c1.metadata is null and c1.deleted = 0 and c1.revision_date > to_timestamp "
+               "('%s', 'YYYY-MM-DD HH24:MI:SS.FF')")
+          table
+          table
+          (source-database-link)
+          (.toString (cr/to-sql-time revision-datetime))))
+
+(defn- fix-null-replicated-blobs
+  "AWS DMS is replicating BLOBs that are over 4K in size as NULL. We need to identify all of them
+  and fix them."
+  [db revision-datetime]
+  (let [all-tables (apply conj (get-concept-tablenames db :collection) (tables-with-null-blobs))]
+    (doseq [table all-tables]
+      (let [curr-time (System/currentTimeMillis)
+            stmt (fix-null-replicated-concepts-query-str table revision-datetime)]
+        (debug "Fixing replicated BLOBs for:" table "starting with statement:" stmt)
+        (j/db-do-commands db stmt)
+        (debug "Fixing replicated BLOBs for:" table "with revision-datetime" revision-datetime
+               "took" (- (System/currentTimeMillis) curr-time)) "ms"))))
+
 (defn index-replicated-concepts
   "Indexes recently replicated concepts."
   [context]
   ;; Get the latest replicated revision date from the database
-  (let [db (get-in context [:system :db])
+  (let [bootstrap-db (get-in context [:system :db])
+        metadata-db (get-in context [:system :embedded-systems :metadata-db :db])
         revision-datetime (j/with-db-transaction
-                            [conn db]
+                            [conn bootstrap-db]
                             (->> (su/find-one conn (select [(csk/->kebab-case-keyword
                                                              replication-date-column)]
                                                            (from replication-status-table)))
                                  :last_replicated_revision_date
                                  (oracle/oracle-timestamp->clj-time conn)))
+        starting-time (System/currentTimeMillis)
+        ;; Fix any NULL replicated BLOBs
+        _ (fix-null-replicated-blobs metadata-db revision-datetime)
         ;; Perform the indexing
         {:keys [max-revision-date]} (bulk-index/index-data-later-than-date-time
                                      (:system context)
-                                     (t/minus revision-datetime (t/seconds buffer)))]
+                                     (t/minus revision-datetime (t/seconds buffer)))
+        ms-taken (- (System/currentTimeMillis) starting-time)
+        ;; Change the max-revision-date to account for how long the whole task took to run to ensure
+        ;; no concepts are missed
+        max-revision-date (when max-revision-date
+                            (t/minus max-revision-date (t/millis ms-taken)))]
     ;; Update the latest replicated revision date in the database
     (when max-revision-date
       (let [stmt (format "UPDATE %s SET %s = ?" replication-status-table replication-date-column)]
-        (j/db-do-prepared db stmt [(cr/to-sql-time max-revision-date)])))))
+        (j/db-do-prepared bootstrap-db stmt [(cr/to-sql-time max-revision-date)])))))
+
+;; ------------
+;; Jobs
 
 (defconfig recently-replicated-interval
   "How often to index recently replicated concepts."
@@ -83,9 +158,6 @@
   true in environments where there is an actively running DMS task replicating data from another
   environment."
   {:default false :type Boolean})
-
-;; ------------
-;; Jobs
 
 (def-stateful-job IndexRecentlyReplicatedJob
   [context system]

@@ -108,6 +108,14 @@
                            :long-name (d/unique-str "long-name")
                            :type (d/unique-str "Type")}
                           attribs)))
+(defn platforms
+  "Return a sequence of platforms with the given short names"
+  [& short-names]
+  (map #(c/map->Platform
+          {:short-name %
+           :long-name (d/unique-str "long-name")
+           :type (d/unique-str "Type")})
+       short-names))
 
 (defn projects
   "Return a sequence of projects with the given short names"

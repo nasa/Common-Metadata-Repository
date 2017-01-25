@@ -4,10 +4,11 @@
    [clojure.set :as set]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
+   [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
+   [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :refer [versions current-version]]))
 
@@ -179,7 +180,7 @@
   [c]
   (if-let [doi-obj (some :DOI (:CollectionCitations c))]
     (-> c
-      (util/update-in-each [:CollectionCitations] dissoc :DOI)
+      (update-in-each [:CollectionCitations] dissoc :DOI)
       (assoc :DOI doi-obj))
     c))
 
@@ -188,17 +189,23 @@
   [c]
   (if-let [doi-obj (:DOI c)]
     (-> c
-      (util/update-in-each [:CollectionCitations] assoc :DOI doi-obj)
-      (dissoc :DOI)) 
-    c))   
+      (update-in-each [:CollectionCitations] assoc :DOI doi-obj)
+      (dissoc :DOI))
+    c))
 
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
-  (-> c migrate-doi-up)) 
+  (-> c
+      migrate-doi-up
+      (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
+      (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)))
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
-  (-> c migrate-doi-down)) 
+  (-> c
+      migrate-doi-down
+      (update-in-each [:PublicationReferences] related-url/migrate-online-resource-to-related-url)
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface

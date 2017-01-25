@@ -52,6 +52,7 @@
          iso-topic-categories :ISOTopicCategories
          version-description :VersionDescription
          related-urls :RelatedUrls} collection
+        doi (get-in collection [:DOI :DOI])
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
@@ -108,6 +109,7 @@
                                   data-centers
                                   directory-long-names
                                   directory-short-names
+                                  doi
                                   entry-id
                                   entry-title
                                   instrument-long-names

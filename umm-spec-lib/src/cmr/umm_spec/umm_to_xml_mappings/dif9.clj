@@ -148,7 +148,7 @@
               :Pages
               [:ISBN (:ISBN pub-ref)]
               [:DOI (get-in pub-ref [:DOI :DOI])]
-              [:Online_Resource (-> pub-ref :RelatedUrl :URLs first)]
+              [:Online_Resource (get-in pub-ref [:OnlineResource :Linkage])]
               :Other_Reference_Details])])
      [:Summary
       [:Abstract (:Abstract c)]
@@ -164,7 +164,7 @@
         [:Description (:Description related-url)]])
      (for [ma (:MetadataAssociations c)]
        [:Parent_DIF (:EntryId ma)])
-     (dif-util/generate-idn-nodes c) 
+     (dif-util/generate-idn-nodes c)
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
      (when-let [creation-date (date/metadata-create-date c)]

@@ -180,6 +180,27 @@
            [:gmd:CI_RoleCode
             {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
              :codeListValue "publisher"} "publication"]]]]
+        (when-let [online-resource (:OnlineResource pub-ref)]
+         [:gmd:citedResponsibleParty
+          [:gmd:CI_ResponsibleParty
+           [:gmd:contactInfo
+            [:gmd:CI_Contact
+             [:gmd:onlineResource
+              [:gmd:CI_OnlineResource
+               [:gmd:linkage
+                [:gmd:URL (:Linkage online-resource)]]
+               [:gmd:protocol (char-string (:Protocol online-resource))]
+               [:gmd:applicationProfile (char-string (:ApplicationProtocol online-resource))]
+               [:gmd:name (char-string (:Name online-resource))]
+               [:gmd:description (char-string (:Description online-resource))]
+               [:gmd:function
+                [:gmd:CI_OnLineFunctionCode
+                 {:codeList (str (:iso iso/code-lists) "#CI_OnLineFunctionCode")
+                  :codeListValue ""} (:Function online-resource)]]]]]]
+           [:gmd:role
+            [:gmd:CI_RoleCode
+             {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
+              :codeListValue "resourceProvider"} "resourceProvider"]]]])
         [:gmd:series
          [:gmd:CI_Series
           [:gmd:name (char-string (:Series pub-ref))]
