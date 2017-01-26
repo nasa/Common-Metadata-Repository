@@ -144,6 +144,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ingest URLs
 
+(defn enable-ingest-url
+  []
+  (format "http://localhost:%s/enable" (transmit-config/ingest-port)))
+
+(defn disable-ingest-url
+  []
+  (format "http://localhost:%s/disable" (transmit-config/ingest-port)))
+
 (defn reindex-collection-permitted-groups-url
   []
   (format "http://localhost:%s/jobs/reindex-collection-permitted-groups"

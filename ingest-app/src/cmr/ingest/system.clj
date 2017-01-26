@@ -5,6 +5,7 @@
   (:require
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.services.jvm-info :as jvm-info]
@@ -67,6 +68,7 @@
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
+                       common-enabled/enabled-cache-key (common-enabled/create-enabled-cache)
                        humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)}
               :ingest-public-conf ingest-public-conf
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
