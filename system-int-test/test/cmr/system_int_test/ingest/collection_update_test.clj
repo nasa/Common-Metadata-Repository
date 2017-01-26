@@ -815,8 +815,8 @@
 
         "Removing a tile that is referenced by a granule is invalid."
         ["Replacement_Tile"]
-        ["Collection Tile [Another_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
+        ["Collection TilingIdentificationSystemName [Another_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
         ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile" ]
-        ["Collection Tile [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection TilingIdentificationSystemName [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))

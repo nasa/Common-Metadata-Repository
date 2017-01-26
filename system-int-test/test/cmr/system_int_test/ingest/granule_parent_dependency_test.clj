@@ -609,17 +609,17 @@
          (= exp-errors
             (flatten (:errors (d/ingest "PROV1" coll {:format metadata-format
                                                       :allow-failure? true}))))
-         ["Collection Tile [BRAVO] is referenced by existing granules, cannot be removed. Found 1 granules."]
+         ["Collection TilingIdentificationSystemName [BRAVO] is referenced by existing granules, cannot be removed. Found 1 granules."]
          :dif
 
          []
          :dif10
 
-         ["Collection Tile [BRAVO] is referenced by existing granules, cannot be removed. Found 1 granules."]
+         ["Collection TilingIdentificationSystemName [BRAVO] is referenced by existing granules, cannot be removed. Found 1 granules."]
          :iso19115
 
          ["Collection additional attribute [a-float] is referenced by existing granules, cannot be removed. Found 1 granules."
-          "Collection Tile [BRAVO] is referenced by existing granules, cannot be removed. Found 1 granules."
+          "Collection TilingIdentificationSystemName [BRAVO] is referenced by existing granules, cannot be removed. Found 1 granules."
           "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
          :iso-smap)))
 
