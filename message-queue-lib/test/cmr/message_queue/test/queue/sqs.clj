@@ -7,12 +7,7 @@
 (defn normalize-queue-name
   "Function to call private normalize-queue-name function."
   [queue-name]
-  (#'sqs/normalize-queue-name queue-name))
-
-(comment
-  (normalize-queue-name "abc")
-  (#'sqs/normalize-queue-name "abc"))
-
+  #'sqs/normalize-queue-name queue-name)
 
 (deftest normalize-queue-name
   (testing "with-and-without-previx"
