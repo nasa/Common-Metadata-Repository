@@ -18,7 +18,7 @@
   :enabled)
 
 (defconfig enabled-cache-time-seconds
-  "The number of seconds to cache the health of the application."
+  "The number of seconds to cache the state of the application."
   {:default 5
    :type Long})
 
@@ -63,7 +63,6 @@
   [context]
   (if-let [cache (cache/context->cache context enabled-cache-key)]
     (do (cache/set-value cache enabled-cache-key false)
-        ;; (expire-consistent-cache-hashes context)
         {:status 200
          :headers {"Content-Type" (mt/with-utf-8 mt/json)}
          :body (json/generate-string "Application successfully disabled.")})
@@ -78,7 +77,6 @@
   [context]
   (if-let [cache (cache/context->cache context enabled-cache-key)]
     (do (cache/set-value cache enabled-cache-key true)
-        ;; (expire-consistent-cache-hashes context)
         {:status 200
          :headers {"Content-Type" (mt/with-utf-8 mt/json)}
          :body (json/generate-string "Application successfully enabled.")})
