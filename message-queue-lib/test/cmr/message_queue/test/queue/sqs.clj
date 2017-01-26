@@ -10,7 +10,7 @@
   #'sqs/normalize-queue-name queue-name)
 
 (deftest normalize-queue-name
-  (testing "with-and-without-previx"
+  (testing "with-and-without-prefix"
     (are3
       [environ queue-name norm-name]
       (with-env-vars {"CMR_APP_ENVIRONMENT" environ}
