@@ -1,6 +1,6 @@
 (ns cmr.message-queue.test.queue.sqs
   (:require [clojure.test :refer :all]
-            [cmr.common.test.config :refer [with-env-vars]]
+            [cmr.common.test.test-util :refer [with-env-vars]]
             [cmr.common.util :as util :refer [are3]]
             [cmr.message-queue.queue.sqs :as sqs]))
 
