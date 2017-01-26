@@ -377,65 +377,112 @@
 ;; deleted, and some that have not yet been deleted, but have an expired deletion date.
 (deftest bulk-index-with-some-deleted
   (s/only-with-real-database
-    (let [;; saved but not indexed
-          umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
-          xml1 (echo10/umm->echo10-xml umm1)
-          coll1 (mdb/save-concept {:concept-type :collection
-                                   :format "application/echo10+xml"
-                                   :metadata xml1
-                                   :extra-fields {:short-name "coll1"
-                                                  :entry-title "coll1"
-                                                  :entry-id "coll1"
-                                                  :version-id "v1"}
-                                   :provider-id "PROV1"
-                                   :native-id "coll1"
-                                   :short-name "coll1"})
-          umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
-          ;; saved and indexed by ingest
-          coll2 (d/ingest "PROV1" (dc/collection {:short-name "coll2" :entry-title "coll2"}))
-          coll2-tombstone {:concept-id (:concept-id coll2)
-                           :revision-id (inc (:revision-id coll2))}
-          ;; saved (with old delete-time), but not indexed
-          umm3 (dc/collection {:short-name "coll3" :entry-title "coll3" :delete-time "2000-01-01T12:00:00Z"})
-          xml3 (echo10/umm->echo10-xml umm3)
-          coll3 (mdb/save-concept {:concept-type :collection
-                                   :format "application/echo10+xml"
-                                   :metadata xml3
-                                   :extra-fields {:short-name "coll3"
-                                                  :entry-title "coll3"
-                                                  :entry-id "coll3"
-                                                  :version-id "v1"
-                                                  :delete-time "2000-01-01T12:00:00Z"}
-                                   :provider-id "PROV1"
-                                   :native-id "coll3"
-                                   :short-name "coll3"})
-          ;; a granule saved with a nil delete time but an expired delete time in the xml
-          ummg1 (dg/granule coll1 {:granule-ur "gran1" :delete-time "2000-01-01T12:00:00Z"})
-          xmlg1 (echo10/umm->echo10-xml ummg1)
-          gran1 (mdb/save-concept {:concept-type :granule
-                                   :provider-id "PROV1"
-                                   :native-id "gran1"
-                                   :format "application/echo10+xml"
-                                   :metadata xmlg1
-                                   :extra-fields {:parent-collection-id (:concept-id umm1)
-                                                  :parent-entry-title "coll1"
-                                                  :granule-ur "ur1"}})]
-      (mdb/tombstone-concept coll2-tombstone)
+   ;; Disable message publishing so items are not indexed as part of the initial save.
+   (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
+   (let [;; coll1 is a regular collection that is ingested
+         umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
+         xml1 (echo10/umm->echo10-xml umm1)
+         coll1 (mdb/save-concept {:concept-type :collection
+                                  :format "application/echo10+xml"
+                                  :metadata xml1
+                                  :extra-fields {:short-name "coll1"
+                                                 :entry-title "coll1"
+                                                 :entry-id "coll1"
+                                                 :version-id "v1"}
+                                  :provider-id "PROV1"
+                                  :native-id "coll1"
+                                  :short-name "coll1"})
+         umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
+         ;; coll2 is a regualr collection that is ingested and will be deleted later
+         coll2 (d/ingest "PROV1" (dc/collection {:short-name "coll2" :entry-title "coll2"}))
+         ;; coll3 is a collection with an expired delete time
+         umm3 (dc/collection {:short-name "coll3" :entry-title "coll3" :delete-time "2000-01-01T12:00:00Z"})
+         xml3 (echo10/umm->echo10-xml umm3)
+         coll3 (mdb/save-concept {:concept-type :collection
+                                  :format "application/echo10+xml"
+                                  :metadata xml3
+                                  :extra-fields {:short-name "coll3"
+                                                 :entry-title "coll3"
+                                                 :entry-id "coll3"
+                                                 :version-id "v1"
+                                                 :delete-time "2000-01-01T12:00:00Z"}
+                                  :provider-id "PROV1"
+                                  :native-id "coll3"
+                                  :short-name "coll3"})
+         ;; gran1 is a regular granule that is ingested
+         ummg1 (dg/granule coll1 {:granule-ur "gran1"})
+         xmlg1 (echo10/umm->echo10-xml ummg1)
+         gran1 (mdb/save-concept {:concept-type :granule
+                                  :provider-id "PROV1"
+                                  :native-id "gran1"
+                                  :format "application/echo10+xml"
+                                  :metadata xmlg1
+                                  :extra-fields {:parent-collection-id (:concept-id umm1)
+                                                 :parent-entry-title "coll1"
+                                                 :granule-ur "gran1"}})
+         ummg1 (merge ummg1 (select-keys gran1 [:concept-id :revision-id]))
+         ;; gran2 is a regular granule that is ingested and will be deleted later
+         ummg2 (dg/granule coll1 {:granule-ur "gran2"})
+         xmlg2 (echo10/umm->echo10-xml ummg2)
+         gran2 (mdb/save-concept {:concept-type :granule
+                                  :provider-id "PROV1"
+                                  :native-id "gran2"
+                                  :format "application/echo10+xml"
+                                  :metadata xmlg2
+                                  :extra-fields {:parent-collection-id (:concept-id umm1)
+                                                 :parent-entry-title "coll1"
+                                                 :granule-ur "gran2"}})
+         ummg2 (merge ummg2 (select-keys gran2 [:concept-id :revision-id]))
+         ;; gran3 is a granule with an expired delete time
+         ummg3 (dg/granule coll1 {:granule-ur "gran3" :delete-time "2000-01-01T12:00:00Z"})
+         xmlg3 (echo10/umm->echo10-xml ummg3)
+         gran3 (mdb/save-concept {:concept-type :granule
+                                  :provider-id "PROV1"
+                                  :native-id "gran3"
+                                  :format "application/echo10+xml"
+                                  :metadata xmlg3
+                                  :extra-fields {:parent-collection-id (:concept-id umm1)
+                                                 :parent-entry-title "coll1"
+                                                 :granule-ur "gran3"}})]
 
-      ;; Verify that all of the ingest requests completed successfully
-      (doseq [concept [coll1 coll2 coll3 gran1]] (is (= 201 (:status concept))))
+     ;; Verify that all of the ingest requests completed successfully
+     (doseq [concept [coll1 coll2 coll3 gran1 gran2 gran3]] (is (= 201 (:status concept))))
+     ;; bulk index all collections and granules
+     (bootstrap/bulk-index-provider "PROV1")
+     (index/wait-until-indexed)
 
-      (bootstrap/bulk-index-provider "PROV1")
-      (index/wait-until-indexed)
+     (testing "Expired documents are not indexed during bulk indexing"
+       (are [search concept-type expected]
+         (d/refs-match? expected (search/find-refs concept-type search))
+         {:concept-id (:concept-id coll1)} :collection [umm1]
+         {:concept-id (:concept-id coll2)} :collection [coll2]
+         {:concept-id (:concept-id coll3)} :collection []
+         {:concept-id (:concept-id gran1)} :granule [ummg1]
+         {:concept-id (:concept-id gran2)} :granule [ummg2]
+         {:concept-id (:concept-id gran3)} :granule []))
 
-      (testing "Expired documents are not indexed during bulk indexing and deleted documents
-               get deleted."
-               (are [search concept-type expected]
-                    (d/refs-match? expected (search/find-refs concept-type search))
-                    {:concept-id (:concept-id coll1)} :collection [umm1]
-                    {:concept-id (:concept-id coll2)} :collection []
-                    {:concept-id (:concept-id coll3)} :collection []
-                    {:concept-id (:concept-id ummg1)} :granule [])))))
+     (testing "Deleted documents get deleted during bulk indexing"
+       (let [coll2-tombstone {:concept-id (:concept-id coll2)
+                              :revision-id (inc (:revision-id coll2))}
+             gran2-tombstone {:concept-id (:concept-id gran2)
+                              :revision-id (inc (:revision-id gran2))}]
+         ;; delete coll2 and gran2 in metadata-db
+         (mdb/tombstone-concept coll2-tombstone)
+         (mdb/tombstone-concept gran2-tombstone)
+         ;; bulk index all collections and granules
+         (bootstrap/bulk-index-provider "PROV1")
+         (index/wait-until-indexed)
+         (are [search concept-type expected]
+           (d/refs-match? expected (search/find-refs concept-type search))
+           {:concept-id (:concept-id coll1)} :collection [umm1]
+           {:concept-id (:concept-id coll2)} :collection []
+           {:concept-id (:concept-id coll3)} :collection []
+           {:concept-id (:concept-id gran1)} :granule [ummg1]
+           {:concept-id (:concept-id gran2)} :granule []
+           {:concept-id (:concept-id gran3)} :granule []))))
+   
+   ;; Re-enable message publishing.
+   (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
 
 ;; This test verifies that the bulk indexer can run concurrently with ingest and indexing of items.
 ;; This test performs the following steps:
