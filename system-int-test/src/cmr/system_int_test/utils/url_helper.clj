@@ -145,10 +145,12 @@
 ;; Ingest URLs
 
 (defn enable-ingest-url
-  [enable?]
-  (if enable?
-    (format "http://localhost:%s/enable" (transmit-config/ingest-port))
-    (format "http://localhost:%s/disable" (transmit-config/ingest-port))))
+  []
+  (format "http://localhost:%s/enable" (transmit-config/ingest-port)))
+
+(defn disable-ingest-url
+  []
+  (format "http://localhost:%s/disable" (transmit-config/ingest-port)))
 
 (defn reindex-collection-permitted-groups-url
   []

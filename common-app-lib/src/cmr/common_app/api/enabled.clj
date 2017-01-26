@@ -1,5 +1,10 @@
 (ns cmr.common-app.api.enabled
-  "Defines the enabled routes for applications."
+  "Defines functions and routes for enabling and disabling an application
+  as well as checking whether or not an application is enabled. Disabled can
+  mean different things for different apps. Disabled ingest prevents
+  writes, but otherwise allows operations to proceed. This functionality is
+  provided to support the migration to NGAP. We need to be able to prevent
+  anything from writing on the NGAP side while we are transitioning."
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]

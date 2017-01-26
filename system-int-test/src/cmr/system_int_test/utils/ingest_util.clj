@@ -24,12 +24,12 @@
 (defn disable-ingest
   "Use the enable/disable endpoint on ingest to disable it."
   []
-  (client/post (url/enable-ingest-url false)))
+  (client/post (url/disable-ingest-url)))
 
 (defn enable-ingest
   "Use the enable/disable endpoint on ingest to enable it."
   []
-  (client/post (url/enable-ingest-url true)))
+  (client/post (url/enable-ingest-url)))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
