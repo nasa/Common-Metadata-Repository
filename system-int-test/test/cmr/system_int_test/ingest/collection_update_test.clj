@@ -711,7 +711,7 @@
         ["Found granules later than collection end date [2000-07-01T12:00:00.000Z]. Found 1 granules."]))))
 
 (deftest collection-update-platform-test
-  (let [;; Platform TERRA is the humanized alias of AM-1
+  (let [;; Platform Terra is the humanized alias of AM-1
         coll (d/ingest "PROV1" (dc/collection
                                 {:entry-title "parent-collection"
                                  :short-name "S1"
@@ -721,12 +721,12 @@
                                  {:entry-title "parent-collection2"
                                   :short-name "S2"
                                   :version-id "V2"
-                                  :platforms (dc/platforms "p4" "TERRA")}))]
+                                  :platforms (dc/platforms "p4" "Terra")}))]
     (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "p1")}))
     (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "p2" "AM-1")}))
     (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "AM-1")}))
     (d/ingest "PROV1" (dg/granule coll2 {:platform-refs (dg/platform-refs "p4")}))
-    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs (dg/platform-refs "TERRA")}))
+    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs (dg/platform-refs "Terra")}))
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
@@ -746,8 +746,8 @@
         "Removing a platform not referenced by any granule in the collection is OK"
         ["p1" "p2" "AM-1"]
 
-        "Updating a platform to humanized aliais referenced by granule on the original value is OK"
-        ["p1" "p2" "TERRA"]))
+        "Updating a platform to humanized alias(case insensitively) referenced by granule on the original value is OK"
+        ["p1" "p2" "tErra"]))
 
     (testing "Update collection failure cases"
       (are3
@@ -762,9 +762,61 @@
           (is (= [422 expected-errors] [status errors])))
 
         "Removing a platform that is referenced by a granule is invalid."
-        ["TERRA"]
+        ["Terra"]
         ["Collection Platform [p4] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Updating a platform that is referenced by a granule by humanized alias back to its original value is invalid."
         ["AM-1" "p4"]
-        ["Collection Platform [TERRA] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection Platform [Terra] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+
+(deftest collection-update-tile-test
+  (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE" 
+        coll (d/ingest "PROV1" (dc/collection
+                                {:entry-title "parent-collection"
+                                 :short-name "S1"
+                                 :version-id "V1"
+                                 :two-d-coordinate-systems (dc/two-ds "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
+    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
+    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
+    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
+    (index/wait-until-indexed)
+
+    (testing "Update collection successful cases"
+      (are3
+        [tile-names]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection"
+                                           :short-name "S1"
+                                           :version-id "V1"
+                                           :two-d-coordinate-systems (apply dc/two-ds tile-names)}))
+              {:keys [status errors]} response]
+          (is (= [200 nil] [status errors])))
+
+        "Adding an additional new tile is OK"
+        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo" "New_Tile"]
+
+        "Removing a tile not referenced by any granule in the collection is OK"
+        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "New_Tile"]
+
+        "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
+        ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
+
+    (testing "Update collection failure cases"
+      (are3
+        [tile-names expected-errors]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection"
+                                           :short-name "S2"
+                                           :version-id "V2"
+                                           :two-d-coordinate-systems (apply dc/two-ds tile-names)})
+                                 {:allow-failure? true})
+              {:keys [status errors]} response]
+          (is (= [422 expected-errors] [status errors])))
+
+        "Removing a tile that is referenced by a granule is invalid."
+        ["Replacement_Tile"]
+        ["Collection TilingIdentificationSystemName [Another_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
+
+        "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
+        ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile" ]
+        ["Collection TilingIdentificationSystemName [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
