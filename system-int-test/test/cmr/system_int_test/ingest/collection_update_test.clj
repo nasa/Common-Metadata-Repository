@@ -711,7 +711,7 @@
         ["Found granules later than collection end date [2000-07-01T12:00:00.000Z]. Found 1 granules."]))))
 
 (deftest collection-update-platform-test
-  (let [;; Platform case-insensitive tErrA is the humanized alias of AM-1
+  (let [;; Platform Terra is the humanized alias of AM-1
         coll (d/ingest "PROV1" (dc/collection
                                 {:entry-title "parent-collection"
                                  :short-name "S1"
@@ -746,7 +746,7 @@
         "Removing a platform not referenced by any granule in the collection is OK"
         ["p1" "p2" "AM-1"]
 
-        "Updating a platform to humanized alias referenced by granule on the original value is OK"
+        "Updating a platform to humanized alias(case insensitively) referenced by granule on the original value is OK"
         ["p1" "p2" "tErra"]))
 
     (testing "Update collection failure cases"
@@ -798,7 +798,7 @@
         "Removing a tile not referenced by any granule in the collection is OK"
         ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "New_Tile"]
 
-        "Updating SOURCE_TILE to Source_Tile_New is ok"
+        "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
         ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
 
     (testing "Update collection failure cases"

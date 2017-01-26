@@ -20,7 +20,7 @@
 
 (defn- retrieve-humanizer-alias-map
   "Returns the alias map like the following. Note: All the replacement_value are UPPER-CASED,
-   so when using this map to get all the non-humanized aliases for a given collection's platform,
+   so when using this map to get all the non-humanized source values for a given collection's platform,
    tile, or instrument, they need to be UPPER-CASED as well.
    {\"platform\" {\"TERRA\" [\"AM-1\" \"am-1\" \"AM 1\"] \"OTHERPLATFORMS\" [\"otheraliases\"]}
     \"tiling_system_name\" {\"TILE\" [\"tile_1\" \"tile_2\"] \"OTHERTILES\" [\"otheraliases\"]}
