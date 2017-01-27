@@ -89,7 +89,9 @@
      (into (when (contains? (set concept-types) :granule) ["small_prov_granules"]))
      (into (when (contains? (set concept-types) :service) ["small_prov_services"]))
      (into (when (contains? (set concept-types) :access-group) ["cmr_groups"]))
-     (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))))))
+     (into (when (contains? (set concept-types) :acl) ["cmr_acls"]))
+     (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))
+     (into (when (contains? (set concept-types) :humanizer) ["cmr_humanizers"]))))))
 
 
 (defn fix-null-replicated-concepts-query-str
@@ -107,7 +109,9 @@
   "AWS DMS is replicating BLOBs that are over 4K in size as NULL. We need to identify all of them
   and fix them."
   [db revision-datetime]
-  (let [all-tables (apply conj (get-concept-tablenames db :collection) (tables-with-null-blobs))]
+  (let [all-tables (apply conj (get-concept-tablenames db :collection :service :access-group :acl
+                                                       :tag :humanizer)
+                          (tables-with-null-blobs))]
     (doseq [table all-tables]
       (let [curr-time (System/currentTimeMillis)
             stmt (fix-null-replicated-concepts-query-str table revision-datetime)]
