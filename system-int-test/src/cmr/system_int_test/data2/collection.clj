@@ -43,6 +43,11 @@
   (c/map->TwoDCoordinateSystem
     {:name name}))
 
+(defn two-ds
+  "Returns a sequence of two-d-coordinate-systems with the given names"
+  [& names]
+  (map two-d names)) 
+  
 (defn product
   [attribs]
   (let [attribs (select-keys attribs (util/record-fields Product))

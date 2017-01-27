@@ -4,6 +4,7 @@
    [clojure.stacktrace :refer [print-stack-trace]]
    [cmr.acl.core :as acl]
    [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
@@ -69,7 +70,11 @@
       common-routes/cache-api-routes
 
       ;; add routes for checking health of the application
-      (common-health/health-api-routes ingest/health))
+      (common-health/health-api-routes ingest/health)
+
+      ;; add routes for enabling/disabling application
+      (common-enabled/enabled-api-routes 
+       #(acl/verify-ingest-management-permission % :update)))
 
     (route/not-found "Not Found")))
 

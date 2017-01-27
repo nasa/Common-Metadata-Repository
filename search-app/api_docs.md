@@ -33,6 +33,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Collection Search By Parameters](#collection-search-by-parameters)
     * [Find all collections](#find-all-collections)
     * [Concept id](#c-concept-id)
+    * [DOI value](#c-doi-value)
     * [Echo collection id](#c-echo-collection-id)
     * [Provider short name](#c-provider-short-name)
     * [Entry title](#c-entry-title)
@@ -1034,6 +1035,12 @@ Example: `C123456-LPDAAC_ECS`
 
     curl "%CMR-ENDPOINT%/collections?concept_id\[\]=C123456-LPDAAC_ECS"
 
+#### <a name="c-doi-value"></a> Find collections by doi value 
+
+  Find a collection matching a collection doi value. Note more than one doi value may be supplied. 
+
+    curl "%CMR-ENDPOINT%/collections?doi\[\]=doi"
+
 #### <a name="c-echo-collection-id"></a> Find collections by echo collection id
 
   Find a collection matching a echo collection id. Note more than one echo collection id may be supplied.
@@ -1269,6 +1276,7 @@ Keyword searches are case insensitive and support wild cards ? and *.
 The following fields are indexed for keyword search:
 
     * Concept ID
+    * DOI value
     * Provider ID
     * Entry ID
     * Entry title

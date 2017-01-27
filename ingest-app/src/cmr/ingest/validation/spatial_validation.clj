@@ -7,7 +7,7 @@
 (defn- extract-granule-spatial-representation
   "Returns the granule spatial representation of the collection or a default of :no-spatial."
   [coll]
-  (or (get-in coll [:SpatialExtent :GranuleSpatialRepresentation]) "NO_SPATIAL"))
+  (or (get-in coll [:SpatialExtent :GranuleSpatialRepresentation]) :no-spatial))
 
 (defn spatial-param-change-searches
   "Validates that if a collection changes its spatial representation for granules then it can

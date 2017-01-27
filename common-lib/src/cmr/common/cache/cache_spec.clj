@@ -26,6 +26,8 @@
             (c/get-value cache :foo always-fail)))
        :a
        "b"
+       false
+       true
        'c
        \d
        1

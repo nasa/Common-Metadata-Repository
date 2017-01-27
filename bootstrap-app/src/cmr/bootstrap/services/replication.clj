@@ -38,34 +38,10 @@
    [cmr.common.jobs :refer [def-stateful-job]]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
-   [cmr.metadata-db.data.providers :as providers]
+   [cmr.metadata-db.data.oracle.providers :as providers]
    [cmr.metadata-db.services.concept-service :as s]
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su :refer [select from]]))
-
-;; ----------------------------
-;; Helper for querying the METADATA_DB tables
-;; Code taken from mdb-migrate-helper
-
-(defn get-concept-tablenames
-  "Returns a sequence of table names for the given concept types, or all concept types
-  if none are specified, for all the existing providers."
-  ([db]
-   ;; use all concept types
-   (apply get-concept-tablenames db (keys s/num-revisions-to-keep-per-concept-type)))
-  ([db & concept-types]
-   (distinct
-    (->
-     (for [provider (providers/get-providers db)
-           concept-type concept-types]
-       (concept-tables/get-table-name provider concept-type))
-      ;; Ensure that we return the small provider tables even if there are no providers in our
-      ;; system yet.
-     (into (when (contains? (set concept-types) :collection) ["small_prov_collections"]))
-     (into (when (contains? (set concept-types) :granule) ["small_prov_granules"]))
-     (into (when (contains? (set concept-types) :service) ["small_prov_services"]))
-     (into (when (contains? (set concept-types) :access-group) ["cmr_groups"]))
-     (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))))))
 
 (def replication-status-table
   "The name of the database table where replication status is stored."
@@ -89,6 +65,32 @@
 (defconfig tables-with-null-blobs
   "Configuration with additional tables that contain NULL BLOBs."
   {:default #{} :type :edn})
+
+;; ----------------------------
+;; Helper for querying the METADATA_DB tables
+;; Code taken from mdb-migrate-helper
+
+(defn get-concept-tablenames
+  "Returns a sequence of table names for the given concept types, or all concept types
+  if none are specified, for all the existing providers."
+  ([db]
+   ;; use all concept types
+   (apply get-concept-tablenames db (keys s/num-revisions-to-keep-per-concept-type)))
+  ([db & concept-types]
+   (distinct
+    (->
+     (for [provider (map providers/dbresult->provider
+                         (j/query db [(format "SELECT * FROM providers@%s" (source-database-link))]))
+           concept-type concept-types]
+       (concept-tables/get-table-name provider concept-type))
+      ;; Ensure that we return the small provider tables even if there are no providers in our
+      ;; system yet.
+     (into (when (contains? (set concept-types) :collection) ["small_prov_collections"]))
+     (into (when (contains? (set concept-types) :granule) ["small_prov_granules"]))
+     (into (when (contains? (set concept-types) :service) ["small_prov_services"]))
+     (into (when (contains? (set concept-types) :access-group) ["cmr_groups"]))
+     (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))))))
+
 
 (defn fix-null-replicated-concepts-query-str
   "Query to fix the NULL replicated concepts. Takes the table name and revision date-time string."

@@ -2,8 +2,8 @@
   "Provides functions to validate the ingest business rules"
   (:require
     [clj-time.core :as t]
-    [cmr.common.time-keeper :as tk]
     [cmr.common.date-time-parser :as p]
+    [cmr.common.time-keeper :as tk]
     [cmr.ingest.services.helper :as h]
     [cmr.ingest.validation.additional-attribute-validation :as aa]
     [cmr.ingest.validation.collection-unique-ids-validation :as cui]
@@ -11,9 +11,10 @@
     [cmr.ingest.validation.project-validation :as pv]
     [cmr.ingest.validation.spatial-validation :as sv]
     [cmr.ingest.validation.temporal-validation :as tv]
-    [cmr.umm-spec.umm-spec-core :as spec]
+    [cmr.ingest.validation.tiling-validation :as tiling-validation]
     [cmr.transmit.metadata-db :as mdb]
-    [cmr.transmit.search :as search]))
+    [cmr.transmit.search :as search]
+    [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
@@ -54,6 +55,7 @@
    aa/additional-attribute-searches
    pv/deleted-project-searches
    platform-validation/deleted-platform-searches
+   tiling-validation/deleted-tiling-searches
    tv/out-of-range-temporal-searches
    sv/spatial-param-change-searches])
 
