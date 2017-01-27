@@ -71,21 +71,35 @@
    (when-let [instruction (:ContactInstruction contact-info)]
     [:gmd:contactInstructions (char-string instruction)])]])
 
+(defn- generate-data-center
+ "Generate data center XML for the data center and ISO role"
+ [data-center iso-role]
+ [:gmd:CI_ResponsibleParty
+  [:gmd:organisationName
+    (char-string (if (:LongName data-center)
+                  (str (:ShortName data-center) " &gt; " (:LongName data-center))
+                  (:ShortName data-center)))]
+  (generate-contact-info (:ContactInformation data-center))
+  [:gmd:role
+   [:gmd:CI_RoleCode
+     {:codeList (:ndgc iso/code-lists)
+      :codeListValue iso-role} iso-role]]])
+
+(defn generate-archive-centers
+ "Archive centers are included with the data centers but also in
+ /gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"
+ [data-centers]
+ (let [archive-centers (filter #(contains? #{"ARCHIVER"} (:Roles %)) data-centers)]
+  (seq
+   (for [center archive-centers]
+    [:gmd:contact
+     (generate-data-center center "custodian")]))))
+
 (defn generate-data-centers
   "Generate data center XML from DataCenters"
  [data-centers]
  (for [data-center data-centers
        role (:Roles data-center)
        :let [iso-role (get data-center-role->iso-role role)]]
-  (do
    [:gmd:pointOfContact
-    [:gmd:CI_ResponsibleParty
-     [:gmd:organisationName
-       (char-string (if (:LongName data-center)
-                     (str (:ShortName data-center) " &gt; " (:LongName data-center))
-                     (:ShortName data-center)))]
-     (generate-contact-info (:ContactInformation data-center))
-     [:gmd:role
-      [:gmd:CI_RoleCode
-        {:codeList (:ndgc iso/code-lists)
-         :codeListValue iso-role} iso-role]]]])))
+    (generate-data-center data-center iso-role)]))

@@ -266,7 +266,9 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
-       [:gmd:contact {:gco:nilReason "missing"}]
+       (if-let [archive-centers (data-contact/generate-archive-centers (:DataCenters c))]
+        archive-centers
+        [:gmd:contact {:gco:nilReason "missing"}])
        (generate-datestamp c)
        [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
        [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]

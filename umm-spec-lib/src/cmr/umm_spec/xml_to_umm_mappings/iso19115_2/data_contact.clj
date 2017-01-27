@@ -2,13 +2,14 @@
  "Functions to parse DataCenters and ContactPersons from ISO 19115-2"
  (:require
   [clojure.string :as str]
+  [clojure.java.io :as io]
   [cmr.common.xml.parse :refer :all]
   [cmr.common.xml.simple-xpath :refer [select text]]
   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as related-url]
   [cmr.umm-spec.util :as util]))
 
-(def contact-xpath
+(def point-of-contact-xpath
  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty")
 
 (def iso-data-center-role->umm-role
@@ -81,7 +82,7 @@
 (defn- get-short-name-long-name
  "Split the name into short name and long name"
  [name]
- (let [names (str/split name #"&gt;")]
+ (let [names (str/split name #"&gt;|>")]
   {:ShortName (str/trim (first names))
    :LongName (when (> (count names) 1)
               (str/join " " (map str/trim (rest names))))}))
@@ -100,15 +101,38 @@
                          sanitize?)}
    (get-short-name-long-name organization-name))))
 
+(defn- process-duplicate-data-centers
+ "Data Centers are located in several places in the ISO xml, so we want to check for data Centers
+ in all of those places, but not duplicate.
+ This function is to parse the data center, check if it's a dup, and return a list of data Centers
+ that are not duplicates"
+ [data-centers data-centers-xml sanitize?]
+ (for [data-center-xml data-centers-xml
+       :let [data-center (parse-data-center data-center-xml nil sanitize?)]]
+   (do
+    (proto-repl.saved-values/save 9)
+    (when (not-any? #(and (= (:ShortName %) (= (:ShortName data-center)))
+                          (= (:LongName %) (= (:LongName data-center)))
+                          (= (:Roles %) (= (:Roles data-center))))
+                data-centers)
+     data-center))))
+
+(defn- group-contacts
+ "Given contact xml, split the contacts into data centers and contacts"
+ [xml]
+ (let [group-contacts (get-contact-groups xml)]
+  {:data-centers-xml (get group-contacts true)
+   :contacts (get group-contacts false)}))
+
 (defn parse-contacts
  "Parse all contacts from XML and determine if they are Data Centers, Contact Persons or
  Contact Groups"
  [xml sanitize?]
- (let [contacts (select xml contact-xpath)
-       group-contacts (get-contact-groups contacts)
-       data-centers-xml (get group-contacts true)
-       contact-persons (get group-contacts false)
-       data-centers (map #(parse-data-center % contact-persons sanitize?) data-centers-xml)]
+ (let [{:keys [data-centers-xml contacts-xml]} (group-contacts (select xml point-of-contact-xpath))
+       data-centers (map #(parse-data-center % nil sanitize?) data-centers-xml)
+       additional-contacts (group-contacts (select xml "/gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"))
+       data-centers (concat data-centers
+                            (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?))]
   (if (seq data-centers)
    data-centers
    (when sanitize?

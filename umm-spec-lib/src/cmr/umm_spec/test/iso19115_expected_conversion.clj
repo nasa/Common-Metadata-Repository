@@ -289,11 +289,18 @@
      (update :ContactMechanisms expected-iso-contact-mechanisms)
      (update :Addresses #(take 1 %))))
 
-(defn- trim-name-whitespace
- "If the name is not nil, trim whitespace"
- [name]
- (when name
-  (str/trim name)))
+
+(defn- update-short-and-long-name
+ "ISO only has 1 field for both short and long and they get combined with a delimeter. combined
+ and then parse the short and long name here to mimic what UMM -> ISO -> UMM will do."
+ [data-center]
+ (let [{:keys [ShortName LongName]} data-center
+       organization-name (str ShortName #"&gt;" LongName)
+       name-split (str/split organization-name #"&gt;|>")]
+   (-> data-center
+       (assoc :ShortName (str/trim (first name-split)))
+       (assoc :LongName (when (> (count name-split) 1)
+                         (str/join " " (map str/trim (rest name-split))))))))
 
 (defn- expected-iso-data-center
  "Expected data center - trim whitespace from short name and long name, update contact info"
@@ -303,8 +310,7 @@
      (assoc :ContactPersons nil)
      (assoc :ContactGroups nil)
      (assoc :Uuid nil)
-     (update :ShortName trim-name-whitespace)
-     (update :LongName trim-name-whitespace)
+     update-short-and-long-name
      (update :ContactInformation expected-iso-contact-information)))
 
 (defn- expected-iso-data-centers
