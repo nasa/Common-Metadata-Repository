@@ -138,7 +138,6 @@
     :RelatedUrls [{:Description "Related url description"
                    :Relation ["GET DATA" "sub type"]
                    :URLs ["www.foo.com", "www.shoo.com"]
-                   :Title "related url title"
                    :MimeType "mime type"}
                   {:Description "Related url 3 description "
                    :Relation ["Some type" "sub type"]
@@ -185,7 +184,6 @@
                      :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                          :URLs ["www.contact.group.foo.com"]
-                                                         :Title "contact group related url title"
                                                          :MimeType "application/html"}]
                                           :ServiceHours "Weekdays 9AM - 5PM"
                                           :ContactInstruction "sample contact group instruction"
@@ -201,7 +199,6 @@
                       :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                           :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                          :Title "contact related url title"
                                                           :MimeType "application/html"}]
                                            :ServiceHours "Weekdays 9AM - 5PM"
                                            :ContactInstruction "sample contact instruction"
@@ -222,7 +219,6 @@
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                          :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                         :Title "contact related url title"
                                                                          :MimeType "application/html"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
                                                           :ContactInstruction "sample contact instruction"
@@ -246,7 +242,6 @@
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                          :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                         :Title "contact related url title"
                                                                          :MimeType "application/html"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
                                                           :ContactInstruction "sample contact instruction"
@@ -266,7 +261,6 @@
                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                        :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                       :Title "contact related url title"
                                                        :MimeType "application/html"}]
                                         :ServiceHours "Weekdays 9AM - 5PM"
                                         :ContactInstruction "sample contact instruction"
@@ -283,7 +277,6 @@
                                     :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                         :URLs ["www.contact.group.foo.com"]
-                                                                        :Title "contact group related url title"
                                                                         :MimeType "application/html"}]
                                                          :ServiceHours "Weekdays 9AM - 5PM"
                                                          :ContactInstruction "sample contact group instruction"
