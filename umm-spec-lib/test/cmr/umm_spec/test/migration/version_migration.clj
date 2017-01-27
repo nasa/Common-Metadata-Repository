@@ -597,7 +597,6 @@
              :Editor nil, :DataPresentationForm nil, :Version nil, :OtherCitationDetails nil
              :OnlineResource {:Linkage "www.google.com" :Name "URL Title" :Description "URL Description"}}]
            (:CollectionCitations result)))
-    ;; RelatedUrls no longer contain Titles
     (let [data-center-related-url
           (:RelatedUrls (first (map :ContactInformation (first (map :ContactPersons (:DataCenters result))))))]
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
