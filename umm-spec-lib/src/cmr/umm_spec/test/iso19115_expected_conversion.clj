@@ -15,8 +15,9 @@
     [cmr.umm-spec.related-url :as ru-gen]
     [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]))
 
@@ -257,6 +258,62 @@
     science-keywords
     su/not-provided-science-keywords))
 
+(defn- expected-iso-contact-mechanisms
+ "Returns expected contact mechanisms with not translated types removed and ordered by phone,
+ fax, email"
+ [contact-mechanisms]
+ (when-let [contact-mechanisms (seq
+                                (remove #(nil? (:Type %))
+                                 (map #(assoc % :Type (get data-contact/translated-contact-mechanism-types (:Type %)))
+                                      contact-mechanisms)))]
+  (let [groups (group-by :Type contact-mechanisms)]
+    (concat
+     (get groups "Telephone")
+     (get groups "Fax")
+     (get groups "Email")))))
+
+(defn- expected-contact-info-related-urls
+ "Returns expected related url - take the first related url and the first url in related urls"
+ [related-urls]
+ (when related-urls
+  (expected-iso-19115-2-related-urls
+   [(-> related-urls
+      first
+      (update :URLs #(take 1 %)))])))
+
+(defn- expected-iso-contact-information
+ "Returns expected contact information - 1 address"
+ [contact-info]
+ (-> contact-info
+     (update :RelatedUrls expected-contact-info-related-urls)
+     (update :ContactMechanisms expected-iso-contact-mechanisms)
+     (update :Addresses #(take 1 %))))
+
+(defn- trim-name-whitespace
+ "If the name is not nil, trim whitespace"
+ [name]
+ (when name
+  (str/trim name)))
+
+(defn- expected-iso-data-center
+ "Expected data center - trim whitespace from short name and long name, update contact info"
+ [data-center role]
+ (-> data-center
+     (assoc :Roles [role])
+     (assoc :ContactPersons nil)
+     (assoc :ContactGroups nil)
+     (assoc :Uuid nil)
+     (update :ShortName trim-name-whitespace)
+     (update :LongName trim-name-whitespace)
+     (update :ContactInformation expected-iso-contact-information)))
+
+(defn- expected-iso-data-centers
+ "For each data center, if there are multiple roles make a copy of the data center for each role"
+ [data-centers]
+ (for [data-center data-centers
+       role (:Roles data-center)]
+  (expected-iso-data-center data-center role)))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -284,9 +341,9 @@
       (update :LocationKeywords conversion-util/fix-location-keyword-conversion)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      (assoc :DataCenters [su/not-provided-data-center])
       (assoc :ContactGroups nil)
       (assoc :ContactPersons nil)
+      (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :CollectionProgress su/with-default)

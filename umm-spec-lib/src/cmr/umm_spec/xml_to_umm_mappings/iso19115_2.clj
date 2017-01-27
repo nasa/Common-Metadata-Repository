@@ -16,6 +16,7 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
@@ -227,10 +228,10 @@
      :AccessConstraints (parse-access-constraints doc sanitize?)
      :UseConstraints
      (su/truncate
-       (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                    #"(?s)^(?!Restriction Comment:).+")
-       su/USECONSTRAINTS_MAX
-       sanitize?)
+      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
+                   #"(?s)^(?!Restriction Comment:).+")
+      su/USECONSTRAINTS_MAX
+      sanitize?)
      :LocationKeywords (lk/translate-spatial-keywords
                         (kf/get-kms-index context) (kws/descriptive-keywords md-data-id-el "place"))
      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
@@ -242,12 +243,12 @@
                           (when sanitize? su/not-provided-temporal-extents))
      :ProcessingLevel {:Id
                        (su/with-default
-                         (char-string-value
-                           md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
-                         sanitize?)
+                        (char-string-value
+                         md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                        sanitize?)
                        :ProcessingLevelDescription
                        (char-string-value
-                         md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
+                        md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (dru/parse-distributions doc sanitize?)
      :Platforms (platform/parse-platforms doc sanitize?)
      :Projects (parse-projects doc sanitize?)
@@ -259,10 +260,10 @@
                                                                           (str (format role-xpath name) xpath)))]]
                               {:Author (select-party "author" "/gmd:organisationName")
                                :PublicationDate (date/sanitize-and-parse-date
-                                                   (str (date-at publication
-                                                              (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
-                                                                   "gmd:date/gco:Date")))
-                                                   sanitize?)
+                                                 (str (date-at publication
+                                                               (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
+                                                                    "gmd:date/gco:Date")))
+                                                 sanitize?)
                                :Title (char-string-value publication "gmd:title")
                                :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
                                :Edition (char-string-value publication "gmd:edition")
@@ -275,14 +276,14 @@
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal
-                          md-data-id-el
-                          ["place" "temporal" "project" "platform" "instrument" "theme"])
+                         md-data-id-el
+                         ["place" "temporal" "project" "platform" "instrument" "theme"])
      :ScienceKeywords (kws/parse-science-keywords md-data-id-el sanitize?)
      :RelatedUrls (dru/parse-related-urls doc sanitize?)
      :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
      ;; DataCenters is not implemented but is required in UMM-C
      ;; Implement with CMR-3161
-     :DataCenters (when sanitize? [su/not-provided-data-center])
+     :DataCenters (data-contact/parse-contacts doc sanitize?)
      :MetadataDates (parse-metadata-dates doc)}))
 
 (defn iso19115-2-xml-to-umm-c

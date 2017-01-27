@@ -1,66 +1,91 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact
   "Functions for generating ISO19115-2 XML elements from UMM DataCenters, ContactPersons and ContactGroups."
   (:require
+   [clojure.set :as set]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]
-   [cmr.umm-spec.util :refer [char-string]]))
+   [cmr.umm-spec.util :refer [char-string]]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as related-url]))
 
-(def contact-info
- {:ContactMechanisms [{:Value "1 301 614 5710 x",
-                       :Type "Telephone"}
-                      {:Value "1 301 614 5644 x",
-                       :Type "Fax"}
-                      {:Value "per.gloersen@gsfc.nasa.gov",
-                       :Type "Email"}]
-  :ServiceHours nil,
-  :Addresses [{:City "Greenbelt",
-               :StateProvince "MD",
-               :StreetAddresses ["Laboratory for Hydrospheric Processes"
-                                 "NASA/Goddard Space Flight Center"
-                                 "Code 971",]
-               :PostalCode "20771"}]
-  :RelatedUrls [{:URLs ["http://nsidc.org"]}
-                :Description nil],
-  :ContactInstruction nil})
+(def translated-contact-mechanism-types
+ {"Direct Line" "Telephone"
+  "Email" "Email"
+  "Fax" "Fax"
+  "Mobile" "Telephone"
+  "Primary" "Telephone"
+  "TDD/TTY Phone" "Telephone"
+  "Telephone" "Telephone"
+  "U.S. toll free" "Telephone"})
 
+(def data-center-role->iso-role
+ (set/map-invert data-contact/iso-data-center-role->umm-role))
 
 (defn- get-phone-contact-mechanisms
  "Get phone/fax contact mechanisms from contact info"
  [contact-info]
- (filter #(or (= "Telephone" (:Type %))
-              (= "Fax" (:Type %)))
-         (:ContactMechanisms contact-info)))
+ (when-let [contact-mechanisms (:ContactMechanisms contact-info)]
+  (let [contact-mechanisms
+        (map #(assoc % :Type (get translated-contact-mechanism-types (:Type %)))
+             (:ContactMechanisms contact-info))]
+   (filter #(or (= "Telephone" (:Type %))
+                (= "Fax" (:Type %)))
+           contact-mechanisms))))
 
 (defn generate-contact-info
+ "Generate contact info xml from ContactInformation"
  [contact-info]
  [:gmd:contactInfo
   [:gmd:CI_Contact
-   (when-let [phone-contacts (get-phone-contact-mechanisms contact-info)]
+   (when-let [phone-contacts (seq (get-phone-contact-mechanisms contact-info))]
      [:gmd:phone
       [:gmd:CI_Telephone
        (for [phone (filter #(= "Telephone" (:Type %)) phone-contacts)]
         [:gmd:voice (char-string (:Value phone))])
        (for [fax (filter #(= "Fax" (:Type %)) phone-contacts)]
-        [:gmd:fascimile (char-string (:Value fax))])]])
-   (when-let [address (first (:Addresses contact-info))]
-     [:gmd:address
-      [:gmd:CI_Address
-       (for [street-address (:StreetAddresses address)]
-        [:gmd:deliveryPoint (char-string street-address)])
-       (when-let [city (:City address)]
-        [:gmd:city (char-string city)])
-       (when-let [state (:StateProvince address)]
-        [:gmd:administrativeArea (char-string state)])
-       (when-let [postal-code (:PostalCode address)]
-        [:gmd:postalCode (char-string postal-code)])
-       (when-let [country (:Country address)]
-        [:gmd:country (char-string country)])
-       (for [email (filter #(= "Email" (:Type %)) (:ContactMechanisms contact-info))]
-        [:gmd:electronicMailAddress (char-string (:Value email))])]])
+        [:gmd:facsimile (char-string (:Value fax))])]])
+   (let [address (first (:Addresses contact-info))
+         emails (filter #(= "Email" (:Type %)) (:ContactMechanisms contact-info))]
+     (when (or address emails)
+      [:gmd:address
+       [:gmd:CI_Address
+        (for [street-address (:StreetAddresses address)]
+         [:gmd:deliveryPoint (char-string street-address)])
+        (when-let [city (:City address)]
+         [:gmd:city (char-string city)])
+        (when-let [state (:StateProvince address)]
+         [:gmd:administrativeArea (char-string state)])
+        (when-let [postal-code (:PostalCode address)]
+         [:gmd:postalCode (char-string postal-code)])
+        (when-let [country (:Country address)]
+         [:gmd:country (char-string country)])
+        (for [email emails]
+         [:gmd:electronicMailAddress (char-string (:Value email))])]]))
    (when-let [url (first (:RelatedUrls contact-info))]
-    [:gmd:onlineResource
-     [:gmd:CI_OnlineResource
-      [:gmd:linkage
-       [:gmd:URL (first (:URLs url))]]
-      (when-let [description (:Description url)]
-       [:gmd:description (char-string description)])]])]])
+     (first
+      (related-url/generate-online-resource-url
+       (update url :URLs #(take 1 %))
+       :gmd:onlineResource)))
+   (when-let [hours (:ServiceHours contact-info)]
+    [:gmd:hoursOfService (char-string hours)])
+   (when-let [instruction (:ContactInstruction contact-info)]
+    [:gmd:contactInstructions (char-string instruction)])]])
+
+(defn generate-data-centers
+  "Generate data center XML from DataCenters"
+ [data-centers]
+ (for [data-center data-centers
+       role (:Roles data-center)
+       :let [iso-role (get data-center-role->iso-role role)]]
+  (do
+   [:gmd:pointOfContact
+    [:gmd:CI_ResponsibleParty
+     [:gmd:organisationName
+       (char-string (if (:LongName data-center)
+                     (str (:ShortName data-center) " &gt; " (:LongName data-center))
+                     (:ShortName data-center)))]
+     (generate-contact-info (:ContactInformation data-center))
+     [:gmd:role
+      [:gmd:CI_RoleCode
+        {:codeList (:ndgc iso/code-lists)
+         :codeListValue iso-role} iso-role]]]])))

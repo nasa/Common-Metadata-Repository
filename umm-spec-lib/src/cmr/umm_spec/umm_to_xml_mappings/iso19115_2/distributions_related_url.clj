@@ -43,12 +43,12 @@
 
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
-  [online-resource-url]
+  [online-resource-url open-tag]
   (let [{:keys [URLs Description] [rel] :Relation} online-resource-url
         name (type->name rel)
         code (if (= "GET DATA" rel) "download" "information")]
     (for [url URLs]
-      [:gmd:onLine
+      [open-tag
        [:gmd:CI_OnlineResource
         [:gmd:linkage
          [:gmd:URL url]]
@@ -103,4 +103,4 @@
           [:gmd:distributorTransferOptions
            [:gmd:MD_DigitalTransferOptions
             (for [related-url related-urls]
-              (generate-online-resource-url related-url))]]]]]])))
+              (generate-online-resource-url related-url :gmd:onLine))]]]]]])))

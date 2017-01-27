@@ -10,6 +10,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
@@ -309,6 +310,7 @@
              {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
+         (data-contact/generate-data-centers (:DataCenters c))
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (kws/generate-iso19115-descriptive-keywords
