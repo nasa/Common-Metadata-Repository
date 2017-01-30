@@ -74,7 +74,8 @@
                                                     :permissions ["read"]}]
                                :catalog_item_identity {:name "Catalog Item Identity 1"
                                                        :provider_id "PROV1"
-                                                       :collection_identifier {:access_value {:include_undefined_value true}}
+                                                       :collection_identifier {:access_value {:include_undefined_value true
+                                                                                              :min_value 1 :max_value 10000}}
                                                        :collection_applicable true
                                                        :granule_applicable false}}
                               {:token (transmit-config/echo-system-token)})))))
@@ -85,7 +86,8 @@
                                                     :permissions ["read"]}]
                                :catalog_item_identity {:name "Catalog Item Identity 2"
                                                        :provider_id "PROV1"
-                                                       :collection_identifier {:access_value {:include_undefined_value true}}
+                                                       :collection_identifier {:access_value {:include_undefined_value true
+                                                                                              :min_value 4 :max_value 999}}
                                                        :collection_applicable false
                                                        :granule_applicable true}}
                               {:token (transmit-config/echo-system-token)}))))))
@@ -416,30 +418,29 @@
                                    :collection_applicable true
                                    :collection_identifier {:entry_titles ["notreal"]}}}
 
-          "At least one of a range (min and/or max) or include_undefined value must be specified."
-          ["min_value and/or max_value must be specified when include_undefined_value is false"]
+          "At least one of a range (min and/or max) or include_undefined value must be specified (collection_identifier)"
+          ["one of either include_undefined_value or the combination of min_value and max_value must be specified"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :collection_applicable true
                                    :collection_identifier {:access_value {:include_undefined_value false}}}}
 
-          "include_undefined_value and range values can't be used together"
-          ["min_value and/or max_value must not be specified if include_undefined_value is true"]
-          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
-           :catalog_item_identity {:name "A Catalog Item ACL"
-                                   :provider_id "PROV1"
-                                   :collection_applicable true
-                                   :collection_identifier {:access_value {:min_value 4
-                                                                          :include_undefined_value true}}}}
-
           "min and max value must be valid numbers if specified"
-          ["/catalog_item_identity/granule_identifier/access_value/min_value instance type (string) does not match any allowed primitive type (allowed: [\"integer\",\"number\"])"]
+          ["/catalog_item_identity/collection_identifier/access_value/min_value instance type (string) does not match any allowed primitive type (allowed: [\"integer\",\"number\"])"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :collection_applicable true
-                                   :granule_identifier {:access_value {:min_value "potato"}}}}
+                                   :collection_identifier {:access_value {:min_value "potato"}}}}
+
+          "min_value and max_value presence"
+          ["min_value and max_value must both be present if either is specified"]
+          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
+           :catalog_item_identity {:name "A Catalog Item ACL"
+                                   :provider_id "PROV1"
+                                   :collection_applicable true
+                                   :collection_identifier {:access_value {:min_value 10}}}}
 
           "temporal validation: stop must be greater than or equal to start"
           ["start_date must be before stop_date"]
@@ -452,22 +453,13 @@
                                                                       :mask "intersect"}}}}
 
           ;; Repeated for Granule Identifier
-          "At least one of a range (min and/or max) or include_undefined value must be specified."
-          ["min_value and/or max_value must be specified when include_undefined_value is false"]
+          "At least one of a range (min and/or max) or include_undefined value must be specified (granule_identifier)"
+          ["one of either include_undefined_value or the combination of min_value and max_value must be specified"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
                                    :granule_applicable true
                                    :granule_identifier {:access_value {:include_undefined_value false}}}}
-
-          "include_undefined_value and range values can't be used together"
-          ["min_value and/or max_value must not be specified if include_undefined_value is true"]
-          {:group_permissions [{:user_type "guest" :permissions ["read"]}]
-           :catalog_item_identity {:name "A Catalog Item ACL"
-                                   :provider_id "PROV1"
-                                   :granule_applicable true
-                                   :granule_identifier {:access_value {:min_value 4
-                                                                       :include_undefined_value true}}}}
 
           "start and stop dates must be valid dates"
           ["/catalog_item_identity/granule_identifier/temporal/start_date string \"banana\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"]

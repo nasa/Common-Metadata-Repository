@@ -97,12 +97,17 @@
   "Validates the access_value part of a collection or granule identifier."
   [key-path access-value-map]
   (let [{:keys [min-value max-value include-undefined-value]} access-value-map]
-    (cond
-      (and include-undefined-value (or min-value max-value))
-      {key-path ["min_value and/or max_value must not be specified if include_undefined_value is true"]}
+    (when-not (or (true? include-undefined-value)
+                  (number? min-value)
+                  (number? max-value))
+      {key-path ["one of either include_undefined_value or the combination of min_value and max_value must be specified"]})))
 
-      (and (not include-undefined-value) (not (or min-value max-value)))
-      {key-path ["min_value and/or max_value must be specified when include_undefined_value is false"]})))
+(defn- access-value-min-max-value-validation
+  [key-path access-value-map]
+  (let [{:keys [min-value max-value]} access-value-map]
+    (when-not (or (and (nil? min-value) (nil? max-value))
+                  (and (number? min-value) (number? max-value)))
+      {key-path ["min_value and max_value must both be present if either is specified"]})))
 
 (defn temporal-identifier-validation
   "A validation for the temporal part of an ACL collection or granule identifier."
@@ -116,12 +121,12 @@
   "Returns a validation for an ACL catalog_item_identity.collection_identifier closed over the given context and ACL to be validated."
   [context acl]
   {:entry-titles (v/when-present (make-collection-entry-titles-validation context acl))
-   :access-value (v/when-present access-value-validation)
+   :access-value (v/when-present [access-value-validation access-value-min-max-value-validation])
    :temporal (v/when-present temporal-identifier-validation)})
 
 (def granule-identifier-validation
   "Validation for the catalog_item_identity.granule_identifier portion of an ACL."
-  {:access-value (v/when-present access-value-validation)
+  {:access-value (v/when-present [access-value-validation access-value-min-max-value-validation])
    :temporal (v/when-present temporal-identifier-validation)})
 
 (defn make-single-instance-identity-target-id-validation
