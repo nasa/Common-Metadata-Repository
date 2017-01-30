@@ -285,23 +285,23 @@
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
              [:gmd:version (char-string (:Version c))]]]
-         (when-let [doi (:DOI c)]
-           [:gmd:identifier
-            [:gmd:MD_Identifier
-           (when-let [authority (:Authority doi)]
-             [:gmd:authority
-              [:gmd:CI_Citation
-               [:gmd:title [:gco:CharacterString ""]]
-                [:gmd:date ""]
-               [:gmd:citedResponsibleParty
-                [:gmd:CI_ResponsibleParty
-                 [:gmd:organisationName [:gco:CharacterString authority]]
-                 [:gmd:role
-                  [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                     :codeListValue ""} "authority"]]]]]])
-             [:gmd:code [:gco:CharacterString (:DOI doi)]]
-             [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-             [:gmd:description [:gco:CharacterString "DOI"]]]])]]
+           (when-let [doi (:DOI c)]
+             [:gmd:identifier
+              [:gmd:MD_Identifier
+               (when-let [authority (:Authority doi)]
+                 [:gmd:authority
+                  [:gmd:CI_Citation
+                   [:gmd:title [:gco:CharacterString ""]]
+                   [:gmd:date ""]
+                   [:gmd:citedResponsibleParty
+                    [:gmd:CI_ResponsibleParty
+                     [:gmd:organisationName [:gco:CharacterString authority]]
+                     [:gmd:role
+                      [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                         :codeListValue ""} "authority"]]]]]])
+                 [:gmd:code [:gco:CharacterString (:DOI doi)]]
+                 [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+                 [:gmd:description [:gco:CharacterString "DOI"]]]])]]
          [:gmd:abstract (char-string (if (or abstract version-description)
                                        (str abstract iso/version-description-separator version-description)
                                        su/not-provided))]
@@ -404,6 +404,11 @@
          [:gmd:lineage
           [:gmd:LI_Lineage
            (aa/generate-data-quality-info-additional-attributes additional-attributes)
+           (when-let [processing-centers (data-contact/generate-processing-centers (:DataCenters c))]
+            [:gmd:processStep
+             [:gmd:LI_ProcessStep
+              [:gmd:description {:gco:nilReason "missing"}]
+              processing-centers]])
            (ma/generate-source-metadata-associations c)]]]]
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation

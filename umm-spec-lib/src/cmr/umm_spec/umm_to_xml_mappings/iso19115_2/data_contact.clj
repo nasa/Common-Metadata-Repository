@@ -89,9 +89,18 @@
  [data-centers role]
  (filter #(some #{role} (:Roles %)) data-centers))
 
-(defn generate-distributors
+(defn generate-processing-centers
  [data-centers]
- (def data-centers data-centers)
+ (let [processors (filter-data-centers-by-role data-centers "PROCESSOR")]
+  (seq
+   (for [processor processors]
+    [:gmd:processor
+     (generate-data-center processor "processor")]))))
+
+(defn generate-distributors
+ "Distributors are incuded with data centers but also in
+ /gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact"
+ [data-centers]
  (let [distributors (filter-data-centers-by-role data-centers "DISTRIBUTOR")]
   (seq
    (for [center distributors]

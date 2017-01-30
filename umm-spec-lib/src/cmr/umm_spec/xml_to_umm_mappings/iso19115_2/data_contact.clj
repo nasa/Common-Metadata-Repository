@@ -13,7 +13,12 @@
  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty")
 
 (def distributor-xpath
- "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact")
+ (str "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/"
+      "gmd:distributorContact/gmd:CI_ResponsibleParty"))
+
+(def processor-xpath
+ (str "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep/"
+      "gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty"))
 
 (def iso-data-center-role->umm-role
  {"custodian" "ARCHIVER"
@@ -96,7 +101,7 @@
 (defn parse-data-center
  "Parse data center XML into data centers"
  [data-center persons sanitize?]
- (let [organization-name (char-string-value data-center "gmd:organisationName")]
+ (when-let [organization-name (char-string-value data-center "gmd:organisationName")]
   (merge
    {:Roles [(get iso-data-center-role->umm-role (value-of data-center "gmd:role/gmd:CI_RoleCode"))]
     :ContactInformation (parse-contact-information
@@ -133,9 +138,11 @@
        data-centers (map #(parse-data-center % nil sanitize?) data-centers-xml)
        additional-contacts (group-contacts (select xml "/gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"))
        distributors (group-contacts (select xml distributor-xpath))
+       processors (group-contacts (select xml processor-xpath))
        data-centers (concat data-centers
                             (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?)
-                            (process-duplicate-data-centers data-centers (:data-centers-xml distributors) sanitize?))]
+                            (process-duplicate-data-centers data-centers (:data-centers-xml distributors) sanitize?)
+                            (process-duplicate-data-centers data-centers (:data-centers-xml processors) sanitize?))]
   (if (seq data-centers)
    data-centers
    (when sanitize?
