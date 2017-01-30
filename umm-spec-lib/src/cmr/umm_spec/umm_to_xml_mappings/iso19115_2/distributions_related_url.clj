@@ -72,8 +72,7 @@
         related-urls (online-resource-urls (:RelatedUrls c))
         contact-element [:gmd:distributorContact {:gco:nilReason "missing"}]]
     (when (or distributions related-urls)
-      [:gmd:distributionInfo
-       [:gmd:MD_Distribution
+      (conj
         (for [[d idx] (map vector distributions (range (count distributions)))]
           [:gmd:distributor
            [:gmd:MD_Distributor
@@ -103,4 +102,4 @@
           [:gmd:distributorTransferOptions
            [:gmd:MD_DigitalTransferOptions
             (for [related-url related-urls]
-              (generate-online-resource-url related-url :gmd:onLine))]]]]]])))
+              (generate-online-resource-url related-url :gmd:onLine))]]]]))))

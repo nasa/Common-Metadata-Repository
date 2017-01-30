@@ -368,7 +368,13 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (dru/generate-distributions c)
+       (let [related-url-distributions (dru/generate-distributions c)
+             data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
+        (when (or related-url-distributions data-center-distributors)
+         [:gmd:distributionInfo
+          [:gmd:MD_Distribution
+           related-url-distributions
+           data-center-distributors]]))
        [:gmd:dataQualityInfo
         [:gmd:DQ_DataQuality
          [:gmd:scope

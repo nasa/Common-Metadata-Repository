@@ -85,11 +85,26 @@
      {:codeList (:ndgc iso/code-lists)
       :codeListValue iso-role} iso-role]]])
 
+(defn- filter-data-centers-by-role
+ [data-centers role]
+ (filter #(some #{role} (:Roles %)) data-centers))
+
+(defn generate-distributors
+ [data-centers]
+ (def data-centers data-centers)
+ (let [distributors (filter-data-centers-by-role data-centers "DISTRIBUTOR")]
+  (seq
+   (for [center distributors]
+    [:gmd:distributor
+     [:gmd:MD_Distributor
+      [:gmd:distributorContact
+       (generate-data-center center "distributor")]]]))))
+
 (defn generate-archive-centers
  "Archive centers are included with the data centers but also in
  /gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"
  [data-centers]
- (let [archive-centers (filter #(contains? #{"ARCHIVER"} (:Roles %)) data-centers)]
+ (let [archive-centers (filter-data-centers-by-role data-centers "ARCHIVER")]
   (seq
    (for [center archive-centers]
     [:gmd:contact

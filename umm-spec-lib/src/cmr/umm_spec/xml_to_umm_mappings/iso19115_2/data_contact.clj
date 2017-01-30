@@ -12,6 +12,9 @@
 (def point-of-contact-xpath
  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty")
 
+(def distributor-xpath
+ "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorContact")
+
 (def iso-data-center-role->umm-role
  {"custodian" "ARCHIVER"
   "originator" "ORIGINATOR"
@@ -109,13 +112,11 @@
  [data-centers data-centers-xml sanitize?]
  (for [data-center-xml data-centers-xml
        :let [data-center (parse-data-center data-center-xml nil sanitize?)]]
-   (do
-    (proto-repl.saved-values/save 9)
-    (when (not-any? #(and (= (:ShortName %) (= (:ShortName data-center)))
-                          (= (:LongName %) (= (:LongName data-center)))
-                          (= (:Roles %) (= (:Roles data-center))))
+  (when (not-any? #(and (= (:ShortName %) (:ShortName data-center))
+                        (= (:LongName %) (:LongName data-center))
+                        (= (:Roles %) (:Roles data-center)))
                 data-centers)
-     data-center))))
+     data-center)))
 
 (defn- group-contacts
  "Given contact xml, split the contacts into data centers and contacts"
@@ -131,8 +132,10 @@
  (let [{:keys [data-centers-xml contacts-xml]} (group-contacts (select xml point-of-contact-xpath))
        data-centers (map #(parse-data-center % nil sanitize?) data-centers-xml)
        additional-contacts (group-contacts (select xml "/gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"))
+       distributors (group-contacts (select xml distributor-xpath))
        data-centers (concat data-centers
-                            (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?))]
+                            (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?)
+                            (process-duplicate-data-centers data-centers (:data-centers-xml distributors) sanitize?))]
   (if (seq data-centers)
    data-centers
    (when sanitize?
