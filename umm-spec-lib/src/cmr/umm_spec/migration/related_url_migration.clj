@@ -48,7 +48,7 @@
   [data-centers]
   (mapv (fn [data-center]
           (-> data-center
-              (update-in-each [:ContactGroups] dissoc-titles-from-contact-information)
+              (update-in-each [:ContactGroups] migrate-contacts-up)
               (update-in-each [:ContactPersons] migrate-contacts-up)
               (update :ContactInformation dissoc-titles-from-contact-information)))
         data-centers))
