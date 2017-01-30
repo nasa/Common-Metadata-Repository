@@ -302,23 +302,61 @@
        (assoc :LongName (when (> (count name-split) 1)
                          (str/join " " (map str/trim (rest name-split))))))))
 
+(defn- update-person-names
+ [person]
+ (let [{:keys [FirstName MiddleName LastName]} person
+       combined-name (str/trim (str/join " " [FirstName MiddleName LastName]))
+       names (str/split combined-name #" {1,}")
+       num-names (count names)]
+  (proto-repl.saved-values/save 3)
+  (if (= 1 num-names)
+    (-> person
+        (assoc :LastName (first names))
+        (dissoc :FirstName)
+        (dissoc :MiddleName))
+    (-> person
+        (assoc :FirstName (first names))
+        (assoc :MiddleName (str/join " " (subvec names 1 (dec num-names))))
+        (assoc :LastName (last names))))))
+
+(defn- expected-contact-person
+ [person role]
+ (-> person
+     (dissoc :Uuid)
+     (assoc :Roles [role])
+     update-person-names
+     (update :ContactInformation expected-iso-contact-information)))
+
 (defn- expected-iso-data-center
  "Expected data center - trim whitespace from short name and long name, update contact info"
- [data-center role]
+ [data-center]
+ ;(proto-repl.saved-values/save 19)
  (-> data-center
-     (assoc :Roles [role])
-     (assoc :ContactPersons nil)
+     (update-in-each [:ContactPersons] #(expected-contact-person % "Data Center Contact"))
      (assoc :ContactGroups nil)
      (assoc :Uuid nil)
      update-short-and-long-name
-     (update :ContactInformation expected-iso-contact-information)))
+     (update :ContactInformation expected-iso-contact-information)
+     cmn/map->DataCenterType))
+
+(defn- expected-data-center-contacts
+ [data-centers]
+ (def data-centers data-centers)
+ (let [data-center-groups (group-by #(select-keys % [:ShortName :LongName]) data-centers)]
+  (apply concat
+   (for [group (vals data-center-groups)
+         :let [persons (apply concat (map :ContactPersons group))]]
+     (map #(assoc % :ContactPersons persons) group)))))
 
 (defn- expected-iso-data-centers
  "For each data center, if there are multiple roles make a copy of the data center for each role"
  [data-centers]
- (for [data-center data-centers
-       role (:Roles data-center)]
-  (expected-iso-data-center data-center role)))
+ (def data-centers data-centers)
+ (let [data-centers (map expected-iso-data-center data-centers)
+       data-centers (expected-data-center-contacts data-centers)]
+  (for [data-center data-centers
+        role (:Roles data-center)]
+   (assoc data-center :Roles [role]))))
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]

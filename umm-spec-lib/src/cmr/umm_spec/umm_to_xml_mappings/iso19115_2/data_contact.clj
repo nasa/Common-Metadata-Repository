@@ -2,6 +2,7 @@
   "Functions for generating ISO19115-2 XML elements from UMM DataCenters, ContactPersons and ContactGroups."
   (:require
    [clojure.set :as set]
+   [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.util :refer [char-string]]
@@ -71,14 +72,18 @@
    (when-let [instruction (:ContactInstruction contact-info)]
     [:gmd:contactInstructions (char-string instruction)])]])
 
+(defn- generate-data-center-name
+ [data-center]
+ (if (:LongName data-center)
+  (str (:ShortName data-center) " &gt; " (:LongName data-center))
+  (:ShortName data-center)))
+
 (defn- generate-data-center
  "Generate data center XML for the data center and ISO role"
  [data-center iso-role]
  [:gmd:CI_ResponsibleParty
   [:gmd:organisationName
-    (char-string (if (:LongName data-center)
-                  (str (:ShortName data-center) " &gt; " (:LongName data-center))
-                  (:ShortName data-center)))]
+   (char-string (generate-data-center-name data-center))]
   (generate-contact-info (:ContactInformation data-center))
   [:gmd:role
    [:gmd:CI_RoleCode
@@ -119,11 +124,32 @@
     [:gmd:contact
      (generate-data-center center "custodian")]))))
 
+(defn- generate-contact-person
+ [person role data-center-name]
+ (let [{:keys [FirstName MiddleName LastName NonDataCenterAffiliation ContactInformation]} person]
+  [:gmd:pointOfContact
+   [:gmd:CI_ResponsibleParty
+    [:gmd:individualName (char-string (str/trim (str/join " " [FirstName MiddleName LastName])))]
+    (when data-center-name
+     [:gmd:organisationName (char-string data-center-name)])
+    [:gmd:positionName (char-string NonDataCenterAffiliation)]
+    (generate-contact-info ContactInformation)
+    [:gmd:role
+     [:gmd:CI_RoleCode
+       {:codeList (:ndgc iso/code-lists)
+        :codeListValue "pointOfContact"} "pointOfContact"]]]]))
+
 (defn generate-data-centers
-  "Generate data center XML from DataCenters"
+ "Generate data center XML from DataCenters"
  [data-centers]
  (for [data-center data-centers
        role (:Roles data-center)
        :let [iso-role (get data-center-role->iso-role role)]]
    [:gmd:pointOfContact
-    (generate-data-center data-center iso-role)]))
+     (generate-data-center data-center iso-role)]))
+
+(defn generate-data-center-contact-persons
+ [data-centers]
+ (for [data-center data-centers]
+  (map #(generate-contact-person % "Data Center Contact" (generate-data-center-name data-center))
+       (:ContactPersons data-center))))
