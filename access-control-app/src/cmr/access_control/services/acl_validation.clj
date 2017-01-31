@@ -98,8 +98,8 @@
   [key-path access-value-map]
   (let [{:keys [min-value max-value include-undefined-value]} access-value-map]
     (when-not (or (true? include-undefined-value)
-                  (number? min-value)
-                  (number? max-value))
+                  (and (number? min-value)
+                       (number? max-value)))
       {key-path ["either include_undefined_value or the combination of min_value and max_value must be specified"]})))
 
 (defn- access-value-min-max-value-validation

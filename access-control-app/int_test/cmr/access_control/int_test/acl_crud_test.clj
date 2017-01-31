@@ -435,7 +435,8 @@
                                    :collection_identifier {:access_value {:min_value "potato"}}}}
 
           "min_value and max_value presence"
-          ["min_value and max_value must both be present if either is specified"]
+          ["either include_undefined_value or the combination of min_value and max_value must be specified"
+           "min_value and max_value must both be present if either is specified"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
