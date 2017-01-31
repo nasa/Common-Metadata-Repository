@@ -84,29 +84,44 @@
   "Associate the tag to a list of collections."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
+  (if (common-enabled/app-enabled? context)
+    (do
+      (validate-tag-content-type headers)
+      (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
+    (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn disassociate-tag-to-collections
   "Disassociate the tag to a list of collections."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-to-collections context tag-key body)))
+  (if (common-enabled/app-enabled? context)
+    (do
+      (validate-tag-content-type headers)
+      (tag-api-response (tagging-service/disassociate-tag-to-collections context tag-key body)))
+    (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
-
+  (if (common-enabled/app-enabled? context)
+    (do
+      (validate-tag-content-type headers)
+      (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
+    (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 (defn disassociate-tag-by-query
   "Processes a request to disassociate a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
+  (if (common-enabled/app-enabled? context)
+    (do
+      (validate-tag-content-type headers)
+      (tag-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
+    (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn search-for-tags
   [context params]
