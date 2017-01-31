@@ -419,7 +419,7 @@
                                    :collection_identifier {:entry_titles ["notreal"]}}}
 
           "At least one of a range (min and/or max) or include_undefined value must be specified (collection_identifier)"
-          ["one of either include_undefined_value or the combination of min_value and max_value must be specified"]
+          ["either include_undefined_value or the combination of min_value and max_value must be specified"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"
@@ -454,7 +454,7 @@
 
           ;; Repeated for Granule Identifier
           "At least one of a range (min and/or max) or include_undefined value must be specified (granule_identifier)"
-          ["one of either include_undefined_value or the combination of min_value and max_value must be specified"]
+          ["either include_undefined_value or the combination of min_value and max_value must be specified"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"
                                    :provider_id "PROV1"

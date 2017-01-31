@@ -100,7 +100,7 @@
     (when-not (or (true? include-undefined-value)
                   (number? min-value)
                   (number? max-value))
-      {key-path ["one of either include_undefined_value or the combination of min_value and max_value must be specified"]})))
+      {key-path ["either include_undefined_value or the combination of min_value and max_value must be specified"]})))
 
 (defn- access-value-min-max-value-validation
   [key-path access-value-map]
