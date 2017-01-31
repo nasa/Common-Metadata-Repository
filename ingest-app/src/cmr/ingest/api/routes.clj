@@ -48,7 +48,7 @@
                              ["migrate" "-version" version]
                              ["migrate"])]
           (info "Running db migration:" migrate-args)
-          (drift/run migrate-args))
+          (drift/run (conj migrate-args "-c" "config.migrate-config/app-migrate-config")))
         {:status 204})
 
       ;; add routes for managing jobs

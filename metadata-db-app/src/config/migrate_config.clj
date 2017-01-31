@@ -40,7 +40,7 @@
   ; sleep a second to workaround timestamp precision issue
   (Thread/sleep 1000))
 
-(defn migrate-config []
+(defn app-migrate-config []
   {:directory "src/migrations/"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.migrate-config :as config])"
    :namespace-prefix "migrations"
@@ -48,3 +48,6 @@
    :init maybe-create-schema-table
    :current-version current-db-version
    :update-version update-db-version})
+
+(defn migrate-config []
+  (assoc (app-migrate-config) :finished shutdown-agents))
