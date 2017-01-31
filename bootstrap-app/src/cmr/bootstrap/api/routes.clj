@@ -19,6 +19,7 @@
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
    [compojure.core :refer :all]
    [compojure.route :as route]
+   [drift.execute :as drift]
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
@@ -192,6 +193,16 @@
 
       ;; Add routes for accessing caches
       common-routes/cache-api-routes
+
+      ;; db migration route
+      (POST "/db-migrate" {:keys [request-context params]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (let [migrate-args (if-let [version (:version params)]
+                             ["migrate" "-version" version]
+                             ["migrate"])]
+          (info "Running db migration:" migrate-args)
+          (drift/run migrate-args))
+        {:status 204})
 
       ;; Add routes for checking health of the application
       (common-health/health-api-routes hs/health))))

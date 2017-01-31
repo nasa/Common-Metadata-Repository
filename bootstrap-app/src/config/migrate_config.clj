@@ -25,8 +25,10 @@
   (try
     (j/db-do-commands (db) "CREATE TABLE CMR_BOOTSTRAP.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
     (catch SQLException e
-      ;; 17081 is the error code we get if the table exists
-      (when-not (= 17081 (.getErrorCode e))
+      ;; 17081 is the error code we get if the table exists and sometimes we also get
+      ;; error message for Universal Connection Pool already exists in the Universal Connection Pool Manager
+      (when-not (or (= 17081 (.getErrorCode e))
+                    (re-matches #"^Unable to start the Universal Connection Pool.*" (.getMessage e)))
         (throw e)))))
 
 (defn current-db-version []
@@ -43,7 +45,5 @@
    :namespace-prefix "cmr.bootstrap.migrations"
    :migration-number-generator incremental-migration-number-generator
    :init maybe-create-schema-table
-   :finished shutdown-agents
    :current-version current-db-version
    :update-version update-db-version })
-
