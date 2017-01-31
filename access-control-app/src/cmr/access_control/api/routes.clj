@@ -195,6 +195,10 @@
     (POST "/reset" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (reset request-context (= (:bootstrap_data params) "true"))
+      {:status 204})
+    (POST "/db-migrate" {context :request-context}
+      (acl/verify-ingest-management-permission context :update)
+      (index/create-index-or-update-mappings (-> context :system :search-index))
       {:status 204})))
 
 ;;; Handler
