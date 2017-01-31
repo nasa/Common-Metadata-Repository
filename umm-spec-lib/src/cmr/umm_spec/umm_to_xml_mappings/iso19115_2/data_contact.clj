@@ -153,3 +153,19 @@
  (for [data-center data-centers]
   (map #(generate-contact-person % "Data Center Contact" (generate-data-center-name data-center))
        (:ContactPersons data-center))))
+
+(defn- generate-contact-group
+ [contact-group]
+ [:gmd:pointOfContact
+   [:gmd:CI_ResponsibleParty
+    [:gmd:organisationName (char-string (:GroupName contact-group))]
+    [:gmd:positionName (char-string (:NonDataCenterAffiliation contact-group))]
+    (generate-contact-info (:ContactInformation contact-group))
+    [:gmd:role
+     [:gmd:CI_RoleCode
+       {:codeList (:ndgc iso/code-lists)
+        :codeListValue "pointOfContact"} "pointOfContact"]]]])
+
+(defn generate-data-center-contact-groups
+ [data-centers]
+ (map generate-contact-group (map :ContactGroups data-centers)))

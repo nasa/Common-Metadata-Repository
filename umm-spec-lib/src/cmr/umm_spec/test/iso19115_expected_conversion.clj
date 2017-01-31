@@ -297,10 +297,12 @@
  (let [{:keys [ShortName LongName]} data-center
        organization-name (str ShortName #"&gt;" LongName)
        name-split (str/split organization-name #"&gt;|>")]
-   (-> data-center
-       (assoc :ShortName (str/trim (first name-split)))
-       (assoc :LongName (when (> (count name-split) 1)
-                         (str/join " " (map str/trim (rest name-split))))))))
+   (if (> (count name-split) 0)
+    (-> data-center
+        (assoc :ShortName (str/trim (first name-split)))
+        (assoc :LongName (when (> (count name-split) 1)
+                          (str/join " " (map str/trim (rest name-split))))))
+    data-center)))
 
 (defn- update-person-names
  [person]
