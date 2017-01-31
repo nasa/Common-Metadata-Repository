@@ -83,6 +83,8 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
     * [GET /caches/\<cache-name> - Gets a list of the keys stored in the specific cache.](#get-cache-keys)
     * [GET /caches/\<cache-name>/\<cache-key> - Gets the value of the cache key in the specific cache](#get-cache-ialue)
     * [POST /caches/clear-cache - Clears the ingest caches.](#clear-cache)
+  * /db-migrate
+    * [POST - Run database migration.](#db-migrate)
   * /health
     * [GET - Gets the health of the ingest application.](#application-health)
 
@@ -322,6 +324,15 @@ The partial cache refresh will look for granules ingested over the last trigger 
 
     curl -i -XPOST http://localhost:3002/jobs/trigger-partial-collection-granule-aggregate-cache-refresh?token=XXXX
 
+### <a name="db-migrate"></a> Run database migration
+
+Migrate database to the latest schema version:
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3002/db-migrate
+
+Migrate database to a specific schema version (e.g. 3):
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3002/db-migrate?version=3
 
 
 ## License

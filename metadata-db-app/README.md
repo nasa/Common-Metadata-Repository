@@ -357,7 +357,20 @@ returns: list of maps containing granule counts per collection in JSON
 params: none
 returns: nothing (status 204)
 
-    curl -v -XPOST localhost:3001/reset
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3001/reset
+
+### POST /db-migrate
+
+params: version
+returns: nothing (status 204)
+
+Migrate database to the latest schema version:
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3001/db-migrate
+
+Migrate database to a specific schema version (e.g. 36):
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3001/db-migrate?version=36
 
 ## Jobs API
 

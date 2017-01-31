@@ -1,34 +1,44 @@
 (ns cmr.metadata-db.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [ring.middleware.params :as params]
-            [ring.middleware.nested-params :as nested-params]
-            [ring.middleware.keyword-params :as keyword-params]
-            [cheshire.core :as json]
-            [cmr.common.jobs :as jobs]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.cache :as cache]
-            [cmr.common.api.context :as context]
-            [cmr.metadata-db.services.health-service :as hs]
-            [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.jobs :as mdb-jobs]
-            [cmr.acl.core :as acl]
-            [cmr.metadata-db.api.provider :as provider-api]
-            [cmr.metadata-db.api.concepts :as concepts-api]
-            [cmr.common-app.api.health :as common-health]
-            [cmr.common-app.api.routes :as common-routes]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.cache :as cache]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.metadata-db.api.concepts :as concepts-api]
+   [cmr.metadata-db.api.provider :as provider-api]
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.metadata-db.services.health-service :as hs]
+   [cmr.metadata-db.services.jobs :as mdb-jobs]
+   [compojure.core :refer :all]
+   [compojure.route :as route]
+   [drift.execute :as drift]
+   [ring.middleware.json :as ring-json]
+   [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]))
 
 (def admin-api-routes
   "The administrative control routes for metadata db."
   (routes
     ;; delete the entire database
-    (POST "/reset" {:keys [request-context params headers]}
+    (POST "/reset" {:keys [request-context]}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
       (concept-service/reset request-context)
+      {:status 204})
+    (POST "/db-migrate" {:keys [request-context params]}
+      (acl/verify-ingest-management-permission request-context :update)
+      (let [migrate-args (if-let [version (:version params)]
+                           ["migrate" "-version" version]
+                           ["migrate"])]
+        (info "Running db migration:" migrate-args)
+        (drift/run migrate-args))
       {:status 204})))
 
 (def job-api-routes
