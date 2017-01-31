@@ -315,6 +315,8 @@
          (data-contact/generate-data-centers (:DataCenters c))
          (data-contact/generate-data-center-contact-persons (:DataCenters c))
          (data-contact/generate-data-center-contact-groups (:DataCenters c))
+         (data-contact/generate-contact-persons (:ContactPersons c))
+         (data-contact/generate-contact-groups (:ContactGroups c))
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (kws/generate-iso19115-descriptive-keywords

@@ -125,19 +125,21 @@
      (generate-data-center center "custodian")]))))
 
 (defn- generate-contact-person
- [person role data-center-name]
- (let [{:keys [FirstName MiddleName LastName NonDataCenterAffiliation ContactInformation]} person]
-  [:gmd:pointOfContact
-   [:gmd:CI_ResponsibleParty
-    [:gmd:individualName (char-string (str/trim (str/join " " [FirstName MiddleName LastName])))]
-    (when data-center-name
-     [:gmd:organisationName (char-string data-center-name)])
-    [:gmd:positionName (char-string NonDataCenterAffiliation)]
-    (generate-contact-info ContactInformation)
-    [:gmd:role
-     [:gmd:CI_RoleCode
-       {:codeList (:ndgc iso/code-lists)
-        :codeListValue "pointOfContact"} "pointOfContact"]]]]))
+ ([person role]
+  (generate-contact-person person role nil))
+ ([person role data-center-name]
+  (let [{:keys [FirstName MiddleName LastName NonDataCenterAffiliation ContactInformation]} person]
+   [:gmd:pointOfContact
+    [:gmd:CI_ResponsibleParty
+     [:gmd:individualName (char-string (str/trim (str/join " " [FirstName MiddleName LastName])))]
+     (when data-center-name
+      [:gmd:organisationName (char-string data-center-name)])
+     [:gmd:positionName (char-string NonDataCenterAffiliation)]
+     (generate-contact-info ContactInformation)
+     [:gmd:role
+      [:gmd:CI_RoleCode
+        {:codeList (:ndgc iso/code-lists)
+         :codeListValue "pointOfContact"} "pointOfContact"]]]])))
 
 (defn generate-data-centers
  "Generate data center XML from DataCenters"
@@ -169,3 +171,11 @@
 (defn generate-data-center-contact-groups
  [data-centers]
  (map generate-contact-group (map :ContactGroups data-centers)))
+
+(defn generate-contact-persons
+ [contact-persons]
+ (map #(generate-contact-person % "Technical Contact") contact-persons))
+
+(defn generate-contact-groups
+ [contact-groups]
+ (map generate-contact-group contact-groups))

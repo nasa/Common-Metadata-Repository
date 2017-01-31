@@ -310,7 +310,6 @@
        combined-name (str/trim (str/join " " [FirstName MiddleName LastName]))
        names (str/split combined-name #" {1,}")
        num-names (count names)]
-  (proto-repl.saved-values/save 3)
   (if (= 1 num-names)
     (-> person
         (assoc :LastName (first names))
@@ -323,16 +322,23 @@
 
 (defn- expected-contact-person
  [person role]
+ (proto-repl.saved-values/save 8)
  (-> person
      (dissoc :Uuid)
      (assoc :Roles [role])
      update-person-names
      (update :ContactInformation expected-iso-contact-information)))
 
+(defn- expected-contact-group
+ [group]
+ (-> group
+     (dissoc :Uuid)
+     (assoc :Roles ["User Services"])
+     (update :ContactInformation expected-iso-contact-information)))
+
 (defn- expected-iso-data-center
  "Expected data center - trim whitespace from short name and long name, update contact info"
  [data-center]
- ;(proto-repl.saved-values/save 19)
  (-> data-center
      (update-in-each [:ContactPersons] #(expected-contact-person % "Data Center Contact"))
      (assoc :ContactGroups nil)
@@ -362,6 +368,7 @@
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]
+  (def umm-coll umm-coll)
   (-> umm-coll
       (assoc :DirectoryNames nil)
       update-bounding-rectangles
@@ -387,8 +394,8 @@
       (update :LocationKeywords conversion-util/fix-location-keyword-conversion)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
+      (assoc :ContactPersons (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll)))
+      (assoc :ContactGroups (map expected-contact-group (:ContactGroups umm-coll)))
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)

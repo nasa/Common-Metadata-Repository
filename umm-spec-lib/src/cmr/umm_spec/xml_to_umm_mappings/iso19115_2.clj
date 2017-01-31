@@ -215,76 +215,75 @@
         id-el (first (select doc identifier-base-xpath))
         extent-info (iso-util/get-extent-info-map doc)
         [abstract version-description] (parse-abstract-version-description md-data-id-el sanitize?)]
-    {:ShortName (char-string-value id-el "gmd:code")
-     :EntryTitle (char-string-value citation-el "gmd:title")
-     :DOI (parse-doi doc)
-     :Version (char-string-value citation-el "gmd:edition")
-     :VersionDescription version-description
-     :Abstract abstract
-     :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
-     :CollectionProgress (su/with-default (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
-     :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
-     :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
-     :AccessConstraints (parse-access-constraints doc sanitize?)
-     :UseConstraints
-     (su/truncate
-      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                   #"(?s)^(?!Restriction Comment:).+")
-      su/USECONSTRAINTS_MAX
-      sanitize?)
-     :LocationKeywords (lk/translate-spatial-keywords
-                        (kf/get-kms-index context) (kws/descriptive-keywords md-data-id-el "place"))
-     :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
-     :DataLanguage (char-string-value md-data-id-el "gmd:language")
-     :ISOTopicCategories (values-at doc topic-categories-xpath)
-     :SpatialExtent (spatial/parse-spatial doc extent-info sanitize?)
-     :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
-     :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
-                          (when sanitize? su/not-provided-temporal-extents))
-     :ProcessingLevel {:Id
-                       (su/with-default
+    (merge
+     (data-contact/parse-contacts doc sanitize?)
+     {:ShortName (char-string-value id-el "gmd:code")
+      :EntryTitle (char-string-value citation-el "gmd:title")
+      :DOI (parse-doi doc)
+      :Version (char-string-value citation-el "gmd:edition")
+      :VersionDescription version-description
+      :Abstract abstract
+      :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
+      :CollectionProgress (su/with-default (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
+      :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
+      :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
+      :AccessConstraints (parse-access-constraints doc sanitize?)
+      :UseConstraints
+      (su/truncate
+       (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
+                    #"(?s)^(?!Restriction Comment:).+")
+       su/USECONSTRAINTS_MAX
+       sanitize?)
+      :LocationKeywords (lk/translate-spatial-keywords
+                         (kf/get-kms-index context) (kws/descriptive-keywords md-data-id-el "place"))
+      :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
+      :DataLanguage (char-string-value md-data-id-el "gmd:language")
+      :ISOTopicCategories (values-at doc topic-categories-xpath)
+      :SpatialExtent (spatial/parse-spatial doc extent-info sanitize?)
+      :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
+      :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
+                           (when sanitize? su/not-provided-temporal-extents))
+      :ProcessingLevel {:Id
+                        (su/with-default
+                         (char-string-value
+                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                         sanitize?)
+                        :ProcessingLevelDescription
                         (char-string-value
-                         md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
-                        sanitize?)
-                       :ProcessingLevelDescription
-                       (char-string-value
-                        md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
-     :Distributions (dru/parse-distributions doc sanitize?)
-     :Platforms (platform/parse-platforms doc sanitize?)
-     :Projects (parse-projects doc sanitize?)
+                         md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
+      :Distributions (dru/parse-distributions doc sanitize?)
+      :Platforms (platform/parse-platforms doc sanitize?)
+      :Projects (parse-projects doc sanitize?)
 
-     :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
-                                  :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
-                                        select-party (fn [name xpath]
-                                                       (char-string-value publication
-                                                                          (str (format role-xpath name) xpath)))]]
-                              {:Author (select-party "author" "/gmd:organisationName")
-                               :PublicationDate (date/sanitize-and-parse-date
-                                                 (str (date-at publication
-                                                               (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
-                                                                    "gmd:date/gco:Date")))
-                                                 sanitize?)
-                               :Title (char-string-value publication "gmd:title")
-                               :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
-                               :Edition (char-string-value publication "gmd:edition")
-                               :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
-                               :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
-                               :Publisher (select-party "publisher" "/gmd:organisationName")
-                               :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
-                               :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
-                               :OnlineResource (parse-online-resource publication sanitize?)
-                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
-     :MetadataAssociations (ma/xml-elem->metadata-associations doc)
-     :AncillaryKeywords (descriptive-keywords-type-not-equal
-                         md-data-id-el
-                         ["place" "temporal" "project" "platform" "instrument" "theme"])
-     :ScienceKeywords (kws/parse-science-keywords md-data-id-el sanitize?)
-     :RelatedUrls (dru/parse-related-urls doc sanitize?)
-     :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
-     ;; DataCenters is not implemented but is required in UMM-C
-     ;; Implement with CMR-3161
-     :DataCenters (data-contact/parse-contacts doc sanitize?)
-     :MetadataDates (parse-metadata-dates doc)}))
+      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
+                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
+                                         select-party (fn [name xpath]
+                                                        (char-string-value publication
+                                                                           (str (format role-xpath name) xpath)))]]
+                               {:Author (select-party "author" "/gmd:organisationName")
+                                :PublicationDate (date/sanitize-and-parse-date
+                                                  (str (date-at publication
+                                                                (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
+                                                                     "gmd:date/gco:Date")))
+                                                  sanitize?)
+                                :Title (char-string-value publication "gmd:title")
+                                :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
+                                :Edition (char-string-value publication "gmd:edition")
+                                :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
+                                :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
+                                :Publisher (select-party "publisher" "/gmd:organisationName")
+                                :ISBN (su/format-isbn (char-string-value publication "gmd:ISBN"))
+                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
+                                :OnlineResource (parse-online-resource publication sanitize?)
+                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
+      :MetadataAssociations (ma/xml-elem->metadata-associations doc)
+      :AncillaryKeywords (descriptive-keywords-type-not-equal
+                          md-data-id-el
+                          ["place" "temporal" "project" "platform" "instrument" "theme"])
+      :ScienceKeywords (kws/parse-science-keywords md-data-id-el sanitize?)
+      :RelatedUrls (dru/parse-related-urls doc sanitize?)
+      :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
+      :MetadataDates (parse-metadata-dates doc)})))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option

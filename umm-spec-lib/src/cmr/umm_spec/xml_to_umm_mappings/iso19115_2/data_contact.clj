@@ -101,7 +101,7 @@
  "Split the name into short name and long name"
  [name]
  (when name
-  (let [names (str/split name #"&gt;|>")]
+  (when-let [names (seq (str/split name #"&gt;|>"))]
    {:ShortName (str/trim (first names))
     :LongName (when (> (count names) 1)
                (str/join " " (map str/trim (rest names))))})))
@@ -145,9 +145,9 @@
       :Type :contact-person}
     {:Contact {:Roles ["User Services"]
                :GroupName organization-name
-               :ContactInformation contact
+               :ContactInformation contact-info
                :NonDataCenterAffiliation non-dc-affiliation}
-     :DataCenter (get-short-name-long-name organization-name)
+     :DataCenter nil
      :Type :contact-group}))))
 
 (defn parse-data-center
@@ -185,11 +185,17 @@
   {:data-centers-xml (get group-contacts true)
    :contacts-xml (get group-contacts false)}))
 
+(defn- get-collection-contact-persons-and-groups
+ [contacts]
+ (let [non-data-center-contacts (filter #(nil? (:DataCenter %)) contacts)
+       groups (group-by :Type non-data-center-contacts)]
+   {:ContactPersons (map :Contact (get groups :contact-person))
+    :ContactGroups (map :Contact (get groups :contact-group))}))
+
 (defn parse-contacts
  "Parse all contacts from XML and determine if they are Data Centers, Contact Persons or
  Contact Groups"
  [xml sanitize?]
- ;(proto-repl.saved-values/save 18)
  (let [{:keys [data-centers-xml contacts-xml]} (group-contacts (select xml point-of-contact-xpath))
        additional-contacts (group-contacts (select xml "/gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"))
        distributors (group-contacts (select xml distributor-xpath))
@@ -202,7 +208,9 @@
                             (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?)
                             (process-duplicate-data-centers data-centers (:data-centers-xml distributors) sanitize?)
                             (process-duplicate-data-centers data-centers (:data-centers-xml processors) sanitize?))]
-  (if (seq data-centers)
-   data-centers
-   (when sanitize?
-    [util/not-provided-data-center]))))
+  (merge
+   {:DataCenters (if (seq data-centers)
+                  data-centers
+                  (when sanitize?
+                   [util/not-provided-data-center]))}
+   (get-collection-contact-persons-and-groups contacts))))
