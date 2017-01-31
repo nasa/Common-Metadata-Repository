@@ -24,7 +24,8 @@
 (defn disable-ingest
   "Use the enable/disable endpoint on ingest to disable it."
   []
-  (client/post (url/disable-ingest-url)))
+  (let [response (client/post (url/disable-ingest-url))]
+    (is (= 200 (:status response)))))
 
 (defn enable-ingest
   "Use the enable/disable endpoint on ingest to enable it."

@@ -6,6 +6,7 @@
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.api.routes :as collection-renderer-routes]
    [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.query-model :as common-qm]
@@ -408,6 +409,10 @@
 
         ;; add routes for checking health of the application
         (common-health/health-api-routes hs/health)
+
+        ;; add routes for enabling/disabling application
+        (common-enabled/enabled-api-routes
+          #(acl/verify-ingest-management-permission % :update))
 
         (GET "/tiles" {params :params context :request-context}
           (find-tiles context params)))
