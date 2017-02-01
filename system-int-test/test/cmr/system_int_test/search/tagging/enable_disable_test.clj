@@ -4,7 +4,6 @@
     [clojure.test :refer :all]
     [clojure.string :as str]
     [cmr.common.util :refer [are2] :as util]
-    [cmr.metadata-db.int-test.utility :as mdb-util]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.utils.index-util :as index]
@@ -88,7 +87,11 @@
       (is (= 200 (:status (tags/delete-tag token tag3-key)))))))
 
 (deftest tag-association-test
-  (let [tag-collection (mdb-util/create-and-save-collection "PROV1" 1)
+  (let [tag-collection (ingest/ingest-concept (dc/collection-concept {:native-id "native1"
+                                                                      :entry-title "coll1"
+                                                                      :entry-id "coll1"
+                                                                      :version-id "V1"
+                                                                      :short-name "short1"}))
         tag1-key "tag1"
         tag1 (tags/make-tag {:tag-key tag1-key})
         tag2-key "tag2"
