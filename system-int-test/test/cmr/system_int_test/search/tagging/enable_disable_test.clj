@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.tagging.enable-disable-test
-  "Search tag / tag association creation enable/disable endpoint test"
+  "Search tag / tag association peristence enable/disable endpoint test"
   (:require
     [clojure.test :refer :all]
     [clojure.string :as str]
@@ -18,7 +18,7 @@
     [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
                        tags/grant-all-tag-fixture]))
 
 (deftest tag-crud-test
@@ -48,7 +48,7 @@
     (testing "Delete succeeds before disable"
       (is (= 200 (:status (tags/delete-tag token tag-key)))))
 
-    ;; disable
+    ;; disable tag / tag association persistence
     (search/disable-persistence {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
     (testing "Failed creation after disable"
@@ -69,7 +69,7 @@
     (testing "Delete fails after disable"
       (is (= 503 (:status (tags/delete-tag token tag2-key)))))
 
-    ;; re-enable
+    ;; re-enable tag / tag association persistence
     (search/enable-persistence {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
     (testing "Successful creation after re-enable"

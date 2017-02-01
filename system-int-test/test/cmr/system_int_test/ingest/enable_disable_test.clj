@@ -4,7 +4,6 @@
     [clojure.test :refer :all]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -38,7 +37,6 @@
           pre-disable-deleted-gran (ingest/delete-concept (d/item->concept pre-disable-gran) {:accept-format :json :raw? true})
           ;; disable ingest
           _ (ingest/disable-ingest)
-          - (search/disable-persistence)
           ;; these should fail
           after-disable-coll-resp (d/ingest "PROV1" (dc/collection (assoc common-fields :native-id "native3")) {:allow-failure? true})
           after-disable-delete (ingest/delete-concept pre-disable-orig-coll)

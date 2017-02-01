@@ -412,7 +412,7 @@
 
         ;; add routes for enabling/disabling application
         (common-enabled/enabled-api-routes
-          #(acl/verify-ingest-management-permission % :update))
+         #(acl/verify-ingest-management-permission % :update))
 
         (GET "/tiles" {params :params context :request-context}
           (find-tiles context params)))

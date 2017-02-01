@@ -30,7 +30,8 @@
 (defn enable-ingest
   "Use the enable/disable endpoint on ingest to enable it."
   []
-  (client/post (url/enable-ingest-url)))
+  (let [response (client/post (url/enable-ingest-url))]
+    (is (= 200 (:status response)))))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
