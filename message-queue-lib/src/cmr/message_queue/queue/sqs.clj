@@ -56,14 +56,16 @@
 
 (defn- normalize-queue-name
   "Ensure all queues start with gsfc-eosdis-cmr since the permissions in NGAP specify that CMR
-  can only create queues with that prefix. Also replaces dots with underscores. This is needed
-  because SQS only allows alpha-numeric chars plus dashes and underscores in queue names, while
-  CMR has dots (periods) in queue names."
+  can only create queues with that prefix. Also adds in the environment (sit/uat/wl/ops) and
+  replaces dots with underscores. This is needed because SQS only allows alpha-numeric chars
+  plus dashes and underscores in queue names, while CMR has dots (periods) in queue names."
   [queue-name]
-  (-> queue-name
-      (str/replace "." "_")
-      (str/replace "cmr_" "")
-      (str/replace #"^(gsfc-eosdis-cmr-)*" "gsfc-eosdis-cmr-")))
+  (let [prefix (str "gsfc-eosdis-cmr-" (config/app-environment))
+        prefix-regex (re-pattern (str "^(" prefix "-)*"))]
+    (-> queue-name
+        (str/replace "." "_")
+        (str/replace "cmr_" "")
+        (str/replace prefix-regex (str prefix "-")))))
 
 (defn- -get-topic
   "Returns the Topic with the given display name."

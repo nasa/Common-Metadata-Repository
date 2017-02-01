@@ -538,14 +538,14 @@
                                                :user_type :registered}]
                           :catalog_item_identity {:name "prov1 granules w/ max access value"
                                                   :granule_applicable true
-                                                  :granule_identifier {:access_value {:max_value 7}}
+                                                  :granule_identifier {:access_value {:min_value 0 :max_value 7}}
                                                   :provider_id "PROV1"}})
         ;; specific group read granules with access value 7 or higher
         acl3 (create-acl {:group_permissions [{:permissions [:read]
                                                :user_type :registered}]
                           :catalog_item_identity {:name "prov1 granules w/ min access value"
                                                   :granule_applicable true
-                                                  :granule_identifier {:access_value {:min_value 7}}
+                                                  :granule_identifier {:access_value {:min_value 7 :max_value 1000}}
                                                   :provider_id "PROV1"}})]
     (are [user result]
       (= result (get-permissions user gran1 gran2 gran3))

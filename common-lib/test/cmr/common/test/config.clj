@@ -1,6 +1,7 @@
 (ns cmr.common.test.config
   (:require [clojure.test :refer :all]
             [cmr.common.config :as c :refer [defconfig]]
+            [cmr.common.test.test-util :refer [with-env-vars]]
             [clojure.edn :as edn]))
 
 (defn redefined-override-config-values-fixture
@@ -51,14 +52,6 @@
   "This is a test config that calls functions for setting the default and the type."
   {:default (+ 1 2)
    :type Long})
-
-(defmacro with-env-vars
-  "Overrides the environment variables the config values will see within the block. Accepts a map
-  of environment variables to values."
-  [env-var-values & body]
-  `(with-bindings {#'c/env-var-value ~env-var-values}
-     ~@body))
-
 
 (deftest def-config-test
   (testing "String configs"

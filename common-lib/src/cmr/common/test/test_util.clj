@@ -1,6 +1,7 @@
 (ns cmr.common.test.test-util
   (:require [clojure.test :refer [is]]
             [clojure.string :as str]
+            [cmr.common.config :as c]
             [taoensso.timbre :as t])
   (:import clojure.lang.ExceptionInfo))
 
@@ -33,3 +34,10 @@
   (t/with-level
     :fatal
     (f)))
+
+(defmacro with-env-vars
+  "Overrides the environment variables the config values will see within the block. Accepts a map
+  of environment variables to values."
+  [env-var-values & body]
+  `(with-bindings {#'c/env-var-value ~env-var-values}
+     ~@body))
