@@ -378,7 +378,6 @@
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]
-  (def umm-coll umm-coll)
   (-> umm-coll
       (assoc :DirectoryNames nil)
       update-bounding-rectangles
