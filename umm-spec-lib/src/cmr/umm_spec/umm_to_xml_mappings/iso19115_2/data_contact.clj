@@ -23,7 +23,8 @@
  (set/map-invert data-contact/iso-data-center-role->umm-role))
 
 (defn- get-phone-contact-mechanisms
- "Get phone/fax contact mechanisms from contact info"
+ "Get phone/fax contact mechanisms from contact info. ISO only supports phone, fax, and email
+ so first translate the UMM types to those 3 and filter by phone and fax."
  [contact-info]
  (when-let [contact-mechanisms (:ContactMechanisms contact-info)]
   (let [contact-mechanisms
@@ -73,6 +74,8 @@
     [:gmd:contactInstructions (char-string instruction)])]])
 
 (defn- generate-data-center-name
+ "Generate data center name from long and short name. ISO only has one field for name, so these
+ should be combined with a delimeter."
  [data-center]
  (if (:LongName data-center)
   (str (:ShortName data-center) " &gt; " (:LongName data-center))
@@ -91,10 +94,12 @@
       :codeListValue iso-role} iso-role]]])
 
 (defn- filter-data-centers-by-role
+ "Filter the data centers by the given role"
  [data-centers role]
  (filter #(some #{role} (:Roles %)) data-centers))
 
 (defn generate-processing-centers
+ "Generate ISO processing centers"
  [data-centers]
  (let [processors (filter-data-centers-by-role data-centers "PROCESSOR")]
   (seq
@@ -125,9 +130,11 @@
      (generate-data-center center "custodian")]))))
 
 (defn- generate-contact-person
- ([person role]
-  (generate-contact-person person role nil))
- ([person role data-center-name]
+ "Generate a contact person. If the contact person is associated with a data center, the data center
+ name will go under organisationName"
+ ([person]
+  (generate-contact-person person nil))
+ ([person data-center-name]
   (let [{:keys [FirstName MiddleName LastName NonDataCenterAffiliation ContactInformation]} person]
    [:gmd:pointOfContact
     [:gmd:CI_ResponsibleParty
@@ -151,12 +158,15 @@
      (generate-data-center data-center iso-role)]))
 
 (defn generate-data-center-contact-persons
+ "Generate the contact persons for the data center. "
  [data-centers]
  (for [data-center data-centers]
-  (map #(generate-contact-person % "Data Center Contact" (generate-data-center-name data-center))
+  (map #(generate-contact-person % (generate-data-center-name data-center))
        (:ContactPersons data-center))))
 
 (defn- generate-contact-group
+ "Generate a contact group in ISO. A contact group is distinguished from a contact person by not
+  having an individualName."
  [contact-group]
  [:gmd:pointOfContact
    [:gmd:CI_ResponsibleParty
@@ -169,13 +179,16 @@
         :codeListValue "pointOfContact"} "pointOfContact"]]]])
 
 (defn generate-data-center-contact-groups
+ "Generate contact groups in ISO."
  [data-centers]
  (map generate-contact-group (map :ContactGroups data-centers)))
 
 (defn generate-contact-persons
+ "Generate contact persons in ISO."
  [contact-persons]
- (map #(generate-contact-person % "Technical Contact") contact-persons))
+ (map generate-contact-person contact-persons))
 
 (defn generate-contact-groups
+ "Generate contact groups in ISO."
  [contact-groups]
  (map generate-contact-group contact-groups))

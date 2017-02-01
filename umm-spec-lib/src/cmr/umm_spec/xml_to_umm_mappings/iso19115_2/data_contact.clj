@@ -2,7 +2,6 @@
  "Functions to parse DataCenters and ContactPersons from ISO 19115-2"
  (:require
   [clojure.string :as str]
-  [clojure.java.io :as io]
   [cmr.common.xml.parse :refer :all]
   [cmr.common.xml.simple-xpath :refer [select text]]
   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
@@ -70,11 +69,6 @@
   :ServiceHours (char-string-value contact-info-xml "gmd:hoursOfService")
   :ContactInstruction (char-string-value contact-info-xml "gmd:contactInstructions")})
 
-(defn point-of-contact->contact-person
- [xml]
- {:LastName (char-string-value xml "gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:individualName")
-  :ContactInformation (parse-contact-information (first (select xml "gmd:pointOfContact/gmd:CI_ResponsibleParty/gmd:contactInfo/gmd:CI_Contact")))})
-
 (defn- get-contact-groups
  "Group contacts by data center types vs non data center types.
   Returns 2 groups: true and false where true is data center types"
@@ -87,18 +81,20 @@
                  (= role "processor"))))
            contacts))
 
-(defn- get-data-center-contact-persons-and-groups
+(defn- get-data-center-contact-persons
+ "Get the Contact Persons associated with a data center. contacts is all contacts with data center
+ and type information added. Match data center on name and filter contact persons. There is
+ currently no way in ISO to associate a contact group with a data center."
  [data-center contacts]
  (when-let [contacts (filter #(and (some? (get-in % [:DataCenter :ShortName]))
                                    (= (:ShortName data-center) (get-in % [:DataCenter :ShortName]))
-                                   (= (:LongName data-center) (get-in % [:DataCenter :LongName])))
+                                   (= (:LongName data-center) (get-in % [:DataCenter :LongName]))
+                                   (= :contact-person (:Type %)))
                              contacts)]
-   (let [grouped-contacts (group-by :Type contacts)]
-     {:ContactPersons (seq (map :Contact (get grouped-contacts :contact-person)))
-      :ContactGroups (seq (map :Contact (get grouped-contacts :contact-group)))})))
+   {:ContactPersons (seq (map :Contact contacts))}))
 
 (defn- get-short-name-long-name
- "Split the name into short name and long name"
+ "Split the name into short name and long name. ISO has one name field so use delimeter."
  [name]
  (when name
   (when-let [names (seq (str/split name #"&gt;|>"))]
@@ -107,12 +103,15 @@
                (str/join " " (map str/trim (rest names))))})))
 
 (defn- parse-individual-name
- "Parse an individial name into first, middle, last"
- [name]
+ "Parse an individial name into first, middle, last. ISO has one name field so use one or
+ more spaces as delimeter."
+ [name sanitize?]
  (let [names (str/split name #" {1,}")
        num-names (count names)]
-  (if (= 1 num-names)
-   {:LastName name}
+  (case num-names
+   0 (when sanitize?
+      {:LastName util/not-provided})
+   1 {:LastName name}
    {:FirstName (first names)
     :MiddleName (str/join " " (subvec names 1 (dec num-names)))
     :LastName (last names)})))
@@ -140,7 +139,7 @@
                           ["Technical Contact"])
                   :ContactInformation contact-info
                   :NonDataCenterAffiliation non-dc-affiliation}
-                (parse-individual-name individual-name))
+                (parse-individual-name individual-name sanitize?))
       :DataCenter (get-short-name-long-name organization-name)
       :Type :contact-person}
     {:Contact {:Roles ["User Services"]
@@ -153,7 +152,6 @@
 (defn parse-data-center
  "Parse data center XML into data centers"
  [data-center persons sanitize?]
- ;(proto-repl.saved-values/save 17)
  (when-let [organization-name (char-string-value data-center "gmd:organisationName")]
   (let [data-center-name (get-short-name-long-name organization-name)]
    (merge
@@ -162,7 +160,7 @@
                           (first (select data-center "gmd:contactInfo/gmd:CI_Contact"))
                           sanitize?)}
     data-center-name
-    (get-data-center-contact-persons-and-groups data-center-name persons)))))
+    (get-data-center-contact-persons data-center-name persons)))))
 
 (defn- process-duplicate-data-centers
  "Data Centers are located in several places in the ISO xml, so we want to check for data Centers
@@ -186,6 +184,7 @@
    :contacts-xml (get group-contacts false)}))
 
 (defn- get-collection-contact-persons-and-groups
+ "Get contact persons and contact groups not associated with a data center."
  [contacts]
  (let [non-data-center-contacts (filter #(nil? (:DataCenter %)) contacts)
        groups (group-by :Type non-data-center-contacts)]
@@ -194,7 +193,12 @@
 
 (defn parse-contacts
  "Parse all contacts from XML and determine if they are Data Centers, Contact Persons or
- Contact Groups"
+ Contact Groups. Contacts are located in 4 different places throughout the XML, with the main place
+ being point-of-contact-xpath. ISO does not distinguish between contact persons, contact groups, and
+ data centers. Roles are used to determine data center. Here we need to get all of the contacts,
+ separate the data centers from contact persons, remove duplicate data centers, associate contact
+ persons to data centers if applicable, and determine which are standalone contact persons and contact
+ groups."
  [xml sanitize?]
  (let [{:keys [data-centers-xml contacts-xml]} (group-contacts (select xml point-of-contact-xpath))
        additional-contacts (group-contacts (select xml "/gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"))

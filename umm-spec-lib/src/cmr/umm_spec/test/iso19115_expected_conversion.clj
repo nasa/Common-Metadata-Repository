@@ -266,7 +266,7 @@
                                 (remove #(nil? (:Type %))
                                  (map #(assoc % :Type (get data-contact/translated-contact-mechanism-types (:Type %)))
                                       contact-mechanisms)))]
-  (let [groups (group-by :Type contact-mechanisms)]
+  (let [groups (group-by :Type contact-mechanisms)] ; Group for ordering
     (concat
      (get groups "Telephone")
      (get groups "Fax")
@@ -282,7 +282,7 @@
       (update :URLs #(take 1 %)))])))
 
 (defn- expected-iso-contact-information
- "Returns expected contact information - 1 address"
+ "Returns expected contact information - 1 address, only certain contact mechanisms are mapped"
  [contact-info]
  (-> contact-info
      (update :RelatedUrls expected-contact-info-related-urls)
@@ -305,6 +305,9 @@
     data-center)))
 
 (defn- update-person-names
+ "ISO only has one field for the whole name. When we go from UMM -> ISO, we combine the names into
+ one field then on ISO -> UMM we split them up. Need to do this processing to handle spaces in names
+ as well as leading/trailing spaces."
  [person]
  (let [{:keys [FirstName MiddleName LastName]} person
        combined-name (str/trim (str/join " " [FirstName MiddleName LastName]))
@@ -321,8 +324,9 @@
         (assoc :LastName (last names))))))
 
 (defn- expected-contact-person
+ "Return an expected ISO contact person. Role is based on whether it is a contact person associated
+ with a data center or standalone contact person"
  [person role]
- (proto-repl.saved-values/save 8)
  (-> person
      (dissoc :Uuid)
      (assoc :Roles [role])
@@ -330,6 +334,7 @@
      (update :ContactInformation expected-iso-contact-information)))
 
 (defn- expected-contact-group
+ "Return an expected ISO contact group"
  [group]
  (-> group
      (dissoc :Uuid)
@@ -348,18 +353,23 @@
      cmn/map->DataCenterType))
 
 (defn- expected-data-center-contacts
+ "In ISO, data centers, persons, and groups are all contacts and only relate by name. If we have
+ multiple data centers with the same name, make sure they have the same ContactPersons, because
+ they will after ISO -> UMM translation.
+
+ Group the data centers by name and for each group (DC's with the same name) create a list of all
+ persons for that DC name and set each DC's ContactPersons to that list. Returns a list of updated
+ data centers"
  [data-centers]
- (def data-centers data-centers)
  (let [data-center-groups (group-by #(select-keys % [:ShortName :LongName]) data-centers)]
   (apply concat
    (for [group (vals data-center-groups)
-         :let [persons (apply concat (map :ContactPersons group))]]
+         :let [persons (apply concat (map :ContactPersons group))]] ; All persons for DC's with that name
      (map #(assoc % :ContactPersons persons) group)))))
 
 (defn- expected-iso-data-centers
  "For each data center, if there are multiple roles make a copy of the data center for each role"
  [data-centers]
- (def data-centers data-centers)
  (let [data-centers (map expected-iso-data-center data-centers)
        data-centers (expected-data-center-contacts data-centers)]
   (for [data-center data-centers
