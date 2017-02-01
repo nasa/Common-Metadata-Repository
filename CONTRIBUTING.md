@@ -31,7 +31,7 @@ The CMR employs both unit testing, and integration testing. Unit tests should te
     - https://clojure.github.io/clojure/clojure.test-api.html
 
 - Integration Testing
-  - Integration tests should clean up after themselves. Any modifications to the system should be undone by the test. This will prevent one integration test from breaking another test by leaving unexpected data around.
+  - The state before each integration test is reset using a fixture that sends a request to reset the application to its initial state.
   - Integration tests should test an application or the whole system as a black box. They shouldn't manipulate underlying resources used by the application.
 
 - Which to use, unit or integration test?
@@ -43,13 +43,9 @@ The CMR employs both unit testing, and integration testing. Unit tests should te
     - testing integration of components in an application.
     - testing integration of applications in a system.
 
-# Code structure
-The CMR is made up of several small services called microservices. These are small purposed-based services that do a small set of things well.
-- More reading: https://martinfowler.com/articles/microservices.html
-
 # Dependencies
 The Common Metadata Repository is built using Clojure 1.8.0, with dependencies managed by Leiningen (version 2.5.1 or greater).
-  - This also requires Java 1.7.0_25 or higher
+  - This also requires Java 1.8.0 or higher
   - We use Mac OSX 10.8 or greater and have had success installing Leiningen via Homebrew and the install script on the Leiningen website
 
 Development and testing can be easily accomplished without the need to set up external Elasticsearch or OracleDB VMs.
