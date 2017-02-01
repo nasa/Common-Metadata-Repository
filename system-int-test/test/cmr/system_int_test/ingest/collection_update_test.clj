@@ -1,16 +1,21 @@
 (ns cmr.system-int-test.ingest.collection-update-test
   "CMR collection update integration tests"
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer [are2]]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.umm.collection.product-specific-attribute :as psa]
-            [cmr.spatial.point :as p]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are3]]
+   [cmr.spatial.point :as p]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.umm.collection.product-specific-attribute :as psa]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+                       hu/grant-all-humanizers-fixture
+                       hu/save-sample-humanizers-fixture]))
 
 (deftest collection-update-additional-attributes-general-test
   (let [a1 (dc/psa {:name "string" :data-type :string})
@@ -56,7 +61,7 @@
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
-      (are2
+      (are3
         [additional-attributes]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
@@ -64,7 +69,7 @@
                                             :version-id "V1"
                                             :product-specific-attributes additional-attributes}))
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "Not changing any additional attributes is OK."
         [a1 a2 a3 a4 a5 a6 a7 a8 a9]
@@ -95,7 +100,7 @@
          a5 a6 a7 a8 a9]))
 
     (testing "Update collection failure cases"
-      (are2
+      (are3
         [additional-attributes expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
@@ -104,7 +109,7 @@
                                             :product-specific-attributes additional-attributes})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [422 expected-errors] [status errors]))
+          (is (= [422 expected-errors] [status errors])))
 
         "Removing an additional attribute that is referenced by its granules is invalid."
         [a2 a3 a4 a5 a6 a7 a8 a9]
@@ -150,7 +155,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are2
+      (are3
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -162,7 +167,7 @@
                                                                            :min-value (first range)
                                                                            :max-value (second range)})]}))
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "expanded range" [0 11]
         "same range" [1 10]
@@ -172,7 +177,7 @@
         "minimal range" [2 5]))
 
     (testing "failure cases"
-      (are2
+      (are3
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [int] cannot be changed since there are existing granules outside of the new value range."))
@@ -187,8 +192,7 @@
                                                                            :max-value (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [422 [expected-error]]
-             [status errors]))
+          (is (= [422 [expected-error]] [status errors])))
 
         "invalid max" [0 4] 1
         "invalid max no min" [nil 4] 1
@@ -210,7 +214,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are2
+      (are3
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -222,7 +226,7 @@
                                                                            :min-value (first range)
                                                                            :max-value (second range)})]}))
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "expanded range" [-11.0 11.0]
         "same range" [-10.0 10.0]
@@ -231,7 +235,7 @@
         "no range"[]
         "minimal range" [-2.0 5.0]))
     (testing "failure cases"
-      (are2
+      (are3
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range."))
@@ -246,8 +250,7 @@
                                                                            :max-value (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [422 [expected-error]]
-             [status errors]))
+          (is (= [422 [expected-error]] [status errors])))
 
         "invalid max" [-3.0 4.99] 1
         "invalid max no min" [nil 4.99] 1
@@ -274,7 +277,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are2
+      (are3
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -286,7 +289,7 @@
                                               :min-value (parse-fn (first range))
                                               :max-value (parse-fn (second range))})]}))
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "expanded range" ["2012-02-01T01:02:02Z" "2012-11-01T01:02:04Z"]
         "same range" ["2012-02-01T01:02:03Z" "2012-11-01T01:02:03Z"]
@@ -295,7 +298,7 @@
         "no range" []
         "minimal range" ["2012-04-01T01:02:03Z" "2012-08-01T01:02:03Z"]))
     (testing "failure cases"
-      (are2
+      (are3
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [datetime] cannot be changed since there are existing granules outside of the new value range."))
@@ -310,8 +313,7 @@
                                               :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [422 [expected-error]]
-             [status errors]))
+          (is (= [422 [expected-error]] [status errors])))
 
         "invalid max" ["2012-02-01T01:02:02Z" "2012-08-01T01:02:02.999Z"] 1
         "invalid max no min" [nil "2012-08-01T01:02:02.999Z"] 1
@@ -336,7 +338,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are2
+      (are3
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -348,7 +350,7 @@
                                               :min-value (parse-fn (first range))
                                               :max-value (parse-fn (second range))})]}))
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "expanded range" ["2012-02-01Z" "2012-11-03Z"]
         "same range" ["2012-02-02Z" "2012-11-02Z"]
@@ -357,7 +359,7 @@
         "no range" []
         "minimal range" ["2012-04-02Z" "2012-08-02Z"]))
     (testing "failure cases"
-      (are2
+      (are3
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [date] cannot be changed since there are existing granules outside of the new value range."))
@@ -372,8 +374,7 @@
                                               :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [422 [expected-error]]
-             [status errors]))
+          (is (= [422 [expected-error]] [status errors])))
 
         "invalid max" ["2012-02-01Z" "2012-08-01Z"] 1
         "invalid max no min" [nil "2012-08-01Z"] 1
@@ -397,7 +398,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are2
+      (are3
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -409,7 +410,7 @@
                                               :min-value (parse-fn (first range))
                                               :max-value (parse-fn (second range))})]}))
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "expanded range" ["01:02:02Z" "11:02:04Z"]
         "same range" ["01:02:03Z" "11:02:03Z"]
@@ -418,7 +419,7 @@
         "no range" []
         "minimal range" ["04:02:03Z" "06:02:03Z"]))
     (testing "failure cases"
-      (are2
+      (are3
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [time] cannot be changed since there are existing granules outside of the new value range."))
@@ -433,8 +434,7 @@
                                               :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [422 [expected-error]]
-             [status errors]))
+          (is (= [422 [expected-error]] [status errors])))
 
         "invalid max" ["01:02:04Z" "06:02:02.999Z"] 1
         "invalid max no min" [nil "06:02:02.999Z"] 1
@@ -459,7 +459,7 @@
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
-      (are2
+      (are3
         [projects]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
@@ -467,7 +467,7 @@
                                             :version-id "V1"
                                             :projects (apply dc/projects projects)}))
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "Adding an additional project is OK"
         ["p1" "p2" "p3" "p4" "p5"]
@@ -476,7 +476,7 @@
         ["p1" "p2" "p3"]))
 
     (testing "Update collection failure cases"
-      (are2
+      (are3
         [projects expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
@@ -485,7 +485,7 @@
                                             :projects (apply dc/projects projects)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [422 expected-errors] [status errors]))
+          (is (= [422 expected-errors] [status errors])))
 
         "Removing a project that is referenced by a granule is invalid."
         ["p1" "p2" "p4"]
@@ -581,14 +581,14 @@
     (testing "Update unique identifiers of a collection even with granules is allowed"
       ;; For CMR-2403 we decided to temporary allow collection identifiers to be updated even
       ;; with existing granules for the collection. We will change this with CMR-2485.
-      (are2 [identifier-map]
+      (are3 [identifier-map]
             (let [response (d/ingest "PROV1" (dc/collection (merge {:entry-title "Dataset1"
                                                                     :short-name "S1"
                                                                     :version-id "V1"
                                                                     :native-id "coll1"}
                                                                   identifier-map)))
                   {:keys [status errors]} response]
-              (= [200 nil] [status errors]))
+              (is (= [200 nil] [status errors])))
 
             "Update entry-title of collection with granules"
             {:entry-title "New Dataset1"}
@@ -641,14 +641,14 @@
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
-      (are2
+      (are3
         [coll beginning-date-time ending-date-time]
         (let [response (update-collection
                          coll
                          {:beginning-date-time beginning-date-time
                           :ending-date-time ending-date-time})
               {:keys [status errors]} response]
-          (= [200 nil] [status errors]))
+          (is (= [200 nil] [status errors])))
 
         "Update dataset with the same temporal coverage"
         coll1 "2010-01-01T12:00:00Z" "2010-05-01T12:00:00Z"
@@ -681,14 +681,14 @@
         coll4 "2001-01-01T12:00:00Z" "2010-05-11T12:00:00Z"))
 
     (testing "Update collection failure cases"
-      (are2
+      (are3
         [coll beginning-date-time ending-date-time expected-errors]
         (let [response (update-collection
                          coll
                          {:beginning-date-time beginning-date-time
                           :ending-date-time ending-date-time})
               {:keys [status errors]} response]
-          (= [422 expected-errors] [status errors]))
+          (is (= [422 expected-errors] [status errors])))
 
         "Update dataset with smaller temporal coverage and does not contain all existing granules, begin date time too late"
         coll1 "2010-01-02T12:00:00Z" "2010-04-01T12:00:00Z"
@@ -709,3 +709,114 @@
         "Update dataset (no end_date_time) to one with end_date_time that does not cover all existing granules"
         coll2 "2000-05-01T12:00:00Z" "2000-07-01T12:00:00Z"
         ["Found granules later than collection end date [2000-07-01T12:00:00.000Z]. Found 1 granules."]))))
+
+(deftest collection-update-platform-test
+  (let [;; Platform Terra is the humanized alias of AM-1
+        coll (d/ingest "PROV1" (dc/collection
+                                {:entry-title "parent-collection"
+                                 :short-name "S1"
+                                 :version-id "V1"
+                                 :platforms (dc/platforms "p1" "p2" "AM-1" "p4")}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "parent-collection2"
+                                  :short-name "S2"
+                                  :version-id "V2"
+                                  :platforms (dc/platforms "p4" "Terra")}))]
+    (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "p1")}))
+    (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "p2" "AM-1")}))
+    (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "AM-1")}))
+    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs (dg/platform-refs "p4")}))
+    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs (dg/platform-refs "Terra")}))
+    (index/wait-until-indexed)
+
+    (testing "Update collection successful cases"
+      (are3
+        [platforms]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection"
+                                           :short-name "S1"
+                                           :version-id "V1"
+                                           :platforms (apply dc/platforms platforms)}))
+              {:keys [status errors]} response]
+          (is (= [200 nil] [status errors])))
+
+        "Adding an additional platform is OK"
+        ["p1" "p2" "AM-1" "p4" "p5"]
+
+        "Removing a platform not referenced by any granule in the collection is OK"
+        ["p1" "p2" "AM-1"]
+
+        "Updating a platform to humanized alias(case insensitively) referenced by granule on the original value is OK"
+        ["p1" "p2" "tErra"]))
+
+    (testing "Update collection failure cases"
+      (are3
+        [platforms expected-errors]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection2"
+                                           :short-name "S2"
+                                           :version-id "V2"
+                                           :platforms (apply dc/platforms platforms)})
+                                 {:allow-failure? true})
+              {:keys [status errors]} response]
+          (is (= [422 expected-errors] [status errors])))
+
+        "Removing a platform that is referenced by a granule is invalid."
+        ["Terra"]
+        ["Collection Platform [p4] is referenced by existing granules, cannot be removed. Found 1 granules."]
+
+        "Updating a platform that is referenced by a granule by humanized alias back to its original value is invalid."
+        ["AM-1" "p4"]
+        ["Collection Platform [Terra] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+
+(deftest collection-update-tile-test
+  (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE" 
+        coll (d/ingest "PROV1" (dc/collection
+                                {:entry-title "parent-collection"
+                                 :short-name "S1"
+                                 :version-id "V1"
+                                 :two-d-coordinate-systems (dc/two-ds "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
+    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
+    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
+    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
+    (index/wait-until-indexed)
+
+    (testing "Update collection successful cases"
+      (are3
+        [tile-names]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection"
+                                           :short-name "S1"
+                                           :version-id "V1"
+                                           :two-d-coordinate-systems (apply dc/two-ds tile-names)}))
+              {:keys [status errors]} response]
+          (is (= [200 nil] [status errors])))
+
+        "Adding an additional new tile is OK"
+        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo" "New_Tile"]
+
+        "Removing a tile not referenced by any granule in the collection is OK"
+        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "New_Tile"]
+
+        "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
+        ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
+
+    (testing "Update collection failure cases"
+      (are3
+        [tile-names expected-errors]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection"
+                                           :short-name "S2"
+                                           :version-id "V2"
+                                           :two-d-coordinate-systems (apply dc/two-ds tile-names)})
+                                 {:allow-failure? true})
+              {:keys [status errors]} response]
+          (is (= [422 expected-errors] [status errors])))
+
+        "Removing a tile that is referenced by a granule is invalid."
+        ["Replacement_Tile"]
+        ["Collection TilingIdentificationSystemName [Another_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
+
+        "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
+        ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile" ]
+        ["Collection TilingIdentificationSystemName [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))

@@ -33,10 +33,12 @@
 
   (get-value
     [this key lookup-fn]
-    (or (c/get-value this key)
-        (let [value (lookup-fn)]
-          (c/set-value this key value)
-          value)))
+    (let [c-value (c/get-value this key)]
+      (if (not (nil? c-value))
+          c-value
+          (let [value (lookup-fn)]
+            (c/set-value this key value)
+            value))))
 
   (reset
     [this]

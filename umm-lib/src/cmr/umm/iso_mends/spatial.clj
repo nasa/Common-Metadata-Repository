@@ -25,12 +25,8 @@
   "Returns a seq of UMM geometry records from an ISO XML document."
   [xml]
   (let [id-elem   (core/id-elem xml)
-        geo-elems (cx/elements-at-path id-elem [:extent :EX_Extent :geographicElement])
-        ;; ISO MENDS includes bounding boxes for each element (point,
-        ;; polygon, etc.) in the spatial extent metadata. We can
-        ;; discard the redundant bounding boxes.
-        shape-elems (map second (partition 2 geo-elems))]
-    (remove nil? (map gmd/decode shape-elems))))
+        geo-elems (cx/elements-at-path id-elem [:extent :EX_Extent :geographicElement])]
+    (remove nil? (map gmd/decode geo-elems))))
 
 (def ref-sys-path-with-ns
   "A namespaced element path sequence for the ISO MENDS coordinate system element."
@@ -71,7 +67,7 @@
     (when (or gran-spatial-rep (seq geometries))
       (c/map->SpatialCoverage
         {:spatial-representation coord-sys
-         :granule-spatial-representation (or gran-spatial-rep "NO_SPATIAL")
+         :granule-spatial-representation (or gran-spatial-rep :no-spatial)
          :geometries (seq (map #(umm-s/set-coordinate-system coord-sys %) geometries))}))))
 
 (defn spatial-coverage->coordinate-system-xml

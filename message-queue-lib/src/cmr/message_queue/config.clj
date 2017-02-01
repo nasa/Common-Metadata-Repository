@@ -4,6 +4,10 @@
             [cmr.common.services.errors :as errors]
             [cheshire.core :as json]))
 
+(defconfig app-environment
+  "The environment in which the application is running in NGAP (wl, sit, uat, ops)"
+  {:default "local"})
+
 (defconfig rabbit-mq-port
   "The port to use for connecting to Rabbit MQ"
   {:default 5672 :type Long})

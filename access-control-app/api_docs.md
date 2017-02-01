@@ -470,6 +470,10 @@ The following parameters are supported when searching for ACLs.
 * target
   * options: none (always case-insensitive)
   * Matches ACLs which have the given object identity target
+* target_id
+  * options: none (case-sensitive)
+  * Matches single_instance ACLs through specified group target_id.  Only applies when the single_instance target is GROUP_MANAGEMENT
+  * identity_type=single_instance parameter is required alongside this parameter
 * permitted_user
   * options: none (always case-insensitive)
   * user is a URS user name corresponding to a member of a group that has access to an ACL

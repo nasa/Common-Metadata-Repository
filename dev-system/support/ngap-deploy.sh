@@ -10,7 +10,7 @@
 
 apps=("metadata-db" "cubby" "index-set" "indexer" "virtual-product" "bootstrap" "access-control" "search" "ingest")
 
-environments=("sit")
+environments=("sit" "wl")
 app=$1
 environment=$2
 
@@ -61,8 +61,10 @@ if ! containsElement ${environment} "${environments[@]}" ; then
   echo "Unrecognized environment name ${environment}. Valid environments are [${environments[@]}]." && exit 1
 fi
 
-deployment_dir=${DEPLOYMENT_DIR:-"${WORKSPACE_HOME}/ngap-deployments/${app}"}
-app_dir=${WORKSPACE_HOME}/cmr/${app}-app
+deployment_dir=${DEPLOYMENT_DIR:-"${WORKSPACE_HOME}/ngap-deployments/${environment}/${app}"}
+# Different app dir for legacy-services
+# app_dir=${WORKSPACE_HOME}/cmr/${app}-app && [[ "${app}" -eq "legacy-services" ]] && app_dir=${WORKSPACE_HOME}/cmr-heritage-services/legacy-services
+app_dir=${WORKSPACE_HOME}/cmr/${app}-app && [[ "${app}" -ne "legacy-services" ]] && app_dir=${WORKSPACE_HOME}/cmr-heritage-services/legacy-services
 ngap_cli_dir=${NGAP_CLI_DIR:-"${WORKSPACE_HOME}/ngap-cli"}
 
 if [ ! -d "$deployment_dir" ]; then
@@ -99,7 +101,7 @@ fi
 
 # Copy the uberjar file into the deployment target directory
 mkdir -p $deployment_dir/target
-cp $app_dir/target/cmr-${app}-app-0.1.0-SNAPSHOT-standalone.jar $deployment_dir/target/cmr-${app}-app-standalone.jar
+cp $app_dir/target/cmr-${app}*standalone.jar $deployment_dir/target/cmr-${app}-app-standalone.jar
 
 # Create the tar file from the deployment directory
 tars_dir=$deployment_dir/../tarfiles

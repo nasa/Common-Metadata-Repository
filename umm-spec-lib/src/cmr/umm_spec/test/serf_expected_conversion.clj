@@ -84,10 +84,18 @@
                                           (take 1)
                                           (map #(url/format-url % true)))})))
 
+(defn- expected-serf-online-resource
+ "Sanitize the linkage and remove unmapped fields"
+ [online-resource]
+ (when (:Linkage online-resource)
+  (cmn/map->OnlineResourceType
+   (-> online-resource
+       conversion-util/sanitize-online-resource
+       (select-keys [:Linkage])))))
+
 (defn- expected-serf-service-citation
   [citation]
   (assoc citation
-         :DOI nil
          :ReleasePlace nil
          :SeriesName nil
          :DataPresentationForm nil
@@ -95,7 +103,8 @@
          :Editor nil
          :ReleaseDate nil
          :OtherCitationDetails nil
-         :RelatedUrl (fix-publication-reference-url (:RelatedUrl citation))))
+         :OnlineResource (expected-serf-online-resource (:OnlineResource citation))))
+
 
 (defn- remove-empty-objects
   "Required to remove some extraneous mappings from ResourceCitation that are not used
@@ -108,6 +117,14 @@
   (if (:DOI pubref)
     (assoc-in pubref [:DOI :Authority] nil)
     pubref))
+
+(defn- expected-publication-reference
+ "Fix the DOI and Online Resouce linkage in Publication Reference"
+ [pubref]
+ (-> pubref
+     fix-serf-doi
+     (update :OnlineResource expected-serf-online-resource)
+     (update :ISBN su/format-isbn)))
 
 (defn- fix-access-constraints
   [access-constraint]
@@ -138,9 +155,7 @@
       (update-in [:AccessConstraints] fix-access-constraints)
       (update-in-each [:MetadataAssociations] assoc :Description nil :Type nil :Version nil)
       (update-in [:MetadataAssociations] fix-metadata-associations)
-      (update-in-each [:PublicationReferences] fix-serf-doi)
-      (update-in-each [:PublicationReferences] update-in [:RelatedUrl] fix-publication-reference-url)
+      (update-in-each [:PublicationReferences] expected-publication-reference)
       (assoc :Platforms nil)
       (dissoc :DataCenters)
-      (update-in-each [:PublicationReferences] #(update % :ISBN su/format-isbn))
       (assoc :CollectionProgress su/not-provided)))

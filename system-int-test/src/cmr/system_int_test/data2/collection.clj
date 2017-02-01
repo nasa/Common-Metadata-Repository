@@ -43,6 +43,11 @@
   (c/map->TwoDCoordinateSystem
     {:name name}))
 
+(defn two-ds
+  "Returns a sequence of two-d-coordinate-systems with the given names"
+  [& names]
+  (map two-d names)) 
+  
 (defn product
   [attribs]
   (let [attribs (select-keys attribs (util/record-fields Product))
@@ -108,6 +113,14 @@
                            :long-name (d/unique-str "long-name")
                            :type (d/unique-str "Type")}
                           attribs)))
+(defn platforms
+  "Return a sequence of platforms with the given short names"
+  [& short-names]
+  (map #(c/map->Platform
+          {:short-name %
+           :long-name (d/unique-str "long-name")
+           :type (d/unique-str "Type")})
+       short-names))
 
 (defn projects
   "Return a sequence of projects with the given short names"

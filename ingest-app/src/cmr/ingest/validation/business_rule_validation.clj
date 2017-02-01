@@ -2,17 +2,19 @@
   "Provides functions to validate the ingest business rules"
   (:require
     [clj-time.core :as t]
-    [cmr.common.time-keeper :as tk]
     [cmr.common.date-time-parser :as p]
+    [cmr.common.time-keeper :as tk]
     [cmr.ingest.services.helper :as h]
     [cmr.ingest.validation.additional-attribute-validation :as aa]
     [cmr.ingest.validation.collection-unique-ids-validation :as cui]
+    [cmr.ingest.validation.platform-validation :as platform-validation]
     [cmr.ingest.validation.project-validation :as pv]
     [cmr.ingest.validation.spatial-validation :as sv]
     [cmr.ingest.validation.temporal-validation :as tv]
-    [cmr.umm-spec.umm-spec-core :as spec]
+    [cmr.ingest.validation.tiling-validation :as tiling-validation]
     [cmr.transmit.metadata-db :as mdb]
-    [cmr.transmit.search :as search]))
+    [cmr.transmit.search :as search]
+    [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn- version-is-not-nil-validation
   "Validates that the version is not nil"
@@ -41,10 +43,10 @@
                    concept-id mdb-concept-id native-id)])))))
 
 (def collection-update-searches
-  "Defines a list of functions that take the concept-id, updated UMM concept and the previous UMM
-  concept and return search maps used to validate that a collection was not updated in a way that
-  invalidates granules. Each search map contains a :params key of the parameters to use to execute
-  the search and an :error-msg to return if the search finds any hits."
+  "Defines a list of functions that take the context, concept-id, updated UMM concept and the
+   previous UMM concept, and return search maps used to validate that a collection was not updated
+   in a way that invalidates granules. Each search map contains a :params key of the parameters to
+   use to execute the search and an :error-msg to return if the search finds any hits."
   [
    ;; For CMR-2403 we decided to disable these validations. We will re-enable them after
    ;; implementing CMR-2485.
@@ -52,6 +54,8 @@
    ;;  cui/short-name-version-id-searches
    aa/additional-attribute-searches
    pv/deleted-project-searches
+   platform-validation/deleted-platform-searches
+   tiling-validation/deleted-tiling-searches
    tv/out-of-range-temporal-searches
    sv/spatial-param-change-searches])
 
@@ -73,8 +77,9 @@
                                                                  :native-id native-id}))]
     (when prev-concept
       (let [prev-umm-concept (spec/parse-metadata context prev-concept)
-            has-granule-searches (mapcat #(% (:concept-id prev-concept) umm-concept prev-umm-concept)
-                                         collection-update-searches)
+            has-granule-searches (mapcat
+                                  #(% context (:concept-id prev-concept) umm-concept prev-umm-concept)
+                                  collection-update-searches)
             search-errors (->> has-granule-searches
                                (map (partial has-granule-search-error context))
                                (remove nil?))]

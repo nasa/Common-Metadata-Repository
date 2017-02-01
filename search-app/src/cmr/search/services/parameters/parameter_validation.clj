@@ -37,7 +37,7 @@
                      :all-revisions}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
-                       :entry-title :platform :platform-h :processing-level-id :processing-level-id-h
+                       :entry-title :doi :platform :platform-h :processing-level-id :processing-level-id-h
                        :sensor :data-center-h}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
@@ -84,6 +84,7 @@
    :archive-center cpv/string-param-options
    :dataset-id cpv/pattern-option
    :entry-title cpv/string-plus-and-options
+   :doi cpv/string-plus-and-options
    :short-name cpv/string-plus-and-options
    :entry-id cpv/string-plus-and-options
    :version cpv/string-param-options

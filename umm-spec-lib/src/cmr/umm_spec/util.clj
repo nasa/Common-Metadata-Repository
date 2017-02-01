@@ -95,6 +95,12 @@
     record
     nil))
 
+(defn with-default-url
+ [url sanitize?]
+ (if sanitize?
+  (or url not-provided-url)
+  url))
+
 (defn remove-empty-records
   "Returns the given records with empty records removed from it."
   [records]
@@ -176,6 +182,14 @@
   (seq (for [elem (select doc path)]
          {:ShortName (p/value-of elem "Short_Name")
           :LongName (p/value-of elem "Long_Name")})))
+
+(defn entry-id
+  "Returns the entry-id for the given short-name and version-id."
+  [short-name version-id]
+  (if (or (nil? version-id)
+          (= not-provided version-id))
+    short-name
+    (str short-name "_" version-id)))
 
 (def ^:private data-size-re
   "Regular expression used to parse file sizes from a string. Supports extracting a single value

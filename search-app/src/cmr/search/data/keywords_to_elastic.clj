@@ -167,6 +167,9 @@
      (keywords->boosted-exact-match-filter :entry-title.lowercase keywords
                                            (get-boost-fn :entry-title))
 
+     ;; doi 
+     (keywords->boosted-exact-match-filter :doi.lowercase keywords
+                                           (get-boost-fn :doi))
      ;; provider-id
      (keywords->boosted-exact-match-filter :provider-id.lowercase keywords
                                            (get-boost-fn :provider))

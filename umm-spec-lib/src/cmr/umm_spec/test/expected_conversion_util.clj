@@ -91,23 +91,43 @@
   (when (seq addresses)
     [(first addresses)]))
 
+(defn sanitize-online-resource
+  "Sanitize the OnlineResource URL (Linkage)"
+  [online-resource]
+  (if (:Linkage online-resource)
+    (update online-resource :Linkage #(url/format-url % true))
+    online-resource))
+
+(defn dif-online-resource
+  "Sanitize the URL, set Name and Description, and dissoc unmapped fields"
+  [online-resource]
+  (cmn/map->OnlineResourceType
+   (-> online-resource
+       sanitize-online-resource
+       (update :Linkage #(su/with-default-url % true))
+       (select-keys [:Linkage])
+       (assoc :Name dif-util/dif-online-resource-name)
+       (assoc :Description dif-util/dif-online-resource-description))))
+
+(defn- check-nil-pub-ref
+ "If the online resource name and description are the only fields in the publication
+ reference, return nil pub ref. They are hardcoded not mapped and give problems with the
+ expected conversion when translating back and forth between umm and xml"
+ [pub-ref]
+ (let [pub-ref (util/remove-nil-keys pub-ref)]
+  (if (= (keys pub-ref) [:OnlineResource])
+   (when (get-in pub-ref [:OnlineResource :Linkage])
+    pub-ref)
+   pub-ref)))
+
 (defn dif-publication-reference
   "Returns the expected value of a parsed DIF 9 publication reference"
   [pub-ref]
   (-> pub-ref
       (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
       (update :ISBN su/format-isbn)
-      (update-in [:RelatedUrl]
-                 (fn [related-url]
-                   (when related-url (assoc related-url
-                                            :URLs (seq (remove nil?
-                                                               [(url/format-url (first (:URLs related-url)) true)]))
-                                            :Description nil
-                                            :Relation nil
-                                            :Title nil
-                                            :MimeType nil
-                                            :FileSize nil))))))
-
+      (update :OnlineResource dif-online-resource)
+      check-nil-pub-ref))
 
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
@@ -172,3 +192,10 @@
   (when language
     (let [dif-language (dif-util/umm-language->dif-language language)]
       (dif-util/dif-language->umm-language dif-language))))
+
+(defn expected-dif-doi
+  "dif9 and dif10 don't have :Authority field, so assign nil to it"
+  [doi]
+  (if (get-in doi [:Authority])
+    (assoc doi :Authority nil)
+    doi))

@@ -2,6 +2,7 @@
   (:require
     [clj-http.client :as client]
     [clj-time.core :as t]
+    [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
@@ -441,8 +442,11 @@
         ["PrOvIdEr"] [fixtures/*fixture-provider-acl*]))))
 
 (deftest acl-search-by-target-test
-  (let [token (e/login (u/conn-context) "user1")]
-
+  (let [token (e/login (u/conn-context) "user1")
+        single-instance-acl (u/ingest-acl token
+                                          {:group_permissions [{:permissions ["update"] :user_type "registered"}]
+                                           :single_instance_identity {:target "GROUP_MANAGEMENT"
+                                                                      :target_id "AG1200000000-CMR"}})]
     (are3 [target expected-acls]
       (let [response (ac/search-for-acls (u/conn-context) {:target target})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls)
@@ -453,6 +457,9 @@
 
       "Provider target"
       ["CATALOG_ITEM_ACL"] [fixtures/*fixture-provider-acl*]
+
+      "Single Istance ACL"
+      ["GROUP_MANAGEMENT"] [single-instance-acl]
 
       "Provider target, case insensitive"
       ["catalog_item_acl"] [fixtures/*fixture-provider-acl*])))
@@ -764,3 +771,66 @@
        (is (= (set (:items (u/acls->search-response
                             (count expected-acls-after-reindexing) expected-acls-after-reindexing)))
               (set (:items actual-response))))))))
+
+(deftest acl-search-by-target-group-id-test
+  (let [token (e/login (u/conn-context) "user1")
+        group1 (u/ingest-group token
+                               {:name "group1"}
+                               ["user1"])
+        group2 (u/ingest-group token
+                               {:name "group2"}
+                               ["user1"])
+        group1-concept-id (:concept_id group1)
+        group2-concept-id (:concept_id group2)
+        acl1 (u/ingest-acl token (u/single-instance-acl group1-concept-id))
+        acl2 (u/ingest-acl token (u/single-instance-acl group2-concept-id))]
+
+    (testing "Invalid target-id search"
+      (testing "No identity-type specified"
+        (is (= {:status 400
+                :body {:errors ["Parameter identity_type=single_instance is required to search by target-id"]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) {:target-id group1-concept-id} {:raw? true}))))
+      (testing "All but single_instance identity-type specified"
+        (is (= {:status 400
+                :body {:errors ["Parameter identity_type=single_instance is required to search by target-id"]}
+                :content-type :json}
+               (ac/search-for-acls (u/conn-context) {:target-id group1-concept-id :identity_type ["provider" "system" "catalog_item"]} {:raw? true})))))
+
+    (testing "Valid target-id search where only single_instance identity-type is specified"
+      (are3 [target-group-id expected-acls]
+            (let [response (ac/search-for-acls (u/conn-context) {:target-id target-group-id
+                                                                 :identity-type ["single_instance"]})]
+              (is (= (u/acls->search-response (count expected-acls) expected-acls)
+                     (dissoc response :took))))
+
+            "Single target-id"
+            [group1-concept-id]
+            [acl1]
+
+            "Multiple target-id"
+            [group1-concept-id group2-concept-id]
+            [acl1 acl2]
+
+            "Non-existent target-id"
+            "AG10000-PROV1"
+            []
+
+            "Multiple target-id including non-existent id"
+            [group1-concept-id "AG10000-PROV1"]
+            [acl1]
+
+            "Case sensitivity"
+            [(str/lower-case group1-concept-id)]
+            []
+
+            "Null target-id"
+            []
+            [acl1 acl2]))
+
+    (testing "Valid target-id search where multiple identity-types including single_instance is specified"
+      (let [response (ac/search-for-acls (u/conn-context) {:target-id [group1-concept-id group2-concept-id]
+                                                           :identity-type ["single_instance" "system" "provider" "catalog_item"]})
+            expected-acls [acl1 acl2]]
+        (is (= (u/acls->search-response (count expected-acls) expected-acls)
+               (dissoc response :took)))))))

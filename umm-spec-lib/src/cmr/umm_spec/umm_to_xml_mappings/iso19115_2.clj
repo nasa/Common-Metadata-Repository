@@ -180,6 +180,27 @@
            [:gmd:CI_RoleCode
             {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
              :codeListValue "publisher"} "publication"]]]]
+        (when-let [online-resource (:OnlineResource pub-ref)]
+         [:gmd:citedResponsibleParty
+          [:gmd:CI_ResponsibleParty
+           [:gmd:contactInfo
+            [:gmd:CI_Contact
+             [:gmd:onlineResource
+              [:gmd:CI_OnlineResource
+               [:gmd:linkage
+                [:gmd:URL (:Linkage online-resource)]]
+               [:gmd:protocol (char-string (:Protocol online-resource))]
+               [:gmd:applicationProfile (char-string (:ApplicationProtocol online-resource))]
+               [:gmd:name (char-string (:Name online-resource))]
+               [:gmd:description (char-string (:Description online-resource))]
+               [:gmd:function
+                [:gmd:CI_OnLineFunctionCode
+                 {:codeList (str (:iso iso/code-lists) "#CI_OnLineFunctionCode")
+                  :codeListValue ""} (:Function online-resource)]]]]]]
+           [:gmd:role
+            [:gmd:CI_RoleCode
+             {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
+              :codeListValue "resourceProvider"} "resourceProvider"]]]])
         [:gmd:series
          [:gmd:CI_Series
           [:gmd:name (char-string (:Series pub-ref))]
@@ -260,7 +281,24 @@
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
-             [:gmd:version (char-string (:Version c))]]]]]
+             [:gmd:version (char-string (:Version c))]]]
+         (when-let [doi (:DOI c)]
+           [:gmd:identifier
+            [:gmd:MD_Identifier
+           (when-let [authority (:Authority doi)]
+             [:gmd:authority
+              [:gmd:CI_Citation
+               [:gmd:title [:gco:CharacterString ""]]
+                [:gmd:date ""]
+               [:gmd:citedResponsibleParty
+                [:gmd:CI_ResponsibleParty
+                 [:gmd:organisationName [:gco:CharacterString authority]]
+                 [:gmd:role
+                  [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                     :codeListValue ""} "authority"]]]]]])
+             [:gmd:code [:gco:CharacterString (:DOI doi)]]
+             [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+             [:gmd:description [:gco:CharacterString "DOI"]]]])]]
          [:gmd:abstract (char-string (if (or abstract version-description)
                                        (str abstract iso/version-description-separator version-description)
                                        su/not-provided))]

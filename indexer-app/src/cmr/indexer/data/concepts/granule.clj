@@ -113,7 +113,8 @@
           (ocsd-map->vector %))
        (ocsd/ocsds->elastic-docs umm-granule)))
 
-(defmethod es/parsed-concept->elastic-doc :granule
+(defn- granule->elastic-doc
+  "Returns elastic json that can be used to insert the given granule concept in elasticsearch."
   [context concept umm-granule]
   (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
         {:keys [parent-collection-id]} extra-fields
@@ -216,3 +217,9 @@
             :atom-links atom-links
             :orbit-calculated-spatial-domains-json ocsd-json}
            (spatial->elastic parent-collection umm-granule))))
+
+(defmethod es/parsed-concept->elastic-doc :granule
+  [context concept umm-granule]
+  (if (:deleted concept)
+    concept
+    (granule->elastic-doc context concept umm-granule)))

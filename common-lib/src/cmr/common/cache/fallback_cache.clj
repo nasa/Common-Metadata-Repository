@@ -50,17 +50,21 @@
 
   (get-value
     [this key]
-    (or (c/get-value primary-cache key)
+    (let [c-value (c/get-value primary-cache key)]
+      (if (nil? c-value)
         (when-let [value (c/get-value backup-cache key)]
           (c/set-value primary-cache key value)
-          value)))
+          value)
+        c-value)))
 
   (get-value
     [this key lookup-fn]
-    (or (c/get-value this key)
+    (let [c-value (c/get-value this key)]
+      (if (nil? c-value)
         (when-let [value (lookup-fn)]
           (c/set-value this key value)
-          value)))
+          value)
+        c-value)))
 
   (reset
     [this]
