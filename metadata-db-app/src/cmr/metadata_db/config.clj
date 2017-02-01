@@ -4,12 +4,17 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]
-   [cmr.message-queue.config :as rmq-conf]
-   [cmr.metadata-db.temp-config :as mdb-temp-config]))
+   [environ.core :refer [env]]
+   [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig metadata-db-username
   "The database username"
   {:default "METADATA_DB"})
+
+(defn metadata-db-password
+  "The database password"
+  []
+  {:default (env :database-password)})
 
 (defconfig catalog-rest-db-username
   "The catalog rest db username"
@@ -24,7 +29,7 @@
    (oracle-config/db-fcf-enabled)
    (oracle-config/db-ons-config)
    (metadata-db-username)
-   (mdb-temp-config/metadata-db-password)))
+   (metadata-db-password)))
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."

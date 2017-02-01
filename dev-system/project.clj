@@ -69,6 +69,7 @@
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.8.1"]
                         [debugger "0.2.0"]
+                        [environ "1.1.0"]
                         [criterium "0.4.4"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]
