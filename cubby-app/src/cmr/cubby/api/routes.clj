@@ -1,19 +1,21 @@
 (ns cmr.cubby.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.api.context :as context]
-            [cmr.cubby.data :as d]
-            [cmr.common.cache :as cache]
-            [cmr.acl.core :as acl]
-            [cmr.common-app.api.health :as common-health]
-            [cmr.common-app.api.routes :as common-routes]
-            [cmr.elastic-utils.connect :as es-conn]
-            [cmr.transmit.echo.rest :as echo-rest]))
+  (:require
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.cache :as cache]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.cubby.data :as d]
+   [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]
+   [cmr.elastic-utils.connect :as es-conn]
+   [cmr.transmit.echo.rest :as echo-rest]
+   [compojure.core :refer :all]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]))
 
 (defn- context->db
   "Returns the db in the context"
@@ -82,9 +84,16 @@
         (delete-value context key-name)))))
 
 (def admin-routes
-  (POST "/reset" {:keys [request-context params headers]}
-    (acl/verify-ingest-management-permission request-context :update)
-    (reset request-context)))
+  "The administrative control routes for cubby."
+  (routes
+    (POST "/reset" {:keys [request-context params]}
+      (acl/verify-ingest-management-permission request-context :update)
+      (reset request-context)
+      {:status 204})
+    (POST "/db-migrate" {context :request-context}
+      (acl/verify-ingest-management-permission context :update)
+      (elastic-cache-store/create-index-or-update-mappings (context->db context))
+      {:status 204})))
 
 (defn- build-routes [system]
   (routes

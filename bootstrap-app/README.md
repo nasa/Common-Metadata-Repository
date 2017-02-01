@@ -135,6 +135,16 @@ concepts that have been replicated since the last replication run.
 
     curl -v -XPOST http://localhost:3006/index_recently_replicated
 
+### Run database migration
+
+Migrate database to the latest schema version:
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3006/db-migrate
+
+Migrate database to a specific schema version (e.g. 3):
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3006/db-migrate?version=3
+
 ### Check application health
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
