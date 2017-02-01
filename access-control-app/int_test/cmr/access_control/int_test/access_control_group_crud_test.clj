@@ -200,7 +200,9 @@
         (is (= {:status 200 :body ["user2"]} (u/get-members token-user1 concept_id)))
 
         ;; Verify that user not in managing group does not have permission to add member to the group.
+        ;; Remove grant-all ECHO acl from fixture
         (e/ungrant (u/conn-context) {:id "guid4"})
+        ;; Clear it from cmr ACL cache
         (ac/clear-cache (u/conn-context))
         (is (= 401 (:status (u/add-members token-user3 concept_id ["user3"]))))))
 
