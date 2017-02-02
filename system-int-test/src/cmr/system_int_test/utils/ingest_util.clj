@@ -21,16 +21,16 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util])
   (:import [java.lang.NumberFormatException]))
 
-(defn disable-ingest
+(defn disable-ingest-writes
   "Use the enable/disable endpoint on ingest to disable it."
   []
-  (let [response (client/post (url/disable-ingest-url))]
+  (let [response (client/post (url/disable-ingest-writes-url))]
     (is (= 200 (:status response)))))
 
-(defn enable-ingest
+(defn enable-ingest-writes
   "Use the enable/disable endpoint on ingest to enable it."
   []
-  (let [response (client/post (url/enable-ingest-url))]
+  (let [response (client/post (url/enable-ingest-writes-url))]
     (is (= 200 (:status response)))))
 
 (defn- create-provider-through-url

@@ -17,7 +17,7 @@
 ;; * Delete of a collection, granule fail with a 503 after disabling, then work again after enabling.
 ;; * Validation still works when disabled
 
-(deftest enable-disable-enable-ingest-concepts
+(deftest enable-disable-enable-ingest-writes-concepts
   (testing "disable / re-enable ingest of concepts"
     (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1" :entry-id "short1_V1"}
           ;; collection/granule ingested before disabling ingest
@@ -36,7 +36,7 @@
           ;; delete the granule
           pre-disable-deleted-gran (ingest/delete-concept (d/item->concept pre-disable-gran) {:accept-format :json :raw? true})
           ;; disable ingest
-          _ (ingest/disable-ingest)
+          _ (ingest/disable-ingest-writes)
           ;; these should fail
           after-disable-coll-resp (d/ingest "PROV1" (dc/collection (assoc common-fields :native-id "native3")) {:allow-failure? true})
           after-disable-delete (ingest/delete-concept pre-disable-orig-coll)
@@ -44,7 +44,7 @@
                                        (update-in (dg/granule new-coll) [:collection-ref] dissoc :short-name :version-id :entry-id)
                                        {:allow-failure? true})
           ;; re-enable ingest
-          _ (ingest/enable-ingest)
+          _ (ingest/enable-ingest-writes)
           ;; these should succeed
           after-enable-coll (dc/collection-concept {:native-id "native3"
                                                     :entry-title "coll3"
@@ -80,7 +80,7 @@
                                                            :small false})]
       (is (= 201 (:status pre-disable-prov))))
     ;; disable ingest
-    (ingest/disable-ingest)
+    (ingest/disable-ingest-writes)
 
     (let [after-disable-prov (ingest/create-ingest-provider {:provider-id "AFTER_DIS_PROV"
                                                              :short-name "after-dis-prov"
@@ -93,4 +93,4 @@
           {:keys [status errors]} (ingest/validate-concept concept)]
       (is (= [200 nil] [status errors]))))
 
-  (ingest/enable-ingest))
+  (ingest/enable-ingest-writes))

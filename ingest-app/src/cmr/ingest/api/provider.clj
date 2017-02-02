@@ -1,6 +1,6 @@
 (ns cmr.ingest.api.provider
   "Defines the HTTP URL routes for the provider endpoint in the ingest application."
-  (:require 
+  (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common.mime-types :as mt]
@@ -30,11 +30,11 @@
     ;; create a new provider
     (POST "/" {:keys [request-context body params headers]}
       (acl/verify-ingest-management-permission request-context :update)
-      (if (common-enabled/app-enabled? request-context)
+      (if (common-enabled/app-write-enabled? request-context)
         (result->response-map
           (ps/create-provider request-context (read-body headers body)))
-        (srvc-errors/throw-service-error :service-unavailable 
-                                       (common-enabled/service-disabled-message "ingest"))))
+        (srvc-errors/throw-service-error :service-unavailable
+                                       (common-enabled/service-write-disabled-message "ingest"))))
 
     ;; update an existing provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
@@ -42,22 +42,22 @@
                           body :body
                           headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
-      (if (common-enabled/app-enabled? request-context)
+      (if (common-enabled/app-write-enabled? request-context)
         (result->response-map
           (ps/update-provider request-context (read-body headers body)))
-        (srvc-errors/throw-service-error :service-unavailable 
-                                       (common-enabled/service-disabled-message "ingest"))))
+        (srvc-errors/throw-service-error :service-unavailable
+                                       (common-enabled/service-write-disabled-message "ingest"))))
 
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
                              request-context :request-context
                              headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
-      (if (common-enabled/app-enabled? request-context)
+      (if (common-enabled/app-write-enabled? request-context)
         (result->response-map
           (ps/delete-provider request-context provider-id))
-        (srvc-errors/throw-service-error :service-unavailable 
-                                       (common-enabled/service-disabled-message "ingest"))))
+        (srvc-errors/throw-service-error :service-unavailable
+                                       (common-enabled/service-write-disabled-message "ingest"))))
 
     ;; get a list of providers
     (GET "/" {:keys [request-context]}

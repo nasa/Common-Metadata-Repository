@@ -35,13 +35,13 @@
 (defn enable-persistence
   "Enables writes for tags / tag associations."
   [options]
-  (let [response (client/post (url/enable-search-url) options)]
+  (let [response (client/post (url/write-enable-search-url) options)]
      (is (= 200 (:status response)))))
 
 (defn disable-persistence
   "Disables writes for tags / tag associations."
   [options]
-  (let [response (client/post (url/disable-search-url) options)]
+  (let [response (client/post (url/write-disable-search-url) options)]
      (is (= 200 (:status response)))))
 
 (defn refresh-collection-metadata-cache
