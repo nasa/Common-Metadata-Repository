@@ -160,8 +160,9 @@
 (defn generate-data-center-contact-persons
  "Generate the contact persons for the data center. "
  [data-centers]
- (for [data-center data-centers]
-  (map #(generate-contact-person % (generate-data-center-name data-center))
+ (for [data-center data-centers
+       :let [data-center-name (generate-data-center-name data-center)]]
+  (map #(generate-contact-person % data-center-name)
        (:ContactPersons data-center))))
 
 (defn- generate-contact-group

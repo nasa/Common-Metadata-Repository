@@ -216,7 +216,7 @@
         extent-info (iso-util/get-extent-info-map doc)
         [abstract version-description] (parse-abstract-version-description md-data-id-el sanitize?)]
     (merge
-     (data-contact/parse-contacts doc sanitize?)
+     (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
      {:ShortName (char-string-value id-el "gmd:code")
       :EntryTitle (char-string-value citation-el "gmd:title")
       :DOI (parse-doi doc)
