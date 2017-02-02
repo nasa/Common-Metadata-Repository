@@ -45,17 +45,17 @@
   "Options map to pass on POST requests to enable/disable writes in access control."
   {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
-(deftest enable-disable-enable-write-acl
+(deftest enable-disable-re-enable-write-acl
   (let [token (e/login (u/conn-context) "admin")
-        resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
-        concept-id (get-in resp [:body :concept_id])
+        first-resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
+        concept-id (get-in first-resp [:body :concept_id])
         ;; Create a second ACL to test update/delete after disable
-        resp2 (ac/create-acl (u/conn-context) provider-acl {:token token})
-        concept-id2 (:concept_id resp2)]
+        second-resp (ac/create-acl (u/conn-context) provider-acl {:token token})
+        concept-id2 (:concept_id second-resp)]
 
-    (testing "save and delete acl works before disable"
+    (testing "save, udate, and delete acl works before disable"
       ;; check save response
-      (is (= 200 (:status resp)))
+      (is (= 200 (:status first-resp)))
       ;; test update
       (is (= 200 (:status (ac/update-acl (u/conn-context) concept-id catalog-item-acl {:token token :raw? true}))))
       ;; test delete
@@ -64,7 +64,7 @@
     ;; disable writes for access control service
     (u/disable-access-control-writes post-options)
 
-    (testing "save and delete acl fails after disable"
+    (testing "save, update, and delete acl fails after disable"
       (let [token (e/login (u/conn-context) "admin")
             resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
             concept-id (get-in resp [:body :concept_id])]
@@ -73,5 +73,19 @@
         ;; test update
         (is (= 503 (:status (ac/update-acl (u/conn-context) concept-id2 provider-acl {:token token :raw? true}))))
         ;; test delete
-        (is (= 503 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))))
+        (is (= 503 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))
+
+    ;; re-enable writes for access control service
+    (u/enable-access-control-writes post-options)
+
+    (testing "save, upate, and delete acl works after re-enable"
+      (let [token (e/login (u/conn-context) "admin")
+            resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
+            concept-id (get-in resp [:body :concept_id])]
+        ;; check save response
+        (is (= 200 (:status resp)))
+        ;; test update
+        (is (= 200 (:status (ac/update-acl (u/conn-context) concept-id2 provider-acl {:token token :raw? true}))))
+        ;; test delete
+        (is (= 200 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))))
 
