@@ -224,11 +224,11 @@
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
 
-(defn write-enable-search-url
+(defn enable-search-writes-url
   []
   (format "http://localhost:%s/enable-writes" (transmit-config/search-port)))
 
-(defn write-disable-search-url
+(defn disable-search-writes-url
   []
   (format "http://localhost:%s/disable-writes" (transmit-config/search-port)))
 

@@ -22,13 +22,13 @@
   (:import [java.lang.NumberFormatException]))
 
 (defn disable-ingest-writes
-  "Use the enable/disable endpoint on ingest to disable it."
+  "Use the enable/disable endpoint on ingest to disable writes."
   []
   (let [response (client/post (url/disable-ingest-writes-url))]
     (is (= 200 (:status response)))))
 
 (defn enable-ingest-writes
-  "Use the enable/disable endpoint on ingest to enable it."
+  "Use the enable/disable endpoint on ingest to enable writes."
   []
   (let [response (client/post (url/enable-ingest-writes-url))]
     (is (= 200 (:status response)))))

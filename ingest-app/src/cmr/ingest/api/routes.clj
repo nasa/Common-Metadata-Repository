@@ -83,7 +83,7 @@
       ;; add routes for checking health of the application
       (common-health/health-api-routes ingest/health)
 
-      ;; add routes for enabling/disabling application
+      ;; add routes for enabling/disabling writes
       (common-enabled/write-enabled-api-routes
        #(acl/verify-ingest-management-permission % :update)))
 
