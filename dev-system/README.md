@@ -10,6 +10,10 @@ You can setup locally for running the CMR in memory by doing the following. You'
 2. cd cmr
 3. dev-system/support/setup_local_dev.sh
 
+## Setting up profiles.clj
+
+You will need to create profiles.clj in dev-system in order to set the METADATA_DB user password.  This can be accomplished by copying the contents of profiles.example.clj into profiles.clj.  Make sure to change the value of :cmr-metadata-db-password.
+
 ## Security of dev system
 
 Dev system is meant to be used for testing only. It provides a control API that allows unrestricted access to shutdown the system, evaluate arbitrary code, remove all data, etc.
@@ -18,4 +22,3 @@ Dev system is meant to be used for testing only. It provides a control API that 
 ## License
 
 Copyright © 2014 NASA
-

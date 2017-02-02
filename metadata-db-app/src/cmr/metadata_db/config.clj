@@ -4,17 +4,16 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]
-   [environ.core :refer [env]]
    [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig metadata-db-username
   "The database username"
   {:default "METADATA_DB"})
 
-(defn metadata-db-password
+;; This value is set via profiles.clj in dev-system
+(defconfig metadata-db-password
   "The database password"
-  []
-  {:default (env :database-password)})
+  {})
 
 (defconfig catalog-rest-db-username
   "The catalog rest db username"

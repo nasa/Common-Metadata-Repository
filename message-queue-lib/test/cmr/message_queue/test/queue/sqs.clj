@@ -13,7 +13,7 @@
   (testing "with-and-without-prefix"
     (are3
       [environ queue-name norm-name]
-      (with-env-vars {"CMR_APP_ENVIRONMENT" environ}
+      (with-env-vars {:cmr-app-environment environ}
         (is (= norm-name (#'sqs/normalize-queue-name  queue-name))))
 
       "SIT with prefix already applied"

@@ -62,7 +62,7 @@
       (is (= "bar" (test-string)))
       (testing "env variable value"
         (with-env-vars
-          {"CMR_TEST_STRING" "foo"}
+          {:cmr-test-string "foo"}
           (is (= "foo" (test-string)))))))
 
   (testing "Long configs"
@@ -74,7 +74,7 @@
       (is (= 45 (test-long)))
       (testing "env variable value"
         (with-env-vars
-          {"CMR_TEST_LONG" "12"}
+          {:cmr-test-long "12"}
           (is (= 12 (test-long)))))))
 
   (testing "Double configs"
@@ -86,7 +86,7 @@
       (is (= 47.89 (test-double)))
       (testing "env variable value"
         (with-env-vars
-          {"CMR_TEST_DOUBLE" "12.2"}
+          {:cmr-test-double "12.2"}
           (is (= 12.2 (test-double)))))))
 
   (testing "Boolean configs"
@@ -100,7 +100,7 @@
       (is (= true (test-bool-true)))
       (testing "env variable value"
         (with-env-vars
-          {"CMR_TEST_BOOL_TRUE" "false"}
+          {:cmr-test-bool-true "false"}
           (is (= false (test-bool-true)))))))
 
   (testing "Custom parser configs"
@@ -112,7 +112,7 @@
       (is (= {:a 1} (test-custom-parser)))
       (testing "env variable value"
         (with-env-vars
-          {"CMR_TEST_CUSTOM_PARSER" "[1 2 3]"}
+          {:cmr-test-custom-parser "[1 2 3]"}
           (is (= [1 2 3] (test-custom-parser)))))))
 
   (testing "EDN configs"
@@ -124,8 +124,8 @@
       (is (= {:a 1} (test-edn)))
       (testing "env variable value"
         (with-env-vars
-          {"CMR_TEST_EDN" "{\"key1\" [\"value1\",\"value2\"]
-                            \"key2\" [\"value3\"]}"}
+          {:cmr-test-edn "{\"key1\" [\"value1\",\"value2\"]
+                           \"key2\" [\"value3\"]}"}
           (is (= {"key1" ["value1" "value2"]
                   "key2" ["value3"]}  (test-edn)))))))
 
@@ -147,6 +147,6 @@
    :type Long})
 
 (deftest test-check-env-vars
-  (is (false? (c/check-env-vars {"CMR_TEST_DEFAULT_JOB_START_DELAY" "common-lib test defconfig",
-                                 "CMR_TEST_HEALTH_CHECK_TIMEOUT_SECONDS" "common-lib test defconfig"})))
-  (is (true? (c/check-env-vars {"CMR_NOTRecognizable" "not recognized"}))))
+  (is (false? (c/check-env-vars {:cmr-test-default-job-start-delay "common-lib test defconfig",
+                                 :cmr-test-health-check-timeout-seconds "common-lib test defconfig"})))
+  (is (true? (c/check-env-vars {:cmr-notrecogizable "not recognized"}))))

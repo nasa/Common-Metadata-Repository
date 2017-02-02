@@ -30,7 +30,6 @@
                         [pjstadig/humane-test-output "0.8.1"]
                         [clj-http "2.0.0"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
-         :database-password "./src/cmr/metadata_db/external_config.clj"
          :jvm-opts ^:replace ["-server"]
          :source-paths ["src" "dev" "test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)

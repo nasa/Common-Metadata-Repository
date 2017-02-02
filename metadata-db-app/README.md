@@ -147,14 +147,6 @@ _Note the absence of provider-id for tags, tag associations and humanizer. These
 
 ### Setting up the database
 
-First, create the temporary config file in the metadata_db source directory.  This is needed to set up the METADATA_DB user password.  Be sure to change the password from CHANGE_ME to the desired password.
-
-```
-cat > metadata-db-app/src/cmr/metadata_db/external_config.clj << EOF
-CHANGE_ME
-EOF
-```
-
 There are two ways database operations can be done. It can happen through leiningen commands for local development or using the built uberjar.
 
 #### leiningen commands
@@ -172,7 +164,7 @@ lein migrate
 ```
 
 You can use `lein migrate -version version` to restore the database to
-a given version. `lein migrate -version 0` will clean the datbase
+a given version. `lein migrate -version 0` will clean the database
 completely.
 
 3. Remove the user
