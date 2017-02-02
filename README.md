@@ -112,7 +112,7 @@ There are a number of main applications, as well as several libraries and suppor
 
 #### Libraries:
 - acl-lib
-  - Contains utilities for retreiving and working with ACLs
+  - Contains utilities for retrieving and working with ACLs
 
 - common-app-lib
   - Contains utilities used within multiple CMR applications
@@ -127,12 +127,14 @@ There are a number of main applications, as well as several libraries and suppor
   - An Elasticsearch plugin that enables spatial search entirely within elastic
 
 - oracle-lib
-  - Contains utilities for connecting to and manipulating data in OracleDB
+  - Contains utilities for connecting to and manipulating data in Oracle
 
 - message-queue-lib
-  - A library for interfacing with RabbitMQ
+  - A library for interfacing with RabbitMQ, AWS SQS, and an in memory message queue
 
 - spatial-lib
+  - The spatial libraries provide utilities for working with spatial areas in the CMR
+
 - transmit-lib
   - The Transmit Library defines functions for invoking CMR services
 
