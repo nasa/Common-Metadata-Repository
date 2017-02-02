@@ -34,6 +34,13 @@
    :provider_identity {:provider_id "PROV1"
                        :target "INGEST_MANAGEMENT_ACL"}})
 
+(def catalog-item-acl
+  {:group_permissions [{:user_type "guest"
+                        :permissions ["create" "delete"]}]
+   :catalog_item_identity {:name "A Catalog Item ACL"
+                           :provider_id "PROV1"
+                           :collection_applicable true}})
+
 (def post-options
   "Options map to pass on POST requests to enable/disable writes in access control."
   {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
@@ -49,6 +56,8 @@
     (testing "save and delete acl works before disable"
       ;; check save response
       (is (= 200 (:status resp)))
+      ;; test update
+      (is (= 200 (:status (ac/update-acl (u/conn-context) concept-id catalog-item-acl {:token token :raw? true}))))
       ;; test delete
       (is (= 200 (:status (ac/delete-acl (u/conn-context) concept-id {:token token :raw? true})))))
 
@@ -61,6 +70,8 @@
             concept-id (get-in resp [:body :concept_id])]
         ;; check save response
         (is (= 503 (:status resp)))
+        ;; test update
+        (is (= 503 (:status (ac/update-acl (u/conn-context) concept-id2 provider-acl {:token token :raw? true}))))
         ;; test delete
         (is (= 503 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))))
 

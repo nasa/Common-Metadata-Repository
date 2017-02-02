@@ -60,30 +60,34 @@
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
   [context concept-id acl]
-  (v/validate-acl-save! context acl :update)
-  (acl-auth/authorize-acl-action context :update acl)
-  ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
-  (let [existing-concept (fetch-acl-concept context concept-id)
-        existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
-        ;; An empty legacy guid can be passed in and we'll continue to use the same one
-        acl (if existing-legacy-guid
-              (update acl :legacy-guid #(or % existing-legacy-guid))
-              acl)
-        legacy-guid (:legacy-guid acl)]
-    (when-not (= existing-legacy-guid legacy-guid)
-      (errors/throw-service-error
-       :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
-                             existing-legacy-guid legacy-guid)))
-    (let [new-concept (merge (acl-util/acl->base-concept context acl)
-                             {:concept-id concept-id
-                              :native-id (:native-id existing-concept)})
-          resp (mdb/save-concept context new-concept)]
-      ;; index the saved ACL synchronously
-      (index/index-acl context
-                       (merge new-concept (select-keys resp [:concept-id :revision-id]))
-                       {:synchronous? true})
-      (info (acl-util/acl-log-message context new-concept existing-concept :update))
-      resp)))
+  (if (common-enabled/app-write-enabled? context)
+    (do
+      (v/validate-acl-save! context acl :update)
+      (acl-auth/authorize-acl-action context :update acl)
+      ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
+      (let [existing-concept (fetch-acl-concept context concept-id)
+            existing-legacy-guid (:legacy-guid (edn/read-string (:metadata existing-concept)))
+            ;; An empty legacy guid can be passed in and we'll continue to use the same one
+            acl (if existing-legacy-guid
+                  (update acl :legacy-guid #(or % existing-legacy-guid))
+                  acl)
+            legacy-guid (:legacy-guid acl)]
+        (when-not (= existing-legacy-guid legacy-guid)
+          (errors/throw-service-error)
+          :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                                existing-legacy-guid legacy-guid))
+        (let [new-concept (merge (acl-util/acl->base-concept context acl)
+                                {:concept-id concept-id
+                                  :native-id (:native-id existing-concept)})
+              resp (mdb/save-concept context new-concept)]
+          ;; index the saved ACL synchronously
+          (index/index-acl context
+                          (merge new-concept (select-keys resp [:concept-id :revision-id]))
+                          {:synchronous? true})
+          (info (acl-util/acl-log-message context new-concept existing-concept :update))
+          resp)))
+    (errors/throw-service-error :service-unavailable
+                                (common-enabled/service-write-disabled-message "access control"))))
 
 (defn delete-acl
   "Delete the ACL with the given concept id."
