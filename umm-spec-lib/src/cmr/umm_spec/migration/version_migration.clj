@@ -198,7 +198,10 @@
   (-> c
       migrate-doi-up
       (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
-      (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)))
+      (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)
+      (update :DataCenters related-url/migrate-data-centers-up)
+      (update-in-each [:ContactGroups] related-url/migrate-contacts-up)
+      (update-in-each [:ContactPersons] related-url/migrate-contacts-up)))
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]

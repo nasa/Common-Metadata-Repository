@@ -87,7 +87,7 @@
 (defn- expected-dif10-related-urls
   [related-urls]
   (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
+         (assoc related-url :FileSize nil :MimeType nil))))
 
 (defn- expected-dif10-spatial-extent
   [spatial-extent]

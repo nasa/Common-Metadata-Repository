@@ -116,7 +116,7 @@
     (seq (for [related-url related-urls
                url (:URLs related-url)]
            (-> related-url
-               (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
+               (assoc :MimeType nil :FileSize nil :URLs [url])
                (update-in [:Relation]
                           (fn [[rel]]
                             (when (conversion-util/relation-set rel)

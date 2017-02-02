@@ -9,7 +9,6 @@
 (defn- multimedia->RelatedUrl
   [multimedia-sample sanitize?]
   {:URLs (map #(url/format-url % sanitize?) (values-at multimedia-sample "URL"))
-   :Title (value-of multimedia-sample "Caption")
    :Description (value-of multimedia-sample "Description")
    :Relation ["GET RELATED VISUALIZATION"]})
 

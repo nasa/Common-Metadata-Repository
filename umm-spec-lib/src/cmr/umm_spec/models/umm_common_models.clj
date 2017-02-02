@@ -680,10 +680,6 @@
 ;; online software packages, web mapping services, and calibration/validation data.
 (defrecord RelatedUrlType
   [
-   ;; The Title is a one-line description of the resource, could be used a caption when a browse
-   ;; image is displayed. The title is especially useful for images such as graphs and photos.
-   Title
-
    ;; Description of the web page at this URL.
    Description
 

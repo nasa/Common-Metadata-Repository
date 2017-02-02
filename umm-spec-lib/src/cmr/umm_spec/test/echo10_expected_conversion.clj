@@ -47,7 +47,7 @@
                :let [[rel] (:Relation related-url)]
                url (:URLs related-url)]
            (-> related-url
-               (assoc :Title nil :URLs [url])
+               (assoc :URLs [url])
                (update-in [:FileSize] (fn [file-size]
                                         (when (and file-size
                                                    (= rel "GET RELATED VISUALIZATION"))

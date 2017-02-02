@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.migration.related-url-migration
   "Contains helper functions for migrating between different versions of UMM related urls"
   (:require
+   [cmr.common.util :refer [update-in-each]]
    [cmr.umm-spec.util :as util]))
 
 (defn migrate-related-url-to-online-resource
@@ -26,3 +27,28 @@
                             :MimeType "text/html"})
         (dissoc :OnlineResource))
     element))
+
+(defn dissoc-titles-from-contact-information
+  "Remove :Title from a given vector of ContactInformation
+  to comply with UMM spec v1.9"
+  [contact-information]
+  (if-let [related-urls (:RelatedUrls contact-information)]
+   (update-in-each contact-information [:RelatedUrls] #(dissoc % :Title))
+   contact-information))
+
+(defn migrate-contacts-up
+  "Migrate ContactPersons to comply with UMM spec v1.9"
+  [contacts]
+  (if (not-empty (:ContactInformation contacts))
+   (update contacts :ContactInformation dissoc-titles-from-contact-information)
+   contacts))
+
+(defn migrate-data-centers-up
+  "Get RelatedUrls from DataCenters and dissoc the Title from any RelatedUrl"
+  [data-centers]
+  (mapv (fn [data-center]
+          (-> data-center
+              (update-in-each [:ContactGroups] migrate-contacts-up)
+              (update-in-each [:ContactPersons] migrate-contacts-up)
+              (update :ContactInformation dissoc-titles-from-contact-information)))
+        data-centers))
