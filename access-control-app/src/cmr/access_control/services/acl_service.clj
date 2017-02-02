@@ -14,6 +14,7 @@
     [cmr.access-control.services.messages :as msg]
     [cmr.access-control.services.parameter-validation :as pv]
     [cmr.acl.core :as acl]
+    [cmr.common-app.api.enabled :as common-enabled]
     [cmr.common-app.services.search.params :as cp]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer [info debug]]
@@ -48,9 +49,13 @@
 (defn create-acl
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
-  (v/validate-acl-save! context acl :create)
-  (acl-auth/authorize-acl-action context :create acl)
-  (acl-util/create-acl context acl))
+  (if (common-enabled/app-write-enabled? context)
+    (do
+      (v/validate-acl-save! context acl :create)
+      (acl-auth/authorize-acl-action context :create acl)
+      (acl-util/create-acl context acl))
+    (errors/throw-service-error :service-unavailable
+                                (common-enabled/service-write-disabled-message "access control"))))
 
 (defn update-acl
   "Update the ACL with the given concept-id in Metadata DB. Returns map with concept and revision id of updated acl."
@@ -83,17 +88,20 @@
 (defn delete-acl
   "Delete the ACL with the given concept id."
   [context concept-id]
-  (let [acl-concept (fetch-acl-concept context concept-id)
-        acl (edn/read-string (:metadata acl-concept))]
-    (acl-auth/authorize-acl-action context :delete acl)
-    (let [tombstone {:concept-id (:concept-id acl-concept)
-                     :revision-id (inc (:revision-id acl-concept))
-                     :deleted true}
-          resp (mdb/save-concept context tombstone)]
-      ;; unindexing is synchronous
-      (index/unindex-acl context concept-id)
-      (info (acl-util/acl-log-message context tombstone acl-concept :delete))
-      resp)))
+  (if (common-enabled/app-write-enabled? context)
+    (let [acl-concept (fetch-acl-concept context concept-id)
+          acl (edn/read-string (:metadata acl-concept))]
+      (acl-auth/authorize-acl-action context :delete acl)
+      (let [tombstone {:concept-id (:concept-id acl-concept)
+                       :revision-id (inc (:revision-id acl-concept))
+                       :deleted true}
+            resp (mdb/save-concept context tombstone)]
+        ;; unindexing is synchronous
+        (index/unindex-acl context concept-id)
+        (info (acl-util/acl-log-message context tombstone acl-concept :delete))
+        resp))
+    (errors/throw-service-error :service-unavailable
+                                (common-enabled/service-write-disabled-message "access control"))))
 
 ;; Member Functions
 
