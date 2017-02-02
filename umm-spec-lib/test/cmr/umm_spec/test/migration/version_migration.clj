@@ -549,6 +549,11 @@
                                                                                    :PostalCode "20774"
                                                                                    :Country "U.S.A."}]}
                                                  :GroupName "NSIDC_IceBridge"}]
+                                :RelatedUrls [{:Description "Contact group related url description"
+                                               :Title "Just when you thought titles couldn't get any better"
+                                               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                               :URLs ["www.contact.group.foo.com"]
+                                               :MimeType "application/html"}]
                                 :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                                                   :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                                   :ContactInformation {:RelatedUrls [{:Title "Contact Title"
@@ -654,7 +659,13 @@
           data-center-contact-groups (:RelatedUrls (:ContactInformation (first (second (next (map :ContactGroups (:DataCenters result)))))))
           data-center-contact-information (:RelatedUrls (second (next (map :ContactInformation (:DataCenters result)))))
           collection-contact-groups (:RelatedUrls (:ContactInformation (first (:ContactGroups result))))
-          collection-contact-persons (:RelatedUrls (:ContactInformation (first (:ContactPersons result))))]
+          collection-contact-persons (:RelatedUrls (:ContactInformation (first (:ContactPersons result))))
+          collection-urls (:RelatedUrls result)]
+      (is (= [{:Description "Contact group related url description"
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+               :URLs ["www.contact.group.foo.com"]
+               :MimeType "application/html"}]
+             collection-urls))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
                :URLs ["www.contact.foo.com" "www.contact.shoo.com"],
@@ -679,7 +690,7 @@
                :MimeType "application/html",
                :URLs ["www.contact.group.foo.com"],
                :Description "Contact group related url description"}]
-             collection-contact-groups))))) 
+             collection-contact-groups)))))
 
 
 (deftest migrate-1_9-down-to-1_8

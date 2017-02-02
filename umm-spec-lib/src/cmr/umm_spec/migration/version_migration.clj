@@ -197,6 +197,7 @@
   [context c & _]
   (-> c
       migrate-doi-up
+      related-url/dissoc-titles-from-contact-information
       (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
       (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)
       (update :DataCenters related-url/migrate-data-centers-up)
