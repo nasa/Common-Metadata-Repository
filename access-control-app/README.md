@@ -30,6 +30,11 @@ Reindexing all acls can be accomplished by sending a post request to /reindex-ac
 
     curl -i -XPOST http://localhost:3011/access-control/reindex-acls?token=XXXX
 
+### Run database migration
+
+Update elasticsearch mappings to the latest version:
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3011/db-migrate
 
 ***
 

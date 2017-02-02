@@ -64,15 +64,14 @@
 (defn- related-url->atom-link
   "Returns the atom link of the given related-url"
   [related-url]
-  (let [{urls :URLs title :Title mime-type :MimeType {:keys [Size Unit]} :FileSize} related-url
+  (let [{urls :URLs mime-type :MimeType {:keys [Size Unit]} :FileSize} related-url
         size (when (or Size Unit) (str Size Unit))]
     ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
-    ;; but only a single Title, MimeType and FileSize. This model doesn't make sense.
+    ;; but only a single MimeType and FileSize. This model doesn't make sense.
     ;; Talked to Erich and he said that we are going to change the model.
     ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
     {:href (first urls)
      :link-type (related-url->link-type related-url)
-     :title title
      :mime-type mime-type
      :size size}))
 

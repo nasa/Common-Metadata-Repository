@@ -57,6 +57,8 @@
       (url/indexer-reset-url)
       (url/enable-ingest-url)
       (url/disable-ingest-url)
+      (url/enable-search-url)
+      (url/disable-search-url)
       (url/mdb-reset-url)
       (url/index-set-reset-url)
       (url/cubby-reset-url)

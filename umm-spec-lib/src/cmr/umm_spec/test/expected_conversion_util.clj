@@ -135,7 +135,7 @@
   (if (seq related-urls)
     (seq (for [related-url related-urls]
            (-> related-url
-               (assoc :Title nil :FileSize nil :MimeType nil)
+               (assoc :FileSize nil :MimeType nil)
                (update-in-each [:URLs] #(url/format-url % true)))))
     [su/not-provided-related-url]))
 

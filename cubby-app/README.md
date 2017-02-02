@@ -23,6 +23,8 @@ CMR_ELASTIC_HOST=localhost CMR_ELASTIC_PORT=9210 java -cp target/cmr-cubby-app-0
       * **DELETE** - remove a key
   * **/reset**
     * **POST** - Recreates indexes dropping all data.
+  * **/db-migrate**
+    * **POST** - Run database migration
   * **/health**
     * **GET** - Returns the health of the application
   * **/caches**
@@ -93,6 +95,12 @@ The following curl will return the keys for a specific cache:
 This curl will return the value for a specific key in the named cache:
 
     curl -i http://localhost:3007/caches/cache-name/cache-key
+
+### Run database migration
+
+Update elasticsearch mappings to the latest version:
+
+    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3007/db-migrate
 
 ### Check application health
 
