@@ -10,7 +10,7 @@
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
-              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2"])
+              (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3"])
               (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
               (fixtures/grant-all-acl-fixture))
 
@@ -161,13 +161,14 @@
         (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept_id)))))
 
     (testing "Attempt to create group with non-existent members"
-      (let [{:keys [status errors]} (create-group-with-members ["user1" "user3"])]
+      (let [{:keys [status errors]} (create-group-with-members ["user1" "user4"])]
         (is (= 400 status))
-        (is (= ["The following users do not exist [user3]"] errors))))))
+        (is (= ["The following users do not exist [user4]"] errors))))))
 
 (deftest create-group-with-managing-group-id-test
   (let [token-user1 (e/login (u/conn-context) "user1")
         token-user2 (e/login (u/conn-context) "user2")
+        token-user3 (e/login (u/conn-context) "user3")
         managing-group (u/ingest-group token-user1 {:name "managing group"} ["user1"])
         managing-group-id (:concept_id managing-group)
         create-group-with-managing-group
@@ -193,14 +194,17 @@
         ;; the group starts with no members
         (is (= {:status 200 :body []} (u/get-members token-user1 concept_id)))
 
-        ;; TODO: Once we add support to update group in ECHO and refresh access control cache,
-        ;; We can verify that user not in managing group does not have permission to add member to the group.
-        ; (is (= 401 (:status (u/add-members token-user2 concept_id ["user2"]))))
-
         ;; Add members to the group as a user in the managing group
         (is (= 200 (:status (u/add-members token-user1 concept_id ["user2"]))))
         ;; verify that the group now has a member added
-        (is (= {:status 200 :body ["user2"]} (u/get-members token-user1 concept_id)))))
+        (is (= {:status 200 :body ["user2"]} (u/get-members token-user1 concept_id)))
+
+        ;; Verify that user not in managing group does not have permission to add member to the group.
+        ;; Remove grant-all ECHO acl from fixture
+        (e/ungrant (u/conn-context) {:id "guid4"})
+        ;; Clear it from cmr ACL cache
+        (ac/clear-cache (u/conn-context))
+        (is (= 401 (:status (u/add-members token-user3 concept_id ["user3"]))))))
 
     (testing "Attempt to create group with non-existent managing group id"
       (let [{:keys [status errors]} (create-group-with-managing-group "group2" "AG10000-PROV1")]
