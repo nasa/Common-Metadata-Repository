@@ -1,15 +1,16 @@
 (ns cmr.search.api.tags-api
   "Defines the API for tagging collections in the CMR."
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as errors]
-            [cmr.common-app.api.enabled :as common-enabled]
-            [cmr.search.services.tagging-service :as tagging-service]
-            [cmr.acl.core :as acl]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [cmr.acl.core :as acl]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.search.services.tagging-service :as tagging-service]
+   [compojure.core :refer :all]
+   [compojure.route :as route]))
 
 (defn- validate-tag-content-type
   "Validates that content type sent with a tag is JSON"
