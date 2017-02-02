@@ -2,16 +2,12 @@
   "Search tag / tag association peristence enable/disable endpoint test"
   (:require
     [clojure.test :refer :all]
-    [clojure.string :as str]
     [cmr.common.util :refer [are2] :as util]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.tag-util :as tags]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.collection :as dc]
-    [cmr.transmit.tag :as tt]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.system :as s]
     [cmr.transmit.config :as transmit-config]))
