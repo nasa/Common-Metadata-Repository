@@ -80,7 +80,7 @@
         (url/access-control-read-caches-url) ["acls" "health" "group-ids-guids"]
         (url/search-read-caches-url) ["acls" "collections-for-gran-acls" "has-granules-map"
                                       "index-names" "token-imp" "token-sid" "health"
-                                      "xsl-transformer-templates" "metadata-cache" "kms"])
+                                      "xsl-transformer-templates" "metadata-cache" "kms" "enabled"])
       (s/only-with-real-database
        (testing "list caches for bootstrap"
          (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]

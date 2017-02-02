@@ -32,6 +32,18 @@
             [cmr.system-int-test.data2.aql-additional-attribute]
             [cmr.system-int-test.data2.facets :as f]))
 
+(defn enable-persistence
+  "Enables writes for tags / tag associations."
+  [options]
+  (let [response (client/post (url/enable-search-url) options)]
+     (is (= 200 (:status response)))))
+
+(defn disable-persistence
+  "Disables writes for tags / tag associations."
+  [options]
+  (let [response (client/post (url/disable-search-url) options)]
+     (is (= 200 (:status response)))))
+
 (defn refresh-collection-metadata-cache
   "Triggers a full refresh of the collection granule aggregate cache in the indexer."
   []

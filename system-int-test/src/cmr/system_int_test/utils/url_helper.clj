@@ -224,6 +224,14 @@
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
 
+(defn enable-search-url
+  []
+  (format "http://localhost:%s/enable" (transmit-config/search-port)))
+
+(defn disable-search-url
+  []
+  (format "http://localhost:%s/disable" (transmit-config/search-port)))
+
 (defn timeline-url
   []
   (format "%s/timeline" (search-url :granule)))

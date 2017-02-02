@@ -1,14 +1,16 @@
 (ns cmr.search.api.tags-api
   "Defines the API for tagging collections in the CMR."
-  (:require [compojure.route :as route]
-            [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]
-            [cmr.search.services.tagging-service :as tagging-service]
-            [cmr.common.services.errors :as errors]
-            [cmr.acl.core :as acl]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [cmr.acl.core :as acl]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.search.services.tagging-service :as tagging-service]
+   [compojure.core :refer :all]
+   [compojure.route :as route]))
 
 (defn- validate-tag-content-type
   "Validates that content type sent with a tag is JSON"
@@ -44,10 +46,14 @@
   "Processes a create tag request."
   [context headers body]
   (verify-tag-modification-permission context :create)
-  (validate-tag-content-type headers)
-  (let [result (tagging-service/create-tag context body)
-        status-code (if (= 1 (:revision-id result)) 201 200)]
-    (tag-api-response status-code result)))
+  (if (common-enabled/app-enabled? context)
+   (do
+     (validate-tag-content-type headers)
+     (let [result (tagging-service/create-tag context body)
+           status-code (if (= 1 (:revision-id result)) 201 200)]
+       (tag-api-response status-code result)))
+   (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn get-tag
   "Retrieves the tag with the given tag-key."
@@ -58,42 +64,65 @@
   "Processes a request to update a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/update-tag context tag-key body)))
+  (if (common-enabled/app-enabled? context)
+   (do
+     (validate-tag-content-type headers)
+     (tag-api-response (tagging-service/update-tag context tag-key body)))
+   (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn delete-tag
   "Deletes the tag with the given tag-key."
   [context tag-key]
-  (verify-tag-modification-permission context :delete)
-  (tag-api-response (tagging-service/delete-tag context tag-key)))
+  (if (common-enabled/app-enabled? context)
+   (do
+     (verify-tag-modification-permission context :delete)
+     (tag-api-response (tagging-service/delete-tag context tag-key)))
+   (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn associate-tag-to-collections
   "Associate the tag to a list of collections."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
+  (if (common-enabled/app-enabled? context)
+   (do
+     (validate-tag-content-type headers)
+     (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
+   (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn disassociate-tag-to-collections
   "Disassociate the tag to a list of collections."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-to-collections context tag-key body)))
+  (if (common-enabled/app-enabled? context)
+   (do
+     (validate-tag-content-type headers)
+     (tag-api-response (tagging-service/disassociate-tag-to-collections context tag-key body)))
+   (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
-
+  (if (common-enabled/app-enabled? context)
+   (do
+     (validate-tag-content-type headers)
+     (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
+   (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 (defn disassociate-tag-by-query
   "Processes a request to disassociate a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
-  (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
+  (if (common-enabled/app-enabled? context)
+   (do
+     (validate-tag-content-type headers)
+     (tag-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
+   (errors/throw-service-error :service-unavailable
+                               (common-enabled/service-disabled-message "search"))))
 
 (defn search-for-tags
   [context params]

@@ -5,6 +5,7 @@
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
@@ -93,7 +94,8 @@
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)
                       metadata-cache/cache-key (metadata-cache/create-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)}
+                      common-health/health-cache-key (common-health/create-health-cache)
+                      common-enabled/enabled-cache-key (common-enabled/create-enabled-cache)}
              :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              :scheduler (jobs/create-scheduler
