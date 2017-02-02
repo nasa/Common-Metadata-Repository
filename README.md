@@ -46,10 +46,12 @@ The CMR is a system consisting of multiple services. The services can be run ind
 
 #### Building and Running separate CMR Applications
 This will build all of the applications, but will put each jar into the appropriate /target directory for each application.
-The command shown in step 3 is an example. For the proper command to start up each application, see the `Applications` section below.
+The command shown in step 3 is an example. For the proper command to start up each application, see the `Applications` section below. Note: Steps 1 and 2 only need to be completed once.
   1. cd cmr/dev-system
   2. ./support/build.sh CMR_BUILD_UBERJARS
-  3. java -classpath ./target/<NAME OF SERVICE>-0.1.0-SNAPSHOT-standalone.jar <MAIN METHOD OF SERVICE>
+  3. cd cmr/<service>
+  4. lein uberjar
+  5. java -classpath ./target/<NAME OF SERVICE>-0.1.0-SNAPSHOT-standalone.jar <MAIN METHOD OF SERVICE>
 
 # Code structure
 The CMR is made up of several small services called microservices. These are small purposed-based services that do a small set of things well.
@@ -61,56 +63,62 @@ There are a number of main applications, as well as several libraries and suppor
 
 #### Applications:
 - access-control-app
-  - The mechanism by which users are granted access to perform different operations in the CMR
-  - java -classpath ./target/cmr-access-control-app-0.1.0-SNAPSHOT.jar cmr.access-control.runner
+  - The mechanism by which users are granted access to perform different operations in the CMR. Also maintains groups and access control rules. Note that users access is provided by either ECHO or URS as an external dependency. The mock-echo application implements both of the necessary interfaces for local testing.
+  - Main method: cmr.access_control.runner
 
 - bootstrap-app
-  - Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST. It has API methods for copying data from Catalog REST to the metadata db. It can also bulk index everything in the Metadata DB
-  - java -classpath ./target/cmr-bootstrap-app-0.1.0-SNAPSHOT.jar cmr.bootstrap.runner
+  - Contains APIs for performing various bulk actions in the CMR
+  - Main method: cmr.bootstrap.runner
   - See /bootstrap-app/README.md for a list of lein and uberjar commands
 
 - cubby-app
   - Centralized caching for the CMR. Ideally each application will cache internally, but for situations that require centralized caching, we use Cubby.
-  - java -classpath ./target/cmr-cubby-app-0.1.0-SNAPSHOT.jar cmr.cubby.runner
+  - Main method: cmr.cubby.runner
 
 - dev-system
   - An app that combines together the separate microservices of the CMR into a single application to make it simpler to develop and run
-  - java -classpath ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar cmr.dev_system.runner
+  - Main method: cmr.dev_system.runner
 
 - indexer-app
-  - This modifies existing data in Elasticsearch
-  - java -classpath ./target/cmr-indexer-app-0.1.0-SNAPSHOT.jar cmr.indexer.runner
+  - This handles indexing collections, granules, and tags in Elasticsearch
+  - Main method: cmr.indexer.runner
 
 - ingest-app
   - The Ingest app is responsible for collaborating with metadata db and indexer components of the CMR system to maintain the lifecycle of concepts coming into the system
-  - java -classpath ./target/cmr-ingest-app-0.1.0-SNAPSHOT.jar cmr.ingest.runner
+  - Main method: cmr.ingest.runner
 
 - search-app
   - Provides a public search API for concepts in the CMR
-  - java -classpath ./target/cmr-search-app-0.1.0-SNAPSHOT.jar cmr.search.runner
+  - Main method: cmr.search.runner
 
 - system-int-test
   - Black-box, system-level tests to ensure functionality of the CMR
 
 - virtual-product-app
   - Adds the concept of Virtual Products to the CMR. In short: Virtual Products represent products at a data provider that are generated on demand from users when they are ordered or downloaded through a URL
-  - java -classpath ./target/cmr-virtual-product-app-0.1.0-SNAPSHOT.jar cmr.virtual-product.runner
+  - Main method: cmr.virtual_product.runner
 
 - index-set-app
   - An application that maintains the set of indexes in elasticsearch for multiple concept types
-  - java -classpath ./target/cmr-index-set-app-0.1.0-SNAPSHOT.jar cmr.index-set.runner
+  - Main method: cmr.index_set.runner
 
 - metadata-db-app
-  - Contains utilities for connecting to and manipulating data in the Metadata DB
-  - java -classpath ./target/cmr-metadata-db-app-0.1.0-SNAPSHOT.jar cmr.metadata-db.runner
+  - A database that maintains revisioned copies of metadata for the CMR
+  - Main method: cmr.metadata_db.runner
 
 - mock-echo-app
-  - This mocks out the ECHO REST API. It's purpose is to make it easier to integration test the CMR system without having to run a full instance of ECHO. It won't mock it perfectly or completely. It will only implement the minimum necessary to enable integration testing.
-  - java -classpath ./target/cmr-mock-echo-app-0.1.0-SNAPSHOT.jar cmr.mock-echo.runner
+  - This mocks out the ECHO REST API and the URS API as well. It's purpose is to make it easier to integration test the CMR system without having to run a full instance of ECHO. It won't mock it perfectly or completely. It will only implement the minimum necessary to enable integration testing.
+  - Main method: cmr.mock_echo.runner
 
 #### Libraries:
 - acl-lib
+  - Contains utilities for retreiving and working with ACLs
+
+- common-app-lib
+  - Contains utilities used within multiple CMR applications
+
 - common-lib
+  - Provides common utility code for CMR projects
 
 - elastic-utils-lib
   - Most interfacing with Elasticsearch is done through this application
@@ -118,7 +126,6 @@ There are a number of main applications, as well as several libraries and suppor
 - es-spatial-plugin
   - An Elasticsearch plugin that enables spatial search entirely within elastic
 
-- common-app-lib
 - oracle-lib
   - Contains utilities for connecting to and manipulating data in OracleDB
 
@@ -127,7 +134,7 @@ There are a number of main applications, as well as several libraries and suppor
 
 - spatial-lib
 - transmit-lib
-  - The Transmit Library is responsible for defining the common transmit libraries that invoke services within the CMR projects
+  - The Transmit Library defines functions for invoking CMR services
 
 - umm-lib
   - This is the old source of UMM schemas and translation code. Since the advent of umm-spec-lib it is actively in the process of being removed
