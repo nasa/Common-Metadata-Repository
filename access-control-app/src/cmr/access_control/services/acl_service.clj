@@ -73,9 +73,9 @@
                   acl)
             legacy-guid (:legacy-guid acl)]
         (when-not (= existing-legacy-guid legacy-guid)
-          (errors/throw-service-error)
-          :invalid-data (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
-                                existing-legacy-guid legacy-guid))
+          (errors/throw-service-error :invalid-data
+                                      (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
+                                              existing-legacy-guid legacy-guid)))
         (let [new-concept (merge (acl-util/acl->base-concept context acl)
                                 {:concept-id concept-id
                                   :native-id (:native-id existing-concept)})
