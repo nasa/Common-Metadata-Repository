@@ -207,7 +207,7 @@
            [value#]
            (set-config-value! ~config-name-key value#))))))
 
-(defconfig defn-timed-debug-switch 
+(defconfig defn-timed-debug 
   "The defn-timed macro produced debug switch"
   {:default false 
    :type Boolean})
