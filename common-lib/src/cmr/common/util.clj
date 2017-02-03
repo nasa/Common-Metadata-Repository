@@ -180,7 +180,7 @@
              ~@timed-arity-body
              (finally
                (let [elapsed# (- (System/currentTimeMillis) start#)]
-                 ;; CMR-3792. defn-timed debug messages removed from the log outside of workload
+                 ;; CMR-3792. making defn-timed debug messages configurable 
                  (when (= true (cfg/defn-timed-debug-switch))
                    (debug (format
                             "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#)))))))))))
