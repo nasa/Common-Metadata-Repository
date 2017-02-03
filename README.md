@@ -30,7 +30,7 @@ The Common Metadata Repository (CMR) is an earth science metadata repository for
   - We've had success with Homebrew and with the install script on the Leiningen website.
 
 ## Building and Running the CMR
-The CMR is a system consisting of multiple services. The services can be run individually or can run in a single process. Running in a single process makes local development easier because it avoids having to start many different processes. The dev-system project allows the CMR to be run from a single REPL or Jar file. If you're developing a client against the CMR you can build an run the entire CMR with no external dependencies from this Jar file and use that instance for local testing. The sections below contain instructions for running the CMR as a single process or as multiple processes.
+The CMR is a system consisting of multiple services. The services can be run individually or can run in a single process. Running in a single process makes local development easier because it avoids having to start many different processes. The dev-system project allows the CMR to be run from a single REPL or Jar file. If you're developing a client against the CMR you can build and run the entire CMR with no external dependencies from this Jar file and use that instance for local testing. The sections below contain instructions for running the CMR as a single process or as multiple processes.
 
 #### Building and Running CMR Dev System in a REPL
   1. cd cmr/dev-system
@@ -107,7 +107,7 @@ There are a number of main applications, as well as several libraries and suppor
   - Main method: cmr.metadata_db.runner
 
 - mock-echo-app
-  - This mocks out the ECHO REST API and the URS API as well. It's purpose is to make it easier to integration test the CMR system without having to run a full instance of ECHO. It won't mock it perfectly or completely. It will only implement the minimum necessary to enable integration testing.
+  - This mocks out the ECHO REST API and the URS API as well. Its purpose is to make it easier to integration test the CMR system without having to run a full instance of ECHO. It won't mock it perfectly or completely. It will only implement the minimum necessary to enable integration testing.
   - Main method: cmr.mock_echo.runner
 
 #### Libraries:
