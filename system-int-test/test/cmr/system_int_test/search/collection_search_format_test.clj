@@ -763,7 +763,7 @@
       (d/ingest "PROV1"
                 (dc/collection
                  {:short-name "S-ISO19115"
-                  :organizations [processing-org archive-org]})
+                  :organizations [archive-org]})
                 {:format :iso19115})
 
       (d/ingest "PROV1"
@@ -792,8 +792,8 @@
         "ISO-SMAP does not support data centers"
         "S-ISO-SMAP" nil
 
-        "ISO19115 does not support data centers"
-        "S-ISO19115" nil
+        "ISO19115 with archive center"
+        "S-ISO19115" ["archive-org"]
 
         "UMM-JSON has an archive center and processing center"
         "S-UMM-JSON" ["TNRIS" "NSIDC" "LPDAAC" "Processing Center"]))))

@@ -56,26 +56,28 @@
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
         (is (= 200 status) body)
         (is (= (mt/format->mime-type output-format) content-type))
-        (is (= expected parsed-umm-json)))))
+        (is (= expected parsed-umm-json))))
 
     (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
       (let [input-format :iso19115
             output-format :umm-json
             options {:skip-sanitize-umm-c false}
-            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            collection (assoc expected-conversion/example-collection-record :DataCenters nil)
+            input-xml (umm-spec/generate-metadata test-context collection input-format)
             {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
                                                                          output-format options)
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
-        (is (= [(umm-cmn/map->DataCenterType {:Roles ["ARCHIVER"], :ShortName "Not provided"})] 
+        (is (= [(umm-cmn/map->DataCenterType {:Roles ["ARCHIVER"], :ShortName "Not provided"})]
                (:DataCenters parsed-umm-json)))
         (is (= 200 status))))
-            
+
     (testing (format "Translating iso19115 to umm-json with skipping sanitizing and without skipping umm validation")
       (let [input-format :iso19115
             output-format :umm-json
             options {:skip-sanitize-umm-c true}
-            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
-            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml 
+            collection (assoc expected-conversion/example-collection-record :DataCenters nil)
+            input-xml (umm-spec/generate-metadata test-context collection input-format)
+            {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
                                                                             output-format options)]
         (is (= "{\"errors\":[\"object has missing required properties ([\\\"DataCenters\\\"])\"]}" body))
         (is (= 422 status))))
@@ -84,7 +86,8 @@
       (let [input-format :iso19115
             output-format :umm-json
             options {:skip-sanitize-umm-c true :query-params {:skip_umm_validation true}}
-            input-xml (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
+            collection (assoc expected-conversion/example-collection-record :DataCenters nil)
+            input-xml (umm-spec/generate-metadata test-context collection input-format)
             {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
                                                                          output-format options)
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
@@ -99,7 +102,7 @@
             {:keys [status body]} (ingest/translate-metadata :collection input-format input-xml
                                                                          output-format options)]
         (is (= "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Skipping santization during translation is only supported when the target format is UMM-C</error></errors>" body))
-        (is (= 400 status))))
+        (is (= 400 status)))))
 
   (testing "Failure cases"
     (testing "unsupported input format"

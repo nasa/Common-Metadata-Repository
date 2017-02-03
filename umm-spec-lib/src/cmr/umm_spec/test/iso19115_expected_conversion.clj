@@ -15,8 +15,9 @@
     [cmr.umm-spec.related-url :as ru-gen]
     [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]))
 
@@ -257,6 +258,124 @@
     science-keywords
     su/not-provided-science-keywords))
 
+(defn- expected-iso-contact-mechanisms
+ "Returns expected contact mechanisms with not translated types removed and ordered by phone,
+ fax, email"
+ [contact-mechanisms]
+ (when-let [contact-mechanisms (seq
+                                (remove #(nil? (:Type %))
+                                 (map #(assoc % :Type (get data-contact/translated-contact-mechanism-types (:Type %)))
+                                      contact-mechanisms)))]
+  (let [groups (group-by :Type contact-mechanisms)] ; Group for ordering
+    (concat
+     (get groups "Telephone")
+     (get groups "Fax")
+     (get groups "Email")))))
+
+(defn- expected-contact-info-related-urls
+ "Returns expected related url - take the first related url and the first url in related urls"
+ [related-urls]
+ (when related-urls
+  (expected-iso-19115-2-related-urls
+   [(-> related-urls
+      first
+      (update :URLs #(take 1 %)))])))
+
+(defn- expected-iso-contact-information
+ "Returns expected contact information - 1 address, only certain contact mechanisms are mapped"
+ [contact-info]
+ (-> contact-info
+     (update :RelatedUrls expected-contact-info-related-urls)
+     (update :ContactMechanisms expected-iso-contact-mechanisms)
+     (update :Addresses #(take 1 %))))
+
+
+(defn- update-short-and-long-name
+ "ISO only has 1 field for both short and long and they get combined with a delimeter. combined
+ and then parse the short and long name here to mimic what UMM -> ISO -> UMM will do."
+ [data-center]
+ (let [{:keys [ShortName LongName]} data-center
+       organization-name (str ShortName #"&gt;" LongName)
+       name-split (str/split organization-name #"&gt;|>")]
+   (if (> (count name-split) 0)
+    (-> data-center
+        (assoc :ShortName (str/trim (first name-split)))
+        (assoc :LongName (when (> (count name-split) 1)
+                          (str/join " " (map str/trim (rest name-split))))))
+    data-center)))
+
+(defn- update-person-names
+ "ISO only has one field for the whole name. When we go from UMM -> ISO, we combine the names into
+ one field then on ISO -> UMM we split them up. Need to do this processing to handle spaces in names
+ as well as leading/trailing spaces."
+ [person]
+ (let [{:keys [FirstName MiddleName LastName]} person
+       combined-name (str/trim (str/join " " [FirstName MiddleName LastName]))
+       names (str/split combined-name #" {1,}")
+       num-names (count names)]
+  (if (= 1 num-names)
+    (-> person
+        (assoc :LastName (first names))
+        (dissoc :FirstName)
+        (dissoc :MiddleName))
+    (-> person
+        (assoc :FirstName (first names))
+        (assoc :MiddleName (str/join " " (subvec names 1 (dec num-names))))
+        (assoc :LastName (last names))))))
+
+(defn- expected-contact-person
+ "Return an expected ISO contact person. Role is based on whether it is a contact person associated
+ with a data center or standalone contact person"
+ [person role]
+ (-> person
+     (dissoc :Uuid)
+     (assoc :Roles [role])
+     update-person-names
+     (update :ContactInformation expected-iso-contact-information)))
+
+(defn- expected-contact-group
+ "Return an expected ISO contact group"
+ [group]
+ (-> group
+     (dissoc :Uuid)
+     (assoc :Roles ["User Services"])
+     (update :ContactInformation expected-iso-contact-information)))
+
+(defn- expected-iso-data-center
+ "Expected data center - trim whitespace from short name and long name, update contact info"
+ [data-center]
+ (-> data-center
+     (update-in-each [:ContactPersons] #(expected-contact-person % "Data Center Contact"))
+     (assoc :ContactGroups nil)
+     (assoc :Uuid nil)
+     update-short-and-long-name
+     (update :ContactInformation expected-iso-contact-information)
+     cmn/map->DataCenterType))
+
+(defn- expected-data-center-contacts
+ "In ISO, data centers, persons, and groups are all contacts and only relate by name. If we have
+ multiple data centers with the same name, make sure they have the same ContactPersons, because
+ they will after ISO -> UMM translation.
+
+ Group the data centers by name and for each group (DC's with the same name) create a list of all
+ persons for that DC name and set each DC's ContactPersons to that list. Returns a list of updated
+ data centers"
+ [data-centers]
+ (let [data-center-groups (group-by #(select-keys % [:ShortName :LongName]) data-centers)]
+  (apply concat
+   (for [group (vals data-center-groups)
+         :let [persons (apply concat (map :ContactPersons group))]] ; All persons for DC's with that name
+     (map #(assoc % :ContactPersons persons) group)))))
+
+(defn- expected-iso-data-centers
+ "For each data center, if there are multiple roles make a copy of the data center for each role"
+ [data-centers]
+ (let [data-centers (map expected-iso-data-center data-centers)
+       data-centers (expected-data-center-contacts data-centers)]
+  (for [data-center data-centers
+        role (:Roles data-center)]
+   (assoc data-center :Roles [role]))))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -284,9 +403,9 @@
       (update :LocationKeywords conversion-util/fix-location-keyword-conversion)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      (assoc :DataCenters [su/not-provided-data-center])
-      (assoc :ContactGroups nil)
-      (assoc :ContactPersons nil)
+      (assoc :ContactPersons (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll)))
+      (assoc :ContactGroups (map expected-contact-group (:ContactGroups umm-coll)))
+      (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :CollectionProgress su/with-default)

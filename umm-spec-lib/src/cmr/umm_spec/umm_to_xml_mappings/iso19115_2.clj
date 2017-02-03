@@ -10,6 +10,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
@@ -265,7 +266,9 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
-       [:gmd:contact {:gco:nilReason "missing"}]
+       (if-let [archive-centers (data-contact/generate-archive-centers (:DataCenters c))]
+        archive-centers
+        [:gmd:contact {:gco:nilReason "missing"}])
        (generate-datestamp c)
        [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
        [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
@@ -282,23 +285,23 @@
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
              [:gmd:version (char-string (:Version c))]]]
-         (when-let [doi (:DOI c)]
-           [:gmd:identifier
-            [:gmd:MD_Identifier
-           (when-let [authority (:Authority doi)]
-             [:gmd:authority
-              [:gmd:CI_Citation
-               [:gmd:title [:gco:CharacterString ""]]
-                [:gmd:date ""]
-               [:gmd:citedResponsibleParty
-                [:gmd:CI_ResponsibleParty
-                 [:gmd:organisationName [:gco:CharacterString authority]]
-                 [:gmd:role
-                  [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                     :codeListValue ""} "authority"]]]]]])
-             [:gmd:code [:gco:CharacterString (:DOI doi)]]
-             [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-             [:gmd:description [:gco:CharacterString "DOI"]]]])]]
+           (when-let [doi (:DOI c)]
+             [:gmd:identifier
+              [:gmd:MD_Identifier
+               (when-let [authority (:Authority doi)]
+                 [:gmd:authority
+                  [:gmd:CI_Citation
+                   [:gmd:title [:gco:CharacterString ""]]
+                   [:gmd:date ""]
+                   [:gmd:citedResponsibleParty
+                    [:gmd:CI_ResponsibleParty
+                     [:gmd:organisationName [:gco:CharacterString authority]]
+                     [:gmd:role
+                      [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                         :codeListValue ""} "authority"]]]]]])
+                 [:gmd:code [:gco:CharacterString (:DOI doi)]]
+                 [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+                 [:gmd:description [:gco:CharacterString "DOI"]]]])]]
          [:gmd:abstract (char-string (if (or abstract version-description)
                                        (str abstract iso/version-description-separator version-description)
                                        su/not-provided))]
@@ -309,6 +312,11 @@
              {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
+         (data-contact/generate-data-centers (:DataCenters c))
+         (data-contact/generate-data-center-contact-persons (:DataCenters c))
+         (data-contact/generate-data-center-contact-groups (:DataCenters c))
+         (data-contact/generate-contact-persons (:ContactPersons c))
+         (data-contact/generate-contact-groups (:ContactGroups c))
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (kws/generate-iso19115-descriptive-keywords
@@ -364,7 +372,13 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (dru/generate-distributions c)
+       (let [related-url-distributions (dru/generate-distributions c)
+             data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
+        (when (or related-url-distributions data-center-distributors)
+         [:gmd:distributionInfo
+          [:gmd:MD_Distribution
+           related-url-distributions
+           data-center-distributors]]))
        [:gmd:dataQualityInfo
         [:gmd:DQ_DataQuality
          [:gmd:scope
@@ -394,6 +408,11 @@
          [:gmd:lineage
           [:gmd:LI_Lineage
            (aa/generate-data-quality-info-additional-attributes additional-attributes)
+           (when-let [processing-centers (data-contact/generate-processing-centers (:DataCenters c))]
+            [:gmd:processStep
+             [:gmd:LI_ProcessStep
+              [:gmd:description {:gco:nilReason "missing"}]
+              processing-centers]])
            (ma/generate-source-metadata-associations c)]]]]
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation
