@@ -190,42 +190,39 @@
   ([context group]
    (create-group context group nil))
   ([context group {:keys [skip-acls? managing-group-id]}]
-   (if (common-enabled/app-write-enabled? context)
-     (do
-       (validate-create-group context group)
-       (when-not skip-acls?
-         (auth/verify-can-create-group context group))
+   (common-enabled/validate-write-enabled context "access control")
+   (validate-create-group context group)
+   (when-not skip-acls?
+     (auth/verify-can-create-group context group))
 
-       (validate-managing-group-id (transmit-config/with-echo-system-token context) managing-group-id)
+   (validate-managing-group-id (transmit-config/with-echo-system-token context) managing-group-id)
 
-       (if-let [concept-id (->> (search-for-groups
-                                   context {:name (:name group)
-                                            :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
-                                :results
-                                :items
-                                (some :concept_id))]
+   (if-let [concept-id (->> (search-for-groups
+                              context {:name (:name group)
+                                       :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
+                            :results
+                            :items
+                            (some :concept_id))]
 
-         ;; The group exists. Check if its latest revision is a tombstone.
-         (let [concept (mdb/get-latest-concept context concept-id)]
-           ;; The group exists and was not deleted. Reject this.
-           (errors/throw-service-error :conflict (g-msg/group-already-exists group concept)))
+     ;; The group exists. Check if its latest revision is a tombstone.
+     (let [concept (mdb/get-latest-concept context concept-id)]
+       ;; The group exists and was not deleted. Reject this.
+       (errors/throw-service-error :conflict (g-msg/group-already-exists group concept)))
 
-         ;; The group doesn't exist.
-         (let [new-concept (group->new-concept context group)
-               {:keys [concept-id revision-id] :as result} (mdb/save-concept context new-concept)]
-           ;; Index the group here. Group indexing is synchronous.
-           (index/index-group context (assoc new-concept :concept-id concept-id :revision-id revision-id))
-           ;; If managing group id exists, create the ACL to grant permission to the managing group
-           ;; to update/delete the group.
-           (when managing-group-id
-             (acl-util/create-acl context
-                                  {:group-permissions [{:group-id managing-group-id
-                                                        :permissions ["update" "delete"]}]
-                                   :single-instance-identity {:target-id concept-id
-                                                              :target "GROUP_MANAGEMENT"}}))
-           result)))
-     (errors/throw-service-error :service-unavailable
-                                 (common-enabled/service-write-disabled-message "access control")))))
+     ;; The group doesn't exist.
+     (let [new-concept (group->new-concept context group)
+           {:keys [concept-id revision-id] :as result} (mdb/save-concept context new-concept)]
+       ;; Index the group here. Group indexing is synchronous.
+       (index/index-group context (assoc new-concept :concept-id concept-id :revision-id revision-id))
+       ;; If managing group id exists, create the ACL to grant permission to the managing group
+       ;; to update/delete the group.
+       (when managing-group-id
+         (acl-util/create-acl context
+                              {:group-permissions [{:group-id managing-group-id
+                                                    :permissions ["update" "delete"]}]
+                               :single-instance-identity {:target-id concept-id
+                                                          :target "GROUP_MANAGEMENT"}}))
+       result))))
 
 (defn get-group-by-concept-id
   "Retrieves a group with the given concept id, returns its parsed metadata."
@@ -245,15 +242,13 @@
 (defn delete-group
   "Deletes a group with the given concept id"
   [context concept-id]
-  (if (common-enabled/app-write-enabled? context)
-    (let [group-concept (fetch-group-concept context concept-id)
-          group (edn/read-string (:metadata group-concept))]
-      (auth/verify-can-delete-group context group)
-      (let [delete-result (save-deleted-group-concept context group-concept)]
-        (index/unindex-group context concept-id)
-        delete-result))
-    (errors/throw-service-error :service-unavailable
-                                (common-enabled/service-write-disabled-message "access control"))))
+  (common-enabled/validate-write-enabled context "access control")
+  (let [group-concept (fetch-group-concept context concept-id)
+        group (edn/read-string (:metadata group-concept))]
+    (auth/verify-can-delete-group context group)
+    (let [delete-result (save-deleted-group-concept context group-concept)]
+      (index/unindex-group context concept-id)
+      delete-result)))
 
 (defn update-group
   "Updates an existing group with the given concept id"

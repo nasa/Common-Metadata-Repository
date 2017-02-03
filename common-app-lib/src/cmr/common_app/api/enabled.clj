@@ -16,6 +16,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [error warn]]
    [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
    [compojure.core :refer [context GET POST]]))
 
 (def write-enabled-cache-key
@@ -56,6 +57,12 @@
   {:status 200
    :headers {"Content-Type" (mt/with-utf-8 mt/json)}
    :body (json/generate-string (if (app-write-enabled? request-context) "Enabled" "Disabled"))})
+
+(defn validate-write-enabled
+  "Validate that the app is enabled for writes. Throughs a service error if not."
+  [context service]
+  (when-not (app-write-enabled? context)
+    (errors/throw-service-error :service-unavailable (service-write-disabled-message service))))
 
 (defn- write-disable-app
   "Mark the app given by the context as write disabled."

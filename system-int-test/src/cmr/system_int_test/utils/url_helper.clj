@@ -452,6 +452,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Access Control URLs
 
+(defn enable-access-control-writes-url
+  "URL to enable writes in access control service."
+  []
+  (format "http://localhost:%s/enable-writes" (transmit-config/access-control-port)))
+
+(defn disable-access-control-writes-url
+  "URL to disable writes in access control service."
+  []
+  (format "http://localhost:%s/disable-writes" (transmit-config/access-control-port)))
+
 (defn access-control-health-url
   "URL to check access control health."
   []

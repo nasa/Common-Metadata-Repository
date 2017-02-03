@@ -59,6 +59,8 @@
       (url/disable-ingest-writes-url)
       (url/enable-search-writes-url)
       (url/disable-search-writes-url)
+      (url/enable-access-control-writes-url)
+      (url/disable-access-control-writes-url)
       (url/mdb-reset-url)
       (url/index-set-reset-url)
       (url/cubby-reset-url)
