@@ -27,6 +27,7 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [proto-repl "0.3.1"]
+                        [environ "1.1.0"]
                         [pjstadig/humane-test-output "0.8.1"]
                         [clj-http "2.0.0"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
