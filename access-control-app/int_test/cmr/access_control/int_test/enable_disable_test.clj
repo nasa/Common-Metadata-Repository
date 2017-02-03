@@ -89,3 +89,6 @@
         ;; test delete
         (is (= 200 (:status (ac/delete-acl (u/conn-context) concept-id2 {:token token :raw? true}))))))))
 
+(deftest enable-disable-re-enable-write-group)
+
+

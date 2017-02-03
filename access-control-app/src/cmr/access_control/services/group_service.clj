@@ -9,6 +9,7 @@
     [cmr.access-control.services.auth-util :as auth]
     [cmr.access-control.services.group-service-messages :as g-msg]
     [cmr.access-control.services.messages :as msg]
+    [cmr.common-app.api.enabled :as common-enabled]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.parameter-validation :as cpv]
@@ -189,38 +190,42 @@
   ([context group]
    (create-group context group nil))
   ([context group {:keys [skip-acls? managing-group-id]}]
-   (validate-create-group context group)
-   (when-not skip-acls?
-     (auth/verify-can-create-group context group))
+   (if (common-enabled/app-write-enabled? context)
+     (do
+       (validate-create-group context group)
+       (when-not skip-acls?
+         (auth/verify-can-create-group context group))
 
-   (validate-managing-group-id (transmit-config/with-echo-system-token context) managing-group-id)
+       (validate-managing-group-id (transmit-config/with-echo-system-token context) managing-group-id)
 
-   (if-let [concept-id (->> (search-for-groups
-                             context {:name (:name group)
-                                      :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
-                            :results
-                            :items
-                            (some :concept_id))]
+       (if-let [concept-id (->> (search-for-groups
+                                   context {:name (:name group)
+                                            :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
+                                :results
+                                :items
+                                (some :concept_id))]
 
-     ;; The group exists. Check if its latest revision is a tombstone.
-     (let [concept (mdb/get-latest-concept context concept-id)]
-       ;; The group exists and was not deleted. Reject this.
-       (errors/throw-service-error :conflict (g-msg/group-already-exists group concept)))
+         ;; The group exists. Check if its latest revision is a tombstone.
+         (let [concept (mdb/get-latest-concept context concept-id)]
+           ;; The group exists and was not deleted. Reject this.
+           (errors/throw-service-error :conflict (g-msg/group-already-exists group concept)))
 
-     ;; The group doesn't exist.
-     (let [new-concept (group->new-concept context group)
-           {:keys [concept-id revision-id] :as result} (mdb/save-concept context new-concept)]
-       ;; Index the group here. Group indexing is synchronous.
-       (index/index-group context (assoc new-concept :concept-id concept-id :revision-id revision-id))
-       ;; If managing group id exists, create the ACL to grant permission to the managing group
-       ;; to update/delete the group.
-       (when managing-group-id
-         (acl-util/create-acl context
-                              {:group-permissions [{:group-id managing-group-id
-                                                    :permissions ["update" "delete"]}]
-                               :single-instance-identity {:target-id concept-id
-                                                          :target "GROUP_MANAGEMENT"}}))
-       result))))
+         ;; The group doesn't exist.
+         (let [new-concept (group->new-concept context group)
+               {:keys [concept-id revision-id] :as result} (mdb/save-concept context new-concept)]
+           ;; Index the group here. Group indexing is synchronous.
+           (index/index-group context (assoc new-concept :concept-id concept-id :revision-id revision-id))
+           ;; If managing group id exists, create the ACL to grant permission to the managing group
+           ;; to update/delete the group.
+           (when managing-group-id
+             (acl-util/create-acl context
+                                  {:group-permissions [{:group-id managing-group-id
+                                                        :permissions ["update" "delete"]}]
+                                   :single-instance-identity {:target-id concept-id
+                                                              :target "GROUP_MANAGEMENT"}}))
+           result)))
+     (errors/throw-service-error :service-unavailable
+                                 (common-enabled/service-write-disabled-message "access control")))))
 
 (defn get-group-by-concept-id
   "Retrieves a group with the given concept id, returns its parsed metadata."
@@ -240,26 +245,31 @@
 (defn delete-group
   "Deletes a group with the given concept id"
   [context concept-id]
-  (let [group-concept (fetch-group-concept context concept-id)
-        group (edn/read-string (:metadata group-concept))]
-    (auth/verify-can-delete-group context group)
-    (let [delete-result (save-deleted-group-concept context group-concept)]
-      (index/unindex-group context concept-id)
-      delete-result)))
+  (if (common-enabled/app-write-enabled? context)
+    (let [group-concept (fetch-group-concept context concept-id)
+          group (edn/read-string (:metadata group-concept))]
+      (auth/verify-can-delete-group context group)
+      (let [delete-result (save-deleted-group-concept context group-concept)]
+        (index/unindex-group context concept-id)
+        delete-result))
+    (errors/throw-service-error :service-unavailable
+                                (common-enabled/service-write-disabled-message "access control"))))
 
 (defn update-group
   "Updates an existing group with the given concept id"
   [context concept-id updated-group]
-  (let [existing-concept (fetch-group-concept context concept-id)
-        existing-group (edn/read-string (:metadata existing-concept))]
-    (validate-update-group context existing-group updated-group)
-    (auth/verify-can-update-group context existing-group)
-    ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
-    ;; specifies :members then it will overwrite the existing value.
-    (let [updated-group (merge existing-group updated-group)
-          update-result (save-updated-group-concept context existing-concept updated-group)]
-      update-result)))
-
+  (if (common-enabled/app-write-enabled? context)
+    (let [existing-concept (fetch-group-concept context concept-id)
+          existing-group (edn/read-string (:metadata existing-concept))]
+      (validate-update-group context existing-group updated-group)
+      (auth/verify-can-update-group context existing-group)
+      ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
+      ;; specifies :members then it will overwrite the existing value.
+      (let [updated-group (merge existing-group updated-group)
+            update-result (save-updated-group-concept context existing-concept updated-group)]
+        update-result))
+    (errors/throw-service-error :service-unavailable
+                                (common-enabled/service-write-disabled-message "access control"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
 
