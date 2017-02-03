@@ -404,3 +404,25 @@
   ([token params options]
    (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/search-for-acls (conn-context) params options)))))
+
+(defn- enable-access-control-writes-url
+  "URL to enable writes in access control service."
+  []
+  (format "http://localhost:%s/enable-writes" (config/access-control-port)))
+
+(defn- disable-access-control-writes-url
+  "URL to disable writes in access control service."
+  []
+  (format "http://localhost:%s/disable-writes" (config/access-control-port)))
+
+(defn disable-access-control-writes
+  "Use the enable/disable endpoint on access control to disable writes."
+  [options]
+  (let [response (client/post (disable-access-control-writes-url) options)]
+    (is (= 200 (:status response)))))
+
+(defn enable-access-control-writes
+  "Use the enable/disable endpoint on access control to enable writes."
+  [options]
+  (let [response (client/post (enable-access-control-writes-url) options)]
+    (is (= 200 (:status response)))))

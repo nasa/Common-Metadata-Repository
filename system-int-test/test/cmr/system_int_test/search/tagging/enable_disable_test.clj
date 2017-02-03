@@ -44,7 +44,7 @@
       (is (= 200 (:status (tags/delete-tag token tag-key)))))
 
     ;; disable tag / tag association persistence
-    (search/disable-persistence {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+    (search/disable-writes {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
     (testing "Failed creation after disable"
       (let [tag-key "tag2"
@@ -65,7 +65,7 @@
       (is (= 503 (:status (tags/delete-tag token tag2-key)))))
 
     ;; re-enable tag / tag association persistence
-    (search/enable-persistence {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+    (search/enable-writes {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
     (testing "Successful creation after re-enable"
       (let [{:keys [status concept-id revision-id]} (tags/create-tag token tag3)]
@@ -116,7 +116,7 @@
         (is (= 200 (:status response)))))
 
     ;; disable tag / tag association persistence
-    (search/disable-persistence {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+    (search/disable-writes {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
     (testing "associate by query fails after disable"
       (let [response (tags/associate-by-query token tag2-key {:provider "PROV1"})]
@@ -134,7 +134,7 @@
         (is (= 503 (:status response)))))
 
     ;; re-enable tag / tag association persistence
-    (search/enable-persistence {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+    (search/enable-writes {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
     (testing "associate by query works after re-enable"
       (let [response (tags/associate-by-query token tag2-key {:provider "PROV1"})]

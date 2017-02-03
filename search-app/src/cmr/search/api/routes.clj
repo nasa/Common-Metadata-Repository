@@ -411,7 +411,7 @@
         (common-health/health-api-routes hs/health)
 
         ;; add routes for enabling/disabling application
-        (common-enabled/enabled-api-routes
+        (common-enabled/write-enabled-api-routes
          #(acl/verify-ingest-management-permission % :update))
 
         (GET "/tiles" {params :params context :request-context}

@@ -32,16 +32,16 @@
             [cmr.system-int-test.data2.aql-additional-attribute]
             [cmr.system-int-test.data2.facets :as f]))
 
-(defn enable-persistence
+(defn enable-writes
   "Enables writes for tags / tag associations."
   [options]
-  (let [response (client/post (url/enable-search-url) options)]
+  (let [response (client/post (url/enable-search-writes-url) options)]
      (is (= 200 (:status response)))))
 
-(defn disable-persistence
+(defn disable-writes
   "Disables writes for tags / tag associations."
   [options]
-  (let [response (client/post (url/disable-search-url) options)]
+  (let [response (client/post (url/disable-search-writes-url) options)]
      (is (= 200 (:status response)))))
 
 (defn refresh-collection-metadata-cache
