@@ -86,7 +86,7 @@
                       :source-paths ["src" "dev" "test"]
                       :injections [(require 'pjstadig.humane-test-output)
                                    (pjstadig.humane-test-output/activate!)]}
-   ;; This is to seperate the dependencies from the dev-config specified in profiles.clj
+   ;; This is to separate the dependencies from the dev-config specified in profiles.clj
    :dev [:dev-dependencies :dev-config]
    :uberjar {:main cmr.dev-system.runner
              ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
