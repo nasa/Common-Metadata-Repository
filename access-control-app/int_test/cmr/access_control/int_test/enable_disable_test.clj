@@ -1,5 +1,5 @@
 (ns cmr.access-control.int-test.enable-disable-test
-  "CMR Ingest Enable/Disable endpoint test"
+  "CMR Access Control Enable/Disable endpoint test"
   (:require
     [clojure.test :refer :all]
     [cmr.access-control.int-test.fixtures :as fixtures]
@@ -109,8 +109,11 @@
     (testing "save, update, and delete group fails after disable"
       (let [group3 (u/make-group {:name "group3" :members ["user1" "user2" "user3"]})
             {:keys [status]} (u/create-group token group3 {:allow-failure? true})]
+        ;; check save response
         (is (= 503 status))
+        ;; test update
         (is (= 503 (:status (u/update-group token concept-id2 {:name "Updated3" :description "Updated3"}))))
+        ;; test delete
         (is (= 503 (:status (u/delete-group token concept-id2 {:allow-failure? true}))))))
 
     ;; re-eneable writes for access control service
@@ -119,8 +122,11 @@
     (testing "save, update, and delete group succeeds after re-enable"
      (let [group3 (u/make-group {:name "group4" :members ["user1" "user5"]})
             {:keys [status]} (u/create-group token group3)]
+        ;; check save response
         (is (= 200 status))
+        ;; test update
         (is (= 200 (:status (u/update-group token concept-id2 {:name "Updated3" :description "Updated3"}))))
+        ;; test delete
         (is (= 200 (:status (u/delete-group token concept-id2 {:allow-failure? true}))))))))
 
 
