@@ -49,19 +49,21 @@
    "Guide" "VIEW RELATED INFORMATION"
    "Browse" "GET RELATED VISUALIZATION"})
 
-(defn- parse-online-urls
+(defn parse-online-urls
   "Parse ISO online resource urls"
-  [doc sanitize?]
-  (for [url (select doc distributor-online-url-xpath)
-        :let [name (char-string-value url "gmd:name")
-              code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
-              type (if (= "download" code)
-                     "GET DATA"
-                     (when name (resource-name->types name)))
-              url-link (value-of url "gmd:linkage/gmd:URL")]]
-    {:URLs (when url-link [(url/format-url url-link sanitize?)])
-     :Description (char-string-value url "gmd:description")
-     :Relation (when type [type])}))
+  ([doc sanitize?]
+   (parse-online-urls doc distributor-online-url-xpath sanitize?))
+  ([doc path sanitize?]
+   (for [url (select doc path)
+         :let [name (char-string-value url "gmd:name")
+               code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
+               type (if (= "download" code)
+                      "GET DATA"
+                      (when name (resource-name->types name)))
+               url-link (value-of url "gmd:linkage/gmd:URL")]]
+     {:URLs (when url-link [(url/format-url url-link sanitize?)])
+      :Description (char-string-value url "gmd:description")
+      :Relation (when type [type])})))
 
 (defn- parse-browse-graphics
   "Parse browse graphic urls"
