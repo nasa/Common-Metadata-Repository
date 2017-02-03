@@ -253,19 +253,18 @@
 (defn update-group
   "Updates an existing group with the given concept id"
   [context concept-id updated-group]
-  (if (common-enabled/app-write-enabled? context)
-    (let [existing-concept (fetch-group-concept context concept-id)
-          existing-group (edn/read-string (:metadata existing-concept))]
-      (validate-update-group context existing-group updated-group)
-      (auth/verify-can-update-group context existing-group)
+  (common-enabled/validate-write-enabled context "access control")
+  (let [existing-concept (fetch-group-concept context concept-id)
+        existing-group (edn/read-string (:metadata existing-concept))]
+    (validate-update-group context existing-group updated-group)
+    (auth/verify-can-update-group context existing-group)
       ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
       ;; specifies :members then it will overwrite the existing value.
-      (let [updated-group (merge existing-group updated-group)
-            update-result (save-updated-group-concept context existing-concept updated-group)]
-        update-result))
-    (errors/throw-service-error :service-unavailable
-                                (common-enabled/service-write-disabled-message "access control"))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (let [updated-group (merge existing-group updated-group)
+          update-result (save-updated-group-concept context existing-concept updated-group)]
+     update-result)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
 
 (defmethod cpv/params-config :access-group
