@@ -60,7 +60,7 @@
   replaces dots with underscores. This is needed because SQS only allows alpha-numeric chars
   plus dashes and underscores in queue names, while CMR has dots (periods) in queue names."
   [queue-name]
-  (let [prefix (str "gsfc-eosdis-cmr-" (config/app-environment))
+  (let [prefix (str "gsfc-eosdis-cmr-" (cfg/app-environment))
         prefix-regex (re-pattern (str "^(" prefix "-)*"))]
     (-> queue-name
         (str/replace "." "_")

@@ -9,6 +9,7 @@
    [clojure.template :as template]
    [clojure.test :as test]
    [clojure.walk :as w]
+   [cmr.common.config :as cfg]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors])
   (:import
@@ -179,8 +180,10 @@
              ~@timed-arity-body
              (finally
                (let [elapsed# (- (System/currentTimeMillis) start#)]
-                 (debug (format
-                          "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#))))))))))
+                 ;; CMR-3792. defn-timed debug messages removed from the log outside of workload
+                 (when (= "wl" (cfg/app-environment))
+                   (debug (format
+                            "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#)))))))))))
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will
