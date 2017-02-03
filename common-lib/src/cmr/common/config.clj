@@ -2,6 +2,7 @@
   "A namespace that allows for global configuration. Configuration can be provided at runtime or
   through an environment variable. Configuration items should be added using the defconfig macro."
   (:require
+   [camel-snake-kebab.core :as csk]
    [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as str]
@@ -31,14 +32,14 @@
 (defn config-name->env-name
   "Converts a config name into the environment variable name"
   [config-name]
-  (keyword (str "cmr-" (name config-name))))
+  (str "CMR_" (csk/->SCREAMING_SNAKE_CASE_STRING config-name)))
 
 ;; dynamic is here only for testing purposes
 (defn- ^:dynamic env-var-value
   "Returns the value of the environment variable. Here specifically to enable testing of this
   namespace."
   [env-name]
-  (env env-name))
+  (env (csk/->kebab-case-keyword env-name)))
 
 (defn config-value*
   "Retrieves the currently configured value for the name or the default value. A parser function
