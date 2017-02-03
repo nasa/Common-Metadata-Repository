@@ -246,21 +246,20 @@
   (let [{:keys [body content-type params headers request-context]} request]
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (if (common-enabled/app-write-enabled? request-context)
-      (let [concept (body->concept :collection provider-id native-id body content-type headers)
-            validation-options (get-validation-options headers)
-            save-collection-result (ingest/save-collection
-                                    request-context
-                                    (set-user-id concept request-context headers)
-                                    validation-options)]
-        (info (format "Ingesting collection %s from client %s"
-                (concept->loggable-string (assoc concept :entry-title (:entry-title save-collection-result)))
-                (:client-id request-context)))
-        (generate-ingest-response headers (contextualize-warnings
-                                            ;; entry-title is added just for the logging above.
-                                            ;; dissoc it so that it remains the same as the original code.
-                                            (dissoc save-collection-result :entry-title))))
-      (srvc-errors/throw-service-error :service-unavailable (common-enabled/service-write-disabled-message "ingest")))))
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (let [concept (body->concept :collection provider-id native-id body content-type headers)
+          validation-options (get-validation-options headers)
+          save-collection-result (ingest/save-collection
+                                  request-context
+                                  (set-user-id concept request-context headers)
+                                  validation-options)]
+      (info (format "Ingesting collection %s from client %s"
+              (concept->loggable-string (assoc concept :entry-title (:entry-title save-collection-result)))
+              (:client-id request-context)))
+      (generate-ingest-response headers (contextualize-warnings
+                                          ;; entry-title is added just for the logging above.
+                                          ;; dissoc it so that it remains the same as the original code.
+                                          (dissoc save-collection-result :entry-title))))))
 
 (defn delete-collection
   [provider-id native-id request]
@@ -270,18 +269,15 @@
                              :concept-type :collection}
                             (set-revision-id headers)
                             (set-user-id request-context headers))]
-    (if (common-enabled/app-write-enabled? request-context)
-      (do
-        (verify-provider-exists request-context provider-id)
-        (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-        (info (format "Deleting collection %s from client %s"
-                      (pr-str concept-attribs) (:client-id request-context)))
-        (generate-ingest-response headers
-                                  (contextualize-warnings (ingest/delete-concept
-                                                           request-context
-                                                           concept-attribs))))
-      (srvc-errors/throw-service-error :service-unavailable
-                                       (common-enabled/service-write-disabled-message "ingest")))))
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (info (format "Deleting collection %s from client %s"
+                  (pr-str concept-attribs) (:client-id request-context)))
+    (generate-ingest-response headers
+                              (contextualize-warnings (ingest/delete-concept
+                                                        request-context
+                                                        concept-attribs)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Granule API Functions
@@ -338,13 +334,11 @@
   (let [{:keys [body content-type params headers request-context]} request]
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (if (common-enabled/app-write-enabled? request-context)
-      (let [concept (body->concept :granule provider-id native-id body content-type headers)]
-        (info (format "Ingesting granule %s from client %s"
-                      (concept->loggable-string concept) (:client-id request-context)))
-        (generate-ingest-response headers (ingest/save-granule request-context concept)))
-      (srvc-errors/throw-service-error :service-unavailable
-                                        (common-enabled/service-write-disabled-message "ingest")))))
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+      (info (format "Ingesting granule %s from client %s"
+                    (concept->loggable-string concept) (:client-id request-context)))
+      (generate-ingest-response headers (ingest/save-granule request-context concept)))))
 
 (defn delete-granule
   [provider-id native-id request]
@@ -357,13 +351,10 @@
 
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (if (common-enabled/app-write-enabled? request-context)
-      (do
-        (info (format "Deleting granule %s from client %s"
-                      (pr-str concept-attribs) (:client-id request-context)))
-        (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs)))
-      (srvc-errors/throw-service-error :service-unavailable
-                                       (common-enabled/service-write-disabled-message "ingest")))))
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (info (format "Deleting granule %s from client %s"
+                  (pr-str concept-attribs) (:client-id request-context)))
+    (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
 
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"
