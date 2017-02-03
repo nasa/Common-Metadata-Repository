@@ -223,7 +223,7 @@
    (let [known-env-vars (for [[_ sub-map] @configs-atom
                               [config-key _] sub-map]
                           (config-name->env-name config-key))
-         cmr-env-vars (filter #(.startsWith ^String (name %) "cmr-")
+         cmr-env-vars (filter #(.startsWith ^String % "CMR_")
                               (keys env-var-map))
          unknown-vars (set/difference (set cmr-env-vars) (set known-env-vars))]
      (if (seq unknown-vars)
