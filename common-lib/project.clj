@@ -20,7 +20,7 @@
                  [clojurewerkz/quartzite "2.0.0"]
                  [clj-time "0.12.0"]
                  [cheshire "5.6.3"]
-
+                 [environ "1.1.0"]
                  ;; Fast compression library
                  [net.jpountz.lz4/lz4 "1.3.0"]
 
