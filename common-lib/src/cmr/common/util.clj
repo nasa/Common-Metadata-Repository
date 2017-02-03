@@ -181,7 +181,7 @@
              (finally
                (let [elapsed# (- (System/currentTimeMillis) start#)]
                  ;; CMR-3792. defn-timed debug messages removed from the log outside of workload
-                 (when (= "wl" (cfg/app-environment))
+                 (when (= true (cfg/defn-timed-debug-switch))
                    (debug (format
                             "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#)))))))))))
 

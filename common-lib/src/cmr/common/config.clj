@@ -207,9 +207,10 @@
            [value#]
            (set-config-value! ~config-name-key value#))))))
 
-(defconfig app-environment
-  "The environment in which the application is running in NGAP (wl, sit, uat, prod)"
-  {:default "local"})
+(defconfig defn-timed-debug-switch 
+  "The defn-timed macro produced debug switch"
+  {:default false 
+   :type Boolean})
 
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.
