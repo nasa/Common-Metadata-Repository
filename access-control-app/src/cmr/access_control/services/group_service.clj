@@ -9,6 +9,7 @@
     [cmr.access-control.services.auth-util :as auth]
     [cmr.access-control.services.group-service-messages :as g-msg]
     [cmr.access-control.services.messages :as msg]
+    [cmr.common-app.api.enabled :as common-enabled]
     [cmr.common-app.services.search :as cs]
     [cmr.common-app.services.search.group-query-conditions :as gc]
     [cmr.common-app.services.search.parameter-validation :as cpv]
@@ -189,6 +190,7 @@
   ([context group]
    (create-group context group nil))
   ([context group {:keys [skip-acls? managing-group-id]}]
+   (common-enabled/validate-write-enabled context "access control")
    (validate-create-group context group)
    (when-not skip-acls?
      (auth/verify-can-create-group context group))
@@ -196,8 +198,8 @@
    (validate-managing-group-id (transmit-config/with-echo-system-token context) managing-group-id)
 
    (if-let [concept-id (->> (search-for-groups
-                             context {:name (:name group)
-                                      :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
+                              context {:name (:name group)
+                                       :provider (get group :provider-id SYSTEM_PROVIDER_ID)})
                             :results
                             :items
                             (some :concept_id))]
@@ -240,6 +242,7 @@
 (defn delete-group
   "Deletes a group with the given concept id"
   [context concept-id]
+  (common-enabled/validate-write-enabled context "access control")
   (let [group-concept (fetch-group-concept context concept-id)
         group (edn/read-string (:metadata group-concept))]
     (auth/verify-can-delete-group context group)
@@ -250,17 +253,18 @@
 (defn update-group
   "Updates an existing group with the given concept id"
   [context concept-id updated-group]
+  (common-enabled/validate-write-enabled context "access control")
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))]
     (validate-update-group context existing-group updated-group)
     (auth/verify-can-update-group context existing-group)
-    ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
-    ;; specifies :members then it will overwrite the existing value.
+      ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
+      ;; specifies :members then it will overwrite the existing value.
     (let [updated-group (merge existing-group updated-group)
           update-result (save-updated-group-concept context existing-concept updated-group)]
-      update-result)))
+     update-result)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search functions
 
 (defmethod cpv/params-config :access-group

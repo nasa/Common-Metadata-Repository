@@ -12,6 +12,7 @@
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.acl.core :as acl]
    [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
@@ -215,6 +216,10 @@
 
       ;; add routes for checking health of the application
       (common-health/health-api-routes group-service/health)
+
+       ;; add routes for enabling/disabling writes
+      (common-enabled/write-enabled-api-routes
+       #(acl/verify-ingest-management-permission % :update))
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

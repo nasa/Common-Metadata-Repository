@@ -144,13 +144,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ingest URLs
 
-(defn enable-ingest-url
+(defn enable-ingest-writes-url
   []
-  (format "http://localhost:%s/enable" (transmit-config/ingest-port)))
+  (format "http://localhost:%s/enable-writes" (transmit-config/ingest-port)))
 
-(defn disable-ingest-url
+(defn disable-ingest-writes-url
   []
-  (format "http://localhost:%s/disable" (transmit-config/ingest-port)))
+  (format "http://localhost:%s/disable-writes" (transmit-config/ingest-port)))
 
 (defn reindex-collection-permitted-groups-url
   []
@@ -224,13 +224,13 @@
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
 
-(defn enable-search-url
+(defn enable-search-writes-url
   []
-  (format "http://localhost:%s/enable" (transmit-config/search-port)))
+  (format "http://localhost:%s/enable-writes" (transmit-config/search-port)))
 
-(defn disable-search-url
+(defn disable-search-writes-url
   []
-  (format "http://localhost:%s/disable" (transmit-config/search-port)))
+  (format "http://localhost:%s/disable-writes" (transmit-config/search-port)))
 
 (defn timeline-url
   []
@@ -451,6 +451,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Access Control URLs
+
+(defn enable-access-control-writes-url
+  "URL to enable writes in access control service."
+  []
+  (format "http://localhost:%s/enable-writes" (transmit-config/access-control-port)))
+
+(defn disable-access-control-writes-url
+  "URL to disable writes in access control service."
+  []
+  (format "http://localhost:%s/disable-writes" (transmit-config/access-control-port)))
 
 (defn access-control-health-url
   "URL to check access control health."

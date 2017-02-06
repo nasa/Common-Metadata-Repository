@@ -68,7 +68,7 @@
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
-                       common-enabled/enabled-cache-key (common-enabled/create-enabled-cache)
+                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                        humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)}
               :ingest-public-conf ingest-public-conf
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
