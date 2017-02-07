@@ -163,6 +163,8 @@
 (h/defcreator create-acl :access-control acl-root-url)
 (h/defupdater update-acl :access-control acl-concept-id-url)
 
+(h/defsearcher search-for-acls-get :access-control acl-root-url)
+
 (h/defsearcher search-for-acls* :access-control acl-search-post-url)
 
 (defn search-for-acls

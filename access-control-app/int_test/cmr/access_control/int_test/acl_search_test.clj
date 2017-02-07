@@ -205,7 +205,11 @@
                (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4}) :took))))
       (testing "Page Number"
         (is (= (u/acls->search-response (count all-acls) all-acls {:page-size 4 :page-num 2})
-               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))))
+               (dissoc (ac/search-for-acls (u/conn-context) {:page_size 4 :page_num 2}) :took)))))
+    (testing "GET and POST return the same results"
+      (is
+        (= (dissoc (ac/search-for-acls (u/conn-context) {}) :took)
+           (dissoc (ac/search-for-acls-get (u/conn-context) {}) :took))))))
 
 (deftest acl-search-by-any-id-test
   (let [token (e/login (u/conn-context) "user1")
