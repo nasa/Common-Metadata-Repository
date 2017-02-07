@@ -22,8 +22,8 @@
 
 (def use-external-db?
   "Set to true to use the Oracle DB"
-  ; true)
-  false)
+  true)
+  ;; false)
 
 (def use-external-mq?
   "Set to true to use Rabbit MQ"
