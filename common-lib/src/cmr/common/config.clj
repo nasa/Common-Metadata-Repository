@@ -1,11 +1,13 @@
 (ns cmr.common.config
   "A namespace that allows for global configuration. Configuration can be provided at runtime or
   through an environment variable. Configuration items should be added using the defconfig macro."
-  (:require [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
-            [clojure.set :as set]
-            [clojure.edn :as edn]
-            [cmr.common.log :as log :refer (debug info warn error)]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.edn :as edn]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [environ.core :refer [env]]))
 
 (defonce ^{:private true
            :doc "An atom containing a map of explicitly set config values."
@@ -37,7 +39,7 @@
   "Returns the value of the environment variable. Here specifically to enable testing of this
   namespace."
   [env-name]
-  (System/getenv env-name))
+  (env (csk/->kebab-case-keyword env-name)))
 
 (defn config-value*
   "Retrieves the currently configured value for the name or the default value. A parser function
@@ -160,8 +162,6 @@
                       String)]
     (when-not doc-string
       (throw (Exception. "defconfig :doc-string is required")))
-    (when (not (contains? options :default))
-      (throw (Exception. "defconfig :default is required")))
     (when (and (nil? parser) config-type (nil? (type->parser config-type)))
       (throw (Exception. (str "Unrecognized defconfig type: " config-type))))
 
@@ -181,6 +181,7 @@
          ;; This has to be done here to allow for the default value to be the result of calling a function
          (when (and (nil? ~parser)
                     (not= :edn ~config-type)
+                    (some? default-value#)
                     (not= (type default-value#) ~config-type))
            (throw
              (Exception.
@@ -217,7 +218,7 @@
   If any are unrecognized a warning message is logged. Usually this should be called at the start
   of an application when it first starts up. "
   ([]
-   (check-env-vars (System/getenv)))
+   (check-env-vars (env)))
   ([env-var-map]
    (let [known-env-vars (for [[_ sub-map] @configs-atom
                               [config-key _] sub-map]
@@ -231,4 +232,3 @@
                (pr-str unknown-vars))
          true)
        false))))
-

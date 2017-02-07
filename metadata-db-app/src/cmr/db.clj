@@ -1,14 +1,15 @@
 (ns cmr.db
   "Entry point for the db related operations. Defines a main method that accepts arguments."
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [drift.execute :as drift]
-            [cmr.oracle.user :as o]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.metadata-db.config :as mdb-config]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.oracle.sql-utils :as su]
-            [config.migrate-config :as mc]
-            [clojure.java.jdbc :as j])
+  (:require
+   [clojure.java.jdbc :as j]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.sql-utils :as su]
+   [cmr.oracle.user :as o]
+   [config.migrate-config :as mc]
+   [drift.execute :as drift])
   (:gen-class))
 
 (defconfig echo-business-user
@@ -50,10 +51,11 @@
   []
   (let [db (oracle-config/sys-dba-db-spec)
         catalog-rest-user (mdb-config/catalog-rest-db-username)
-        metadata-db-user (mdb-config/metadata-db-username)]
+        metadata-db-user (mdb-config/metadata-db-username)
+        metadata-db-password (mdb-config/metadata-db-password)]        
     (su/ignore-already-exists-errors "METADATA_DB user"
                                      (o/create-user db metadata-db-user
-                                                    (mdb-config/metadata-db-password)))
+                                                    metadata-db-password))
     ;; Metadata DB needs access to the catalog-rest database tables for the DB synchronization task.
     ;; It also needed access for the initial migration of data from ECHO to CMR.
     (su/ignore-already-exists-errors "Catalog rest user"

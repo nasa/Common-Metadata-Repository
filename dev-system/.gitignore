@@ -19,3 +19,4 @@ test2junit
 build.xml
 /plugins
 dev/no_commit.clj
+profiles.clj

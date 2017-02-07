@@ -61,7 +61,7 @@
 (defn grant-select-privileges
   "Grant select privileges from one user's tables to another user."
   [db from-user to-user]
-    (println "Granting select privileges to" to-user "on tables in" from-user)
+  (println "Granting select privileges to" to-user "on tables in" from-user)
   (let [select-tables-sql (replace-values {"USERNAME" from-user} select-users-tables-template)
         tables (j/query db select-tables-sql)]
     (when (empty? tables)
@@ -70,8 +70,8 @@
       (let [grant-sql (replace-values {"FROM_USER" from-user
                                         "TABLE" table_name
                                         "CMR_USER" to-user}
-                                       grant-select-template)]
-      (j/db-do-commands db grant-sql)))))
+                                      grant-select-template)]
+       (j/db-do-commands db grant-sql)))))
 
 (defn grant-create-drop-any-table-privileges
   "Grant privileges to create and drop any table or modify any table. This is useful in testing
@@ -79,4 +79,3 @@
   [db to-user]
   (println "Granting create and drop any table privileges to" to-user)
   (j/db-do-commands db (replace-values {"CMR_USER" to-user} grant-any-table-template)))
-
