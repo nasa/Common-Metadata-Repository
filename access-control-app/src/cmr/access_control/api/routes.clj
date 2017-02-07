@@ -287,8 +287,11 @@
                  (pv/validate-standard-params (:params req))
                  common-routes/options-response)
 
-        ;; Search for ACLs
+        ;; Search for ACLs with either GET or POST
         (GET "/" {:keys [request-context headers params]}
+          (search-for-acls request-context headers params))
+        ;; POST search is at a different route to avoid a collision with the ACL creation route
+        (POST "/search" {:keys [request-context headers params]}
           (search-for-acls request-context headers params))
 
         ;; Create an ACL
