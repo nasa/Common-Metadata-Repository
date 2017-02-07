@@ -442,7 +442,7 @@ For system, provider, and single instance identities, the grantable permissions 
 
 ### <a name="search-acls"></a> Search ACLs
 
-ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`. A valid Echo token is required to search ACLs.  If no token is supplied then guest permissions are used.
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid Echo token is required to search ACLs.  If no token is supplied then guest permissions are used.
 
 ##### ACL Search Parameters
 
@@ -510,7 +510,7 @@ The response is always returned in JSON and includes the following parts.
 ###### By permitted_group
 
 ```
-curl -i "%CMR-ENDPOINT%/acls?permitted_group\[\]=guest&permitted_group\[\]=registered&pretty=true"
+curl -i "%CMR-ENDPOINT%/acls/search" -d "permitted_group[]=guest&permitted_group[]=registered&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
@@ -547,7 +547,7 @@ Content-Length: 702
 ###### By identity_type
 
 ```
-curl -i "%CMR-ENDPOINT%/acls?identity_type\[\]=provider&identity_type\[\]=catalog_item&pretty=true"
+curl -i "%CMR-ENDPOINT%/acls/search" -d "identity_type[]=provider&identity_type[]=catalog_item&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
@@ -578,7 +578,7 @@ Content-Length: 702
 ###### By permitted_user
 
 ```
-curl -i "%CMR-ENDPOINT%/acls?permitted_user=user1&pretty=true"
+curl -i "%CMR-ENDPOINT%/acls/search" -d "permitted_user=user1&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
@@ -609,7 +609,7 @@ Content-Length: 702
 ###### By provider
 
 ```
-curl -i "%CMR-ENDPOINT%/acls?provider=prov1&pretty=true"
+curl -i "%CMR-ENDPOINT%/acls/search" -d "provider=prov1&pretty=true"
 
 HTTP/1.1 200 OK
 Date: Thu, 28 Jul 2016 13:16:36 GMT
@@ -650,7 +650,7 @@ Server: Jetty(9.2.10.v20150310)
 ##### By group_permission
 
 ```
-curl -i -g "%CMR-ENDPOINT%/acls?group_permission[0][permitted_group]=guest&group_permission[0][permission]=create&pretty=true"
+curl -i "%CMR-ENDPOINT%/acls/search" -d "group_permission[0][permitted_group]=guest&group_permission[0][permission]=create&pretty=true"
 
 HTTP/1.1 200 OK
 Date: Fri, 12 Aug 2016 18:42:42 GMT
@@ -679,8 +679,7 @@ Server: Jetty(9.2.10.v20150310)
 ###### By permitted_concept_id
 
 ```
-curl -i -g
-"%CMR-ENDPOINT%/acls?permitted_concept_id=C1200000003-PROV1&pretty=true"
+curl -i "%CMR-ENDPOINT%/acls/search" -d "permitted_concept_id=C1200000003-PROV1&pretty=true"
 
 HTTP/1.1 200 OK
 Date: Thu, 03 Nov 2016 15:48:41 GMT
@@ -715,7 +714,7 @@ Server: Jetty(9.2.10.v20150310)
 ###### With include_full_acl
 
 ```
-curl -i "%CMR-ENDPOINT%/acls?include_full_acl=true&pretty=true"
+curl -i "%CMR-ENDPOINT%/acls/search" -d "include_full_acl=true&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
