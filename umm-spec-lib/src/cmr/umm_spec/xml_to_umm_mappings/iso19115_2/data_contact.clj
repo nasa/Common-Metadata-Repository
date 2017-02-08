@@ -159,7 +159,9 @@
      :ContactInformation (parse-contact-information
                           (first (select data-center "gmd:contactInfo/gmd:CI_Contact"))
                           sanitize?)}
-    data-center-name
+    (if (or data-center-name (not sanitize?))
+     data-center-name
+     {:ShortName util/not-provided})
     (get-data-center-contact-persons data-center-name persons)))))
 
 (defn- process-duplicate-data-centers
