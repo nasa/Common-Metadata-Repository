@@ -1,17 +1,19 @@
 (ns cmr.metadata-db.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.oracle.connection :as conn]
-            [cmr.message-queue.config :as rmq-conf]))
+  (:require
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as conn]
+   [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig metadata-db-username
   "The database username"
   {:default "METADATA_DB"})
 
+;; This value is set via profiles.clj in dev-system
 (defconfig metadata-db-password
   "The database password"
-  {:default "METADATA_DB"})
+  {})
 
 (defconfig catalog-rest-db-username
   "The catalog rest db username"
@@ -21,12 +23,12 @@
   "Returns a db spec populated with config information that can be used to connect to oracle"
   [connection-pool-name]
   (conn/db-spec
-    connection-pool-name
-    (oracle-config/db-url)
-    (oracle-config/db-fcf-enabled)
-    (oracle-config/db-ons-config)
-    (metadata-db-username)
-    (metadata-db-password)))
+   connection-pool-name
+   (oracle-config/db-url)
+   (oracle-config/db-fcf-enabled)
+   (oracle-config/db-ons-config)
+   (metadata-db-username)
+   (metadata-db-password)))
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."

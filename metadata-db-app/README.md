@@ -164,7 +164,7 @@ lein migrate
 ```
 
 You can use `lein migrate -version version` to restore the database to
-a given version. `lein migrate -version 0` will clean the datbase
+a given version. `lein migrate -version 0` will clean the database
 completely.
 
 3. Remove the user

@@ -100,17 +100,18 @@
         ;; the expected index set.
         expected-index-set (idx-set/index-set extra-granule-indexes)]
 
-    (when-not (requires-update? existing-index-set expected-index-set)
-      (info "Existing index set:" (pr-str existing-index-set))
-      (info "New index set:" (pr-str expected-index-set))
-      (errors/throw-service-error :bad-request "It appears the existing index set and the new index set are the same."))
-
-    (info "Updating the index set to " (pr-str expected-index-set))
-    (idx-set/update context expected-index-set)
-    (info "Creating colleciton index alias.")
-    (esi/create-index-alias (context->conn context)
-                            (idx-set/collections-index)
-                            (idx-set/collections-index-alias))))
+    (if (requires-update? existing-index-set expected-index-set)
+      (do
+        (info "Updating the index set to " (pr-str expected-index-set))
+        (idx-set/update context expected-index-set)
+        (info "Creating colleciton index alias.")
+        (esi/create-index-alias (context->conn context)
+                                (idx-set/collections-index)
+                                (idx-set/collections-index-alias)))
+      (do
+        (info "Ignoring upate indexes request because index set is unchanged.")
+        (info "Existing index set:" (pr-str existing-index-set))
+        (info "New index set:" (pr-str expected-index-set))))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."

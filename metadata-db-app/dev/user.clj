@@ -22,7 +22,7 @@
 
 (def use-external-db?
   "Set to true to use the Oracle DB"
-  ; true)
+  ; true
   false)
 
 (def use-external-mq?
