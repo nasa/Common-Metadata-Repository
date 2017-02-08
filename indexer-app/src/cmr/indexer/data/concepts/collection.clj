@@ -159,7 +159,7 @@
         instrument-long-names (->> (distinct (keep :long-name
                                                    (concat instruments instruments-nested)))
                                    (map str/trim))
-        sensors (mapcat :sensors instruments)
+        sensors (mapcat :composed-of instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
         project-short-names (->> (map :ShortName (:Projects collection))

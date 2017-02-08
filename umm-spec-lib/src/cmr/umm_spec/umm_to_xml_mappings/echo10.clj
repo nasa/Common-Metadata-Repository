@@ -39,13 +39,13 @@
           (elements-from inst
                          :ShortName
                          :LongName
-                         :Technique
-                         :NumberOfSensors)
+                         :Technique)
+          [:NumberOfSensors (:NumberOfInstruments inst)]
           [:Characteristics
            (for [cc (:Characteristics inst)]
              (characteristic-mapping cc))]
           [:Sensors
-           (for [ss (:Sensors inst)]
+           (for [ss (:ComposedOf inst)]
              [:Sensor
               (elements-from ss
                              :ShortName
@@ -138,7 +138,7 @@
                      (util/trunc abstract 12000)
                      spec-util/not-provided)]
    (when-let [doi (:DOI c)]
-     [:DOI 
+     [:DOI
       [:DOI (:DOI doi)]
       [:Authority (:Authority doi)]])
      [:CollectionDataType (:CollectionDataType c)]

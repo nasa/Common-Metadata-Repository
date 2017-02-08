@@ -39,7 +39,7 @@
 (defn- expected-dif-instruments
   "Returns the expected DIF instruments for the given instruments"
   [instruments]
-  (seq (map #(assoc % :Characteristics nil :Technique nil :NumberOfSensors nil :Sensors nil
+  (seq (map #(assoc % :Characteristics nil :Technique nil :NumberOfInstruments nil :ComposedOf nil
                     :OperationalModes nil) instruments)))
 
 (defn- expected-dif-platform

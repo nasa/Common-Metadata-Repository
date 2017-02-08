@@ -387,7 +387,7 @@
       (update :TemporalExtents expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
-                      :NumberOfSensors nil
+                      :NumberOfInstruments nil
                       :OperationalModes nil)
       (update :DataDates expected-iso19115-data-dates)
       (assoc :CollectionDataType nil)

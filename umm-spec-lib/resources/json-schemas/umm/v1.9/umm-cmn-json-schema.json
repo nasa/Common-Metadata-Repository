@@ -823,14 +823,14 @@
           "minLength": 1,
           "maxLength": 2048
         },
-        "NumberOfSensors": {
-          "description": "Number of sensors used on the instrument when acquiring the granule data.",
+        "NumberOfInstruments": {
+          "description": "Number of instruments used on the instrument when acquiring the granule data.",
           "type": "integer"
         },
-        "Sensors": {
+        "ComposedOf": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SensorType"
+            "$ref": "#/definitions/InstrumentChildType"
           },
           "minItems": 0
         },
@@ -847,19 +847,19 @@
       },
       "required": ["ShortName"]
     },
-    "SensorType": {
+    "InstrumentChildType": {
       "type": "object",
       "additionalProperties": false,
       "description": "Information about the collection source/sensor configuration, including sensor parameters settings such as technique etc.",
       "properties": {
         "ShortName": {
-          "$ref": "#/definitions/ShortNameType"
+          "$ref": "#/definitions/PlatformShortNameType"
         },
         "LongName": {
-          "$ref": "#/definitions/LongNameType"
+          "$ref": "#/definitions/PlatformLongNameType"
         },
         "Characteristics": {
-          "description": "Sensor-specific characteristics, e.g,. Wavelength, SwathWidth, Field of View.   The characteristic names must be unique on this sensor; however the names do not have to be unique across sensors.",
+          "description": "Instrument-specific characteristics, e.g., Wavelength, SwathWidth, Field of View. The characteristic names must be unique on this instrument; however the names do not have to be unique across instruments.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CharacteristicType"
@@ -867,7 +867,7 @@
           "minItems": 0
         },
         "Technique": {
-          "description": "Technique applied for this sensor in the configuration.",
+          "description": "The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal Emission and Reflective Radiometer, Clouds and the Earth's Radiant Energy System, Human Observation).",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048
