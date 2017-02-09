@@ -1,4 +1,4 @@
-require 'echo_orbits'
+require 'orbits'
 
 module SpecHelpers
   def self.close_to?(actual, expected)

@@ -1,29 +1,31 @@
-require 'echo_orbits'
+require 'orbits'
 require 'spec_helper'
 require 'mock_geometries'
 
-describe "Geometry-based backtracking" do
-  matcher :backtrack_similar_ranges_for do |geometry, ascending, tolerance|
-    def areas(orbit, geometry, ascending)
-      densified = orbit.densified_area_crossing_range(geometry, ascending)
-      fast = orbit.fast_area_crossing_range(geometry, ascending)
-      [densified.to_a, fast.to_a]
-    end
 
-    match do |orbit|
-      densified, fast = areas(orbit, geometry, ascending)
-      flat_dense = densified.flatten
-      flat_fast = fast.flatten
-      flat_dense.zip(flat_fast).all? do |dense, fast|
-        (dense - fast).abs < tolerance
-      end
-    end
+RSpec::Matchers.define :backtrack_similar_ranges_for do |geometry, ascending, tolerance|
+  def areas(orbit, geometry, ascending)
+    densified = orbit.densified_area_crossing_range(geometry, ascending)
+    fast = orbit.fast_area_crossing_range(geometry, ascending)
+    [densified.to_a, fast.to_a]
+  end
 
-    failure_message_for_should do |orbit|
-      densified, fast = areas(orbit, geometry, ascending)
-      "expected #{geometry.inspect} to backtrack similar to #{densified.inspect} on the #{ascending ? 'ascending' : 'descending'} pass, got #{fast.inspect}"
+  match do |orbit|
+    densified, fast = areas(orbit, geometry, ascending)
+    flat_dense = densified.flatten
+    flat_fast = fast.flatten
+    flat_dense.zip(flat_fast).all? do |dense, fast|
+      (dense - fast).abs < tolerance
     end
   end
+
+  failure_message_for_should do |orbit|
+    densified, fast = areas(orbit, geometry, ascending)
+    "expected #{geometry.inspect} to backtrack similar to #{densified.inspect} on the #{ascending ? 'ascending' : 'descending'} pass, got #{fast.inspect}"
+  end
+end
+
+describe "Geometry-based backtracking" do
 
   let (:orbit) { Orbits::Orbit.new(98.15, 98.88, 100, 50, 0.5) }
 

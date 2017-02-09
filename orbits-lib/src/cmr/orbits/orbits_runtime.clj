@@ -56,8 +56,14 @@
     (to-array ["br", coords2, ascending, inclination_deg,
                fperiod_min, swath_width_km, start_clat_deg, count])))
 
- (eval-jruby "javascript_include_tag '/search/javascripts/application'  ")
- (eval-jruby "stylesheet_link_tag \"/search/stylesheets/application\", media: 'all' "))
+ (do
+  (eval-jruby "load 'spec/coordinate_spec.rb'")
+  (eval-jruby "load 'spec/geometry_backtracking_spec.rb'"))
+
+ (eval-jruby "load 'spec/_spec.rb'")
+
+ (eval-jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))
+
 
 
 ; ;; An wrapper component for the JRuby runtime

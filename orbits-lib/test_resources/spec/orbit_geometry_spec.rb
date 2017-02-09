@@ -1,4 +1,4 @@
-require 'echo_orbits'
+require 'orbits'
 require 'spec/spec_helper'
 require 'spec/mock_geometries'
 require 'orbits/orbit_geometry'
