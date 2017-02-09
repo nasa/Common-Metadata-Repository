@@ -163,11 +163,11 @@ Error messages can also be returned in JSON by setting the Accept header to appl
 ```
 {
   "errors" : [ {
-    "path" : [ "Platforms", 1, "Instruments", 1, "ComposedOf" ],
-    "errors" : [ "ComposedOf must be unique. This contains duplicates named [S2]." ]
+    "path" : [ "Platforms", 1, "Instruments", 1, "Composed Of" ],
+    "errors" : [ "Composed Of must be unique. This contains duplicates named [S2]." ]
   }, {
-    "path" : [ "Platforms", 1, "Instruments", 0, "ComposedOf" ],
-    "errors" : [ "ComposedOf must be unique. This contains duplicates named [S1]." ]
+    "path" : [ "Platforms", 1, "Instruments", 0, "Composed Of" ],
+    "errors" : [ "Composed Of must be unique. This contains duplicates named [S1]." ]
   }, {
     "path" : [ "Platforms", 1, "Instruments" ],
     "errors" : [ "Instruments must be unique. This contains duplicates named [I1]." ]

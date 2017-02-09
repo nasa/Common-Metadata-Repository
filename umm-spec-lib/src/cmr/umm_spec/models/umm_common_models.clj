@@ -448,24 +448,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
 
-;; Information about the collection source/sensor configuration, including sensor parameters
-;; settings such as technique etc.
-(defrecord SensorType
-  [
-   ShortName
-
-   LongName
-
-   ;; Sensor-specific characteristics, e.g,. Wavelength, SwathWidth, Field of View. The
-   ;; characteristic names must be unique on this sensor; however the names do not have to be unique
-   ;; across sensors.
-   Characteristics
-
-   ;; Technique applied for this sensor in the configuration.
-   Technique
-  ])
- (record-pretty-printer/enable-record-pretty-printing SensorType)
-
 ;; The longitude and latitude values of a spatially referenced point in degrees.
 (defrecord PointType
   [
