@@ -1035,9 +1035,9 @@ Example: `C123456-LPDAAC_ECS`
 
     curl "%CMR-ENDPOINT%/collections?concept_id\[\]=C123456-LPDAAC_ECS"
 
-#### <a name="c-doi-value"></a> Find collections by doi value 
+#### <a name="c-doi-value"></a> Find collections by doi value
 
-  Find a collection matching a collection doi value. Note more than one doi value may be supplied. 
+  Find a collection matching a collection doi value. Note more than one doi value may be supplied.
 
     curl "%CMR-ENDPOINT%/collections?doi\[\]=doi"
 
@@ -1192,6 +1192,8 @@ Find collections matching any of the 'instrument' param values
      curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B&instrument\[\]=2B"
 
 #### <a name="c-sensor"></a> Find collections by sensor.
+
+Sensor search is deprecated and should be replaced with instrument. Sensors are now child instruments on an instrument.
 
 This supports `pattern`, `ignore_case` and option `and`.
 
