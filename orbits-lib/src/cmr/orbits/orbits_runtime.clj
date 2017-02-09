@@ -1,33 +1,28 @@
+
+*
 (ns cmr.orbits.orbits-runtime
   "Defines a component which can be used to calculate Orbits"
-  (require [cmr.common.lifecycle :as l]
-           [clojure.java.io :as io])
-  (import [javax.script
-           ScriptEngine
-           ScriptEngineManager
-           Invocable]
-          [java.io
-           ByteArrayInputStream]))
+  (:require
+   [cmr.common.lifecycle :as l]
+   [clojure.java.io :as io])
+  (:import
+   (javax.script
+    ScriptEngine
+    ScriptEngineManager
+    Invocable)
+   (java.io
+    ByteArrayInputStream)))
 
 (def system-key
   "The key to use when storing the orbit runtime"
   :orbits)
-
-(def bootstrap-rb
-  "A ruby script that will bootstrap the JRuby environment to contain the appropriate functions for
-   generating ERB code."
-  (io/resource "collection_preview/bootstrap.rb"))
-
-(def collection-preview-erb
-  "The main ERB used to generate the Collection HTML."
-  (io/resource "collection_preview/collection_preview.erb"))
 
 (defn- create-jruby-runtime
   "Creates and initializes a JRuby runtime."
   []
   (let [jruby (.. (ScriptEngineManager.)
                   (getEngineByName "jruby"))]
-    ; (.eval jruby (io/reader bootstrap-rb))
+    (.eval jruby "load 'orbits/echo_orbits_impl.rb'")
     jruby))
 
 ;; Allows easily evaluating Ruby code in the Clojure REPL.
@@ -38,75 +33,76 @@
    [s]
    (.eval jruby (java.io.StringReader. s)))
 
- (eval-jruby "load 'orbits/echo_orbits_impl.rb'")
+ (area-crossing-range
+  (:orbits user/system)
+  {:geometry-type :br
+   :coords [-45, 45, 45, -45]
+   :ascending? true
+   :inclination 98.15
+   :period 98.88
+   :swath-width 1450.0
+   :start-clat -90.0
+   :num-orbits 0.5})
 
- (let [lat 88.0
-       lon 179.0
-       ascending true
-       inclination_deg 98.15
-       fperiod_min 98.88
-       swath_width_km 1450.0
-       start_clat_deg -90.0
-       count 0.5
-       coords (to-array [-45, -145, -45, 145, 45, 145, 45, -145])
-       coords2 (to-array [-45, 45, 45, -45])]
-   (.invokeFunction
-    jruby
-    "areaCrossingRange"
-    (to-array ["br", coords2, ascending, inclination_deg,
-               fperiod_min, swath_width_km, start_clat_deg, count])))
+ (denormalize-latitude-range
+  (:orbits user/system)
+  50 720)
 
  (do
-  (eval-jruby "load 'spec/coordinate_spec.rb'")
-  (eval-jruby "load 'spec/geometry_backtracking_spec.rb'"))
-
- (eval-jruby "load 'spec/_spec.rb'")
+   (eval-jruby "load 'spec/coordinate_spec.rb'")
+   (eval-jruby "load 'spec/geometry_backtracking_spec.rb'"))
 
  (eval-jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))
 
+;; An wrapper component for the JRuby runtime
+(defrecord OrbitsRuntime
+  [jruby-runtime]
+  l/Lifecycle
 
+  (start
+    [this _system]
+    (assoc this :jruby-runtime (create-jruby-runtime)))
+  (stop
+    [this _system]
+    (dissoc this :jruby-runtime)))
 
-; ;; An wrapper component for the JRuby runtime
-; (defrecord CollectionRenderer
-;   [jruby-runtime]
-;   l/Lifecycle
-;
-;   (start
-;     [this _system]
-;     (assoc this :jruby-runtime (create-jruby-runtime)))
-;   (stop
-;     [this _system]
-;     (dissoc this :jruby-runtime)))
-;
-; (defn create-collection-renderer
-;   "Returns an instance of the collection renderer component."
-;   []
-;   (->CollectionRenderer nil))
-;
-; (defn- render-erb
-;   "Renders the ERB resource with the given JRuby runtime, URL to an ERB on the classpath, and a map
-;    of arguments to pass the ERB."
-;   [jruby-runtime erb-resource args]
-;   (.invokeFunction
-;    ^Invocable jruby-runtime
-;    "java_render" ;; Defined in bootstrap.rb
-;    (to-array [(io/input-stream erb-resource) args])))
-;
-; (defn- context->jruby-runtime
-;   [context]
-;   (get-in context [:system system-key :jruby-runtime]))
-;
-; (defn- context->relative-root-url
-;   [context]
-;   (get-in context [:system :public-conf :relative-root-url]))
-;
-; (defn render-collection
-;   "Renders a UMM-C collection record and returns the HTML as a string."
-;   [context collection]
-;   (let [umm-json (umm-json/umm->json collection)]
-;    (render-erb (context->jruby-runtime context) collection-preview-erb
-;                ;; Arguments for collection preview. See the ERB file for documentation.
-;                {"umm_json" umm-json
-;                 "relative_root_url" (context->relative-root-url context)})))
-;
-;
+(defn create-orbits-runtime
+  "Returns an instance of the Orbits runtime"
+  []
+  (->OrbitsRuntime nil))
+
+(defn area-crossing-range
+  "Given a set of coordinates representing a shape and satellite information, returns a range of
+   longitudes.  Orbital passes which cross the equator within the returned ranges will cover the
+   given coordinate with their swath.
+
+   Parameters
+   * geometry-type - the type of the geometry. One of :br, :line, :point, :polygon
+   * coords - the coordinates of the geometry
+   * ascending? - true to indicate ascending orbit
+   * inclination - The inclination angle of the orbit in degrees
+   * period - The number of minutes it takes to complete one orbit
+   * swath-width - The width of the orbital track in kilometers
+   * start-clat - The starting circular latitude in degrees
+   * num-orbits - The number of orbits per granule of data (may be a fraction)"
+  [orbits-runtime
+   {:keys [geometry-type coords ascending? inclination period swath-width start-clat num-orbits]}]
+  (let [args [(name geometry-type)
+              (to-array coords)
+              ascending?
+              inclination
+              period
+              swath-width
+              start-clat
+              num-orbits]
+        {:keys [jruby-runtime]} orbits-runtime]
+    (.invokeFunction jruby-runtime "areaCrossingRange" (to-array args))))
+
+(defn denormalize-latitude-range
+  "Returns an array containing all min, max ranges crossing the range from min to max for ascending
+   and descending passes."
+  [orbits-runtime min max]
+  (let [args [min max]
+        {:keys [jruby-runtime]} orbits-runtime]
+    (.invokeFunction jruby-runtime "denormalizeLatitudeRange" (to-array args))))
+

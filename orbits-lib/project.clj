@@ -37,8 +37,7 @@
   [["rspec" "2.12.0"]])
 
 (defproject orbits-lib "0.1.0-SNAPSHOT"
-  :description "TODO write description"
-  :url "http://example.com/FIXME"
+  :description "Contains Ruby code that allows performing orbit calculations for spatial search."
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.jruby/jruby-complete ~jruby-version]]
