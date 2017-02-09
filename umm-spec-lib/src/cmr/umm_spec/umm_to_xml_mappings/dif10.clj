@@ -360,28 +360,3 @@
        [:Metadata
         [:Name "Restriction"]
         [:Value access-value]]])]))
-
-
-(def x [{:ShortName "A"
-         :Instruments [{:ShortName "A-1"
-                        :Instruments [{:ShortName "A-1-1"
-                                       :B 1}
-                                      {:ShortName "A-1-2"}]}
-                       {:ShortName "A-2"}]}
-        {:ShortName "B"
-         :Instruments [{:ShortName "B-1"}
-                       {:ShortName "B-2"}
-                       {:ShortName "B-3"}]}])
-
-(defn flatten-instruments
- [x]
- (proto-repl.saved-values/save 11)
- (conj
-  (for [instruments (seq (:Instruments x))]
-   (flatten-instruments instruments))
-  x))
-
-
-(flatten (flatten-instruments (first x)))
-
-(flatten (mapcat flatten-instruments x))

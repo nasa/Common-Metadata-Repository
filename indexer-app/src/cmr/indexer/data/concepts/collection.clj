@@ -151,6 +151,7 @@
         platform-long-names (->> (distinct (keep :long-name (concat platforms platforms-nested)))
                                  (map str/trim))
         instruments (mapcat :instruments platforms)
+        instruments (concat instruments (mapcat :composed-of instruments))
         instruments-nested (map #(instrument/instrument-short-name->elastic-doc kms-index %)
                                 (keep :short-name instruments))
         instrument-short-names (->> instruments-nested
@@ -192,7 +193,7 @@
         permitted-group-ids (get-coll-permitted-group-ids context provider-id umm-lib-collection)]
     (merge {:concept-id concept-id
             :doi doi
-            :doi.lowercase doi-lowercase 
+            :doi.lowercase doi-lowercase
             :revision-id revision-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id

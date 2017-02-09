@@ -300,15 +300,23 @@
                               :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
                              {:field "platform"
                               :value-counts [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
-                             {:field "instrument"
+                             {:field "instrument" ; Instruments now include sensors as child instruments
                               :value-counts [["A-p0-i0" 2]
+                                             ["A-p0-i0-s0" 2]
                                              ["A-p0-i1" 1]
+                                             ["A-p0-i1-s0" 1]
                                              ["A-p1-i0" 1]
+                                             ["A-p1-i0-s0" 1]
                                              ["A-p1-i1" 1]
+                                             ["A-p1-i1-s0" 1]
                                              ["B-p0-i0" 1]
+                                             ["B-p0-i0-s0" 1]
                                              ["B-p0-i1" 1]
+                                             ["B-p0-i1-s0" 1]
                                              ["B-p1-i0" 1]
-                                             ["B-p1-i1" 1]]}
+                                             ["B-p1-i0-s0" 1]
+                                             ["B-p1-i1" 1]
+                                             ["B-p1-i1-s0" 1]]}
                              {:field "sensor"
                               :value-counts [["A-p0-i0-s0" 2]
                                              ["A-p0-i1-s0" 1]
@@ -381,15 +389,23 @@
                                 :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
                                {:field "platform"
                                 :value-counts [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
-                               {:field "instrument"
+                               {:field "instrument" ; Instruments now include sensors as child instruments
                                 :value-counts [["A-p0-i0" 1]
+                                               ["A-p0-i0-s0" 1]
                                                ["A-p0-i1" 1]
+                                               ["A-p0-i1-s0" 1]
                                                ["A-p1-i0" 1]
+                                               ["A-p1-i0-s0" 1]
                                                ["A-p1-i1" 1]
+                                               ["A-p1-i1-s0" 1]
                                                ["B-p0-i0" 1]
+                                               ["B-p0-i0-s0" 1]
                                                ["B-p0-i1" 1]
+                                               ["B-p0-i1-s0" 1]
                                                ["B-p1-i0" 1]
-                                               ["B-p1-i1" 1]]}
+                                               ["B-p1-i0-s0" 1]
+                                               ["B-p1-i1" 1]
+                                               ["B-p1-i1-s0" 1]]}
                                {:field "sensor"
                                 :value-counts [["A-p0-i0-s0" 1]
                                                ["A-p0-i1-s0" 1]
@@ -427,11 +443,15 @@
                                 :value-counts [["GSFC" 1]]}
                                {:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
                                {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
-                               {:field "instrument"
+                               {:field "instrument" ; Instruments now include sensors as child instruments
                                 :value-counts [["B-p0-i0" 1]
+                                               ["B-p0-i0-s0" 1]
                                                ["B-p0-i1" 1]
+                                               ["B-p0-i1-s0" 1]
                                                ["B-p1-i0" 1]
-                                               ["B-p1-i1" 1]]}
+                                               ["B-p1-i0-s0" 1]
+                                               ["B-p1-i1" 1]
+                                               ["B-p1-i1-s0" 1]]}
                                {:field "sensor"
                                 :value-counts [["B-p0-i0-s0" 1]
                                                ["B-p0-i1-s0" 1]
@@ -586,7 +606,7 @@
                                      :count 1,
                                      :subfields ["subtype"],
                                      :subtype
-                                     [{:value "Not Provided",
+                                     [{:value "Not Provided", ; Instruments now include sensors as child instruments
                                        :count 1,
                                        :subfields ["short_name"],
                                        :short_name
@@ -594,7 +614,15 @@
                                          :count 1,
                                          :subfields ["long_name"],
                                          :long_name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p0-i0-s0",
+                                         :count 1,
+                                         :subfields ["long_name"],
+                                         :long_name [{:value "Not Provided", :count 1}]}
                                         {:value "instrument-test-p0-i1",
+                                         :count 1,
+                                         :subfields ["long_name"],
+                                         :long_name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p0-i1-s0",
                                          :count 1,
                                          :subfields ["long_name"],
                                          :long_name [{:value "Not Provided", :count 1}]}
@@ -602,11 +630,19 @@
                                          :count 1,
                                          :subfields ["long_name"],
                                          :long_name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p1-i0-s0",
+                                         :count 1,
+                                         :subfields ["long_name"],
+                                         :long_name [{:value "Not Provided", :count 1}]}
                                         {:value "instrument-test-p1-i1",
                                          :count 1,
                                          :subfields ["long_name"],
                                          :long_name
-                                         [{:value "Not Provided", :count 1}]}]}]}]}]}
+                                         [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p1-i1-s0",
+                                         :count 1,
+                                         :subfields ["long_name"],
+                                         :long_name [{:value "Not Provided", :count 1}]}]}]}]}]}
                                 {:value "In Situ/Laboratory Instruments",
                                  :count 1,
                                  :subfields ["class"],
@@ -758,16 +794,24 @@
                              {:field "platform",
                               :value-counts
                               [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
-                             {:field "instrument",
+                             {:field "instrument", ; Instruments now include sensors as child instruments
                               :value-counts
                               [["A-p0-i0" 1]
+                               ["A-p0-i0-s0" 1]
                                ["A-p0-i1" 1]
+                               ["A-p0-i1-s0" 1]
                                ["A-p1-i0" 1]
+                               ["A-p1-i0-s0" 1]
                                ["A-p1-i1" 1]
+                               ["A-p1-i1-s0" 1]
                                ["B-p0-i0" 1]
+                               ["B-p0-i0-s0" 1]
                                ["B-p0-i1" 1]
+                               ["B-p0-i1-s0" 1]
                                ["B-p1-i0" 1]
-                               ["B-p1-i1" 1]]}
+                               ["B-p1-i0-s0" 1]
+                               ["B-p1-i1" 1]
+                               ["B-p1-i1-s0" 1]]}
                              {:field "sensor",
                               :value-counts
                               [["A-p0-i0-s0" 1]
