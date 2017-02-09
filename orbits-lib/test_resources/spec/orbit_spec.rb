@@ -1,54 +1,10 @@
 require 'orbits'
-require 'spec/orbit_data'
 require 'spec/spec_helper'
 require 'spec/mock_geometries'
 require 'spec/metrics'
 
 describe "Orbit" do
   context "#coord_crossing_range" do
-    context "when compared to legacy getPointCrossingRange" do
-      # This is bad rspec form but lets us test a lot of points and easily see what fails
-      latitudes = [-90, -88, -60, -47, -1, 0, 1, 47, 60, 88, 90]
-      longitudes = [-180, -179, -100, -61, 1, 0, 1, 61, 100, 179, 180]
-      test_coordinates = []
-
-      latitudes.each do |lat|
-        longitudes.each do |lon|
-          test_coordinates << [lat, lon]
-        end
-      end
-
-      passes = [:ascending, :descending]
-      orbit_pairs = OrbitData.nsidc_orbits.zip(OrbitData.echo_orbits)
-
-      orbit_pairs.each do |java_orbit, ruby_orbit|
-        context "for #{ruby_orbit.to_s}" do
-          test_coordinates.each do |lat, lon|
-            passes.each do |pass|
-              it "calculates a similar value for (#{lat}, #{lon}) on the #{pass} pass" do
-                is_ascending = pass == :ascending
-                java_range = Metrics.time('backtracking points in Java') do
-                  java_orbit.get_point_crossing_range(lat, lon, is_ascending)
-                end
-
-                ruby_range = Metrics.time('backtracking points in Ruby') do
-                  coord = Orbits::Coordinate.lat_lon(lat, lon)
-                  ruby_orbit.coord_crossing_range(coord, is_ascending).to_a.flatten
-                end
-
-                # We don't test against the legacy code when size is 0 because
-                # it ignores that case to avoid returning null
-                if ruby_range.size > 0
-                  java_range.min.should be_close_to ruby_range[0]
-                  java_range.max.should be_close_to ruby_range[1]
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-
     describe "given points near the orbit's inflection" do
       it "returns no results for points above the swath" do
         # Swath width of 889km is almost exactly 8 degrees, so at the inflection
