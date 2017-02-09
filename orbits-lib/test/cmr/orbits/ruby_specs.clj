@@ -28,12 +28,17 @@
             ;; results for each spec.
             :let [jruby (create-jruby-runtime)]]
       (testing spec-name
-       (eval-jruby
-        jruby
-        (format "load 'spec/%s'" spec-name))
-       ;; RSPec returns 0 when tests pass and 1 when they fail.
-       (is (= 0 (eval-jruby jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))
-           (str "RSPec returned failure status for " spec-name))))))
+        (try
+          (eval-jruby
+           jruby
+           (format "load 'spec/%s'" spec-name))
+          (catch Exception e
+            (println "The spec failed to load. You may need to install the gems in orbits lib to continue."
+                     "Run lein install-gems in orbits-lib and restart your REPL.")
+            (throw e)))
+        ;; RSPec returns 0 when tests pass and 1 when they fail.
+        (is (= 0 (eval-jruby jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))
+            (str "RSPec returned failure status for " spec-name))))))
 
 
 
