@@ -6,11 +6,8 @@
    [clojure.test :refer :all])
   (:import
    (javax.script
-    Invocable
-    ScriptEngine
-    ScriptEngineManager)
-   (java.io
-    ByteArrayInputStream)))
+    ScriptEngineManager)))
+
 
 (defn- create-jruby-runtime
   "Creates and initializes a JRuby runtime."
@@ -21,17 +18,22 @@
   [jruby s]
   (.eval jruby (java.io.StringReader. s)))
 
-
 (deftest test-ruby-specs
+  ;; Find all the spec files in the test_resources/spec folder
   (let [specs (->> (io/file (io/resource "spec"))
                    (.list)
                    (filter #(str/ends-with? %"_spec.rb")))]
     (doseq [spec-name specs
+            ;; Create a new instance of the JRuby runtime for each spec so that we can show separate
+            ;; results for each spec.
             :let [jruby (create-jruby-runtime)]]
-      (eval-jruby
-       jruby
-       (format "load 'spec/%s'" spec-name))
-      (is (= 0 (eval-jruby jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))))))
+      (testing spec-name
+       (eval-jruby
+        jruby
+        (format "load 'spec/%s'" spec-name))
+       ;; RSPec returns 0 when tests pass and 1 when they fail.
+       (is (= 0 (eval-jruby jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))
+           (str "RSPec returned failure status for " spec-name))))))
 
 
 
