@@ -23,36 +23,6 @@
     (.eval jruby "load 'orbits/echo_orbits_impl.rb'")
     jruby))
 
-;; Allows easily evaluating Ruby code in the Clojure REPL.
-(comment
- (def jruby (create-jruby-runtime))
-
- (defn eval-jruby
-   [s]
-   (.eval jruby (java.io.StringReader. s)))
-
- (area-crossing-range
-  (:orbits user/system)
-  {:lat-range [-45 45]
-   :geometry-type :br
-   :coords [-45, 45, 45, -45]
-   :ascending? true
-   :inclination 98.15
-   :period 98.88
-   :swath-width 1450.0
-   :start-clat -90.0
-   :num-orbits 0.5})
-
- (denormalize-latitude-range
-  (:orbits user/system)
-  50 720)
-
- (do
-   (eval-jruby "load 'spec/coordinate_spec.rb'")
-   (eval-jruby "load 'spec/geometry_backtracking_spec.rb'"))
-
- (eval-jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))
-
 ;; An wrapper component for the JRuby runtime
 (defrecord OrbitsRuntime
   [jruby-runtime]
@@ -108,3 +78,32 @@
         {:keys [jruby-runtime]} orbits-runtime]
     (.invokeFunction jruby-runtime "denormalizeLatitudeRange" (to-array args))))
 
+;; Allows easily evaluating Ruby code in the Clojure REPL.
+(comment
+ (def jruby (create-jruby-runtime))
+
+ (defn eval-jruby
+   [s]
+   (.eval jruby (java.io.StringReader. s)))
+
+ (area-crossing-range
+  (:orbits user/system)
+  {:lat-range [-45 45]
+   :geometry-type :br
+   :coords [-45, 45, 45, -45]
+   :ascending? true
+   :inclination 98.15
+   :period 98.88
+   :swath-width 1450.0
+   :start-clat -90.0
+   :num-orbits 0.5})
+
+ (denormalize-latitude-range
+  (:orbits user/system)
+  50 720)
+
+ (do
+   (eval-jruby "load 'spec/coordinate_spec.rb'")
+   (eval-jruby "load 'spec/geometry_backtracking_spec.rb'"))
+
+ (eval-jruby "require 'rspec/core'; RSpec::Core::Runner.run([])"))
