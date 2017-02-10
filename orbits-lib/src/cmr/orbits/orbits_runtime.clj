@@ -35,7 +35,8 @@
 
  (area-crossing-range
   (:orbits user/system)
-  {:geometry-type :br
+  {:lat-range [-45 45]
+   :geometry-type :br
    :coords [-45, 45, 45, -45]
    :ascending? true
    :inclination 98.15
@@ -77,6 +78,7 @@
    given coordinate with their swath.
 
    Parameters
+   * lat-range - The latitude range from the MBR of the search area
    * geometry-type - the type of the geometry. One of :br, :line, :point, :polygon
    * coords - the coordinates of the geometry
    * ascending? - true to indicate ascending orbit
@@ -86,8 +88,10 @@
    * start-clat - The starting circular latitude in degrees
    * num-orbits - The number of orbits per granule of data (may be a fraction)"
   [orbits-runtime
-   {:keys [geometry-type coords ascending? inclination period swath-width start-clat num-orbits]}]
-  (let [args [(name geometry-type)
+   {:keys [lat-range geometry-type coords ascending? inclination period swath-width start-clat
+           num-orbits]}]
+  (let [args [(to-array lat-range)
+              (name geometry-type)
               (to-array coords)
               ascending?
               inclination

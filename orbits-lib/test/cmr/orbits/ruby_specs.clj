@@ -8,15 +8,15 @@
    (javax.script
     ScriptEngineManager)))
 
+(defn eval-jruby
+  [jruby s]
+  (.eval jruby (java.io.StringReader. s)))
 
 (defn- create-jruby-runtime
   "Creates and initializes a JRuby runtime."
   []
   (.getEngineByName (ScriptEngineManager.) "jruby"))
 
-(defn eval-jruby
-  [jruby s]
-  (.eval jruby (java.io.StringReader. s)))
 
 (deftest test-ruby-specs
   ;; Find all the spec files in the test_resources/spec folder
@@ -27,6 +27,7 @@
             ;; Create a new instance of the JRuby runtime for each spec so that we can show separate
             ;; results for each spec.
             :let [jruby (create-jruby-runtime)]]
+      (eval-jruby jruby "require 'rspec'")
       (testing spec-name
         (try
           (eval-jruby

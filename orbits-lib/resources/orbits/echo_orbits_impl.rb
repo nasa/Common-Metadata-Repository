@@ -67,8 +67,8 @@ def denormalizeLatitudeRange(min, max)
 	[asc_ranges, desc_ranges]
 end
 
-def areaCrossingRange(type, coordinates, ascending, inclination_deg, period_min, swath_width_km,
-	start_clat_deg, count=0)
+def areaCrossingRange(lat_range, type, coordinates, ascending, inclination_deg, period_min,
+	swath_width_km, start_clat_deg, count=0)
 	geometry = nil
 	case type
 	when "br"
@@ -81,17 +81,22 @@ def areaCrossingRange(type, coordinates, ascending, inclination_deg, period_min,
 		geometry = Polygon.new(coordinates)
 	end
 	orbit = Orbits::Orbit.new(inclination_deg, period_min, swath_width_km, start_clat_deg, count)
-	ranges = orbit.area_crossing_range(geometry, ascending).to_a
+	lat_and_lon_ranges = orbit.area_crossing_range(lat_range, geometry, ascending)
+	rval = []
 
-	shifted_ranges = []
-	(0...count).each do |i|
-		shifted_ranges += shift_ranges(ranges, orbit.period_s * EARTH_ANGULAR_VELOCITY_DEG_SEC * i)
+	lat_and_lon_ranges.each do |lat_range, lon_ranges|
+		lon_ranges = lon_ranges.to_a
+		shifted_ranges = []
+		(0...count).each do |i|
+			shifted_ranges += shift_ranges(lon_ranges, orbit.period_s * EARTH_ANGULAR_VELOCITY_DEG_SEC * i)
+			end
+			shifted_ranges.flatten!
+			shifted_ranges = shifted_ranges.map do |range|
+				[range.begin, range.end]
+			end
+			rval << [[lat_range], shifted_ranges]
 		end
-		shifted_ranges.flatten!
-		shifted_ranges = shifted_ranges.map do |range|
-			[range.begin, range.end]
-		end
-		shifted_ranges
+		rval
 end
 
 # Shifts the given list of ranges by amount degrees

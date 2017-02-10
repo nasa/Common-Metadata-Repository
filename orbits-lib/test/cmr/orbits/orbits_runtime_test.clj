@@ -8,10 +8,11 @@
 
 (deftest test-area-crossing-range
   (let [orbits-runtime (l/start (o/create-orbits-runtime) nil)]
-    (is (= [[-65.92018254333931 65.92018254333937]]
+    (is (= [[[[-45 45]] [[-65.92018254333931 65.92018254333937]]]]
            (o/area-crossing-range
             orbits-runtime
-            {:geometry-type :br
+            {:lat-range [-45 45]
+             :geometry-type :br
              :coords [-45, 45, 45, -45]
              :ascending? true
              :inclination 98.15

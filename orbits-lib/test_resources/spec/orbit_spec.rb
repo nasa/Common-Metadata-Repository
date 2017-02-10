@@ -70,7 +70,8 @@ describe "Orbit" do
       it "returns correct coverage for whole earth" do
         orbit = Orbits::Orbit.new(94.0, 96.7, 2.0, -50.0, 0.25)
         geometry = Mock::BoundingRectangle.new(-90, 90, -180, 180)
-        range = orbit.area_crossing_range(geometry,true)
+        ranges = orbit.area_crossing_range([-90, 90], geometry,true)
+        range = ranges.last.last
         range.to_a.size.should be == 1
         range.to_a[0][0].should be == -180
         range.to_a[0][1].should be == 180

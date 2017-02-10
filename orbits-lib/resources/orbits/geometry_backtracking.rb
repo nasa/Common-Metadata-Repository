@@ -26,25 +26,32 @@ module Orbits
     # Replaces the previous area_crossing_range.  debug=true is used to return
     # intermediate results to debug visualizations.  It should not be set for
     # any production purposes.
-    def fast_area_crossing_range(geometry, ascending, debug=false)
+    # This function returns results as an array consisting of one or more pairs of
+    # latitude range / LongitudeCoverage objects. The latitude range is an array of two elements
+    # consisting of the lower and the upper latitudes for which the associated longitude range
+    # is valid. Any granule intersecting the latitude range AND crossing the equator within
+    # the longitude range intersects the search area. This is done to avoid the bug reported in CMR-1168.
+    #
+    def fast_area_crossing_range(lat_range, geometry, ascending, debug=false)
+      lat_range = lat_range.to_a
       result = nil
       # There is a separate algorithm for each type of geometry
       if geometry.respond_to? :lat
         # Points
-        result = fast_point_crossing_range(Coordinate.lat_lon(geometry.lat, geometry.lon), ascending)
+        result = fast_point_crossing_range(lat_range, Coordinate.lat_lon(geometry.lat, geometry.lon), ascending)
       elsif geometry.respond_to? :west
         # Bounding rectangles
         north, west, south, east = geometry.north, geometry.west, geometry.south, geometry.east
-        result = fast_bounding_rectangle_crossing_range(north, west, south, east, ascending)
+        result = fast_bounding_rectangle_crossing_range(lat_range, north, west, south, east, ascending)
       elsif geometry.respond_to? :rings
         # Polygons
         points = geometry.rings.first.points.map {|p| Coordinate.lat_lon(p.lat, p.lon)}
         points << points.first unless points.first.lat == points.last.lat && points.first.lon == points.last.lon
-        result = fast_poly_crossing_range(points, ascending, debug)
+        result = fast_poly_crossing_range(lat_range, points, ascending, debug)
       elsif geometry.respond_to? :points
         # Line strings
         points = geometry.points.map {|p| Coordinate.lat_lon(p.lat, p.lon)}
-        result = fast_poly_crossing_range(points, ascending)
+        result = fast_poly_crossing_range(lat_range, points, ascending)
       else
         # Oops
         raise "Unrecognized geometry: #{geometry.inspect}"
@@ -55,12 +62,12 @@ module Orbits
     private
 
     # Point backtracking.  Just backtrack the single point
-    def fast_point_crossing_range(point, ascending)
-      coord_crossing_range(point, ascending)
+    def fast_point_crossing_range(lat_range, point, ascending)
+      [[lat_range, coord_crossing_range(point, ascending)]]
     end
 
     # Bounding box backtracking.
-    def fast_bounding_rectangle_crossing_range(north_deg, west_deg, south_deg, east_deg, ascending)
+    def fast_bounding_rectangle_crossing_range(lat_range, north_deg, west_deg, south_deg, east_deg, ascending)
       # Convert to radians
       north = north_deg * PI / 180.0
       west = west_deg * PI / 180.0
@@ -73,31 +80,35 @@ module Orbits
         # the same latitude and therefore get calculated to represent a
         # bounding box of width 0.
         if south > max_coverage_phi || north < -max_coverage_phi
-          return LongitudeCoverage.none
+          return [[lat_range, LongitudeCoverage.none]]
         else
-          return LongitudeCoverage.full
+          return [[lat_range, LongitudeCoverage.full]]
         end
       end
 
       # Special case: the box is above the maximum coverage or below the minimum
       if south > max_coverage_phi || north < -max_coverage_phi
-        return LongitudeCoverage.none
+        return [[lat_range, LongitudeCoverage.none]]
       end
 
       # Special case: part of the box touches an area near the poles which every orbit covers
       if north > full_coverage_phi || south < -full_coverage_phi
-        return LongitudeCoverage.full
+        return [[lat_range, LongitudeCoverage.full]]
       end
 
       # If the northern part of the bounding rectangle is above the orbit's starting latitude
       # and the southern part is below, split into two bounding rectangles, one entirely above
       # and one entirely below and backtrack each
       if north > start_lat_rad && south < start_lat_rad
-        range = LongitudeCoverage.none
         lat_deg = start_lat_rad * 180.0 / PI
-        range << fast_bounding_rectangle_crossing_range(north_deg, west_deg, lat_deg + EPSILON, east_deg, ascending)
-        range << fast_bounding_rectangle_crossing_range(lat_deg - EPSILON, west_deg, south_deg, east_deg, ascending)
-        return range
+        upper_lat_range = [lat_deg + EPSILON, lat_range[1]]
+        lower_lat_range = [lat_range[0], lat_deg - EPSILON]
+        upper =  fast_bounding_rectangle_crossing_range(upper_lat_range, north_deg, west_deg, lat_deg + EPSILON, east_deg, ascending)
+        lower =  fast_bounding_rectangle_crossing_range(lower_lat_range, lat_deg - EPSILON, west_deg, south_deg, east_deg, ascending)
+        # move split point to original latitdue
+        upper[0][0][0] = start_clat_rad * 180.0/PI + EPSILON
+        lower[0][0][1] = start_clat_rad * 180.0/PI - EPSILON
+        return upper + lower
       end
 
       # Special cases out of the way.  Do actual backtracking
@@ -128,13 +139,13 @@ module Orbits
       end
 
       # Done!
-      range
+      [[lat_range, range]]
     end
 
     # Polygon and Polyline / Linestring backtracking.  Both use the same algorithm.
     # Polygons are closed by having a last point the same as their first (enforced
     # by fast_area_crossing_range)
-    def fast_poly_crossing_range(points, ascending, debug=false)
+    def fast_poly_crossing_range(lat_range, points, ascending, debug=false)
       # Easy case first
       return LongitudeCoverage.full if points.any? {|p| p.phi.abs > full_coverage_phi}
 
@@ -158,16 +169,67 @@ module Orbits
 
       # Split segments crossing the orbit start latitude so that all segments are
       # entirely above or below the start latitude
+
       segments = split_at_start_lat(segments)
       #debug_log "Split:       #{segments.map {|s| s.join(', ')}}"
 
-      # Merge the crossing ranges of each segment
-      range = debug ? [] : LongitudeCoverage.none
+      # Join the ranges from segments that form a contiguous run on one side of the orbit start
+      # lat or the other (needed to fix CMR-1168). The approach used here simply starts at the
+      # first segment and moves forward until it reaches a segment on the other side of the
+      # orbit start lat boundary, at which point a new run is started. This approach is suboptimal
+      # in that the first and last segment may end up on two runs that could be merged but will
+      # not be. This results in at most one extra run, however, and greatly simplifies the code.
+      upper_runs = []
+      lower_runs = []
+      lat_deg = start_lat_rad * 180.0 / PI
+      upper_lat_start = [lat_deg, lat_range[0]].max
+      upper_lat_range = [upper_lat_start, lat_range[1]]
+      lower_lat_end = [lat_deg, lat_range[1]].min
+      lower_lat_range = [lat_range[0], lower_lat_end]
+      current_range = debug ? [] : LongitudeCoverage.none
+      first_seg = segments[0]
+      is_current_range_upper = first_seg[0].phi >= start_lat_rad
+
+      if is_current_range_upper
+        upper_runs << current_range
+      else
+        lower_runs << current_range
+      end
+
       segments.each do |p0, p1|
         combined = segment_crossing_range(p0, p1, ascending)
-        range << (debug ? [p0, p1, combined] : combined)
+        if p0.phi < start_lat_rad
+          if is_current_range_upper
+            current_range =  debug ? [] : LongitudeCoverage.none
+            lower_runs << current_range
+          end
+        else
+          if !is_current_range_upper
+            current_range = debug ? [] : LongitudeCoverage.none
+            upper_runs << current_range
+          end
+        end
+
+        current_range << (debug ? [p0, p1, combined] : combined)
+
       end
-      range
+
+      # Convert split latitude ranges split latitude back to original collection start latitdue
+      start_lat_deg = start_clat_rad * 180.0/PI
+      if upper_runs.count > 0 && lower_runs.count > 0
+        upper_lat_range[0] = start_lat_deg + EPSILON
+        lower_lat_range[1] = start_lat_deg
+      end
+
+      # combine ranges with latitudes
+      lat_lon_ranges = upper_runs.reduce([]) do |memo, lon_range|
+        memo << [upper_lat_range, lon_range]
+      end
+
+      lower_runs.reduce(lat_lon_ranges) do |memo, lon_range|
+        memo << [lower_lat_range, lon_range]
+      end
+
     end
 
     # Find the longitude crossing range for the great circle segment defined by p0

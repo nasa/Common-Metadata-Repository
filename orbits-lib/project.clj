@@ -36,7 +36,7 @@
   "The list of development time dependency gems and their versions to install"
   [["rspec" "2.12.0"]])
 
-(defproject orbits-lib "0.1.0-SNAPSHOT"
+(defproject nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"
   :description "Contains Ruby code that allows performing orbit calculations for spatial search."
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
