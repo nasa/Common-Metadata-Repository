@@ -1,5 +1,3 @@
-
-*
 (ns cmr.orbits.orbits-runtime
   "Defines a component which can be used to calculate Orbits"
   (:require

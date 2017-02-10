@@ -4,7 +4,7 @@ require 'mock_geometries'
 
 # This test is commented out now because it doesn't work. As part of an update to CMR-1168 a fix was
 # made in a branch, a new jar was created, and then included in the CMR without merging the branch
-# or fixing these tests. I'm leaving the tests here for historical purposes. The methos that it
+# or fixing these tests. I'm leaving the tests here for historical purposes. The methods that it
 # was calling have new arguments and changed behavior.
 
 # RSpec::Matchers.define :backtrack_similar_ranges_for do |geometry, ascending, tolerance|
