@@ -194,6 +194,8 @@
     c))
 
 (defn- migrate-sensor-to-instrument
+ "Migrate from 1.8 to 1.9 sensors to ComposedOf list of instrument child types on
+ the instrument"
  [instrument]
  (-> instrument
      (assoc :ComposedOf (:Sensors instrument))
@@ -202,6 +204,7 @@
      (dissoc :NumberOfSensors)))
 
 (defn- migrate-instrument-to-sensor
+ "Migrate from 1.9 to 1.8 child instruments to sensors "
  [instrument]
  (-> instrument
      (assoc :Sensors (:ComposedOf instrument))
