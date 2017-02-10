@@ -33,25 +33,29 @@ The Common Metadata Repository (CMR) is an earth science metadata repository for
 The CMR is a system consisting of multiple services. The services can be run individually or can run in a single process. Running in a single process makes local development easier because it avoids having to start many different processes. The dev-system project allows the CMR to be run from a single REPL or Jar file. If you're developing a client against the CMR you can build and run the entire CMR with no external dependencies from this Jar file and use that instance for local testing. The sections below contain instructions for running the CMR as a single process or as multiple processes.
 
 #### Building and Running CMR Dev System in a REPL
-  1. cd cmr/dev-system
-  2. ./support/setup_local_dev.sh
-  3. lein repl
-  4. Once given a clojure prompt, run `(reset)`
+
+1. Install Oracle JDBC Jars into your local maven repository following instructions in `oracle-lib/README.md`. The CMR must have these libraries to build but it does not depend on Oracle DB when running locally. It uses a local in memory database by default.
+2. `cd cmr/dev-system`
+3. `./support/setup_local_dev.sh`
+4. `lein repl`
+5. Once given a Clojure prompt, run `(reset)`
 
 #### Building and Running CMR Dev System from a Jar
-  1. cd cmr/dev-system
-  2. ./support/setup_local_dev.sh
-  3. lein uberjar
-  4. See CMR Development Guide to read about specifying options and setting environment variables
+
+1. cd cmr/dev-system
+2. ./support/setup_local_dev.sh
+3. lein uberjar
+4. See CMR Development Guide to read about specifying options and setting environment variables
 
 #### Building and Running separate CMR Applications
 This will build all of the applications, but will put each jar into the appropriate /target directory for each application.
 The command shown in step 3 is an example. For the proper command to start up each application, see the `Applications` section below. Note: Steps 1 and 2 only need to be completed once.
-  1. cd cmr/dev-system
-  2. ./support/build.sh CMR_BUILD_UBERJARS
-  3. cd cmr/<service>
-  4. lein uberjar
-  5. java -classpath ./target/<NAME OF SERVICE>-0.1.0-SNAPSHOT-standalone.jar <MAIN METHOD OF SERVICE>
+
+1. `cd cmr/dev-system`
+2. `./support/build.sh CMR_BUILD_UBERJARS`
+3. `cd cmr/<service>`
+4. `lein uberjar`
+5. `java -classpath ./target/<NAME OF SERVICE>-0.1.0-SNAPSHOT-standalone.jar <MAIN METHOD OF SERVICE>`
 
 # Code structure
 The CMR is made up of several small services called microservices. These are small purposed-based services that do a small set of things well.
