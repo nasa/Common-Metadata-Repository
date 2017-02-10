@@ -42,9 +42,9 @@ The CMR is a system consisting of multiple services. The services can be run ind
 
 #### Building and Running CMR Dev System from a Jar
 
-1. cd cmr/dev-system
-2. ./support/setup_local_dev.sh
-3. lein uberjar
+1. `cd cmr/dev-system`
+2. `./support/setup_local_dev.sh`
+3. `lein uberjar`
 4. See CMR Development Guide to read about specifying options and setting environment variables
 
 #### Building and Running separate CMR Applications
