@@ -156,6 +156,7 @@
                                 (keep :short-name instruments))
         instrument-short-names (->> instruments-nested
                                     (map :short-name)
+                                    distinct
                                     (map str/trim))
         instrument-long-names (->> (distinct (keep :long-name
                                                    (concat instruments instruments-nested)))

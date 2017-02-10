@@ -79,7 +79,7 @@
         platform-short-names (map :short-name platforms)
         platform-instruments (mapcat :instruments platforms)
         instruments (concat platform-instruments (mapcat :composed-of platform-instruments))
-        instrument-short-names (keep :short-name instruments)
+        instrument-short-names (distinct (keep :short-name instruments))
         instrument-techiques (keep :technique instruments)
         characteristics (mapcat :characteristics platforms)
         char-names (keep :name characteristics)

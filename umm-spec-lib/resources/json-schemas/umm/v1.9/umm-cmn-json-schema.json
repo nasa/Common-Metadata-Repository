@@ -850,7 +850,7 @@
     "InstrumentChildType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Information about the collection source/sensor configuration, including sensor parameters settings such as technique etc.",
+      "description": "Child object on an instrument. Has all the same fields as instrument, minus the list of child instruments.",
       "properties": {
         "ShortName": {
           "$ref": "#/definitions/PlatformShortNameType"
