@@ -184,7 +184,7 @@
   [query]
   (keywords-extractor/extract-keywords query))
 
-(defn- ^:pure get-max-kw-number-allowed
+(defn- get-max-kw-number-allowed
   "Returns the max number of keyword string with wildcards allowed, given the max length of 
    the keyword string with wildcards"
   [length]
@@ -202,7 +202,7 @@
 (def KEYWORD_WILDCARD_NUMBER_MAX
   30)
 
-(defn- ^:pure validate-keyword-wildcards
+(defn- ^:pure get-validate-keyword-wildcards-msg
   "Validates if the number of keyword strings with wildcards exceeds the max number allowed
    for the max length of the keyword strings."
   [keywords]
@@ -216,7 +216,12 @@
         (let [msg (cond 
                     (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) "Max number of keywords with wildcard allowed is 30"
                     :else msg)]  
-          (errors/throw-service-errors :bad-request (vector msg)))))))
+          msg)))))
+
+(defn- validate-keyword-wildcards
+  [keywords]
+  (when-let [msg (get-validate-keyword-wildcards-msg keywords)]
+    (errors/throw-service-errors :bad-request (vector msg)))) 
  
 (defmethod q2e/query->elastic :collection
   [query]
