@@ -206,15 +206,15 @@
   "Validates if the number of keyword strings with wildcards exceeds the max number allowed
    for the max length of the keyword strings."
   [keywords]
-  (when-let [kw-with-wild-cards (get (group-by #(.contains % "*") keywords) true)]  
+  (when-let [kw-with-wild-cards (get (group-by #(or (.contains % "?") (.contains % "*")) keywords) true)]  
     (let [max-kw-length (apply max (map count kw-with-wild-cards))
           kw-number (count kw-with-wild-cards)
           max-kw-number-allowed (get-max-kw-number-allowed max-kw-length)
-          msg (str "Max number of keyword strings with wildcard allowed is: " max-kw-number-allowed
-                   " given the max length of the keyword strings being: " max-kw-length)]
+          msg (str "Max number of keywords with wildcard allowed is: " max-kw-number-allowed
+                   " given the max length of the keyword being: " max-kw-length)]
       (when (or (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) (> kw-number max-kw-number-allowed))
         (let [msg (cond 
-                    (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) "Max # of keyword strings with * allowed is 30"
+                    (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) "Max number of keywords with wildcard allowed is 30"
                     :else msg)]  
           (errors/throw-service-errors :bad-request (vector msg)))))))
  
