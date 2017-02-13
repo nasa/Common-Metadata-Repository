@@ -184,21 +184,50 @@
   [query]
   (keywords-extractor/extract-keywords query))
 
+(defn- ^:pure get-max-kw-number-allowed
+  "Returns the max number of keyword string with wildcards allowed, given the max length of 
+   the keyword string with wildcards"
+  [length]
+  (cond
+    (> length 241) 0
+    (and (> length 121) (<= length 241)) 10
+    (and (> length 61) (<= length 121)) 16
+    (and (> length 41) (<= length 61)) 22
+    (and (> length 21) (<= length 41)) 26
+    (and (> length 7) (<= length 21)) 36
+    (and (> length 5) (<= length 7)) 66
+    (= length 5) 83
+    (and (> length 0) (<= length 4)) 118))
+
+(defn- ^:pure validate-keyword-wildcards
+  "Validates if the number of keyword strings with wildcards exceeds the max number allowed
+   for the max length of the keyword strings."
+  [keywords]
+  (when-let [kw-with-wild-cards (get (group-by #(.contains % "*") keywords) true)]  
+    (let [max-kw-length (apply max (map count kw-with-wild-cards))
+          kw-number (count kw-with-wild-cards)
+          max-kw-number-allowed (get-max-kw-number-allowed max-kw-length)
+          msg (str "Max number of keyword strings with wildcard allowed is: " max-kw-number-allowed
+                    " given the max length of the keyword strings being: " max-kw-length)]
+      (when (> kw-number max-kw-number-allowed)
+        (errors/throw-service-errors :bad-request (vector msg))))))
+ 
 (defmethod q2e/query->elastic :collection
   [query]
   (let [boosts (:boosts query)
         {:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (q2e/condition->elastic condition concept-type)]
     (if-let [keywords (keywords-in-query query)]
-      ;; Forces score to be returned even if not sorting by score.
-      {:track_scores true
-       ;; function_score query allows us to compute a custom relevance score for each document
-       ;; matched by the primary query. The final document relevance is given by multiplying
-       ;; a boosting term for each matching filter in a set of filters.
-       :query {:function_score {:score_mode :multiply
-                                :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                                :query {:filtered {:query (eq/match-all)
-                                                   :filter core-query}}}}}
+      (let [_ (validate-keyword-wildcards keywords)]
+        ;; Forces score to be returned even if not sorting by score.
+        {:track_scores true
+         ;; function_score query allows us to compute a custom relevance score for each document
+         ;; matched by the primary query. The final document relevance is given by multiplying
+         ;; a boosting term for each matching filter in a set of filters.
+         :query {:function_score {:score_mode :multiply
+                                  :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
+                                  :query {:filtered {:query (eq/match-all)
+                                                     :filter core-query}}}}})
       (if boosts
         (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
         {:query {:filtered {:query (eq/match-all)
