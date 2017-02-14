@@ -493,6 +493,24 @@
         (is (= 400 status))
         (is (= "Relevance boost value [foo] for field [short_name] is not a number." (first errors)))))
 
+    (testing "keyword number of keywords with wildcards exceeds the limit for the given max keyword string length."
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :keyword "000000000000000000000* 1* 2* 3* 4* 5* 6* 7* 8* 9* 10* 11* 12* 13* 14* 15* 16* 17* 18* 19* 20* 21* 22* 23* 24? 25* 26?"
+                                                :boosts {:short-name 2.0}})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "The CMR permits a maximum of 26 keywords with wildcards in a search, given the max length of the keyword being 22. Your query contains 27 keywords with wildcards" (first errors)))))
+
+    (testing "keyword with too many wildcard is an error."
+      (let [resp (search/find-refs :collection {:provider "PROV1"
+                                                :page_size 5
+                                                :keyword "0* 1* 2* 3* 4* 5* 6* 7* 8* 9* 10* 11* 12* 13* 14* 15* 16* 17* 18* 19* 20* 21* 22* 23* 24* 25* 26* 27* 28* 29* 30?"
+                                                :boosts {:short-name 2.0}})
+            {:keys [status errors]} resp]
+        (is (= 400 status))
+        (is (= "Max number of keywords with wildcard allowed is 30" (first errors)))))
+
     (testing "sorted search"
       (are [params items]
         (let [refs (search/find-refs :collection params)
