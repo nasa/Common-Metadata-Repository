@@ -204,7 +204,7 @@
 
 (defn- ^:pure get-validate-keyword-wildcards-msg
   "Validates if the number of keyword strings with wildcards exceeds the max number allowed
-   for the max length of the keyword strings."
+   for the max length of the keyword strings. Returns validation message if it fails."
   [keywords]
   (when-let [kw-with-wild-cards (get (group-by #(or (.contains % "?") (.contains % "*")) keywords) true)]  
     (let [max-kw-length (apply max (map count kw-with-wild-cards))
@@ -219,6 +219,7 @@
           msg)))))
 
 (defn- validate-keyword-wildcards
+  "Validates keyword with wildcards. If validation fails, throw bad-request error"
   [keywords]
   (when-let [msg (get-validate-keyword-wildcards-msg keywords)]
     (errors/throw-service-errors :bad-request (vector msg)))) 
