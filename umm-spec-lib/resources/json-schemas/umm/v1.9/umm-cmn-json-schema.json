@@ -801,7 +801,7 @@
     "InstrumentType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Information about the device used to measure or record data in this collection, including direct human observation. In cases where instruments have a single child instrument or the instrument and child instrument are used synonymously (e.g. AVHRR), both Instrument and ComposedOf should be recorded. The child instrument information is represented in a separate section."
+      "description": "Information about the device used to measure or record data in this collection, including direct human observation. In cases where instruments have a single child instrument or the instrument and child instrument are used synonymously (e.g. AVHRR), both Instrument and ComposedOf should be recorded. The child instrument information is represented in a separate section.",
       "properties": {
         "ShortName": {
           "$ref": "#/definitions/PlatformShortNameType"
