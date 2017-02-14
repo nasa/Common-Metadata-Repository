@@ -185,8 +185,8 @@
   (keywords-extractor/extract-keywords query))
 
 (defn- get-max-kw-number-allowed
-  "Returns the max number of keyword string with wildcards allowed, given the max length of 
-   the keyword string with wildcards"
+  "Returns the max number of keyword string with wildcards allowed by elastic query, 
+   given the max length of the keyword string with wildcards."
   [length]
   (cond
     (> length 241) 0
@@ -200,6 +200,9 @@
     (and (> length 0) (<= length 4)) 118))
 
 (def KEYWORD_WILDCARD_NUMBER_MAX
+  "Maximum number of keyword strings with wildcards allowed by the CMR.
+   This is the absolute maximum number which can not be exceeded. 
+   It takes precedence over the maximum number from the get-max-kw-number-allowed function."
   30)
 
 (defn- ^:pure get-validate-keyword-wildcards-msg
@@ -210,13 +213,15 @@
     (let [max-kw-length (apply max (map count kw-with-wild-cards))
           kw-number (count kw-with-wild-cards)
           max-kw-number-allowed (get-max-kw-number-allowed max-kw-length)
-          msg (str "Max number of keywords with wildcard allowed is: " max-kw-number-allowed
-                   " given the max length of the keyword being: " max-kw-length)]
+          over-abs-max-msg (str "Max number of keywords with wildcard allowed is " KEYWORD_WILDCARD_NUMBER_MAX)
+          over-rel-max-msg (str "The CMR permits a maximum of " max-kw-number-allowed 
+                                " keywords with wildcards in a search,"
+                                " given the max length of the keyword being " max-kw-length
+                                ". Your query contains " kw-number " keywords with wildcards")]
       (when (or (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) (> kw-number max-kw-number-allowed))
-        (let [msg (cond 
-                    (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) "Max number of keywords with wildcard allowed is 30"
-                    :else msg)]  
-          msg)))))
+        (cond 
+          (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) over-abs-max-msg 
+          :else over-rel-max-msg)))))  
 
 (defn- validate-keyword-wildcards
   "Validates keyword with wildcards. If validation fails, throw bad-request error"

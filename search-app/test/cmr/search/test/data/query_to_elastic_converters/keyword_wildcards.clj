@@ -15,7 +15,7 @@
           ["0*" "1*" "2*" "3*" "4*" "5*" "6*" "7*" "8*" "9*" "10*" "11*" "12*" "13*" "14*" "15*" "16*" "17*" "18*" "19*" "20*" "21*" "22*" "23*" "24*" "25*" "26*" "27*" "28*" "29*" "30?"])
         
         "Testing number of keywords with wildcards exceeds the limit for the given max keyword string length "
-        "Max number of keywords with wildcard allowed is: 26 given the max length of the keyword being: 22" 
+        "The CMR permits a maximum of 26 keywords with wildcards in a search, given the max length of the keyword being 22. Your query contains 29 keywords with wildcards" 
         (#'query-to-elastic/get-validate-keyword-wildcards-msg            
           ["000000000000000000000*" "1*" "2*" "3*" "4*" "5*" "6*" "7*" "8*" "9*" "10*" "11*" "12*" "13*" "14*" "15*" "16*" "17*" "18*" "19*" "20*" "21*" "22*" "23*" "24*" "25*" "26?" "27?" "28?"])
 
