@@ -47,10 +47,11 @@
 (defn parse-instrument
   "Returns a UMM Instrument record from an ECHO10 Instrument element."
   [inst]
-  (assoc (fields-from inst :ShortName :LongName :Technique :NumberOfSensors)
+  (assoc (fields-from inst :ShortName :LongName :Technique)
+         :NumberOfInstruments (value-of inst "NumberOfSensors")
          :OperationalModes (values-at inst "OperationModes/OperationMode")
          :Characteristics (parse-characteristics inst)
-         :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
+         :ComposedOf (map parse-sensor (select inst "Sensors/Sensor"))))
 
 (defn parse-metadata-association
   "Returns a UMM MetadataAssocation from an ECHO10 CollectionAsscociation element."

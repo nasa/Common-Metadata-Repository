@@ -21,7 +21,6 @@
         project-boost (k2e/get-boost nil :project)
         platform-boost (k2e/get-boost nil :platform)
         instrument-boost (k2e/get-boost nil :instrument)
-        sensor-boost (k2e/get-boost nil :sensor)
         concept-id-boost (k2e/get-boost nil :concept-id)
         provider-boost (k2e/get-boost nil :provider)
         entry-title-boost (k2e/get-boost nil :entry-title)
@@ -349,12 +348,16 @@
         "instrument long-name (from KMS)"
         {:keyword "L-Band Radiometer"} [instrument-boost]
 
+        ;; In UMM-C sensors are now instruments. All instruments (instruments + child instruments,
+        ;; aka sensors) are indexed as both instruments and sensors until sensors search goes
+        ;; away. Since they are instruments, there is no longer a sensor boost, but instrument
+        ;; boost will be used.
         "sensor short-name as keyword"
-        {:keyword (:short-name (first (:sensors (first (:instruments p1)))))} [sensor-boost]
+        {:keyword (:short-name (first (:sensors (first (:instruments p1)))))} [instrument-boost]
         "sensor short-name as parameter"
-        {:sensor (:short-name (first (:sensors (first (:instruments p1)))))} [sensor-boost]
+        {:sensor (:short-name (first (:sensors (first (:instruments p1)))))} [instrument-boost]
         "sensor long-name"
-        {:keyword (:long-name (first (:sensors (first (:instruments p1)))))} [sensor-boost]
+        {:keyword (:long-name (first (:sensors (first (:instruments p1)))))} [instrument-boost]
 
         "temporal-keywords"
         {:keyword "tk1"} [(k2e/get-boost nil :temporal-keyword)]
@@ -424,8 +427,12 @@
         "instrument short-name"
         {:keyword (:short-name (first (:instruments p1))) :boosts {:instrument 5.0}} [5.0]
 
+        ;; In UMM-C sensors are now instruments. All instruments (instruments + child instruments, 
+        ;; aka sensors) are indexed as both instruments and sensors until sensors search goes
+        ;; away. Since they are instruments, there is no longer a sensor boost, but instrument
+        ;; boost will be used.
         "sensor short-name"
-        {:keyword (:short-name (first (:sensors (first (:instruments p1))))) :boosts {:sensor 6.0}} [6.0]
+        {:keyword (:short-name (first (:sensors (first (:instruments p1))))) :boosts {:instrument 6.0}} [6.0]
 
         "temporal-keywords"
         {:keyword "tk1" :boosts {:temporal-keyword 7.0}} [7.0]

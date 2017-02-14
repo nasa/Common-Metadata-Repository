@@ -24,7 +24,7 @@
    :LongName (value-of instrument-elem iso/long-name-xpath)
    :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
    :Characteristics (ch/parse-characteristics instrument-elem)
-   :Sensors (parse-instrument-sensors instrument-elem)})
+   :ComposedOf (parse-instrument-sensors instrument-elem)})
 
 (defn- xml-elem->instrument-mapping
   [instrument-elem]

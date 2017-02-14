@@ -73,7 +73,7 @@
     [instrument-ref instrument]
     (-> instrument-ref
         (assoc :parent instrument)
-        (update-in [:sensor-refs] set-parents-by-name (:Sensors instrument) :short-name :ShortName)
+        (update-in [:sensor-refs] set-parents-by-name (:ComposedOf instrument) :short-name :ShortName)
         (update-in [:characteristic-refs] set-parents-by-name (:Characteristics instrument))))
 
   SensorRef
@@ -90,4 +90,3 @@
   (set-parent
     [_ _]
     nil))
-
