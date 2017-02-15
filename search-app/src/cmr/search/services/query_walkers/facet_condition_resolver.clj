@@ -6,16 +6,15 @@
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.util :as util]))
 
-
 (defprotocol AdjustFacetQuery
   "Defines function to adjust facet query for a given facet field."
-   (adjust-facet-query
-    [c field-key]
-    "Returns the query condition by dropping the conditions that are related to the field key.")
-
   (has-field?
     [c field-key]
-    "Returns true if the condition has the field key"))
+    "Returns true if the condition has the field key")
+
+   (adjust-facet-query
+    [c field-key]
+    "Returns the query condition by dropping the conditions that are related to the field key."))
 
 (extend-protocol AdjustFacetQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,8 +50,7 @@
 
   (adjust-facet-query
    [c field-key]
-   (if (has-field? (:condition c) field-key)
-     nil
+   (when-not (has-field? (:condition c) field-key)
      (update c :condition #(adjust-facet-query % field-key))))
 
   cmr.common_app.services.search.query_model.StringCondition
