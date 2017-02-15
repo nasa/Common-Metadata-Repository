@@ -121,7 +121,7 @@
     (when sanitize?
       u/not-provided-science-keywords)))
 
-(defn- parse-access-constraints
+(defn parse-access-constraints
   "If both value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with u/not-provided"
   [doc sanitize?]

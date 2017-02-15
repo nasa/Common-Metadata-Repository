@@ -118,7 +118,7 @@
     (when (seq temporal-extent)
       temporal-extent)))
 
-(defn- parse-temporal-extents
+(defn parse-temporal-extents
   "Returns a list of temportal extents"
   [doc sanitize?]
   (if-let [temporal-extents
