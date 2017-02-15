@@ -351,7 +351,6 @@
   (let [field-match-value (get-facet-field facets-result field value)]
     (is (= count (:count field-match-value)))))
 
-
 (deftest platform-facets-v2-test
   (let [coll (d/ingest "PROV1" (dc/collection
                                 {:entry-title "coll1"
@@ -407,6 +406,28 @@
         (assert-facet-field facets-result "Projects" "proj4" 1)
         (assert-facet-field-not-exist facets-result "Platforms" "P1")
         (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Projects" "proj3")))
+
+    (testing "search by both facet field param and regular param"
+      (let [facets-result (search-and-return-v2-facets {:short-name "S1"
+                                                        :platform-h ["P4"]})]
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field facets-result "Platforms" "P4" 0)
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Instruments" "I3")
+        (assert-facet-field-not-exist facets-result "Instruments" "I4")
+        (assert-facet-field-not-exist facets-result "Projects" "proj3")
+        (assert-facet-field-not-exist facets-result "Projects" "proj4")))
+
+    (testing "search by more than one facet field params"
+      (let [facets-result (search-and-return-v2-facets {:platform-h ["P4"]
+                                                        :instrument-h ["I4"]})]
+        (assert-facet-field facets-result "Platforms" "P4" 1)
+        (assert-facet-field facets-result "Instruments" "I4" 1)
+        (assert-facet-field facets-result "Projects" "proj4" 1)
+        (assert-facet-field-not-exist facets-result "Platforms" "P1")
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
 (comment
