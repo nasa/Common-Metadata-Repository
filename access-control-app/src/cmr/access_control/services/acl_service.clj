@@ -183,7 +183,6 @@
 (defn- grants-concept-permission?
   "Returns true if permission keyword is granted on concept to any sids by given acl."
   [acl permission concept sids]
-  ;(proto-repl.saved-values/save 2)
   (and (acl/acl-matches-sids-and-permission? sids (name permission) acl)
        (case (:concept-type concept)
          :collection (acl-matchers/coll-applicable-acl? (:provider-id concept) concept acl)
@@ -205,7 +204,6 @@
   "Returns the set of permission keywords (:read, :order, and :update) granted on concept
    to the seq of group guids by seq of acls."
   [concept sids acls]
-  ;(proto-repl.saved-values/save 1)
   (let [provider-acls (filter #(provider-acl? (:provider-id concept) %) acls)
         ;; When a user has UPDATE on the provider's INGEST_MANAGEMENT_ACL target, then they have UPDATE and
         ;; DELETE permission on all of the provider's catalog items.
@@ -239,8 +237,7 @@
         acls (get-echo-style-acls context)]
     (into {}
           (for [concept (mdb1/get-latest-concepts context concept-ids)
-                :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)
-                      _ (proto-repl.saved-values/save 4)]]
+                :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)]]
             [(:concept-id concept)
              (concept-permissions-granted-by-acls concept-with-acl-fields sids acls)]))))
 

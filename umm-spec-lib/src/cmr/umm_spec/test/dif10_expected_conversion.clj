@@ -262,4 +262,5 @@
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :DataLanguage conversion-util/dif-expected-data-language)
       (update :CollectionProgress su/with-default)
+      (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
       js/parse-umm-c))

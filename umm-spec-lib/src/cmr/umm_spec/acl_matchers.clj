@@ -1,15 +1,18 @@
 (ns cmr.umm-spec.acl-matchers
   "Contains code for determining if a collection matches an acl"
-  (:require [clojure.set :as set]
-            [clojure.string :as str]
-            [cmr.common.services.errors :as errors]
-            [clj-time.core :as t]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.util :as u]
-            [cmr.umm.umm-core :as ummc]
-            [cmr.umm.acl-matchers :as umm-lib-acl-matchers]
-            [cmr.umm-spec.umm-spec-core :as umm-spec-core]))
+  (:require
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as u]
+   [cmr.umm-spec.time :as umm-time]
+   [cmr.umm-spec.umm-spec-core :as umm-spec-core]
+   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.umm.umm-core :as ummc]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal})
@@ -46,22 +49,36 @@
       ;; Is end2 in the range
       (or (= end1 end2) (= start1 end2) (t/within? interval1 end2)))))
 
-(defn matches-temporal-filter?
-  "Returns true if the umm item matches the temporal filter"
-  [concept-type umm-temporal temporal-filter]
-  (when umm-temporal
-    (when-not (= :acquisition (:temporal-field temporal-filter))
-      (errors/internal-error!
-        (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
+(defmulti matches-temporal-filter?
+ "Returns true if the umm item matches the temporal filter"
+ (fn [concept-type umm-temporal temporal-filter]
+   concept-type))
 
-    (let [{:keys [start-date end-date mask]} temporal-filter
-          umm-start (sed/start-date concept-type umm-temporal)
-          umm-end (or (sed/end-date concept-type umm-temporal) (tk/now))]
-      (case mask
-        :intersect (t/overlaps? start-date end-date umm-start umm-end)
-        ;; Per ECHO10 API documentation disjoint is the negation of intersects
-        :disjoint (not (t/overlaps? start-date end-date umm-start umm-end))
-        :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
+(defmethod matches-temporal-filter? :collection
+ [concept-type umm-temporal temporal-filter]
+ (when (seq umm-temporal)
+   (when-not (= :acquisition (:temporal-field temporal-filter))
+     (errors/internal-error!
+       (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
+
+   (let [{:keys [start-date end-date mask]} temporal-filter
+         coll-with-temporal {:TemporalExtents umm-temporal}
+         umm-start (umm-time/collection-start-date coll-with-temporal)
+         umm-start (when umm-start
+                    (f/parse (f/formatters :date-time) umm-start))
+         umm-end (umm-time/normalized-end-date coll-with-temporal)
+         umm-end (if umm-end
+                  (f/parse (f/formatters :date-time) umm-end)
+                  (tk/now))]
+     (case mask
+       :intersect (t/overlaps? start-date end-date umm-start umm-end)
+       ;; Per ECHO10 API documentation disjoint is the negation of intersects
+       :disjoint (not (t/overlaps? start-date end-date umm-start umm-end))
+       :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
+
+(defmethod matches-temporal-filter? :granule
+ [concept-type umm-temporal temporal-filter]
+ (umm-lib-acl-matchers/matches-temporal-filter? concept-type umm-temporal temporal-filter))
 
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
@@ -115,10 +132,9 @@
 
 (defmethod add-acl-enforcement-fields-to-concept :collection
   [concept]
-  (proto-repl.saved-values/save 1)
   (-> concept
       (u/lazy-assoc :access-value (umm-spec-core/parse-collection-access-value concept))
-      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
+      (u/lazy-assoc :temporal (umm-spec-core/parse-collection-temporal concept))
       (assoc :entry-title (get-in concept [:extra-fields :entry-title]))))
 
 (defmethod add-acl-enforcement-fields-to-concept :granule

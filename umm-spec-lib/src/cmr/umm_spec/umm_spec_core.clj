@@ -120,13 +120,14 @@
   [concept]
   (let [{:keys [format metadata]} concept]
     (condp = format
-     :echo10 (echo10-to-umm/parse-temporal metadata)
-     :dif (dif9-to-umm/parse-temporal-extents metadata true)
-     :dif10 (dif10-to-umm/parse-temporal-extents metadata true)
-     :iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
-     :iso-smap (iso-smap-to-umm/parse-temporal-extents metadata))))
+     mt/echo10 (echo10-to-umm/parse-temporal metadata)
+     mt/dif (dif9-to-umm/parse-temporal-extents metadata true)
+     mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
+     mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
+     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents metadata))))
 
 (defn- get-access-value
+ "Get the access value as a double or nil"
  [access-constraint]
  (when-let [value (:Value access-constraint)]
   (Double/parseDouble value)))
