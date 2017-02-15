@@ -1,19 +1,24 @@
 (ns cmr.search.services.query-execution
-  (:require [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
-            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.search.services.query-walkers.collection-query-resolver :as r]
-            [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
-            [cmr.search.services.acl-service :as acl-service]
-            [cmr.common-app.services.search.query-execution :as common-qe]
-            [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.common-app.services.search.results-model :as results]
-            [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
-            [cmr.common-app.services.search.related-item-resolver :as related-item-resolver])
-  (:import [cmr.common_app.services.search.query_model
-            StringCondition StringsCondition]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
+   [cmr.common-app.services.search.elastic-search-index :as idx]
+   [cmr.common-app.services.search.query-execution :as common-qe]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
+   [cmr.common-app.services.search.results-model :as results]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.util :as util]
+   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
+   [cmr.search.services.acl-service :as acl-service]
+   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fv2rf]
+   [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
+   [cmr.search.services.query-walkers.collection-query-resolver :as r]
+   [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver])
+  (:import
+   (cmr.common_app.services.search.query_model StringCondition StringsCondition)))
 
 (def specific-elastic-items-format?
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
@@ -54,12 +59,20 @@
        (not all-revisions?)
        (specific-elastic-items-format? result-format)))
 
+(defn- complicated-facets?
+  "Returns true if the query has v2 facets and at least one of the facets fields in the query."
+  [{:keys [result-format all-revisions?] :as query}]
+  (and (not= false (:complicated-facets query))
+       ((set (:result-features query)) :facets-v2)
+       (util/any? #(facet-condition-resolver/has-field? query %) fv2rf/facets-v2-params)))
+
 (defn- collection-and-granule-execution-strategy-determiner
   "Determines the execution strategy to use for the given query."
   [query]
   (cond
     (direct-db-query? query) :direct-db
     (specific-items-from-elastic-query? query) :specific-elastic-items
+    (complicated-facets? query) :complicated-facets
     :else :elasticsearch))
 
 (defmethod common-qe/query->execution-strategy :collection
@@ -120,5 +133,44 @@
   [context query]
   [context (related-item-resolver/resolve-related-item-conditions query context)])
 
+(defn- get-facets-for-field
+  "Returns the facets search result on the given field by executing an elasticsearch query
+   with the given field removed from the filter to only retrieve the facet info on that field."
+  [context query field]
+  (let [query (-> query
+                  (facet-condition-resolver/adjust-facet-query field)
+                  (assoc :result-features [:facets-v2])
+                  (assoc :facet-fields [field])
+                  (assoc :page-size 0)
+                  (assoc :skip-acls? true))]
+    (common-qe/execute-query context query)))
 
+(defn- merge-facets
+  "Returns the facets by merging the two lists of facets and sort the fields in the correct order."
+  [facets others]
+  (let [sort-fn (fn [facet] (.indexOf fv2rf/v2-facets-result-field-in-order (:title facet)))]
+    (sort-by sort-fn (concat facets others))))
 
+(defn- merge-search-result-facets
+  "Returns search result by merging the base result and the facet results."
+  [base-result facet-results]
+  (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)]
+    (update-in base-result [:facets :children] #(merge-facets % individual-facets))))
+
+(defmethod common-qe/execute-query :complicated-facets
+  [context query]
+  ;; A query can only be a complicated facets query when it has never been executed as part of
+  ;; an execution. We set :complicated-facets to false and add the facets fields to be returned
+  ;; from aggregate to the query to facilitate the aggregation search and result generation.
+  ;; We execute a base query with all the parameters to get the result and facets of fields that
+  ;; are not in the query, then we merge this base result with only the facets for each individual
+  ;; facet field that is in the query.
+  (let [facet-fields-in-query (keep #(when (facet-condition-resolver/has-field? query %) %)
+                                    ;; CMR-3812: once science-keywords is fixed, we will include science-keywords
+                                    (drop 1 fv2rf/facets-v2-params))
+                                    ; fv2rf/facets-v2-params)
+        base-facet-fields (set/difference (set fv2rf/facets-v2-params) (set facet-fields-in-query))
+        query (assoc query :complicated-facets false :facet-fields base-facet-fields)
+        base-result (common-qe/execute-query context query)
+        facet-results (map #(get-facets-for-field context query %) facet-fields-in-query)]
+    (merge-search-result-facets base-result facet-results)))

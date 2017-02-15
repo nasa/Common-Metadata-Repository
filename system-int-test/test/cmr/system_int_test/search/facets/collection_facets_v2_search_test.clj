@@ -1,16 +1,18 @@
 (ns cmr.system-int-test.search.facets.collection-facets-v2-search-test
   "This tests retrieving v2 facets when searching for collections"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.search.facets.facets-util :as fu]
-            [cmr.system-int-test.search.facets.facet-responses :as fr]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :refer [are3]]
-            [cmr.system-int-test.utils.humanizer-util :as hu]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [are3]]
+   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.search.facets.facet-responses :as fr]
+   [cmr.system-int-test.search.facets.facets-util :as fu]
+   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -152,6 +154,7 @@
         (verify-nested-facets-ordered-alphabetically science-keywords)))))
 
 (deftest remove-facets-without-collections
+  ;; (fu/platforms "ASTER" 1) will create platform with ShortName ASTER-p0, not ASTER
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "ASTER" 1))
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1) (fu/platforms "MODIS" 1))
   (testing (str "When searching against faceted fields which do not match any matching collections,"
@@ -329,6 +332,82 @@
               (search/find-concepts-in-format resp-format :collection {:include-facets "v2"})))
          mt/umm-json
          mt/opendata)))
+
+(defn- get-facet-field
+  "Returns the facet in result that matches the given facet field and value"
+  [facets-result field value]
+  (let [field-facet (first (get (group-by :title (:children facets-result)) field))]
+    (some #(when (= value (:title %)) %) (:children field-facet))))
+
+(defn- assert-facet-field-not-exist
+  "Assert the given facet field with name does not exist in the facets result"
+  [facets-result field value]
+  (let [field-match-value (get-facet-field facets-result field value)]
+    (is (nil? field-match-value))))
+
+(defn- assert-facet-field
+  "Assert the given facet field with name and count matches the facets result"
+  [facets-result field value count]
+  (let [field-match-value (get-facet-field facets-result field value)]
+    (is (= count (:count field-match-value)))))
+
+
+(deftest platform-facets-v2-test
+  (let [coll (d/ingest "PROV1" (dc/collection
+                                {:entry-title "coll1"
+                                 :short-name "S1"
+                                 :version-id "V1"
+                                 :platforms (dc/platforms "P1")}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll2"
+                                  :short-name "S2"
+                                  :version-id "V2"
+                                  :platforms (dc/platforms "P1" "P2")}))
+        coll3 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll3"
+                                  :short-name "S3"
+                                  :version-id "V3"
+                                  :platforms [(dc/platform
+                                               {:short-name "P2"
+                                                :instruments [(dc/instrument {:short-name "I3"})]})]
+                                  :projects (dc/projects "proj3")}))
+        coll4 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll4"
+                                  :short-name "S4"
+                                  :version-id "V4"
+                                  :platforms [(dc/platform
+                                               {:short-name "P4"
+                                                :instruments [(dc/instrument {:short-name "I4"})]})]
+                                  :projects (dc/projects "proj4")}))]
+    (testing "search by platform parameter filters the other facets, but not platforms facets"
+      (let [facets-result (search-and-return-v2-facets {:platform-h ["P4"]})]
+        (assert-facet-field facets-result "Platforms" "P1" 2)
+        (assert-facet-field facets-result "Platforms" "P2" 2)
+        (assert-facet-field facets-result "Platforms" "P4" 1)
+        (assert-facet-field facets-result "Instruments" "I4" 1)
+        (assert-facet-field facets-result "Projects" "proj4" 1)
+        (assert-facet-field-not-exist facets-result "Instruments" "I3")
+        (assert-facet-field-not-exist facets-result "Projects" "proj3")))
+
+    (testing "search by multiple platforms"
+      (let [facets-result (search-and-return-v2-facets {:platform-h ["P1" "P2"]})]
+        (assert-facet-field facets-result "Platforms" "P1" 2)
+        (assert-facet-field facets-result "Platforms" "P2" 2)
+        (assert-facet-field facets-result "Platforms" "P4" 1)
+        (assert-facet-field facets-result "Instruments" "I3" 1)
+        (assert-facet-field facets-result "Projects" "proj3" 1)
+        (assert-facet-field-not-exist facets-result "Instruments" "I4")
+        (assert-facet-field-not-exist facets-result "Projects" "proj4")))
+
+    (testing "search by params other than platform"
+      (let [facets-result (search-and-return-v2-facets {:instrument-h ["I4"]})]
+        (assert-facet-field facets-result "Platforms" "P4" 1)
+        (assert-facet-field facets-result "Instruments" "I3" 1)
+        (assert-facet-field facets-result "Instruments" "I4" 1)
+        (assert-facet-field facets-result "Projects" "proj4" 1)
+        (assert-facet-field-not-exist facets-result "Platforms" "P1")
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
 (comment
  ;; Good for manually testing applying links
