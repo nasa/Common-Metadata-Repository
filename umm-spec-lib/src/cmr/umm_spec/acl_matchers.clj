@@ -117,7 +117,7 @@
   [concept]
   (proto-repl.saved-values/save 1)
   (-> concept
-      (assoc :access-value (umm-spec-core/parse-collection-access-value concept))
+      (u/lazy-assoc :access-value (umm-spec-core/parse-collection-access-value concept))
       (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
       (assoc :entry-title (get-in concept [:extra-fields :entry-title]))))
 
