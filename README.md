@@ -129,6 +129,9 @@ There are a number of main applications, as well as several libraries and suppor
 - oracle-lib
   - Contains utilities for connecting to and manipulating data in Oracle
 
+- orbits-lib
+  - Clojure wrapper of a Ruby implementation of the Backtrack Orbit Search Algorithm (BOSA)
+
 - message-queue-lib
   - A library for interfacing with RabbitMQ, AWS SQS, and an in memory message queue
 

@@ -23,7 +23,8 @@
    :cmr-orbits-lib "0.1.0-SNAPSHOT"
    :cmr-mock-echo-app "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
-   :cmr-common-app-lib "0.1.0-SNAPSHOT"})
+   :cmr-common-app-lib "0.1.0-SNAPSHOT"
+   :cmr-orbits-lib "0.1.0-SNAPSHOT"})
 
 (def project-dependencies
   "A list of other projects as maven dependencies"
