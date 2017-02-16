@@ -430,6 +430,88 @@
         (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
+(deftest science-keywords-facets-v2-test
+  (let [coll (d/ingest "PROV1" (dc/collection
+                                {:entry-title "coll1"
+                                 :short-name "S1"
+                                 :version-id "V1"
+                                 :platforms (dc/platforms "P1")
+                                 :science-keywords [(dc/science-keyword
+                                                     {:category "Earth Science"
+                                                      :topic "Topic1"
+                                                      :term "Term1"
+                                                      :variable-level-1 "Level1-1"
+                                                      :variable-level-2 "Level1-2"
+                                                      :variable-level-3 "Level1-3"
+                                                      :detailed-variable "Detail1"})]}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll2"
+                                  :short-name "S2"
+                                  :version-id "V2"
+                                  :platforms (dc/platforms "P2")
+                                  :science-keywords [(dc/science-keyword
+                                                      {:category "Earth Science"
+                                                       :topic "Topic2"
+                                                       :term "Term2"
+                                                       :variable-level-1 "Level2-1"
+                                                       :variable-level-2 "Level2-2"})]}))
+        coll3 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll3"
+                                  :short-name "S3"
+                                  :version-id "V3"
+                                  :platforms (dc/platforms "P3")
+                                  :science-keywords [(dc/science-keyword
+                                                      {:category "Earth Science"
+                                                       :topic "Topic1"
+                                                       :term "Term3"})
+                                                     (dc/science-keyword
+                                                      {:category "Earth Science"
+                                                       :topic "Topic2"
+                                                       :term "Term3"})]}))]
+    ;; We only check the topic level science keywords facet for convenience since the whole
+    ;; hierarchical structure of science keywords facet has been covered in all facets test.
+    (testing "search by science-keywords param filters the other facets, but not science-keywords facets"
+      (let [facets-result (search-and-return-v2-facets
+                           {:science-keywords-h {:0 {:topic "Topic1"
+                                                     :term "Term1"
+                                                     :variable-level-1 "Level1-1"
+                                                     :variable-level-2 "Level1-2"
+                                                     :variable-level-3 "Level1-3"}}})]
+        (assert-facet-field facets-result "Keywords" "Topic1" 2)
+        (assert-facet-field facets-result "Keywords" "Topic2" 2)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+
+    (testing "search by both science-keywords param and regular param"
+      (let [facets-result (search-and-return-v2-facets
+                           {:short-name "S1"
+                            :science-keywords-h {:0 {:topic "Topic1"}}})]
+        (assert-facet-field facets-result "Keywords" "Topic1" 1)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field-not-exist facets-result "Keywords" "Topic2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+    (testing "search by both science-keywords param and a facet field param, with science keywords match a collection"
+      (let [facets-result (search-and-return-v2-facets
+                           {:platform-h "P1"
+                            :science-keywords-h {:0 {:topic "Topic1"
+                                                     :term "Term1"}}})]
+        (assert-facet-field facets-result "Keywords" "Topic1" 1)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field-not-exist facets-result "Keywords" "Topic2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+    (testing "search by both science-keywords param and a facet field param, with science keywords match two collections"
+      (let [facets-result (search-and-return-v2-facets
+                           {:platform-h "P3"
+                            :science-keywords-h {:0 {:topic "Topic1"}}})]
+        (assert-facet-field facets-result "Keywords" "Topic1" 1)
+        (assert-facet-field facets-result "Keywords" "Topic2" 1)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field facets-result "Platforms" "P3" 1)
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")))))
+
 (comment
  ;; Good for manually testing applying links
  (do
