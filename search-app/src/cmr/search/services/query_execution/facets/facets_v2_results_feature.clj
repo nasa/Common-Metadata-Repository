@@ -21,18 +21,44 @@
   "The default limit for the number of results to return from any terms query for v2 facets."
   50)
 
+(def facets-v2-params
+  "The base search parameters for the v2 facets fields."
+  [:science-keywords :platform :instrument :data-center :project :processing-level-id])
+
+(def facet-fields->aggregation-fields
+  "Defines the mapping between facet fields to aggregation fields."
+  (into {} (map (fn [field] [field (keyword (str (name field) "-h"))]) facets-v2-params)))
+
+(def v2-facets-result-field-in-order
+  "Defines the v2 facets result field in order"
+  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"])
+
+(defn- facet-query
+  "Returns the facet query for the given facet field"
+  [facet-field size query-params]
+  (case facet-field
+    :science-keywords
+    (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
+      (hv2/nested-facet :science-keywords.humanized size sk-depth))
+    :platform
+    (v2h/prioritized-facet :platform-sn.humanized2 size)
+    :instrument
+    (v2h/prioritized-facet :instrument-sn.humanized2 size)
+    :data-center
+    (v2h/prioritized-facet :organization.humanized2 size)
+    :project
+    (v2h/prioritized-facet :project-sn.humanized2 size)
+    :processing-level-id
+    (v2h/prioritized-facet :processing-level-id.humanized2 size)))
+
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search. Size specifies the number of results to return. Only a subset of the
   facets are returned in the v2 facets, specifically those that help enable dataset discovery."
-  [size query-params]
-  (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
-    {:science-keywords-h (hv2/nested-facet :science-keywords.humanized size sk-depth)
-     :platform-h (v2h/prioritized-facet :platform-sn.humanized2 size)
-     :instrument-h (v2h/prioritized-facet :instrument-sn.humanized2 size)
-     :data-center-h (v2h/prioritized-facet :organization.humanized2 size)
-     :project-h (v2h/prioritized-facet :project-sn.humanized2 size)
-     :processing-level-id-h (v2h/prioritized-facet :processing-level-id.humanized2 size)}))
+  [size query-params facet-fields]
+  (into {}
+        (for [field facet-fields]
+          [(facet-fields->aggregation-fields field) (facet-query field size query-params)])))
 
 (def v2-facets-root
   "Root element for the facet response"
@@ -54,8 +80,8 @@
 
 (defn- create-prioritized-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."
-  [elastic-aggregations base-url query-params]
-  (let [flat-fields [:platform-h :instrument-h :data-center-h :project-h :processing-level-id-h]]
+  [elastic-aggregations facet-fields base-url query-params]
+  (let [flat-fields (map facet-fields->aggregation-fields facet-fields)]
     (remove nil?
       (for [field-name flat-fields
             :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
@@ -84,24 +110,31 @@
                                               {:relative-root-url :context})]
     (format "%s/collections.json" (conn/root-url public-search-config))))
 
-(defn create-v2-facets
+(defn- create-v2-facets
   "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
-  [context aggs]
+  [context aggs facet-fields]
   (let [base-url (collection-search-root-url context)
         query-params (parse-params (:query-string context) "UTF-8")
-        facets (concat (hv2/create-hierarchical-v2-facets aggs base-url query-params)
-                       (create-prioritized-v2-facets aggs base-url query-params))]
+        flat-facet-fields (remove #{:science-keywords} facet-fields)
+        hierarchical-facets (when ((set facet-fields) :science-keywords)
+                              (hv2/create-hierarchical-v2-facets aggs base-url query-params))
+        facets (concat hierarchical-facets
+                       (create-prioritized-v2-facets aggs flat-facet-fields base-url query-params))]
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))
 
 (defmethod query-execution/pre-process-query-result-feature :facets-v2
   [{:keys [query-string]} query _]
-  (let [query-params (parse-params query-string "UTF-8")]
+  (let [query-params (parse-params query-string "UTF-8")
+        facet-fields (:facet-fields query)
+        facet-fields (if facet-fields facet-fields facets-v2-params)]
     ;; With CMR-1101 we will support a parameter to specify the number of terms to return. For now
     ;; always use the DEFAULT_TERMS_SIZE
-    (assoc query :aggregations (facets-v2-aggregations DEFAULT_TERMS_SIZE query-params))))
+    (assoc query :aggregations
+           (facets-v2-aggregations DEFAULT_TERMS_SIZE query-params facet-fields))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
-  [context _ {:keys [aggregations]} query-results _]
-  (assoc query-results :facets (create-v2-facets context aggregations)))
+  [context {:keys [facet-fields]} {:keys [aggregations]} query-results _]
+  (let [facet-fields (if facet-fields facet-fields facets-v2-params)]
+    (assoc query-results :facets (create-v2-facets context aggregations facet-fields))))
