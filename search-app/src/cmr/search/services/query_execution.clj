@@ -166,9 +166,7 @@
   ;; are not in the query, then we merge this base result with only the facets for each individual
   ;; facet field that is in the query.
   (let [facet-fields-in-query (keep #(when (facet-condition-resolver/has-field? query %) %)
-                                    ;; CMR-3812: once science-keywords is fixed, we will include science-keywords
-                                    (drop 1 fv2rf/facets-v2-params))
-                                    ; fv2rf/facets-v2-params)
+                                    fv2rf/facets-v2-params)
         base-facet-fields (set/difference (set fv2rf/facets-v2-params) (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
         base-result (common-qe/execute-query context query)
