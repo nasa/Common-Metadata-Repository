@@ -126,19 +126,13 @@
      mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
      mt/iso-smap (iso-smap-to-umm/parse-temporal-extents metadata))))
 
-(defn- get-access-value
- "Get the access value as a double or nil"
- [access-constraint]
- (when-let [value (:Value access-constraint)]
-  (Double/parseDouble value)))
-
 (defn parse-collection-access-value
   "Convert a metadata db concept map into the access value by parsing its metadata."
   [concept]
   (let [{:keys [format metadata]} concept]
     (condp = format
-     mt/echo10 (get-access-value (echo10-to-umm/parse-access-constraints metadata true))
-     mt/dif (get-access-value (dif-util/parse-access-constraints metadata true))
-     mt/dif10 (get-access-value (dif-util/parse-access-constraints metadata true))
-     mt/iso19115 (get-access-value (iso19115-2-to-umm/parse-access-constraints metadata true))
+     mt/echo10 (echo10-to-umm/parse-access-constraints metadata true)
+     mt/dif (dif-util/parse-access-constraints metadata true)
+     mt/dif10 (dif-util/parse-access-constraints metadata true)
+     mt/iso19115 (iso19115-2-to-umm/parse-access-constraints metadata true)
      mt/iso-smap nil)))

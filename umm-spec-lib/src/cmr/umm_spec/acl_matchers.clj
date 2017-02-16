@@ -10,26 +10,24 @@
    [cmr.common.util :as u]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]
-   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]
-   [cmr.umm.start-end-date :as sed]
-   [cmr.umm.umm-core :as ummc]))
+   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal})
 
-(defn- coll-matches-collection-id?
-  "Returns true if the collection matches the collection id"
-  [coll collection-id]
-  (= (:data-set-id collection-id) (:entry-title coll)))
+(defmulti matches-access-value-filter?
+ "Returns true if the umm item matches the access-value filter"
+ (fn [concept-type umm access-value-filter]
+   concept-type))
 
-(defn matches-access-value-filter?
-  "Returns true if the umm item matches the access-value filter"
-  [umm access-value-filter]
+(defmethod matches-access-value-filter? :collection
+  [concept-type umm access-value-filter]
   (let [{:keys [min-value max-value include-undefined]} access-value-filter]
+    ;(proto-repl.saved-values/save 2)
     (when (and (not min-value) (not max-value) (not include-undefined))
       (errors/internal-error!
         "Encountered restriction flag filter where min and max were not set and include-undefined was false"))
-    (if-let [^double access-value (u/get-real-or-lazy umm :access-value)]
+    (if-let [^double access-value (:Value (u/get-real-or-lazy umm :AccessConstraints))]
       ;; If there's no range specified then a umm item without a value is restricted
       (when (or min-value max-value)
         (and (or (nil? min-value)
@@ -38,6 +36,10 @@
                  (<= access-value ^double max-value))))
       ;; umm items without a value will only be included if include-undefined is true
       include-undefined)))
+
+(defmethod matches-access-value-filter? :granule
+ [concept-type umm access-value-filter]
+ (umm-lib-acl-matchers/matches-access-value-filter? umm access-value-filter))
 
 (defn- time-range1-contains-range2?
   "Returns true if the time range1 completely contains range 2. Start and ends are inclusive."
@@ -56,6 +58,7 @@
 
 (defmethod matches-temporal-filter? :collection
  [concept-type umm-temporal temporal-filter]
+ ;(proto-repl.saved-values/save 4)
  (when (seq umm-temporal)
    (when-not (= :acquisition (:temporal-field temporal-filter))
      (errors/internal-error!
@@ -64,12 +67,13 @@
    (let [{:keys [start-date end-date mask]} temporal-filter
          coll-with-temporal {:TemporalExtents umm-temporal}
          umm-start (umm-time/collection-start-date coll-with-temporal)
-         umm-start (when umm-start
-                    (f/parse (f/formatters :date-time) umm-start))
-         umm-end (umm-time/normalized-end-date coll-with-temporal)
-         umm-end (if umm-end
-                  (f/parse (f/formatters :date-time) umm-end)
-                  (tk/now))]
+         ; umm-start (when umm-start
+         ;            (f/parse (f/formatters :date-time) umm-start))
+         umm-end (or (umm-time/normalized-end-date coll-with-temporal) (tk/now))]
+         ; umm-end (if umm-end
+         ;          (f/parse (f/formatters :date-time) umm-end)
+         ;          (tk/now))]
+     (proto-repl.saved-values/save 3)
      (case mask
        :intersect (t/overlaps? start-date end-date umm-start umm-end)
        ;; Per ECHO10 API documentation disjoint is the negation of intersects
@@ -83,14 +87,17 @@
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
-  (let [coll-entry-title (:entry-title coll)
+  ; (when (:entry-title coll)
+  ;   (throw (Exception. "LAUREN")))
+  ;(proto-repl.saved-values/save 9)
+  (let [coll-entry-title (:EntryTitle coll)
         {:keys [entry-titles access-value temporal]} coll-id]
     (and (or (empty? entry-titles)
              (some (partial = coll-entry-title) entry-titles))
          (or (nil? access-value)
-             (matches-access-value-filter? coll access-value))
+             (matches-access-value-filter? :collection coll access-value))
          (or (nil? temporal)
-             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :temporal) temporal)))))
+             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal)))))
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."
@@ -107,10 +114,13 @@
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."
   [coll-prov-id coll acl]
+  ;(throw (Exception. "LAUREN"))
+  ;(proto-repl.saved-values/save 10)
   (when-let [{:keys [collection-applicable
                      collection-identifier
                      provider-id]} (:catalog-item-identity acl)]
 
+    ;(proto-repl.saved-values/save 1)
     (validate-collection-identiier acl collection-identifier)
 
     (and collection-applicable
@@ -133,9 +143,9 @@
 (defmethod add-acl-enforcement-fields-to-concept :collection
   [concept]
   (-> concept
-      (u/lazy-assoc :access-value (umm-spec-core/parse-collection-access-value concept))
-      (u/lazy-assoc :temporal (umm-spec-core/parse-collection-temporal concept))
-      (assoc :entry-title (get-in concept [:extra-fields :entry-title]))))
+      (u/lazy-assoc :AccessConstraints (umm-spec-core/parse-collection-access-value concept))
+      (u/lazy-assoc :TemporalExtents (umm-spec-core/parse-collection-temporal concept))
+      (assoc :EntryTitle (get-in concept [:extra-fields :entry-title]))))
 
 (defmethod add-acl-enforcement-fields-to-concept :granule
   [concept]

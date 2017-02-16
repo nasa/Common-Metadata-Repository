@@ -6,7 +6,7 @@
     [cmr.common.log :refer (debug info warn error)]
     [cmr.message-queue.services.queue :as queue]
     [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm.acl-matchers :as acl-matchers]
+    [cmr.umm-spec.acl-matchers :as acl-matchers]
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.transmit.config :as transmit-config]
     [cmr.common.concepts :as concepts]))

@@ -27,13 +27,14 @@
     [cmr.indexer.data.concepts.spatial :as spatial]
     [cmr.indexer.data.concepts.tag :as tag]
     [cmr.indexer.data.elasticsearch :as es]
+    [cmr.umm-spec.acl-matchers :as umm-matchers]
     [cmr.umm-spec.date-util :as date-util]
     [cmr.umm-spec.location-keywords :as lk]
+    [cmr.umm-spec.models.umm-collection-models :as umm-collection]
     [cmr.umm-spec.related-url :as ru]
     [cmr.umm-spec.time :as spec-time]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.util :as su]
-    [cmr.umm.acl-matchers :as umm-matchers]
     [cmr.umm.collection.entry-id :as eid]
     [cmr.umm.umm-collection :as umm-c]))
 
@@ -191,7 +192,7 @@
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                                        :Geometry :CoordinateSystem])
-        permitted-group-ids (get-coll-permitted-group-ids context provider-id umm-lib-collection)]
+        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
@@ -303,7 +304,7 @@
          :keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format]} concept
         ;; only used to get default ACLs for tombstones
-        tombstone-umm (umm-c/map->UmmCollection {:entry-title entry-title})
+        tombstone-umm (umm-collection/map->UMM-C {:EntryTitle entry-title})
         tombstone-permitted-group-ids (get-coll-permitted-group-ids context
                                                                     provider-id tombstone-umm)]
     {:concept-id concept-id

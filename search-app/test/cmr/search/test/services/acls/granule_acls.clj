@@ -55,9 +55,9 @@
   ([concept-id entry-title]
    (collection concept-id entry-title nil))
   ([concept-id entry-title access-value]
-   {:entry-title entry-title
+   {:EntryTitle entry-title
     :concept-id concept-id
-    :access-value access-value}))
+    :AccessConstraints [{:Value access-value}]}))
 
 (defn context-with-cached-collections
   "Creates a context with the specified collections in the collections cache"
@@ -77,10 +77,10 @@
     (is (g/acl-match-concept? {} (make-acl "P1") (concept "P1" "C2-P1"))))
 
   (let [collections [["C1-P1" "coll1" nil]
-                     ["C2-P1" "coll2" 1]
-                     ["C3-P1" "coll3" 2]
+                     ["C2-P1" "coll2" "1"]
+                     ["C3-P1" "coll3" "2"]
                      ["C4-P2" "coll1" nil]
-                     ["C5-P2" "coll2" 1]]
+                     ["C5-P2" "coll2" "1"]]
         context (context-with-cached-collections
                   (for [coll-args collections]
                     (apply collection coll-args)))]

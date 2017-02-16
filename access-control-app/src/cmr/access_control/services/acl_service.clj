@@ -156,7 +156,7 @@
   [gran-identifier granule]
   (let [{:keys [access-value temporal]} gran-identifier]
     (and (if access-value
-           (acl-matchers/matches-access-value-filter? granule access-value)
+           (acl-matchers/matches-access-value-filter? :granule granule access-value)
            true)
          (if temporal
            (when-let [umm-temporal (util/lazy-get granule :temporal)]
