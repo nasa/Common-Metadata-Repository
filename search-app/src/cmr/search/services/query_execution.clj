@@ -141,8 +141,7 @@
                   (facet-condition-resolver/adjust-facet-query field)
                   (assoc :result-features [:facets-v2])
                   (assoc :facet-fields [field])
-                  (assoc :page-size 0)
-                  (assoc :skip-acls? true))]
+                  (assoc :page-size 0))]
     (common-qe/execute-query context query)))
 
 (defn- merge-facets
