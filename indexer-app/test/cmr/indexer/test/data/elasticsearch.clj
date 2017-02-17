@@ -1,6 +1,5 @@
 (ns cmr.indexer.test.data.elasticsearch
   (:require [clojure.test :refer :all]
-            [clojurewerkz.elastisch.rest.bulk :as bulk]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.data.index-set :as i]))
 
