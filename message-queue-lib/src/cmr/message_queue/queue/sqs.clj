@@ -26,6 +26,7 @@
    (com.amazonaws.auth.policy.conditions ConditionFactory)
    (com.amazonaws.services.sns AmazonSNSClient)
    (com.amazonaws.services.sqs AmazonSQSClient)
+   (com.amazonaws.services.sns.util Topics)
    (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlResult PurgeQueueRequest
                                      ReceiveMessageRequest SendMessageResult
                                      SetQueueAttributesRequest)
@@ -178,26 +179,13 @@
  [sns-client sqs-client exchange-names queue-name]
  (let [q-name (normalize-queue-name queue-name)
        q-arn (get-queue-arn sqs-client q-name)
-       q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))
-       ;; create an access policy to allow the topic to publish to the queue
-       access-policy (sns-to-sqs-access-policy sns-client sqs-client q-name exchange-names)
-       q-attrs (HashMap. {"Policy" access-policy})
-
-       ;; create an empty SetQueueAttributesRequest object and then set the attributes on it
-       set-queue-attrs-request (doto (SetQueueAttributesRequest.)
-                                     (.setAttributes q-attrs)
-                                     (.setQueueUrl q-url))]
-    ;; make the call to set the access policy attribute on the queue
-    (.setQueueAttributes sqs-client set-queue-attrs-request)
+       q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))]
     (doseq [exchange-name exchange-names
             :let [ex-name (normalize-queue-name exchange-name)
                   topic (get-topic sns-client ex-name)
-                  topic-arn (.getTopicArn topic)
-                  ;; subscribe the queue to the topic
-                  subscription-arn (.getSubscriptionArn (.subscribe sns-client topic-arn "sqs" q-arn))]])))
-      ;; Keeping the following commented-out line until we determine if raw message delivery has
-      ;; performance benefits.
-      ; (.setSubscriptionAttributes sns-client subscription-arn "RawMessageDelivery" "true"))))
+                  topic-arn (.getTopicArn topic)]]
+      ;; subscribe the queue to the topic
+      (Topics/subscribeQueue sns-client sqs-client topic-arn q-url))))
 
 (defn- normalized-queue-name->original-queue-name
   "Convert a normalized queue name to the original queue name used to create it."
@@ -336,18 +324,19 @@
   ;; list the topics for the cmr-ingest_exchange exchange/topic
   (get-topic (:sns-client broker) "cmr_ingest_exchange")
   ;; list the queues for the cmr_ingest_exchange
-  (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
+  (queue/get-queues-bound-to-exchange broker "gsfc-eosdis-cmr-wl-ingest_exchange")
   ;; create a test queue
-  (create-queue (:sqs-client broker) "cmr_test.queue")
+  (create-queue (:sqs-client broker) "gsfc-eosdis-cmr-wl-index_all_revisions_queue")
   ;; create a test exchange
   (create-exchange (:sns-client broker) "cmr_test_exchange")
   ;; list the queues for the cmr_test_exchange
   (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
   ;; Bind the queue to the new exchange
-  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["cmr_test_exchange"] "cmr_test.queue")
+  (queue/publish-to-queue broker "gsfc-eosdis-cmr-wl-index_queue" {:action "concept-update"})
+  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["gsfc-eosdis-cmr-wl-ingest_exchange"] "gsfc-eosdis-cmr-wl-index_all_revisions_queue")
   ;; subscribe to test queue with a simple handler that prints received messages
-  (queue/subscribe broker "cmr-test.queue" (fn [msg] (println "Got Message: " msg)))
+  (queue/subscribe broker "gsfc-eosdis-cmr-wl-index_queue" (fn [msg] (println "Got Message: " msg)))
   ;; publish a message to the queue to verify our subscribe worked
-  (queue/publish-to-queue broker "cmr-test.queue" "{\"body\": \"ABC\"}")
+  (queue/publish-to-queue broker "gsfc-eosdis-cmr-wl-index_all_revisions_queue" {:action "concept-update"})
   ;; publish a message to the exchange to verify the message is sent to the queue
-  (queue/publish-to-exchange broker "cmr_test_exchange" "{\"body\": \"test-exchange\"}"))
+  (queue/publish-to-exchange broker "gsfc-eosdis-cmr-wl-ingest_exchange" {:action "concept-update" :dummy "dummy"}))

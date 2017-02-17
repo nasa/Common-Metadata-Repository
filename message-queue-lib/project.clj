@@ -7,7 +7,7 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [com.novemberain/langohr "3.4.0"]
-                 [com.amazonaws/aws-java-sdk "1.10.60"]]
+                 [com.amazonaws/aws-java-sdk "1.11.92"]]
 
   :plugins [[test2junit "1.2.1"]]
   :jvm-opts ^:replace ["-server"
