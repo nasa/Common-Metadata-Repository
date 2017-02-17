@@ -33,7 +33,32 @@
                          :C274211-USGS_EROS "1_c274211_usgs_eros"},
                :tag {:tags "1_tags"}}}})
 
+(def valid-item-resp
+  "Response for an item that is successfullly indexed during bulk indexing."
+  {:index {:_index "1_collections_v2"
+           :_type "collection"
+           :_id "C1216143440-NSIDC_TS1"
+           :status 201}})
 
+(def invalid-item-resp
+  "Response for an item that fails indexing during bulk indexing."
+  {:index {:_index "1_collections_v2"
+           :_type "collection"
+           :_id "C1216143440-NSIDC_TS1"
+           :status 400
+           :error "StrictDynamicMappingException[mapping set to strict, dynamic introduction of [] within [attributes] is not allowed]"}})
+
+(defn- some-failed-bulk-index-response
+  "Returns a response mimicking the elastich bulk response with a failing item."
+  [num-items]
+  (when (> num-items 1)
+    (concat [invalid-item-resp] (take (dec num-items) (repeatedly valid-item-resp)))))
+
+(deftest bulk-index-continues-on-error-test
+  (testing "400 in response doesn't throw exception"
+    ;; Just call handle-bulk-index-reponse to demonstrate it doesn't throw exception
+    (let [fake-resp (some-failed-bulk-index-response 1000)]
+      (#'es/handle-bulk-index-response fake-resp))))
 
 (deftest extra-granule-indexes-test
   (testing "extra indexes configured"
