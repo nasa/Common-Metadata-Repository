@@ -49,7 +49,7 @@
            :error "StrictDynamicMappingException[mapping set to strict, dynamic introduction of [] within [attributes] is not allowed]"}})
 
 (defn- some-failed-bulk-index-response
-  "Returns a response mimicing the elastich bulk response with a failing item."
+  "Returns a response mimicking the elastich bulk response with a failing item."
   [num-items]
   (when (> num-items 1)
     (concat [invalid-item-resp] (take (dec num-items) (repeatedly valid-item-resp)))))
