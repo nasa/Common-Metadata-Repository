@@ -13,7 +13,7 @@
 # If the CMR_ORACLE_JAR_REPO is specified then we'll use that in the oracle lib to find dependencies
 if [ -n "${CMR_ORACLE_JAR_REPO}" ] ; then
   echo "Updating Oracle lib maven repository"
-  ( cd oracle-lib && \
+  ( cd ../oracle-lib && \
   lein change :repositories set "[[\"releases\" \"${CMR_ORACLE_JAR_REPO}\"]]" )
 fi
 
