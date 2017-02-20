@@ -82,6 +82,7 @@
       [su/not-provided-related-url])))
 
 (defn parse-temporal-extents
+ "Return a list of temporal extents from the XML doc"
  [doc sanitize?]
  (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
   [{:RangeDateTimes (for [temporal temporals]

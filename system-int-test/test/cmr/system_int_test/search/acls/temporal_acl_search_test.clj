@@ -1,25 +1,25 @@
 (ns cmr.system-int-test.search.acls.temporal-acl-search-test
   "Tests searching for collections and granules with temporal ACLs in place."
-  (:require [clojure.test :refer :all]
-            [clj-time.format :as f]
-            [clojure.string :as str]
-            [cmr.common.services.messages :as msg]
-            [cmr.common.util :refer [are2 are3] :as util]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.opendata :as od]
-            [cmr.system-int-test.data2.granule-counts :as gran-counts]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.transmit.echo.conversion :as echo-conversion]
-            [clj-time.core :as t]
-            [cmr.common.test.time-util :as tu]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.services.messages :as msg]
+   [cmr.common.test.time-util :as tu]
+   [cmr.common.util :refer [are2 are3] :as util]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.granule-counts :as gran-counts]
+   [cmr.system-int-test.data2.opendata :as od]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.echo.conversion :as echo-conversion]))
 
 
 (use-fixtures :each (join-fixtures
@@ -73,8 +73,6 @@
                                                :beginning-date-time (tu/n->date-time-string begin)
                                                :ending-date-time (tu/n->date-time-string end)})
                            {:format metadata-format}))]
-    (def single-date-coll single-date-coll)
-    (def range-date-coll range-date-coll)
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
@@ -149,7 +147,6 @@
                                 (when token (str "token=" token "&"))
                                 "page_size=100&concept_id="
                                 (str/join "&concept_id=" concept-ids)))]
-            (def gran-atom gran-atom)
             (is (= gran-atom (:results (search/find-concepts-atom
                                         :granule (util/remove-nil-keys
                                                   {:token token

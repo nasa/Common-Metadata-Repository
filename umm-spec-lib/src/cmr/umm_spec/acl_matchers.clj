@@ -23,7 +23,6 @@
 (defmethod matches-access-value-filter? :collection
   [concept-type umm access-value-filter]
   (let [{:keys [min-value max-value include-undefined]} access-value-filter]
-    (proto-repl.saved-values/save 2)
     (when (and (not min-value) (not max-value) (not include-undefined))
       (errors/internal-error!
         "Encountered restriction flag filter where min and max were not set and include-undefined was false"))
@@ -79,37 +78,6 @@
        :disjoint (not (t/overlaps? start-date end-date umm-start umm-end))
        :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
 
-(defn temporal
- [start end]
- {:start (f/unparse (f/formatters :date-time) start)
-  :end (f/unparse (f/formatters :date-time) end)})
-
-(defn temporal-all-dates
-  "Returns the set of all dates contained in the given TemporalExtent record. :present is used to
-   indicate the temporal range goes to the present date."
-  [temporal]
-  (let [ranges  (:RangeDateTimes temporal)
-        singles (:SingleDateTimes temporal)
-        periods (:PeriodicDateTimes temporal)]
-    (set
-     (concat singles
-             (when (:EndsAtPresentFlag temporal)
-               [:present])
-             (map :BeginningDateTime ranges)
-             ;; ending date time is optional. If it's not included it ends at present.
-             (map #(or (get % :EndingDateTime) :present) ranges)
-             (map :StartDate periods)
-             ;; end date is required for periodic
-             (map :EndDate periods)))))
-
-(comment
- (temporal start-date end-date)
- (temporal umm-start umm-end)
-
- (f/unparse (f/formatters :date-time) (:EndingDateTime (first (:RangeDateTimes (first umm-temporal)))))
-
- (temporal-all-dates (first umm-temporal)))
-
 (defmethod matches-temporal-filter? :granule
  [concept-type umm-temporal temporal-filter]
  (umm-lib-acl-matchers/matches-temporal-filter? concept-type umm-temporal temporal-filter))
@@ -117,9 +85,6 @@
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
-  (proto-repl.saved-values/save 1)
-  ; (when (:entry-title coll)
-  ;   (throw (Exception. "LAUREN")))
   (let [coll-entry-title (:EntryTitle coll)
         {:keys [entry-titles access-value temporal]} coll-id]
     (and (or (empty? entry-titles)
@@ -144,13 +109,9 @@
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."
   [coll-prov-id coll acl]
-  ;(throw (Exception. "LAUREN"))
-  ;(proto-repl.saved-values/save 10)
   (when-let [{:keys [collection-applicable
                      collection-identifier
                      provider-id]} (:catalog-item-identity acl)]
-
-    ;(proto-repl.saved-values/save 1)
     (validate-collection-identiier acl collection-identifier)
 
     (and collection-applicable
@@ -180,7 +141,6 @@
 
 (defmethod add-acl-enforcement-fields-to-concept :collection
   [concept]
-  (proto-repl.saved-values/save 5)
   (-> concept
       (u/lazy-assoc :AccessConstraints (umm-spec-core/parse-collection-access-value concept))
       (u/lazy-assoc :TemporalExtents (umm-spec-core/parse-collection-temporal concept))

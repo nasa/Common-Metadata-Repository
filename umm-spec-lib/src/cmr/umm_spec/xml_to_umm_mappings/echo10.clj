@@ -133,7 +133,6 @@
                        sanitize?)
          :Value (when value
                  (Double/parseDouble value))}]
-    (proto-repl.saved-values/save 9)
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 
