@@ -2,16 +2,16 @@
   :description "Contains utilities for connecting to and manipulating data in Oracle."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/oracle-lib"
 
-  ;; Need the maven repo for Oracle jars that aren't available in public maven repos.
-  :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
-
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/java.jdbc "0.4.2"]
+                 [sqlingvo "0.7.15"]
+
+                 ;; These Oracle JDBC Driver jars are not available via public maven repositories.
+                 ;; They have to manually installed in the local repo. See README for instructions.
                  [com.oracle/ojdbc6 "11.2.0.4"]
                  [com.oracle/ons "11.2.0.4"]
-                 [com.oracle/ucp "11.2.0.4"]
-                 [sqlingvo "0.7.15"]]
+                 [com.oracle/ucp "11.2.0.4"]]
 
   :plugins [[test2junit "1.2.1"]]
   :jvm-opts ^:replace ["-server"
