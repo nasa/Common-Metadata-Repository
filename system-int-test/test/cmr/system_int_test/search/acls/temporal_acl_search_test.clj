@@ -1,9 +1,10 @@
 (ns cmr.system-int-test.search.acls.temporal-acl-search-test
   "Tests searching for collections and granules with temporal ACLs in place."
   (:require [clojure.test :refer :all]
+            [clj-time.format :as f]
             [clojure.string :as str]
             [cmr.common.services.messages :as msg]
-            [cmr.common.util :refer [are2] :as util]
+            [cmr.common.util :refer [are2 are3] :as util]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -72,6 +73,8 @@
                                                :beginning-date-time (tu/n->date-time-string begin)
                                                :ending-date-time (tu/n->date-time-string end)})
                            {:format metadata-format}))]
+    (def single-date-coll single-date-coll)
+    (def range-date-coll range-date-coll)
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
@@ -117,28 +120,28 @@
           group4-granules [gran3 gran4]]
       (index/wait-until-indexed)
 
-      ; (testing "Collection temporal as applied to granule searches"
-      ;   (are2 [token items]
-      ;     (d/refs-match? items (search/find-refs :granule (when token {:token token})))
-      ;     "Guests find nothing"
-      ;     nil []
-      ;     "group1" user1 group1-granules
-      ;     "group2" user2 group2-granules
-      ;     "group3" user3 group3-granules
-      ;     "group4" user4 group4-granules))
-      ;
-      ; (testing "Parameter searching ACL enforcement"
-      ;   (are2 [token items]
-      ;     (d/refs-match? items (search/find-refs :collection (when token {:token token})))
-      ;     "Guests find nothing"
-      ;     nil []
-      ;     "group1" user1 group1-colls
-      ;     "group2" user2 group2-colls
-      ;     "group3" user3 group3-colls
-      ;     "group4" user4 group4-colls))
+      (testing "Collection temporal as applied to granule searches"
+        (are2 [token items]
+          (d/refs-match? items (search/find-refs :granule (when token {:token token})))
+          "Guests find nothing"
+          nil []
+          "group1" user1 group1-granules
+          "group2" user2 group2-granules
+          "group3" user3 group3-granules
+          "group4" user4 group4-granules))
+
+      (testing "Parameter searching ACL enforcement"
+        (are2 [token items]
+          (d/refs-match? items (search/find-refs :collection (when token {:token token})))
+          "Guests find nothing"
+          nil []
+          "group1" user1 group1-colls
+          "group2" user2 group2-colls
+          "group3" user3 group3-colls
+          "group4" user4 group4-colls))
 
       (testing "Granule ACL Enforcement by concept id"
-        (are2 [token grans colls]
+        (are3 [token grans colls]
           (let [concept-ids all-gran-concept-ids
                 gran-atom (da/granules->expected-atom
                            grans colls
@@ -146,61 +149,62 @@
                                 (when token (str "token=" token "&"))
                                 "page_size=100&concept_id="
                                 (str/join "&concept_id=" concept-ids)))]
+            (def gran-atom gran-atom)
             (is (= gran-atom (:results (search/find-concepts-atom
                                         :granule (util/remove-nil-keys
                                                   {:token token
                                                    :page-size 100
                                                    :concept-id concept-ids}))))))
           "Guests find nothing" nil [] []
-          ;"group1" user1 group1-granules group1-colls)))))
-           "group2" user2 group2-granules group2-colls)))))
-          ; "group3" user3 group3-granules group3-colls
-          ; "group4" user4 group4-granules group4-colls)))))
+          "group1" user1 group1-granules group1-colls
+          "group2" user2 group2-granules group2-colls
+          "group3" user3 group3-granules group3-colls
+          "group4" user4 group4-granules group4-colls))
 
-      ; (testing "Collection ATOM ACL Enforcement by concept id"
-      ;   (are2 [token colls]
-      ;     (= (set (map :entry-title colls))
-      ;        (atom-results->title-set
-      ;         (search/find-concepts-atom
-      ;          :collection (util/remove-nil-keys
-      ;                       {:token token
-      ;                        :page-size 100
-      ;                        :concept-id all-coll-concept-ids}))))
-      ;     "Guests find nothing" nil []
-      ;     "group1" user1 group1-colls
-      ;     "group2" user2 group2-colls
-      ;     "group3" user3 group3-colls
-      ;     "group4" user4 group4-colls))
-      ;
-      ; (testing "Collection JSON ACL Enforcement by concept id"
-      ;   (are2 [token colls]
-      ;     (= (set (map :entry-title colls))
-      ;        (atom-results->title-set
-      ;         (search/find-concepts-json
-      ;          :collection (util/remove-nil-keys
-      ;                       {:token token
-      ;                        :page-size 100
-      ;                        :concept-id all-coll-concept-ids}))))
-      ;     "Guests find nothing" nil []
-      ;     "group1" user1 group1-colls
-      ;     "group2" user2 group2-colls
-      ;     "group3" user3 group3-colls
-      ;     "group4" user4 group4-colls))
-      ;
-      ; (testing "Collection OpenData ACL Enforcement by concept id"
-      ;   (let [open-data-results (search/find-concepts-opendata :collection {:token user1
-      ;                                                                       :page-size 100
-      ;                                                                       :concept-id all-coll-concept-ids})]
-      ;     (is (= (set (map :entry-title group1-colls))
-      ;            (set (map :title (get-in open-data-results [:results :dataset])))))))
-      ;
-      ; (testing "Direct transformer retrieval acl enforcement"
-      ;   (is (= (set (map :concept-id group1-colls))
-      ;          (set (map :concept-id (:items (search/find-metadata
-      ;                                         :collection :dif
-      ;                                         {:token user1
-      ;                                          :page-size 100
-      ;                                          :concept-id all-coll-concept-ids}))))))))))
+      (testing "Collection ATOM ACL Enforcement by concept id"
+        (are2 [token colls]
+          (= (set (map :entry-title colls))
+             (atom-results->title-set
+              (search/find-concepts-atom
+               :collection (util/remove-nil-keys
+                            {:token token
+                             :page-size 100
+                             :concept-id all-coll-concept-ids}))))
+          "Guests find nothing" nil []
+          "group1" user1 group1-colls
+          "group2" user2 group2-colls
+          "group3" user3 group3-colls
+          "group4" user4 group4-colls))
+
+      (testing "Collection JSON ACL Enforcement by concept id"
+        (are2 [token colls]
+          (= (set (map :entry-title colls))
+             (atom-results->title-set
+              (search/find-concepts-json
+               :collection (util/remove-nil-keys
+                            {:token token
+                             :page-size 100
+                             :concept-id all-coll-concept-ids}))))
+          "Guests find nothing" nil []
+          "group1" user1 group1-colls
+          "group2" user2 group2-colls
+          "group3" user3 group3-colls
+          "group4" user4 group4-colls))
+
+      (testing "Collection OpenData ACL Enforcement by concept id"
+        (let [open-data-results (search/find-concepts-opendata :collection {:token user1
+                                                                            :page-size 100
+                                                                            :concept-id all-coll-concept-ids})]
+          (is (= (set (map :entry-title group1-colls))
+                 (set (map :title (get-in open-data-results [:results :dataset])))))))
+
+      (testing "Direct transformer retrieval acl enforcement"
+        (is (= (set (map :concept-id group1-colls))
+               (set (map :concept-id (:items (search/find-metadata
+                                              :collection :dif
+                                              {:token user1
+                                               :page-size 100
+                                               :concept-id all-coll-concept-ids}))))))))))
 
 (deftest granule-search-with-temporal-acls-test
   ;; Users have access to the collection

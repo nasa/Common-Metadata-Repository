@@ -39,6 +39,7 @@
 ;;; Deletes
 (defmethod handle-event [:concept-delete :access-group]
   [context {:keys [concept-id]}]
+  (proto-repl.saved-values/save 3)
   (doseq [acl-concept (acl-service/get-all-acl-concepts context)
           :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                 group-permissions (:group-permissions parsed-acl)]]
@@ -70,9 +71,10 @@
 
 (defmethod handle-event [:concept-delete :collection]
   [context {:keys [concept-id revision-id]}]
+  (proto-repl.saved-values/save 4)
   (let [concept-map (mdb/get-concept context concept-id revision-id)
         collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)
-        entry-title (:entry-title collection-concept)]
+        entry-title (:EntryTitle collection-concept)]
     (doseq [acl-concept (acl-service/get-all-acl-concepts context)
             :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                   catalog-item-id (:catalog-item-identity parsed-acl)

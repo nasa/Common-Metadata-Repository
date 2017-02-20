@@ -125,12 +125,15 @@
   "If both value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with u/not-provided"
   [doc sanitize?]
-  (let [access-constraints-record
+  (let [value (value-of doc "/Collection/RestrictionFlag")
+        access-constraints-record
         {:Description (u/truncate
                        (value-of doc "/Collection/RestrictionComment")
                        u/ACCESSCONSTRAINTS_DESCRIPTION_MAX
                        sanitize?)
-         :Value (value-of doc "/Collection/RestrictionFlag")}]
+         :Value (when value
+                 (Double/parseDouble value))}]
+    (proto-repl.saved-values/save 9)
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 

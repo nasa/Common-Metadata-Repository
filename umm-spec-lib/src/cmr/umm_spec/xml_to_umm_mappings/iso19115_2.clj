@@ -133,16 +133,18 @@
   "If both value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with su/not-provided"
   [doc sanitize?]
-  (let [access-constraints-record
+  (let [value (regex-value doc (str constraints-xpath
+                                 "/gmd:otherConstraints/gco:CharacterString")
+               #"(?s)Restriction Flag:(.+)")
+        access-constraints-record
         {:Description (su/truncate
                        (regex-value doc (str constraints-xpath
                                          "/gmd:useLimitation/gco:CharacterString")
                          #"(?s)Restriction Comment: (.+)")
                        su/ACCESSCONSTRAINTS_DESCRIPTION_MAX
                        sanitize?)
-         :Value (regex-value doc (str constraints-xpath
-                                   "/gmd:otherConstraints/gco:CharacterString")
-                   #"(?s)Restriction Flag:(.+)")}]
+         :Value (when value
+                 (Double/parseDouble value))}]
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(su/with-default % sanitize?)))))
 

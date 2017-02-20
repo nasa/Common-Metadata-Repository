@@ -7,7 +7,7 @@
    [clojure.string :as str]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
-   [cmr.common.util :as u]
+   [cmr.common.util :as u :refer [update-in-each]]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]
    [cmr.umm.acl-matchers :as umm-lib-acl-matchers]))
@@ -23,7 +23,7 @@
 (defmethod matches-access-value-filter? :collection
   [concept-type umm access-value-filter]
   (let [{:keys [min-value max-value include-undefined]} access-value-filter]
-    ;(proto-repl.saved-values/save 2)
+    (proto-repl.saved-values/save 2)
     (when (and (not min-value) (not max-value) (not include-undefined))
       (errors/internal-error!
         "Encountered restriction flag filter where min and max were not set and include-undefined was false"))
@@ -56,9 +56,14 @@
  (fn [concept-type umm-temporal temporal-filter]
    concept-type))
 
+(defn- parse-date
+ [date]
+ (if (string? date)
+  (f/parse (f/formatters :date-time) date)
+  date))
+
 (defmethod matches-temporal-filter? :collection
  [concept-type umm-temporal temporal-filter]
- ;(proto-repl.saved-values/save 4)
  (when (seq umm-temporal)
    (when-not (= :acquisition (:temporal-field temporal-filter))
      (errors/internal-error!
@@ -66,19 +71,44 @@
 
    (let [{:keys [start-date end-date mask]} temporal-filter
          coll-with-temporal {:TemporalExtents umm-temporal}
-         umm-start (umm-time/collection-start-date coll-with-temporal)
-         ; umm-start (when umm-start
-         ;            (f/parse (f/formatters :date-time) umm-start))
-         umm-end (or (umm-time/normalized-end-date coll-with-temporal) (tk/now))]
-         ; umm-end (if umm-end
-         ;          (f/parse (f/formatters :date-time) umm-end)
-         ;          (tk/now))]
-     (proto-repl.saved-values/save 3)
+         umm-start (parse-date (umm-time/collection-start-date coll-with-temporal))
+         umm-end (parse-date (or (umm-time/normalized-end-date coll-with-temporal) (tk/now)))]
      (case mask
        :intersect (t/overlaps? start-date end-date umm-start umm-end)
        ;; Per ECHO10 API documentation disjoint is the negation of intersects
        :disjoint (not (t/overlaps? start-date end-date umm-start umm-end))
        :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
+
+(defn temporal
+ [start end]
+ {:start (f/unparse (f/formatters :date-time) start)
+  :end (f/unparse (f/formatters :date-time) end)})
+
+(defn temporal-all-dates
+  "Returns the set of all dates contained in the given TemporalExtent record. :present is used to
+   indicate the temporal range goes to the present date."
+  [temporal]
+  (let [ranges  (:RangeDateTimes temporal)
+        singles (:SingleDateTimes temporal)
+        periods (:PeriodicDateTimes temporal)]
+    (set
+     (concat singles
+             (when (:EndsAtPresentFlag temporal)
+               [:present])
+             (map :BeginningDateTime ranges)
+             ;; ending date time is optional. If it's not included it ends at present.
+             (map #(or (get % :EndingDateTime) :present) ranges)
+             (map :StartDate periods)
+             ;; end date is required for periodic
+             (map :EndDate periods)))))
+
+(comment
+ (temporal start-date end-date)
+ (temporal umm-start umm-end)
+
+ (f/unparse (f/formatters :date-time) (:EndingDateTime (first (:RangeDateTimes (first umm-temporal)))))
+
+ (temporal-all-dates (first umm-temporal)))
 
 (defmethod matches-temporal-filter? :granule
  [concept-type umm-temporal temporal-filter]
@@ -87,9 +117,9 @@
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
+  (proto-repl.saved-values/save 1)
   ; (when (:entry-title coll)
   ;   (throw (Exception. "LAUREN")))
-  ;(proto-repl.saved-values/save 9)
   (let [coll-entry-title (:EntryTitle coll)
         {:keys [entry-titles access-value temporal]} coll-id]
     (and (or (empty? entry-titles)
@@ -128,6 +158,14 @@
          (or (nil? collection-identifier)
              (coll-matches-collection-identifier? coll collection-identifier)))))
 
+(defn- parse-temporal
+ [umm-temporal]
+ (for [temporal umm-temporal]
+   (-> temporal
+       (update-in-each [:RangeDateTimes] update :BeginningDateTime #(f/parse (f/formatters :date-time) %))
+       (update-in-each [:RangeDateTimes] update :EndingDateTime #(f/parse (f/formatters :date-time) %))
+       (update-in-each [:SingleDateTimes] #(f/parse (f/formatters :date-time) %)))))
+
 ;; Functions for preparing concepts to be passed to functions above.
 
 (defmulti add-acl-enforcement-fields-to-concept
@@ -142,6 +180,7 @@
 
 (defmethod add-acl-enforcement-fields-to-concept :collection
   [concept]
+  (proto-repl.saved-values/save 5)
   (-> concept
       (u/lazy-assoc :AccessConstraints (umm-spec-core/parse-collection-access-value concept))
       (u/lazy-assoc :TemporalExtents (umm-spec-core/parse-collection-temporal concept))
