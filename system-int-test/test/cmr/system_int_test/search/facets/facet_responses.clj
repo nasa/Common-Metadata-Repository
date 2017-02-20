@@ -601,7 +601,39 @@
               :subfields ["long_name"],
               :long_name
               [{:value "Land, Vegetation, and Ice Sensor",
-                :count 2}]}]}]}]}]}]}
+                :count 2}]}]}]}]}]}
+     {:value "Not Provided", ; Instruments now include sensors as child instruments
+      :count 2,
+      :subfields ["class"],
+      :class
+        [{:value "Not Provided",
+          :count 2,
+          :subfields ["type"],
+          :type
+          [{:value "Not Provided",
+            :count 2,
+            :subfields ["subtype"],
+            :subtype
+            [{:value "Not Provided",
+              :count 2,
+              :subfields ["short_name"],
+              :short_name
+              [{:value "FROM_KMS-p0-i0-s0",
+                :count 2,
+                :subfields ["long_name"],
+                :long_name [{:count 2, :value "Not Provided"}]}
+               {:value "FROM_KMS-p0-i1-s0",
+                :count 2,
+                :subfields ["long_name"],
+                :long_name [{:count 2, :value "Not Provided"}]}
+               {:value "FROM_KMS-p1-i0-s0",
+                :count 2,
+                :subfields ["long_name"],
+                :long_name [{:count 2, :value "Not Provided"}]}
+               {:value "FROM_KMS-p1-i1-s0",
+                :count 2,
+                :subfields ["long_name"],
+                :long_name [{:count 2, :value "Not Provided"}]}]}]}]}]}]}
    {:field "science_keywords",
     :subfields ["category"],
     :category

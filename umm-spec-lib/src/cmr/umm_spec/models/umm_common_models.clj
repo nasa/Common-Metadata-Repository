@@ -68,10 +68,10 @@
    ;; Observation).
    Technique
 
-   ;; Number of sensors used on the instrument when acquiring the granule data.
-   NumberOfSensors
+   ;; Number of instruments used on the instrument when acquiring the granule data.
+   NumberOfInstruments
 
-   Sensors
+   ComposedOf
 
    ;; The operation mode applied on the instrument when acquiring the granule data.
    OperationalModes
@@ -429,23 +429,24 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing GeometryType)
 
-;; Information about the collection source/sensor configuration, including sensor parameters
-;; settings such as technique etc.
-(defrecord SensorType
+;; Information about the instrument excluding fields used in the top level instrument element
+(defrecord InstrumentChildType
   [
    ShortName
 
    LongName
 
-   ;; Sensor-specific characteristics, e.g,. Wavelength, SwathWidth, Field of View. The
-   ;; characteristic names must be unique on this sensor; however the names do not have to be unique
-   ;; across sensors.
+   ;; Instrument-specific characteristics, e.g., Wavelength, SwathWidth, Field of View. The
+   ;; characteristic names must be unique on this instrument; however the names do not have to be
+   ;; unique across instruments.
    Characteristics
 
-   ;; Technique applied for this sensor in the configuration.
+   ;; The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal
+   ;; Emission and Reflective Radiometer, Clouds and the Earth's Radiant Energy System, Human
+   ;; Observation).
    Technique
   ])
-(record-pretty-printer/enable-record-pretty-printing SensorType)
+(record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
 
 ;; The longitude and latitude values of a spatially referenced point in degrees.
 (defrecord PointType

@@ -724,3 +724,43 @@
                           :Relation ["VIEW RELATED INFORMATION" "Citation"]
                           :MimeType "text/html"}}]
            (:PublicationReferences result)))))
+
+(deftest migrate-1_8-instruments-up-to-1_9
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
+                               {:Platforms [{:Instruments [{:ShortName "Inst1"
+                                                            :NumberOfSensors 5
+                                                            :Sensors [{:ShortName "Sensor 1"}
+                                                                      {:ShortName "Sensor 2"}]}
+                                                           {:ShortName "Inst2"
+                                                            :NumberOfSensors 5
+                                                            :Sensors [{:ShortName "Sensor 1"}
+                                                                      {:ShortName "Sensor 2"}]}]}]})]
+    (is (= [{:Instruments [{:ShortName "Inst1"
+                            :NumberOfInstruments 5
+                            :ComposedOf [{:ShortName "Sensor 1"}
+                                         {:ShortName "Sensor 2"}]}
+                           {:ShortName "Inst2"
+                            :NumberOfInstruments 5
+                            :ComposedOf [{:ShortName "Sensor 1"}
+                                         {:ShortName "Sensor 2"}]}]}]
+           (:Platforms result)))))
+
+(deftest migrate-1_9-instruments-down-to-1_8
+  (let [result (vm/migrate-umm {} :collection "1.9" "1.8"
+                               {:Platforms [{:Instruments [{:ShortName "Inst1"
+                                                            :NumberOfInstruments 5
+                                                            :ComposedOf [{:ShortName "Sensor 1"}
+                                                                         {:ShortName "Sensor 2"}]}
+                                                           {:ShortName "Inst2"
+                                                            :NumberOfInstruments 5
+                                                            :ComposedOf [{:ShortName "Sensor 1"}
+                                                                         {:ShortName "Sensor 2"}]}]}]})]
+    (is (= [{:Instruments [{:ShortName "Inst1"
+                            :NumberOfSensors 5
+                            :Sensors [{:ShortName "Sensor 1"}
+                                      {:ShortName "Sensor 2"}]}
+                           {:ShortName "Inst2"
+                            :NumberOfSensors 5
+                            :Sensors [{:ShortName "Sensor 1"}
+                                      {:ShortName "Sensor 2"}]}]}]
+           (:Platforms result)))))

@@ -1035,9 +1035,9 @@ Example: `C123456-LPDAAC_ECS`
 
     curl "%CMR-ENDPOINT%/collections?concept_id\[\]=C123456-LPDAAC_ECS"
 
-#### <a name="c-doi-value"></a> Find collections by doi value 
+#### <a name="c-doi-value"></a> Find collections by doi value
 
-  Find a collection matching a collection doi value. Note more than one doi value may be supplied. 
+  Find a collection matching a collection doi value. Note more than one doi value may be supplied.
 
     curl "%CMR-ENDPOINT%/collections?doi\[\]=doi"
 
@@ -1193,6 +1193,8 @@ Find collections matching any of the 'instrument' param values
 
 #### <a name="c-sensor"></a> Find collections by sensor.
 
+Sensor search is deprecated and should be replaced with instrument. Sensors are now child instruments on an instrument.
+
 This supports `pattern`, `ignore_case` and option `and`.
 
 Find collections matching 'sensor' param value
@@ -1269,7 +1271,9 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 #### <a name="c-keyword"></a> Find collections by keyword (free text) search
 
-Keyword searches are case insensitive and support wild cards ? and *.
+Keyword searches are case insensitive and support wild cards ? and *. 
+There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
+string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 

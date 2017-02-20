@@ -244,27 +244,27 @@
        ["Project References must be unique. This contains duplicates named [C1]."]))))
 
 (deftest granule-platform-refs
-  (let [s1 (cmn/map->SensorType {:ShortName "S1"
-                                 :Characteristics [(cmn/map->CharacteristicType
-                                                    {:Name "C3"})
-                                                   (cmn/map->CharacteristicType
-                                                    {:Name "C4"})]})
-        s2 (cmn/map->SensorType {:ShortName "S2"
-                                 :Characteristics [(cmn/map->CharacteristicType
-                                                    {:Name "C5"})]})
-        s3 (cmn/map->SensorType {:ShortName "S3"})
+  (let [s1 (cmn/map->InstrumentChildType {:ShortName "S1"
+                                          :Characteristics [(cmn/map->CharacteristicType
+                                                             {:Name "C3"})
+                                                            (cmn/map->CharacteristicType
+                                                             {:Name "C4"})]})
+        s2 (cmn/map->InstrumentChildType {:ShortName "S2"
+                                          :Characteristics [(cmn/map->CharacteristicType
+                                                             {:Name "C5"})]})
+        s3 (cmn/map->InstrumentChildType {:ShortName "S3"})
         i1 (cmn/map->InstrumentType {:ShortName "I1"
                                      :Characteristics [(cmn/map->CharacteristicType
                                                         {:Name "C1"})
                                                        (cmn/map->CharacteristicType
                                                         {:Name "C2"})]
-                                     :Sensors [s1 s2]
+                                     :ComposedOf [s1 s2]
                                      :OperationalModes ["OM1" "OM2"]})
         i2 (cmn/map->InstrumentType {:ShortName "I2"
-                                     :Sensors [s1 s2]
+                                     :ComposedOf [s1 s2]
                                      :OperationalModes ["OM3" "OM4"]})
         i3 (cmn/map->InstrumentType {:ShortName "I3"
-                                     :Sensors [s2 s3]})
+                                     :ComposedOf [s2 s3]})
         i4 (cmn/map->InstrumentType {:ShortName "I3"})
         p1 (cmn/map->PlatformType {:ShortName "p1"
                                    :Instruments [i1 i2]})
