@@ -203,7 +203,6 @@
   ([json-str concept-type]
    (validate-umm-json json-str concept-type ver/current-version))
   ([json-str concept-type umm-version]
-   (proto-repl.saved-values/save 4)
    (let [schema-name (concept-schema-name concept-type)
          schema-url (umm-schema-resource umm-version schema-name)]
      (if schema-url

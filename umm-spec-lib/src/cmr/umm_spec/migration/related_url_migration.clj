@@ -74,7 +74,6 @@
 (defn migrate-contacts-down
   "Migrate ContactPersons to UMM spec v1.8 and lower"
   [contacts]
-  (proto-repl.saved-values/save 7)
   (for [contact contacts]
    (if (not-empty (:ContactInformation contact))
     (update-in-each contact [:ContactInformation :RelatedUrls] url->array-of-urls)
@@ -95,7 +94,6 @@
   ":RelatedUrl {:URL url} -> :RelatedUrl {:URLs [url]} for a given Data Center.
    Complies with UMM spec v1.8 and lower"
   [data-centers]
-  (proto-repl.saved-values/save 8)
   (if (not-empty data-centers)
    (mapv (fn [data-center]
            (-> data-center
