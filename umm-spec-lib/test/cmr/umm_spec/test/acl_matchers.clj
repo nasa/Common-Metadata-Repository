@@ -1,10 +1,10 @@
-(ns cmr.umm.test.acl-matchers
+(ns cmr.umm-spec.test.acl-matchers
   (:require
    [clojure.test :refer :all]
    [cmr.common.test.time-util :as tu]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :refer [are2]]
-   [cmr.umm-spec.related-url.acl-matchers :as a]))
+   [cmr.umm-spec.acl-matchers :as a]))
 
 (use-fixtures :each tk/freeze-resume-time-fixture)
 
@@ -163,9 +163,9 @@
   to simulate a non ending time."
   [start-n end-n]
   {:TemporalExtents
-   {:RangeDateTimes
-    [{:BeginningDateTime (tu/n->date-time start-n)
-      :Ending (tu/n->date-time end-n)}]}})
+   [{:RangeDateTimes
+     [{:BeginningDateTime (tu/n->date-time start-n)
+       :EndingDateTime (tu/n->date-time end-n)}]}]})
 
 (deftest collection-applicable-temporal-acl-test
   (tk/set-time-override! (tu/n->date-time now-n))
