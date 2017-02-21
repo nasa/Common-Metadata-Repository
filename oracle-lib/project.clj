@@ -1,6 +1,21 @@
+
+(def oracle-jar-repo-env-var
+  "The name of an environment variable that when set indicates an internal maven repo containing
+   the Oracle JDBC jars. Set this environment variable to avoid having to manually download
+   Oracle JDBC jars."
+  "CMR_ORACLE_JAR_REPO")
+
+(def extra-repositories
+  "The set of repositories to include if configured"
+  (when-let [repo (get (System/getenv) oracle-jar-repo-env-var)]
+    [["releases" repo]]))
+
 (defproject nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for connecting to and manipulating data in Oracle."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/oracle-lib"
+
+  ;; Dynamically include extra repositories in the project definition if configured.
+  :repositories ~extra-repositories
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
