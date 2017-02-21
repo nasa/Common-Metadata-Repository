@@ -1,17 +1,27 @@
 (ns cmr.bootstrap.data.util
   "Functions for working with CMR data used by various bootstrap
   processes."
-  (:require [cmr.bootstrap.embedded-system-helper :as helper]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.indexer.services.index-service :as index-service]
-            [cmr.umm.umm-core :as umm]
-            [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.provider-service :as provider-service]))
+  (:require
+   [cmr.bootstrap.embedded-system-helper :as helper]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.indexer.services.index-service :as index-service]
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.metadata-db.services.provider-service :as provider-service]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm.umm-core :as umm-legacy]))
+
+(defn- parse-concept
+ "If the concept is a collection, use umm-spec to parse to UMM-C collection. Else, use
+ umm."
+ [concept]
+ (if (= (:concept-type concept) :collection)
+  (umm-spec/parse-metadata concept)
+  (umm-legacy/parse-concept concept)))
 
 (defn save-and-index-concept
   "Saves the concept to the Metadata DB and indexes it using the indexer"
   ([system concept]
-   (save-and-index-concept system concept (umm/parse-concept concept)))
+   (save-and-index-concept system concept (parse-concept concept)))
   ([system concept umm-record]
    ;; This is going to copy the item to metadata db. If it was never added to MDB in the first place
    ;; and was deleted in Catalog REST in the mean time Ingest would return a 404 from the delete

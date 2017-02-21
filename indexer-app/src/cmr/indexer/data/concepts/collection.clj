@@ -122,7 +122,7 @@
 
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
-  [context concept umm-lib-collection collection]
+  [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id
                 native-id revision-date deleted format extra-fields tag-associations]} concept
         collection (remove-index-irrelevant-defaults collection)
@@ -329,11 +329,9 @@
      :permitted-group-ids tombstone-permitted-group-ids}))
 
 (defmethod es/parsed-concept->elastic-doc :collection
-  [context concept umm-lib-collection]
+  [context concept umm-collection]
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
-    (let [umm-spec-collection (umm-spec/parse-metadata context concept)]
-      (get-elastic-doc-for-full-collection context
-                                           concept
-                                           umm-lib-collection
-                                           umm-spec-collection))))
+    (get-elastic-doc-for-full-collection context
+                                         concept
+                                         umm-collection)))
