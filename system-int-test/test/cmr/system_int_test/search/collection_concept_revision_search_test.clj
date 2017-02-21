@@ -127,11 +127,13 @@
   (let [coll4-umm expected-conversion/example-collection-record
         mime-type "application/vnd.nasa.cmr.umm+json;version=1.0"
         json (umm-spec/generate-metadata test-context coll4-umm mime-type)
+        coolvariablename (println json)
         coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
                                                  :concept-type :collection
                                                  :format mime-type
                                                  :native-id "coll"
                                                  :metadata json})
+        testprint (println "~~~~~~~~~~~~~~~~~~~~~~~~")
         tombstone (ingest/delete-concept {:provider-id "PROV1"
                                                   :concept-type :collection
                                                   :native-id "coll"})

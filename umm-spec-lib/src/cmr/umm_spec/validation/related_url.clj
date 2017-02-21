@@ -21,7 +21,7 @@
        [(vu/escape-error-string (format "[%s] is not a valid URL" value))]})))
 
 (def urls-validation
-  {:URLs (v/every url-validation)})
+  {:URL url-validation})
 
 (def contact-information-url-validation
   {:ContactInformation {:RelatedUrls (v/every urls-validation)}})

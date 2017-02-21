@@ -50,8 +50,7 @@
        [:Data_Center_URL (-> (:ContactInformation center)
                              :RelatedUrls
                              first
-                             :URLs
-                             first)]
+                             :URL)]
        ;; Personnel within Data_Center
        (if (or (seq (:ContactGroups center)) (seq (:ContactPersons center)))
          (contact/generate-personnel center umm-contact-role->dif9-data-center-contact-role)

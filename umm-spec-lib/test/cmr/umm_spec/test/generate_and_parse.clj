@@ -69,6 +69,16 @@
   [metadata-format]
   (seq (.listFiles (io/file (io/resource (str "example_data/" (name metadata-format)))))))
 
+(comment
+ (let [metadata-format :iso19115
+       metadata (slurp "/Users/mschmele/cmr/umm-spec-lib/resources/example_data/iso19115/artificial_test_data.xml")
+       umm (core/parse-metadata test-context :collection metadata-format metadata)
+       valid (core/validate-xml :collection metadata-format metadata)
+       actual (xml-round-trip :collection metadata-format umm)
+       conversion (expected-conversion/convert umm metadata-format)]
+   (:DataCenters conversion)))
+
+
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
         check-failure (fn [result]
@@ -78,6 +88,7 @@
             :when (not @failed-atom)
             :let [metadata (slurp example-file)
                   umm (core/parse-metadata test-context :collection metadata-format metadata)]]
+
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
@@ -107,6 +118,7 @@
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
          (is (= expected actual)
+
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))
 
@@ -115,6 +127,7 @@
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
             actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
+        (println (:DataCenters expected))
         (is (= expected actual))))))
 
 (deftest roundtrip-example-service-record

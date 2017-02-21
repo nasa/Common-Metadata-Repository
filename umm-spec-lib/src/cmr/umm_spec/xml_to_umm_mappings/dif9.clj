@@ -71,10 +71,12 @@
 (defn- parse-related-urls
   "Returns a list of related urls"
   [doc sanitize?]
+  (def doc doc)
+  (def sanitize? true)
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
           :let [description (value-of related-url "Description")]]
-      {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
+      {:URL (url/format-url (value-of related-url "URL") sanitize?)
        :Description description
        :Relation [(value-of related-url "URL_Content_Type/Type")
                   (value-of related-url "URL_Content_Type/Subtype")]})
@@ -89,7 +91,7 @@
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :DOI (first (remove nil? (for [dsc (select doc "DIF/Data_Set_Citation")]
-                                {:DOI (value-of dsc "Dataset_DOI")}))) 
+                                {:DOI (value-of dsc "Dataset_DOI")})))
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)

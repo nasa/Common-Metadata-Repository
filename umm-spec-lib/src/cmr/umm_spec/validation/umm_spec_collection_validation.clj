@@ -63,6 +63,4 @@
    :RelatedUrls (v/every url/urls-validation)
    :DataCenters (v/every url/data-center-url-validation)
    :ContactPersons (v/every url/contact-information-url-validation)
-   :ContactGroups (v/every url/contact-information-url-validation)
-   :CollectionCitations (v/every {:RelatedUrl url/urls-validation})
-   :PublicationReferences (v/every {:RelatedUrl url/urls-validation})})
+   :ContactGroups (v/every url/contact-information-url-validation)})

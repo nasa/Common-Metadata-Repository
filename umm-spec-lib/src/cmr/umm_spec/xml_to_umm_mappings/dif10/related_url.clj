@@ -8,7 +8,7 @@
 
 (defn- multimedia->RelatedUrl
   [multimedia-sample sanitize?]
-  {:URLs (map #(url/format-url % sanitize?) (values-at multimedia-sample "URL"))
+  {:URL (url/format-url (value-of multimedia-sample "URL") sanitize?)
    :Description (value-of multimedia-sample "Description")
    :Relation ["GET RELATED VISUALIZATION"]})
 
@@ -18,13 +18,13 @@
   [doc sanitize?]
   (let [multimedia-urls (mapv #(multimedia->RelatedUrl % sanitize?) (select doc "/DIF/Multimedia_Sample"))
         related-urls (for [related-url (select doc "/DIF/Related_URL")]
-                       {:URLs (if-let [urls (seq
-                                             (remove nil?
-                                               (map #(url/format-url % sanitize?) (values-at related-url "URL"))))]
-                                 urls
-                                [su/not-provided-url])
+                       {:URL (if-let [url (url/format-url (value-of related-url "URL") sanitize?)]
+                                url
+                                (when sanitize? su/not-provided-url))
                         :Description (value-of related-url "Description")
                         :Relation [(value-of related-url "URL_Content_Type/Type")
                                    (value-of related-url "URL_Content_Type/Subtype")]
                         :MimeType (value-of related-url "Mime_Type")})]
-    (seq (into multimedia-urls related-urls))))
+    (if (or multimedia-urls related-urls)
+     (seq (into multimedia-urls related-urls))
+     (when sanitize? (seq su/not-provided-related-url)))))

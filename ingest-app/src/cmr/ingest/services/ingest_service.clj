@@ -166,7 +166,7 @@
     {:concept-id concept-id, :revision-id revision-id}))
 
 (defn-timed save-collection
-  "Store a concept in mdb and indexer.   
+  "Store a concept in mdb and indexer.
    Return entry-titile, concept-id, revision-id, and warnings."
   [context concept validation-options]
   (let [{:keys [concept warnings]} (validate-and-prepare-collection context
@@ -174,9 +174,9 @@
                                                                     validation-options)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
           entry-title (get-in concept [:extra-fields :entry-title])]
-      {:entry-title entry-title 
-       :concept-id concept-id 
-       :revision-id revision-id 
+      {:entry-title entry-title
+       :concept-id concept-id
+       :revision-id revision-id
        :warnings warnings})))
 
 (defn-timed delete-concept

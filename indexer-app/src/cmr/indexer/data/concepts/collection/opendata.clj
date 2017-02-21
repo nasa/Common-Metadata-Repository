@@ -29,7 +29,7 @@
 (defn related-url->opendata-related-url
   "Returns the opendata related url for the given collection related url"
   [related-url]
-  (let [{:keys [Title Description Relation URLs MimeType FileSize]} related-url
+  (let [{:keys [Title Description Relation URL MimeType FileSize]} related-url
         {:keys [Size Unit]} FileSize
         size (when (or Size Unit) (str Size Unit))]
     ;; See CMR-3446. The current UMM JSON RelatedUrlType is flawed in that there can be multiple
@@ -38,7 +38,7 @@
     ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
     {:type (first Relation)
      :sub-type (second Relation)
-     :url (first URLs)
+     :url URL
      :description Description
      :mime-type MimeType
      :title Title

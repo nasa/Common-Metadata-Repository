@@ -173,10 +173,10 @@
 (defn- expected-dif-data-center-contact-info
   "Returns the expected DIF9 data center contact information."
   [contact-info]
-  (when-let [related-url (first (:URLs (first (:RelatedUrls contact-info))))]
+  (when-let [related-url (:URL (first (:RelatedUrls contact-info)))]
     (cmn/map->ContactInformationType
        {:RelatedUrls [(cmn/map->RelatedUrlType
-                        {:URLs [related-url]})]})))
+                        {:URL related-url})]})))
 
 (defn- expected-dif-data-centers
   "Returns the expected DIF parsed data centers for the given UMM collection."

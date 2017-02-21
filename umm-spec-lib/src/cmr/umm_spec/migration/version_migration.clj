@@ -198,6 +198,7 @@
   (-> c
       migrate-doi-up
       related-url/dissoc-titles-from-contact-information
+      (update :RelatedUrls related-url/array-of-urls->url)
       (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
       (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)
       (update :DataCenters related-url/migrate-data-centers-up)
@@ -208,6 +209,7 @@
   [context c & _]
   (-> c
       migrate-doi-down
+      related-url/migrate-down-from-1_9
       (update-in-each [:PublicationReferences] related-url/migrate-online-resource-to-related-url)
       (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)))
 
@@ -223,3 +225,11 @@
               (migrate-umm-version context data concept-type v1 v2))
             data
             (version-steps source-version dest-version))))
+
+(comment
+ (let [coll4-umm cmr.umm-spec.test.expected-conversion/example-collection-record
+       test-context (cmr.umm-spec.test.location-keywords-helper/setup-context-for-test)
+       mime-type "application/vnd.nasa.cmr.umm+json;version=1.9"
+       json (cmr.umm-spec.umm-spec-core/generate-metadata test-context coll4-umm mime-type)
+       migrated (migrate-umm test-context :collection :1.9 :1.0 json)]
+  (cmr.umm-spec.umm-spec-core/validate-metadata :collection "application/vnd.nasa.cmr.umm+json;version=1.0" migrated)))

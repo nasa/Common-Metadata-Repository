@@ -154,6 +154,9 @@
                  (transform-with-strategy context concept k v))))
        (reduce into {})))
 
+(comment
+ (def strategy :umm-spec))
+
 (defn transform
   "Transforms a concept to the target format given returning metadata."
   [context concept target-format]

@@ -76,14 +76,6 @@
       filter-unique-serf-dates
       seq))
 
-(defn- fix-publication-reference-url
-  [some-url]
-  (when some-url
-    (cmn/map->RelatedUrlType {:URLs (->> some-url
-                                          :URLs
-                                          (take 1)
-                                          (map #(url/format-url % true)))})))
-
 (defn- expected-serf-online-resource
  "Sanitize the linkage and remove unmapped fields"
  [online-resource]

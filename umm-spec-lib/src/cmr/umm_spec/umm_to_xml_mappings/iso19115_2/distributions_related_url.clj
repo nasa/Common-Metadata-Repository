@@ -44,16 +44,15 @@
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
   [online-resource-url open-tag]
-  (let [{:keys [URLs Description] [rel] :Relation} online-resource-url
+  (let [{:keys [URL Description] [rel] :Relation} online-resource-url
         name (type->name rel)
         code (if (= "GET DATA" rel) "download" "information")]
-    (for [url URLs]
       [open-tag
        [:gmd:CI_OnlineResource
         [:gmd:linkage
-         [:gmd:URL url]]
+         [:gmd:URL URL]]
         [:gmd:protocol
-         (char-string (url/protocol url))]
+         (char-string (url/protocol URL))]
         [:gmd:name
          (char-string name)]
         (if Description
@@ -63,7 +62,7 @@
         [:gmd:function
          [:gmd:CI_OnLineFunctionCode
           {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
-           :codeListValue code}]]]])))
+           :codeListValue code}]]]]))
 
 (defn generate-distributions
   "Returns content generator instructions for distributions in the given umm-c"

@@ -42,22 +42,20 @@
 
 (defn- expected-echo10-related-urls
   [related-urls]
-  (if (seq related-urls)
-    (seq (for [related-url related-urls
-               :let [[rel] (:Relation related-url)]
-               url (:URLs related-url)]
-           (-> related-url
-               (assoc :URLs [url])
-               (update-in [:FileSize] (fn [file-size]
-                                        (when (and file-size
-                                                   (= rel "GET RELATED VISUALIZATION"))
-                                          (when-let [byte-size (ru-gen/convert-to-bytes
-                                                                (:Size file-size) (:Unit file-size))]
-                                            (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
-               (update-in [:Relation] (fn [[rel]]
-                                        (when (conversion-util/relation-set rel)
-                                          [rel])))
-               (update-in-each [:URLs] #(url/format-url % true)))))
+  (if (seq? related-urls)
+    (for [related-url related-urls
+             :let [[rel] (:Relation related-url)]]
+         (-> related-url
+             (update-in [:FileSize] (fn [file-size]
+                                      (when (and file-size
+                                                 (= rel "GET RELATED VISUALIZATION"))
+                                        (when-let [byte-size (ru-gen/convert-to-bytes
+                                                              (:Size file-size) (:Unit file-size))]
+                                          (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
+             (update-in [:Relation] (fn [[rel]]
+                                      (when (conversion-util/relation-set rel)
+                                        [rel])))
+             (assoc :URL (:URL related-url))))
     [su/not-provided-related-url]))
 
 (defn- expected-echo10-reorder-related-urls

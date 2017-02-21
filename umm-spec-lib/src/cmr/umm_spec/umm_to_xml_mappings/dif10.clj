@@ -181,13 +181,11 @@
          [:URL_Content_Type
           [:Type type]
           [:Subtype subtype]])
-       ;; Adding a dummy URL if none exists since it is required
-       (for [url (get related-url :URLs ["http://example.com"])]
-         [:URL url])
+       [:URL (get related-url :URL u/not-provided-url)]
        [:Description (:Description related-url)]])
     ;; Default Related URL to add if none exist
     [:Related_URL
-     [:URL "http://example.com"]]))
+     [:URL u/not-provided-url]]))
 
 (def collection-progress->dif10-dataset-progress
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."

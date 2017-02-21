@@ -62,8 +62,7 @@
        [:URL_Content_Type
         [:Type type]
         [:Subtype subtype]])
-     (for [url (:URLs related-url)]
-       [:URL url])
+     [:URL (:URL related-url)]
      [:Description (:Description related-url)]]))
 
 (defn- create-service-citations
@@ -139,6 +138,7 @@
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
   [s]
+  (def s s)
   (xml
     [:SERF
      serf-xml-namespaces

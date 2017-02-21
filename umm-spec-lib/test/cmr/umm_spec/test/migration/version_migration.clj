@@ -663,32 +663,32 @@
           collection-urls (:RelatedUrls result)]
       (is (= [{:Description "Contact group related url description"
                :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-               :URLs ["www.contact.group.foo.com"]
+               :URL "www.contact.group.foo.com"
                :MimeType "application/html"}]
              collection-urls))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.foo.com" "www.contact.shoo.com"],
+               :URL "www.contact.foo.com",
                :Description "Contact related url description"}]
              data-center-contact-persons))
       (is (= [{:Description "Contact group related url description"
                :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-               :URLs ["www.contact.group.foo.com"]
+               :URL "www.contact.group.foo.com"
                :MimeType "application/html"}]
              data-center-contact-groups))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.foo.com" "www.contact.shoo.com"],
+               :URL "www.contact.foo.com",
                :Description "Contact related url description"}]
              data-center-contact-information))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.foo.com" "www.contact.shoo.com"],
+               :URL "www.contact.foo.com",
                :Description "Contact related url description"}]
              collection-contact-persons))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.group.foo.com"],
+               :URL "www.contact.group.foo.com",
                :Description "Contact group related url description"}]
              collection-contact-groups)))))
 

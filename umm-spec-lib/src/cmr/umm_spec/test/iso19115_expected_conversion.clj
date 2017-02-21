@@ -114,15 +114,14 @@
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
   (if (seq related-urls)
-    (seq (for [related-url related-urls
-               url (:URLs related-url)]
+    (seq (for [related-url related-urls]
            (-> related-url
-               (assoc :MimeType nil :FileSize nil :URLs [url])
+               (assoc :MimeType nil :FileSize nil :URL (:URL related-url))
                (update-in [:Relation]
                           (fn [[rel]]
                             (when (conversion-util/relation-set rel)
                               [rel])))
-               (update-in-each [:URLs] #(url/format-url % true)))))
+               (update-in [:URL] #(url/format-url % true)))))
     [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values
@@ -279,7 +278,7 @@
   (expected-iso-19115-2-related-urls
    [(-> related-urls
       first
-      (update :URLs #(take 1 %)))])))
+      (update :URL #(take 1 %)))])))
 
 (defn- expected-iso-contact-information
  "Returns expected contact information - 1 address, only certain contact mechanisms are mapped"
