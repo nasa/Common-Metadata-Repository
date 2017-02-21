@@ -9,14 +9,6 @@
 # CMR_ORACLE_JAR_REPO: Oracle libraries are not available in public maven repositories. We can host
 # them in internal ones for building. If this is set then the maven repo will be updated to use this.
 
-
-# If the CMR_ORACLE_JAR_REPO is specified then we'll use that in the oracle lib to find dependencies
-if [ -n "${CMR_ORACLE_JAR_REPO}" ] ; then
-  echo "Updating Oracle lib maven repository"
-  ( cd ../oracle-lib && \
-  lein change :repositories set "[[\"releases\" \"${CMR_ORACLE_JAR_REPO}\"]]" )
-fi
-
 date && echo "Installing all apps" &&
 (cd .. && lein modules do clean, install)
 if [ $? -ne 0 ] ; then
