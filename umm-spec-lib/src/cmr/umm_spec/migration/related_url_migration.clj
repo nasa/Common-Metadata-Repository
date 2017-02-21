@@ -50,7 +50,7 @@
          (if-let [url (first (:URLs related-url))]
           (-> related-url
            (assoc :URL url)
-           (dissoc :URLs))
+           (dissoc :URLs :Title))
           related-url))
         related-urls))
 
@@ -66,8 +66,8 @@
   "Migrate ContactPersons to comply with UMM spec v1.9"
   [contacts]
   (mapv (fn [contact]
-         (if (not-empty (:ContactInformation contact))
-          (update-in-each contact [:ContactInformation :RelatedUrls] array-of-urls->url)
+         (if (seq (:ContactInformation contact))
+          (update-in contact [:ContactInformation :RelatedUrls] array-of-urls->url)
           contact))
         contacts))
 
@@ -75,8 +75,8 @@
   "Migrate ContactPersons to UMM spec v1.8 and lower"
   [contacts]
   (for [contact contacts]
-   (if (not-empty (:ContactInformation contact))
-    (update-in-each contact [:ContactInformation :RelatedUrls] url->array-of-urls)
+   (if (seq (:ContactInformation contact))
+    (update-in contact [:ContactInformation :RelatedUrls] url->array-of-urls)
     contact)))
 
 (defn migrate-data-centers-up
@@ -84,10 +84,10 @@
   [data-centers]
   (mapv (fn [data-center]
           (-> data-center
-              (update-in-each [:ContactGroups] migrate-contacts-up)
-              (update-in-each [:ContactPersons] migrate-contacts-up)
+              (update :ContactGroups migrate-contacts-up)
+              (update :ContactPersons migrate-contacts-up)
               (update :ContactInformation dissoc-titles-from-contact-information)
-              (update-in-each [:ContactInformation :RelatedUrls] array-of-urls->url)))
+              (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)))
         data-centers))
 
 (defn migrate-data-centers-down
@@ -99,7 +99,7 @@
            (-> data-center
                (update :ContactGroups migrate-contacts-down)
                (update :ContactPersons migrate-contacts-down)
-               (update-in-each [:ContactInformation :RelatedUrls] url->array-of-urls)))
+               (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)))
          data-centers))
   data-centers)
 
