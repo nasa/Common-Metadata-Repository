@@ -15,9 +15,9 @@
     (keyword (:action msg))))
 
 (defmethod handle-ingest-event :default
-  [_ _ _])
+  [context all-revisions-index? msg]
+  (warn "I'm ignoring this message" msg))
 ;; Default ignores the ingest event. There may be ingest events we don't care about.
-
 
 (defmethod handle-ingest-event :provider-collection-reindexing
   [context _ {:keys [provider-id force-version? all-revisions-index?]}]
