@@ -182,8 +182,10 @@
         q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))
         ex-name (normalize-queue-name exchange-name)
         topic (get-topic sns-client ex-name)
-        topic-arn (.getTopicArn topic)]
-    (Topics/subscribeQueue sns-client sqs-client topic-arn q-url extend?)))
+        topic-arn (.getTopicArn topic)
+        sub-arn (Topics/subscribeQueue sns-client sqs-client topic-arn q-url extend?)]
+    ;; use raw mode
+    (.setSubscriptionAttributes sns-client sub-arn "RawMessageDelivery" "true")))
 
 (defn- bind-queue-to-exchanges
  "Bind a queue to SNS Topics representing exchanges."
