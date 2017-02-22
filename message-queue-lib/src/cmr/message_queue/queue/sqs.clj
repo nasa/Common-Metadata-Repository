@@ -325,7 +325,6 @@
 
 ;; Tests to make sure SNS/SQS is working
 (comment
-  ; (.subscribe (:sns-client broker) "arn:aws:sns:us-east-1:688991608580:gsfc-eosdis-cmr-ingest_exchange" "sqs" "arn:aws:sqs:us-east-1:688991608580:gsfc-eosdis-cmr-ngap-cmr-test_queue")
   ;; create a broker
   ;; (def broker (lifecycle/start (create-queue-broker {}) nil))
   (def broker (lifecycle/start (create-queue-broker {:queues ["jn_test_queueX5" "jn_test_queueY5" "jn_test_queueZ5"]
@@ -352,8 +351,6 @@
   ;; subscribe to test queue with a simple handler that prints received messages
   (queue/subscribe broker "jn_test_queueY5" (fn [msg] (do (println "MESSAGE!") (swap! msg-cnt-atom inc))))
   ;; publish a message to the queue to verify our subscribe worked
-  (queue/publish-to-queue broker "jn_test_queueY5" {:action "concept-update" :dummy "John"})
+  (queue/publish-to-queue broker "jn_test_queueY5" {:action "concept-update" :dummy "dummy"})
   ;; publish a message to the exchange to verify the message is sent to the queue
-  (queue/publish-to-exchange broker "jn_test_exchangeA5" {:action "concept-update" :dummy "Dan"})
-  (println "OK")
-  @msg-cnt-atom)
+  (queue/publish-to-exchange broker "jn_test_exchangeA5" {:action "concept-update" :dummy "dummy"}))
