@@ -12,11 +12,12 @@
   [context concept-id concept prev-concept]
   (let [platform-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "platform")
         current-platforms (map :ShortName (:Platforms concept))
+        previous-platforms (map :ShortName (:Platforms prev-concept))
         platform-aliases (mapcat #(get platform-alias-map %) (map str/upper-case current-platforms))
-        deleted-platform-names (s/difference
-                                 (set (map :ShortName (:Platforms prev-concept)))
-                                 (set (concat current-platforms platform-aliases)))]
-    (for [name deleted-platform-names]
+        deleted-non-alias-platform-names (s/difference
+                                           (set previous-platforms)
+                                           (set (concat current-platforms platform-aliases)))]
+    (for [name deleted-non-alias-platform-names]
       {:params {"platform[]" name
                 :collection-concept-id concept-id}
        :error-msg (format (str "Collection Platform [%s] is referenced by existing"
