@@ -37,10 +37,11 @@
         current-parent-ins (get-parent-instruments-from-concept concept)
         previous-parent-ins (get-parent-instruments-from-concept prev-concept)
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-parent-ins))
-        deleted-non-alias-parent-instrument-names (s/difference
-                                                    (set previous-parent-ins)
-                                                    (set (concat current-parent-ins ins-aliases)))]
-    (for [name deleted-non-alias-parent-instrument-names]
+        ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
+        deleted-parent-instrument-names (s/difference
+                                          (set previous-parent-ins)
+                                          (set (concat current-parent-ins ins-aliases)))]
+    (for [name deleted-parent-instrument-names]
       {:params {"instrument[]" name
                 :collection-concept-id concept-id}
        :error-msg (format (str "Collection Instrument [%s] is referenced by existing"
@@ -55,10 +56,11 @@
         current-child-ins (get-child-instruments-from-concept concept)
         previous-child-ins (get-child-instruments-from-concept prev-concept)
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-child-ins))
-        deleted-non-alias-child-instrument-names (s/difference
-                                                   (set previous-child-ins)
-                                                   (set (concat current-child-ins ins-aliases)))]
-    (for [name deleted-non-alias-child-instrument-names]
+        ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
+        deleted-child-instrument-names (s/difference
+                                         (set previous-child-ins)
+                                         (set (concat current-child-ins ins-aliases)))]
+    (for [name deleted-child-instrument-names]
       {:params {"sensor[]" name
                 :collection-concept-id concept-id}
        :error-msg (format (str "Collection Child Instrument [%s] is referenced by existing"

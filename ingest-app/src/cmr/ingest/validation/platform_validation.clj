@@ -14,10 +14,11 @@
         current-platforms (map :ShortName (:Platforms concept))
         previous-platforms (map :ShortName (:Platforms prev-concept))
         platform-aliases (mapcat #(get platform-alias-map %) (map str/upper-case current-platforms))
-        deleted-non-alias-platform-names (s/difference
-                                           (set previous-platforms)
-                                           (set (concat current-platforms platform-aliases)))]
-    (for [name deleted-non-alias-platform-names]
+        ;; Only the deleted ones that are not part of the platform-aliases need to be validated.
+        deleted-platform-names (s/difference
+                                 (set previous-platforms)
+                                 (set (concat current-platforms platform-aliases)))]
+    (for [name deleted-platform-names]
       {:params {"platform[]" name
                 :collection-concept-id concept-id}
        :error-msg (format (str "Collection Platform [%s] is referenced by existing"
