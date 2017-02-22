@@ -19,6 +19,7 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
+   [cmr.orbits.orbits-runtime :as orbits-runtime]
    [cmr.search.api.routes :as routes]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
@@ -61,7 +62,8 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches collection-renderer/system-key :search-index :scheduler :web :nrepl])
+  [:log :caches collection-renderer/system-key orbits-runtime/system-key :search-index :scheduler
+   :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -98,6 +100,7 @@
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)}
              :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
+             orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")

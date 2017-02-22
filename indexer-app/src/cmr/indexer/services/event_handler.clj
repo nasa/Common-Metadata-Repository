@@ -18,7 +18,6 @@
   [_ _ _])
 ;; Default ignores the ingest event. There may be ingest events we don't care about.
 
-
 (defmethod handle-ingest-event :provider-collection-reindexing
   [context _ {:keys [provider-id force-version? all-revisions-index?]}]
   ;; We set the refresh acls flag to false because the ACLs should have been refreshed as part

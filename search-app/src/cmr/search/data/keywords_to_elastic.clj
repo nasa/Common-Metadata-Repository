@@ -48,7 +48,6 @@
    :project 1.3
    :platform 1.3
    :instrument 1.2
-   :sensor 1.2
    :science-keywords 1.2
    :spatial-keyword 1.1
    :temporal-keyword 1.1
@@ -148,9 +147,6 @@
      ;; instrument
      (keywords->name-filter :instrument-ln.lowercase :instrument-sn.lowercase keywords
                             (get-boost-fn :instrument))
-     ;; sensor
-     (keywords->name-filter :sensor-ln.lowercase :sensor-sn.lowercase keywords
-                            (get-boost-fn :sensor))
      ;; science keywords
      (keywords->sk-filter keywords (get-boost-fn :science-keywords))
      ;; spatial-keyword
@@ -167,7 +163,7 @@
      (keywords->boosted-exact-match-filter :entry-title.lowercase keywords
                                            (get-boost-fn :entry-title))
 
-     ;; doi 
+     ;; doi
      (keywords->boosted-exact-match-filter :doi.lowercase keywords
                                            (get-boost-fn :doi))
      ;; provider-id

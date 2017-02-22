@@ -126,11 +126,11 @@
        [:Short_Name (:ShortName instrument)]
        [:Long_Name (:LongName instrument)]
        [:Technique (:Technique instrument)]
-       [:NumberOfSensors (:NumberOfSensors instrument)]
+       [:NumberOfSensors (:NumberOfInstruments instrument)]
        (characteristics-for instrument)
        (for [opmode (:OperationalModes instrument)]
          [:OperationalMode opmode])
-       (map sensor-mapping (:Sensors instrument))])
+       (map sensor-mapping (:ComposedOf instrument))])
     [:Instrument
      [:Short_Name u/not-provided]]))
 

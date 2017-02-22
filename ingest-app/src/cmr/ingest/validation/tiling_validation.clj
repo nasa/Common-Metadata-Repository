@@ -19,11 +19,12 @@
          (get (humanizer-alias-cache/get-humanizer-alias-map context) "tiling_system_name")
         tile-aliases 
          (mapcat #(get tile-alias-map %) (map str/upper-case current-tiles))
-        deleted-non-alias-tile-names 
+        ;; Only the deleted ones that are not part of the tile-aliases need to be validated.
+        deleted-tile-names 
          (s/difference
            (set previous-tiles) 
            (set (concat current-tiles tile-aliases)))]
-    (for [name deleted-non-alias-tile-names]
+    (for [name deleted-tile-names]
       {:params {"two-d-coordinate-system[]" name
                 :collection-concept-id concept-id}
        :error-msg (format 

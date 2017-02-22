@@ -21,6 +21,12 @@ if [ $? -ne 0 ] ; then
   echo "Failed to install gems" >&2
   exit 1
 fi
+date && echo "Installing orbit library gems" &&
+(cd orbits-lib && lein install-gems)
+if [ $? -ne 0 ] ; then
+  echo "Failed to install gems" >&2
+  exit 1
+fi
 date && echo "Generating Search API documentation" &&
 (cd search-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then

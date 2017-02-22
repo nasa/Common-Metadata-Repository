@@ -88,8 +88,8 @@
         (update-in-each [:Platforms] update-in-each [:Instruments] assoc
                         :Characteristics nil
                         :OperationalModes nil
-                        :NumberOfSensors nil
-                        :Sensors nil
+                        :NumberOfInstruments nil
+                        :ComposedOf nil
                         :Technique nil)
         (update :ScienceKeywords expected-science-keywords)
         (update-in [:Platforms] normalize-smap-instruments)

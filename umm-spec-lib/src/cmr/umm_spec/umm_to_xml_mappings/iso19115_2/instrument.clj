@@ -11,9 +11,9 @@
   "Returns the instrument with generated ids for ISO xml generation"
   [platform-id instrument]
   (let [instrument-id (su/generate-id)
-        sensors (sensor/sensors-with-id (:Sensors instrument) instrument-id)]
+        sensors (sensor/sensors-with-id (:ComposedOf instrument) instrument-id)]
     (-> instrument
-        (assoc :Sensors sensors)
+        (assoc :ComposedOf sensors)
         (assoc :instrument-id instrument-id)
         (assoc :platform-id platform-id))))
 
@@ -26,7 +26,7 @@
   "Returns the instrument tag :eos:EOS_Instrument if there are sensors in the instrument,
   otherwise returns :gmi:MI_Instrument"
   [instrument]
-  (if (or (seq (:Sensors instrument))
+  (if (or (seq (:ComposedOf instrument))
           (seq (:Characteristics instrument)))
     :eos:EOS_Instrument
     :gmi:MI_Instrument))
@@ -58,7 +58,4 @@
       [:gmi:description {:gco:nilReason "missing"}]
       [:gmi:mountedOn {:xlink:href (str "#" (:platform-id instrument))}]
       (ch/generate-characteristics "instrumentInformation" (:Characteristics instrument))
-      (sensor/generate-sensors (:Sensors instrument))]]))
-
-
-
+      (sensor/generate-sensors (:ComposedOf instrument))]]))

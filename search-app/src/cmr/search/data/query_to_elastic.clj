@@ -184,21 +184,67 @@
   [query]
   (keywords-extractor/extract-keywords query))
 
+(defn- get-max-kw-number-allowed
+  "Returns the max number of keyword string with wildcards allowed by elastic query, 
+   given the max length of the keyword string with wildcards."
+  [length]
+  (cond
+    (> length 241) 0
+    (and (> length 121) (<= length 241)) 10
+    (and (> length 61) (<= length 121)) 16
+    (and (> length 41) (<= length 61)) 22
+    (and (> length 21) (<= length 41)) 26
+    (and (> length 7) (<= length 21)) 36
+    (and (> length 5) (<= length 7)) 66
+    (= length 5) 83
+    (and (> length 0) (<= length 4)) 118))
+
+(def KEYWORD_WILDCARD_NUMBER_MAX
+  "Maximum number of keyword strings with wildcards allowed by the CMR.
+   This is the absolute maximum number which can not be exceeded. 
+   It takes precedence over the maximum number from the get-max-kw-number-allowed function."
+  30)
+
+(defn- ^:pure get-validate-keyword-wildcards-msg
+  "Validates if the number of keyword strings with wildcards exceeds the max number allowed
+   for the max length of the keyword strings. Returns validation message if it fails."
+  [keywords]
+  (when-let [kw-with-wild-cards (get (group-by #(or (.contains % "?") (.contains % "*")) keywords) true)]  
+    (let [max-kw-length (apply max (map count kw-with-wild-cards))
+          kw-number (count kw-with-wild-cards)
+          max-kw-number-allowed (get-max-kw-number-allowed max-kw-length)
+          over-abs-max-msg (str "Max number of keywords with wildcard allowed is " KEYWORD_WILDCARD_NUMBER_MAX)
+          over-rel-max-msg (str "The CMR permits a maximum of " max-kw-number-allowed 
+                                " keywords with wildcards in a search,"
+                                " given the max length of the keyword being " max-kw-length
+                                ". Your query contains " kw-number " keywords with wildcards")]
+      (when (or (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) (> kw-number max-kw-number-allowed))
+        (cond 
+          (> kw-number KEYWORD_WILDCARD_NUMBER_MAX) over-abs-max-msg 
+          :else over-rel-max-msg)))))  
+
+(defn- validate-keyword-wildcards
+  "Validates keyword with wildcards. If validation fails, throw bad-request error"
+  [keywords]
+  (when-let [msg (get-validate-keyword-wildcards-msg keywords)]
+    (errors/throw-service-errors :bad-request (vector msg)))) 
+ 
 (defmethod q2e/query->elastic :collection
   [query]
   (let [boosts (:boosts query)
         {:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (q2e/condition->elastic condition concept-type)]
     (if-let [keywords (keywords-in-query query)]
-      ;; Forces score to be returned even if not sorting by score.
-      {:track_scores true
-       ;; function_score query allows us to compute a custom relevance score for each document
-       ;; matched by the primary query. The final document relevance is given by multiplying
-       ;; a boosting term for each matching filter in a set of filters.
-       :query {:function_score {:score_mode :multiply
-                                :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                                :query {:filtered {:query (eq/match-all)
-                                                   :filter core-query}}}}}
+      (let [_ (validate-keyword-wildcards keywords)] 
+        ;; Forces score to be returned even if not sorting by score.
+        {:track_scores true
+         ;; function_score query allows us to compute a custom relevance score for each document
+         ;; matched by the primary query. The final document relevance is given by multiplying
+         ;; a boosting term for each matching filter in a set of filters.
+         :query {:function_score {:score_mode :multiply
+                                  :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
+                                  :query {:filtered {:query (eq/match-all)
+                                                     :filter core-query}}}}}) 
       (if boosts
         (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
         {:query {:filtered {:query (eq/match-all)

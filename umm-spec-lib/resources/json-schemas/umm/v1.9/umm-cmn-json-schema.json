@@ -797,7 +797,7 @@
     "InstrumentType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Information about the device used to measure or record data in this collection, including direct human observation. In cases where instruments have a single sensor or the instrument and sensor are used synonymously (e.g. AVHRR), both Instrument and Sensor should be recorded. The Sensor information is represented in a separate section.",
+      "description": "Information about the device used to measure or record data in this collection, including direct human observation. In cases where instruments have a single child instrument or the instrument and child instrument are used synonymously (e.g. AVHRR), both Instrument and ComposedOf should be recorded. The child instrument information is represented in a separate section.",
       "properties": {
         "ShortName": {
           "$ref": "#/definitions/PlatformShortNameType"
@@ -819,14 +819,14 @@
           "minLength": 1,
           "maxLength": 2048
         },
-        "NumberOfSensors": {
-          "description": "Number of sensors used on the instrument when acquiring the granule data.",
+        "NumberOfInstruments": {
+          "description": "Number of instruments used on the instrument when acquiring the granule data.",
           "type": "integer"
         },
-        "Sensors": {
+        "ComposedOf": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SensorType"
+            "$ref": "#/definitions/InstrumentChildType"
           },
           "minItems": 0
         },
@@ -843,19 +843,19 @@
       },
       "required": ["ShortName"]
     },
-    "SensorType": {
+    "InstrumentChildType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Information about the collection source/sensor configuration, including sensor parameters settings such as technique etc.",
+      "description": "Child object on an instrument. Has all the same fields as instrument, minus the list of child instruments.",
       "properties": {
         "ShortName": {
-          "$ref": "#/definitions/ShortNameType"
+          "$ref": "#/definitions/PlatformShortNameType"
         },
         "LongName": {
-          "$ref": "#/definitions/LongNameType"
+          "$ref": "#/definitions/PlatformLongNameType"
         },
         "Characteristics": {
-          "description": "Sensor-specific characteristics, e.g,. Wavelength, SwathWidth, Field of View.   The characteristic names must be unique on this sensor; however the names do not have to be unique across sensors.",
+          "description": "Instrument-specific characteristics, e.g., Wavelength, SwathWidth, Field of View. The characteristic names must be unique on this instrument; however the names do not have to be unique across instruments.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CharacteristicType"
@@ -863,7 +863,7 @@
           "minItems": 0
         },
         "Technique": {
-          "description": "Technique applied for this sensor in the configuration.",
+          "description": "The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal Emission and Reflective Radiometer, Clouds and the Earth's Radiant Energy System, Human Observation).",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048

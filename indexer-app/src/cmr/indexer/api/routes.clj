@@ -69,6 +69,13 @@
         (index-svc/update-indexes request-context)
         {:status 200})
 
+      ;; This is just an alias for /update-indexes to make it easy to update indexes
+      ;; after a deployment using the same deployment code that other apps use for db-migrate.
+      (POST "/db-migrate" {:keys [request-context]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (index-svc/update-indexes request-context)
+        {:status 200})
+
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 

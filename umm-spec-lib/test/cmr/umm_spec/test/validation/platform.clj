@@ -6,12 +6,12 @@
             [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))
 
 (deftest collection-platforms-validation
-  (let [s1 (c/map->SensorType {:ShortName "S1"})
-        s2 (c/map->SensorType {:ShortName "S2"})
+  (let [s1 (c/map->InstrumentChildType {:ShortName "S1"})
+        s2 (c/map->InstrumentChildType {:ShortName "S2"})
         i1 (c/map->InstrumentType {:ShortName "I1"
-                                   :Sensors [s1 s2]})
+                                   :ComposedOf [s1 s2]})
         i2 (c/map->InstrumentType {:ShortName "I2"
-                                   :Sensors [s1 s2]})
+                                   :ComposedOf [s1 s2]})
         c1 (c/map->CharacteristicType {:Name "C1"})
         c2 (c/map->CharacteristicType {:Name "C2"})]
     (testing "valid platforms"
@@ -64,23 +64,23 @@
                      {:Platforms [(c/map->PlatformType
                                     {:ShortName "P1"
                                      :Instruments [(c/map->InstrumentType {:ShortName "I1"
-                                                                           :Sensors [s1 s1]})]})]})]
+                                                                           :ComposedOf [s1 s1]})]})]})]
           (h/assert-invalid
             coll
-            [:Platforms 0 :Instruments 0 :Sensors]
-            ["Sensors must be unique. This contains duplicates named [S1]."])))
+            [:Platforms 0 :Instruments 0 :ComposedOf]
+            ["Composed Of must be unique. This contains duplicates named [S1]."])))
       (testing "duplicate sensor characteristics names"
         (let [coll (coll/map->UMM-C
                      {:Platforms [(c/map->PlatformType
                                     {:ShortName "P1"
                                      :Instruments [(c/map->InstrumentType
                                                      {:ShortName "I1"
-                                                      :Sensors [(c/map->SensorType
-                                                                  {:ShortName "S1"
-                                                                   :Characteristics [c2 c2]})]})]})]})]
+                                                      :ComposedOf [(c/map->InstrumentChildType
+                                                                    {:ShortName "S1"
+                                                                     :Characteristics [c2 c2]})]})]})]})]
           (h/assert-invalid
             coll
-            [:Platforms 0 :Instruments 0 :Sensors 0 :Characteristics]
+            [:Platforms 0 :Instruments 0 :ComposedOf 0 :Characteristics]
             ["Characteristics must be unique. This contains duplicates named [C2]."])))
       (testing "multiple errors"
         (let [coll (coll/map->UMM-C
@@ -89,16 +89,15 @@
                                   (c/map->PlatformType
                                     {:ShortName "P1"
                                      :Instruments [(c/map->InstrumentType {:ShortName "I1"
-                                                                           :Sensors [s1 s1]})
+                                                                           :ComposedOf [s1 s1]})
                                                    (c/map->InstrumentType {:ShortName "I1"
-                                                                           :Sensors [s1 s2 s2]})]})]})
-              expected-errors [{:path [:Platforms 1 :Instruments 0 :Sensors]
-                                :errors ["Sensors must be unique. This contains duplicates named [S1]."]}
-                               {:path [:Platforms 1 :Instruments 1 :Sensors]
-                                :errors ["Sensors must be unique. This contains duplicates named [S2]."]}
+                                                                           :ComposedOf [s1 s2 s2]})]})]})
+              expected-errors [{:path [:Platforms 1 :Instruments 0 :ComposedOf]
+                                :errors ["Composed Of must be unique. This contains duplicates named [S1]."]}
+                               {:path [:Platforms 1 :Instruments 1 :ComposedOf]
+                                :errors ["Composed Of must be unique. This contains duplicates named [S2]."]}
                                {:path [:Platforms 1 :Instruments]
                                 :errors ["Instruments must be unique. This contains duplicates named [I1]."]}
                                {:path [:Platforms]
                                 :errors ["Platforms must be unique. This contains duplicates named [P1]."]}]]
           (h/assert-multiple-invalid coll expected-errors))))))
-

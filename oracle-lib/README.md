@@ -2,24 +2,21 @@
 
 Contains utilities for connecting to and manipulating data in Oracle.
 
-## Instructions for Upgrading Oracle Jars
+## Instructions for Obtaining Oracle Jars
 
-Oracle Jars are not installed on public maven servers so they must be hosted on a different location.
+Oracle Jars are not installed on public maven servers so they must be manually obtained and installed.
 
-1. Download oracle Jars from Oracle's website. You can usually google for each for the jar files such as "oracle ucp jar" to find the location of each jar file.
-2. SCP them to devrepo1.dev.echo.nasa.gov
-3. chusr to echo_opr
-4. Run the install commands to install them into the maven repo there:
+### Configuring a Private Repository
 
-Replace `<version>` with the version from Oracle
+If you have the jars located on a internal maven repository you can configure the location of that through the environment variable `CMR_ORACLE_JAR_REPO`. This will be used dynamically as the repository location in the leiningen project.
 
-```
-mvn install:install-file -Dfile=ojdbc6.jar -DartifactId=ojdbc6 -Dversion=<version>  -DgroupId=com.oracle -Dpackaging=jar -DlocalRepositoryPath=/data/dist/projects/echo/mavenrepo -DcreateChecksum=true
-mvn install:install-file -Dfile=ons.jar -DartifactId=ons -Dversion=<version>  -DgroupId=com.oracle -Dpackaging=jar -DlocalRepositoryPath=/data/dist/projects/echo/mavenrepo -DcreateChecksum=true
-mvn install:install-file -Dfile=ucp.jar -DartifactId=ucp -Dversion=<version>  -DgroupId=com.oracle -Dpackaging=jar -DlocalRepositoryPath=/data/dist/projects/echo/mavenrepo -DcreateChecksum=true
-```
+### Manually installing the Oracle JDBC Jars
 
-5. Update the version in the project.clj and run `lein deps`.
+1. Download oracle Jars from Oracle's website. You can usually google for each for the jar files such as "oracle ucp jar" to find the location of each jar file. You need to download `ojdbc6.jar`, `ucp.jar`, and `ons.jar`. Make sure to get the version matching the versions specified in `project.clj`.
+2. Put the Jars in `oracle-lib/support`
+3. Run `install_oracle_jars.sh` in `oracle-lib/support` which will install the oracle jars in your local maven repository.
+
+
 
 ## License
 

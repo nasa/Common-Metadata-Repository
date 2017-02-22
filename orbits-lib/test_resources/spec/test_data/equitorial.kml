@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name></name>
+	<Placemark>
+		<name>equitorial.kml</name>
+		<MultiGeometry>
+		<LineString><tessellate>1</tessellate><coordinates>150.00000000000003,6.523732106725016 150.00000000000003,-6.523732106725016</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>153.35000000000002,6.523732106725029 153.35000000000002,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>156.70000000000002,6.52373210672503 156.70000000000002,-6.52373210672503</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>160.05,6.52373210672503 160.05,-6.52373210672503</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>163.40000000000003,6.523732106725029 163.40000000000003,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>166.75000000000003,6.523732106725029 166.75000000000003,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>170.1,6.523732106725029 170.1,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>173.45000000000002,6.523732106725029 173.45000000000002,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>176.8,6.523732106725029 176.8,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-179.85000000000002,6.523732106725029 -179.85000000000002,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-176.5,6.523732106725029 -176.5,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-173.14999999999998,6.52373210672503 -173.14999999999998,-6.52373210672503</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-169.8,6.523732106725029 -169.8,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-166.45,6.523732106725029 -166.45,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-163.10000000000002,6.523732106725029 -163.10000000000002,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-159.75,6.523732106725029 -159.75,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-156.4,6.523732106725029 -156.4,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-153.05,6.52373210672503 -153.05,-6.52373210672503</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-149.70000000000002,6.523732106725029 -149.70000000000002,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-146.35,6.523732106725029 -146.35,-6.523732106725029</coordinates></LineString>
+<LineString><tessellate>1</tessellate><coordinates>-142.99999999999997,6.523732106725029 -142.99999999999997,-6.523732106725029</coordinates></LineString>
+
+		</MultiGeometry>
+	</Placemark>
+</Document>
+</kml>

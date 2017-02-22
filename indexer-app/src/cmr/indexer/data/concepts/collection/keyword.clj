@@ -77,13 +77,10 @@
         platforms (map util/map-keys->kebab-case
                        (when-not (= su/not-provided-platforms platforms) platforms))
         platform-short-names (map :short-name platforms)
-        instruments (mapcat :instruments platforms)
-        instrument-short-names (keep :short-name instruments)
+        platform-instruments (mapcat :instruments platforms)
+        instruments (concat platform-instruments (mapcat :composed-of platform-instruments))
+        instrument-short-names (distinct (keep :short-name instruments))
         instrument-techiques (keep :technique instruments)
-        sensors (mapcat :sensors instruments)
-        sensor-short-names (keep :short-name sensors)
-        sensor-long-names (keep :long-name sensors)
-        sensor-techniques (keep :technique sensors)
         characteristics (mapcat :characteristics platforms)
         char-names (keep :name characteristics)
         char-descs (keep :description characteristics)
@@ -126,9 +123,6 @@
                                   related-url-titles
                                   related-url-urls
                                   science-keywords
-                                  sensor-long-names
-                                  sensor-short-names
-                                  sensor-techniques
                                   short-name
                                   spatial-keywords
                                   summary

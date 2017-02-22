@@ -291,14 +291,18 @@
  and then parse the short and long name here to mimic what UMM -> ISO -> UMM will do."
  [data-center]
  (let [{:keys [ShortName LongName]} data-center
-       organization-name (str ShortName #"&gt;" LongName)
+       organization-name (if LongName
+                          (str ShortName " &gt; " LongName)
+                          ShortName)
        name-split (str/split organization-name #"&gt;|>")]
    (if (> (count name-split) 0)
     (-> data-center
         (assoc :ShortName (str/trim (first name-split)))
         (assoc :LongName (when (> (count name-split) 1)
                           (str/join " " (map str/trim (rest name-split))))))
-    data-center)))
+    (-> data-center
+        (assoc :ShortName su/not-provided)
+        (assoc :LongName nil)))))
 
 (defn- update-person-names
  "ISO only has one field for the whole name. When we go from UMM -> ISO, we combine the names into
@@ -383,7 +387,7 @@
       (update :TemporalExtents expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
-                      :NumberOfSensors nil
+                      :NumberOfInstruments nil
                       :OperationalModes nil)
       (update :DataDates expected-iso19115-data-dates)
       (assoc :CollectionDataType nil)

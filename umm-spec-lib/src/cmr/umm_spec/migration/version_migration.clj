@@ -193,6 +193,25 @@
       (dissoc :DOI))
     c))
 
+(defn- migrate-sensor-to-instrument
+ "Migrate from 1.8 to 1.9 sensors to ComposedOf list of instrument child types on
+ the instrument"
+ [instrument]
+ (-> instrument
+     (assoc :ComposedOf (:Sensors instrument))
+     (assoc :NumberOfInstruments (:NumberOfSensors instrument))
+     (dissoc :Sensors)
+     (dissoc :NumberOfSensors)))
+
+(defn- migrate-instrument-to-sensor
+ "Migrate from 1.9 to 1.8 child instruments to sensors "
+ [instrument]
+ (-> instrument
+     (assoc :Sensors (:ComposedOf instrument))
+     (assoc :NumberOfSensors (:NumberOfInstruments instrument))
+     (dissoc :ComposedOf)
+     (dissoc :NumberOfInstruments)))
+
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
   (-> c
@@ -203,7 +222,8 @@
       (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)
       (update :DataCenters related-url/migrate-data-centers-up)
       (update :ContactGroups related-url/migrate-contacts-up)
-      (update :ContactPersons related-url/migrate-contacts-up)))
+      (update :ContactPersons related-url/migrate-contacts-up)
+      (update-in-each [:Platforms] update-in-each [:Instruments] migrate-sensor-to-instrument)))
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
@@ -211,8 +231,8 @@
       migrate-doi-down
       related-url/migrate-down-from-1_9
       (update-in-each [:PublicationReferences] related-url/migrate-online-resource-to-related-url)
-      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)))
-
+      (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)
+      (update-in-each [:Platforms] update-in-each [:Instruments] migrate-instrument-to-sensor)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 

@@ -100,17 +100,18 @@
         ;; the expected index set.
         expected-index-set (idx-set/index-set extra-granule-indexes)]
 
-    (when-not (requires-update? existing-index-set expected-index-set)
-      (info "Existing index set:" (pr-str existing-index-set))
-      (info "New index set:" (pr-str expected-index-set))
-      (errors/throw-service-error :bad-request "It appears the existing index set and the new index set are the same."))
-
-    (info "Updating the index set to " (pr-str expected-index-set))
-    (idx-set/update context expected-index-set)
-    (info "Creating colleciton index alias.")
-    (esi/create-index-alias (context->conn context)
-                            (idx-set/collections-index)
-                            (idx-set/collections-index-alias))))
+    (if (requires-update? existing-index-set expected-index-set)
+      (do
+        (info "Updating the index set to " (pr-str expected-index-set))
+        (idx-set/update context expected-index-set)
+        (info "Creating colleciton index alias.")
+        (esi/create-index-alias (context->conn context)
+                                (idx-set/collections-index)
+                                (idx-set/collections-index-alias)))
+      (do
+        (info "Ignoring upate indexes request because index set is unchanged.")
+        (info "Existing index set:" (pr-str existing-index-set))
+        (info "New index set:" (pr-str expected-index-set))))))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
@@ -257,6 +258,25 @@
         (filter identity)
         flatten)))
 
+(defn- handle-bulk-index-response
+  "Logs any non-standard (not 409/404) errors found in the bulk index response."
+  [response]
+  ;; we don't care about version conflicts or deletes that aren't found
+  (let [bad-items  (filter (fn [item]
+                               (let [status (if (:index item)
+                                                (get-in item [:index :status])
+                                                (get-in item [:delete :status]))]
+                                 (and (> status 399)
+                                      (not= 409 status)
+                                      (not= 404 status))))
+                           (:items response))]
+    (doseq [resp bad-items
+            :let [resp-data (if (:index resp)
+                                (:index resp)
+                                (:delete resp))
+                  {:keys [_id status error]} resp-data]]
+         (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
+
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
   ([context docs]
@@ -265,18 +285,8 @@
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (context->conn context)
-           response (bulk/bulk conn bulk-operations)
-           ;; we don't care about version conflicts or deletes that aren't found
-           bad-errors (some (fn [item]
-                              (let [status (if (:index item)
-                                             (get-in item [:index :status])
-                                             (get-in item [:delete :status]))]
-                                (and (> status 399)
-                                     (not= 409 status)
-                                     (not= 404 status))))
-                            (:items response))]
-       (when bad-errors
-         (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))))
+           response (bulk/bulk conn bulk-operations)]
+      (handle-bulk-index-response response)))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."

@@ -20,6 +20,7 @@
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-system-int-test "0.1.0-SNAPSHOT"
    :cmr-oracle-lib "0.1.0-SNAPSHOT"
+   :cmr-orbits-lib "0.1.0-SNAPSHOT"
    :cmr-mock-echo-app "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
    :cmr-common-app-lib "0.1.0-SNAPSHOT"})
@@ -53,7 +54,8 @@
                            [org.codehaus.groovy/groovy-all "2.4.0"]]
                          project-dependencies)
   :plugins [[lein-shell "0.4.0"]
-            [test2junit "1.2.1"]]
+            [test2junit "1.2.1"]
+            [lein-environ "1.1.0"]]
   :repl-options {:init-ns user
                  :timeout 180000}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
@@ -62,28 +64,30 @@
              "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
              "-Dorg.eclipse.jetty.LEVEL=INFO"
              "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
-
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.5"]
-                        [org.clojure/tools.namespace "0.2.11"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [pjstadig/humane-test-output "0.8.1"]
-                        [debugger "0.2.0"]
-                        [criterium "0.4.4"]
-                        ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.3"]
-                        [proto-repl-charts "0.3.1"]
-                        [proto-repl "0.3.1"]
-                        [proto-repl-sayid "0.1.3"]]
-         ;; Use the following to enable JMX profiling with visualvm
-         ;:jvm-opts ^:replace ["-server"
-         ;                     "-Dcom.sun.management.jmxremote"
-         ;                     "-Dcom.sun.management.jmxremote.ssl=false"
-         ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
-         ;                     "-Dcom.sun.management.jmxremote.port=1098"]
-         :source-paths ["src" "dev" "test"]
-         :injections [(require 'pjstadig.humane-test-output)
-                      (pjstadig.humane-test-output/activate!)]}
+  {:dev-dependencies {:dependencies [[ring-mock "0.1.5"]
+                                     [org.clojure/tools.namespace "0.2.11"]
+                                     [org.clojars.gjahad/debug-repl "0.3.3"]
+                                     [pjstadig/humane-test-output "0.8.1"]
+                                     [debugger "0.2.0"]
+                                     [criterium "0.4.4"]
+                                     ;; Must be listed here as metadata db depends on it.
+                                     [drift "1.5.3"]
+                                     [proto-repl-charts "0.3.1"]
+                                     [proto-repl "0.3.1"]
+                                     [proto-repl-sayid "0.1.3"]]
+
+                      ;; Use the following to enable JMX profiling with visualvm
+                      ;:jvm-opts ^:replace ["-server"
+                      ;                     "-Dcom.sun.management.jmxremote"
+                      ;                     "-Dcom.sun.management.jmxremote.ssl=false"
+                      ;                     "-Dcom.sun.management.jmxremote.authenticate=false"
+                      ;                     "-Dcom.sun.management.jmxremote.port=1098"]
+                      :source-paths ["src" "dev" "test"]
+                      :injections [(require 'pjstadig.humane-test-output)
+                                   (pjstadig.humane-test-output/activate!)]}
+   ;; This is to separate the dependencies from the dev-config specified in profiles.clj
+   :dev [:dev-dependencies :dev-config]
    :uberjar {:main cmr.dev-system.runner
              ;; See http://stephen.genoprime.com/2013/11/14/uberjar-with-titan-dependency.html
              :uberjar-merge-with {#"org\.apache\.lucene\.codecs\.*" [slurp str spit]}

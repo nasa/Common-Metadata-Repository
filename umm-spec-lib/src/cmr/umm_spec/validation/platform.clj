@@ -9,8 +9,8 @@
 
 (def ^:private instrument-validations
   "Defines the instrument validations for collections"
-  {:Sensors [(v/every sensor-validations)
-             (vu/unique-by-name-validator :ShortName)]
+  {:ComposedOf [(v/every sensor-validations)
+                (vu/unique-by-name-validator :ShortName)]
    :Characteristics (vu/unique-by-name-validator :Name)})
 
 (def ^:private platform-validations

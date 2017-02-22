@@ -9,3 +9,4 @@ pom.xml.asc
 /.nrepl-port
 test2junit
 build.xml
+support/*.jar

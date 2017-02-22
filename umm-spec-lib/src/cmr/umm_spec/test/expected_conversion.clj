@@ -33,21 +33,21 @@
                  :Instruments [{:ShortName "An Instrument"
                                 :LongName "The Full Name of An Instrument v123.4"
                                 :Technique "Two cans and a string"
-                                :NumberOfSensors 1
+                                :NumberOfInstruments 1
                                 :OperationalModes ["on" "off"]
                                 :Characteristics [{:Name "Signal to Noise Ratio"
                                                    :Description "Is that necessary?"
                                                    :DataType "float"
                                                    :Unit "dB"
                                                    :Value "10"}]
-                                :Sensors [{:ShortName "ABC"
-                                           :LongName "Long Range Sensor"
-                                           :Characteristics [{:Name "Signal to Noise Ratio"
-                                                              :Description "Is that necessary?"
-                                                              :DataType "float"
-                                                              :Unit "dB"
-                                                              :Value "10"}]
-                                           :Technique "Drunken Fist"}]}]}]
+                                :ComposedOf [{:ShortName "ABC"
+                                              :LongName "Long Range Sensor"
+                                              :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                 :Description "Is that necessary?"
+                                                                 :DataType "float"
+                                                                 :Unit "dB"
+                                                                 :Value "10"}]
+                                              :Technique "Drunken Fist"}]}]}]
     :TemporalExtents [{:TemporalRangeType "temp range"
                        :PrecisionOfSeconds 3
                        :EndsAtPresentFlag false
