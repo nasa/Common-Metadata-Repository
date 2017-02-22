@@ -5,17 +5,18 @@
    Oracle JDBC jars."
   "CMR_ORACLE_JAR_REPO")
 
-(def extra-repositories
+(def extra-repository
   "The set of repositories to include if configured"
-  (when-let [repo (get (System/getenv) oracle-jar-repo-env-var)]
-    [["releases" repo]]))
+  (if-let [repo (get (System/getenv) oracle-jar-repo-env-var)]
+    repo
+    "http://example.com/no_url_specified_this_is_ignored"))
 
 (defproject nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for connecting to and manipulating data in Oracle."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/oracle-lib"
 
   ;; Dynamically include extra repositories in the project definition if configured.
-  :repositories ~extra-repositories
+  :repositories [["releases" ~extra-repository]]
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
