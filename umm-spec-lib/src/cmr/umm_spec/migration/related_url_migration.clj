@@ -38,8 +38,9 @@
          (if-let [url (:URL related-url)]
           (-> related-url
            (assoc :URLs [url])
-           (dissoc :URL)))
-         related-url)
+           (assoc :Title util/not-provided)
+           (dissoc :URL))
+          related-url))
         related-urls))
 
 (defn array-of-urls->url
