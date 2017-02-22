@@ -7,6 +7,7 @@
     [cmr.ingest.services.helper :as h]
     [cmr.ingest.validation.additional-attribute-validation :as aa]
     [cmr.ingest.validation.collection-unique-ids-validation :as cui]
+    [cmr.ingest.validation.instrument-validation :as instrument-validation]
     [cmr.ingest.validation.platform-validation :as platform-validation]
     [cmr.ingest.validation.project-validation :as pv]
     [cmr.ingest.validation.spatial-validation :as sv]
@@ -54,6 +55,8 @@
    ;;  cui/short-name-version-id-searches
    aa/additional-attribute-searches
    pv/deleted-project-searches
+   instrument-validation/deleted-parent-instrument-searches
+   instrument-validation/deleted-child-instrument-searches
    platform-validation/deleted-platform-searches
    tiling-validation/deleted-tiling-searches
    tv/out-of-range-temporal-searches

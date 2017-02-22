@@ -91,11 +91,35 @@
   (c/map->Sensor (merge {:short-name (d/unique-str "short-name")}
                         attribs)))
 
+(defn sensors
+  "Return a sequence of sensors with the given short names"
+  [& short-names]
+  (map #(c/map->Sensor
+          {:short-name %
+           :long-name (d/unique-str "long-name")})
+       short-names))
+
 (defn instrument
   "Return an instrument based on instrument attribs"
   [attribs]
   (c/map->Instrument (merge {:short-name (d/unique-str "short-name")}
                             attribs)))
+
+(defn instruments
+  "Return a sequence of instruments with the given short names"
+  [& short-names]
+  (map #(c/map->Instrument
+          {:short-name %
+           :long-name (d/unique-str "long-name")})
+       short-names))
+
+(defn instrument-with-sensors
+  "Return an instrument, with a sequence of sensors"
+  [short-name & sensor-short-names]
+  (let [sensors (apply sensors sensor-short-names)]
+    (c/map->Instrument {:short-name short-name
+                        :long-name (d/unique-str "long-name")
+                        :sensors sensors})))
 
 (defn characteristic
   "Returns a platform characteristic"
@@ -121,6 +145,24 @@
            :long-name (d/unique-str "long-name")
            :type (d/unique-str "Type")})
        short-names))
+
+(defn platform-with-instruments
+  "Return a platform with a list of instruments"
+  [short-name & instr-short-names]
+  (let [instruments (apply instruments instr-short-names)]
+    (c/map->Platform {:short-name short-name 
+                      :long-name (d/unique-str "long-name")
+                      :type (d/unique-str "Type")
+                      :instruments instruments})))
+
+(defn platform-with-instrument-and-sensors
+  "Return a platform with an instrument and a list of sensors"
+  [plat-short-name instr-short-name & sensor-short-names]
+  (let [instr-with-sensors (apply instrument-with-sensors instr-short-name sensor-short-names)]
+    (c/map->Platform {:short-name plat-short-name 
+                      :long-name (d/unique-str "long-name")
+                      :type (d/unique-str "Type")
+                      :instruments [instr-with-sensors]})))
 
 (defn projects
   "Return a sequence of projects with the given short names"
