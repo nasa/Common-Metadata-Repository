@@ -101,8 +101,8 @@
                (update :ContactGroups migrate-contacts-down)
                (update :ContactPersons migrate-contacts-down)
                (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)))
-         data-centers))
-  data-centers)
+         data-centers)
+   data-centers))
 
 (defn migrate-down-from-1_9
   ":RelatedUrl {:URL url} -> :RelatedUrl {:URLs [url]} for a given collection"

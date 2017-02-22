@@ -225,11 +225,3 @@
               (migrate-umm-version context data concept-type v1 v2))
             data
             (version-steps source-version dest-version))))
-
-(comment
- (let [coll4-umm cmr.umm-spec.test.expected-conversion/example-collection-record
-       test-context (cmr.umm-spec.test.location-keywords-helper/setup-context-for-test)
-       mime-type "application/vnd.nasa.cmr.umm+json;version=1.9"
-       json (cmr.umm-spec.umm-spec-core/generate-metadata test-context coll4-umm mime-type)
-       migrated (migrate-umm test-context :collection :1.9 :1.0 json)]
-  (cmr.umm-spec.umm-spec-core/validate-metadata :collection "application/vnd.nasa.cmr.umm+json;version=1.0" migrated)))
