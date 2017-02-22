@@ -8,14 +8,13 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.search.api.context-user-id-sids :as user-id-sids]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
-  (if-let [token (:token context)]
-    (tokens/get-user-id context (:token context))
-    (errors/throw-service-error :unauthorized "Humanizer cannot be modified without a valid user token.")))
+  (or (util/lazy-get context :user-id) (user-id-sids/context->user-id context "Humanizer cannot be modified without a valid user token.")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation

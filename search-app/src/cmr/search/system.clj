@@ -4,8 +4,8 @@
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
-   [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
@@ -20,12 +20,12 @@
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
+   [cmr.search.api.context-user-id-sids :as user-id-sids]
    [cmr.search.api.routes :as routes]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.models.query :as q]
-   [cmr.search.services.acls.acl-helper :as ah]
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.transmit.config :as transmit-config]))
@@ -86,7 +86,8 @@
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object])
                       ;; Caches a map of tokens to the security identifiers
-                      ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
+                      user-id-sids/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
+                      user-id-sids/token-user-id-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)

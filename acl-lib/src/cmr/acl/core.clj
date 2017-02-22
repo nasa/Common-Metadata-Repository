@@ -135,7 +135,7 @@
          (filter #(= target (get-in % [acl-oit-key :target])))
          ;; Find acls for this user and permission type
          (filter (partial acl-matches-sids-and-permission?
-                          (context->sids context)
+                          (or (util/lazy-get context :sids) (context->sids context))
                           permission-type))
          seq)))
 

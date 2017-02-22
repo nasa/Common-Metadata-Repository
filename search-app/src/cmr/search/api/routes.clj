@@ -20,6 +20,7 @@
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.search.api.community-usage-metrics :as metrics-api]
+   [cmr.search.api.context-user-id-sids :as user-id-sids]
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.tags-api :as tags-api]
@@ -468,6 +469,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      user-id-sids/add-user-id-and-sids-handler
       acl/add-authentication-handler
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
