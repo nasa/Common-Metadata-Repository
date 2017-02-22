@@ -114,15 +114,13 @@
       (try
         (u/while-let [rec-result (.receiveMessage sqs-client rec-req)]
           (when-let [msg (first (.getMessages rec-result))]
-            (do
-              (debug "Message is: " msg)
-              (let [msg-body (.getBody msg)
-                    msg-content (json/decode msg-body true)]
-                (try
-                  (handler msg-content)
-                  (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
-                  (catch Throwable e
-                    (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name)))))))
+            (let [msg-body (.getBody msg)
+                  msg-content (json/decode msg-body true)]
+              (try
+                (handler msg-content)
+                (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
+                (catch Throwable e
+                  (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
         (catch Throwable e
           (error  e "Async handler for queue" queue-name "completing."))))))
 
