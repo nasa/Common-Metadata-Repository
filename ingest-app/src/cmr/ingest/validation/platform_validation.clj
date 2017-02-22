@@ -12,9 +12,11 @@
   [context concept-id concept prev-concept]
   (let [platform-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "platform")
         current-platforms (map :ShortName (:Platforms concept))
+        previous-platforms (map :ShortName (:Platforms prev-concept))
         platform-aliases (mapcat #(get platform-alias-map %) (map str/upper-case current-platforms))
+        ;; Only the deleted ones that are not part of the platform-aliases need to be validated.
         deleted-platform-names (s/difference
-                                 (set (map :ShortName (:Platforms prev-concept)))
+                                 (set previous-platforms)
                                  (set (concat current-platforms platform-aliases)))]
     (for [name deleted-platform-names]
       {:params {"platform[]" name

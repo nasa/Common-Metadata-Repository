@@ -258,6 +258,25 @@
         (filter identity)
         flatten)))
 
+(defn- handle-bulk-index-response
+  "Logs any non-standard (not 409/404) errors found in the bulk index response."
+  [response]
+  ;; we don't care about version conflicts or deletes that aren't found
+  (let [bad-items  (filter (fn [item]
+                               (let [status (if (:index item)
+                                                (get-in item [:index :status])
+                                                (get-in item [:delete :status]))]
+                                 (and (> status 399)
+                                      (not= 409 status)
+                                      (not= 404 status))))
+                           (:items response))]
+    (doseq [resp bad-items
+            :let [resp-data (if (:index resp)
+                                (:index resp)
+                                (:delete resp))
+                  {:keys [_id status error]} resp-data]]
+         (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
+
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
   ([context docs]
@@ -266,18 +285,8 @@
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (context->conn context)
-           response (bulk/bulk conn bulk-operations)
-           ;; we don't care about version conflicts or deletes that aren't found
-           bad-errors (some (fn [item]
-                              (let [status (if (:index item)
-                                             (get-in item [:index :status])
-                                             (get-in item [:delete :status]))]
-                                (and (> status 399)
-                                     (not= 409 status)
-                                     (not= 404 status))))
-                            (:items response))]
-       (when bad-errors
-         (errors/internal-error! (format "Bulk indexing failed with response %s" response)))))))
+           response (bulk/bulk conn bulk-operations)]
+      (handle-bulk-index-response response)))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
