@@ -1,18 +1,35 @@
-(ns cmr.search.api.context-user-id-sids
+(ns cmr.search.api.request-context-user-augmenter
+ "Adds data to the context for the current user for performance improvements. Adds user id and sids
+ as well as caches those."
  (:require
   [cmr.acl.core :as acl]
   [cmr.common.cache :as cache]
+  [cmr.common.cache.in-memory-cache :as mem-cache]
   [cmr.common.log :refer (info)]
   [cmr.common.services.errors :as errors]
   [cmr.common.util :as util]
   [cmr.search.data.sids-retriever :as sids-retriever]
   [cmr.transmit.echo.tokens :as tokens]))
 
+(def CACHE_TIME
+  "The number of milliseconds token information will be cached for."
+  (* 5 60 1000))
+
 (def token-sid-cache-name
   :token-sid)
 
 (def token-user-id-cache-name
  :token-user-id)
+
+(defn create-token-sid-cache
+ "Create a cache for sids by token"
+ []
+ (mem-cache/create-in-memory-cache :ttl {} {:ttl CACHE_TIME}))
+
+(defn create-token-user-id-cache
+ "Create a cache for user id by token"
+ []
+ (mem-cache/create-in-memory-cache :ttl {} {:ttl CACHE_TIME}))
 
 (defn context->sids
   "Wraps the existing context->sids but with caching"
@@ -45,6 +62,7 @@
 (defn- add-user-id-and-sids-to-context
   "Adds information to the context including the user is and sids"
   [context params headers]
+  (def context context)
   (-> context
       (util/lazy-assoc :sids (context->sids context))
       (util/lazy-assoc :user-id (context->user-id context))))

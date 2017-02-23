@@ -20,7 +20,7 @@
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
-   [cmr.search.api.context-user-id-sids :as user-id-sids]
+   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
    [cmr.search.api.routes :as routes]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
@@ -31,10 +31,6 @@
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
-
-(def TOKEN_CACHE_TIME
-  "The number of milliseconds token information will be cached for."
-  (* 5 60 1000))
 
 (defconfig search-public-protocol
   "The protocol to use in links returned by the search application."
@@ -86,8 +82,8 @@
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object])
                       ;; Caches a map of tokens to the security identifiers
-                      user-id-sids/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
-                      user-id-sids/token-user-id-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
+                      context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
+                      context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)

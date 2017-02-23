@@ -9,12 +9,12 @@
    [cmr.common.util :as util]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb]
-   [cmr.search.api.context-user-id-sids :as user-id-sids]))
+   [cmr.search.api.request-context-user-augmenter :as context-augmenter]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
-  (or (util/lazy-get context :user-id) (user-id-sids/context->user-id context "Humanizer cannot be modified without a valid user token.")))
+  (util/lazy-get context :user-id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation

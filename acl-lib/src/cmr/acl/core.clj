@@ -55,9 +55,10 @@
 
 (defn context->sids
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified
-  by the token in the context."
+  by the token in the context. Search app adds the sids to the context so before making the call
+  to get sids, check if they are stored on the context."
   [context]
-  (or (:sids context)
+  (or (util/get-real-or-lazy context :sids)
       (let [{:keys [token]} context]
         (if token
           (echo-tokens/get-current-sids context token)
@@ -135,7 +136,7 @@
          (filter #(= target (get-in % [acl-oit-key :target])))
          ;; Find acls for this user and permission type
          (filter (partial acl-matches-sids-and-permission?
-                          (or (util/lazy-get context :sids) (context->sids context))
+                          (context->sids context)
                           permission-type))
          seq)))
 

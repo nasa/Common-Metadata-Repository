@@ -13,7 +13,7 @@
     [cmr.common.util :as util]
     [cmr.metadata-db.services.concept-service :as mdb-cs]
     [cmr.metadata-db.services.search-service :as mdb-ss]
-    [cmr.search.api.context-user-id-sids :as user-id-sids]
+    [cmr.search.api.request-context-user-augmenter :as context-augmenter]
     [cmr.search.services.json-parameters.conversion :as jp]
     [cmr.search.services.query-service :as query-service]
     [cmr.search.services.tagging.tag-association-validation :as av]
@@ -32,7 +32,7 @@
 (defn- get-user-id
  "Get the user id from the context or cache"
  [context]
- (or (util/lazy-get context :user-id) (user-id-sids/context->user-id context msg/token-required-for-tag-modification)))
+ (or (util/lazy-get context :user-id) (context-augmenter/context->user-id context msg/token-required-for-tag-modification)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation

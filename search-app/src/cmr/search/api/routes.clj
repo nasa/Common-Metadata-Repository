@@ -20,7 +20,7 @@
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.search.api.community-usage-metrics :as metrics-api]
-   [cmr.search.api.context-user-id-sids :as user-id-sids]
+   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.tags-api :as tags-api]
@@ -469,7 +469,10 @@
 
 (defn make-api [system]
   (-> (build-routes system)
-      user-id-sids/add-user-id-and-sids-handler
+      ;; add-authentication-handler adds the token and client id for user to the context
+      ;; add-user-id-and-sids-handler adds the user id and sids for that token
+      ;; Need to maintain this order (works backwards)
+      context-augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
