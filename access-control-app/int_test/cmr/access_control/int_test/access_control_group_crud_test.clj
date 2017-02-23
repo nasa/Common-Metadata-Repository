@@ -167,7 +167,7 @@
 
 ;; This test currently records a false positive, the single instance acl is not granting permissions because group
 ;; service uses echo-rest to determine permissions therefor adding a single instance acl to cmr has no effect.
-;; The fixture system group acl in mock echo is what allows for any user to modify groups in this test. A ticket is needed to have
+;; The fixture system group acl in mock echo is what allows for any user to modify groups in this test. CMR-3295 is needed to have
 ;; mock-echo use cmr for acls instead of echo-rest to more accurately depict how operations works with cmr-acl-read-enabled.
 (deftest create-group-with-managing-group-id-test
   (let [token-user1 (e/login (u/conn-context) "user1")
