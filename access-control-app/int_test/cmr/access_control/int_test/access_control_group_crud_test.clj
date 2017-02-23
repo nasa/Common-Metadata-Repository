@@ -166,8 +166,8 @@
         (is (= ["The following users do not exist [user4]"] errors))))))
 
 ;; This test currently records a false positive, the single instance acl is not granting permissions because group
-;; service uses echo-rest to determine permissions therefor adding an single instance ACL to cmr has no effect.  Also,
-;; the fixture system group acl in mock echo allows for any user to modify groups. A ticket is needed to have
+;; service uses echo-rest to determine permissions therefor adding an single instance ACL to cmr has no effect.
+;; The fixture system group acl in mock echo is what allows for any user to modify groups in this test. A ticket is needed to have
 ;; mock-echo use cmr for acls instead of echo-rest to more accurately depict how operations works with cmr-acl-read-enabled.
 (deftest create-group-with-managing-group-id-test
   (let [token-user1 (e/login (u/conn-context) "user1")
