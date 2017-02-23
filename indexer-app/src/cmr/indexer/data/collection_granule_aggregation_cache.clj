@@ -187,7 +187,7 @@
   "Fully refreshes the collection granule aggregate cache."
   [context]
   (let [cache (c/context->cache context coll-gran-aggregate-cache-key)]
-    (debug "Running a full refresh of the collection aggregation cache.")
+    (info "Running a full refresh of the collection aggregation cache.")
     (c/set-value cache coll-gran-aggregate-cache-key
                  (coll-gran-aggregates->cachable-value (fetch-coll-gran-aggregates context)))))
 
@@ -208,7 +208,7 @@
     (if-let [existing-value (c/get-value cache coll-gran-aggregate-cache-key)]
 
       (do
-       (debug "Running a partial refresh of the collection aggregation cache.")
+       (info "Running a partial refresh of the collection aggregation cache.")
        (let [existing-aggregate-map (cached-value->coll-gran-aggregates existing-value)
              recently-updated-granule-map (fetch-coll-gran-aggregates-updated-in-last-n
                                            context granules-updated-in-last-n)
@@ -251,5 +251,3 @@
                                           (fetch-coll-gran-aggregates context))))
         cga-map (cached-value->coll-gran-aggregates cached-value)]
     (get cga-map concept-id)))
-
-

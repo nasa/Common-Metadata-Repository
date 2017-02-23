@@ -32,9 +32,9 @@
   "Validates that a query does not contain more than the configured maximum number of conditions"
   [query]
   (let [num-conditions (count-conditions query)]
-    (debug "Query contained" num-conditions "conditions")
+    (when (> num-conditions 50)
+      (info "Query contained" num-conditions "conditions"))
     (when (> num-conditions (max-number-of-conditions))
       [(format (str "The number of conditions in the query [%d] exceeded the maximum allowed for a "
                     "query [%s]. Reduce the number of conditions in your query.")
                num-conditions (max-number-of-conditions))])))
-
