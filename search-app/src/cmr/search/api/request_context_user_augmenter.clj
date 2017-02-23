@@ -1,6 +1,6 @@
 (ns cmr.search.api.request-context-user-augmenter
  "Adds data to the context for the current user for performance improvements. Adds user id and sids
- as well as caches those."
+ as well as caches for those. "
  (:require
   [cmr.acl.core :as acl]
   [cmr.common.cache :as cache]
@@ -60,7 +60,9 @@
      (errors/throw-service-error :unauthorized token-required-message)))))
 
 (defn- add-user-id-and-sids-to-context
-  "Adds information to the context including the user is and sids"
+  "Adds information to the context including the user is and sids. Lazy assoc with a delay so we don't
+  do the expensive work until we need the sids or user id. This is called for every search api
+  call, so don't want this to affect performance."
   [context params headers]
   (def context context)
   (-> context
