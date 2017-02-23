@@ -12,11 +12,11 @@
   [cmr.transmit.echo.tokens :as tokens]))
 
 (def CACHE_TIME
-  "The number of milliseconds token information will be cached for."
-  (* 5 60 1000))
+ "The number of milliseconds token information will be cached for."
+ (* 5 60 1000))
 
 (def token-sid-cache-name
-  :token-sid)
+ :token-sid)
 
 (def token-user-id-cache-name
  :token-user-id)
