@@ -72,7 +72,7 @@
                          ;; for single instance acls
                          (= action-description "read") [:update :delete]
                          (= action-description "delete") [:delete]
-                         :else permission)]
+                         :else [permission])]
    (when (or legacy-guid concept-id)
      (doseq [permission permissions]
        (filter #(or (= concept-id (-> % :single-instance-object-identity :target-guid))
