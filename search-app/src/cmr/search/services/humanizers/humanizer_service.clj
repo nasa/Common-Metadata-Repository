@@ -14,8 +14,9 @@
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
   (if-let [token (:token context)]
-    (tokens/get-user-id context (:token context))
-    (errors/throw-service-error :unauthorized "Humanizer cannot be modified without a valid user token.")))
+   (util/lazy-get context :user-id)
+   (errors/throw-service-error :unauthorized "Humanizer cannot be modified without a valid user token.")))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
