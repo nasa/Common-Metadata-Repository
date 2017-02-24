@@ -1,6 +1,7 @@
 (ns cmr.search.api.request-context-user-augmenter
  "Adds data to the context for the current user for performance improvements. Adds user id and sids
- as well as caches for those. "
+ as well as caches for those. Data on the context is lazy assoc'd to delay expensive work since
+ this is done for every call that hits the search API."
  (:require
   [cmr.acl.core :as acl]
   [cmr.common.cache :as cache]
@@ -31,7 +32,7 @@
  []
  (mem-cache/create-in-memory-cache :ttl {} {:ttl CACHE_TIME}))
 
-(defn context->sids
+(defn- context->sids
   "Wraps the existing context->sids but with caching"
   [context]
   (let [{:keys [token]} context]
@@ -44,7 +45,7 @@
       (when token-guid (info (format "Client token GUID: [%s]" token-guid)))
       sids)))
 
-(defn context->user-id
+(defn- context->user-id
  "Get the user id from the cache using the token. If there is a message for the token being required
  throw an exception if the token doesn't exist."
  ([context]
@@ -64,7 +65,6 @@
   do the expensive work until we need the sids or user id. This is called for every search api
   call, so don't want this to affect performance."
   [context params headers]
-  (def context context)
   (-> context
       (util/lazy-assoc :sids (context->sids context))
       (util/lazy-assoc :user-id (context->user-id context))))

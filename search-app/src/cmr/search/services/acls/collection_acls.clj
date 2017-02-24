@@ -5,7 +5,6 @@
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.util :as util]
-   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
    [cmr.search.services.acl-service :as acl-service]
    [cmr.umm-spec.acl-matchers :as umm-matchers]))
 

@@ -470,8 +470,8 @@
 (defn make-api [system]
   (-> (build-routes system)
       ;; add-authentication-handler adds the token and client id for user to the context
-      ;; add-user-id-and-sids-handler adds the user id and sids for that token
-      ;; Need to maintain this order (works backwards)
+      ;; add-user-id-and-sids-handler lazy adds the user id and sids for that token
+      ;; Need to maintain this order (works backwards).
       context-augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
       keyword-params/wrap-keyword-params

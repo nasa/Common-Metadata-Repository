@@ -17,15 +17,15 @@
                                      context-augmenter/token-user-id-cache-name user-id-cache}}
                    :token "ABC-1"}]
      (testing "sids"
-      (is (= ["sid-1" "sid-2"] (context-augmenter/context->sids context))))
+      (is (= ["sid-1" "sid-2"] (#'context-augmenter/context->sids context))))
 
      (testing "user-id"
-      (is (= "user-id-1" (context-augmenter/context->user-id context))))))
+      (is (= "user-id-1" (#'context-augmenter/context->user-id context))))))
 
    (testing "Token required message"
     (let [context {:system {:caches {context-augmenter/token-sid-cache-name token-sid-cache
                                      context-augmenter/token-user-id-cache-name user-id-cache}}}]
      (try
-      (context-augmenter/context->user-id context "Token required")
+      (#'context-augmenter/context->user-id context "Token required")
       (catch clojure.lang.ExceptionInfo e
        (is (= "Token required" (first (:errors (ex-data e)))))))))))
