@@ -74,12 +74,13 @@
                          (= action-description "delete") [:delete]
                          :else [permission])]
    (when (or legacy-guid concept-id)
-     (remove empty?                  
-       (for [permission permissions]
-         (filter #(or (= concept-id (-> % :single-instance-object-identity :target-guid))
-                      (= legacy-guid (-> % :single-instance-object-identity :target-guid)))
-                 (acl/get-permitting-acls context
-                                          :single-instance-object "GROUP_MANAGEMENT" permission)))))))
+     (for [permission permissions
+           :let [acls (acl/get-permitting-acls context :single-instance-object "GROUP_MANAGEMENT" permission)
+                 acls (filter #(or (= concept-id (-> % :single-instance-object-identity :target-guid))
+                                   (= legacy-guid (-> % :single-instance-object-identity :target-guid))) acls)]
+           :when (not-empty acls)]
+       acls))))
+
 (defn- describe-group
   [group]
   (let [{:keys [provider-id]} group]
