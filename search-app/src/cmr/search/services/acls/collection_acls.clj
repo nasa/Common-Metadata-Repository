@@ -1,11 +1,12 @@
 (ns cmr.search.services.acls.collection-acls
   "Contains functions for manipulating collection acls"
-  (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.search.services.acls.acl-helper :as acl-helper]
-            [cmr.search.services.acl-service :as acl-service]
-            [cmr.umm.acl-matchers :as umm-matchers]))
+  (:require
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.search.services.acl-service :as acl-service]
+   [cmr.search.services.acls.acl-helper :as acl-helper]
+   [cmr.umm-spec.acl-matchers :as umm-matchers]))
 
 (defmethod qe/add-acl-conditions-to-query :collection
   [context query]

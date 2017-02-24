@@ -245,7 +245,7 @@
                                              mdb-context (merge association {:tag-key tag-key
                                                                              :originator-id originator-id}) operation))
                                           tag-associations))]
-    (debug "update-tag-associations:" t1)
+    (info "update-tag-associations:" t1)
     result))
 
 (defn- update-tag-associations-with-query

@@ -55,9 +55,9 @@
   ([concept-id entry-title]
    (collection concept-id entry-title nil))
   ([concept-id entry-title access-value]
-   {:entry-title entry-title
+   {:EntryTitle entry-title
     :concept-id concept-id
-    :access-value access-value}))
+    :AccessConstraints {:Value access-value}}))
 
 (defn context-with-cached-collections
   "Creates a context with the specified collections in the collections cache"

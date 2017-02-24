@@ -116,9 +116,10 @@
                                                      :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
                                                      :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})]
     (when (seq temporal-extent)
-      temporal-extent)))
+      ;; Do this after testing if the map is empty. The map will never be empty if we use the bool value
+      (update temporal-extent :EndsAtPresentFlag #(Boolean/valueOf %)))))
 
-(defn- parse-temporal-extents
+(defn parse-temporal-extents
   "Returns a list of temportal extents"
   [doc sanitize?]
   (if-let [temporal-extents

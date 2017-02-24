@@ -58,8 +58,9 @@
         start (System/currentTimeMillis)
         result (j/query db (cons {:fetch-size fetch-size} stmt-and-params))
         millis (- (System/currentTimeMillis) start)]
-    (when (> millis 100)
-      (debug (format "Query execution took [%d] ms" millis)))
+    ;; We have about 100 per day of these long running queries
+    (when (> millis 60000)
+      (warn (format "Query execution took [%d] ms, SQL: %s" millis (first stmt-and-params))))
     result))
 
 (defn find-one

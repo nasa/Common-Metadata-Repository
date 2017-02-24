@@ -1,21 +1,14 @@
 (ns cmr.umm.acl-matchers
   "Contains code for determining if a collection matches an acl"
-  (:require [clojure.set :as set]
-            [clojure.string :as str]
-            [cmr.common.services.errors :as errors]
-            [clj-time.core :as t]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.util :as u]
-            [cmr.umm.umm-core :as ummc]))
-
-(def ^:private supported-collection-identifier-keys
-  #{:entry-titles :access-value :temporal})
-
-(defn- coll-matches-collection-id?
-  "Returns true if the collection matches the collection id"
-  [coll collection-id]
-  (= (:data-set-id collection-id) (:entry-title coll)))
+  (:require
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as u]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.umm.umm-core :as ummc]))
 
 (defn matches-access-value-filter?
   "Returns true if the umm item matches the access-value filter"
@@ -60,45 +53,6 @@
         ;; Per ECHO10 API documentation disjoint is the negation of intersects
         :disjoint (not (t/overlaps? start-date end-date umm-start umm-end))
         :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
-
-(defn coll-matches-collection-identifier?
-  "Returns true if the collection matches the collection identifier"
-  [coll coll-id]
-  (let [coll-entry-title (:entry-title coll)
-        {:keys [entry-titles access-value temporal]} coll-id]
-    (and (or (empty? entry-titles)
-             (some (partial = coll-entry-title) entry-titles))
-         (or (nil? access-value)
-             (matches-access-value-filter? coll access-value))
-         (or (nil? temporal)
-             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :temporal) temporal)))))
-
-(defn- validate-collection-identiier
-  "Verifies the collection identifier isn't using any unsupported ACL features."
-  [acl collection-identifier]
-  (when collection-identifier
-      (let [unsupported-keys (set/difference (set (keys collection-identifier))
-                                             supported-collection-identifier-keys)]
-        (when-not (empty? unsupported-keys)
-          (errors/internal-error!
-            (format "The ACL with GUID %s had unsupported attributes set: %s"
-                    (:id acl)
-                    (str/join ", " unsupported-keys)))))))
-
-(defn coll-applicable-acl?
-  "Returns true if the acl is applicable to the collection."
-  [coll-prov-id coll acl]
-  (when-let [{:keys [collection-applicable
-                     collection-identifier
-                     provider-id]} (:catalog-item-identity acl)]
-
-    (validate-collection-identiier acl collection-identifier)
-
-    (and collection-applicable
-         (= coll-prov-id provider-id)
-         (or (nil? collection-identifier)
-             (coll-matches-collection-identifier? coll collection-identifier)))))
-
 ;; Functions for preparing concepts to be passed to functions above.
 
 (defmulti add-acl-enforcement-fields-to-concept
@@ -110,13 +64,6 @@
 (defmethod add-acl-enforcement-fields-to-concept :default
   [concept]
   concept)
-
-(defmethod add-acl-enforcement-fields-to-concept :collection
-  [concept]
-  (-> concept
-      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
-      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
-      (assoc :entry-title (get-in concept [:extra-fields :entry-title]))))
 
 (defmethod add-acl-enforcement-fields-to-concept :granule
   [concept]
