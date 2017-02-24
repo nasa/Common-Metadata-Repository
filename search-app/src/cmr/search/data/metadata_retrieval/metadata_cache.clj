@@ -8,24 +8,25 @@
                  * revision-id
                  * native-format - A key or map of format and version identifying the native format
                  * various format keys each mapped to compressed metadata."
-  (require [cmr.common.util :as u]
-           [cmr.common.cache :as c]
-           [cmr.common.xml :as cx]
-           [clojure.set :as set]
-           [cmr.common.config :refer [defconfig]]
-           [cmr.common.jobs :refer [defjob]]
-           [cmr.common.services.errors :as errors]
-           [cmr.common.log :as log :refer (debug info warn error)]
-           [cmr.search.services.result-format-helper :as rfh]
-           [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-           [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
-           [cmr.search.services.acl-service :as acl-service]
-           [cmr.umm.acl-matchers :as acl-match]
-           [cmr.umm-spec.versioning :as umm-version]
-           [cmr.common-app.services.search.query-model :as q]
-           [cmr.common-app.services.search.query-execution :as qe]
-           [cmr.metadata-db.services.concept-service :as metadata-db]
-           [cmr.umm-spec.umm-spec-core :as umm-spec]))
+  (require
+   [cmr.common.util :as u]
+   [clojure.set :as set]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as q]
+   [cmr.common.cache :as c]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.xml :as cx]
+   [cmr.metadata-db.services.concept-service :as metadata-db]
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+   [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
+   [cmr.search.services.acl-service :as acl-service]
+   [cmr.search.services.result-format-helper :as rfh]
+   [cmr.umm-spec.acl-matchers :as acl-match]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.versioning :as umm-version]))
 
 (def cache-key
   "Identifies the key used when the cache is stored in the system."
@@ -417,4 +418,3 @@
            "acl-filter-concepts time:" t3
            "metadata-transformer/transform-concepts time:" t4)
     concept))
-

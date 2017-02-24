@@ -1,32 +1,28 @@
 (ns cmr.umm-spec.umm-spec-core
   "Contains functions for parsing, generating and validating metadata of various metadata formats."
-  (:require [cmr.umm-spec.json-schema :as js]
-            [clojure.java.io :as io]
-            [cmr.common.xml :as cx]
-
-            ;; XML -> UMM
-            [cmr.common.xml.simple-xpath :as xpath]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
-            [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
-            [cmr.umm-spec.xml-to-umm-mappings.dif9 :as dif9-to-umm]
-            [cmr.umm-spec.xml-to-umm-mappings.dif10 :as dif10-to-umm]
-            [cmr.umm-spec.xml-to-umm-mappings.serf :as serf-to-umm]
-
-            ;; UMM -> XML
-            [cmr.umm-spec.umm-to-xml-mappings.echo10 :as umm-to-echo10]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as umm-to-iso19115-2]
-            [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as umm-to-iso-smap]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9 :as umm-to-dif9]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as umm-to-dif10]
-            [cmr.umm-spec.umm-to-xml-mappings.serf :as umm-to-serf]
-
-            ;; UMM and JSON
-            [cmr.umm-spec.umm-json :as umm-json]
-            [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.migration.version-migration :as vm]
-            [cmr.common.mime-types :as mt])
+  (:require
+   [clojure.java.io :as io]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml.simple-xpath :as xpath]
+   [cmr.umm-spec.dif-util :as dif-util]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-to-xml-mappings.dif10 :as umm-to-dif10]
+   [cmr.umm-spec.umm-to-xml-mappings.dif9 :as umm-to-dif9]
+   [cmr.umm-spec.umm-to-xml-mappings.echo10 :as umm-to-echo10]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as umm-to-iso-smap]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as umm-to-iso19115-2]
+   [cmr.umm-spec.umm-to-xml-mappings.serf :as umm-to-serf]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.versioning :as ver]
+   [cmr.umm-spec.xml-to-umm-mappings.dif10 :as dif10-to-umm]
+   [cmr.umm-spec.xml-to-umm-mappings.dif9 :as dif9-to-umm]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
+   [cmr.umm-spec.xml-to-umm-mappings.serf :as serf-to-umm])
   (:import (cmr.umm_spec.models.umm_collection_models UMM-C)
            (cmr.umm_spec.models.umm_service_models UMM-S)))
 
@@ -118,3 +114,25 @@
        [:collection :iso19115] (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm)
        [:collection :iso-smap] (umm-to-iso-smap/umm-c-to-iso-smap-xml umm)
        [:service :serf]        (umm-to-serf/umm-s-to-serf-xml umm)))))
+
+(defn parse-collection-temporal
+  "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
+  [concept]
+  (let [{:keys [format metadata]} concept]
+    (condp = format
+     mt/echo10 (echo10-to-umm/parse-temporal metadata)
+     mt/dif (dif9-to-umm/parse-temporal-extents metadata true)
+     mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
+     mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
+     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents metadata))))
+
+(defn parse-collection-access-value
+  "Convert a metadata db concept map into the access value by parsing its metadata."
+  [concept]
+  (let [{:keys [format metadata]} concept]
+    (condp = format
+     mt/echo10 (echo10-to-umm/parse-access-constraints metadata true)
+     mt/dif (dif-util/parse-access-constraints metadata true)
+     mt/dif10 (dif-util/parse-access-constraints metadata true)
+     mt/iso19115 (iso19115-2-to-umm/parse-access-constraints metadata true)
+     mt/iso-smap nil)))
