@@ -672,7 +672,11 @@
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
                :URL "www.contact.foo.com",
-               :Description "Contact related url description"}]
+               :Description "Contact related url description"}
+              {:Description "Contact related url description",
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URL "www.contact.shoo.com"}]
              data-center-contact-persons))
       (is (= [{:Description "Contact group related url description"
                :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
@@ -682,12 +686,20 @@
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
                :URL "www.contact.foo.com",
-               :Description "Contact related url description"}]
+               :Description "Contact related url description"}
+              {:Description "Contact related url description",
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URL "www.contact.shoo.com"}]
              data-center-contact-information))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
                :URL "www.contact.foo.com",
-               :Description "Contact related url description"}]
+               :Description "Contact related url description"}
+              {:Description "Contact related url description",
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URL "www.contact.shoo.com"}]
              collection-contact-persons))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
@@ -716,7 +728,6 @@
     (is (= nil (:DOI result)))
     (is (= [{:Description "Contact group related url description"
                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                          :Title "Not provided"
                           :MimeType "application/html"
                           :URLs ["www.contact.group.foo.com"]}]
            (:RelatedUrls result)))

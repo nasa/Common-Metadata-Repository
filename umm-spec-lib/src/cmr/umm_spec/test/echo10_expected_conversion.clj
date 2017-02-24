@@ -42,7 +42,7 @@
 
 (defn- expected-echo10-related-urls
   [related-urls]
-  (if (seq? related-urls)
+  (if (seq related-urls)
     (for [related-url related-urls
              :let [[rel] (:Relation related-url)]]
          (-> related-url

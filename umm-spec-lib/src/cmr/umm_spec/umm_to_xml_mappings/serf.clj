@@ -138,7 +138,6 @@
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
   [s]
-  (def s s)
   (xml
     [:SERF
      serf-xml-namespaces

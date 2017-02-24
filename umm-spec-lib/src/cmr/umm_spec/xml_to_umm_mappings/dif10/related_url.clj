@@ -8,9 +8,12 @@
 
 (defn- multimedia->RelatedUrl
   [multimedia-sample sanitize?]
-  {:URL (url/format-url (value-of multimedia-sample "URL") sanitize?)
-   :Description (value-of multimedia-sample "Description")
-   :Relation ["GET RELATED VISUALIZATION"]})
+  (map
+   (fn [url]
+     {:URL url
+      :Description (value-of multimedia-sample "Description")
+      :Relation ["GET RELATED VISUALIZATION"]})
+   (values-at multimedia-sample "URL")))
 
 (defn parse-related-urls
   "Extracts urls from both Related_URL and Multimedia_Sample from DIF10 XML and includes both
@@ -26,5 +29,5 @@
                                    (value-of related-url "URL_Content_Type/Subtype")]
                         :MimeType (value-of related-url "Mime_Type")})]
     (if (or multimedia-urls related-urls)
-     (seq (into multimedia-urls related-urls))
+     (flatten (seq (into multimedia-urls related-urls)))
      (when sanitize? (seq su/not-provided-related-url)))))

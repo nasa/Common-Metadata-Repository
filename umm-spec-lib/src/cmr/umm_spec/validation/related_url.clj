@@ -8,7 +8,7 @@
   (:import
    (org.apache.commons.validator.routines UrlValidator)))
 
-(defn- url-validation
+(defn url-validation
   "Validate the URL. Return nil if no errors and the field path and error if the URL
   is not valid."
   [field-path value]
