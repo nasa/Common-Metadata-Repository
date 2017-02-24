@@ -63,15 +63,18 @@
                 (get-provider-level-group-acls context permission))))))
 
 (defn- get-instance-acls
- "Returns any ACLs that grant the given permission to the context user on a specific group by its :legacy-guid."
+ "Returns any ACLs that grant the given permission to the context user on a specific group by its concept-id or legacy-guid."
  [context action-description permission group]
- (when-let [target-guid (or (:concept-id group) (:legacy-guid group))]
-   (let [permissions (cond (= action-description "update") :update
-                           (= action-description "read") [:update :delete]
-                           (= action-description "delete") :delete
-                           :else permission)]
+ (let [concept-id (:concept-id group)
+       legacy-guid (:legacy-guid group)
+       permissions (cond (= action-description "update") :update
+                         (= action-description "read") [:update :delete]
+                         (= action-description "delete") :delete
+                         :else permission)]
+   (when (or legacy-guid concept-id)
      (doseq [permission permissions]
-       (filter #(= target-guid (-> % :single-instance-object-identity :target-guid))
+       (filter #(or (= concept-id (-> % :single-instance-object-identity :target-guid))
+                    (= legacy-guid (-> % :single-instance-object-identity :target-guid)))
                (acl/get-permitting-acls context
                                         :single-instance-object "GROUP_MANAGEMENT" permission))))))
 (defn- describe-group
