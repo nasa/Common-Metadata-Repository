@@ -112,15 +112,12 @@
   "Parse a SERF RelatedURL element into a map"
   [doc sanitize?]
   (if-let [related-urls (select doc "/SERF/Related_URL")]
-    (flatten (map
-              (fn [related-url]
-                (let [urls (map #(url/format-url % sanitize?) (values-at related-url "URL"))]
-                  (for [url urls]
-                   {:URL url
-                    :Description (value-of related-url "Description")
-                    :Relation [(value-of related-url "URL_Content_Type/Type")
-                               (value-of related-url "URL_Content_Type/Subtype")]})))
-              related-urls))))
+   (for [related-url related-urls
+         url (map #(url/format-url % sanitize?) (values-at related-url "URL"))]
+    {:URL url
+     :Description (value-of related-url "Description")
+     :Relation [(value-of related-url "URL_Content_Type/Type")
+                (value-of related-url "URL_Content_Type/Subtype")]})))
 
 (defn- parse-multimedia-samples
   "Parse a SERF Multimedia Sample element into a RelatedURL map"

@@ -119,19 +119,10 @@
     (when (seq (util/remove-nil-keys contact-info))
       contact-info)))
 
-(defn- expected-dif10-contact-info-urls
-  "Returns the first URL from a given list, or singular URL.
-  URLs are very unlikely to be lists after the schema change in umm-spec v1.9, but this will handle both cases."
-  [urls]
-  (if (seq? urls)
-    (first urls)
-    urls))
-
 (defn- expected-dif-10-contact-info-related-urls
   "Returns the expected DIF 10 RelatedURL for the ContactInformation
    or nil if there are no related urls"
   [related-urls]
-  (def related-urls related-urls)
   (let [related-url (first related-urls)]
     (if related-url
      [(-> related-urls
@@ -141,7 +132,6 @@
           (dissoc :Relation)
           (dissoc :Title)
           (dissoc :FileSize)
-          (update :URL expected-dif10-contact-info-urls)
           (cmn/map->RelatedUrlType))]
      nil)))
 

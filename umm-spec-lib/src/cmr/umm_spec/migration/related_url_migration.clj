@@ -46,17 +46,11 @@
   "UMM spec version 1.9's RelatedUrls contain a single URL.
   This function changes the :URLs [url] of a RelatedUrl to :URL url"
   [related-urls]
-  (flatten
-   (mapv
-    (fn [related-url]
-     (let [{:keys [Description Relation MimeType FileSize]} related-url]
-      (for [related-url related-urls
-            url (:URLs related-url)]
-       (-> related-url
-           (assoc :URL url)
-           (dissoc :URLs :Title)))))
-    related-urls)))
-
+  (for [related-url related-urls
+        url (:URLs related-url)]
+   (-> related-url
+       (assoc :URL url)
+       (dissoc :URLs :Title))))
 
 (defn dissoc-titles-from-contact-information
   "Remove :Title from a given vector of ContactInformation

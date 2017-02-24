@@ -72,18 +72,15 @@
   "Returns a list of related urls. Each URL will be put into its own RelatedUrl object comply with UMM spec v1.9"
   [doc sanitize?]
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
-    (flatten (mapv
-              (fn [related-url]
-                (let [description (value-of related-url "Description")
-                      urls (map #(url/format-url % sanitize?) (values-at related-url "URL"))]
-                 (for [url urls]
-                      {:URL url
-                       :Description (value-of related-url "Description")
-                       :Relation [(value-of related-url "URL_Content_Type/Type")
-                                  (value-of related-url "URL_Content_Type/Subtype")]})))
-              related-urls))
-    (when sanitize?
-      [su/not-provided-related-url])))
+    (for [related-url related-urls
+          url (map #(url/format-url % sanitize?) (values-at related-url "URL"))
+          :let [description (value-of related-url "Description")]]
+         {:URL url
+          :Description (value-of related-url "Description")
+          :Relation [(value-of related-url "URL_Content_Type/Type")
+                     (value-of related-url "URL_Content_Type/Subtype")]})
+   (when sanitize?
+    [su/not-provided-related-url])))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
