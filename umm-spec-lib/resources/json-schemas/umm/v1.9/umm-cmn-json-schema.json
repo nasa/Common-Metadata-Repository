@@ -1133,9 +1133,6 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "CenterPoint": {
-          "$ref": "#/definitions/PointType"
-        },
         "WestBoundingCoordinate": {
           "$ref": "#/definitions/LongitudeType"
         },
@@ -1155,9 +1152,6 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "CenterPoint": {
-          "$ref": "#/definitions/PointType"
-        },
         "Boundary": {
           "$ref": "#/definitions/BoundaryType"
         },
@@ -1207,9 +1201,6 @@
             "$ref": "#/definitions/PointType"
           },
           "minItems": 2
-        },
-        "CenterPoint": {
-          "$ref": "#/definitions/PointType"
         }
       },
       "required": ["Points"]

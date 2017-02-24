@@ -24,7 +24,6 @@
   "Returns DIF 10 Bounding_Rectangle element from a UMM BoundingRectangleType record."
   [rect]
   [:Bounding_Rectangle
-   [:Center_Point (point-contents (:CenterPoint rect))]
    [:Southernmost_Latitude (:SouthBoundingCoordinate rect)]
    [:Northernmost_Latitude (:NorthBoundingCoordinate rect)]
    [:Westernmost_Longitude (:WestBoundingCoordinate rect)]
@@ -39,17 +38,13 @@
    [:Exclusive_Zone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element (u/closed-counter-clockwise->open-clockwise (:Points b)))])]
-   [:Center_Point
-    (point-contents (:CenterPoint poly))]])
+       (map point-element (u/closed-counter-clockwise->open-clockwise (:Points b)))])]])
 
 (defn- line-element
   "Returns DIF 10 Line element from given UMM LineType record."
   [line]
   [:Line
-   (map point-element (:Points line))
-   ;; Yes, it's CenterPoint here, and Center_Point everywhere else.
-   [:CenterPoint (point-contents (:CenterPoint line))]])
+   (map point-element (:Points line))])
 
 (defn- tiling-system-coord-element
   "Returns a DIF 10 tiling system Coordinate(n) element."

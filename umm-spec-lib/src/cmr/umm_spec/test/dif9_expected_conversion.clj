@@ -74,9 +74,8 @@
                                :CoordinateSystem "CARTESIAN"
                                :Points nil
                                :Lines nil
-                               :GPolygons nil)
-                    (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
-                                    :CenterPoint nil))]
+                               :GPolygons nil))]
+                
     (if (seq (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles]))
       spatial
       (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
