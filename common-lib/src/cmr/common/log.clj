@@ -95,7 +95,7 @@
         this))
 
 (def default-log-options
-  {:level :debug
+  {:level :info
    ;; Do not log to a file by default
    :file nil
    :stdout-enabled? true})

@@ -38,7 +38,7 @@
         [result-gen-time result-str] (u/time-execution
                                       (search-results->response
                                        context query (assoc results :took query-execution-time)))]
-    (debug "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
+    (info "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
 
     {:results result-str
      :hits (:hits results)

@@ -1,6 +1,6 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
-  (:require 
+  (:require
     [cmr.acl.acl-fetcher :as acl-fetcher]
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
@@ -48,9 +48,9 @@
         context
         (ingest-events/provider-collections-require-reindexing-event provider force-version?)))
 
-    (debug "Reindexing all collection events submitted. Saving provider acl hashes")
+    (info "Reindexing all collection events submitted. Saving provider acl hashes")
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)
-    (debug "Saving provider acl hashes complete")))
+    (info "Saving provider acl hashes complete")))
 
 (defn reindex-collection-permitted-groups
   "Reindexes all collections in a provider if the acls have changed. This is necessary because

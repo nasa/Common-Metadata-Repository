@@ -338,7 +338,7 @@
           ;; Put everything in the order requested.
           [t6 ordered-concepts] (u/time-execution
                                  (order-concepts concept-tuples concepts))]
-      (debug "get-formatted-concept-revisions of" (count concept-tuples) "concepts total:"
+      (info "get-formatted-concept-revisions of" (count concept-tuples) "concepts total:"
              (+ t1 t2 t3 t4 t5 t6)
              "get-cached-metadata-in-format" t1
              "revision-format-maps->concepts:" t2
@@ -373,7 +373,7 @@
        (let [[t3 concepts] (u/time-execution
                             (metadata-transformer/transform-concepts
                              context concepts target-format))]
-         (debug "get-latest-concepts time:" t1
+         (info "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
                 "metadata-transformer/transform-concepts time:" t3)
          concepts)
@@ -384,7 +384,7 @@
              [t5 concepts] (u/time-execution
                             (metadata-transformer/transform-concepts
                              context concepts target-format))]
-         (debug "get-latest-concepts time:" t1
+         (info "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
                 "add-acl-enforcement-fields time:" t3
                 "acl-filter-concepts time:" t4
@@ -413,7 +413,8 @@
         [t4 [concept]] (u/time-execution
                         (when concept
                          (metadata-transformer/transform-concepts context [concept] target-format)))]
-    (debug "get-concept time:" t1
+    ;; We log the message below on INFO level as it is used by CMR log miner to replay the search
+    (info "get-concept time:" t1
            "add-acl-enforcement-fields time:" t2
            "acl-filter-concepts time:" t3
            "metadata-transformer/transform-concepts time:" t4)
