@@ -174,18 +174,25 @@
         policy (.withStatements (Policy.) (into-array Statement [statement]))]
     (.toJson policy)))
 
+(defn bind-queue-to-exchange
+  "Bind a queue to a single exchange. Extend should be true
+  if the queue is already bound to other exchanges."
+  [sns-client sqs-client exchange-name queue-name extend?]
+  (let [q-name (normalize-queue-name queue-name)
+        q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))
+        ex-name (normalize-queue-name exchange-name)
+        topic (get-topic sns-client ex-name)
+        topic-arn (.getTopicArn topic)
+        sub-arn (Topics/subscribeQueue sns-client sqs-client topic-arn q-url extend?)]
+    ;; use raw mode
+    (.setSubscriptionAttributes sns-client sub-arn "RawMessageDelivery" "true")))
+
 (defn- bind-queue-to-exchanges
  "Bind a queue to SNS Topics representing exchanges."
  [sns-client sqs-client exchange-names queue-name]
- (let [q-name (normalize-queue-name queue-name)
-       q-arn (get-queue-arn sqs-client q-name)
-       q-url (.getQueueUrl (.getQueueUrl sqs-client q-name))]
-    (doseq [exchange-name exchange-names
-            :let [ex-name (normalize-queue-name exchange-name)
-                  topic (get-topic sns-client ex-name)
-                  topic-arn (.getTopicArn topic)]]
-      ;; subscribe the queue to the topic
-      (Topics/subscribeQueue sns-client sqs-client topic-arn q-url))))
+ (bind-queue-to-exchange sns-client sqs-client (first exchange-names) queue-name false)
+ (doseq [exchange-name (rest exchange-names)]
+   (bind-queue-to-exchange sns-client sqs-client exchange-name queue-name true)))
 
 (defn- normalized-queue-name->original-queue-name
   "Convert a normalized queue name to the original queue name used to create it."
@@ -318,25 +325,32 @@
 
 ;; Tests to make sure SNS/SQS is working
 (comment
-  ; (.subscribe (:sns-client broker) "arn:aws:sns:us-east-1:688991608580:gsfc-eosdis-cmr-ingest_exchange" "sqs" "arn:aws:sqs:us-east-1:688991608580:gsfc-eosdis-cmr-ngap-cmr-test_queue")
   ;; create a broker
-  (def broker (lifecycle/start (create-queue-broker {}) nil))
+  ;; (def broker (lifecycle/start (create-queue-broker {}) nil))
+  (def broker (lifecycle/start (create-queue-broker {:queues ["jn_test_queueX5" "jn_test_queueY5" "jn_test_queueZ5"]
+                                                     :exchanges ["jn_test_exchangeA5" "jn_test_exchangeB5"]
+                                                     :queues-to-exchanges {"jn_test_queueX5" ["jn_test_exchangeA5"]
+                                                                           "jn_test_queueY5" ["jn_test_exchangeA5" "jn_test_exchangeB5"]
+                                                                           "jn_test_queueZ5" ["jn_test_exchangeB5"]}})
+                               nil))
+
+  (def msg-cnt-atom (atom 0))
   ;; list the topics for the cmr-ingest_exchange exchange/topic
   (get-topic (:sns-client broker) "cmr_ingest_exchange")
   ;; list the queues for the cmr_ingest_exchange
-  (queue/get-queues-bound-to-exchange broker "gsfc-eosdis-cmr-wl-ingest_exchange")
+  (queue/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; create a test queue
-  (create-queue (:sqs-client broker) "gsfc-eosdis-cmr-wl-index_all_revisions_queue")
+  (create-queue (:sqs-client broker) "jn_test_queue3")
   ;; create a test exchange
-  (create-exchange (:sns-client broker) "cmr_test_exchange")
+  (create-exchange (:sns-client broker) "jn_test_exchange3")
+  (create-exchange (:sns-client broker) "jn_test_exchange3b")
   ;; list the queues for the cmr_test_exchange
-  (queue/get-queues-bound-to-exchange broker "cmr_test_exchange")
+  (queue/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; Bind the queue to the new exchange
-  (queue/publish-to-queue broker "gsfc-eosdis-cmr-wl-index_queue" {:action "concept-update"})
-  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["gsfc-eosdis-cmr-wl-ingest_exchange"] "gsfc-eosdis-cmr-wl-index_all_revisions_queue")
+  (bind-queue-to-exchanges (:sns-client broker) (:sqs-client broker) ["jn_test_exchangeA5"] "jn_test_queueY5")
   ;; subscribe to test queue with a simple handler that prints received messages
-  (queue/subscribe broker "gsfc-eosdis-cmr-wl-index_queue" (fn [msg] (println "Got Message: " msg)))
+  (queue/subscribe broker "jn_test_queueY5" (fn [msg] (do (println "MESSAGE!") (swap! msg-cnt-atom inc))))
   ;; publish a message to the queue to verify our subscribe worked
-  (queue/publish-to-queue broker "gsfc-eosdis-cmr-wl-index_all_revisions_queue" {:action "concept-update"})
+  (queue/publish-to-queue broker "jn_test_queueY5" {:action "concept-update" :dummy "dummy"})
   ;; publish a message to the exchange to verify the message is sent to the queue
-  (queue/publish-to-exchange broker "gsfc-eosdis-cmr-wl-ingest_exchange" {:action "concept-update" :dummy "dummy"}))
+  (queue/publish-to-exchange broker "jn_test_exchangeA5" {:action "concept-update" :dummy "dummy"}))

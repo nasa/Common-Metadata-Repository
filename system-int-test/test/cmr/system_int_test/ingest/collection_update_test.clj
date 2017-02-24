@@ -820,3 +820,71 @@
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
         ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile" ]
         ["Collection TilingIdentificationSystemName [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+
+(deftest collection-update-instrument-test
+  (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
+        coll (d/ingest "PROV1" (dc/collection
+                                {:entry-title "parent-collection"
+                                 :short-name "S1"
+                                 :version-id "V1"
+                                 :platforms [(dc/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
+                                             (dc/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "parent-collection2"
+                                  :short-name "S2"
+                                  :version-id "V2"
+                                  :platforms [(dc/platform-with-instrument-and-sensors "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+    (d/ingest "PROV1" (dg/granule coll {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
+    (d/ingest "PROV1" (dg/granule coll {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
+    (d/ingest "PROV1" (dg/granule coll {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
+    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "s1")]}))
+    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "GPS RECEIVERS")]}))
+    (index/wait-until-indexed)
+    (testing "Update collection successful cases"
+      (are3
+        [plat-instruments-1 plat-instruments-2]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection"
+                                           :short-name "S1"
+                                           :version-id "V1"
+                                           :platforms [(apply dc/platform-with-instruments plat-instruments-1)
+                                                       (apply dc/platform-with-instruments plat-instruments-2)]}))
+              {:keys [status errors]} response]
+          (is (= [200 nil] [status errors])))
+
+        "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
+         Currently it's okay if it exists under other platforms."
+        ["p1-1" "i2" "GPS" "i4"]
+        ["p1-2" "i1" "i2" "GPS" "i4"]
+
+        "Adding an additional instrument is OK"
+        ["p1-1" "i1" "i2" "GPS" "i4" "i5"] 
+        ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
+
+        "Removing an instrument not referenced by any granule in the collection is OK"
+        ["p1-1" "i1" "i2" "GPS"] 
+        ["p1-2" "i1" "i2" "GPS"]
+
+        "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
+        ["p1-1" "i1" "i2" "Gps Receivers"] 
+        ["p1-2" "i1" "i2" "Gps Receivers"]))
+
+    (testing "Update collection failure cases"
+      (are3
+        [plat-instr-sensors expected-errors]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                          {:entry-title "parent-collection2"
+                                           :short-name "S2"
+                                           :version-id "V2"
+                                           :platforms [(apply dc/platform-with-instrument-and-sensors plat-instr-sensors)]})
+                                 {:allow-failure? true})
+              {:keys [status errors]} response]
+          (is (= [422 expected-errors] [status errors])))
+ 
+        "Removing an instrument  that is referenced by a granule is invalid."
+        ["p2" "i2" "GPS RECEIVERS"]
+        ["Collection Child Instrument [s1] is referenced by existing granules, cannot be removed. Found 1 granules."]
+
+        "Updating an instrument  that is referenced by a granule by humanized alias back to its original value is invalid."
+        ["p2" "i2" "GPS" "s1"]
+        ["Collection Child Instrument [GPS RECEIVERS] is referenced by existing granules, cannot be removed. Found 1 granules."]))))

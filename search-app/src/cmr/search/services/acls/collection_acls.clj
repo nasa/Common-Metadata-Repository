@@ -7,7 +7,7 @@
    [cmr.common.util :as util]
    [cmr.search.api.request-context-user-augmenter :as context-augmenter]
    [cmr.search.services.acl-service :as acl-service]
-   [cmr.umm.acl-matchers :as umm-matchers]))
+   [cmr.umm-spec.acl-matchers :as umm-matchers]))
 
 (defmethod qe/add-acl-conditions-to-query :collection
   [context query]

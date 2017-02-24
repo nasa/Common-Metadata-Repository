@@ -39,10 +39,27 @@
   [attribs]
   (g/map->SensorRef attribs))
 
+(defn sensor-refs
+  "Return a list of sensor-ref based on given short names"
+  [& short-names]
+  (map #(g/map->SensorRef {:short-name %}) short-names))
+
 (defn instrument-ref
   "Return an instrument-ref based on instrument attribs"
   [attribs]
   (g/map->InstrumentRef attribs))
+
+(defn instrument-refs
+  "Return a list of instrument-ref based on given short names"
+  [& short-names]
+  (map #(g/map->InstrumentRef {:short-name %}) short-names))
+
+(defn instrument-ref-with-sensor-refs
+  "Return a instrument-ref based on a given short name and a list of sensor short names"
+  [short-name & sensor-short-names]
+  (let [sensor-refs (apply sensor-refs sensor-short-names)]
+    (g/map->InstrumentRef {:short-name short-name              
+                           :sensor-refs sensor-refs})))
 
 (defn platform-ref
   "Return a platform-ref based on platform attribs"
@@ -53,6 +70,21 @@
   "Return a list of platform-ref based on given short names"
   [& short-names]
   (map #(g/map->PlatformRef {:short-name %}) short-names))
+
+(defn platform-ref-with-instrument-refs
+  "Return a platform-ref based on a given short name and a list of instrument short names"
+  [short-name & instr-short-names]
+  (let [instr-refs (apply instrument-refs instr-short-names)]
+    (g/map->PlatformRef {:short-name short-name 
+                         :instrument-refs instr-refs})))
+
+(defn platform-ref-with-instrument-ref-and-sensor-refs
+  "Return a platform-ref based on a given short name and a instrument ref which is
+   based on a short name and a list of sensor short names"
+  [plat-short-name instr-short-name & sensor-short-names]
+  (let [instr-ref (apply instrument-ref-with-sensor-refs instr-short-name sensor-short-names)]
+    (g/map->PlatformRef {:short-name plat-short-name              
+                         :instrument-refs [instr-ref]})))
 
 (defn data-granule
   "Returns a data-granule with the given attributes"

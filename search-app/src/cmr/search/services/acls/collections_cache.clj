@@ -43,9 +43,9 @@
         by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
                                  [concept-id coll]))
         by-provider-id-entry-title (into {}
-                                         (for [{:keys [provider-id entry-title] :as coll}
+                                         (for [{:keys [provider-id EntryTitle] :as coll}
                                                collections]
-                                           [[provider-id entry-title] coll]))]
+                                           [[provider-id EntryTitle] coll]))]
     ;; We could reduce the amount of memory here if needed by only fetching the collections that
     ;; have granules.
     {:by-concept-id by-concept-id
