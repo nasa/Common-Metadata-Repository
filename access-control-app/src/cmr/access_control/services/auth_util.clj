@@ -67,9 +67,11 @@
  [context action-description permission group]
  (let [concept-id (:concept-id group)
        legacy-guid (:legacy-guid group)
-       permissions (cond (= action-description "update") :update
+       permissions (cond (= action-description "update") [:update]
+                         ;; Update and delete permissions grant read as well, there is no explicity read permissions
+                         ;; for single instance acls
                          (= action-description "read") [:update :delete]
-                         (= action-description "delete") :delete
+                         (= action-description "delete") [:delete]
                          :else permission)]
    (when (or legacy-guid concept-id)
      (doseq [permission permissions]
