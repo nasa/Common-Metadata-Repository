@@ -22,7 +22,6 @@
 
    Instruments
   ])
-
 (record-pretty-printer/enable-record-pretty-printing PlatformType)
 
 ;; Information describing the scientific endeavor(s) with which the collection is associated.
@@ -47,7 +46,6 @@
    ;; The ending data of the campaign.
    EndDate
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ProjectType)
 
 ;; Information about the device used to measure or record data in this collection, including direct
@@ -78,7 +76,6 @@
    ;; The operation mode applied on the instrument when acquiring the granule data.
    OperationalModes
   ])
-
 (record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
 ;; Information about a collection with horizontal spatial coverage.
@@ -90,7 +87,6 @@
 
    Geometry
   ])
-
 (record-pretty-printer/enable-record-pretty-printing HorizontalSpatialDomainType)
 
 ;; Contains the excluded boundaries from the GPolygon.
@@ -98,7 +94,6 @@
   [
    Boundaries
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
 
 ;; Information about a two-dimensional tiling system related to this collection.
@@ -110,7 +105,6 @@
 
    Coordinate2
   ])
-
 (record-pretty-printer/enable-record-pretty-printing TilingIdentificationSystemType)
 
 ;; Specifies the geographic and vertical (altitude, depth) coverage of the data.
@@ -129,7 +123,6 @@
 
    GranuleSpatialRepresentation
   ])
-
 (record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
 
 ;; Defines the contact information of a data center or data contact.
@@ -151,7 +144,6 @@
    ;; Contact addresses.
    Addresses
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ContactInformationType)
 
 (defrecord ContactGroupType
@@ -171,7 +163,6 @@
    ;; This is the contact group name.
    GroupName
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ContactGroupType)
 
 ;; Defines a data center which is either an organization or institution responsible for
@@ -199,7 +190,6 @@
    ;; This is the contact information of the data center.
    ContactInformation
   ])
-
 (record-pretty-printer/enable-record-pretty-printing DataCenterType)
 
 ;; Describes media options, size, data format, and fees involved in distributing or accessing the
@@ -218,7 +208,6 @@
    ;; The fee for ordering the collection data. The fee is entered as a number, in US Dollars.
    Fees
   ])
-
 (record-pretty-printer/enable-record-pretty-printing DistributionType)
 
 ;; Building block text fields used to construct the recommended language for citing the collection
@@ -266,7 +255,6 @@
    ;; Additional free-text citation information.
    OtherCitationDetails
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ResourceCitationType)
 
 ;; This element describes the digital object identifier.
@@ -278,7 +266,6 @@
    ;; The Digitial Object Identifier.
    DOI
   ])
-
 (record-pretty-printer/enable-record-pretty-printing DoiType)
 
 ;; Stores the start and end date/time of a collection.
@@ -290,7 +277,6 @@
    ;; The time when the temporal coverage period being described ended.
    EndingDateTime
   ])
-
 (record-pretty-printer/enable-record-pretty-printing RangeDateTimeType)
 
 (defrecord BoundingRectangleType
@@ -303,14 +289,12 @@
 
    SouthBoundingCoordinate
   ])
-
 (record-pretty-printer/enable-record-pretty-printing BoundingRectangleType)
 
 (defrecord LineType
   [
    Points
   ])
-
 (record-pretty-printer/enable-record-pretty-printing LineType)
 
 ;; Method for contacting the data contact. A contact can be available via phone, email, Facebook, or
@@ -325,7 +309,6 @@
    ;; associated with the contact method.
    Value
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ContactMechanismType)
 
 ;; Enables specification of Earth science keywords related to the collection. The Earth Science
@@ -347,7 +330,6 @@
 
    DetailedVariable
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ScienceKeywordType)
 
 ;; Additional unique attributes of the collection, beyond those defined in the UMM model, which the
@@ -396,7 +378,6 @@
    ;; Data type of the values of the additional attribute.
    DataType
   ])
-
 (record-pretty-printer/enable-record-pretty-printing AdditionalAttributeType)
 
 ;; Information about any constraints for accessing the data set. This includes any special
@@ -415,7 +396,6 @@
    ;; This field does not exist in DIF.
    Value
   ])
-
 (record-pretty-printer/enable-record-pretty-printing AccessConstraintsType)
 
 (defrecord VerticalSpatialDomainType
@@ -429,7 +409,6 @@
    ;; either DepthDistanceUnits or AltitudeDistanceUnits.
    Value
   ])
-
 (record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
 
 (defrecord GeometryType
@@ -444,7 +423,6 @@
 
    Lines
   ])
-
 (record-pretty-printer/enable-record-pretty-printing GeometryType)
 
 ;; Information about the instrument excluding fields used in the top level instrument element
@@ -464,7 +442,6 @@
    ;; Observation).
    Technique
   ])
-
 (record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
 
 ;; The longitude and latitude values of a spatially referenced point in degrees.
@@ -474,7 +451,6 @@
 
    Latitude
   ])
-
 (record-pretty-printer/enable-record-pretty-printing PointType)
 
 ;; Describes key bibliographic citations pertaining to the data.
@@ -525,7 +501,6 @@
    ;; The pubication place of the publication.
    PublicationPlace
   ])
-
 (record-pretty-printer/enable-record-pretty-printing PublicationReferenceType)
 
 ;; Used to identify other services, collections, visualizations, granules, and other metadata types
@@ -547,7 +522,6 @@
    ;; The version of the target metadata record that is associated with this collection record.
    Version
   ])
-
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
 
 ;; Represents a data file size.
@@ -559,7 +533,6 @@
    ;; Unit of information, together with Size determines total size in bytes of the data.
    Unit
   ])
-
 (record-pretty-printer/enable-record-pretty-printing FileSizeType)
 
 ;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.
@@ -569,7 +542,6 @@
 
    MaximumValue
   ])
-
 (record-pretty-printer/enable-record-pretty-printing TilingCoordinateType)
 
 (defrecord GPolygonType
@@ -578,7 +550,6 @@
 
    ExclusiveZone
   ])
-
 (record-pretty-printer/enable-record-pretty-printing GPolygonType)
 
 ;; A boundary is set of points connected by straight lines representing a polygon on the earth. It
@@ -588,7 +559,6 @@
   [
    Points
   ])
-
 (record-pretty-printer/enable-record-pretty-printing BoundaryType)
 
 (defrecord ContactPersonType
@@ -614,7 +584,6 @@
    ;; Last name of the individual.
    LastName
   ])
-
 (record-pretty-printer/enable-record-pretty-printing ContactPersonType)
 
 ;; Specifies the date and its type.
@@ -627,7 +596,6 @@
    ;; is chosen from a picklist.
    Type
   ])
-
 (record-pretty-printer/enable-record-pretty-printing DateType)
 
 ;; This entity is used to define characteristics.
@@ -648,7 +616,6 @@
    ;; The datatype of the Characteristic/attribute.
    DataType
   ])
-
 (record-pretty-printer/enable-record-pretty-printing CharacteristicType)
 
 ;; Information which describes the temporal range or extent of a specific collection.
@@ -678,7 +645,6 @@
    ;; and cycle duration unit and value.
    PeriodicDateTimes
   ])
-
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
 ;; Describes the online resource pertaining to the data.
@@ -702,7 +668,6 @@
     ;; The function of the online resource.
     Function
    ])
-
 (record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
 
 ;; Represents Internet sites that contain information related to the data, as well as related
@@ -726,7 +691,6 @@
    ;; The estimated or average size of a file downloaded from this site.
    FileSize
   ])
-
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 
 ;; Orbit parameters for the collection used by the Orbital Backtrack Algorithm.
@@ -750,7 +714,6 @@
    ;; will default to 0 if not specified.
    StartCircularLatitude
   ])
-
 (record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 
 ;; Information about Periodic Date Time collections, including the name of the temporal period in
@@ -783,7 +746,6 @@
 
    PeriodCycleDurationValue
   ])
-
 (record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
 
 ;; This entity contains the physical address details for the contact.
@@ -805,5 +767,4 @@
    ;; The zip or other postal code portion of the physical address.
    PostalCode
   ])
-
 (record-pretty-printer/enable-record-pretty-printing AddressType)
