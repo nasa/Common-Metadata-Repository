@@ -20,7 +20,8 @@
    ;; have to be unique across platforms.
    Characteristics
 
-   Instruments])
+   Instruments
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing PlatformType)
 
@@ -44,7 +45,8 @@
    StartDate
 
    ;; The ending data of the campaign.
-   EndDate])
+   EndDate
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ProjectType)
 
@@ -74,7 +76,8 @@
    ComposedOf
 
    ;; The operation mode applied on the instrument when acquiring the granule data.
-   OperationalModes])
+   OperationalModes
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
@@ -85,14 +88,16 @@
    ;; grid coordinate system.
    ZoneIdentifier
 
-   Geometry])
+   Geometry
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing HorizontalSpatialDomainType)
 
 ;; Contains the excluded boundaries from the GPolygon.
 (defrecord ExclusiveZoneType
   [
-   Boundaries])
+   Boundaries
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
 
@@ -103,7 +108,8 @@
 
    Coordinate1
 
-   Coordinate2])
+   Coordinate2
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing TilingIdentificationSystemType)
 
@@ -121,7 +127,8 @@
 
    OrbitParameters
 
-   GranuleSpatialRepresentation])
+   GranuleSpatialRepresentation
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
 
@@ -142,7 +149,8 @@
    ContactMechanisms
 
    ;; Contact addresses.
-   Addresses])
+   Addresses
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ContactInformationType)
 
@@ -161,7 +169,8 @@
    ContactInformation
 
    ;; This is the contact group name.
-   GroupName])
+   GroupName
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ContactGroupType)
 
@@ -188,7 +197,8 @@
    ContactPersons
 
    ;; This is the contact information of the data center.
-   ContactInformation])
+   ContactInformation
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing DataCenterType)
 
@@ -206,7 +216,8 @@
    DistributionFormat
 
    ;; The fee for ordering the collection data. The fee is entered as a number, in US Dollars.
-   Fees])
+   Fees
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing DistributionType)
 
@@ -253,7 +264,8 @@
    Version
 
    ;; Additional free-text citation information.
-   OtherCitationDetails])
+   OtherCitationDetails
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ResourceCitationType)
 
@@ -264,7 +276,8 @@
    Authority
 
    ;; The Digitial Object Identifier.
-   DOI])
+   DOI
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing DoiType)
 
@@ -275,7 +288,8 @@
    BeginningDateTime
 
    ;; The time when the temporal coverage period being described ended.
-   EndingDateTime])
+   EndingDateTime
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing RangeDateTimeType)
 
@@ -287,13 +301,15 @@
 
    EastBoundingCoordinate
 
-   SouthBoundingCoordinate])
+   SouthBoundingCoordinate
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing BoundingRectangleType)
 
 (defrecord LineType
   [
-   Points])
+   Points
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing LineType)
 
@@ -307,7 +323,8 @@
 
    ;; This is the contact phone number, email address, Facebook address, or Twitter handle
    ;; associated with the contact method.
-   Value])
+   Value
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ContactMechanismType)
 
@@ -328,7 +345,8 @@
 
    VariableLevel3
 
-   DetailedVariable])
+   DetailedVariable
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ScienceKeywordType)
 
@@ -376,7 +394,8 @@
    ParameterRangeEnd
 
    ;; Data type of the values of the additional attribute.
-   DataType])
+   DataType
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing AdditionalAttributeType)
 
@@ -394,7 +413,8 @@
    ;; collection. For example, a provider might specify a collection level ACL that hides all
    ;; collections with a value element set to 15. In ECHO, this field is called RestrictionFlag.
    ;; This field does not exist in DIF.
-   Value])
+   Value
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing AccessConstraintsType)
 
@@ -407,7 +427,8 @@
    ;; accompanied by an Altitude Encoding Method description. The datatype for this attribute is the
    ;; value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of
    ;; either DepthDistanceUnits or AltitudeDistanceUnits.
-   Value])
+   Value
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
 
@@ -421,7 +442,8 @@
 
    GPolygons
 
-   Lines])
+   Lines
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing GeometryType)
 
@@ -440,7 +462,8 @@
    ;; The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal
    ;; Emission and Reflective Radiometer, Clouds and the Earth's Radiant Energy System, Human
    ;; Observation).
-   Technique])
+   Technique
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
 
@@ -449,7 +472,8 @@
   [
    Longitude
 
-   Latitude])
+   Latitude
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing PointType)
 
@@ -499,7 +523,8 @@
    Issue
 
    ;; The pubication place of the publication.
-   PublicationPlace])
+   PublicationPlace
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing PublicationReferenceType)
 
@@ -520,7 +545,8 @@
    EntryId
 
    ;; The version of the target metadata record that is associated with this collection record.
-   Version])
+   Version
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
 
@@ -531,7 +557,8 @@
    Size
 
    ;; Unit of information, together with Size determines total size in bytes of the data.
-   Unit])
+   Unit
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing FileSizeType)
 
@@ -540,7 +567,8 @@
   [
    MinimumValue
 
-   MaximumValue])
+   MaximumValue
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing TilingCoordinateType)
 
@@ -548,7 +576,8 @@
   [
    Boundary
 
-   ExclusiveZone])
+   ExclusiveZone
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing GPolygonType)
 
@@ -557,7 +586,8 @@
 ;; order and closed (the first and last vertices are the same).
 (defrecord BoundaryType
   [
-   Points])
+   Points
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing BoundaryType)
 
@@ -582,7 +612,8 @@
    MiddleName
 
    ;; Last name of the individual.
-   LastName])
+   LastName
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing ContactPersonType)
 
@@ -594,7 +625,8 @@
 
    ;; This is the type of event associated with the date. For example, Creation, Last Revision. Type
    ;; is chosen from a picklist.
-   Type])
+   Type
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing DateType)
 
@@ -614,7 +646,8 @@
    Unit
 
    ;; The datatype of the Characteristic/attribute.
-   DataType])
+   DataType
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing CharacteristicType)
 
@@ -643,7 +676,8 @@
    ;; Temporal information about a collection having granules collected at a regularly occurring
    ;; period. Information includes the start and end dates of the period, duration unit and value,
    ;; and cycle duration unit and value.
-   PeriodicDateTimes])
+   PeriodicDateTimes
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
@@ -666,7 +700,8 @@
     Description
 
     ;; The function of the online resource.
-    Function])
+    Function
+   ])
 
 (record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
 
@@ -689,7 +724,8 @@
    MimeType
 
    ;; The estimated or average size of a file downloaded from this site.
-   FileSize])
+   FileSize
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 
@@ -712,7 +748,8 @@
    ;; The latitude start of the orbit relative to the equator. This is used by the backtrack search
    ;; algorithm to treat the orbit as if it starts from the specified latitude. This is optional and
    ;; will default to 0 if not specified.
-   StartCircularLatitude])
+   StartCircularLatitude
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 
@@ -744,7 +781,8 @@
    ;; The unit specification of the period cycle duration.
    PeriodCycleDurationUnit
 
-   PeriodCycleDurationValue])
+   PeriodCycleDurationValue
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
 
@@ -765,6 +803,7 @@
    Country
 
    ;; The zip or other postal code portion of the physical address.
-   PostalCode])
+   PostalCode
+  ])
 
 (record-pretty-printer/enable-record-pretty-printing AddressType)
