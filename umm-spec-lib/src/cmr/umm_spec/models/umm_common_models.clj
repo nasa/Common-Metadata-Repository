@@ -667,7 +667,7 @@
 
     ;; The function of the online resource.
     Function
-   ])
+  ])
 (record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
 
 ;; Represents Internet sites that contain information related to the data, as well as related
