@@ -129,8 +129,8 @@
     [:Collection
      [:ShortName (:ShortName c)]
      [:VersionId (:Version c)]
-     [:InsertTime (dates/with-default (dates/data-create-date c))]
-     [:LastUpdate (dates/with-default (dates/data-update-date c))]
+     [:InsertTime (dates/with-current (dates/data-create-date c))]
+     [:LastUpdate (dates/with-current (dates/data-update-date c))]
      [:DeleteTime (dates/data-delete-date c)]
      [:LongName spec-util/not-provided]
      [:DataSetId (:EntryTitle c)]
