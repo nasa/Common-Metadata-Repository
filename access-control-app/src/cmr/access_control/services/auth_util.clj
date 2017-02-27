@@ -1,7 +1,6 @@
 (ns cmr.access-control.services.auth-util
   (:require
    [cmr.acl.core :as acl]
-   [cmr.common-app.services.search :as cs]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]

@@ -2,14 +2,19 @@
   "Contains functions needed to be called by group-serivce to avoid circular dependencies between
    group-service and acl-service."
   (:require
-   [clojure.string :as str]
-   [cmr.access-control.data.access-control-index :as index]
-   [cmr.access-control.data.acls :as acls]
-   [cmr.common.log :refer [info debug]]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.metadata-db2 :as mdb]))
+    [clojure.edn :as edn]
+    [clojure.string :as str]
+    [cmr.access-control.data.access-control-index :as index]
+    [cmr.access-control.data.acls :as acls]
+    [cmr.common.log :refer [info debug]]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :refer [defn-timed] :as util]
+    [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.common-app.services.search.query-model :as qm]
+    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.common-app.services.search.group-query-conditions :as gc]))
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -73,3 +78,27 @@
                      {:synchronous? true})
     (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
     resp))
+
+(defn-timed get-acls-by-condition
+  "Returns the ACLs found by executing given condition against ACL index."
+  [context condition]
+  (let [query (qm/query {:concept-type :acl
+                         :condition condition
+                         :skip-acls? true
+                         :page-size :unlimited
+                         :result-format :query-specified
+                         :result-fields [:acl-gzip-b64]})
+        response (qe/execute-query context query)]
+    (mapv #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))))
+
+(defn get-acl-concepts-by-identity-type-and-target
+  "Returns ACLs with given identity-type string and target string.
+   Valid identity types are defined in cmr.access-control.data.access-control-index.
+   Valid targets can be found in cmr.access-control.data.acl-schema."
+  [context identity-type target]
+  (let [identity-type-condition (qm/string-condition :identity-type identity-type true false)
+        condition (if target
+                    (gc/and identity-type-condition
+                            (qm/string-condition :target target))
+                    identity-type-condition)]
+    (get-acls-by-condition context condition)))
