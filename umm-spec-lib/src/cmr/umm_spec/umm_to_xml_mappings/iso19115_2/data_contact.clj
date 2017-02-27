@@ -35,43 +35,42 @@
            contact-mechanisms))))
 
 (defn generate-contact-info
- "Generate contact info xml from ContactInformation"
- [contact-info]
- [:gmd:contactInfo
-  [:gmd:CI_Contact
-   (when-let [phone-contacts (seq (get-phone-contact-mechanisms contact-info))]
-     [:gmd:phone
-      [:gmd:CI_Telephone
-       (for [phone (filter #(= "Telephone" (:Type %)) phone-contacts)]
-        [:gmd:voice (char-string (:Value phone))])
-       (for [fax (filter #(= "Fax" (:Type %)) phone-contacts)]
-        [:gmd:facsimile (char-string (:Value fax))])]])
-   (let [address (first (:Addresses contact-info))
-         emails (filter #(= "Email" (:Type %)) (:ContactMechanisms contact-info))]
-     (when (or address emails)
-      [:gmd:address
-       [:gmd:CI_Address
-        (for [street-address (:StreetAddresses address)]
-         [:gmd:deliveryPoint (char-string street-address)])
-        (when-let [city (:City address)]
-         [:gmd:city (char-string city)])
-        (when-let [state (:StateProvince address)]
-         [:gmd:administrativeArea (char-string state)])
-        (when-let [postal-code (:PostalCode address)]
-         [:gmd:postalCode (char-string postal-code)])
-        (when-let [country (:Country address)]
-         [:gmd:country (char-string country)])
-        (for [email emails]
-         [:gmd:electronicMailAddress (char-string (:Value email))])]]))
-   (when-let [url (first (:RelatedUrls contact-info))]
-     (first
+  "Generate contact info xml from ContactInformation"
+  [contact-info]
+  [:gmd:contactInfo
+   [:gmd:CI_Contact
+    (when-let [phone-contacts (seq (get-phone-contact-mechanisms contact-info))]
+      [:gmd:phone
+       [:gmd:CI_Telephone
+        (for [phone (filter #(= "Telephone" (:Type %)) phone-contacts)]
+          [:gmd:voice (char-string (:Value phone))])
+        (for [fax (filter #(= "Fax" (:Type %)) phone-contacts)]
+          [:gmd:facsimile (char-string (:Value fax))])]])
+    (let [address (first (:Addresses contact-info))
+          emails (filter #(= "Email" (:Type %)) (:ContactMechanisms contact-info))]
+      (when (or address emails)
+        [:gmd:address
+         [:gmd:CI_Address
+          (for [street-address (:StreetAddresses address)]
+            [:gmd:deliveryPoint (char-string street-address)])
+          (when-let [city (:City address)]
+            [:gmd:city (char-string city)])
+          (when-let [state (:StateProvince address)]
+            [:gmd:administrativeArea (char-string state)])
+          (when-let [postal-code (:PostalCode address)]
+            [:gmd:postalCode (char-string postal-code)])
+          (when-let [country (:Country address)]
+            [:gmd:country (char-string country)])
+          (for [email emails]
+            [:gmd:electronicMailAddress (char-string (:Value email))])]]))
+    (when-let [url (first (:RelatedUrls contact-info))]
       (related-url/generate-online-resource-url
-       (update url :URLs #(take 1 %))
-       :gmd:onlineResource)))
-   (when-let [hours (:ServiceHours contact-info)]
-    [:gmd:hoursOfService (char-string hours)])
-   (when-let [instruction (:ContactInstruction contact-info)]
-    [:gmd:contactInstructions (char-string instruction)])]])
+       url
+       :gmd:onlineResource))
+    (when-let [hours (:ServiceHours contact-info)]
+      [:gmd:hoursOfService (char-string hours)])
+    (when-let [instruction (:ContactInstruction contact-info)]
+      [:gmd:contactInstructions (char-string instruction)])]])
 
 (defn- generate-data-center-name
  "Generate data center name from long and short name. ISO only has one field for name, so these

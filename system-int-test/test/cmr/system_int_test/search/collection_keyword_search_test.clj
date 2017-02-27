@@ -93,7 +93,6 @@
         tdcs2 (dc/two-d "twoduniq")
         org (dc/org :archive-center "Some&Place")
         url1 (dc/related-url {:url "cmr.earthdata.nasa.gov"
-                              :title "CMR"
                               :description "Earthdata"})
         url2 (dc/related-url {:url "http://nsidc.org/"
                               :description "Home page of National Snow and Ice Data Center"})
@@ -285,7 +284,6 @@
 
         ;; Related URLs
         "earthdata" [coll25]
-        "cmr" [coll25]
         "nsidc" [coll25 coll27]
 
         ;; Special characters are escaped before sending to Elastic

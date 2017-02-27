@@ -61,7 +61,7 @@
                       "GET DATA"
                       (when name (resource-name->types name)))
                url-link (value-of url "gmd:linkage/gmd:URL")]]
-     {:URLs (when url-link [(url/format-url url-link sanitize?)])
+     {:URL (when url-link (url/format-url url-link sanitize?))
       :Description (char-string-value url "gmd:description")
       :Relation (when type [type])})))
 
@@ -73,7 +73,7 @@
         ;; outcome of ECSE-129.
         :let [browse-url (or (value-of url "gmd:fileName/gmx:FileName/@src")
                              (value-of url "gmd:fileName/gco:CharacterString"))]]
-    {:URLs (when browse-url [(url/format-url browse-url sanitize?)])
+    {:URL (when browse-url (url/format-url browse-url sanitize?))
      :Description (char-string-value url "gmd:fileDescription")
      :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
                  [rel])}))

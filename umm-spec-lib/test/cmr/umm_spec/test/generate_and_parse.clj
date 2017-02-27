@@ -78,6 +78,7 @@
             :when (not @failed-atom)
             :let [metadata (slurp example-file)
                   umm (core/parse-metadata test-context :collection metadata-format metadata)]]
+
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
@@ -107,6 +108,7 @@
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
          (is (= expected actual)
+
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))
 

@@ -154,14 +154,14 @@
       [:Abstract (:Abstract c)]
       [:Purpose (:Purpose c)]]
      (for [related-url (:RelatedUrls c)]
+      (when-not (= u/not-provided-related-url related-url)
        [:Related_URL
         (when-let [[type subtype] (:Relation related-url)]
           [:URL_Content_Type
            [:Type type]
            [:Subtype subtype]])
-        (for [url (:URLs related-url)]
-          [:URL url])
-        [:Description (:Description related-url)]])
+        [:URL (:URL related-url)]
+        [:Description (:Description related-url)]]))
      (for [ma (:MetadataAssociations c)]
        [:Parent_DIF (:EntryId ma)])
      (dif-util/generate-idn-nodes c)
