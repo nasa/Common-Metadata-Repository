@@ -443,7 +443,7 @@
         {:action :provider-collection-reindexing
          :provider-id provider-id
          :all-revisions-index? false}))
-    (debug "Reindexing all collection events submitted.")))
+    (info "Reindexing all collection events submitted.")))
 
 (defn update-humanizers
   "Update the humanizer cache and reindex all collections"

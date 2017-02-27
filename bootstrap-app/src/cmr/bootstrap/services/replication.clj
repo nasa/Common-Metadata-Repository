@@ -115,9 +115,9 @@
     (doseq [table all-tables]
       (let [curr-time (System/currentTimeMillis)
             stmt (fix-null-replicated-concepts-query-str table revision-datetime)]
-        (debug "Fixing replicated BLOBs for:" table "starting with statement:" stmt)
+        (info "Fixing replicated BLOBs for:" table "starting with statement:" stmt)
         (j/db-do-commands db stmt)
-        (debug "Fixing replicated BLOBs for:" table "with revision-datetime" revision-datetime
+        (info "Fixing replicated BLOBs for:" table "with revision-datetime" revision-datetime
                "took" (- (System/currentTimeMillis) curr-time)) "ms"))))
 
 (defn index-replicated-concepts

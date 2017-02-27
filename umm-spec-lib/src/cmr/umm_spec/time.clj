@@ -26,7 +26,7 @@
   "Returns the earliest date found in the temporal extent of a UMM collection. Nil indicates the
    collection has no temporal extents."
   [umm-coll]
-  (when-let [dates (seq (remove #(= :present %) (mapcat temporal-all-dates (:TemporalExtents umm-coll))))]
+  (when-let [dates (seq (remove #(or (nil? %) (= :present %)) (mapcat temporal-all-dates (:TemporalExtents umm-coll))))]
     (t/earliest dates)))
 
 (defn collection-end-date

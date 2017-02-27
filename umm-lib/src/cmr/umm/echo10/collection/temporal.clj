@@ -76,4 +76,3 @@
                                 (gu/optional-elem :DurationValue duration-value)
                                 (gu/optional-elem :PeriodCycleDurationUnit period-cycle-duration-unit)
                                 (gu/optional-elem :PeriodCycleDurationValue period-cycle-duration-value))))))))
-

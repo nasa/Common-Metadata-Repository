@@ -23,7 +23,7 @@
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm.acl-matchers :as acl-matchers]))
+    [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -156,7 +156,7 @@
   [gran-identifier granule]
   (let [{:keys [access-value temporal]} gran-identifier]
     (and (if access-value
-           (acl-matchers/matches-access-value-filter? granule access-value)
+           (acl-matchers/matches-access-value-filter? :granule granule access-value)
            true)
          (if temporal
            (when-let [umm-temporal (util/lazy-get granule :temporal)]
@@ -217,8 +217,8 @@
                                                    catalog-item-acls)]
                                    permission)]
     (set
-      (concat catalog-item-permissions
-              ingest-management-permissions))))
+     (concat catalog-item-permissions
+             ingest-management-permissions))))
 
 (defn- add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."

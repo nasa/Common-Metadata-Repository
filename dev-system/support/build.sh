@@ -1,11 +1,13 @@
 #!/bin/sh
 # This script is used to manage building the CMR applications
 #
-# The script uses two environment variables:
+# The script uses these environment variables:
 # CMR_BUILD_UBERJARS: If set to true, the script will create the application uberjars.
 # CMR_DEV_SYSTEM_DB_TYPE: If set to external, the script will create all of the users required and
 # run the database migrations to setup an Oracle database for use with CMR. Note that the caller
 # should also set CMR_DB_URL to the URL to connect to the external database.
+# CMR_ORACLE_JAR_REPO: Oracle libraries are not available in public maven repositories. We can host
+# them in internal ones for building. If this is set then the maven repo will be updated to use this.
 
 date && echo "Installing all apps" &&
 (cd .. && lein modules do clean, install)

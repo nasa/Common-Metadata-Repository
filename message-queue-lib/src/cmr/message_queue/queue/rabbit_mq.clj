@@ -286,7 +286,7 @@
 
   (reset
     [this]
-    (debug "Resetting RabbitMQ")
+    (info "Resetting RabbitMQ")
     (doseq [queue-name persistent-queues]
       (purge-queue this queue-name)))
 

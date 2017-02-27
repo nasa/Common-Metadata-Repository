@@ -91,7 +91,7 @@
      (case status
        404
        (let [err-msg "Unable to find all concepts."]
-         (debug "Not found response body:" (:body response))
+         (info "Not found response body:" (:body response))
          (errors/throw-service-error :not-found err-msg))
 
        200
@@ -123,7 +123,7 @@
      (case status
        404
        (let [err-msg "Unable to find all concepts."]
-         (debug "Not found response body:" (:body response))
+         (info "Not found response body:" (:body response))
          (errors/throw-service-error :not-found err-msg))
 
        200
