@@ -79,7 +79,7 @@
                                       "health" "humanizer-alias-cache" "write-enabled"]
         (url/access-control-read-caches-url) ["acls" "health" "group-ids-guids" "write-enabled"]
         (url/search-read-caches-url) ["acls" "collections-for-gran-acls" "has-granules-map"
-                                      "index-names" "token-imp" "token-sid" "health"
+                                      "index-names" "token-imp" "token-sid" "token-user-id" "health"
                                       "xsl-transformer-templates" "metadata-cache" "kms" "write-enabled"])
       (s/only-with-real-database
        (testing "list caches for bootstrap"
@@ -173,8 +173,9 @@
         (url/search-read-caches-url) "has-granules-map" []
         (url/search-read-caches-url) "index-names" []
         (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
-        (url/search-read-caches-url) "token-sid" []
-        (url/search-read-caches-url) "xsl-transformer-templates" [])
+        (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
+        (url/search-read-caches-url) "xsl-transformer-templates" []
+        (url/search-read-caches-url) "token-user-id" [])
       (s/only-with-real-database
        (testing "list cache keys for bootstrap"
          (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
