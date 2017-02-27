@@ -63,13 +63,23 @@
                 (get-provider-level-group-acls context permission))))))
 
 (defn- get-instance-acls
-  "Returns any ACLs that grant the given permission to the context user on a specific group by its :legacy-guid."
-  [context permission group]
-  (when-let [target-guid (:legacy-guid group)]
-    (seq
-      (filter #(= target-guid (-> % :single-instance-object-identity :target-guid))
-              (acl/get-permitting-acls context
-                                       :single-instance-object "GROUP" permission)))))
+ "Returns any ACLs that grant the given permission to the context user on a specific group by its concept-id or legacy-guid."
+ [context action-description group]
+ (let [concept-id (:concept-id group)
+       legacy-guid (:legacy-guid group)
+       permissions (case action-description
+                         "update" [:update]
+                         ;; Update and delete permissions grant read as well, there is no explicit read permissions
+                         ;; for single instance acls
+                         "read" [:update :delete]
+                         "delete" [:delete]
+                         "create" [:create])]
+   (when (or legacy-guid concept-id)
+     (let [acls (mapcat #(acl/get-permitting-acls context :single-instance-object "GROUP_MANAGEMENT" %) permissions)]
+       (seq (filter
+             #(or (= concept-id (get-in % [:single-instance-object-identity :target-guid]))
+                  (= legacy-guid (get-in % [:single-instance-object-identity :target-guid])))
+             acls))))))
 
 (defn- describe-group
   [group]
@@ -92,7 +102,7 @@
   [context action-description permission group]
   (when-not (transmit-config/echo-system-token? context)
     (let [context (put-sids-in-context context)]
-      (when-not (or (get-instance-acls context permission group)
+      (when-not (or (get-instance-acls context action-description group)
                     (get-provider-acls context permission group)
                     (get-system-level-group-acls context permission))
         (throw-group-permission-error action-description group)))))
