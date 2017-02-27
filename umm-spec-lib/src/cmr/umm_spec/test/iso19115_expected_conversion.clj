@@ -121,7 +121,7 @@
                           (fn [[rel]]
                             (when (conversion-util/relation-set rel)
                               [rel])))
-               (update-in [:URL] #(url/format-url % true)))))
+               (update :URL #(url/format-url % true)))))
     [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values
