@@ -919,9 +919,9 @@
           data-center-contact-groups (get-in (first (:ContactGroups (nth (:DataCenters result) 2))) [:ContactInformation :RelatedUrls])
           collection-contact-persons (get-in (first (:ContactPersons result)) [:ContactInformation :RelatedUrls])]
       (is (= [{:Description "Contact group related url description"
-                            :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                            :MimeType "application/html"
-                            :URLs ["www.contact.group.foo.com"]}]
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+               :MimeType "application/html"
+               :URLs ["www.contact.group.foo.com"]}]
              (:RelatedUrls result)))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",

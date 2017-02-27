@@ -73,9 +73,9 @@
   [doc sanitize?]
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
-          url (map #(url/format-url % sanitize?) (values-at related-url "URL"))
+          url (values-at related-url "URL")
           :let [description (value-of related-url "Description")]]
-         {:URL url
+         {:URL (url/format-url url sanitize?)
           :Description (value-of related-url "Description")
           :Relation [(value-of related-url "URL_Content_Type/Type")
                      (value-of related-url "URL_Content_Type/Subtype")]})
