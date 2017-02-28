@@ -8,7 +8,7 @@
   (:import
    (org.apache.commons.validator.routines UrlValidator)))
 
-(defn- url-validation
+(defn url-validation
   "Validate the URL. Return nil if no errors and the field path and error if the URL
   is not valid."
   [field-path value]
@@ -21,7 +21,7 @@
        [(vu/escape-error-string (format "[%s] is not a valid URL" value))]})))
 
 (def urls-validation
-  {:URLs (v/every url-validation)})
+  {:URL url-validation})
 
 (def contact-information-url-validation
   {:ContactInformation {:RelatedUrls (v/every urls-validation)}})

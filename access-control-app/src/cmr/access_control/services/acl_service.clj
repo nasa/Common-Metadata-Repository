@@ -23,7 +23,7 @@
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm.acl-matchers :as acl-matchers]))
+    [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -125,8 +125,9 @@
 
 (defn- get-echo-style-acls
   "Returns all ACLs in metadata db, converted to \"ECHO-style\" keys for use with existing ACL functions."
-  [context]
-  (map acl/echo-style-acl (map get-parsed-acl (get-all-acl-concepts context))))
+  [context identity-type target]
+  (map acl/echo-style-acl
+       (acl-util/get-acl-concepts-by-identity-type-and-target context identity-type target)))
 
 (def all-permissions
   "The set of all permissions checked and returned by the functions below."
@@ -156,7 +157,7 @@
   [gran-identifier granule]
   (let [{:keys [access-value temporal]} gran-identifier]
     (and (if access-value
-           (acl-matchers/matches-access-value-filter? granule access-value)
+           (acl-matchers/matches-access-value-filter? :granule granule access-value)
            true)
          (if temporal
            (when-let [umm-temporal (util/lazy-get granule :temporal)]
@@ -217,8 +218,8 @@
                                                    catalog-item-acls)]
                                    permission)]
     (set
-      (concat catalog-item-permissions
-              ingest-management-permissions))))
+     (concat catalog-item-permissions
+             ingest-management-permissions))))
 
 (defn- add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."
@@ -234,7 +235,9 @@
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (get-echo-style-acls context)]
+        acls (concat
+               (get-echo-style-acls context index/provider-identity-type-name schema/ingest-management-acl-target)
+               (get-echo-style-acls context index/catalog-item-identity-type-name nil))]
     (into {}
           (for [concept (mdb1/get-latest-concepts context concept-ids)
                 :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)]]
@@ -256,7 +259,7 @@
   "Returns a map of the system object type to the set of permissions granted to the given username or user type."
   [context username-or-type system-object-target]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (get-echo-style-acls context)]
+        acls (get-echo-style-acls context index/system-identity-type-name system-object-target)]
     (hash-map system-object-target (system-permissions-granted-by-acls system-object-target sids acls))))
 
 (defn provider-permissions-granted-by-acls
@@ -271,7 +274,7 @@
   "Returns a map of target object ids to permissions granted to the specified user for the specified provider id."
   [context username-or-type provider-id target]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (get-echo-style-acls context)]
+        acls (get-echo-style-acls context index/provider-identity-type-name target)]
     (hash-map target (provider-permissions-granted-by-acls provider-id target sids acls))))
 
 (defn- group-permissions-granted-by-acls
@@ -288,7 +291,7 @@
    granted to the given username or user type."
   [context username-or-type target-group-ids]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (get-echo-style-acls context)]
+        acls (get-echo-style-acls context index/single-instance-identity-type-name nil)]
     (into {}
           (for [group-id target-group-ids]
             [group-id (group-permissions-granted-by-acls group-id sids acls)]))))

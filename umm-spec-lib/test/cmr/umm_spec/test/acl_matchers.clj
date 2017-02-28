@@ -1,9 +1,10 @@
-(ns cmr.umm.test.acl-matchers
-  (:require [clojure.test :refer :all]
-            [cmr.umm.acl-matchers :as a]
-            [cmr.common.util :refer [are2]]
-            [cmr.common.test.time-util :as tu]
-            [cmr.common.time-keeper :as tk]))
+(ns cmr.umm-spec.test.acl-matchers
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.test.time-util :as tu]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :refer [are2]]
+   [cmr.umm-spec.acl-matchers :as a]))
 
 (use-fixtures :each tk/freeze-resume-time-fixture)
 
@@ -24,8 +25,8 @@
   ([]
    (collection {}))
   ([{:keys [entry-title access-value]}]
-   {:entry-title (or entry-title "entry title")
-    :access-value access-value}))
+   {:EntryTitle (or entry-title "entry title")
+    :AccessConstraints {:Value access-value}}))
 
 (deftest collection-applicable-acl-test
   (testing "collection-applicable flag false"
@@ -161,10 +162,10 @@
   "Helper for creating a collection with temporal at given n and end date times. end-n can be nil
   to simulate a non ending time."
   [start-n end-n]
-  {:temporal
-   {:range-date-times
-    [{:beginning-date-time (tu/n->date-time start-n)
-      :ending-date-time (tu/n->date-time end-n)}]}})
+  {:TemporalExtents
+   [{:RangeDateTimes
+     [{:BeginningDateTime (tu/n->date-time start-n)
+       :EndingDateTime (tu/n->date-time end-n)}]}]})
 
 (deftest collection-applicable-temporal-acl-test
   (tk/set-time-override! (tu/n->date-time now-n))

@@ -90,7 +90,7 @@
         science-keywords (mapcat sk/science-keyword->keywords (:ScienceKeywords collection))
         attrib-keywords (mapcat #(attrib/psa->keywords (util/map-keys->kebab-case %))
                                 (:AdditionalAttributes collection))
-        related-url-urls (mapcat :URLs related-urls)
+        related-url-urls (map :URL related-urls)
         related-url-titles (map :Title related-urls)
         related-url-descriptions (map :Description related-urls)
         all-fields (flatten (conj [concept-id]

@@ -52,4 +52,3 @@
   (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
     (validation-errors->path-errors
      (v/validate vg/granule-validations granule-with-parent))))
-

@@ -129,20 +129,22 @@
                         :EndingDateTime    (value-of period "gml:endPosition")})
      :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")}))
 
-(defn- parse-access-constraints
+(defn parse-access-constraints
   "If both value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with su/not-provided"
   [doc sanitize?]
-  (let [access-constraints-record
+  (let [value (regex-value doc (str constraints-xpath
+                                 "/gmd:otherConstraints/gco:CharacterString")
+               #"(?s)Restriction Flag:(.+)")
+        access-constraints-record
         {:Description (su/truncate
                        (regex-value doc (str constraints-xpath
                                          "/gmd:useLimitation/gco:CharacterString")
                          #"(?s)Restriction Comment: (.+)")
                        su/ACCESSCONSTRAINTS_DESCRIPTION_MAX
                        sanitize?)
-         :Value (regex-value doc (str constraints-xpath
-                                   "/gmd:otherConstraints/gco:CharacterString")
-                   #"(?s)Restriction Flag:(.+)")}]
+         :Value (when value
+                 (Double/parseDouble value))}]
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(su/with-default % sanitize?)))))
 
@@ -290,3 +292,10 @@
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [context metadata options]
   (js/parse-umm-c (parse-iso19115-xml context metadata options)))
+
+(defn parse-doc-temporal-extents
+ "Standalone function to parse temporal extents outside of full collection parsing"
+ [doc]
+ (let [md-data-id-el (first (select doc md-data-id-base-xpath))
+       extent-info (iso-util/get-extent-info-map doc)]
+  (parse-temporal-extents doc extent-info md-data-id-el)))

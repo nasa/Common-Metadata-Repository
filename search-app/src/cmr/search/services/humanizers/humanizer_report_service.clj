@@ -72,7 +72,7 @@
                                   (get-all-collections context))
          string-writer (StringWriter.)
          idx-atom (atom 0)]
-    (debug "get-all-collections:" t1
+    (info "get-all-collections:" t1
            "processing " (count collection-batches)
            " batches of size" (humanizer-report-collection-batch-size))
     (csv/write-csv string-writer [CSV_HEADER])
@@ -90,9 +90,9 @@
                     [t3 rows] (u/time-execution
                                 (apply concat humanized-rows))]
                 (csv/write-csv string-writer rows)
-                (debug "Batch " (swap! idx-atom inc) " Size " (count batch)
+                (info "Batch " (swap! idx-atom inc) " Size " (count batch)
                        "Write humanizer report of " (count rows) " rows"
                        "get humanized rows:" t2
                        "concat humanized rows:" t3))))]
-      (debug "Create report " t4)
+      (info "Create report " t4)
       (str string-writer))))
