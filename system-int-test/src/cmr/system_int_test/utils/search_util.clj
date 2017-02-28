@@ -1,36 +1,39 @@
 (ns cmr.system-int-test.utils.search-util
   "provides search related utilities."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.coerce :as tc]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [cmr.system-int-test.utils.dev-system-util :as dev-util]
-            [cmr.common.concepts :as cs]
-            [cmr.common.mime-types :as mime-types]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.system :as s]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.util :as util]
-            [camel-snake-kebab.core :as csk]
-            [clojure.set :as set]
-            [clojure.walk]
-            [ring.util.codec :as codec]
-            [clojure.data.xml :as x]
-            [cmr.system-int-test.utils.fast-xml :as fx]
-            [cmr.common.xml :as cx]
-            [cmr.umm.dif.dif-collection]
-            [cmr.umm.iso-mends.iso-mends-collection]
-            [cmr.umm.iso-smap.iso-smap-collection]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.atom-json :as dj]
-            [cmr.system-int-test.data2.kml :as dk]
-            [cmr.system-int-test.data2.opendata :as od]
-            [cmr.system-int-test.data2.provider-holdings :as ph]
-            [cmr.system-int-test.data2.aql :as aql]
-            [cmr.system-int-test.data2.aql-additional-attribute]
-            [cmr.system-int-test.data2.facets :as f]))
+  (:require 
+    [camel-snake-kebab.core :as csk]
+    [cheshire.core :as json]
+    [clj-http.client :as client]
+    [clj-time.coerce :as tc]
+    [clj-time.core :as t]
+    [clojure.data.xml :as x]
+    [clojure.set :as set]
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [clojure.walk]
+    [cmr.common-app.test.side-api :as side]
+    [cmr.common.concepts :as cs]
+    [cmr.common.mime-types :as mime-types]
+    [cmr.common.time-keeper :as tk]
+    [cmr.common.util :as util]
+    [cmr.common.xml :as cx]
+    [cmr.system-int-test.data2.aql :as aql]
+    [cmr.system-int-test.data2.aql-additional-attribute]
+    [cmr.system-int-test.data2.atom :as da]
+    [cmr.system-int-test.data2.atom-json :as dj]
+    [cmr.system-int-test.data2.facets :as f]
+    [cmr.system-int-test.data2.kml :as dk]
+    [cmr.system-int-test.data2.opendata :as od]
+    [cmr.system-int-test.data2.provider-holdings :as ph]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.dev-system-util :as dev-util]
+    [cmr.system-int-test.utils.fast-xml :as fx]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.transmit.config :as transmit-config]
+    [cmr.umm.dif.dif-collection]
+    [cmr.umm.iso-mends.iso-mends-collection]
+    [cmr.umm.iso-smap.iso-smap-collection]
+    [ring.util.codec :as codec]))
 
 (defn enable-writes
   "Enables writes for tags / tag associations."
@@ -632,3 +635,18 @@
    (if (= 200 (:status response))
      (:body response)
      response)))
+
+(defn freeze-resume-time-fixture
+  []
+  (fn [f]
+    (try
+      ;; Freeze time in test
+      (tk/set-time-override! (tk/now))
+      ;; Freeze time on CMR side
+      (side/eval-form `(tk/set-time-override! (tk/now))) 
+      (f)
+      (finally
+        ;; Resume time in test
+        (tk/clear-current-time!)
+        ;; Resume time on CMR side
+        (side/eval-form `(tk/clear-current-time!)))))) 

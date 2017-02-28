@@ -5,8 +5,6 @@
     [clojure.test :refer :all]
     [clojure.string :as str]
     [cmr.common.services.messages :as msg]
-    [cmr.common.test.time-util :as tu]
-    [cmr.common.time-keeper :as tk]
     [cmr.common.util :refer [are2] :as util]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.data2.atom :as da]
@@ -20,17 +18,17 @@
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.search-util :as search]))
 
-
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
-                                           "provguid3" "PROV3" "provguid4" "PROV4"}
-                                          {:grant-all-search? false}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
+                                              "provguid3" "PROV3" "provguid4" "PROV4"}
+                                             {:grant-all-search? false})
+                       (search/freeze-resume-time-fixture)]))
 
 (comment
   (dev-sys-util/reset)
   (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
   (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
   (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"}))
-
 
 (deftest invalid-security-token-test
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}
@@ -84,7 +82,6 @@
                        (search/find-refs :collection {:token guest-token})))))
 
 (deftest collection-search-with-acls-test
-  (side/eval-form `(tk/set-time-override! (tk/now))) 
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
   (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
@@ -275,9 +272,7 @@
         ;; none of the revisions are readable by guest users
         "provider-id all-revisions=true no token"
         []
-        {:provider-id "PROV4" :all-revisions true})))
-  (side/eval-form `(tk/clear-current-time!)))
-
+        {:provider-id "PROV4" :all-revisions true}))))
 
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.

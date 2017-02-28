@@ -9,8 +9,6 @@
     [clojure.java.io :as io]
     [cmr.common-app.test.side-api :as side]
     [cmr.common.mime-types :as mt]
-    [cmr.common.test.time-util :as tu]
-    [cmr.common.time-keeper :as tk]
     [cmr.common.util :as util :refer [are2 are3]]
     [cmr.common.xml :as cx]
     [cmr.search.validators.opendata :as opendata-json]
@@ -41,8 +39,9 @@
     [cmr.umm.umm-core :as umm]
     [cmr.umm.umm-spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture
-                      {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
+                       (search/freeze-resume-time-fixture)]))
 
 (comment
  ((ingest/reset-fixture
@@ -92,7 +91,6 @@
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
-  (side/eval-form `(tk/set-time-override! (tk/now))) 
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -201,8 +199,7 @@
               "ECHO10" :echo10
               "DIF" :dif
               "DIF10" :dif10
-              "ISO" :iso19115))))))
-  (side/eval-form `(tk/clear-current-time!)))
+              "ISO" :iso19115)))))))
 
 (deftest collection-umm-json-metadata-cache-test
   (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
@@ -247,7 +244,6 @@
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
-  (side/eval-form `(tk/set-time-override! (tk/now))) 
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   ;; Whitespace here but not stripped out for expected
@@ -408,8 +404,7 @@
       (testing "ECHO10"
         (d/assert-echo-compatible-metadata-results-match
          :echo10 all-colls
-         (search/find-metadata :collection :echo10 {:echo-compatible true})))))
-  (side/eval-form `(tk/clear-current-time!)))
+         (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
 
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
