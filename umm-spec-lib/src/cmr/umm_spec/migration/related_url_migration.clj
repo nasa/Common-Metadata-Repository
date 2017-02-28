@@ -38,7 +38,7 @@
          (if-let [url (:URL related-url)]
           (-> related-url
            (assoc :URLs [url])
-           (dissoc :URL))
+           (dissoc :URL :URLContentType :Type :Subtype))
           related-url))
         related-urls))
 
