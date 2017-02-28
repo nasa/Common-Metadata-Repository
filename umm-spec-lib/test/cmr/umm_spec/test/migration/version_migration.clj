@@ -506,7 +506,27 @@
                                 :PublicationReferences [{:RelatedUrl {:URLs ["www.google.com" "www.foo.com"]
                                                                       :Title "URL Title"
                                                                       :Description "URL Description"}}
-                                                        {:RelatedUrl {:URLs ["www.foo.com"]}}]})]
+                                                        {:RelatedUrl {:URLs ["www.foo.com"]}}]
+                                :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                                                     :BoundingRectangles {:CenterPoint {:Longitude "0"
+                                                                                                                        :Latitude "0"}
+                                                                                                          :WestBoundingCoordinate "0"
+                                                                                                          :NorthBoundingCoordinate "0"
+                                                                                                          :EastBoundingCoordinate "0"
+                                                                                                          :SouthBoundingCoordinate "0"}
+                                                                                     :GPolygons {:CenterPoint {:Longitude "0"
+                                                                                                               :Latitude "0"}
+                                                                                                 :Boundary {:Points [{"Longitude":-10, "Latitude":-10}
+                                                                                                                     {"Longitude":10, "Latitude":-10}
+                                                                                                                     {"Longitude":10, "Latitude":10}
+                                                                                                                     {"Longitude":-10, "Latitude":10}
+                                                                                                                     {"Longitude":-10, "Latitude":-10}]}}
+                                                                                     :Lines {:CenterPoint {:Longitude "0"
+                                                                                                           :Latitude "0"}
+                                                                                             :Points [{"Longitude":-10, "Latitude":-10}
+                                                                                                      {"Longitude":10, "Latitude":-10}]}}}
+                                                :GranuleSpatialRepresentation "NO_SPATIAL"}})]
+
     ;; DOI is moved from :CollectionCitations to :DOI
     ;; RelatedUrl is moved to :OnlineResource
     (is (= {:Authority ";'", :DOI "F19,L"} (:DOI result)))
@@ -518,7 +538,20 @@
     ;; PublicationReferences Related URL migrates to Online Resource
     (is (= [{:OnlineResource {:Linkage "www.google.com" :Name "URL Title" :Description "URL Description"}}
             {:OnlineResource {:Linkage "www.foo.com" :Name u/not-provided :Description u/not-provided}}]
-           (:PublicationReferences result)))))
+           (:PublicationReferences result)))
+    (is (= {:SpatialExtent {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                                 :BoundingRectangles {:WestBoundingCoordinate "0"
+                                                                                      :NorthBoundingCoordinate "0"
+                                                                                      :EastBoundingCoordinate "0"
+                                                                                      :SouthBoundingCoordinate "0"}
+                                                                 :GPolygons {:Boundary {:Points [{"Longitude":-10, "Latitude":-10}
+                                                                                                 {"Longitude":10, "Latitude":-10}
+                                                                                                 {"Longitude":10, "Latitude":10}
+                                                                                                 {"Longitude":-10, "Latitude":10}
+                                                                                                 {"Longitude":-10, "Latitude":-10}]}}
+                                                                 :Lines {:Points [{"Longitude":-10, "Latitude":-10}
+                                                                                  {"Longitude":10, "Latitude":-10}]}}}
+                            :GranuleSpatialRepresentation "NO_SPATIAL"}}))))
 
 (deftest migrate-1_8-related-urls-up-to-1_9
   (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
