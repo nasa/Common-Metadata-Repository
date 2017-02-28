@@ -539,7 +539,7 @@
     (is (= [{:OnlineResource {:Linkage "www.google.com" :Name "URL Title" :Description "URL Description"}}
             {:OnlineResource {:Linkage "www.foo.com" :Name u/not-provided :Description u/not-provided}}]
            (:PublicationReferences result)))
-    (is (= {:SpatialExtent {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+    (is (= {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
                                                                  :BoundingRectangles {:WestBoundingCoordinate "0"
                                                                                       :NorthBoundingCoordinate "0"
                                                                                       :EastBoundingCoordinate "0"
@@ -551,7 +551,8 @@
                                                                                                  {"Longitude":-10, "Latitude":-10}]}}
                                                                  :Lines {:Points [{"Longitude":-10, "Latitude":-10}
                                                                                   {"Longitude":10, "Latitude":-10}]}}}
-                            :GranuleSpatialRepresentation "NO_SPATIAL"}}))))
+                            :GranuleSpatialRepresentation "NO_SPATIAL"}
+           (:SpatialExtent result)))))
 
 (deftest migrate-1_8-related-urls-up-to-1_9
   (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
