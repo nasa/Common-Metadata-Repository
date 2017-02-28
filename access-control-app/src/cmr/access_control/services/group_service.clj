@@ -233,7 +233,7 @@
   "Retrieves a group with the given concept id."
   [context concept-id]
   (let [group (get-group-by-concept-id context concept-id)]
-    (auth/verify-can-read-group context group)
+    (auth/verify-can-read-group context (assoc group :concept-id concept-id))
     ;; Group response includes the number of members and not the actual members
     (-> group
         (assoc :num-members (count (:members group)))
@@ -245,7 +245,7 @@
   (common-enabled/validate-write-enabled context "access control")
   (let [group-concept (fetch-group-concept context concept-id)
         group (edn/read-string (:metadata group-concept))]
-    (auth/verify-can-delete-group context group)
+    (auth/verify-can-delete-group context (assoc group :concept-id concept-id))
     (let [delete-result (save-deleted-group-concept context group-concept)]
       (index/unindex-group context concept-id)
       delete-result)))
@@ -257,7 +257,7 @@
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))]
     (validate-update-group context existing-group updated-group)
-    (auth/verify-can-update-group context existing-group)
+    (auth/verify-can-update-group context (assoc existing-group :concept-id concept-id))
       ;; Avoid clobbering :members by merging the updated-group into existing-group. If updated-group
       ;; specifies :members then it will overwrite the existing value.
     (let [updated-group (merge existing-group updated-group)
@@ -378,7 +378,7 @@
          existing-group (edn/read-string (:metadata existing-concept))
          updated-group (add-members-to-group existing-group members)]
      (when-not skip-acls?
-       (auth/verify-can-update-group context existing-group))
+       (auth/verify-can-update-group context (assoc existing-group :concept-id concept-id)))
      (save-updated-group-concept context existing-concept updated-group))))
 
 (defn- remove-members-from-group
@@ -396,7 +396,7 @@
   (let [existing-concept (fetch-group-concept context concept-id)
         existing-group (edn/read-string (:metadata existing-concept))
         updated-group (remove-members-from-group existing-group members)]
-    (auth/verify-can-update-group context existing-group)
+    (auth/verify-can-update-group context (assoc existing-group :concept-id concept-id))
     (save-updated-group-concept context existing-concept updated-group)))
 
 (defn get-members
@@ -404,7 +404,7 @@
   [context concept-id]
   (let [concept (fetch-group-concept context concept-id)
         group (edn/read-string (:metadata concept))]
-    (auth/verify-can-read-group context group)
+    (auth/verify-can-read-group context (assoc group :concept-id concept-id))
     (get group :members [])))
 
 (defn health

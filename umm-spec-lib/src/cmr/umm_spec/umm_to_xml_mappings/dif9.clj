@@ -162,8 +162,7 @@
          [:URL_Content_Type
           [:Type type]
           [:Subtype subtype]])
-       (for [url (:URLs related-url)]
-         [:URL url])
+       [:URL (:URL related-url)]
        [:Description (:Description related-url)]])
     (for [ma (:MetadataAssociations c)]
       [:Parent_DIF (:EntryId ma)])

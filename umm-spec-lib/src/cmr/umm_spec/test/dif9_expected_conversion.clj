@@ -154,7 +154,8 @@
   [c]
   (let [contacts (conversion-util/expected-contact-information-urls
                    (mapv #(contact->expected % role->expected)
-                       (concat (:ContactGroups c) (:ContactPersons c))))]
+                       (concat (:ContactGroups c) (:ContactPersons c)))
+                   "Data")]
     (when (seq contacts)
       contacts)))
 
@@ -173,12 +174,12 @@
 (defn- expected-dif-data-center-contact-info
   "Returns the expected DIF9 data center contact information."
   [contact-info]
-  (when-let [related-url (first (:URLs (first (:RelatedUrls contact-info))))]
+  (when-let [related-url (:URL (first (:RelatedUrls contact-info)))]
     (cmn/map->ContactInformationType
        {:RelatedUrls [(cmn/map->RelatedUrlType
-                        {:URLs [related-url]
-                         :URLContentType "DataCenterURL"
-                         :Type "HOME PAGE"})]})))
+                       {:URLContentType "DataCenterURL"
+                        :Type "HOME PAGE"
+                        :URL related-url})]})))
 
 (defn- expected-dif-data-centers
   "Returns the expected DIF parsed data centers for the given UMM collection."

@@ -43,24 +43,22 @@
 (defn- expected-echo10-related-urls
   [related-urls]
   (if (seq related-urls)
-    (seq (for [related-url related-urls
-               :let [[rel] (:Relation related-url)]
-               url (:URLs related-url)]
-           (cmn/map->RelatedUrlType
-            (-> related-url
-                (assoc :URLs [url])
-                (dissoc :URLContentType :Type :Subtype)
-                (update-in [:FileSize] (fn [file-size]
-                                         (when (and file-size
-                                                    (= rel "GET RELATED VISUALIZATION"))
-                                           (when-let [byte-size (ru-gen/convert-to-bytes
-                                                                 (:Size file-size) (:Unit file-size))]
-                                             (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
-                (update-in [:Relation] (fn [[rel]]
-                                         (when (conversion-util/relation-set rel)
-                                           [rel])))
-                (update-in-each [:URLs] #(url/format-url % true))))))
-    [su/not-provided-related-url]))
+    (for [related-url related-urls
+          :let [[rel] (:Relation related-url)]]
+     (cmn/map->RelatedUrlType
+      (-> related-url
+          (update-in [:FileSize] (fn [file-size]
+                                   (when (and file-size
+                                              (= rel "GET RELATED VISUALIZATION"))
+                                     (when-let [byte-size (ru-gen/convert-to-bytes
+                                                           (:Size file-size) (:Unit file-size))]
+                                       (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
+          (update-in [:Relation] (fn [[rel]]
+                                   (when (conversion-util/relation-set rel)
+                                     [rel])))
+          (dissoc :URLContentType :Type :Subtype)
+          (update :URL url/format-url true))))
+   [su/not-provided-related-url]))
 
 (defn- expected-echo10-reorder-related-urls
   "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."
@@ -150,7 +148,8 @@
   (when (seq contact-persons)
     (flatten
      (conversion-util/expected-contact-information-urls
-       (mapv expected-echo10-contact-person contact-persons)))))
+       (mapv expected-echo10-contact-person contact-persons)
+       "DataContactURL"))))
 
 (defn- expected-echo10-data-center
   "Returns an expected data center for each role. ECHO10 only allows for 1 role per
@@ -172,7 +171,8 @@
   (if (seq data-centers)
     (flatten
      (conversion-util/expected-contact-information-urls
-       (mapv expected-echo10-data-center data-centers)))
+       (mapv expected-echo10-data-center data-centers)
+       "DataCenterURL"))
     [su/not-provided-data-center]))
 
 (defn- expected-metadata-dates

@@ -137,19 +137,19 @@
     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
     :RelatedUrls [{:Description "Related url description"
                    :Relation ["GET DATA" "ECHO"]
-                   :URLs ["www.foo.com", "www.shoo.com"]
+                   :URL "www.foo.com"
                    :MimeType "mime type"
                    :URLContentType "DistributionURL"
                    :Type "GET DATA"
                    :Subtype "ECHO"}
                   {:Description "Related url 3 description "
                    :Relation ["GET SERVICE"]
-                   :URLs ["www.foo.com"]
+                   :URL "www.foo.com"
                    :URLContentType "DistributionURL"
                    :Type "GET SERVICE"}
                   {:Description "Related url 2 description"
                    :Relation ["GET RELATED VISUALIZATION" "WORLDVIEW"]
-                   :URLs ["www.foo.com"]
+                   :URL "www.foo.com"
                    :FileSize {:Size 10.0 :Unit "MB"}
                    :URLContentType "VisualizationURL"
                    :Type "GET RELATED VISUALIZATION"
@@ -191,7 +191,7 @@
                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                      :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                         :URLs ["www.contact.group.foo.com"]
+                                                         :URL "www.contact.group.foo.com"
                                                          :MimeType "application/html"
                                                          :URLContentType "DataContactURL"
                                                          :Type "HOME PAGE"}]
@@ -208,7 +208,7 @@
                       :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                       :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                          :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                          :URL "www.contact.foo.com"
                                                           :MimeType "application/html"
                                                           :URLContentType "DataContactURL"
                                                           :Type "HOME PAGE"}]
@@ -230,7 +230,7 @@
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                         :URL "www.contact.foo.com"
                                                                          :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
                                                                          :Type "HOME PAGE"}]
@@ -255,7 +255,7 @@
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                         :URL "www.contact.shoes.com"
                                                                          :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
                                                                          :Type "HOME PAGE"}]
@@ -276,7 +276,7 @@
                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                       :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                       :URL "www.contact.shoo.com"
                                                        :MimeType "application/html"
                                                        :URLContentType "DataCenterURL"
                                                        :Type "HOME PAGE"}]
@@ -294,10 +294,11 @@
                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                                     :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                        :URLs ["www.contact.group.foo.com"]
+                                                                        :URL "www.contact.group.foo.com"
                                                                         :MimeType "application/html"
                                                                         :URLContentType "DataContactURL"
                                                                         :Type "HOME PAGE"}]
+
                                                          :ServiceHours "Weekdays 9AM - 5PM"
                                                          :ContactInstruction "sample contact group instruction"
                                                          :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
@@ -332,7 +333,7 @@
                              :URLContentType "DistributionURL"
                              :Type "GET SERVICE"
                              :Subtype "GET WEB COVERAGE SERVICE (WCS)"
-                             :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]}]
+                             :URL "http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"}]
               :ServiceKeywords [{:Category "EARTH SCIENCE SERVICES"
                                  :Topic "WEB SERVICES"
                                  :Term "DATA APPLICATION SERVICES"}

@@ -61,8 +61,8 @@
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
    :TilingIdentificationSystems tiling-identification-system-validations
    :RelatedUrls (v/every url/urls-validation)
+   :CollectionCitations (v/every {:OnlineResource {:Linkage url/url-validation}})
+   :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})
    :DataCenters (v/every url/data-center-url-validation)
    :ContactPersons (v/every url/contact-information-url-validation)
-   :ContactGroups (v/every url/contact-information-url-validation)
-   :CollectionCitations (v/every {:RelatedUrl url/urls-validation})
-   :PublicationReferences (v/every {:RelatedUrl url/urls-validation})})
+   :ContactGroups (v/every url/contact-information-url-validation)})

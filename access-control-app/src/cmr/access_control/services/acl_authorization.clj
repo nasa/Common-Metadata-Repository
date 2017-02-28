@@ -1,6 +1,7 @@
 (ns cmr.access-control.services.acl-authorization
   (:require
     [clojure.edn :as edn]
+    [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as group-service]
     [cmr.access-control.data.access-control-index :as index]
@@ -13,18 +14,6 @@
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.transmit.config :as transmit-config]))
 
-(defn-timed get-acls-by-condition
-  "Returns the acls found by executing given condition against ACL index"
-  [context condition]
-  (let [query (qm/query {:concept-type :acl
-                         :condition condition
-                         :skip-acls? true
-                         :page-size :unlimited
-                         :result-format :query-specified
-                         :result-fields [:acl-gzip-b64]})
-        response (qe/execute-query context query)]
-    (mapv #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))))
-
 (defn-timed acls-granting-acl-read
   "Returns a sequences of acls granting ACL read to the current user"
   [context]
@@ -35,7 +24,7 @@
                                (gc/or (qm/string-condition :target schema/provider-catalog-item-acl-target)
                                       (qm/string-condition :target schema/provider-object-acl-target)))
         condition (gc/or system-condition prov-condition)
-        acls (get-acls-by-condition context condition)]
+        acls (acl-util/get-acls-by-condition context condition)]
     (filterv #(acl/acl-matches-sids-and-permission? sids "read" (acl/echo-style-acl %)) acls)))
 
 (defn- provider-read-acl->condition
@@ -74,7 +63,7 @@
   "Returns true if system ACL matches sids for user in context for a given action"
   [context action target]
   (let [condition (qm/string-condition :identity-type index/system-identity-type-name true false)
-        system-acls (get-acls-by-condition context condition)
+        system-acls (acl-util/get-acls-by-condition context condition)
         any-acl-system-acl (acl/echo-style-acl
                              (first (filter #(= target (:target (:system-identity %))) system-acls)))
         sids (auth-util/get-sids context)]
@@ -86,7 +75,7 @@
   (let [provider-identity-condition (qm/string-condition :identity-type index/provider-identity-type-name true false)
         provider-id-condition (qm/string-condition :provider provider-id)
         conditions (gc/and-conds [provider-identity-condition provider-id-condition])
-        provider-acls (get-acls-by-condition context conditions)
+        provider-acls (acl-util/get-acls-by-condition context conditions)
         prov-acl (acl/echo-style-acl
                    (first (filter #(= target (:target (:provider-identity %))) provider-acls)))
         sids (auth-util/get-sids context)]
@@ -96,7 +85,7 @@
   "Returns true if ACL itself matches sids for user in context for a given action"
   [context action concept-id]
   (let [condition (qm/string-condition :concept-id concept-id true false)
-        returned-acl (first (get-acls-by-condition context condition))
+        returned-acl (first (acl-util/get-acls-by-condition context condition))
         echo-acl (acl/echo-style-acl returned-acl)
         sids (auth-util/get-sids context)]
     ;; read is special, if the user has any permission for the acl

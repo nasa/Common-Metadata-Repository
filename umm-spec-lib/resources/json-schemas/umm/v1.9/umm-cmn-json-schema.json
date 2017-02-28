@@ -291,15 +291,11 @@
           "description": "An enumerated subtype based on the URLContentType and Type",
           "$ref": "#/definitions/URLSubtypeEnum"
         },
-        "URLs": {
+        "URL": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1024
-          },
-          "minItems": 1
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
         },
         "MimeType": {
           "description": "The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).",
@@ -312,7 +308,7 @@
           "$ref": "#/definitions/FileSizeType"
         }
       },
-      "required": ["URLs"]
+      "required": ["URL"]
     },
     "OnlineResourceType": {
       "type": "object",

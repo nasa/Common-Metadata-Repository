@@ -119,12 +119,6 @@
     (when (seq (util/remove-nil-keys contact-info))
       contact-info)))
 
-(defn- expected-dif10-contact-info-urls
-  "Returns a vector of the first URL in the list"
-  [urls]
-  (when (seq urls)
-    [(first urls)]))
-
 (defn- expected-dif-10-contact-info-related-urls
   "Returns the expected DIF 10 RelatedURL for the ContactInformation
    or nil if there are no related urls"
@@ -138,7 +132,6 @@
           (dissoc :Relation)
           (dissoc :Title)
           (dissoc :FileSize)
-          (update :URLs expected-dif10-contact-info-urls)
           (assoc :URLContentType "DataCenterURL")
           (assoc :Type "HOME PAGE")
           (cmn/map->RelatedUrlType))]
@@ -191,7 +184,8 @@
   "Returns the expected DIF 10 data center contact persons or contact groups for the given UMM collection."
   (let [expected-contacts
         (conversion-util/expected-contact-information-urls
-         (mapv #(contact->expected-dif10-collection %) contacts))]
+         (mapv #(contact->expected-dif10-collection %) contacts)
+         "DataContactURL")]
     (when (seq expected-contacts)
       expected-contacts)))
 

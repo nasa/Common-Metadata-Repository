@@ -17,7 +17,7 @@
       {:ServiceHours service-hours
        :ContactInstruction instruction
        :RelatedUrls (when (some? related-url)
-                      [{:URLs [related-url]
+                      [{:URL related-url
                         :URLContentType "DataCenterURL"
                         :Type "HOME PAGE"}])})))
 

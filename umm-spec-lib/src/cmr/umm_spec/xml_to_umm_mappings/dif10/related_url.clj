@@ -9,11 +9,14 @@
 
 (defn- multimedia->RelatedUrl
   [multimedia-sample sanitize?]
-  {:URLs (map #(url/format-url % sanitize?) (values-at multimedia-sample "URL"))
-   :Description (value-of multimedia-sample "Description")
-   :Relation ["GET RELATED VISUALIZATION"]
-   :URLContentType "VisualizationURL"
-   :Type "GET RELATED VISUALIZATION"})
+  (map
+   (fn [url]
+     {:URL url
+      :Description (value-of multimedia-sample "Description")
+      :Relation ["GET RELATED VISUALIZATION"]
+      :URLContentType "VisualizationURL"
+      :Type "GET RELATED VISUALIZATION"})
+   (values-at multimedia-sample "URL")))
 
 (defn parse-related-urls
   "Extracts urls from both Related_URL and Multimedia_Sample from DIF10 XML and includes both
@@ -26,11 +29,11 @@
                                  url-types (dif-util/dif-url-content-type->umm-url-types [type subtype])]]
                        (merge
                         url-types
-                        {:URLs (if-let [urls (seq
-                                              (remove nil?
-                                                (map #(url/format-url % sanitize?) (values-at related-url "URL"))))]
-                                  urls
-                                 [su/not-provided-url])
+                        {:URL (if-let [url (url/format-url (value-of related-url "URL") sanitize?)]
+                                 url
+                                 (when sanitize? su/not-provided-url))
                          :Description (value-of related-url "Description")
                          :MimeType (value-of related-url "Mime_Type")}))]
-    (seq (into multimedia-urls related-urls))))
+    (if (or multimedia-urls related-urls)
+     (flatten (seq (into multimedia-urls related-urls)))
+     (when sanitize? (seq su/not-provided-related-url)))))

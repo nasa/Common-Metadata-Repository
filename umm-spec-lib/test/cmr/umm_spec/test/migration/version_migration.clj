@@ -13,6 +13,274 @@
             [cmr.umm-spec.models.umm-common-models :as umm-cmn]
             [cmr.umm-spec.util :as u]))
 
+(def umm-1-9-related-urls
+  {:ContactGroups [{:Roles ["Investigator"]}
+                   :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                   :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
+                                                       :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                       :URL "www.contact.group.foo.com"
+                                                       :MimeType "application/html"}]
+                                        :ServiceHours "Weekdays 9AM - 5PM"
+                                        :ContactInstruction "sample contact group instruction"
+                                        :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                        :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                     :City "Riverdale"
+                                                     :StateProvince "MD"
+                                                     :PostalCode "20774"
+                                                     :Country "U.S.A."}]}
+                   :GroupName "NSIDC_IceBridge"]
+   :RelatedUrls [{:Description "Contact group related url description"
+                  :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                  :URL "www.contact.group.foo.com"
+                  :MimeType "application/html"}]
+   :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                     :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                         :URL "www.contact.foo.com"
+                                                         :MimeType "application/html"}
+                                                        {:Description "Contact related url description"
+                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                         :URL "www.contact.shoo.com"
+                                                         :MimeType "application/html"}]
+                                          :ServiceHours "Weekdays 9AM - 5PM"
+                                          :ContactInstruction "sample contact instruction"
+                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                              {:Type "Email" :Value "cmr@nasa.gov"}]
+                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                       :City "Greenbelt"
+                                                       :StateProvince "MD"
+                                                       :PostalCode "20771"
+                                                       :Country "U.S.A."}]}
+                     :FirstName "John"
+                     :MiddleName "D"
+                     :LastName "Smith"}]
+   :DataCenters [{:Roles ["ORIGINATOR"]
+                  :ShortName "LPDAAC"
+                  :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URL "www.contact.shoo.com"
+                                                                        :MimeType "application/html"}
+                                                                       {:Description "Contact related url description"
+                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URL "www.contact.shoo.com"
+                                                                        :MimeType "application/html"}]
+                                                         :ServiceHours "Weekdays 9AM - 5PM"
+                                                         :ContactInstruction "sample contact instruction"
+                                                         :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                             {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                         :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                      :City "Greenbelt"
+                                                                      :StateProvince "MD"
+                                                                      :PostalCode "20771"
+                                                                      :Country "U.S.A."}]}
+                                    :FirstName "John"
+                                    :MiddleName "D"
+                                    :LastName "Smith"}]
+                  :ContactInformation {:ContactMechanisms [{:Type "Twitter" :Value "@lpdaac"}]}}
+                 {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                  :ShortName "TNRIS"
+                  :LongName "Texas Natural Resources Information System"
+                  :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                  :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URL "www.contact.shoo.com"
+                                                                        :MimeType "application/html"}
+                                                                       {:Description "Contact related url description"
+                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URL "www.contact.shoo.com"
+                                                                        :MimeType "application/html"}]
+                                                         :ServiceHours "Weekdays 9AM - 5PM"
+                                                         :ContactInstruction "sample contact instruction"
+                                                         :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                             {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                         :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                      :City "Greenbelt"
+                                                                      :StateProvince "MD"
+                                                                      :PostalCode "20771"
+                                                                      :Country "U.S.A."}]}
+                                    :FirstName "John"
+                                    :MiddleName "D"
+                                    :LastName "Smith"}]}
+                 {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                  :ShortName "NSIDC"
+                  :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                  :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                      :URL "www.contact.foo.com"
+                                                      :MimeType "application/html"}
+                                                     {:Description "Contact related url description"
+                                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                      :URL "www.contact.shoo.com"
+                                                      :MimeType "application/html"}]
+                                       :ServiceHours "Weekdays 9AM - 5PM"
+                                       :ContactInstruction "sample contact instruction"
+                                       :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                           {:Type "Email" :Value "cmr@nasa.gov"}
+                                                           {:Type "Fax" :Value "301-851-4321"}]
+                                       :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                    :City "Greenbelt"
+                                                    :StateProvince "MD"
+                                                    :PostalCode "20771"
+                                                    :Country "U.S.A."}]}
+                  :ContactGroups [{:Roles ["Investigator"]
+                                   :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                                   :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
+                                                                       :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                       :URL "www.contact.group.foo.com"
+                                                                       :MimeType "application/html"}]
+                                                        :ServiceHours "Weekdays 9AM - 5PM"
+                                                        :ContactInstruction "sample contact group instruction"
+                                                        :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                                        :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                                     :City "Riverdale"
+                                                                     :StateProvince "MD"
+                                                                     :PostalCode "20774"
+                                                                     :Country "U.S.A."}]}
+                                   :GroupName "NSIDC_IceBridge"}]}
+                 {:Roles ["PROCESSOR"]
+                  :ShortName "Processing Center"
+                  :LongName "processor.processor"}]})
+
+(def umm-1-8-collection
+  {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
+                          :DOI {:Authority ";'", :DOI "F19,L"}, :Publisher nil, :ReleaseDate nil,
+                          :IssueIdentification nil, :Editor nil, :DataPresentationForm nil,
+                          :Version nil, :OtherCitationDetails nil,
+                          :RelatedUrl {:URLs ["www.google.com" "www.foo.com"]
+                                       :Title "URL Title"
+                                       :Description "URL Description"}}]
+   :PublicationReferences [{:RelatedUrl {:URLs ["www.google.com" "www.foo.com"]
+                                         :Title "URL Title"
+                                         :Description "URL Description"}}
+                           {:RelatedUrl {:URLs ["www.foo.com"]}}]
+   :ContactGroups [{:Roles ["Investigator"]
+                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                    :ContactInformation {:RelatedUrls [{:Title "Zounds! What a great title!"
+                                                        :Description "Contact group related url description"
+                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                        :URLs ["www.contact.group.foo.com"]
+                                                        :MimeType "application/html"}]
+                                         :ServiceHours "Weekdays 9AM - 5PM"
+                                         :ContactInstruction "sample contact group instruction"
+                                         :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                         :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                      :City "Riverdale"
+                                                      :StateProvince "MD"
+                                                      :PostalCode "20774"
+                                                      :Country "U.S.A."}]}
+                    :GroupName "NSIDC_IceBridge"}]
+   :RelatedUrls [{:Description "Contact group related url description"
+                  :Title "Just when you thought titles couldn't get any better"
+                  :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                  :URLs ["www.contact.group.foo.com"]
+                  :MimeType "application/html"}]
+   :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                     :ContactInformation {:RelatedUrls [{:Title "Contact Title"
+                                                         :Description "Contact related url description"
+                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                         :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                         :MimeType "application/html"}]
+                                          :ServiceHours "Weekdays 9AM - 5PM"
+                                          :ContactInstruction "sample contact instruction"
+                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                              {:Type "Email" :Value "cmr@nasa.gov"}]
+                                          :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                       :City "Greenbelt"
+                                                       :StateProvince "MD"
+                                                       :PostalCode "20771"
+                                                       :Country "U.S.A."}]}
+                     :FirstName "John"
+                     :MiddleName "D"
+                     :LastName "Smith"}]
+   :DataCenters [{:Roles ["ORIGINATOR"]
+                  :ShortName "LPDAAC"
+                  :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                                        :Title "A nice title"
+                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                        :MimeType "application/html"}]
+                                                         :ServiceHours "Weekdays 9AM - 5PM"
+                                                         :ContactInstruction "sample contact instruction"
+                                                         :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                             {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                         :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                      :City "Greenbelt"
+                                                                      :StateProvince "MD"
+                                                                      :PostalCode "20771"
+                                                                      :Country "U.S.A."}]}
+                                    :FirstName "John"
+                                    :MiddleName "D"
+                                    :LastName "Smith"}]
+                  :ContactInformation {:ContactMechanisms [{:Type "Twitter" :Value "@lpdaac"}]}}
+                 {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                  :ShortName "TNRIS"
+                  :LongName "Texas Natural Resources Information System"
+                  :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                  :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
+                                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
+                                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                                        :Title "A lovely title. Doesn't it make you so happy?"
+                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                                        :MimeType "application/html"}]
+                                                         :ServiceHours "Weekdays 9AM - 5PM"
+                                                         :ContactInstruction "sample contact instruction"
+                                                         :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                                             {:Type "Email" :Value "cmr@nasa.gov"}]
+                                                         :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                                      :City "Greenbelt"
+                                                                      :StateProvince "MD"
+                                                                      :PostalCode "20771"
+                                                                      :Country "U.S.A."}]}
+                                    :FirstName "John"
+                                    :MiddleName "D"
+                                    :LastName "Smith"}]}
+                 {:Roles ["ARCHIVER" "DISTRIBUTOR"]
+                  :ShortName "NSIDC"
+                  :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
+                  :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
+                                                      :Title "Title McTitleburgh"
+                                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                      :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
+                                                      :MimeType "application/html"}]
+                                       :ServiceHours "Weekdays 9AM - 5PM"
+                                       :ContactInstruction "sample contact instruction"
+                                       :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
+                                                           {:Type "Email" :Value "cmr@nasa.gov"}
+                                                           {:Type "Fax" :Value "301-851-4321"}]
+                                       :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
+                                                    :City "Greenbelt"
+                                                    :StateProvince "MD"
+                                                    :PostalCode "20771"
+                                                    :Country "U.S.A."}]}
+                  :ContactGroups [{:Roles ["Investigator"]
+                                   :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
+                                   :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
+                                                                       :Title "Just when you thought titles couldn't get any better"
+                                                                       :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                       :URLs ["www.contact.group.foo.com"]
+                                                                       :MimeType "application/html"}]
+                                                        :ServiceHours "Weekdays 9AM - 5PM"
+                                                        :ContactInstruction "sample contact group instruction"
+                                                        :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
+                                                        :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
+                                                                     :City "Riverdale"
+                                                                     :StateProvince "MD"
+                                                                     :PostalCode "20774"
+                                                                     :Country "U.S.A."}]}
+                                   :GroupName "NSIDC_IceBridge"}]}
+                 {:Roles ["PROCESSOR"]
+                  :ShortName "Processing Center"
+                  :LongName "processor.processor"}]})
+
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3"]}
     (is (= [] (#'vm/version-steps "1.2" "1.2")))
@@ -521,140 +789,8 @@
            (:PublicationReferences result)))))
 
 (deftest migrate-1_8-related-urls-up-to-1_9
-  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
-                               {:CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
-                                                       :DOI {:Authority ";'", :DOI "F19,L"}, :Publisher nil, :ReleaseDate nil,
-                                                       :IssueIdentification nil, :Editor nil, :DataPresentationForm nil,
-                                                       :Version nil, :OtherCitationDetails nil,
-                                                       :RelatedUrl {:URLs ["www.google.com" "www.foo.com"]
-                                                                    :Title "URL Title"
-                                                                    :Description "URL Description"}}]
-                                :PublicationReferences [{:RelatedUrl {:URLs ["www.google.com" "www.foo.com"]
-                                                                      :Title "URL Title"
-                                                                      :Description "URL Description"}}
-                                                        {:RelatedUrl {:URLs ["www.foo.com"]}}]
-                                :ContactGroups [{:Roles ["Investigator"]
-                                                 :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
-                                                 :ContactInformation {:RelatedUrls [{:Title "Zounds! What a great title!"
-                                                                                     :Description "Contact group related url description"
-                                                                                     :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                                     :URLs ["www.contact.group.foo.com"]
-                                                                                     :MimeType "application/html"}]
-                                                                      :ServiceHours "Weekdays 9AM - 5PM"
-                                                                      :ContactInstruction "sample contact group instruction"
-                                                                      :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
-                                                                      :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
-                                                                                   :City "Riverdale"
-                                                                                   :StateProvince "MD"
-                                                                                   :PostalCode "20774"
-                                                                                   :Country "U.S.A."}]}
-                                                 :GroupName "NSIDC_IceBridge"}]
-                                :RelatedUrls [{:Description "Contact group related url description"
-                                               :Title "Just when you thought titles couldn't get any better"
-                                               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                               :URLs ["www.contact.group.foo.com"]
-                                               :MimeType "application/html"}]
-                                :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
-                                                  :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
-                                                  :ContactInformation {:RelatedUrls [{:Title "Contact Title"
-                                                                                      :Description "Contact related url description"
-                                                                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                                      :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                                      :MimeType "application/html"}]
-                                                                       :ServiceHours "Weekdays 9AM - 5PM"
-                                                                       :ContactInstruction "sample contact instruction"
-                                                                       :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                           {:Type "Email" :Value "cmr@nasa.gov"}]
-                                                                       :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                                    :City "Greenbelt"
-                                                                                    :StateProvince "MD"
-                                                                                    :PostalCode "20771"
-                                                                                    :Country "U.S.A."}]}
-                                                  :FirstName "John"
-                                                  :MiddleName "D"
-                                                  :LastName "Smith"}]
-                                :DataCenters [{:Roles ["ORIGINATOR"]
-                                               :ShortName "LPDAAC"
-                                               :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
-                                                                 :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
-                                                                 :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                                                     :Title "A nice title"
-                                                                                                     :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                                                     :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                                                     :MimeType "application/html"}]
-                                                                                      :ServiceHours "Weekdays 9AM - 5PM"
-                                                                                      :ContactInstruction "sample contact instruction"
-                                                                                      :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                                          {:Type "Email" :Value "cmr@nasa.gov"}]
-                                                                                      :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                                                   :City "Greenbelt"
-                                                                                                   :StateProvince "MD"
-                                                                                                   :PostalCode "20771"
-                                                                                                   :Country "U.S.A."}]}
-                                                                 :FirstName "John"
-                                                                 :MiddleName "D"
-                                                                 :LastName "Smith"}]
-                                               :ContactInformation {:ContactMechanisms [{:Type "Twitter" :Value "@lpdaac"}]}}
-                                              {:Roles ["ARCHIVER" "DISTRIBUTOR"]
-                                               :ShortName "TNRIS"
-                                               :LongName "Texas Natural Resources Information System"
-                                               :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
-                                               :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
-                                                                 :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
-                                                                 :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                                                     :Title "A lovely title. Doesn't it make you so happy?"
-                                                                                                     :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                                                     :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                                                     :MimeType "application/html"}]
-                                                                                      :ServiceHours "Weekdays 9AM - 5PM"
-                                                                                      :ContactInstruction "sample contact instruction"
-                                                                                      :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                                          {:Type "Email" :Value "cmr@nasa.gov"}]
-                                                                                      :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                                                   :City "Greenbelt"
-                                                                                                   :StateProvince "MD"
-                                                                                                   :PostalCode "20771"
-                                                                                                   :Country "U.S.A."}]}
-                                                                 :FirstName "John"
-                                                                 :MiddleName "D"
-                                                                 :LastName "Smith"}]}
-                                              {:Roles ["ARCHIVER" "DISTRIBUTOR"]
-                                               :ShortName "NSIDC"
-                                               :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
-                                               :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                                   :Title "Title McTitleburgh"
-                                                                                   :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                                   :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                                   :MimeType "application/html"}]
-                                                                    :ServiceHours "Weekdays 9AM - 5PM"
-                                                                    :ContactInstruction "sample contact instruction"
-                                                                    :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
-                                                                                        {:Type "Email" :Value "cmr@nasa.gov"}
-                                                                                        {:Type "Fax" :Value "301-851-4321"}]
-                                                                    :Addresses [{:StreetAddresses ["NASA GSFC, Code 610.2"]
-                                                                                 :City "Greenbelt"
-                                                                                 :StateProvince "MD"
-                                                                                 :PostalCode "20771"
-                                                                                 :Country "U.S.A."}]}
-                                               :ContactGroups [{:Roles ["Investigator"]
-                                                                :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
-                                                                :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
-                                                                                                    :Title "Just when you thought titles couldn't get any better"
-                                                                                                    :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-                                                                                                    :URLs ["www.contact.group.foo.com"]
-                                                                                                    :MimeType "application/html"}]
-                                                                                     :ServiceHours "Weekdays 9AM - 5PM"
-                                                                                     :ContactInstruction "sample contact group instruction"
-                                                                                     :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
-                                                                                     :Addresses [{:StreetAddresses ["5700 Rivertech Ct"]
-                                                                                                  :City "Riverdale"
-                                                                                                  :StateProvince "MD"
-                                                                                                  :PostalCode "20774"
-                                                                                                  :Country "U.S.A."}]}
-                                                                :GroupName "NSIDC_IceBridge"}]}
-                                              {:Roles ["PROCESSOR"]
-                                               :ShortName "Processing Center"
-                                               :LongName "processor.processor"}]})]
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9" umm-1-8-collection)]
+
     (let [data-center-contact-persons (:RelatedUrls (first (map :ContactInformation (first (map :ContactPersons (:DataCenters result))))))
           data-center-contact-groups (:RelatedUrls (:ContactInformation (first (second (next (map :ContactGroups (:DataCenters result)))))))
           data-center-contact-information (:RelatedUrls (second (next (map :ContactInformation (:DataCenters result)))))
@@ -663,32 +799,44 @@
           collection-urls (:RelatedUrls result)]
       (is (= [{:Description "Contact group related url description"
                :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-               :URLs ["www.contact.group.foo.com"]
+               :URL "www.contact.group.foo.com"
                :MimeType "application/html"}]
              collection-urls))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.foo.com" "www.contact.shoo.com"],
-               :Description "Contact related url description"}]
+               :URL "www.contact.foo.com",
+               :Description "Contact related url description"}
+              {:Description "Contact related url description",
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URL "www.contact.shoo.com"}]
              data-center-contact-persons))
       (is (= [{:Description "Contact group related url description"
                :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
-               :URLs ["www.contact.group.foo.com"]
+               :URL "www.contact.group.foo.com"
                :MimeType "application/html"}]
              data-center-contact-groups))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.foo.com" "www.contact.shoo.com"],
-               :Description "Contact related url description"}]
+               :URL "www.contact.foo.com",
+               :Description "Contact related url description"}
+              {:Description "Contact related url description",
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URL "www.contact.shoo.com"}]
              data-center-contact-information))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.foo.com" "www.contact.shoo.com"],
-               :Description "Contact related url description"}]
+               :URL "www.contact.foo.com",
+               :Description "Contact related url description"}
+              {:Description "Contact related url description",
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URL "www.contact.shoo.com"}]
              collection-contact-persons))
       (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URLs ["www.contact.group.foo.com"],
+               :URL "www.contact.group.foo.com",
                :Description "Contact group related url description"}]
              collection-contact-groups)))))
 
@@ -763,4 +911,38 @@
                             :NumberOfSensors 5
                             :Sensors [{:ShortName "Sensor 1"}
                                       {:ShortName "Sensor 2"}]}]}]
-           (:Platforms result)))))
+           (:Platforms result))))
+
+  (deftest migrate-1_9-related-urls-down-to-1_8
+    (let [result (vm/migrate-umm {} :collection "1.9" "1.8" umm-1-9-related-urls)
+          data-center-contact-persons (get-in (first (:ContactPersons (first (:DataCenters result)))) [:ContactInformation :RelatedUrls])
+          data-center-contact-groups (get-in (first (:ContactGroups (nth (:DataCenters result) 2))) [:ContactInformation :RelatedUrls])
+          collection-contact-persons (get-in (first (:ContactPersons result)) [:ContactInformation :RelatedUrls])]
+      (is (= [{:Description "Contact group related url description"
+               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+               :MimeType "application/html"
+               :URLs ["www.contact.group.foo.com"]}]
+             (:RelatedUrls result)))
+      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URLs ["www.contact.shoo.com"],
+               :Description "Contact related url description"}
+              {:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URLs ["www.contact.shoo.com"],
+               :Description "Contact related url description"}]
+             data-center-contact-persons))
+      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URLs ["www.contact.group.foo.com"],
+               :Description "Contact group related url description"}]
+             data-center-contact-groups))
+      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URLs ["www.contact.foo.com"],
+               :Description "Contact related url description"}
+              {:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
+               :MimeType "application/html",
+               :URLs ["www.contact.shoo.com"],
+               :Description "Contact related url description"}]
+             collection-contact-persons)))))
