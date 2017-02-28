@@ -129,14 +129,27 @@
       (update :OnlineResource dif-online-resource)
       check-nil-pub-ref))
 
+(defn- expected-url-type
+ "Perform a roundtrip of the URLContentType, Type, and Subtype to get the values back.
+ Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}"
+ [related-url]
+ (let [url-type (util/remove-nil-keys
+                 (select-keys related-url [:URLContentType :Type :Subtype]))
+       dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)]
+   (dif-util/dif-url-content-type->umm-url-types dif-content-type)))
+
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
   [related-urls]
   (if (seq related-urls)
-    (seq (for [related-url related-urls]
-           (-> related-url
-               (assoc :FileSize nil :MimeType nil)
-               (update-in-each [:URLs] #(url/format-url % true)))))
+    (seq (for [related-url related-urls
+               :let [url-type (expected-url-type related-url)]]
+           (cmn/map->RelatedUrlType
+            (merge
+             url-type
+             (-> related-url
+                 (assoc :FileSize nil :MimeType nil :Relation nil)
+                 (update-in-each [:URLs] #(url/format-url % true)))))))
     [su/not-provided-related-url]))
 
 (def bounding-rectangles-path

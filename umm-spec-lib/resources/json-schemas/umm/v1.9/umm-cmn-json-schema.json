@@ -279,6 +279,18 @@
             "maxLength": 200
           }
         },
+        "URLContentType": {
+          "description": "The content type of the URL",
+          "$ref": "#/definitions/URLContentTypeEnum"
+        },
+        "Type": {
+          "description": "An enumerated type based on the URLContentType",
+          "$ref": "#/definitions/URLTypeEnum"
+        },
+        "Subtype": {
+          "description": "An enumerated subtype based on the URLContentType and Type",
+          "$ref": "#/definitions/URLSubtypeEnum"
+        },
         "URLs": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
           "type": "array",
@@ -1455,6 +1467,39 @@
     "GranuleSpatialRepresentationEnum": {
       "type": "string",
       "enum": ["CARTESIAN", "GEODETIC", "ORBIT", "NO_SPATIAL"]
+    },
+    "URLContentTypeEnum": {
+      "type": "string",
+      "enum": ["CollectionURL", "PublicationURL", "DataCenterURL", "DistributionURL", "DataContactURL", "VisualizationURL"]
+    },
+    "URLTypeEnum": {
+      "type": "string",
+      "enum": ["GET DATA", "GET SERVICE", "GET RELATED VISUALIZATION", "DATA SET LANDING PAGE", "DOI",
+               "EXTENDED METADATA", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION",
+               "HOME PAGE"]
+    },
+    "URLSubtypeEnum": {
+      "type": "string",
+      "enum": ["DATACAST URL", "EARTHDATA SEARCH", "ECHO", "EDG", "EOSDIS DATA POOL", "GDS", "GIOVANNI", "KML",
+               "LAADS", "LANCE", "LAS", "MIRADOR", "MODAPS", "NOAA CLASS", "ON-LINE ARCHIVE", "REVERB",
+               "ACCESS MAP VIEWER", "ACCESS MOBILE APP", "ACCESS WEB SERVICE", "DIF", "MAP SERVICE", "NOMADS",
+               "OPENDAP DATA", "OPENDAP DATA (DODS)", "OPENDAP DIRECTORY (DODS)", "OpenSearch", "SERF", "SOFTWARE PACKAGE",
+               "SSW", "SUBSETTER", "THREADS CATALOG", "THREADS DATA", "THREDDS DIRECTORY", "WEB COVERAGE SERVICE (WCS)",
+               "WEB FEATURE SERVICE (WFS)", "WEB MAP FOR TIME SERIES", "WEB MAP SERVICE (WMS)", "WORKFLOW (SERVICE CHAIN)",
+               "GIBS", "ALGORITHM THEORETICAL BASIS DOCUMENT", "CALIBRATION DATA DOCUMENTATION", "DATA QUALITY",
+               "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
+               "PROCESSING HISTORY", "PRODUCTION VERSION HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE",
+               "PRODUCT HISTORY", "PUBLICATIONS", "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS", "READ-ME",
+               "RECIPE", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
+               "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK", "USER'S GUIDE"]
+    },
+    "URLMimeTypeEnum": {
+      "type": "string",
+      "enum": ["application/json", "application/xml", "application/x-netcdf", "application/gml+xml",
+               "application/vnd.google-earch.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
+               "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
+               "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
+               "image/vnd.collada+xml", "text/html", "text/plain"]
     }
   }
 }

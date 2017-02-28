@@ -6,6 +6,7 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of not-provided]]))
@@ -111,11 +112,14 @@
 (defn- parse-actual-related-urls
   "Parse a SERF RelatedURL element into a map"
   [doc sanitize?]
-  (for [related-url (select doc "/SERF/Related_URL")]
-    {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
-     :Description (value-of related-url "Description")
-     :Relation [(value-of related-url "URL_Content_Type/Type")
-                (value-of related-url "URL_Content_Type/Subtype")]}))
+  (for [related-url (select doc "/SERF/Related_URL")
+        :let [type (value-of related-url "URL_Content_Type/Type")
+              subtype (value-of related-url "URL_Content_Type/Subtype")
+              url-type (dif-util/dif-url-content-type->umm-url-types [type subtype])]]
+    (merge
+     url-type
+     {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
+      :Description (value-of related-url "Description")})))
 
 (defn- parse-multimedia-samples
   "Parse a SERF Multimedia Sample element into a RelatedURL map"
@@ -123,7 +127,9 @@
   (for [multimedia-sample (select doc "/SERF/Multimedia_Sample")]
     {:URLs (map #(url/format-url % sanitize?) (values-at multimedia-sample "URL"))
      :MimeType (value-of multimedia-sample "Format")
-     :Description (value-of multimedia-sample "Description")}))
+     :Description (value-of multimedia-sample "Description")
+     :URLContentType "VisualizationURL"
+     :Type "GET RELATED VISUALIZATION"}))
 
 (defn- parse-related-urls
   "Parse SERF Related URLs and Multimedia Samples into a UMM RelatedUrls object"

@@ -136,16 +136,24 @@
     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
     :RelatedUrls [{:Description "Related url description"
-                   :Relation ["GET DATA" "sub type"]
+                   :Relation ["GET DATA" "ECHO"]
                    :URLs ["www.foo.com", "www.shoo.com"]
-                   :MimeType "mime type"}
+                   :MimeType "mime type"
+                   :URLContentType "DistributionURL"
+                   :Type "GET DATA"
+                   :Subtype "ECHO"}
                   {:Description "Related url 3 description "
-                   :Relation ["Some type" "sub type"]
-                   :URLs ["www.foo.com"]}
-                  {:Description "Related url 2 description"
-                   :Relation ["GET RELATED VISUALIZATION"]
+                   :Relation ["GET SERVICE"]
                    :URLs ["www.foo.com"]
-                   :FileSize {:Size 10.0 :Unit "MB"}}]
+                   :URLContentType "DistributionURL"
+                   :Type "GET SERVICE"}
+                  {:Description "Related url 2 description"
+                   :Relation ["GET RELATED VISUALIZATION" "WORLDVIEW"]
+                   :URLs ["www.foo.com"]
+                   :FileSize {:Size 10.0 :Unit "MB"}
+                   :URLContentType "VisualizationURL"
+                   :Type "GET RELATED VISUALIZATION"
+                   :Subtype "GIBS"}]
     :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
                             :Description "Associated with a collection"
                             :EntryId "AssocEntryId"
@@ -184,7 +192,9 @@
                      :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                          :URLs ["www.contact.group.foo.com"]
-                                                         :MimeType "application/html"}]
+                                                         :MimeType "application/html"
+                                                         :URLContentType "DataContactURL"
+                                                         :Type "HOME PAGE"}]
                                           :ServiceHours "Weekdays 9AM - 5PM"
                                           :ContactInstruction "sample contact group instruction"
                                           :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
@@ -199,7 +209,9 @@
                       :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                           :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                           :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                          :MimeType "application/html"}]
+                                                          :MimeType "application/html"
+                                                          :URLContentType "DataContactURL"
+                                                          :Type "HOME PAGE"}]
                                            :ServiceHours "Weekdays 9AM - 5PM"
                                            :ContactInstruction "sample contact instruction"
                                            :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -219,7 +231,9 @@
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                          :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                         :MimeType "application/html"}]
+                                                                         :MimeType "application/html"
+                                                                         :URLContentType "DataContactURL"
+                                                                         :Type "HOME PAGE"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
                                                           :ContactInstruction "sample contact instruction"
                                                           :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -242,7 +256,9 @@
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                          :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                                         :MimeType "application/html"}]
+                                                                         :MimeType "application/html"
+                                                                         :URLContentType "DataContactURL"
+                                                                         :Type "HOME PAGE"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
                                                           :ContactInstruction "sample contact instruction"
                                                           :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -261,7 +277,9 @@
                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                        :URLs ["www.contact.foo.com", "www.contact.shoo.com"]
-                                                       :MimeType "application/html"}]
+                                                       :MimeType "application/html"
+                                                       :URLContentType "DataCenterURL"
+                                                       :Type "HOME PAGE"}]
                                         :ServiceHours "Weekdays 9AM - 5PM"
                                         :ContactInstruction "sample contact instruction"
                                         :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -277,7 +295,9 @@
                                     :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                         :URLs ["www.contact.group.foo.com"]
-                                                                        :MimeType "application/html"}]
+                                                                        :MimeType "application/html"
+                                                                        :URLContentType "DataContactURL"
+                                                                        :Type "HOME PAGE"}]
                                                          :ServiceHours "Weekdays 9AM - 5PM"
                                                          :ContactInstruction "sample contact group instruction"
                                                          :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
@@ -309,6 +329,9 @@
                                  :Title "OGC Web Coverage Service (WCS) for accessing Atmospheric Infrared Sounder (AIRS) Data"}]
               :RelatedUrls [{:Description "\n   This Web Coverage Service (WCS) is one of the multiple GES DISC data service instances used to provide gridded Level 3 Atmospheric Infrared Sounder (AIRS) data products. Accessing to this URL will result in a brief description of coverages (i.e., data layers or variables), or a getCapabilities response. A client can request more detailed information about the served coverages by sending a describeCoverage request to the server. Finally, a client can request actual data using a getCoverage request. \n"
                              :Relation ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"]
+                             :URLContentType "DistributionURL"
+                             :Type "GET SERVICE"
+                             :Subtype "GET WEB COVERAGE SERVICE (WCS)"
                              :URLs ["http://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsAIRSL3?Service=WCS&Version=1.0.0&Request=getCapabilities"]}]
               :ServiceKeywords [{:Category "EARTH SCIENCE SERVICES"
                                  :Topic "WEB SERVICES"

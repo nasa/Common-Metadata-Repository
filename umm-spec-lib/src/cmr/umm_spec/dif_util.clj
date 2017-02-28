@@ -35,6 +35,151 @@
        [:Short_Name ShortName]
        [:Long_Name LongName]])))
 
+(def dif-url-content-type->umm-url-types
+ "Mapping from the dif URL Content Type type and subtype to UMM URLContentType, Type, and Subtype
+  Pair of ['Type' 'Subtype'] -> {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}
+  Note UMM Subtype is not required so there may not be a subtype"
+ {["GET DATA" nil] {:URLContentType "DistributionURL" :Type "GET DATA"}
+  ["GET DATA" "ALTERNATE ACCESS"] {:URLContentType "DistributionURL" :Type "GET DATA"}
+  ["GET DATA" "DATACAST URL"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATACAST URL"}
+  ["GET DATA" "EARTHDATA SEARCH"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EARTHDATA SEARCH"}
+  ["GET DATA" "ECHO"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "ECHO"}
+  ["GET DATA" "EDG"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EDG"}
+  ["GET DATA" "EOSDIS DATA POOL"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EOSDIS DATA POOL"}
+  ["GET DATA" "GDS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EOSDIS DATA POOL"}
+  ["GET DATA" "GIOVANNI"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GIOVANNI"}
+  ["GET DATA" "KML"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "KML"}
+  ["GET DATA" "LAADS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "LAADS"}
+  ["GET DATA" "LANCE"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "LANCE"}
+  ["GET DATA" "LAS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "LAS"}
+  ["GET DATA" "MIRADOR"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "MIRADOR"}
+  ["GET DATA" "MODAPS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "MODAPS"}
+  ["GET DATA" "NOAA CLASS"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "NOAA CLASS"}
+  ["GET DATA" "NOMADS"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "NOMADS"}
+  ["GET DATA" "ON-LINE ARCHIVE"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "ON-LINE ARCHIVE"}
+  ["GET DATA" "OPENDAP DATA"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OPENDAP DATA"}
+  ["GET DATA" "OPENDAP DATA (DODS)"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OPENDAP DATA (DODS)"}
+  ["GET DATA" "OPENDAP DIRECTORY (DODS)"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OPENDAP DIRECTORY (DODS)"}
+  ["GET DATA" "REVERB"] {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "REVERB"}
+  ["GET DATA" "SSW"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SSW"}
+  ["GET DATA" "SUBSETTER"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SUBSETTER"}
+  ["GET DATA" "THREDDS CATALOG"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS CATALOG"}
+  ["GET DATA" "THREDDS DATA"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS DATA"}
+  ["GET DATA" "THREDDS DIRECTORY"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS DIRECTORY"}
+  ["GET RELATED DATA SET METADATA" nil] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "DIF"}
+  ["GET RELATED SERVICE METADATA" nil] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SERF"}
+  ["GET RELATED VISUALIZATION" nil] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION"}
+  ["GET RELATED VISUALIZATION" "GIOVANNI"] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "GIOVANNI"}
+  ["GET RELATED VISUALIZATION" "WORLDVIEW"] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "GIBS"}
+  ["GET SERVICE" nil] {:URLContentType "DistributionURL" :Type "GET SERVICE"}
+  ["GET SERVICE" "ACCESS MAP VIEWER"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MAP VIEWER"}
+  ["GET SERVICE" "ACCESS MOBILE APP"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MOBILE APP"}
+  ["GET SERVICE" "ACCESS WEB SERVICE"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS WEB SERVICE"}
+  ["GET SERVICE" "DATA LIST"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "DATA LIST"}
+  ["GET SERVICE" "GET MAP SERVICE"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET MAP SERVICE"}
+  ["GET SERVICE" "GET SOFTWARE PACKAGE"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET SOFTWARE PACKAGE"}
+  ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB COVERAGE SERVICE (WCS)"}
+  ["GET SERVICE" "GET WEB FEATURE SERVICE (WFS)"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB FEATURE SERVICE (WFS)"}
+  ["GET SERVICE" "GET WEB MAP FOR TIME SERIES"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB MAP FOR TIME SERIES"}
+  ["GET SERVICE" "GET WEB MAP SERVICE (WMS)"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB MAP SERVICE (WMS)"}
+  ["GET SERVICE" "GET WORKFLOW (SERVICE CHAIN)"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WORKFLOW (SERVICE CHAIN)"}
+  ["GET SERVICE" "OpenSearch"] {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OpenSearch"}
+  ["VIEW DATA SET LANDING PAGE" nil] {:URLContentType "CollectionURL" :Type "DATA SET LANDING PAGE"}
+  ["VIEW EXTENDED METADATA" nil] {:URLContentType "CollectionURL" :Type "EXTENDED METADATA"}
+  ["VIEW IMAGES" nil] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION"}
+  ["VIEW IMAGES" "BROWSE SAMPLE"] {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION"}
+  ["VIEW PROFESSIONAL HOME PAGE" nil] {:URLContentType "CollectionURL" :Type "PROFESSIONAL HOME PAGE"}
+  ["VIEW PROJECT HOME PAGE" nil] {:URLContentType "CollectionURL" :Type "PROJECT HOME PAGE"}
+  ["VIEW RELATED INFORMATION" nil] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION"}
+  ["VIEW RELATED INFORMATION" "ALGORITHM DOCUMENTATION"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT"}
+  ["VIEW RELATED INFORMATION" "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT"}
+  ["VIEW RELATED INFORMATION" "ANOMALIES"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "GENERAL DOCUMENTATION"}
+  ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "GENERAL DOCUMENTATION"}
+  ["VIEW RELATED INFORMATION" "HOW-TO"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "HOW-TO"}
+  ["VIEW RELATED INFORMATION" "IMPORTANT NOTICE"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "GENERAL DOCUMENTATION"}
+  ["VIEW RELATED INFORMATION" "PI DOCUMENTATION"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PI DOCUMENTATION"}
+  ["VIEW RELATED INFORMATION" "PRODUCT HISTORY"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PRODUCT HISTORY"}
+  ["VIEW RELATED INFORMATION" "PUBLICATIONS"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PUBLICATIONS"}
+  ["VIEW RELATED INFORMATION" "USER'S GUIDE"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "USER'S GUIDE"}
+  ["VIEW RELATED INFORMATION" "VIEW MICRO ARTICLE"] {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "GENERAL DOCUMENTATION"}})
+
+(def umm-url-type->dif-umm-content-type
+ "Map a combination of UMM URLContentType, Type, and Subtype (optional) to a dif url content type
+ type and subtype. This is not dif->umm list flipped."
+ {{:URLContentType "CollectionURL" :Type "DATA SET LANDING PAGE"} ["VIEW DATA SET LANDING PAGE" nil]
+  {:URLContentType "CollectionURL" :Type "DOI"} ["VIEW DATA SET LANDING PAGE" nil]
+  {:URLContentType "CollectionURL" :Type "EXTENDED METADATA"} ["VIEW EXTENDED METADATA" nil]
+  {:URLContentType "CollectionURL" :Type "PROFESSIONAL HOME PAGE"} ["VIEW PROFESSIONAL HOME PAGE" nil]
+  {:URLContentType "CollectionURL" :Type "PROJECT HOME PAGE"} ["VIEW PROJECT HOME PAGE" nil]
+  {:URLContentType "DistributionURL" :Type "GET DATA"} ["GET DATA" nil]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "DATACAST URL"} ["GET DATA" "DATACAST URL"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EARTHDATA SEARCH"} ["GET DATA" "EARTHDATA SEARCH"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "ECHO"} ["GET DATA" "ECHO"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EDG"} ["GET DATA" "EDG"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "EOSDIS DATA POOL"} ["GET DATA" "EOSDIS DATA POOL"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GDS"} ["GET DATA" "GDS"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "GIOVANNI"} ["GET DATA" "GIOVANNI"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "KML"} ["GET DATA" "KML"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "LAADS"} ["GET DATA" "LAADS"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "LANCE"} ["GET DATA" "LANCE"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "LAS"} ["GET DATA" "LAS"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "MIRADOR"} ["GET DATA" "MIRADOR"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "MODAPS"} ["GET DATA" "MODAPS"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "NOAA CLASS"} ["GET DATA" "NOAA CLASS"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "NOMADS"} ["GET DATA" "NOMADS"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "ON-LINE ARCHIVE"} ["GET DATA" "ON-LINE ARCHIVE"]
+  {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "REVERB"} ["GET DATA" "REVERB"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE"} ["GET SERVICE" nil]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MAP VIEWER"} ["GET SERVICE" "ACCESS MAP VIEWER"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS MOBILE APP"} ["GET SERVICE" "ACCESS MOBILE APP"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "ACCESS WEB SERVICE"} ["GET SERVICE" "ACCESS WEB SERVICE"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "DIF"} ["GET RELATED DATA SET METADATA" nil]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET MAP SERVICE"} ["GET SERVICE" "GET MAP SERVICE"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "NOMADS"} ["GET DATA" "NOMADS"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OPENDAP DATA"} ["GET DATA" "OPENDAP DATA"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OPENDAP DATA (DODS)"} ["GET DATA" "OPENDAP DATA (DODS)"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OPENDAP DIRECTORY (DODS)"} ["GET DATA" "OPENDAP DIRECTORY (DODS)"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "OpenSearch"} ["GET SERVICE" "OpenSearch"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SERF"} ["GET RELATED SERVICE METADATA" nil]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET SOFTWARE PACKAGE"} ["GET SERVICE" "GET SOFTWARE PACKAGE"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SSW"} ["GET DATA" "SSW"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "SUBSETTER"} ["GET DATA" "SUBSETTER"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS CATALOG"} ["GET DATA" "THREDDS CATALOG"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS DATA"} ["GET DATA" "THREDDS DATA"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "THREDDS DIRECTORY"} ["GET DATA" "THREDDS DIRECTORY"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB COVERAGE SERVICE (WCS)"} ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB FEATURE SERVICE (WFS)"} ["GET SERVICE" "GET WEB FEATURE SERVICE (WFS)"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB MAP FOR TIME SERIES"} ["GET SERVICE" "GET WEB MAP FOR TIME SERIES"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WEB MAP SERVICE (WMS)"} ["GET SERVICE" "GET WEB MAP SERVICE (WMS)"]
+  {:URLContentType "DistributionURL" :Type "GET SERVICE" :Subtype "GET WORKFLOW (SERVICE CHAIN)"} ["GET SERVICE" "GET WORKFLOW (SERVICE CHAIN)"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION"} ["VIEW RELATED INFORMATION" nil]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT"} ["VIEW RELATED INFORMATION" "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "CALIBRATION DATA DOCUMENTATION"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "CASE STUDY"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "DATA QUALITY"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "DATA USAGE"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "DELIVERABLES CHECKLIST"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "GENERAL DOCUMENTATION"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "HOW-TO"} ["VIEW RELATED INFORMATION" "HOW-TO"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PI DOCUMENTATION"} ["VIEW RELATED INFORMATION" "PI DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PROCESSING HISTORY"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PRODUCTION VERSION HISTORY"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PRODUCT QUALITY ASSESSMENT"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PRODUCT USAGE"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PRODUCT HISTORY"} ["VIEW RELATED INFORMATION" "PRODUCT HISTORY"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "PUBLICATIONS"} ["VIEW RELATED INFORMATION" "PUBLICATIONS"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "READ-ME"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "RECIPE"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "REQUIREMENTS AND DESIGN"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "SCIENCE DATA PRODUCT VALIDATION"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "USER FEEDBACK"} ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
+  {:URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION" :Subtype "USER'S GUIDE"} ["VIEW RELATED INFORMATION" "USER'S GUIDE"]
+  {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION"} ["GET RELATED VISUALIZATION" nil]
+  {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "GIOVANNI"} ["GET RELATED VISUALIZATION" "GIOVANNI"]
+  {:URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION" :Subtype "GIBS"} ["GET RELATED VISUALIZATION" "WORLDVIEW"]})
+
 (def iso-639-2->dif10-dataset-language
   "Mapping from ISO 639-2 to the enumeration supported for dataset languages in DIF10."
   {"eng" "English"

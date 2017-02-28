@@ -17,7 +17,9 @@
       {:ServiceHours service-hours
        :ContactInstruction instruction
        :RelatedUrls (when (some? related-url)
-                      [{:URLs [related-url]}])})))
+                      [{:URLs [related-url]
+                        :URLContentType "DataCenterURL"
+                        :Type "HOME PAGE"}])})))
 
 (defn parse-data-centers
   "Returns UMM-C data centers from DIF 10 XML document."

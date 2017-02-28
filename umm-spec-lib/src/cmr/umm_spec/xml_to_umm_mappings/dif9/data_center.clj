@@ -42,5 +42,7 @@
      ;; We probably want to refactor the following call into the common parse namespace later
      :Uuid (:uuid (:attrs (first (filter #(= :Data_Center_Name (:tag %)) (:content center)))))
      :ContactInformation (when-let [related-url (value-of center "Data_Center_URL")]
-                           {:RelatedUrls [{:URLs [(url/format-url related-url sanitize?)]}]})
+                           {:RelatedUrls [{:URLs [(url/format-url related-url sanitize?)]
+                                           :URLContentType "DataCenterURL"
+                                           :Type "HOME PAGE"}]})
      :ContactPersons (contact/parse-contact-persons (select center "Personnel"))}))

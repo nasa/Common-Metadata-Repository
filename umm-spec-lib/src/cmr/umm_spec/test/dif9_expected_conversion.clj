@@ -176,7 +176,9 @@
   (when-let [related-url (first (:URLs (first (:RelatedUrls contact-info))))]
     (cmn/map->ContactInformationType
        {:RelatedUrls [(cmn/map->RelatedUrlType
-                        {:URLs [related-url]})]})))
+                        {:URLs [related-url]
+                         :URLContentType "DataCenterURL"
+                         :Type "HOME PAGE"})]})))
 
 (defn- expected-dif-data-centers
   "Returns the expected DIF parsed data centers for the given UMM collection."

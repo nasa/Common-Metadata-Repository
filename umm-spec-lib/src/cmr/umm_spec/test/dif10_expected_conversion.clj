@@ -139,6 +139,8 @@
           (dissoc :Title)
           (dissoc :FileSize)
           (update :URLs expected-dif10-contact-info-urls)
+          (assoc :URLContentType "DataCenterURL")
+          (assoc :Type "HOME PAGE")
           (cmn/map->RelatedUrlType))]
      nil)))
 

@@ -116,13 +116,15 @@
   (if (seq related-urls)
     (seq (for [related-url related-urls
                url (:URLs related-url)]
-           (-> related-url
-               (assoc :MimeType nil :FileSize nil :URLs [url])
-               (update-in [:Relation]
-                          (fn [[rel]]
-                            (when (conversion-util/relation-set rel)
-                              [rel])))
-               (update-in-each [:URLs] #(url/format-url % true)))))
+           (cmn/map->RelatedUrlType
+            (-> related-url
+                (assoc :MimeType nil :FileSize nil :URLs [url])
+                (dissoc :URLContentType :Type :Subtype)
+                (update-in [:Relation]
+                           (fn [[rel]]
+                             (when (conversion-util/relation-set rel)
+                               [rel])))
+                (update-in-each [:URLs] #(url/format-url % true))))))
     [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values

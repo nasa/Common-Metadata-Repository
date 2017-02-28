@@ -73,11 +73,14 @@
   [doc sanitize?]
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
-          :let [description (value-of related-url "Description")]]
-      {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
-       :Description description
-       :Relation [(value-of related-url "URL_Content_Type/Type")
-                  (value-of related-url "URL_Content_Type/Subtype")]})
+          :let [description (value-of related-url "Description")
+                type (value-of related-url "URL_Content_Type/Type")
+                subtype (value-of related-url "URL_Content_Type/Subtype")
+                url-type (dif-util/dif-url-content-type->umm-url-types [type subtype])]]
+      (merge
+       url-type
+       {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
+        :Description description}))
     (when sanitize?
       [su/not-provided-related-url])))
 

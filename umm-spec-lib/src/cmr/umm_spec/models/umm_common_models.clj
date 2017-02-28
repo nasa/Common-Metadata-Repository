@@ -687,6 +687,15 @@
    ;; An array of keywords describing the relation of the online resource to this resource.
    Relation
 
+   ;; The content type of the URL
+   URLContentType
+
+   ;; An enumerated type based on the URLContentType
+   Type
+
+   ;; An enumerated subtype based on the URLContentType and Type
+   Subtype
+
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
    ;; the URL of the collection landing page, the URL of the download site for the collection).
    URLs

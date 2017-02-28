@@ -7,7 +7,9 @@
   (testing "parse related urls from Multimedia_Sample"
     (is (= [{:URLs ["http://disc.sci.gsfc.nasa.gov/OCO-2/images/ACOS.xCO2.2013.v3.5.png"]
              :Description " Global amounts of column CO2 in 2013, ..."
-             :Relation ["GET RELATED VISUALIZATION"]}]
+             :Relation ["GET RELATED VISUALIZATION"]
+             :URLContentType "VisualizationURL"
+             :Type "GET RELATED VISUALIZATION"}]
            (ru/parse-related-urls
              "<DIF>
                 <Multimedia_Sample>
@@ -22,11 +24,16 @@
   (testing "parse realted urls from Related_URL and Multimedia_Sample together"
     (is (= [{:URLs ["http://disc.sci.gsfc.nasa.gov/OCO-2/images/ACOS.xCO2.2013.v3.5.png"]
              :Description " Global amounts of column CO2 in 2013, ..."
-             :Relation ["GET RELATED VISUALIZATION"]}
+             :Relation ["GET RELATED VISUALIZATION"]
+             :URLContentType "VisualizationURL"
+             :Type "GET RELATED VISUALIZATION"}
             {:URLs ["http://reverb.echo.nasa.gov/reverb/"]
              :Description "Interface to search, discover, and access EOS data products, and invoke available data services."
              :Relation ["GET DATA" "REVERB"]
-             :MimeType nil}]
+             :MimeType nil
+             :URLContentType "DistributionURL"
+             :Type "GET DATA"
+             :Subtype "REVERB"}]
            (ru/parse-related-urls
              "<DIF>
                 <Multimedia_Sample>
