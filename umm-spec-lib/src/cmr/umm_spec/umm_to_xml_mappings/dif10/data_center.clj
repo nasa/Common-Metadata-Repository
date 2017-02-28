@@ -23,7 +23,6 @@
        [:Organization_URL (-> contact-information
                               :RelatedUrls
                               first
-                              :URLs
-                              first)]
+                              :URL)]
        ;; Personnel within Data_Center
        (contact/generate-data-center-personnel center)])))

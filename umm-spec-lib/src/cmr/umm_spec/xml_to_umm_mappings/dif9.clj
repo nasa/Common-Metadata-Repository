@@ -69,17 +69,18 @@
                 (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
 
 (defn- parse-related-urls
-  "Returns a list of related urls"
+  "Returns a list of related urls. Each URL will be put into its own RelatedUrl object comply with UMM spec v1.9"
   [doc sanitize?]
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
+          url (values-at related-url "URL")
           :let [description (value-of related-url "Description")]]
-      {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
-       :Description description
-       :Relation [(value-of related-url "URL_Content_Type/Type")
-                  (value-of related-url "URL_Content_Type/Subtype")]})
-    (when sanitize?
-      [su/not-provided-related-url])))
+         {:URL (url/format-url url sanitize?)
+          :Description (value-of related-url "Description")
+          :Relation [(value-of related-url "URL_Content_Type/Type")
+                     (value-of related-url "URL_Content_Type/Subtype")]})
+   (when sanitize?
+    [su/not-provided-related-url])))
 
 (defn parse-temporal-extents
  "Return a list of temporal extents from the XML doc"

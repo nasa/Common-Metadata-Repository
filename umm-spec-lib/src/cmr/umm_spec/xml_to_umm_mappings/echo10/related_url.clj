@@ -65,7 +65,7 @@
                                   (re-find #"^.*OPENDAP.*$" (str/upper-case resource-type)))
                          "OPENDAP DATA ACCESS"))
               description (value-of resource "Description")]]
-    {:URLs [(url/format-url (value-of resource "URL") sanitize?)]
+    {:URL (url/format-url (value-of resource "URL") sanitize?)
      :Description description
      :Relation (when type [type sub-type])
      :MimeType (value-of resource "MimeType")}))
@@ -74,7 +74,7 @@
   "Parse online access urls"
   [doc sanitize?]
   (for [resource (select doc "/Collection/OnlineAccessURLs/OnlineAccessURL")]
-    {:URLs [(url/format-url (value-of resource "URL") sanitize?)]
+    {:URL (url/format-url (value-of resource "URL") sanitize?)
      :Description (value-of resource "URLDescription")
      :MimeType (value-of resource "MimeType")
      :Relation ["GET DATA"]}))
@@ -84,7 +84,7 @@
   [doc sanitize?]
   (for [resource (select doc "/Collection/AssociatedBrowseImageUrls/ProviderBrowseUrl")
         :let [file-size (value-of resource "FileSize")]]
-    {:URLs [(url/format-url (value-of resource "URL") sanitize?)]
+    {:URL (url/format-url (value-of resource "URL") sanitize?)
      :FileSize (when file-size {:Size (/ (Long. file-size) 1024) :Unit "KB"})
      :Description (value-of resource "Description")
      :MimeType (value-of resource "MimeType")

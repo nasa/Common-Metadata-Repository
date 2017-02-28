@@ -272,7 +272,7 @@
   [context group-guid target-group-guid & permission-types]
   (grant context [(group-ace group-guid (seq permission-types))]
          :single-instance-object-identity
-         {:target "GROUP"
+         {:target "GROUP_MANAGEMENT"
           :target-guid target-group-guid}))
 
 (defn grant-system-group-permissions-to-all

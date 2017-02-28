@@ -59,7 +59,7 @@
 (def not-provided-related-url
   "Place holder to use when a related url is not provided."
   (cmn/map->RelatedUrlType
-    {:URLs [not-provided-url]}))
+    {:URL not-provided-url}))
 
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
