@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.acls.collection-acl-search-test
   "Tests searching for collections with ACLs in place"
-  (:require 
+  (:require
+    [cmr.common-app.test.side-api :as side] 
     [clojure.test :refer :all]
     [clojure.string :as str]
     [cmr.common.services.messages :as msg]
@@ -82,13 +83,8 @@
     (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso]
                        (search/find-refs :collection {:token guest-token})))))
 
-(def now-n
-  "The N value for the current time. Uses N values for date times as describd in
-  cmr.common.test.time-util."
-  10)
-
 (deftest collection-search-with-acls-test
-  (tk/set-time-override! (tu/n->date-time now-n))
+  (side/eval-form `(tk/set-time-override! (tk/now))) 
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
   (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
@@ -279,7 +275,8 @@
         ;; none of the revisions are readable by guest users
         "provider-id all-revisions=true no token"
         []
-        {:provider-id "PROV4" :all-revisions true}))))
+        {:provider-id "PROV4" :all-revisions true})))
+  (side/eval-form `(tk/clear-current-time!)))
 
 
 ;; This tests that when acls change after collections have been indexed that collections will be

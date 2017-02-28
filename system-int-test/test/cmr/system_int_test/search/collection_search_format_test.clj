@@ -7,6 +7,7 @@
     [clojure.string :as str]
     [clojure.test :refer :all]
     [clojure.java.io :as io]
+    [cmr.common-app.test.side-api :as side]
     [cmr.common.mime-types :as mt]
     [cmr.common.test.time-util :as tu]
     [cmr.common.time-keeper :as tk]
@@ -88,15 +89,10 @@
          response (search/find-concepts-umm-json :collection params options)]
      (du/assert-umm-jsons-match version collections response))))
 
-(def now-n
-  "The N value for the current time. Uses N values for date times as describd in
-  cmr.common.test.time-util."
-  10)
-
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
-  (tk/set-time-override! (tu/n->date-time now-n))
+  (side/eval-form `(tk/set-time-override! (tk/now))) 
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -205,7 +201,8 @@
               "ECHO10" :echo10
               "DIF" :dif
               "DIF10" :dif10
-              "ISO" :iso19115)))))))
+              "ISO" :iso19115))))))
+  (side/eval-form `(tk/clear-current-time!)))
 
 (deftest collection-umm-json-metadata-cache-test
   (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
@@ -250,7 +247,7 @@
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
-  (tk/set-time-override! (tu/n->date-time now-n))
+  (side/eval-form `(tk/set-time-override! (tk/now))) 
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   ;; Whitespace here but not stripped out for expected
@@ -411,7 +408,8 @@
       (testing "ECHO10"
         (d/assert-echo-compatible-metadata-results-match
          :echo10 all-colls
-         (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
+         (search/find-metadata :collection :echo10 {:echo-compatible true})))))
+  (side/eval-form `(tk/clear-current-time!)))
 
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
