@@ -8,6 +8,8 @@
     [clojure.test :refer :all]
     [clojure.java.io :as io]
     [cmr.common.mime-types :as mt]
+    [cmr.common.test.time-util :as tu]
+    [cmr.common.time-keeper :as tk]
     [cmr.common.util :as util :refer [are2 are3]]
     [cmr.common.xml :as cx]
     [cmr.search.validators.opendata :as opendata-json]
@@ -86,10 +88,15 @@
          response (search/find-concepts-umm-json :collection params options)]
      (du/assert-umm-jsons-match version collections response))))
 
+(def now-n
+  "The N value for the current time. Uses N values for date times as describd in
+  cmr.common.test.time-util."
+  10)
 
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
+  (tk/set-time-override! (tu/n->date-time now-n))
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -243,6 +250,7 @@
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
+  (tk/set-time-override! (tu/n->date-time now-n))
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   ;; Whitespace here but not stripped out for expected

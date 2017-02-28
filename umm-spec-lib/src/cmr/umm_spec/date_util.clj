@@ -1,15 +1,15 @@
 (ns cmr.umm-spec.date-util
   "Useful UMM date values and functions."
   (:require
-   [clj-time.core :as ctc]
    [clj-time.format :as f]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as p]
+   [cmr.common.time-keeper :as tk]
    [cmr.common.xml.parse :refer :all]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
 (def current-date-time
-  (ctc/now))
+  (tk/now))
 
 (def default-date-value "1970-01-01T00:00:00")
 

@@ -1,20 +1,23 @@
 (ns cmr.system-int-test.search.acls.collection-acl-search-test
   "Tests searching for collections with ACLs in place"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.services.messages :as msg]
-            [cmr.common.util :refer [are2] :as util]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.opendata :as od]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require 
+    [clojure.test :refer :all]
+    [clojure.string :as str]
+    [cmr.common.services.messages :as msg]
+    [cmr.common.test.time-util :as tu]
+    [cmr.common.time-keeper :as tk]
+    [cmr.common.util :refer [are2] :as util]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.data2.atom :as da]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.opendata :as od]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
@@ -79,7 +82,13 @@
     (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso]
                        (search/find-refs :collection {:token guest-token})))))
 
+(def now-n
+  "The N value for the current time. Uses N values for date times as describd in
+  cmr.common.test.time-util."
+  10)
+
 (deftest collection-search-with-acls-test
+  (tk/set-time-override! (tu/n->date-time now-n))
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
   (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
