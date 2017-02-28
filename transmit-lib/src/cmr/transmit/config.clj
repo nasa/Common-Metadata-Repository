@@ -75,7 +75,7 @@
 
 (defconfig urs-password
   "Defines the password that is sent from the CMR to URS to authenticate the CMR."
-  {***REMOVED***})
+  {})
 
 (defn mins->ms
   "Returns the number of minutes in milliseconds"
