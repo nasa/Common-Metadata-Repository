@@ -69,17 +69,27 @@
                 (date/parse-date-type-from-xml doc "DIF/Last_DIF_Revision_Date" "UPDATE")]))
 
 (defn- parse-related-urls
-  "Returns a list of related urls"
+  "Returns a list of related urls. Each URL will be put into its own RelatedUrl object comply with UMM spec v1.9"
   [doc sanitize?]
   (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
+          url (values-at related-url "URL")
           :let [description (value-of related-url "Description")]]
-      {:URLs (map #(url/format-url % sanitize?) (values-at related-url "URL"))
-       :Description description
-       :Relation [(value-of related-url "URL_Content_Type/Type")
-                  (value-of related-url "URL_Content_Type/Subtype")]})
-    (when sanitize?
-      [su/not-provided-related-url])))
+         {:URL (url/format-url url sanitize?)
+          :Description (value-of related-url "Description")
+          :Relation [(value-of related-url "URL_Content_Type/Type")
+                     (value-of related-url "URL_Content_Type/Subtype")]})
+   (when sanitize?
+    [su/not-provided-related-url])))
+
+(defn parse-temporal-extents
+ "Return a list of temporal extents from the XML doc"
+ [doc sanitize?]
+ (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
+  [{:RangeDateTimes (for [temporal temporals]
+                      {:BeginningDateTime (date/with-default (value-of temporal "Start_Date") sanitize?)
+                       :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
+  (when sanitize? su/not-provided-temporal-extents)))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
@@ -89,7 +99,7 @@
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :DOI (first (remove nil? (for [dsc (select doc "DIF/Data_Set_Citation")]
-                                {:DOI (value-of dsc "Dataset_DOI")}))) 
+                                {:DOI (value-of dsc "Dataset_DOI")})))
      :ShortName short-name
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
@@ -116,11 +126,7 @@
      :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
      :UseConstraints (su/truncate (value-of doc "/DIF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
      :Platforms (parse-platforms doc sanitize?)
-     :TemporalExtents (if-let [temporals (select doc "/DIF/Temporal_Coverage")]
-                        [{:RangeDateTimes (for [temporal temporals]
-                                            {:BeginningDateTime (date/with-default (value-of temporal "Start_Date") sanitize?)
-                                             :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
-                        (when sanitize? su/not-provided-temporal-extents))
+     :TemporalExtents (parse-temporal-extents doc sanitize?)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
      :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
                                                               (when sanitize?

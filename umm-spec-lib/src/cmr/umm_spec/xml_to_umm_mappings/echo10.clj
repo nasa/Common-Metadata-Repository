@@ -20,7 +20,7 @@
   (for [temporal (select doc "/Collection/Temporal")]
     {:TemporalRangeType (value-of temporal "TemporalRangeType")
      :PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
-     :EndsAtPresentFlag (value-of temporal "EndsAtPresentFlag")
+     :EndsAtPresentFlag (Boolean/valueOf (value-of temporal "EndsAtPresentFlag"))
      :RangeDateTimes (for [rdt (select temporal "RangeDateTime")]
                        (fields-from rdt :BeginningDateTime :EndingDateTime))
      :SingleDateTimes (values-at temporal "SingleDateTime")
@@ -47,10 +47,11 @@
 (defn parse-instrument
   "Returns a UMM Instrument record from an ECHO10 Instrument element."
   [inst]
-  (assoc (fields-from inst :ShortName :LongName :Technique :NumberOfSensors)
+  (assoc (fields-from inst :ShortName :LongName :Technique)
+         :NumberOfInstruments (value-of inst "NumberOfSensors")
          :OperationalModes (values-at inst "OperationModes/OperationMode")
          :Characteristics (parse-characteristics inst)
-         :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
+         :ComposedOf (map parse-sensor (select inst "Sensors/Sensor"))))
 
 (defn parse-metadata-association
   "Returns a UMM MetadataAssocation from an ECHO10 CollectionAsscociation element."
@@ -120,16 +121,18 @@
     (when sanitize?
       u/not-provided-science-keywords)))
 
-(defn- parse-access-constraints
+(defn parse-access-constraints
   "If both value and Description are nil, return nil.
   Otherwise, if Description is nil, assoc it with u/not-provided"
   [doc sanitize?]
-  (let [access-constraints-record
+  (let [value (value-of doc "/Collection/RestrictionFlag")
+        access-constraints-record
         {:Description (u/truncate
                        (value-of doc "/Collection/RestrictionComment")
                        u/ACCESSCONSTRAINTS_DESCRIPTION_MAX
                        sanitize?)
-         :Value (value-of doc "/Collection/RestrictionFlag")}]
+         :Value (when value
+                 (Double/parseDouble value))}]
     (when (seq (util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(u/with-default % sanitize?)))))
 

@@ -4,8 +4,8 @@
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
-   [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
@@ -19,21 +19,18 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
+   [cmr.orbits.orbits-runtime :as orbits-runtime]
+   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
    [cmr.search.api.routes :as routes]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.models.query :as q]
-   [cmr.search.services.acls.acl-helper :as ah]
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
-
-(def TOKEN_CACHE_TIME
-  "The number of milliseconds token information will be cached for."
-  (* 5 60 1000))
 
 (defconfig search-public-protocol
   "The protocol to use in links returned by the search application."
@@ -61,7 +58,8 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches collection-renderer/system-key :search-index :scheduler :web :nrepl])
+  [:log :caches collection-renderer/system-key orbits-runtime/system-key :search-index :scheduler
+   :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -84,7 +82,8 @@
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object])
                       ;; Caches a map of tokens to the security identifiers
-                      ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
+                      context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
+                      context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
@@ -98,6 +97,7 @@
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)}
              :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
+             orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              :scheduler (jobs/create-scheduler
                           `system-holder
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")

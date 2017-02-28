@@ -48,14 +48,14 @@
     {:ShortName (value-of inst "Short_Name")
      :LongName (value-of inst "Long_Name")
      :Technique (value-of inst "Technique")
-     :NumberOfSensors (value-of inst "NumberOfSensors")
+     :NumberOfInstruments (value-of inst "NumberOfSensors")
      :Characteristics (parse-characteristics inst)
      :OperationalModes (values-at inst "OperationalMode")
-     :Sensors (for [sensor (select inst "Sensor")]
-                {:ShortName (value-of sensor "Short_Name")
-                 :LongName (value-of sensor "Long_Name")
-                 :Technique (value-of sensor "Technique")
-                 :Characteristics (parse-characteristics sensor)})}))
+     :ComposedOf (for [sensor (select inst "Sensor")]
+                  {:ShortName (value-of sensor "Short_Name")
+                   :LongName (value-of sensor "Long_Name")
+                   :Technique (value-of sensor "Technique")
+                   :Characteristics (parse-characteristics sensor)})}))
 
 (defn- parse-instruments
   [platform-el sanitize?]
@@ -116,9 +116,10 @@
                                                      :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
                                                      :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})]
     (when (seq temporal-extent)
-      temporal-extent)))
+      ;; Do this after testing if the map is empty. The map will never be empty if we use the bool value
+      (update temporal-extent :EndsAtPresentFlag #(Boolean/valueOf %)))))
 
-(defn- parse-temporal-extents
+(defn parse-temporal-extents
   "Returns a list of temportal extents"
   [doc sanitize?]
   (if-let [temporal-extents
@@ -132,8 +133,8 @@
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :DOI (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
-                              (when (= (value-of dsc "Persistent_Identifier/Type") "DOI") 
-                                {:DOI (value-of dsc "Persistent_Identifier/Identifier")})))) 
+                              (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
+                                {:DOI (value-of dsc "Persistent_Identifier/Identifier")}))))
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
    :VersionDescription (value-of doc "/DIF/Version_Description")

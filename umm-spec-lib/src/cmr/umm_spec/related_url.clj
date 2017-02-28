@@ -64,13 +64,13 @@
 (defn- related-url->atom-link
   "Returns the atom link of the given related-url"
   [related-url]
-  (let [{urls :URLs mime-type :MimeType {:keys [Size Unit]} :FileSize} related-url
+  (let [{url :URL mime-type :MimeType {:keys [Size Unit]} :FileSize} related-url
         size (when (or Size Unit) (str Size Unit))]
     ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
     ;; but only a single MimeType and FileSize. This model doesn't make sense.
     ;; Talked to Erich and he said that we are going to change the model.
     ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
-    {:href (first urls)
+    {:href url
      :link-type (related-url->link-type related-url)
      :mime-type mime-type
      :size size}))
@@ -86,10 +86,9 @@
   (when-let [urls (seq (downloadable-urls related-urls))]
     [:OnlineAccessURLs
      (for [related-url urls
-           :let [{:keys [Description MimeType]} related-url]
-           url (:URLs related-url)]
+           :let [{:keys [Description MimeType URL]} related-url]]
        [:OnlineAccessURL
-        [:URL url]
+        [:URL URL]
         [:URLDescription Description]
         [:MimeType MimeType]])]))
 
@@ -99,11 +98,10 @@
   (when-let [urls (seq (resource-urls related-urls))]
     [:OnlineResources
      (for [related-url urls
-           url (:URLs related-url)
            :let [{:keys [Description MimeType]} related-url
                  [rel] (:Relation related-url)]]
        [:OnlineResource
-        [:URL url]
+        [:URL (:URL related-url)]
         [:Description Description]
         ;; There is not a well defined one to one mapping between related url type and resource type.
         ;; This default value of "UNKNOWN" is to get us by the xml schema validation.
@@ -130,10 +128,9 @@
     [:AssociatedBrowseImageUrls
      (for [related-url urls
            :let [{:keys [Description MimeType] {:keys [Size Unit]} :FileSize} related-url
-                 file-size (convert-to-bytes Size Unit)]
-           url (:URLs related-url)]
+                 file-size (convert-to-bytes Size Unit)]]
        [:ProviderBrowseUrl
-        [:URL url]
+        [:URL (:URL related-url)]
         [:FileSize (when file-size (int file-size))]
         [:Description Description]
         [:MimeType MimeType]])]))

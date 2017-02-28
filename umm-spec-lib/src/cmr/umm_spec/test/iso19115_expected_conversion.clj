@@ -114,15 +114,14 @@
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
   (if (seq related-urls)
-    (seq (for [related-url related-urls
-               url (:URLs related-url)]
+    (seq (for [related-url related-urls]
            (-> related-url
-               (assoc :MimeType nil :FileSize nil :URLs [url])
+               (assoc :MimeType nil :FileSize nil)
                (update-in [:Relation]
                           (fn [[rel]]
                             (when (conversion-util/relation-set rel)
                               [rel])))
-               (update-in-each [:URLs] #(url/format-url % true)))))
+               (update :URL #(url/format-url % true)))))
     [su/not-provided-related-url]))
 
 (defn- fix-iso-vertical-spatial-domain-values
@@ -273,13 +272,10 @@
      (get groups "Email")))))
 
 (defn- expected-contact-info-related-urls
- "Returns expected related url - take the first related url and the first url in related urls"
- [related-urls]
- (when related-urls
-  (expected-iso-19115-2-related-urls
-   [(-> related-urls
-      first
-      (update :URLs #(take 1 %)))])))
+  "Returns expected related url - take the first related url and the first url in related urls"
+  [related-urls]
+  (when related-urls
+    (expected-iso-19115-2-related-urls (take 1 related-urls))))
 
 (defn- expected-iso-contact-information
  "Returns expected contact information - 1 address, only certain contact mechanisms are mapped"
@@ -295,14 +291,18 @@
  and then parse the short and long name here to mimic what UMM -> ISO -> UMM will do."
  [data-center]
  (let [{:keys [ShortName LongName]} data-center
-       organization-name (str ShortName #"&gt;" LongName)
+       organization-name (if LongName
+                          (str ShortName " &gt; " LongName)
+                          ShortName)
        name-split (str/split organization-name #"&gt;|>")]
    (if (> (count name-split) 0)
     (-> data-center
         (assoc :ShortName (str/trim (first name-split)))
         (assoc :LongName (when (> (count name-split) 1)
                           (str/join " " (map str/trim (rest name-split))))))
-    data-center)))
+    (-> data-center
+        (assoc :ShortName su/not-provided)
+        (assoc :LongName nil)))))
 
 (defn- update-person-names
  "ISO only has one field for the whole name. When we go from UMM -> ISO, we combine the names into
@@ -387,7 +387,7 @@
       (update :TemporalExtents expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
-                      :NumberOfSensors nil
+                      :NumberOfInstruments nil
                       :OperationalModes nil)
       (update :DataDates expected-iso19115-data-dates)
       (assoc :CollectionDataType nil)

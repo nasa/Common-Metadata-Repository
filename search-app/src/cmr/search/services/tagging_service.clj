@@ -14,10 +14,10 @@
     [cmr.metadata-db.services.concept-service :as mdb-cs]
     [cmr.metadata-db.services.search-service :as mdb-ss]
     [cmr.search.services.json-parameters.conversion :as jp]
+    [cmr.search.services.query-service :as query-service]
     [cmr.search.services.tagging.tag-association-validation :as av]
     [cmr.search.services.tagging.tag-validation :as tv]
     [cmr.search.services.tagging.tagging-service-messages :as msg]
-    [cmr.search.services.query-service :as query-service]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb]))
 
@@ -32,7 +32,7 @@
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
   (if-let [token (:token context)]
-    (tokens/get-user-id context (:token context))
+    (util/lazy-get context :user-id)
     (errors/throw-service-error :unauthorized msg/token-required-for-tag-modification)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -245,7 +245,7 @@
                                              mdb-context (merge association {:tag-key tag-key
                                                                              :originator-id originator-id}) operation))
                                           tag-associations))]
-    (debug "update-tag-associations:" t1)
+    (info "update-tag-associations:" t1)
     result))
 
 (defn- update-tag-associations-with-query

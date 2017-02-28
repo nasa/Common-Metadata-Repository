@@ -244,15 +244,20 @@
       ([context# params# options#]
        (let [options# (merge options# ~default-options)
              {raw?# :raw? token# :token http-options# :http-options} options#
+             method# (get options# :method :get)
              token# (or token# (:token context#))
              headers# (when token# {config/token-header token#})]
          (request context# ~app-name
                   {:url-fn ~url-fn
-                   :method :get
+                   :method method#
                    :raw? raw?#
                    :http-options (merge {:headers headers#
-                                         :query-params params#
                                          :accept :json}
+                                        ;; Merge these params depending on what the HTTP method is.
+                                        (case method#
+                                          :get {:query-params params#}
+                                          ;; POST as form params, no JSON support yet. Sorry.
+                                          :post {:form-params params#})
                                         http-options#)}))))))
 
 (defmacro defhealther

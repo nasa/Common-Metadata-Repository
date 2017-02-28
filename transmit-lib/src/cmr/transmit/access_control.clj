@@ -134,6 +134,11 @@
   [ctx concept-id]
   (str (conn/root-url ctx) "/acls/" concept-id))
 
+(defn acl-search-post-url
+  "Returns ACL search URL for POST requests."
+  [ctx]
+  (str (conn/root-url ctx) "/acls/search"))
+
 (defn acl-permission-url
   [ctx]
   (str (conn/root-url ctx) "/permissions/"))
@@ -157,7 +162,18 @@
 
 (h/defcreator create-acl :access-control acl-root-url)
 (h/defupdater update-acl :access-control acl-concept-id-url)
-(h/defsearcher search-for-acls :access-control acl-root-url)
+
+(h/defsearcher search-for-acls-get :access-control acl-root-url)
+
+(h/defsearcher search-for-acls* :access-control acl-search-post-url)
+
+(defn search-for-acls
+  "Search for ACLs."
+  ([context params]
+    (search-for-acls context params nil))
+  ([context params options]
+    (search-for-acls* context params (merge options {:method :post}))))
+
 (h/defdestroyer delete-acl :access-control acl-concept-id-url)
 (h/defgetter get-acl :access-control acl-concept-id-url)
 

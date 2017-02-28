@@ -136,7 +136,7 @@
     (seq (for [related-url related-urls]
            (-> related-url
                (assoc :FileSize nil :MimeType nil)
-               (update-in-each [:URLs] #(url/format-url % true)))))
+               (update-in [:URL] #(url/format-url % true)))))
     [su/not-provided-related-url]))
 
 (def bounding-rectangles-path
@@ -150,21 +150,18 @@
     (update access-constraints :Description su/with-default)))
 
 (defn expected-related-url
-  "Format all of the URLs in RelatedUrl"
+  "Format the URL in RelatedUrl"
   [entry]
-  (if-let [urls (get-in entry [:RelatedUrl :URLs])]
-    (assoc-in entry [:RelatedUrl :URLs]
-      (seq (for [url urls]
-             (url/format-url url true))))
+  (if-let [url (get-in entry [:RelatedUrl :URL])]
+    (assoc-in entry [:RelatedUrl :URL]
+      (url/format-url url true))
     entry))
 
 (defn- expected-related-urls
   "Format all of the URLs in RelatedUrls, returns a list of RelatedUrls"
   [related-urls]
   (seq (for [ru related-urls]
-         (assoc ru :URLs
-           (seq (for [url (:URLs ru)]
-                  (url/format-url url true)))))))
+         (assoc ru :URL (url/format-url (:URL ru) true)))))
 
 (defn expected-contact-information-urls
   "Format all of the URLs in ContactInformation"

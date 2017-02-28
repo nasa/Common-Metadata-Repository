@@ -1,24 +1,25 @@
 (ns cmr.system-int-test.search.acls.temporal-acl-search-test
   "Tests searching for collections and granules with temporal ACLs in place."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.services.messages :as msg]
-            [cmr.common.util :refer [are2] :as util]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.opendata :as od]
-            [cmr.system-int-test.data2.granule-counts :as gran-counts]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.transmit.echo.conversion :as echo-conversion]
-            [clj-time.core :as t]
-            [cmr.common.test.time-util :as tu]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.services.messages :as msg]
+   [cmr.common.test.time-util :as tu]
+   [cmr.common.util :refer [are2 are3] :as util]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.granule-counts :as gran-counts]
+   [cmr.system-int-test.data2.opendata :as od]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.echo.conversion :as echo-conversion]))
 
 
 (use-fixtures :each (join-fixtures
@@ -138,7 +139,7 @@
           "group4" user4 group4-colls))
 
       (testing "Granule ACL Enforcement by concept id"
-        (are2 [token grans colls]
+        (are3 [token grans colls]
           (let [concept-ids all-gran-concept-ids
                 gran-atom (da/granules->expected-atom
                            grans colls
@@ -209,7 +210,7 @@
   (grant-temporal :granule "group-guid2" :intersect 5 9)
   (grant-temporal :granule "group-guid3" :disjoint 3 5)
   (grant-temporal :granule "group-guid4" :contains 3 7)
-  
+
   (let [collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}))
         gran-num (atom 0)
         single-date-gran (fn [n metadata-format]

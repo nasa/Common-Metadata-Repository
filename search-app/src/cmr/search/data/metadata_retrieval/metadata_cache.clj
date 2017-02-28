@@ -8,24 +8,25 @@
                  * revision-id
                  * native-format - A key or map of format and version identifying the native format
                  * various format keys each mapped to compressed metadata."
-  (require [cmr.common.util :as u]
-           [cmr.common.cache :as c]
-           [cmr.common.xml :as cx]
-           [clojure.set :as set]
-           [cmr.common.config :refer [defconfig]]
-           [cmr.common.jobs :refer [defjob]]
-           [cmr.common.services.errors :as errors]
-           [cmr.common.log :as log :refer (debug info warn error)]
-           [cmr.search.services.result-format-helper :as rfh]
-           [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-           [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
-           [cmr.search.services.acl-service :as acl-service]
-           [cmr.umm.acl-matchers :as acl-match]
-           [cmr.umm-spec.versioning :as umm-version]
-           [cmr.common-app.services.search.query-model :as q]
-           [cmr.common-app.services.search.query-execution :as qe]
-           [cmr.metadata-db.services.concept-service :as metadata-db]
-           [cmr.umm-spec.umm-spec-core :as umm-spec]))
+  (require
+   [cmr.common.util :as u]
+   [clojure.set :as set]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as q]
+   [cmr.common.cache :as c]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.xml :as cx]
+   [cmr.metadata-db.services.concept-service :as metadata-db]
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+   [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
+   [cmr.search.services.acl-service :as acl-service]
+   [cmr.search.services.result-format-helper :as rfh]
+   [cmr.umm-spec.acl-matchers :as acl-match]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.versioning :as umm-version]))
 
 (def cache-key
   "Identifies the key used when the cache is stored in the system."
@@ -337,7 +338,7 @@
           ;; Put everything in the order requested.
           [t6 ordered-concepts] (u/time-execution
                                  (order-concepts concept-tuples concepts))]
-      (debug "get-formatted-concept-revisions of" (count concept-tuples) "concepts total:"
+      (info "get-formatted-concept-revisions of" (count concept-tuples) "concepts total:"
              (+ t1 t2 t3 t4 t5 t6)
              "get-cached-metadata-in-format" t1
              "revision-format-maps->concepts:" t2
@@ -372,7 +373,7 @@
        (let [[t3 concepts] (u/time-execution
                             (metadata-transformer/transform-concepts
                              context concepts target-format))]
-         (debug "get-latest-concepts time:" t1
+         (info "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
                 "metadata-transformer/transform-concepts time:" t3)
          concepts)
@@ -383,7 +384,7 @@
              [t5 concepts] (u/time-execution
                             (metadata-transformer/transform-concepts
                              context concepts target-format))]
-         (debug "get-latest-concepts time:" t1
+         (info "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
                 "add-acl-enforcement-fields time:" t3
                 "acl-filter-concepts time:" t4
@@ -412,9 +413,9 @@
         [t4 [concept]] (u/time-execution
                         (when concept
                          (metadata-transformer/transform-concepts context [concept] target-format)))]
-    (debug "get-concept time:" t1
+    ;; We log the message below on INFO level as it is used by CMR log miner to replay the search
+    (info "get-concept time:" t1
            "add-acl-enforcement-fields time:" t2
            "acl-filter-concepts time:" t3
            "metadata-transformer/transform-concepts time:" t4)
     concept))
-

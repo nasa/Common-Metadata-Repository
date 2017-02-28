@@ -209,7 +209,8 @@
            (set-config-value! ~config-name-key value#))))))
 
 (defconfig defn-timed-debug 
-  "The defn-timed macro produced debug switch"
+  "This sets the switch for the logging of the debug info from defn-timed macro.
+   If it is set to true, the debug info will be logged."
   {:default false 
    :type Boolean})
 

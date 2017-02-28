@@ -71,7 +71,7 @@
                                                 :fields fields
                                                 :aggs aggregations
                                                 :highlight highlights}))]
-    (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
+    (info "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
            "with sort" (pr-str sort-params)
            "with aggregations" (pr-str aggregations)
@@ -140,7 +140,7 @@
         e-results (send-query-to-elastic context query)
         elapsed (- (System/currentTimeMillis) start)
         hits (get-in e-results [:hits :total])]
-    (debug "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
+    (info "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
                (e/internal-error! "Failed to retrieve all hits.")))
     e-results))

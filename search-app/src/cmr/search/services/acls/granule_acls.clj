@@ -1,21 +1,22 @@
 (ns cmr.search.services.acls.granule-acls
   "Contains functions for manipulating granule acls"
-  (:require [cmr.search.models.query :as q]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.search.services.acls.acl-helper :as acl-helper]
-            [cmr.search.services.acl-service :as acl-service]
-            [cmr.common.concepts :as c]
-            [cmr.common.util :as u]
-            [cmr.common.date-time-parser :as date-time-parser]
-            [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
-            [cmr.search.services.query-walkers.collection-query-resolver :as r]
-            [cmr.umm.acl-matchers :as umm-matchers]
-            [cmr.search.services.acls.collections-cache :as coll-cache]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.time-keeper :as tk]
-            [clojure.set :as set]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common.concepts :as c]
+   [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as u]
+   [cmr.search.models.query :as q]
+   [cmr.search.services.acl-service :as acl-service]
+   [cmr.search.services.acls.acl-helper :as acl-helper]
+   [cmr.search.services.acls.collections-cache :as coll-cache]
+   [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
+   [cmr.search.services.query-walkers.collection-query-resolver :as r]
+   [cmr.umm-spec.acl-matchers :as umm-matchers]))
 
 (defmulti filter-applicable-granule-acls
   (fn [context coll-ids-by-prov acls]
@@ -227,7 +228,7 @@
   [gran-identifier concept]
   (let [{:keys [access-value temporal]} gran-identifier]
     (and (if access-value
-           (umm-matchers/matches-access-value-filter? concept access-value)
+           (umm-matchers/matches-access-value-filter? :granule concept access-value)
            true)
          (if temporal
            (when-let [umm-temporal (u/lazy-get concept :temporal)]

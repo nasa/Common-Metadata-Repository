@@ -1,20 +1,17 @@
 (ns cmr.search.data.complex-to-simple-converters.spatial
   "Contains converters for spatial condition into the simpler executable conditions"
-  (:require [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.search.services.query-helper-service :as query-helper]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.serialize :as srl]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.relations :as sr]
-            [clojure.string :as str])
-  (:import gov.nasa.echo_orbits.EchoOrbitsRubyBootstrap))
-
-(def orbits
-  "Java wrapper for echo-orbits ruby library."
-  (EchoOrbitsRubyBootstrap/bootstrapEchoOrbits))
+  (:require
+   [clojure.string :as str]
+   [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.common-app.services.search.elastic-search-index :as idx]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.orbits.orbits-runtime :as orbits]
+   [cmr.search.services.query-helper-service :as query-helper]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.relations :as sr]
+   [cmr.spatial.serialize :as srl]))
 
 (defn- shape->script-cond
   [shape]
@@ -59,13 +56,13 @@
                        (gc/or-conds [am-conds non-am-conds])])))))
 
 (defn- resolve-shape-type
-  "Convert the 'type' string from a serialized shape to one of 'point', 'line', 'br', or 'poly'.
-  These are used by the echo-orbits-java wrapper library."
+  "Convert the 'type' string from a serialized shape to one of :point, :line, :br, or :polygon.
+  These are used by the orbits wrapper library."
   [type]
   (cond
-    (re-matches #".*line.*" type) "line"
-    (re-matches #".*poly.*" type) "poly"
-    :else type))
+    (re-matches #".*line.*" type) :line
+    (re-matches #".*poly.*" type) :polygon
+    :else (keyword type)))
 
 (defn- lat-lon-crossings-valid?
   "Returns true only if the latitude/longitude range array returned from echo-orbits has
@@ -82,43 +79,35 @@
   the search area (as returned by the shape->stored-ords method of the spatial library.
   The orbit-params paraemter is the set of orbit parameters for a single collection.
   Returns a vector of vectors of doubles representing the ascending and descending crossing ranges."
-  [mbr stored-ords orbit-params]
+  [context mbr stored-ords orbit-params]
   ;; Use the orbit parameters to perform orbital back tracking to longitude ranges to be used
   ;; in the search.
   (let [shape-type (resolve-shape-type (name (:type (first stored-ords))))
-        coords (double-array (map srl/stored->ordinate
-                                  (:ords (first stored-ords))))
-        lat-range (double-array [(:south mbr) (:north mbr)])]
+        coords (map srl/stored->ordinate (:ords (first stored-ords)))
+        lat-range [(:south mbr) (:north mbr)]
+        orbits-runtime (get-in context [:system orbits/system-key])]
     (let [{:keys [swath-width
                   period
                   inclination-angle
                   number-of-orbits
                   start-circular-latitude]} orbit-params
-          start-circular-latitude (or start-circular-latitude 0)]
+          start-circular-latitude (or start-circular-latitude 0)
+          area-crossing-range-params {:lat-range lat-range
+                                      :geometry-type shape-type
+                                      :coords coords
+                                      :inclination inclination-angle
+                                      :period period
+                                      :swath-width swath-width
+                                      :start-clat start-circular-latitude
+                                      :num-orbits number-of-orbits}]
       (when (and shape-type
                  (seq coords))
-        (let [asc-crossing (.areaCrossingRange
-                             orbits
-                             lat-range
-                             shape-type
-                             coords
-                             true
-                             inclination-angle
-                             period
-                             swath-width
-                             start-circular-latitude
-                             number-of-orbits)
-              desc-crossing (.areaCrossingRange
-                              orbits
-                              lat-range
-                              shape-type
-                              coords
-                              false
-                              inclination-angle
-                              period
-                              swath-width
-                              start-circular-latitude
-                              number-of-orbits)]
+        (let [asc-crossing (orbits/area-crossing-range
+                            orbits-runtime
+                            (assoc area-crossing-range-params :ascending? true))
+              desc-crossing (orbits/area-crossing-range
+                             orbits-runtime
+                             (assoc area-crossing-range-params :ascending? false))]
           (when (or (lat-lon-crossings-valid? asc-crossing)
                     (lat-lon-crossings-valid? desc-crossing))
             [asc-crossing desc-crossing]))))))
@@ -149,20 +138,22 @@
 (defn- lat-lon-crossings-conditions
   "Create the seacrh conditions for a latitude-range / equator crosssing longitude-range returned
   by echo-orbits"
-  [lat-ranges-crossings ascending?]
-  (gc/or-conds
-    (map (fn [lat-range-lon-range]
-           (let [lat-range (first (first lat-range-lon-range))
-                 [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits
-                                                                             (first lat-range)
-                                                                             (last lat-range))
-                 lat-ranges (if ascending? asc-lat-ranges desc-lat-ranges)
-                 lat-conds (range->numeric-range-intersection-condition lat-ranges)
-                 crossings (last lat-range-lon-range)]
-             (gc/and-conds
+  [context lat-ranges-crossings ascending?]
+  (let [orbits-runtime (get-in context [:system orbits/system-key])]
+    (gc/or-conds
+     (map (fn [lat-range-lon-range]
+            (let [lat-range (first (first lat-range-lon-range))
+                  [asc-lat-ranges desc-lat-ranges] (orbits/denormalize-latitude-range
+                                                    orbits-runtime
+                                                    (first lat-range)
+                                                    (last lat-range))
+                  lat-ranges (if ascending? asc-lat-ranges desc-lat-ranges)
+                  lat-conds (range->numeric-range-intersection-condition lat-ranges)
+                  crossings (last lat-range-lon-range)]
+              (gc/and-conds
                [lat-conds
                 (crossing-ranges->condition crossings)])))
-         lat-ranges-crossings)))
+          lat-ranges-crossings))))
 
 (defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
@@ -173,7 +164,7 @@
         orbit-params (query-helper/collection-orbit-parameters context query-collection-ids true)
         stored-ords (srl/shape->stored-ords shape)
         crossings-map (reduce (fn [memo params]
-                                (let [lon-crossings-lat-ranges (orbit-crossings mbr stored-ords params)]
+                                (let [lon-crossings-lat-ranges (orbit-crossings context mbr stored-ords params)]
                                   (if (seq lon-crossings-lat-ranges)
                                     (assoc
                                       memo
@@ -191,9 +182,9 @@
                    [(qm/string-condition :collection-concept-id collection-id, true, false)
                     (gc/or-conds
                       [;; ascending
-                       (lat-lon-crossings-conditions asc-crossings-lat-ranges true)
+                       (lat-lon-crossings-conditions context asc-crossings-lat-ranges true)
                        ;; descending
-                       (lat-lon-crossings-conditions desc-crossings-lat-ranges false)])])))
+                       (lat-lon-crossings-conditions context desc-crossings-lat-ranges false)])])))
 
              (keys crossings-map))))))
 

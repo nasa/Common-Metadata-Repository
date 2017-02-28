@@ -38,17 +38,16 @@
 (defn- sanitize-related-url
   "Returns a single sanitized RelatedUrl"
   [entry]
-  (if-let [urls (get-in entry [:RelatedUrl :URLs])]
-    (assoc-in entry [:RelatedUrl :URLs]
-      (seq (seq (gen/sample test/file-url-string (count urls)))))
+  (if-let [urls (get-in entry [:RelatedUrl :URL])]
+    (assoc-in entry [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
     entry))
 
 (defn- sanitize-related-urls
   "Returns a list of sanitized related urls"
   [related-urls]
-  (seq (for [ru related-urls]
-         (assoc ru :URLs
-           (seq (gen/sample test/file-url-string (count (:URLs ru))))))))
+  (when related-urls
+   (for [ru related-urls]
+    (assoc ru :URL (first (gen/sample test/file-url-string 1))))))
 
 (defn- sanitize-contact-informations
   "Sanitize a record with ContactInformation"
@@ -117,7 +116,6 @@
 (defn sanitized-umm-record
   "Returns the sanitized version of the given umm record."
   [record]
-  (def record record)
   (-> record
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
       ;; so here we just replace the generated value to eng to make it through the validation.
