@@ -113,7 +113,7 @@
 
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
-  (if (seq related-urls)
+  (when (seq related-urls)
     (seq (for [related-url related-urls]
            (-> related-url
                (assoc :MimeType nil :FileSize nil)
@@ -121,8 +121,7 @@
                           (fn [[rel]]
                             (when (conversion-util/relation-set rel)
                               [rel])))
-               (update :URL #(url/format-url % true)))))
-    [su/not-provided-related-url]))
+               (update :URL #(url/format-url % true)))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]

@@ -132,12 +132,11 @@
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
   [related-urls]
-  (if (seq related-urls)
+  (when (seq related-urls)
     (seq (for [related-url related-urls]
            (-> related-url
                (assoc :FileSize nil :MimeType nil)
-               (update-in [:URL] #(url/format-url % true)))))
-    [su/not-provided-related-url]))
+               (update-in [:URL] #(url/format-url % true)))))))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."

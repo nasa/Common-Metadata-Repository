@@ -42,7 +42,7 @@
 
 (defn- expected-echo10-related-urls
   [related-urls]
-  (if (seq related-urls)
+  (when (seq related-urls)
     (for [related-url related-urls
           :let [[rel] (:Relation related-url)]]
      (-> related-url
@@ -55,8 +55,7 @@
          (update-in [:Relation] (fn [[rel]]
                                   (when (conversion-util/relation-set rel)
                                     [rel])))
-         (update :URL url/format-url true)))
-   [su/not-provided-related-url]))
+         (update :URL url/format-url true)))))
 
 (defn- expected-echo10-reorder-related-urls
   "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."
