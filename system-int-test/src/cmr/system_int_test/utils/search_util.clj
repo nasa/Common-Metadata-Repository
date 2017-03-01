@@ -14,6 +14,7 @@
     [cmr.common-app.test.side-api :as side]
     [cmr.common.concepts :as cs]
     [cmr.common.mime-types :as mime-types]
+    [cmr.common.test.time-util :as tu]
     [cmr.common.time-keeper :as tk]
     [cmr.common.util :as util]
     [cmr.common.xml :as cx]
@@ -641,14 +642,19 @@
     in test and on CMR side."
   (tk/now))
 
+(def now-n
+  "The N value for the current time. Uses N values for date times as describd in
+  cmr.common.test.time-util."
+  204)
+
 (defn freeze-resume-time-fixture
   []
   (fn [f]
     (try
       ;; Freeze time in test
-      (tk/set-time-override! common-now)
+      (tk/set-time-override! (tu/n->date-time now-n))
       ;; Freeze time on CMR side
-      (side/eval-form `(tk/set-time-override! common-now)) 
+      (side/eval-form `(tk/set-time-override! (tu/n->date-time now-n))) 
       (f)
       (finally
         ;; Resume time in test
