@@ -8,9 +8,6 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
-(def current-date-time
-  (tk/now))
-
 (def default-date-value "1970-01-01T00:00:00")
 
 (def parsed-default-date
@@ -28,7 +25,7 @@
 (defn with-current
   "Returns x if not nil, or else the current-date-time placeholder value."
   ([x]
-   (or x current-date-time)))
+   (or x (tk/now))))
 
 (defn without-default
   "Returns x if it is not the default date value string."
