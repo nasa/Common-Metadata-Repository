@@ -26,7 +26,8 @@
         related-urls (for [related-url (select doc "/DIF/Related_URL")
                            :let [type (value-of related-url "URL_Content_Type/Type")
                                  subtype (value-of related-url "URL_Content_Type/Subtype")
-                                 url-types (dif-util/dif-url-content-type->umm-url-types [type subtype])]]
+                                 url-types (get dif-util/dif-url-content-type->umm-url-types
+                                             [type subtype] su/default-url-type)]]
                        (merge
                         url-types
                         {:URL (if-let [url (url/format-url (value-of related-url "URL") sanitize?)]

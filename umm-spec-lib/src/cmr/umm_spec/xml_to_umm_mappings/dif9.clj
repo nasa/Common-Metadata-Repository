@@ -77,7 +77,8 @@
           :let [description (value-of related-url "Description")
                 type (value-of related-url "URL_Content_Type/Type")
                 subtype (value-of related-url "URL_Content_Type/Subtype")
-                url-type (dif-util/dif-url-content-type->umm-url-types [type subtype])]]
+                url-type (get dif-util/dif-url-content-type->umm-url-types
+                              [type subtype] su/default-url-type)]]
       (merge
        url-type
        {:URL (url/format-url url sanitize?)

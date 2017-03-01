@@ -1,14 +1,7 @@
 (ns cmr.umm-spec.related-url
-  (:require [cmr.common.xml.gen :refer :all]
-            [clojure.string :as str]))
-
-(def related-url-types->resource-types
-  "A mapping of UMM RelatedURL's type to ECHO10 OnlineResource's type.
-  This list is used for generating ECHO10 OnlineResources from UMM RelatedURLs."
-  {"GET DATA" "DATA ACCESS"
-   "GET RELATED VISUALIZATION" "BROWSE"
-   "VIEW RELATED INFORMATION" "USER SUPPORT"
-   "OPENDAP DATA ACCESS" "GET DATA : OPENDAP DATA (DODS)"})
+  (:require
+   [clojure.string :as str]
+   [cmr.common.xml.gen :refer :all]))
 
 (def DOCUMENTATION_MIME_TYPES
   "Mime Types that indicate the RelatedURL is of documentation type"
@@ -19,7 +12,8 @@
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
   [related-url]
-  (some #{"GET DATA"} (:Relation related-url)))
+  (and (= "DistributionURL" (:URLContentType related-url))
+       (= "GET DATA" (:Type related-url))))
 
 (defn downloadable-urls
   "Returns the related-urls that are downloadable"
@@ -29,7 +23,7 @@
 (defn browse-url?
   "Returns true if the related-url is browse url"
   [related-url]
-  (some #{"GET RELATED VISUALIZATION"} (:Relation related-url)))
+  (= "VisualizationURL" (:URLContentType related-url)))
 
 (defn browse-urls
   "Returns the related-urls that are browse urls"
@@ -39,7 +33,7 @@
 (defn- documentation-url?
   "Returns true if the related-url is documentation url"
   [related-url]
-  (contains? DOCUMENTATION_MIME_TYPES (:MimeType related-url)))
+  (= "PublicationURL" (:URLContentType)))
 
 (defn resource-url?
   "Returns true if the related-url is resource url"
@@ -51,6 +45,25 @@
   "Returns the related-urls that are resource urls"
   [related-urls]
   (filter resource-url? related-urls))
+
+(def subtype->abbreviation
+ "The following subtypes create a string too large to write to ECHO10 so map
+ them to an abbreviation"
+ {"ALGORITHM THEORETICAL BASIS DOCUMENT" "ALGORITHM THEO BASIS"
+  "CALIBRATION DATA DOCUMENTATION" "CALIBRATION DATA"
+  "PRODUCT QUALITY ASSESSMENT" "PRODUCT QUALITY"
+  "WORKFLOW (SERVICE CHAIN)" "WORKFLOW"})
+
+(defn related-url->online-resource-type
+ "Format the online resource type to be 'URLContentType : Type' if no subtype
+ exists else 'Type : Subtype'. Can't store all 3 because of limitations in
+ ECHO10"
+ [related-url]
+ (let [{:keys [URLContentType Type Subtype]} related-url
+       Subtype (get subtype->abbreviation Subtype Subtype)]
+   (if Subtype
+    (str Type " : " Subtype)
+    (str URLContentType " : " Type))))
 
 (defn- related-url->link-type
   "Returns the atom link type of the related url"
@@ -98,14 +111,11 @@
   (when-let [urls (seq (resource-urls related-urls))]
     [:OnlineResources
      (for [related-url urls
-           :let [{:keys [Description MimeType]} related-url
-                 [rel] (:Relation related-url)]]
+           :let [{:keys [Description MimeType]} related-url]]
        [:OnlineResource
         [:URL (:URL related-url)]
         [:Description Description]
-        ;; There is not a well defined one to one mapping between related url type and resource type.
-        ;; This default value of "UNKNOWN" is to get us by the xml schema validation.
-        [:Type (get related-url-types->resource-types rel "UNKNOWN")]
+        [:Type (related-url->online-resource-type related-url)]
         [:MimeType MimeType]])]))
 
 (defn convert-to-bytes

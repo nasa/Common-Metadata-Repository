@@ -308,7 +308,7 @@
           "$ref": "#/definitions/FileSizeType"
         }
       },
-      "required": ["URL"]
+      "required": ["URL", "URLContentType", "Type"]
     },
     "OnlineResourceType": {
       "type": "object",

@@ -30,6 +30,23 @@
 (def SHORTNAME_MAX
   85)
 
+(def type->url-content-type
+ "Get the URLContentType from the type"
+ {"DATA SET LANDING PAGE" "CollectionURL"
+  "DOI" "CollectionURL"
+  "EXTENDED METADATA" "CollectionURL"
+  "PROFESSIONAL HOME PAGE" "CollectionURL"
+  "PROJECT HOME PAGE" "CollectionURL"
+  "GET DATA" "DistributionURL"
+  "GET SERVICE" "DistributionURL"
+  "VIEW RELATED INFORMATION" "PublicationURL"
+  "GET RELEATED VISUALIZATION" "VisualizationURL"})
+
+(def default-url-type
+ {:URLContentType "PublicationURL"
+  :Type "VIEW RELATED INFORMATION"
+  :Subtype "GENERAL DOCUMENTATION"})
+
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
    "Phone" "Telephone"
@@ -59,7 +76,8 @@
 (def not-provided-related-url
   "Place holder to use when a related url is not provided."
   (cmn/map->RelatedUrlType
-    {:URL not-provided-url}))
+   (merge default-url-type
+    {:URL not-provided-url})))
 
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"

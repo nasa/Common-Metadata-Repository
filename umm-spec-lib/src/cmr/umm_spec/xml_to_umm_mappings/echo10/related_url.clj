@@ -1,74 +1,171 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.related-url
   (:require
+   [clojure.set :as set]
    [clojure.string :as str]
+   [clojure.java.io :as io]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.related-url :as related-url]
    [cmr.umm-spec.util :as su]
    [cmr.umm-spec.url :as url]))
 
-(def resource-type->related-url-types
-  "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
-  This came from a list provided by Katie on ECHO10 collections, more may need to be added for granules."
-  {"STATIC URL" ["VIEW RELATED INFORMATION"]
-   "GUIDE" ["VIEW RELATED INFORMATION" "USER'S GUIDE"]
-   "HOMEPAGE" ["VIEW PROJECT HOME PAGE"]
-   "SOFTWARE" ["GET SERVICE" "GET SOFTWARE PACKAGE"]
-   "CURRENT BROWSE BY CHANNEL" ["GET RELATED VISUALIZATION"]
-   "BROWSE" ["GET RELATED VISUALIZATION"]
-   "CITING GHRC DATA" ["GET DATA"]
-   "PI DOCUMENTATION" ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
-   "DATASETDISCLAIMER" ["VIEW RELATED INFORMATION"]
-   "ECSCOLLGUIDE" ["VIEW RELATED INFORMATION" "USER'S GUIDE"]
-   "MISCINFORMATION" ["VIEW RELATED INFORMATION"]
-   "TEMPERATURE TREND GRAPHS" ["GET RELATED VISUALIZATION"]
-   "DATA SET GUIDE" ["VIEW RELATED INFORMATION" "USER'S GUIDE"]
-   "REFERENCE MATERIALS" ["VIEW RELATED INFORMATION"]
-   "THUMBNAIL" ["GET RELATED VISUALIZATION"]
-   "DATASET QUALITY SUMMARY" ["VIEW RELATED INFORMATION"]
-   "ONLINERESOURCETYPE" ["VIEW RELATED INFORMATION"]
-   "PROJECT HOME PAGE" ["VIEW PROJECT HOME PAGE"]
-   "USER SUPPORT" ["VIEW RELATED INFORMATION"]
-   "DATA ACCESS (FTP)" ["GET DATA"]
-   "CALIBRATION/VALIDATION DATA" ["VIEW RELATED INFORMATION"]
-   "PORTAL_DA_DIRECT_ACCESS" ["GET DATA"]
-   "ICE HOME PAGE" ["VIEW PROJECT HOME PAGE"]
-   "PROJECT HOMEPAGE" ["VIEW PROJECT HOME PAGE"]
-   "PRODUCT QUALITY MONITORING PAGE" ["VIEW RELATED INFORMATION"]
-   "GHRSST PORTAL HOME PAGE" ["VIEW PROJECT HOME PAGE"]
-   "DOI" ["VIEW PROJECT HOME PAGE"]
-   "RELATED URLS" ["VIEW RELATED INFORMATION"]
-   "DATA DOCUMENTATION" ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
-   "IMPORTANT NOTICE" ["VIEW RELATED INFORMATION"]
-   "PROJECT WEBSITE" ["VIEW PROJECT HOME PAGE"]
-   "WEB SITE" ["VIEW PROJECT HOME PAGE"]
-   "TEXT/HTML" ["VIEW RELATED INFORMATION"]
-   "PRODUCT INFO" ["VIEW RELATED INFORMATION"]
-   "OVERVIEW" ["VIEW RELATED INFORMATION" "GENERAL DOCUMENTATION"]
-   "BROWSE CALENDAR" ["VIEW RELATED INFORMATION"]
-   "ALGORITHM INFORMATION" ["VIEW RELATED INFORMATION"]
-   "DATA ACCESS" ["GET DATA"]
-   "ALGORITHM INFO" ["VIEW RELATED INFORMATION"]
-   "GET DATA : OPENDAP DATA (DODS)" ["OPENDAP DATA ACCESS"]})
+(def url-content-types
+ "URL content type enums"
+ #{"DistributionURL" "VisualizationURL" "PublicationURL" "CollectionURL" "DataCenterURL" "DataContactURL"})
+
+(def online-resource-type->related-url-types
+ "Map from ECHO online resource type to UMM RelatedURL URLContentType, Type,
+ and Subtype."
+ {"VIEW RELATED INFORMATION" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "DOI URL" {:URLContentType "CollectionURL", :Type "DOI"}
+  "BROWSE" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "Guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Homepage" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "Software" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
+  "DOI" {:URLContentType "CollectionURL", :Type "DOI"}
+  "Citing GHRC Data" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "GET DATA : MIRADOR" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "MIRADOR"}
+  "VIEW RELATED INFORMATION : USER'S GUIDE" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "GET DATA : REVERB" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "REVERB"}
+  "GET DATA : ON-LINE ARCHIVE" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ON-LINE ARCHIVE"}
+  "Data Tool/Application" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
+  "Browse" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "Collection Quality Summary" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "DATA QUALITY"}
+  "GET DATA : OPENDAP DATA (DODS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "OPENDAP DATA (DODS)"}
+  "GET DATA : ECHO" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ECHO"}
+  "VIEW PROJECT HOME PAGE" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "GET RELATED VISUALIZATION" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "GET DATA : SSW" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "SSW"}
+  "GET SERVICE : GET WEB MAP SERVICE (WMS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "WEB MAP SERVICE (WMS)"}
+  "GET SERVICE : GET WEB COVERAGE SERVICE (WCS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "WEB COVERAGE SERVICE (WCS)"}
+  "GET DATA : DATACAST URL" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "DATACAST URL"}
+  "BROWSE SAMPLE" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "PI Documentation" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PI DOCUMENTATION"}
+  "DatasetDisclaimer" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "ECSCollGuide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "MiscInformation" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Collection Guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "Type:GET DATA Subtype:REVERB" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "REVERB"}
+  "Type:GET DATA Subtype:ON-LINE ARCHIVE" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ON-LINE ARCHIVE"}
+  "Type:VIEW PROJECT HOME PAGE" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "Type:GET DATA" {:URLContentType "DistributionURL", :Type "GET DATA"}
+  "Type:VIEW RELATED INFORMATION" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "PORTAL_DA_DIRECT_ACCESS" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Project Home Page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "Get Data" {:URLContentType "DistributionURL", :Type "GET DATA"}
+  "Reference Materials" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "GET DATA : THREDDS CATALOG" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "THREDDS CATALOG"}
+  "VIEW RELATED INFORMATION : GENERAL DOCUMENTATION" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "VIEW RELATED INFORMATION : HOW-TO" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "HOW-TO"}
+  "Related URLs" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "static URL" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "GET RELATED SERVICE METADATA (SERF)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SERF"}
+  "GET SERVICE : GET SOFTWARE PACKAGE" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
+  "GET DATA : SUBSETTER" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SUBSETTER"}
+  "GET DATA : GIOVANNI" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "GIOVANNI"}
+  "GET DATA : GDS" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "GDS"}
+  "Home Page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "Landing Page" {:URLContentType "CollectionURL", :Type "DATA SET LANDING PAGE"}
+  "User Support" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "GET DATA" {:URLContentType "DistributionURL", :Type "GET DATA"}
+  "Quality Summary" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "DATA QUALITY"}
+  "VIEW EXTENDED METADATA" {:URLContentType "CollectionURL", :Type "EXTENDED METADATA"}
+  "GET SERVICE : GET WEB MAP FOR TIME SERIES" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "WEB MAP FOR TIME SERIES"}
+  "Algorithm Information" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT"}
+  "Micro Article" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "OPeNDAP" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "OPENDAP DATA"}
+  "Publications" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PUBLICATIONS"}
+  "Data Documentation" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "VIEW RELATED INFORMATION : PI DOCUMENTATION" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PI DOCUMENTATION"}
+  "Important Notice" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "text/html" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Anomalies" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Collection DOI" {:URLContentType "CollectionURL", :Type "DOI"}
+  "GET DATA : EOSDIS DATA POOL" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "EOSDUS DATA POOL"}
+  "GET DATA : LANCE" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "LANCE"}
+  "Type:GET DATA Subtype:LANCE" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "LANCE"}
+  "Type:GET DATA Subtype:ECHO" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ECHO"}
+  "Type:GET DATA Subtype:LAADS" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "LAADS"}
+  "Alternate Data Access" {:URLContentType "DistributionURL", :Type "GET DATA"}
+  "Worldview Imagery" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION", :Subtype "GIBS"}
+  "GET SERVICE" {:URLContentType "DistributionURL", :Type "GET SERVICE"}
+  "PORTAL_DA_READ_SOFTWARE" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
+  "PORTAL_DOC_USERS_GUIDE" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "Thumbnail" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "Reference" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "PORTAL_DOC_JOURNAL_REFERENCES" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PUBLICATIONS"}
+  "PORTAL_DOC_ADDITIONAL_SITES" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "PORTAL_DOC_PROJECT_MATERIALS" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "PORTAL_DA_TOOLS_AND_SERVICES" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SUBSETTER"}
+  "PORTAL_DOC_KNOWN_ISSUES" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Web Page" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Provider Webpage" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "JPL ESG Link" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION"}
+  "Guide Document" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "Project home page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "GHRSST Portal Home Page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "PORTAL_DOC_ANNOUNCEMENTS" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Calibration/validation data" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "CALIBRATION DATA DOCUMENTATION"}
+  "PORTAL_DOC_FAQS" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Get Service" {:URLContentType "DistributionURL", :Type "GET SERVICE"}
+  "Ice Home Page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "EXTRACT_NETCDF4" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
+  "Website" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Web site" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "Data access (FTP)" {:URLContentType "DistributionURL", :Type "GET SERVICE"}
+  "Data access (OpenDAP)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "OPENDAP DATA"}
+  "Product Quality Monitoring Page" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PRODUCT QUALITY ASSESSMENT"}
+  "Project Homepage" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "Data access (OPeNDAP)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "OPENDAP DATA"}
+  "Project Website" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "Project homepage" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "Release Notes" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION"}
+  "data set guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "Dataset User Guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "Documentation" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "README" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "READ-ME"}
+  "ersst.v2.readme.txt" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "READ-ME"}
+  "dataset description" {:URLContentType "CollectionURL", :Type "DATA SET LANDING PAGE"}
+  "User guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
+  "PORTAL_DA" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "PO.DAAC SPURS Mission page" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
+  "PDF" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
+  "GET DATA : THREDDS DIRECTORY" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "THREDDS DIRECTORY"}
+  "VIEW RELATED INFORMATION : PRODUCT HISTORY" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PRODUCT HISTORY"}
+  "Algorithm Info" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT"}})
+
+(defn- get-url-type
+ "Get UMM URL type from ECHO online resource type. The resource type could be the
+ URLContentType, Type, and Subtype delimited by :, otherwise try lookup in the table.
+ Default is used if cannot be found in the table"
+ [resource-type]
+ (if resource-type
+  (let [types (str/split resource-type #" : ")]
+   (if (> (count types) 1)
+    (if (contains? url-content-types (first types)) ; Check for valid URLContentType
+     ;; No subtype
+     {:URLContentType (first types)
+      :Type (second types)}
+     (if-let [url-content-type (su/type->url-content-type (first types))]
+      {:URLContentType url-content-type
+       :Type (first types)
+       :Subtype (get (set/map-invert related-url/subtype->abbreviation) (second types) (second types))}
+      (get online-resource-type->related-url-types resource-type su/default-url-type)))
+    (get online-resource-type->related-url-types resource-type su/default-url-type)))
+  su/default-url-type))
 
 (defn- parse-online-resource-urls
   "Parse online resource urls"
   [doc sanitize?]
   (for [resource (select doc "/Collection/OnlineResources/OnlineResource")
         :let [resource-type (value-of resource "Type")
-              [type sub-type] (resource-type->related-url-types
-                                (when resource-type (str/upper-case resource-type)))
-              ;; Check for opendap (case-insensitive) in OnlineResource Type when no defined type is found.
-              ;; This is due to GES_DISC OnlineResource opendap could use any string that contains opendap.
-              ;; See CMR-2555 for details
-              type (or type
-                       (when (and resource-type
-                                  (re-find #"^.*OPENDAP.*$" (str/upper-case resource-type)))
-                         "OPENDAP DATA ACCESS"))
+              url-type (get-url-type resource-type)
               description (value-of resource "Description")]]
-    {:URL (url/format-url (value-of resource "URL") sanitize?)
-     :Description description
-     :Relation (when type [type sub-type])
-     :MimeType (value-of resource "MimeType")}))
+    (merge
+     url-type
+     {:URL (url/format-url (value-of resource "URL") sanitize?)
+      :Description description
+      :MimeType (value-of resource "MimeType")})))
 
 (defn- parse-online-access-urls
   "Parse online access urls"
@@ -77,7 +174,8 @@
     {:URL (url/format-url (value-of resource "URL") sanitize?)
      :Description (value-of resource "URLDescription")
      :MimeType (value-of resource "MimeType")
-     :Relation ["GET DATA"]}))
+     :URLContentType "DistributionURL"
+     :Type "GET DATA"}))
 
 (defn- parse-browse-urls
   "Parse browse urls"
@@ -88,8 +186,8 @@
      :FileSize (when file-size {:Size (/ (Long. file-size) 1024) :Unit "KB"})
      :Description (value-of resource "Description")
      :MimeType (value-of resource "MimeType")
-     :Relation ["GET RELATED VISUALIZATION"]}))
-
+     :URLContentType "VisualizationURL"
+     :Type "GET RELATED VISUALIZATION"}))
 
 (defn parse-related-urls
   "Returns related-urls elements from a parsed XML structure"
