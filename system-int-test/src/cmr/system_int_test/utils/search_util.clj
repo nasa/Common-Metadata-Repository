@@ -655,7 +655,7 @@
       (tk/set-time-override! (tu/n->date-time now-n))
       ;; Freeze time on CMR side
       (side/eval-form 
-        `(do (require 'cmr.common.test.time-util) (tk/set-time-override! (tu/n->date-time now-n))))
+        `(do (require 'cmr.common.test.time-util) (tk/set-time-override! (tu/n->date-time ~now-n))))
       (f)
       (finally
         ;; Resume time in test
