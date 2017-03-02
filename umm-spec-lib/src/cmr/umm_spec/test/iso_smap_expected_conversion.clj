@@ -79,7 +79,7 @@
         (assoc :Projects nil)
         (assoc :PublicationReferences nil)
         (assoc :AncillaryKeywords nil)
-        (assoc :RelatedUrls [su/not-provided-related-url])
+        (assoc :RelatedUrls nil)
         (assoc :ISOTopicCategories nil)
         ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
         ;; Platform Characteristics are also not supported.
