@@ -246,7 +246,7 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
-      (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf)
+      (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif10)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords

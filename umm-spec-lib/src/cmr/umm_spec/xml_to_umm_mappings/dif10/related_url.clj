@@ -21,13 +21,10 @@
   [doc sanitize?]
   (let [multimedia-urls (mapv #(multimedia->RelatedUrl % sanitize?) (select doc "/DIF/Multimedia_Sample"))
         related-urls (for [related-url (select doc "/DIF/Related_URL")]
-                       {:URL (if-let [url (url/format-url (value-of related-url "URL") sanitize?)]
-                                url
-                                (when sanitize? su/not-provided-url))
+                       {:URL (url/format-url (value-of related-url "URL") sanitize?)
                         :Description (value-of related-url "Description")
                         :Relation [(value-of related-url "URL_Content_Type/Type")
                                    (value-of related-url "URL_Content_Type/Subtype")]
                         :MimeType (value-of related-url "Mime_Type")})]
-    (if (or multimedia-urls related-urls)
-     (flatten (seq (into multimedia-urls related-urls)))
-     (when sanitize? (seq su/not-provided-related-url)))))
+    (when (or multimedia-urls related-urls)
+     (flatten (seq (into multimedia-urls related-urls))))))

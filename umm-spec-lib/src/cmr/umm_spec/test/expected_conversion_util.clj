@@ -138,6 +138,16 @@
                (assoc :FileSize nil :MimeType nil)
                (update-in [:URL] #(url/format-url % true)))))))
 
+(defn expected-related-urls-for-dif10
+  "Expected Related URLs for DIF10 concepts"
+  [related-urls]
+  (if (seq related-urls)
+    (seq (for [related-url related-urls]
+           (-> related-url
+               (assoc :FileSize nil :MimeType nil)
+               (update-in [:URL] #(url/format-url % true)))))
+    [su/not-provided-related-url]))
+
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."
   [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles])

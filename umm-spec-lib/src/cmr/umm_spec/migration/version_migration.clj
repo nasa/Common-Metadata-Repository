@@ -196,8 +196,8 @@
 (defn- add-related-urls
   "Add required RelatedUrls in version 1.8 if missing in version 1.9"
   [c]
-  (if-let [_ (:RelatedUrls c)]
-    c
+  (if (seq (:RelatedUrls c))
+    c 
     (assoc c :RelatedUrls [u/not-provided-related-url])))
 
 (defn- migrate-sensor-to-instrument
