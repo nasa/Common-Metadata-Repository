@@ -123,8 +123,6 @@
        :SpatialExtent (spatial/parse-spatial data-id-el sanitize?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
-       :RelatedUrls (when sanitize? [u/not-provided-related-url])
-       ;; Required by UMM-C
        :ProcessingLevel (when sanitize? {:Id u/not-provided})
        ;; DataCenters is not implemented but is required in UMM-C
        :DataCenters (when sanitize? [u/not-provided-data-center])})))

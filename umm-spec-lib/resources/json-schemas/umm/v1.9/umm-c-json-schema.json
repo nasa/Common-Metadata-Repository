@@ -529,7 +529,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/RelatedUrlType"
       },
-      "minItems": 1
+      "minItems": 1 
     },
     "ShortName": {
       "description": "The short name associated with the collection.",
@@ -544,5 +544,5 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/VersionDescriptionType"
     }
   },
-  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DataCenters", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms", "CollectionProgress"]
+  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DataCenters", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms", "CollectionProgress"]
 }

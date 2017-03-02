@@ -193,6 +193,13 @@
       (dissoc :DOI))
     c))
 
+(defn- add-related-urls
+  "Add required RelatedUrls in version 1.8 if missing in version 1.9"
+  [c]
+  (if (seq (:RelatedUrls c))
+    c 
+    (assoc c :RelatedUrls [u/not-provided-related-url])))
+
 (defn- migrate-sensor-to-instrument
  "Migrate from 1.8 to 1.9 sensors to ComposedOf list of instrument child types on
  the instrument"
@@ -232,7 +239,8 @@
       related-url/migrate-down-from-1_9
       (update-in-each [:PublicationReferences] related-url/migrate-online-resource-to-related-url)
       (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)
-      (update-in-each [:Platforms] update-in-each [:Instruments] migrate-instrument-to-sensor)))
+      (update-in-each [:Platforms] update-in-each [:Instruments] migrate-instrument-to-sensor)
+      add-related-urls))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 
