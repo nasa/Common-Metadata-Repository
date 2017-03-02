@@ -136,7 +136,7 @@
     (seq (for [related-url related-urls]
            (-> related-url
                (assoc :FileSize nil :MimeType nil)
-               (update-in [:URL] #(url/format-url % true)))))))
+               (update :URL #(url/format-url % true)))))))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."

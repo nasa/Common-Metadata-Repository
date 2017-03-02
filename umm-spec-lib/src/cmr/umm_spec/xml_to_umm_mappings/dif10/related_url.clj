@@ -26,8 +26,7 @@
                         :Relation [(value-of related-url "URL_Content_Type/Type")
                                    (value-of related-url "URL_Content_Type/Subtype")]
                         :MimeType (value-of related-url "Mime_Type")})
-        related-urls (if (= su/not-provided-url (:URL (first related-urls)))
-                       nil 
+        related-urls (when-not (= su/not-provided-url (:URL (first related-urls)))
                        related-urls)]
     (when (or multimedia-urls related-urls)
      (flatten (seq (into multimedia-urls related-urls))))))
