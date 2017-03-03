@@ -2,10 +2,13 @@
   (require
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
+   [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.revision-format-map :as r]
    [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+
+(use-fixtures :each tk/freeze-resume-time-fixture)
 
 (def all-metadata-formats
   #{:echo10 :iso19115 :dif :dif10 {:format :umm-json :version "1.3"}})
@@ -57,11 +60,11 @@
       (testing (str "To " metadata-format)
         (concept-match? (tm/concept-in-format metadata-format)
                (r/revision-format-map->concept
-                metadata-format revision-format-map-with-all-formats)))))
+                metadata-format (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats))))))
   (testing "With Compressed revision format map"
-    (is (= tm/echo10-concept
+    (is (= (tm/concept-in-format :echo10)
            (r/revision-format-map->concept
-            :echo10 (r/compress revision-format-map-with-all-formats)))))
+            :echo10 (r/compress (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)))))) 
   (testing "With native target format"
     ;; DIF was the native format for sample revision format metadata
     (is (= tm/dif-concept
@@ -80,7 +83,7 @@
             :revision-id (:revision-id tm/dif-concept)
             :native-format :dif
             :dif (:metadata tm/dif-concept)
-            :echo10 (:metadata tm/echo10-concept)
+            :echo10 (:metadata (tm/concept-in-format :echo10))
             {:format :umm-json
              :version "1.3"} (:metadata tm/umm-json-1.3-concept)}
            (r/concept->revision-format-map

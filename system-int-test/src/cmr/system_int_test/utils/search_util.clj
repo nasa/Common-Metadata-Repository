@@ -637,11 +637,6 @@
      (:body response)
      response)))
 
-(def common-now
-  " Need to use this common now-n to lock both the current time
-    in test and on CMR side."
-  (tk/now))
-
 (def now-n
   "The N value for the current time. Uses N values for date times as describd in
   cmr.common.test.time-util."
