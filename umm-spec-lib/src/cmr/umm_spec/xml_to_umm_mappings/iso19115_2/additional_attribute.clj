@@ -34,8 +34,8 @@
           :let [description (first (select aa additional-attribute-xpath))]]
       {:Group (char-string-value description "eos:identifier/gmd:MD_Identifier/gmd:code")
        :Name (char-string-value description "eos:name")
-       :DataType (s/trim
-                  (value-of description "eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
+       :DataType (when-let [data-type (value-of description "eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode")]
+                   (s/trim data-type))
        :Value (char-string-value aa "eos:value")
        :Description (su/with-default (char-string-value description "eos:description") sanitize?)
        :MeasurementResolution (char-string-value description "eos:measurementResolution")
