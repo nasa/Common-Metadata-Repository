@@ -7,6 +7,7 @@
     [clojure.string :as str]
     [clojure.test :refer :all]
     [clojure.java.io :as io]
+    [cmr.common-app.test.side-api :as side]
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as util :refer [are2 are3]]
     [cmr.common.xml :as cx]
@@ -38,8 +39,9 @@
     [cmr.umm.umm-core :as umm]
     [cmr.umm.umm-spatial :as umm-s]))
 
-(use-fixtures :each (ingest/reset-fixture
-                      {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"})
+                       (search/freeze-resume-time-fixture)]))
 
 (comment
  ((ingest/reset-fixture
@@ -85,7 +87,6 @@
          options {:accept (mt/with-version mt/umm-json-results version)}
          response (search/find-concepts-umm-json :collection params options)]
      (du/assert-umm-jsons-match version collections response))))
-
 
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
