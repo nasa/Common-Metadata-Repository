@@ -17,7 +17,7 @@
     :Description "The identifier of the airplane used by the FAA to uniquely identify each aircraft"
     :DataType "STRING"}])
 
-(deftest dif10-metadata-additional-attributes-test
+(deftest iso-metadata-additional-attributes-test
   (testing (str "Parse additional attributes from dataQualityInfo where there are multiple "
                 "eos:EOS_AdditionalAttributeDescription under eos:reference.")
     ;; Note this should be invalid according to xml schema, but xml validation is not catching
