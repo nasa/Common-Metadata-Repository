@@ -1,9 +1,11 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute
   "Functions for parsing UMM additional attribute records out of ISO19115-2 XML documents."
-  (:require [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]))
+  (:require
+   [clojure.string :as s]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
+   [cmr.umm-spec.util :as su]))
 
 (def ^:private content-info-base-xpath
   "Defines the base xpath for the ISO additional Attributes of content information type."
@@ -24,28 +26,25 @@
   "Returns the additional attributes parsed from the given additional attributes elements."
   [aas sanitize?]
   (when aas
-    (for [aa aas]
-      {:Group (char-string-value
-                aa (str additional-attribute-xpath "/eos:identifier/gmd:MD_Identifier/gmd:code"))
-       :Name (char-string-value aa (str additional-attribute-xpath "/eos:name"))
-       :DataType (value-of aa (str additional-attribute-xpath
-                                   "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
+    (for [aa aas
+          ;; ISO19115 schema validation does not catch maxOccurs errors on reference elements.
+          ;; Some ISO19115 xml may have more than one eos:EOS_AdditionalAttributeDescription
+          ;; elements but still passes validation. See CMR-3832.
+          ;; Here we just use the first one, the rest will be dropped.
+          :let [description (first (select aa additional-attribute-xpath))]]
+      {:Group (char-string-value description "eos:identifier/gmd:MD_Identifier/gmd:code")
+       :Name (char-string-value description "eos:name")
+       :DataType (s/trim
+                  (value-of description "eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
        :Value (char-string-value aa "eos:value")
-       :Description (su/with-default
-                      (char-string-value aa (str additional-attribute-xpath "/eos:description"))
-                      sanitize?)
-       :MeasurementResolution (char-string-value aa (str additional-attribute-xpath
-                                                         "/eos:measurementResolution"))
-       :ParameterRangeBegin (char-string-value aa (str additional-attribute-xpath
-                                                       "/eos:parameterRangeBegin"))
-       :ParameterRangeEnd (char-string-value aa (str additional-attribute-xpath
-                                                     "/eos:parameterRangeEnd"))
-       :ParameterUnitsOfMeasure (char-string-value aa (str additional-attribute-xpath
-                                                           "/eos:parameterUnitsOfMeasure"))
-       :ParameterValueAccuracy (char-string-value aa (str additional-attribute-xpath
-                                                          "/eos:parameterValueAccuracy"))
-       :ValueAccuracyExplanation (char-string-value aa (str additional-attribute-xpath
-                                                            "/eos:valueAccuracyExplanation"))})))
+       :Description (su/with-default (char-string-value description "eos:description") sanitize?)
+       :MeasurementResolution (char-string-value description "eos:measurementResolution")
+       :ParameterRangeBegin (char-string-value description "eos:parameterRangeBegin")
+       :ParameterRangeEnd (char-string-value description "eos:parameterRangeEnd")
+       :ParameterUnitsOfMeasure (char-string-value description "eos:parameterUnitsOfMeasure")
+       :ParameterValueAccuracy (char-string-value description "eos:parameterValueAccuracy")
+       :ValueAccuracyExplanation (char-string-value
+                                  description "eos:valueAccuracyExplanation")})))
 
 (defn- parse-content-info-additional-attributes
   "Returns the additional attributes parsed from contentInfo path of the given xml document."
