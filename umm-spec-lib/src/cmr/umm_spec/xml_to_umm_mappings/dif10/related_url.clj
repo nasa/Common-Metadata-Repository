@@ -13,7 +13,6 @@
    (fn [url]
      {:URL url
       :Description (value-of multimedia-sample "Description")
-      :Relation ["GET RELATED VISUALIZATION"]
       :URLContentType "VisualizationURL"
       :Type "GET RELATED VISUALIZATION"})
    (values-at multimedia-sample "URL")))

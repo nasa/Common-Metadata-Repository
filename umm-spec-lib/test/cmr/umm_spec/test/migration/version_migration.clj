@@ -17,7 +17,8 @@
   {:ContactGroups [{:Roles ["Investigator"]}
                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                    :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
-                                                       :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                       :URLContentType "DataContactURL"
+                                                       :Type "HOME PAGE"
                                                        :URL "www.contact.group.foo.com"
                                                        :MimeType "application/html"}]
                                         :ServiceHours "Weekdays 9AM - 5PM"
@@ -30,17 +31,21 @@
                                                      :Country "U.S.A."}]}
                    :GroupName "NSIDC_IceBridge"]
    :RelatedUrls [{:Description "Contact group related url description"
-                  :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                  :URLContentType "DistributionURL"
+                  :Type "GET DATA"
+                  :Subtype "ECHO"
                   :URL "www.contact.group.foo.com"
                   :MimeType "application/html"}]
    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                         :URLContentType "DataContactURL"
+                                                         :Type "HOME PAGE"
                                                          :URL "www.contact.foo.com"
                                                          :MimeType "application/html"}
                                                         {:Description "Contact related url description"
-                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                         :URLContentType "DataContactURL"
+                                                         :Type "HOME PAGE"
                                                          :URL "www.contact.shoo.com"
                                                          :MimeType "application/html"}]
                                           :ServiceHours "Weekdays 9AM - 5PM"
@@ -60,11 +65,13 @@
                   :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                     :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URLContentType "DataContactURL"
+                                                                        :Type "HOME PAGE"
                                                                         :URL "www.contact.shoo.com"
                                                                         :MimeType "application/html"}
                                                                        {:Description "Contact related url description"
-                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URLContentType "DataContactURL"
+                                                                        :Type "HOME PAGE"
                                                                         :URL "www.contact.shoo.com"
                                                                         :MimeType "application/html"}]
                                                          :ServiceHours "Weekdays 9AM - 5PM"
@@ -87,11 +94,13 @@
                   :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                     :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URLContentType "DataContactURL"
+                                                                        :Type "HOME PAGE"
                                                                         :URL "www.contact.shoo.com"
                                                                         :MimeType "application/html"}
                                                                        {:Description "Contact related url description"
-                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                        :URLContentType "DataContactURL"
+                                                                        :Type "HOME PAGE"
                                                                         :URL "www.contact.shoo.com"
                                                                         :MimeType "application/html"}]
                                                          :ServiceHours "Weekdays 9AM - 5PM"
@@ -110,11 +119,13 @@
                   :ShortName "NSIDC"
                   :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
                   :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                      :URLContentType "DataCentertURL"
+                                                      :Type "HOME PAGE"
                                                       :URL "www.contact.foo.com"
                                                       :MimeType "application/html"}
                                                      {:Description "Contact related url description"
-                                                      :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                      :URLContentType "DataCentertURL"
+                                                      :Type "HOME PAGE"
                                                       :URL "www.contact.shoo.com"
                                                       :MimeType "application/html"}]
                                        :ServiceHours "Weekdays 9AM - 5PM"
@@ -130,7 +141,8 @@
                   :ContactGroups [{:Roles ["Investigator"]
                                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                                    :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
-                                                                       :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                                                                       :URLContentType "DataContactURL"
+                                                                       :Type "HOME PAGE"
                                                                        :URL "www.contact.group.foo.com"
                                                                        :MimeType "application/html"}]
                                                         :ServiceHours "Weekdays 9AM - 5PM"
@@ -176,7 +188,17 @@
                     :GroupName "NSIDC_IceBridge"}]
    :RelatedUrls [{:Description "Contact group related url description"
                   :Title "Just when you thought titles couldn't get any better"
-                  :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+                  :Relation ["VIEW RELATED INFORMATION" "USER FEEDBACK"]
+                  :URLs ["www.contact.group.foo.com"]
+                  :MimeType "application/html"}
+                 {:Description "Contact group related url description"
+                  :Title "Just when you thought titles couldn't get any better"
+                  :Relation ["GET DATA"]
+                  :URLs ["www.contact.group.foo.com" "www.google.com"]
+                  :MimeType "application/html"}
+                 {:Description "Contact group related url description"
+                  :Title "Just when you thought titles couldn't get any better"
+                  :Relation ["INVALID" "X"]
                   :URLs ["www.contact.group.foo.com"]
                   :MimeType "application/html"}]
    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
@@ -798,46 +820,74 @@
           collection-contact-persons (:RelatedUrls (:ContactInformation (first (:ContactPersons result))))
           collection-urls (:RelatedUrls result)]
       (is (= [{:Description "Contact group related url description"
-               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+               :URLContentType "PublicationURL"
+               :Type "VIEW RELATED INFORMATION"
+               :Subtype "USER FEEDBACK"
+               :URL "www.contact.group.foo.com"
+               :MimeType "application/html"}
+              {:Description "Contact group related url description"
+               :URLContentType "DistributionURL"
+               :Type "GET DATA"
+               :Subtype nil
+               :URL "www.contact.group.foo.com"
+               :MimeType "application/html"}
+              {:Description "Contact group related url description"
+               :URLContentType "DistributionURL"
+               :Type "GET DATA"
+               :Subtype nil
+               :URL "www.google.com"
+               :MimeType "application/html"}
+              {:Description "Contact group related url description"
+               :URLContentType "PublicationURL"
+               :Type "VIEW RELATED INFORMATION"
+               :Subtype "GENERAL DOCUMENTATION"
                :URL "www.contact.group.foo.com"
                :MimeType "application/html"}]
              collection-urls))
-      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
-               :URL "www.contact.foo.com",
-               :Description "Contact related url description"}
-              {:Description "Contact related url description",
-               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
-               :URL "www.contact.shoo.com"}]
+      (is (= [{:MimeType "application/html"
+               :URL "www.contact.foo.com"
+               :Description "Contact related url description"
+               :URLContentType "DataContactURL"
+               :Type "HOME PAGE"}
+              {:Description "Contact related url description"
+               :MimeType "application/html"
+               :URL "www.contact.shoo.com"
+               :URLContentType "DataContactURL"
+               :Type "HOME PAGE"}]
              data-center-contact-persons))
       (is (= [{:Description "Contact group related url description"
-               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                :URL "www.contact.group.foo.com"
-               :MimeType "application/html"}]
+               :MimeType "application/html"
+               :URLContentType "DataContactURL"
+               :Type "HOME PAGE"}]
              data-center-contact-groups))
-      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+      (is (= [{:MimeType "application/html",
                :URL "www.contact.foo.com",
-               :Description "Contact related url description"}
+               :Description "Contact related url description"
+               :URLContentType "DataCenterURL"
+               :Type "HOME PAGE"}
               {:Description "Contact related url description",
-               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URL "www.contact.shoo.com"}]
+               :URL "www.contact.shoo.com"
+               :URLContentType "DataCenterURL"
+               :Type "HOME PAGE"}]
              data-center-contact-information))
-      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+      (is (= [{:MimeType "application/html",
                :URL "www.contact.foo.com",
-               :Description "Contact related url description"}
+               :Description "Contact related url description"
+               :URLContentType "DataContactURL"
+               :Type "HOME PAGE"}
               {:Description "Contact related url description",
-               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
                :MimeType "application/html",
-               :URL "www.contact.shoo.com"}]
+               :URL "www.contact.shoo.com"
+               :URLContentType "DataContactURL"
+               :Type "HOME PAGE"}]
              collection-contact-persons))
-      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+      (is (= [{:MimeType "application/html",
                :URL "www.contact.group.foo.com",
-               :Description "Contact group related url description"}]
+               :Description "Contact group related url description"
+               :URLContentType "DataContactURL"
+               :Type "HOME PAGE"}]
              collection-contact-groups)))))
 
 
@@ -919,30 +969,25 @@
           data-center-contact-groups (get-in (first (:ContactGroups (nth (:DataCenters result) 2))) [:ContactInformation :RelatedUrls])
           collection-contact-persons (get-in (first (:ContactPersons result)) [:ContactInformation :RelatedUrls])]
       (is (= [{:Description "Contact group related url description"
-               :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
+               :Relation ["GET DATA" "ECHO"]
                :MimeType "application/html"
                :URLs ["www.contact.group.foo.com"]}]
              (:RelatedUrls result)))
-      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+      (is (= [{:MimeType "application/html",
                :URLs ["www.contact.shoo.com"],
                :Description "Contact related url description"}
-              {:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+              {:MimeType "application/html",
                :URLs ["www.contact.shoo.com"],
                :Description "Contact related url description"}]
              data-center-contact-persons))
-      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+      (is (= [{:MimeType "application/html",
                :URLs ["www.contact.group.foo.com"],
                :Description "Contact group related url description"}]
              data-center-contact-groups))
-      (is (= [{:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+      (is (= [{:MimeType "application/html",
                :URLs ["www.contact.foo.com"],
                :Description "Contact related url description"}
-              {:Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"],
-               :MimeType "application/html",
+              {:MimeType "application/html",
                :URLs ["www.contact.shoo.com"],
                :Description "Contact related url description"}]
              collection-contact-persons)))))

@@ -136,19 +136,16 @@
     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
     :RelatedUrls [{:Description "Related url description"
-                   :Relation ["GET DATA" "ECHO"]
                    :URL "www.foo.com"
                    :MimeType "mime type"
                    :URLContentType "DistributionURL"
                    :Type "GET DATA"
                    :Subtype "ECHO"}
                   {:Description "Related url 3 description "
-                   :Relation ["GET SERVICE"]
                    :URL "www.foo.com"
                    :URLContentType "DistributionURL"
                    :Type "GET SERVICE"}
                   {:Description "Related url 2 description"
-                   :Relation ["GET RELATED VISUALIZATION" "WORLDVIEW"]
                    :URL "www.foo.com"
                    :FileSize {:Size 10.0 :Unit "MB"}
                    :URLContentType "VisualizationURL"
@@ -190,7 +187,6 @@
     :ContactGroups [{:Roles ["Investigator"]
                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                      :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
-                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                          :URL "www.contact.group.foo.com"
                                                          :MimeType "application/html"
                                                          :URLContentType "DataContactURL"
@@ -207,7 +203,6 @@
     :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                       :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                       :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                          :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                           :URL "www.contact.foo.com"
                                                           :MimeType "application/html"
                                                           :URLContentType "DataContactURL"
@@ -229,7 +224,6 @@
                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                          :URL "www.contact.foo.com"
                                                                          :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
@@ -254,7 +248,6 @@
                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                         :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                          :URL "www.contact.shoes.com"
                                                                          :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
@@ -275,7 +268,6 @@
                    :ShortName "NSIDC"
                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                       :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                        :URL "www.contact.shoo.com"
                                                        :MimeType "application/html"
                                                        :URLContentType "DataCenterURL"
@@ -293,7 +285,6 @@
                    :ContactGroups [{:Roles ["Investigator"]
                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                                     :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
-                                                                        :Relation ["VIEW RELATED INFORMATION" "USER SUPPORT"]
                                                                         :URL "www.contact.group.foo.com"
                                                                         :MimeType "application/html"
                                                                         :URLContentType "DataContactURL"
@@ -329,7 +320,6 @@
               :ServiceCitation [{:Creator "NASA Goddard Earth Sciences (GES) Data and Information Services Center (DISC)"
                                  :Title "OGC Web Coverage Service (WCS) for accessing Atmospheric Infrared Sounder (AIRS) Data"}]
               :RelatedUrls [{:Description "\n   This Web Coverage Service (WCS) is one of the multiple GES DISC data service instances used to provide gridded Level 3 Atmospheric Infrared Sounder (AIRS) data products. Accessing to this URL will result in a brief description of coverages (i.e., data layers or variables), or a getCapabilities response. A client can request more detailed information about the served coverages by sending a describeCoverage request to the server. Finally, a client can request actual data using a getCoverage request. \n"
-                             :Relation ["GET SERVICE" "GET WEB COVERAGE SERVICE (WCS)"]
                              :URLContentType "DistributionURL"
                              :Type "GET SERVICE"
                              :Subtype "GET WEB COVERAGE SERVICE (WCS)"

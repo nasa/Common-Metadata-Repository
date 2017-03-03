@@ -61,9 +61,12 @@
                       "GET DATA"
                       (when name (resource-name->types name)))
                url-link (value-of url "gmd:linkage/gmd:URL")]]
-     {:URL (when url-link (url/format-url url-link sanitize?))
-      :Description (char-string-value url "gmd:description")
-      :Relation (when type [type])})))
+     (merge
+      su/default-url-type
+      {:URL (when url-link (url/format-url url-link sanitize?))
+       :Description (char-string-value url "gmd:description")
+       :Relation (when type [type])}))))
+
 
 (defn- parse-browse-graphics
   "Parse browse graphic urls"
@@ -73,10 +76,12 @@
         ;; outcome of ECSE-129.
         :let [browse-url (or (value-of url "gmd:fileName/gmx:FileName/@src")
                              (value-of url "gmd:fileName/gco:CharacterString"))]]
-    {:URL (when browse-url (url/format-url browse-url sanitize?))
-     :Description (char-string-value url "gmd:fileDescription")
-     :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
-                 [rel])}))
+    (merge
+     su/default-url-type
+     {:URL (when browse-url (url/format-url browse-url sanitize?))
+      :Description (char-string-value url "gmd:fileDescription")
+      :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
+                  [rel])})))
 
 (defn parse-related-urls
   "Parse related-urls present in the document"

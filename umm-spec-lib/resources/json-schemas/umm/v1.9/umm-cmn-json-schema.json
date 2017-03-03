@@ -280,16 +280,16 @@
           }
         },
         "URLContentType": {
-          "description": "The content type of the URL",
-          "$ref": "#/definitions/URLContentTypeEnum"
+            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+            "$ref": "#/definitions/RelatedURLContentTypeEnum"
         },
         "Type": {
-          "description": "An enumerated type based on the URLContentType",
-          "$ref": "#/definitions/URLTypeEnum"
+            "description": "An keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+            "$ref": "#/definitions/RelatedUrlTypeEnum"
         },
         "Subtype": {
-          "description": "An enumerated subtype based on the URLContentType and Type",
-          "$ref": "#/definitions/URLSubtypeEnum"
+            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+            "$ref": "#/definitions/RelatedURLSubTypeEnum"
         },
         "URL": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
@@ -1464,17 +1464,17 @@
       "type": "string",
       "enum": ["CARTESIAN", "GEODETIC", "ORBIT", "NO_SPATIAL"]
     },
-    "URLContentTypeEnum": {
+    "RelatedURLContentTypeEnum": {
       "type": "string",
       "enum": ["CollectionURL", "PublicationURL", "DataCenterURL", "DistributionURL", "DataContactURL", "VisualizationURL"]
     },
-    "URLTypeEnum": {
+    "RelatedUrlTypeEnum": {
       "type": "string",
       "enum": ["GET DATA", "GET SERVICE", "GET RELATED VISUALIZATION", "DATA SET LANDING PAGE", "DOI",
                "EXTENDED METADATA", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION",
                "HOME PAGE"]
     },
-    "URLSubtypeEnum": {
+    "RelatedURLSubTypeEnum": {
       "type": "string",
       "enum": ["DATACAST URL", "EARTHDATA SEARCH", "ECHO", "EDG", "EOSDIS DATA POOL", "GDS", "GIOVANNI", "KML",
                "LAADS", "LANCE", "LAS", "MIRADOR", "MODAPS", "NOAA CLASS", "ON-LINE ARCHIVE", "REVERB",

@@ -18,7 +18,7 @@
  and Subtype."
  {"VIEW RELATED INFORMATION" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "DOI URL" {:URLContentType "CollectionURL", :Type "DOI"}
-  "BROWSE" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "BROWSE" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
   "Guide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "Homepage" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
   "Software" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
@@ -29,17 +29,17 @@
   "GET DATA : REVERB" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "REVERB"}
   "GET DATA : ON-LINE ARCHIVE" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ON-LINE ARCHIVE"}
   "Data Tool/Application" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
-  "Browse" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "Browse" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
   "Collection Quality Summary" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "DATA QUALITY"}
   "GET DATA : OPENDAP DATA (DODS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "OPENDAP DATA (DODS)"}
   "GET DATA : ECHO" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ECHO"}
   "VIEW PROJECT HOME PAGE" {:URLContentType "CollectionURL", :Type "PROJECT HOME PAGE"}
-  "GET RELATED VISUALIZATION" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "GET RELATED VISUALIZATION" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
   "GET DATA : SSW" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "SSW"}
   "GET SERVICE : GET WEB MAP SERVICE (WMS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "WEB MAP SERVICE (WMS)"}
   "GET SERVICE : GET WEB COVERAGE SERVICE (WCS)" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "WEB COVERAGE SERVICE (WCS)"}
   "GET DATA : DATACAST URL" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "DATACAST URL"}
-  "BROWSE SAMPLE" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "BROWSE SAMPLE" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
   "PI Documentation" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PI DOCUMENTATION"}
   "DatasetDisclaimer" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "ECSCollGuide" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
@@ -87,11 +87,11 @@
   "Type:GET DATA Subtype:ECHO" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "ECHO"}
   "Type:GET DATA Subtype:LAADS" {:URLContentType "DistributionURL", :Type "GET DATA", :Subtype "LAADS"}
   "Alternate Data Access" {:URLContentType "DistributionURL", :Type "GET DATA"}
-  "Worldview Imagery" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION", :Subtype "GIBS"}
+  "Worldview Imagery" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION", :Subtype "GIBS"}
   "GET SERVICE" {:URLContentType "DistributionURL", :Type "GET SERVICE"}
   "PORTAL_DA_READ_SOFTWARE" {:URLContentType "DistributionURL", :Type "GET SERVICE", :Subtype "SOFTWARE PACKAGE"}
   "PORTAL_DOC_USERS_GUIDE" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "USER'S GUIDE"}
-  "Thumbnail" {:URLContentType "VisualizationURL", :Type "GET RELEATED VISUALIZATION"}
+  "Thumbnail" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION"}
   "Reference" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}
   "PORTAL_DOC_JOURNAL_REFERENCES" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "PUBLICATIONS"}
   "PORTAL_DOC_ADDITIONAL_SITES" {:URLContentType "PublicationURL", :Type "VIEW RELATED INFORMATION", :Subtype "GENERAL DOCUMENTATION"}

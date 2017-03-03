@@ -7,7 +7,6 @@
   (testing "parse related urls from Multimedia_Sample"
     (is (= [{:URL "http://disc.sci.gsfc.nasa.gov/OCO-2/images/ACOS.xCO2.2013.v3.5.png"
              :Description " Global amounts of column CO2 in 2013, ..."
-             :Relation ["GET RELATED VISUALIZATION"]
              :URLContentType "VisualizationURL"
              :Type "GET RELATED VISUALIZATION"}]
            (ru/parse-related-urls
@@ -24,7 +23,6 @@
   (testing "parse realted urls from Related_URL and Multimedia_Sample together"
     (is (= [{:URL "http://disc.sci.gsfc.nasa.gov/OCO-2/images/ACOS.xCO2.2013.v3.5.png"
              :Description " Global amounts of column CO2 in 2013, ..."
-             :Relation ["GET RELATED VISUALIZATION"]
              :URLContentType "VisualizationURL"
              :Type "GET RELATED VISUALIZATION"}
             {:URL "http://reverb.echo.nasa.gov/reverb/"

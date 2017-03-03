@@ -813,8 +813,9 @@ __Example__
       "EntryTitle" : "et1",
       "RelatedUrls" : [ {
         "Description" : "description648",
-        "Relation" : [ "GET DATA" ],
-        "URLs" : [ "http://example.com/file649" ]
+        "URLContentType" : "DistributionURL",
+        "Type" : "GET DATA" ,
+        "URL" : "http://example.com/file649"
       } ],
       "DataDates" : [ {
         "Date" : "2012-01-11T10:00:00.000Z",
@@ -1271,7 +1272,7 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 #### <a name="c-keyword"></a> Find collections by keyword (free text) search
 
-Keyword searches are case insensitive and support wild cards ? and *. 
+Keyword searches are case insensitive and support wild cards ? and *.
 There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword
 string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
 

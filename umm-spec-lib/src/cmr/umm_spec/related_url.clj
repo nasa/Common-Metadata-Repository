@@ -33,7 +33,7 @@
 (defn- documentation-url?
   "Returns true if the related-url is documentation url"
   [related-url]
-  (= "PublicationURL" (:URLContentType)))
+  (= "PublicationURL" (:URLContentType related-url)))
 
 (defn resource-url?
   "Returns true if the related-url is resource url"
@@ -51,8 +51,7 @@
  them to an abbreviation"
  {"ALGORITHM THEORETICAL BASIS DOCUMENT" "ALGORITHM THEO BASIS"
   "CALIBRATION DATA DOCUMENTATION" "CALIBRATION DATA"
-  "PRODUCT QUALITY ASSESSMENT" "PRODUCT QUALITY"
-  "WORKFLOW (SERVICE CHAIN)" "WORKFLOW"})
+  "PRODUCT QUALITY ASSESSMENT" "PRODUCT QUALITY"})
 
 (defn related-url->online-resource-type
  "Format the online resource type to be 'URLContentType : Type' if no subtype
@@ -79,10 +78,6 @@
   [related-url]
   (let [{url :URL mime-type :MimeType {:keys [Size Unit]} :FileSize} related-url
         size (when (or Size Unit) (str Size Unit))]
-    ;; The current UMM JSON RelatedUrlType is flawed in that there can be multiple URLs,
-    ;; but only a single MimeType and FileSize. This model doesn't make sense.
-    ;; Talked to Erich and he said that we are going to change the model.
-    ;; So for now, we make the assumption that there is only one URL in each RelatedUrlType.
     {:href url
      :link-type (related-url->link-type related-url)
      :mime-type mime-type
@@ -135,12 +130,10 @@
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
   (when-let [urls (seq (browse-urls related-urls))]
-    [:AssociatedBrowseImageUrls
-     (for [related-url urls
-           :let [{:keys [Description MimeType] {:keys [Size Unit]} :FileSize} related-url
-                 file-size (convert-to-bytes Size Unit)]]
-       [:ProviderBrowseUrl
-        [:URL (:URL related-url)]
-        [:FileSize (when file-size (int file-size))]
-        [:Description Description]
-        [:MimeType MimeType]])]))
+     [:AssociatedBrowseImageUrls
+      (for [related-url urls
+            :let [{:keys [Description MimeType]} related-url]]
+        [:ProviderBrowseUrl
+         [:URL (:URL related-url)]
+         [:Description Description]
+         [:MimeType MimeType]])]))

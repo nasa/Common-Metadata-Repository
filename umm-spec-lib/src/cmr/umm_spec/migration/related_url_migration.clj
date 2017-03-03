@@ -30,6 +30,31 @@
         (dissoc :OnlineResource))
     element))
 
+(defn- url-content-type->relation
+ "Convert the Type and Subtype of the URLContentType to Relation"
+ [related-url]
+ (let [{:keys [Type Subtype]} related-url
+       relation (if Subtype
+                 [Type Subtype]
+                 [Type])]
+  (-> related-url
+      (assoc :Relation relation)
+      (dissoc :URLContentType :Type :Subtype))))
+
+(defn relation->url-content-type
+ "Get the URLContentType from relation or use default if a conversion is not
+ possible"
+ [related-url]
+ (let [[type subtype] (:Relation related-url)
+       url-content-type (util/type->url-content-type type)
+       url-content-type (if url-content-type
+                         {:URLContentType url-content-type
+                          :Type type
+                          :Subtype subtype}
+                         util/default-url-type)
+       related-url (dissoc related-url :Relation)]
+   (merge related-url url-content-type)))
+
 (defn url->array-of-urls
   "UMM spec versions 1.8 and lower's RelatedUrls contain an array of URLs.
   This function changes the :URL url of a RelatedUrl to :URLs [urls]"
@@ -38,7 +63,7 @@
          (if-let [url (:URL related-url)]
           (-> related-url
            (assoc :URLs [url])
-           (dissoc :URL :URLContentType :Type :Subtype))
+           (dissoc :URL))
           related-url))
         related-urls))
 
@@ -65,7 +90,14 @@
   [contacts]
   (mapv (fn [contact]
          (if (seq (:ContactInformation contact))
-          (update-in contact [:ContactInformation :RelatedUrls] array-of-urls->url)
+          (-> contact
+           (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)
+           (update-in-each [:ContactInformation :RelatedUrls]
+             (fn [related-url]
+               (-> related-url
+                   (assoc :URLContentType "DataContactURL")
+                   (assoc :Type "HOME PAGE")
+                   (dissoc :Relation)))))
           contact))
         contacts))
 
@@ -74,7 +106,10 @@
   [contacts]
   (for [contact contacts]
    (if (seq (:ContactInformation contact))
-    (update-in contact [:ContactInformation :RelatedUrls] url->array-of-urls)
+    (-> contact
+        (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)
+        (update-in-each [:ContactInformation :RelatedUrls]
+          #(dissoc % :URLContentType :Type :Subtype)))
     contact)))
 
 (defn migrate-data-centers-up
@@ -85,7 +120,13 @@
               (update :ContactGroups migrate-contacts-up)
               (update :ContactPersons migrate-contacts-up)
               (update :ContactInformation dissoc-titles-from-contact-information)
-              (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)))
+              (update-in [:ContactInformation :RelatedUrls] array-of-urls->url)
+              (update-in-each [:ContactInformation :RelatedUrls]
+                (fn [related-url]
+                  (-> related-url
+                      (assoc :URLContentType "DataCenterURL")
+                      (assoc :Type "HOME PAGE")
+                      (dissoc :Relation))))))
         data-centers))
 
 (defn migrate-data-centers-down
@@ -97,7 +138,9 @@
            (-> data-center
                (update :ContactGroups migrate-contacts-down)
                (update :ContactPersons migrate-contacts-down)
-               (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)))
+               (update-in [:ContactInformation :RelatedUrls] url->array-of-urls)
+               (update-in-each [:ContactInformation :RelatedUrls]
+                 #(dissoc % :URLContentType :Type :Subtype))))
          data-centers)
    data-centers))
 
@@ -106,6 +149,7 @@
   [collection]
   (-> collection
    (update :RelatedUrls url->array-of-urls)
+   (update-in-each [:RelatedUrls] url-content-type->relation)
    (update :ContactGroups migrate-contacts-down)
    (update :ContactPersons migrate-contacts-down)
    (update :DataCenters migrate-data-centers-down)))

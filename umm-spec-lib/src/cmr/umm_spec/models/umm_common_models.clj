@@ -684,16 +684,13 @@
    ;; Description of the web page at this URL.
    Description
 
-   ;; An array of keywords describing the relation of the online resource to this resource.
-   Relation
-
-   ;; The content type of the URL
+   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
    URLContentType
 
-   ;; An enumerated type based on the URLContentType
+   ;; An keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
    Type
 
-   ;; An enumerated subtype based on the URLContentType and Type
+   ;; A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').
    Subtype
 
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,

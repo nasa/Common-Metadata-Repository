@@ -46,8 +46,8 @@
 (defn two-ds
   "Returns a sequence of two-d-coordinate-systems with the given names"
   [& names]
-  (map two-d names)) 
-  
+  (map two-d names))
+
 (defn product
   [attribs]
   (let [attribs (select-keys attribs (util/record-fields Product))
@@ -150,7 +150,7 @@
   "Return a platform with a list of instruments"
   [short-name & instr-short-names]
   (let [instruments (apply instruments instr-short-names)]
-    (c/map->Platform {:short-name short-name 
+    (c/map->Platform {:short-name short-name
                       :long-name (d/unique-str "long-name")
                       :type (d/unique-str "Type")
                       :instruments instruments})))
@@ -159,7 +159,7 @@
   "Return a platform with an instrument and a list of sensors"
   [plat-short-name instr-short-name & sensor-short-names]
   (let [instr-with-sensors (apply instrument-with-sensors instr-short-name sensor-short-names)]
-    (c/map->Platform {:short-name plat-short-name 
+    (c/map->Platform {:short-name plat-short-name
                       :long-name (d/unique-str "long-name")
                       :type (d/unique-str "Type")
                       :instruments [instr-with-sensors]})))
@@ -265,7 +265,7 @@
                                                              :instruments [(instrument {:short-name "inst"})]})]
                                       :projects (projects "proj")
                                       :spatial-coverage (spatial {:gsr :cartesian})
-                                      :related-urls [(related-url {:type "type" :url "htt://www.foo.com"})]
+                                      :related-urls [(related-url {:type nil :url "htt://www.foo.com"})]
                                       :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                       :ending-date-time "1967-12-12T07:00:00.000-05:00"}
          attribs (merge required-extra-dif10-fields attribs)]

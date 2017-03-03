@@ -58,7 +58,9 @@
   (condp = URLContentType
    "DistributionURL" (if (= "GET DATA" Type)
                        (dissoc related-url :Subtype)
-                       related-url)
+                       (if Subtype
+                        (merge related-url (get-url-type-by-type Type Subtype))
+                        related-url))
    "VisualizationURL" (-> related-url
                           (assoc :Type "GET RELATED VISUALIZATION")
                           (dissoc :Subtype))
@@ -72,15 +74,8 @@
     (for [related-url related-urls]
      (cmn/map->RelatedUrlType
       (-> related-url
-          (update-in [:FileSize] (fn [file-size]
-                                   (when (and file-size
-                                              (= (:URLContentType related-url)
-                                                 "VisualizationURL"))
-                                     (when-let [byte-size (ru-gen/convert-to-bytes
-                                                           (:Size file-size) (:Unit file-size))]
-                                       (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
           expected-related-url-type
-          (dissoc :Relation)
+          (dissoc :Relation :FileSize)
           (update :URL url/format-url true))))
    [su/not-provided-related-url]))
 

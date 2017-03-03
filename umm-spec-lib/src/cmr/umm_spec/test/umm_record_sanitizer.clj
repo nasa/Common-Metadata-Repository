@@ -6,7 +6,8 @@
   (:require
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as test]
-   [cmr.common.util :as util :refer [update-in-each]]))
+   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.util :as spec-util]))
 
 (defn- set-if-exist
   "Sets the field of the given record to the value if the field has a value, returns the record."
@@ -35,19 +36,37 @@
                                    sk)))))
 
 
+(defn- generate-valid-type-and-subtype-for-url-content-type
+ [url-content-type]
+ (let [valid-types (gen/elements (spec-util/valid-types-for-url-content-type url-content-type))
+       types (gen/sample valid-types 1)
+       valid-subtypes (spec-util/valid-subtypes-for-type type)
+       subtypes (when valid-subtypes (gen/sample (gen/elements valid-subtypes) 1))]
+  {:Type (first types)
+   :Subtype (first subtypes)}))
+
 (defn- sanitize-related-url
   "Returns a single sanitized RelatedUrl"
   [entry]
   (if-let [urls (get-in entry [:RelatedUrl :URL])]
-    (assoc-in entry [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
+    (let [url-content-type (get-in entry [:RelatedUrl :URLContentType])
+          {:keys [Type Subtype]} (generate-valid-type-and-subtype-for-url-content-type url-content-type)]
+      (-> entry
+          (assoc-in [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
+          (assoc-in [:RelatedUrl :Type] Type)
+          (assoc-in [:RelatedUrl :Subtype] Subtype)))
     entry))
 
 (defn- sanitize-related-urls
   "Returns a list of sanitized related urls"
   [related-urls]
   (when related-urls
-   (for [ru related-urls]
-    (assoc ru :URL (first (gen/sample test/file-url-string 1))))))
+   (for [ru related-urls
+         :let [type-subtype
+               (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru))]]
+    (merge
+     (assoc ru :URL (first (gen/sample test/file-url-string 1)))
+     type-subtype))))
 
 (defn- sanitize-contact-informations
   "Sanitize a record with ContactInformation"

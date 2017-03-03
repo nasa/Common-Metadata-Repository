@@ -136,7 +136,7 @@
  (let [url-type (util/remove-nil-keys
                  (select-keys related-url [:URLContentType :Type :Subtype]))
        dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)]
-  (dif-util/dif-url-content-type->umm-url-types dif-content-type)))
+  (get dif-util/dif-url-content-type->umm-url-types dif-content-type su/default-url-type)))
 
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
@@ -148,9 +148,9 @@
             (merge
              url-type
              (-> related-url
-                 (assoc :FileSize nil :MimeType nil :Relation nil)
+                 (assoc :FileSize nil :MimeType nil)
                  (update-in [:URL] #(url/format-url % true))
-                 (dissoc :URLContentType :Type :Subtype))))))
+                 (dissoc :URLContentType :Type :Subtype :Relation))))))
     [su/not-provided-related-url]))
 
 (def bounding-rectangles-path
