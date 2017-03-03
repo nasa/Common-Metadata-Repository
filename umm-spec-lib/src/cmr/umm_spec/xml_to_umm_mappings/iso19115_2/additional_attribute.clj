@@ -30,8 +30,8 @@
           ;; ISO19115 schema validation does not catch maxOccurs errors on reference elements.
           ;; Some ISO19115 xml may have more than one eos:EOS_AdditionalAttributeDescription
           ;; elements but still passes validation. See CMR-3832.
-          ;; Here we just use the first one, the rest will be dropped.
-          :let [description (first (select aa additional-attribute-xpath))]]
+          ;; Here we just parse out all descriptions as additional attributes.
+          description (select aa additional-attribute-xpath)]
       {:Group (char-string-value description "eos:identifier/gmd:MD_Identifier/gmd:code")
        :Name (char-string-value description "eos:name")
        :DataType (when-let [data-type (value-of description "eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode")]
