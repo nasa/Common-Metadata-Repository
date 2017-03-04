@@ -71,7 +71,7 @@
 (defn- parse-related-urls
   "Returns a list of related urls. Each URL will be put into its own RelatedUrl object comply with UMM spec v1.9"
   [doc sanitize?]
-  (if-let [related-urls (seq (select doc "/DIF/Related_URL"))]
+  (when-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
           url (values-at related-url "URL")
           :let [description (value-of related-url "Description")
@@ -82,9 +82,7 @@
       (merge
        url-type
        {:URL (url/format-url url sanitize?)
-        :Description description}))
-    (when sanitize?
-      [su/not-provided-related-url])))
+        :Description description}))))
 
 (defn parse-temporal-extents
  "Return a list of temporal extents from the XML doc"

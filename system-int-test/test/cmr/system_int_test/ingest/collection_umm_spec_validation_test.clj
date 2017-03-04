@@ -69,7 +69,7 @@
                                                 (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                                {:allow-failure? true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
 
     (testing "schema validation errors not returned"
@@ -84,7 +84,7 @@
                                                         (dc/psa {:name "bool2" :data-type :boolean :value true})]})
                                {:allow-failure? true :validate-umm-c true})]
         (is (= {:status 422
-                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
+                :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
 
     (testing "schema validation error returns is controlled by config setting when Cmr-Validate-Umm-C header is NOT true"
@@ -220,20 +220,20 @@
               (is (= warning-message (:warnings response)))))
 
           "ECHO10 Ingest and Ingest Validation"
-          :echo10 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :echo10 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "DIF10 Ingest and Ingest Validation"
           :dif10 (dc/collection-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"ProcessingLevel\"])"
 
           "DIF9 Ingest and Ingest Validation"
-          :dif (dc/collection-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :dif (dc/collection-dif {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO19115 Ingest and Ingest Validation"
-          :iso19115 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso19115 (dc/collection {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "ISO SMAP Ingest and Ingest Validation"
-          :iso-smap (dc/collection-smap {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
+          :iso-smap (dc/collection-smap {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"SpatialExtent\",\"TemporalExtents\"])"
 
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc-in (dc/collection-dif {}) [:product :version-id] nil)
-          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"RelatedUrls\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))
+          "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))

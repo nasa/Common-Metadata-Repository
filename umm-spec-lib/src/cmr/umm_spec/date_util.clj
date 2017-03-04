@@ -4,6 +4,7 @@
    [clj-time.format :as f]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as p]
+   [cmr.common.time-keeper :as tk]
    [cmr.common.xml.parse :refer :all]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
@@ -20,6 +21,11 @@
    (if sanitize?
      (or x default-date-value)
      x)))
+
+(defn with-current
+  "Returns x if not nil, or else the current-date-time placeholder value."
+  ([x]
+   (or x (tk/now))))
 
 (defn without-default
   "Returns x if it is not the default date value string."

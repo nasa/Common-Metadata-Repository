@@ -138,9 +138,8 @@
   [doc sanitize?]
   (let [actual-urls (parse-actual-related-urls doc sanitize?)
         multimedia-urls (parse-multimedia-samples doc sanitize?)]
-    (if-let [related-urls (seq (concat actual-urls multimedia-urls))]
-      related-urls
-      [su/not-provided-related-url])))
+    (when-let [related-urls (seq (concat actual-urls multimedia-urls))]
+      related-urls)))
 
 (defn- parse-metadata-associations
   "Parse a SERF document and return a UMM-S Metadata Associations element"

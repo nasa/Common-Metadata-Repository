@@ -56,7 +56,16 @@
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
         (is (= 200 status) body)
         (is (= (mt/format->mime-type output-format) content-type))
-        (is (= expected parsed-umm-json))))
+        ;; when translating from dif9 to echo10, 
+        ;; The expected is umm-C->dif9->umm-C->echo10->umm-C
+        ;; The DataDates part is lost at dif9->umm-C. so in the end there is no DataDates in the expected.
+        ;; The parsed-umm-json is from dif9 converted umm-C->echo10->umm-C, so there is no DataDates to start. 
+        ;; Current-time is used from umm-C to echo10, then when convert back from echo10 to umm-C, 
+        ;; the current-time can not be removed like before when the default was used because it is not a constant.
+        ;; We can't modify the expected because we can't expect a changing current-time either.
+        (if (and (= "dif" (name input-format)) (= "echo10" (name output-format)))
+          (is (= expected (assoc parsed-umm-json :DataDates nil)))
+          (is (= expected parsed-umm-json))))) 
 
     (testing (format "Translating iso19115 to umm-json without skipping sanitizing makes use of default values")
       (let [input-format :iso19115

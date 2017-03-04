@@ -69,15 +69,14 @@
     related-url))))
 
 (defn- expected-echo10-related-urls
-  [related-urls]
-  (if (seq related-urls)
-    (for [related-url related-urls]
-     (cmn/map->RelatedUrlType
-      (-> related-url
-          expected-related-url-type
-          (dissoc :Relation :FileSize)
-          (update :URL url/format-url true))))
-   [su/not-provided-related-url]))
+ [related-urls]
+ (when (seq related-urls)
+   (for [related-url related-urls]
+    (cmn/map->RelatedUrlType
+     (-> related-url
+         expected-related-url-type
+         (dissoc :Relation :FileSize)
+         (update :URL url/format-url true))))))
 
 (defn- expected-echo10-reorder-related-urls
   "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."

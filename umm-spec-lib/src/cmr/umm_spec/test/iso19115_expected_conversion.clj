@@ -113,7 +113,7 @@
 
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
-  (if (seq related-urls)
+  (when (seq related-urls)
     (seq (for [related-url related-urls]
            (merge
             (-> related-url
@@ -123,8 +123,7 @@
                              (when (conversion-util/relation-set rel)
                                [rel])))
                 (update :URL #(url/format-url % true)))
-            su/default-url-type)))
-    [su/not-provided-related-url]))
+            su/default-url-type)))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]

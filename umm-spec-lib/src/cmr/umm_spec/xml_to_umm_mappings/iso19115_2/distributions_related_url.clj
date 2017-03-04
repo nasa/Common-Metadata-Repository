@@ -86,10 +86,5 @@
 (defn parse-related-urls
   "Parse related-urls present in the document"
   [doc sanitize?]
-  (if-let [related-urls (seq
-                         (concat
-                          (parse-online-urls doc sanitize?)
-                          (parse-browse-graphics doc sanitize?)))]
-    related-urls
-    (when sanitize?
-     [su/not-provided-related-url])))
+  (seq (concat (parse-online-urls doc sanitize?)
+               (parse-browse-graphics doc sanitize?))))

@@ -101,7 +101,9 @@
     :ShortName "Short"
     :Version "V5"
     :DataDates [{:Date (t/date-time 2012)
-                 :Type "CREATE"}]
+                 :Type "CREATE"}
+                {:Date (t/date-time 2013)
+                 :Type "UPDATE"}]
     :Abstract "A very abstract collection"
     :VersionDescription "Best version ever"
     :DataLanguage "eng"

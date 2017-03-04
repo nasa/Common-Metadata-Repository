@@ -33,7 +33,8 @@
                                  url
                                  (when sanitize? su/not-provided-url))
                          :Description (value-of related-url "Description")
-                         :MimeType (value-of related-url "Mime_Type")}))]
-    (if (or multimedia-urls related-urls)
-     (flatten (seq (into multimedia-urls related-urls)))
-     (when sanitize? (seq su/not-provided-related-url)))))
+                         :MimeType (value-of related-url "Mime_Type")}))
+        related-urls (when-not (= su/not-provided-url (:URL (first related-urls)))
+                         related-urls)]
+    (when (or multimedia-urls related-urls)
+     (flatten (seq (into multimedia-urls related-urls))))))
