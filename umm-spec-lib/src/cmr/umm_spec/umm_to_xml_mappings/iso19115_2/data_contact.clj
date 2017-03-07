@@ -65,8 +65,7 @@
             [:gmd:electronicMailAddress (char-string (:Value email))])]]))
     (when-let [url (first (:RelatedUrls contact-info))]
       (related-url/generate-online-resource-url
-       url
-       :gmd:onlineResource))
+       url :gmd:onlineResource false))
     (when-let [hours (:ServiceHours contact-info)]
       [:gmd:hoursOfService (char-string hours)])
     (when-let [instruction (:ContactInstruction contact-info)]

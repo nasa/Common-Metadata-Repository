@@ -17,7 +17,7 @@
 (defn browse-url?
   "Returns true if the related-url is browse url"
   [related-url]
-  (some #{"GET RELATED VISUALIZATION"} (:Relation related-url)))
+  (= "VisualizationURL" (:URLContentType related-url)))
 
 (defn browse-urls
   "Returns the related-urls that are browse urls"
@@ -29,24 +29,42 @@
   [related-urls]
   (remove browse-url? related-urls))
 
+(defn- generate-description-with-types
+ [related-url]
+ (let [{:keys [URLContentType Type Subtype Description]} related-url
+       description (if Description
+                    (format "Description: %s URLContentType: %s Type: %s"
+                     Description URLContentType Type)
+                    (format "URLContentType: %s Type: %s"
+                     URLContentType Type))]
+  (if Subtype
+   (format "%s Subtype: %s" description Subtype)
+   description)))
+
 (defn generate-browse-urls
   "Returns content generator instructions for a browse url"
   [c]
-  (for [{:keys [URL Description] [rel] :Relation} (browse-urls (:RelatedUrls c))]
+  (for [related-url (browse-urls (:RelatedUrls c))
+        :let [{:keys [URL Description Type]} related-url
+              description (generate-description-with-types related-url)]]
     [:gmd:graphicOverview
      [:gmd:MD_BrowseGraphic
       [:gmd:fileName
        [:gmx:FileName {:src URL}]]
-      [:gmd:fileDescription (char-string Description)]
-      [:gmd:fileType (char-string (type->name rel))]]]))
+      [:gmd:fileDescription (char-string description)]
+      [:gmd:fileType (char-string (type->name Type))]]]))
 
 (defn generate-online-resource-url
-  "Returns content generator instructions for an online resource url or access url"
-  [online-resource-url open-tag]
+  "Returns content generator instructions for an online resource url or access url.
+  encode-types=true will encode the Type and Subtype into the description field."
+  [online-resource-url open-tag encode-types]
   (when online-resource-url
-   (let [{:keys [URL Description] [rel] :Relation} online-resource-url
-         name (type->name rel)
-         code (if (= "GET DATA" rel) "download" "information")]
+   (let [{:keys [URL Description Type]} online-resource-url
+         description (if encode-types
+                      (generate-description-with-types online-resource-url)
+                      Description)
+         name (type->name Type)
+         code (if (= "GET DATA" Type) "download" "information")]
        [open-tag
         [:gmd:CI_OnlineResource
          [:gmd:linkage
@@ -55,9 +73,9 @@
           (char-string (url/protocol URL))]
          [:gmd:name
           (char-string name)]
-         (if Description
+         (if description
            [:gmd:description
-            (char-string Description)]
+            (char-string description)]
            [:gmd:description {:gco:nilReason "missing"}])
          [:gmd:function
           [:gmd:CI_OnLineFunctionCode
@@ -101,4 +119,4 @@
           [:gmd:distributorTransferOptions
            [:gmd:MD_DigitalTransferOptions
             (for [related-url related-urls]
-              (generate-online-resource-url related-url :gmd:onLine))]]]]))))
+              (generate-online-resource-url related-url :gmd:onLine true))]]]]))))

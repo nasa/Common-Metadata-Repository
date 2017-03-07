@@ -268,17 +268,6 @@
           "minLength": 1,
           "maxLength": 4000
         },
-        "Relation": {
-          "description": "An array of keywords describing the relation of the online resource to this resource.",
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 2,
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          }
-        },
         "URLContentType": {
             "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
             "$ref": "#/definitions/RelatedURLContentTypeEnum"

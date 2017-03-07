@@ -145,9 +145,14 @@
                                :DataDates [{:Date (t/date-time 2012)
                                             :Type "CREATE"}
                                            {:Date (t/date-time 2013)
-                                            :Type "UPDATE"}]))]
-      (is (= (expected-conversion/convert umm-record metadata-format)
-             (xml-round-trip :collection metadata-format umm-record))
+                                            :Type "UPDATE"}]))
+          expected (expected-conversion/convert umm-record metadata-format)
+          actual (xml-round-trip :collection metadata-format umm-record)
+          ;; The RelatedUrls field get reshuffled during the conversions,
+          ;; so we compare RelatedUrls as a set.
+          expected (update expected :RelatedUrls set)
+          actual (update actual :RelatedUrls set)]
+      (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
 (deftest roundtrip-generated-service-records
