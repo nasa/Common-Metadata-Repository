@@ -225,7 +225,7 @@
       (update :ContactGroups related-url/migrate-contacts-up)
       (update :ContactPersons related-url/migrate-contacts-up)
       (update-in-each [:Platforms] update-in-each [:Instruments] migrate-sensor-to-instrument)
-      (update-in [:SpatialExtent] spatial-extent/remove-centerPoint)))
+      (update-in [:SpatialExtent] spatial-extent/remove-center-point)))
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
