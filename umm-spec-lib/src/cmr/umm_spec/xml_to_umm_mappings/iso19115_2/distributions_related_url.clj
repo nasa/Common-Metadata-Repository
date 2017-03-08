@@ -33,6 +33,12 @@
 (def service-url-path
  "/gmi:MI_Metadata/gmd:identificationInfo/srv:SV_ServiceIdentification")
 
+(def publication-url-path
+ (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:aggregationInfo/"
+      "gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation/"
+      "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:contactInfo/"
+      "gmd:CI_Contact/gmd:onlineResource/CI_OnlineResource"))
+
 (defn parse-distributions
   "Returns the distributions parsed from the given xml document."
   [doc sanitize?]
@@ -116,6 +122,21 @@
               (or (:Subtype types-and-desc) (:Subtype service-url)))
     :Description (:Description types-and-desc)}))
 
+(defn- parse-publication-urls
+ [doc sanitize?]
+ (proto-repl.saved-values/save 56)
+ (for [url (select doc publication-url-path)
+       :let [description (char-string-value url "gmd:description")]
+       :when (and (some? description)
+                  (str/includes? description "PublicationURL"))
+       :let [types-and-desc (parse-url-types-from-description description)
+             url-content-type (or (:URLContentType types-and-desc) "PublicationURL")]]
+  {:URL (value-of url "gmd:linkage/gmd:URL")
+   :Description (:Description types-and-desc)
+   :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")
+   :Type (or (:Type types-and-desc) "VIEW RELATED INFORMATION")
+   :Subtype (:Subtype types-and-desc)}))
+
 (defn- parse-online-and-service-urls
  [doc sanitize?]
  (let [service-urls (parse-service-urls doc sanitize?)
@@ -146,4 +167,5 @@
   "Parse related-urls present in the document"
   [doc sanitize?]
   (seq (concat (parse-online-and-service-urls doc sanitize?)
-               (parse-browse-graphics doc sanitize?))))
+               (parse-browse-graphics doc sanitize?)
+               (parse-publication-urls doc sanitize?))))

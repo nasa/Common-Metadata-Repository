@@ -19,15 +19,15 @@
   [related-url]
   (= "VisualizationURL" (:URLContentType related-url)))
 
-(defn browse-urls
+(defn- browse-urls
   "Returns the related-urls that are browse urls"
   [related-urls]
   (filter browse-url? related-urls))
 
-(defn online-resource-urls
+(defn- online-resource-urls
   "Returns all related-urls which are not browse urls"
   [related-urls]
-  (remove browse-url? related-urls))
+  (filter #(= "DistributionURL" (:URLContentType %)) related-urls))
 
 (defn- generate-description-with-types
  [related-url]
@@ -118,6 +118,32 @@
          [:gmd:CI_OnLineFunctionCode
           {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
            :codeListValue "download"}]]]]]]]]))
+
+(defn generate-publication-related-urls
+ [c]
+ (for [publication-url (filter #(or (= "CollectionURL" (:URLContentType %))
+                                    (= "PublicationURL" (:URLContentType %)))
+                               (:RelatedUrls c))
+       :let [description (generate-description-with-types publication-url)]]
+  [:gmd:aggregationInfo
+   [:gmd:MD_AggregateInformation
+    [:gmd:aggregateDataSetName
+     [:gmd:CI_Citation
+      [:gmd:title {:gco:nilReason "missing"}]
+      [:gmd:date {:gco:nilReason "missing"}]
+      [:gmd:citedResponsibleParty
+       [:gmd:CI_ResponsibleParty
+        [:gmd:contactInfo
+         [:gmd:CI_Contact
+          [:gmd:onlineResource
+           [:gmd:CI_OnlineResource
+            [:gmd:linkage
+             [:gmd:URL (:URL publication-url)]]
+            [:gmd:description (char-string (str "PublicationURL " description))]]]]]
+        [:gmd:role
+         [:gmd:CI_RoleCode
+          {:codeList "" :codeListValue ""}]]]]]]
+    [:gmd:associationType {:gco:nilReason "missing"}]]]))
 
 (defn generate-distributions
   "Returns content generator instructions for distributions in the given umm-c"

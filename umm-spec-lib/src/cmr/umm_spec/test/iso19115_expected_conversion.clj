@@ -122,11 +122,11 @@
 (defn- expected-collection-related-urls
  [related-urls]
  (let [related-urls (expected-iso-19115-2-related-urls related-urls)]
-   (seq (for [related-url related-urls]
+   (seq (for [related-url
+              (remove #(or (= "DataCenterURL" (:URLContentType %))
+                           (= "DataContactURL" (:URLContentType %)))
+                      related-urls)]
           (-> related-url
-              (update :URLContentType #(if (= % "VisualizationURL")
-                                        "VisualizationURL"
-                                        "DistributionURL")) ;; REMOVE
               (update :Description #(when % (str/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values

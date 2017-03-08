@@ -259,9 +259,12 @@
 
       :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
                                    :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
+                                         online-resource (parse-online-resource publication sanitize?)
                                          select-party (fn [name xpath]
                                                         (char-string-value publication
-                                                                           (str (format role-xpath name) xpath)))]]
+                                                                           (str (format role-xpath name) xpath)))]
+                                    :when (or (nil? (:Description online-resource))
+                                              (not (str/includes? (:Description online-resource) "PublicationURL")))]
                                {:Author (select-party "author" "/gmd:organisationName")
                                 :PublicationDate (date/sanitize-and-parse-date
                                                   (str (date-at publication

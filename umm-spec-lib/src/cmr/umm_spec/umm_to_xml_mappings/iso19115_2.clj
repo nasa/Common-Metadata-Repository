@@ -331,6 +331,7 @@
          (generate-user-constraints c)
          (ma/generate-non-source-metadata-associations c)
          (generate-publication-references (:PublicationReferences c))
+         (dru/generate-publication-related-urls c)
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
          (for [topic-category (:ISOTopicCategories c)]
            [:gmd:topicCategory
