@@ -139,9 +139,6 @@
   [spatial-extent]
   (-> spatial-extent
       (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] assoc :CenterPoint nil)
       (update-in [:VerticalSpatialDomains] #(take 1 %))
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       conversion-util/prune-empty-maps))
@@ -158,15 +155,14 @@
 
 (defn- normalize-bounding-rectangle
   [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
-           EastBoundingCoordinate SouthBoundingCoordinate
-           CenterPoint]}]
+           EastBoundingCoordinate SouthBoundingCoordinate]}]
+
   (let [{:keys [west north east south]} (m/mbr WestBoundingCoordinate
                                                NorthBoundingCoordinate
                                                EastBoundingCoordinate
                                                SouthBoundingCoordinate)]
     (cmn/map->BoundingRectangleType
-      {:CenterPoint CenterPoint
-       :WestBoundingCoordinate west
+      {:WestBoundingCoordinate west
        :NorthBoundingCoordinate north
        :EastBoundingCoordinate east
        :SouthBoundingCoordinate south})))

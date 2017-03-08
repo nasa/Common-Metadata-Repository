@@ -281,8 +281,6 @@
 
 (defrecord BoundingRectangleType
   [
-   CenterPoint
-
    WestBoundingCoordinate
 
    NorthBoundingCoordinate
@@ -296,8 +294,6 @@
 (defrecord LineType
   [
    Points
-
-   CenterPoint
   ])
 (record-pretty-printer/enable-record-pretty-printing LineType)
 
@@ -550,8 +546,6 @@
 
 (defrecord GPolygonType
   [
-   CenterPoint
-
    Boundary
 
    ExclusiveZone

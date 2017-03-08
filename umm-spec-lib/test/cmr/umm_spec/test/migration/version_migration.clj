@@ -775,6 +775,7 @@
                                                                       :Title "URL Title"
                                                                       :Description "URL Description"}}
                                                         {:RelatedUrl {:URLs ["www.foo.com"]}}]})]
+
     ;; DOI is moved from :CollectionCitations to :DOI
     ;; RelatedUrl is moved to :OnlineResource
     (is (= {:Authority ";'", :DOI "F19,L"} (:DOI result)))
@@ -840,6 +841,133 @@
                :Description "Contact group related url description"}]
              collection-contact-groups)))))
 
+(deftest migrate-1_8-spatial-extent-up-to-1_9_all
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
+                               {:SpatialExtent {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                                                     :BoundingRectangles [{:CenterPoint {:Longitude "0"
+                                                                                                                         :Latitude "0"}
+                                                                                                           :WestBoundingCoordinate "0"
+                                                                                                           :NorthBoundingCoordinate "0"
+                                                                                                           :EastBoundingCoordinate "0"
+                                                                                                           :SouthBoundingCoordinate "0"}
+                                                                                                          {:CenterPoint {:Longitude "0"
+                                                                                                                         :Latitude "0"}
+                                                                                                           :WestBoundingCoordinate "0"
+                                                                                                           :NorthBoundingCoordinate "0"
+                                                                                                           :EastBoundingCoordinate "0"
+                                                                                                           :SouthBoundingCoordinate "0"}]
+                                                                                     :GPolygons [{:CenterPoint {:Longitude "0"
+                                                                                                                :Latitude "0"}
+                                                                                                  :Boundary {:Points [{:Longitude "-10", :Latitude "-10"}
+                                                                                                                      {:Longitude "10", :Latitude "-10"}
+                                                                                                                      {:Longitude "10", :Latitude "10"}
+                                                                                                                      {:Longitude "-10", :Latitude "10"}
+                                                                                                                      {:Longitude "-10", :Latitude "-10"}]}}]
+                                                                                     :Lines [{:CenterPoint {:Longitude "0"
+                                                                                                            :Latitude "0"}
+                                                                                              :Points [{:Longitude "-10", :Latitude "-10"}
+                                                                                                       {:Longitude "10", :Latitude "-10"}]}]}}
+                                                :GranuleSpatialRepresentation "NO_SPATIAL"}})]
+
+    (is (= {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                 :BoundingRectangles [{:WestBoundingCoordinate "0"
+                                                                       :NorthBoundingCoordinate "0"
+                                                                       :EastBoundingCoordinate "0"
+                                                                       :SouthBoundingCoordinate "0"}
+                                                                      {:WestBoundingCoordinate "0"
+                                                                       :NorthBoundingCoordinate "0"
+                                                                       :EastBoundingCoordinate "0"
+                                                                       :SouthBoundingCoordinate "0"}]
+                                                 :GPolygons [{:Boundary {:Points [{:Longitude "-10", :Latitude "-10"}
+                                                                                  {:Longitude "10", :Latitude "-10"}
+                                                                                  {:Longitude "10", :Latitude "10"}
+                                                                                  {:Longitude "-10", :Latitude "10"}
+                                                                                  {:Longitude "-10", :Latitude "-10"}]}}]
+                                                 :Lines [{:Points [{:Longitude "-10", :Latitude "-10"}
+                                                                   {:Longitude "10", :Latitude "-10"}]}]}}
+            :GranuleSpatialRepresentation "NO_SPATIAL"}
+           (:SpatialExtent result)))))
+
+(deftest migrate-1_8-spatial-extent-up-to-1_9_without_some_centerpoints
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
+                               {:SpatialExtent {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                                                     :BoundingRectangles [{:WestBoundingCoordinate "0"
+                                                                                                           :NorthBoundingCoordinate "0"
+                                                                                                           :EastBoundingCoordinate "0"
+                                                                                                           :SouthBoundingCoordinate "0"}
+                                                                                                          {:WestBoundingCoordinate "0"
+                                                                                                           :NorthBoundingCoordinate "0"
+                                                                                                           :EastBoundingCoordinate "0"
+                                                                                                           :SouthBoundingCoordinate "0"}]
+                                                                                     :GPolygons [{:CenterPoint {:Longitude "0"
+                                                                                                                :Latitude "0"}
+                                                                                                  :Boundary {:Points [{:Longitude "-10", :Latitude "-10"}
+                                                                                                                      {:Longitude "10", :Latitude "-10"}
+                                                                                                                      {:Longitude "10", :Latitude "10"}
+                                                                                                                      {:Longitude "-10", :Latitude "10"}
+                                                                                                                      {:Longitude "-10", :Latitude "-10"}]}}]
+                                                                                     :Lines [{:CenterPoint {:Longitude "0"
+                                                                                                            :Latitude "0"}
+                                                                                              :Points [{:Longitude "-10", :Latitude "-10"}
+                                                                                                       {:Longitude "10", :Latitude "-10"}]}]}}
+                                                :GranuleSpatialRepresentation "NO_SPATIAL"}})]
+
+    (is (= {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                 :BoundingRectangles [{:WestBoundingCoordinate "0"
+                                                                       :NorthBoundingCoordinate "0"
+                                                                       :EastBoundingCoordinate "0"
+                                                                       :SouthBoundingCoordinate "0"}
+                                                                      {:WestBoundingCoordinate "0"
+                                                                       :NorthBoundingCoordinate "0"
+                                                                       :EastBoundingCoordinate "0"
+                                                                       :SouthBoundingCoordinate "0"}]
+                                                 :GPolygons [{:Boundary {:Points [{:Longitude "-10", :Latitude "-10"}
+                                                                                  {:Longitude "10", :Latitude "-10"}
+                                                                                  {:Longitude "10", :Latitude "10"}
+                                                                                  {:Longitude "-10", :Latitude "10"}
+                                                                                  {:Longitude "-10", :Latitude "-10"}]}}]
+                                                 :Lines [{:Points [{:Longitude "-10", :Latitude "-10"}
+                                                                   {:Longitude "10", :Latitude "-10"}]}]}}
+            :GranuleSpatialRepresentation "NO_SPATIAL"}
+           (:SpatialExtent result)))))
+
+(deftest migrate-1_8-spatial-extent-up-to-1_9_without_gpolygon
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
+                               {:SpatialExtent {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                                                     :BoundingRectangles [{:WestBoundingCoordinate "0"
+                                                                                                           :NorthBoundingCoordinate "0"
+                                                                                                           :EastBoundingCoordinate "0"
+                                                                                                           :SouthBoundingCoordinate "0"}
+                                                                                                          {:WestBoundingCoordinate "0"
+                                                                                                           :NorthBoundingCoordinate "0"
+                                                                                                           :EastBoundingCoordinate "0"
+                                                                                                           :SouthBoundingCoordinate "0"}]
+                                                                                     :Lines [{:CenterPoint {:Longitude "0"
+                                                                                                            :Latitude "0"}
+                                                                                              :Points [{:Longitude "-10", :Latitude "-10"}
+                                                                                                       {:Longitude "10", :Latitude "-10"}]}]}}
+                                                :GranuleSpatialRepresentation "NO_SPATIAL"}})]
+
+    (is (= {:HorizontalSpatialDomain {:Geometry {:CoordinateSystem "CARTESIAN"
+                                                 :BoundingRectangles [{:WestBoundingCoordinate "0"
+                                                                       :NorthBoundingCoordinate "0"
+                                                                       :EastBoundingCoordinate "0"
+                                                                       :SouthBoundingCoordinate "0"}
+                                                                      {:WestBoundingCoordinate "0"
+                                                                       :NorthBoundingCoordinate "0"
+                                                                       :EastBoundingCoordinate "0"
+                                                                       :SouthBoundingCoordinate "0"}]
+                                                 :Lines [{:Points [{:Longitude "-10", :Latitude "-10"}
+                                                                   {:Longitude "10", :Latitude "-10"}]}]}}
+            :GranuleSpatialRepresentation "NO_SPATIAL"}
+           (:SpatialExtent result)))))
+
+(deftest migrate-1_8-spatial-extent-up-to-1_9_without_horizontal
+  (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
+                               {:SpatialExtent {:VerticalSpatialDomain {}}})]
+
+    (is (= {:VerticalSpatialDomain {}}
+           (:SpatialExtent result)))))
 
 (deftest migrate-1_9-down-to-1_8
   (let [result (vm/migrate-umm {} :collection "1.9" "1.8"

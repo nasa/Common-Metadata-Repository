@@ -3,7 +3,7 @@
             [cmr.umm-spec.util :as u]))
 
 (defn- point-contents
-  "Returns the inner lon/lat elements for an ECHO Point or CenterPoint element from a UMM PointType
+  "Returns the inner lon/lat elements for an ECHO Point from a UMM PointType
   record."
   [point]
   (list [:PointLongitude (:Longitude point)]
@@ -15,19 +15,13 @@
   [:Point
    (point-contents point)])
 
-(defn- center-point-of
-  "Returns ECHO CenterPoint element from the :CenterPoint of the given record."
-  [x]
-  [:CenterPoint (point-contents (:CenterPoint x))])
-
 (defn- bounding-rect-element
   "Returns ECHO BoundingRectangle element from a UMM BoundingRectangleType record."
   [rect]
   [:BoundingRectangle
    (elements-from rect
                   :WestBoundingCoordinate :NorthBoundingCoordinate
-                  :EastBoundingCoordinate :SouthBoundingCoordinate)
-   (center-point-of rect)])
+                  :EastBoundingCoordinate :SouthBoundingCoordinate)])
 
 (defn- polygon-element
   "Returns ECHO GPolygon element from UMM GPolygonType record."
@@ -38,16 +32,13 @@
    [:ExclusiveZone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element (u/closed-counter-clockwise->open-clockwise (:Points b)))])]
-   [:CenterPoint
-    (point-contents (:CenterPoint poly))]])
+       (map point-element (u/closed-counter-clockwise->open-clockwise (:Points b)))])]])
 
 (defn- line-element
   "Returns ECHO Line element from given UMM LineType record."
   [line]
   [:Line
-   (map point-element (:Points line))
-   (center-point-of line)])
+   (map point-element (:Points line))])
 
 (defn spatial-element
   "Returns ECHO10 Spatial element from given UMM-C record."
