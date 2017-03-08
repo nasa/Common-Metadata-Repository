@@ -126,8 +126,7 @@
  [related-urls]
  (let [related-urls (expected-iso-19115-2-related-urls related-urls)]
    (seq (for [related-url
-              (remove #(or (= "DataCenterURL" (:URLContentType %))
-                           (= "DataContactURL" (:URLContentType %)))
+              (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
                       related-urls)]
           (-> related-url
               (update :Description #(when % (str/trim %))))))))
