@@ -999,7 +999,9 @@
                           :Description "URL Description"
                           :Relation ["VIEW RELATED INFORMATION" "Citation"]
                           :MimeType "text/html"}}]
-           (:PublicationReferences result)))))
+           (:PublicationReferences result)))
+    ;; Default RelatedUrls is added
+     (is (= [u/not-provided-related-url] (:RelatedUrls result)))))
 
 (deftest migrate-1_8-instruments-up-to-1_9
   (let [result (vm/migrate-umm {} :collection "1.8" "1.9"

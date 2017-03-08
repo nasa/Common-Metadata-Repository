@@ -2,6 +2,7 @@
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
   (:require
+   [clj-time.core :as t]
    [clojure.java.io :as io]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
@@ -77,8 +78,13 @@
             example-file (example-files metadata-format)
             :when (not @failed-atom)
             :let [metadata (slurp example-file)
-                  umm (core/parse-metadata test-context :collection metadata-format metadata)]]
-
+                  umm (js/parse-umm-c
+                        (assoc
+                          (core/parse-metadata test-context :collection metadata-format metadata)
+                          :DataDates [{:Date (t/date-time 2012)
+                                       :Type "CREATE"}
+                                      {:Date (t/date-time 2013)
+                                       :Type "UPDATE"}]))]]
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
@@ -134,9 +140,15 @@
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (is (= (expected-conversion/convert umm-record metadata-format)
-           (xml-round-trip :collection metadata-format umm-record))
-        (str "Unable to roundtrip with format " metadata-format))))
+    (let [umm-record (js/parse-umm-c
+                        (assoc umm-record
+                               :DataDates [{:Date (t/date-time 2012)
+                                            :Type "CREATE"}
+                                           {:Date (t/date-time 2013)
+                                            :Type "UPDATE"}]))]
+      (is (= (expected-conversion/convert umm-record metadata-format)
+             (xml-round-trip :collection metadata-format umm-record))
+          (str "Unable to roundtrip with format " metadata-format)))))
 
 (deftest roundtrip-generated-service-records
   (checking "service round tripping" 100

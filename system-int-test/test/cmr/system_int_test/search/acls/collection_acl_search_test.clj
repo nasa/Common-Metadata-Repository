@@ -1,32 +1,34 @@
 (ns cmr.system-int-test.search.acls.collection-acl-search-test
   "Tests searching for collections with ACLs in place"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.services.messages :as msg]
-            [cmr.common.util :refer [are2] :as util]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.opendata :as od]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require
+    [cmr.common-app.test.side-api :as side] 
+    [clojure.test :refer :all]
+    [clojure.string :as str]
+    [cmr.common.services.messages :as msg]
+    [cmr.common.util :refer [are2] :as util]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.data2.atom :as da]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.opendata :as od]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]))
 
-
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
-                                           "provguid3" "PROV3" "provguid4" "PROV4"}
-                                          {:grant-all-search? false}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
+                                              "provguid3" "PROV3" "provguid4" "PROV4"}
+                                             {:grant-all-search? false})
+                       (search/freeze-resume-time-fixture)]))
 
 (comment
   (dev-sys-util/reset)
   (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
   (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
   (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"}))
-
 
 (deftest invalid-security-token-test
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}
@@ -271,7 +273,6 @@
         "provider-id all-revisions=true no token"
         []
         {:provider-id "PROV4" :all-revisions true}))))
-
 
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
