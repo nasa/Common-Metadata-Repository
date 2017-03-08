@@ -120,6 +120,9 @@
               (update :URL #(url/format-url % true)))))))
 
 (defn- expected-collection-related-urls
+ "Update the collection top level RelatedUrls. Do processing not applicable
+ for data center/data contact RelatedUrls. DataCenter and DataContact URL
+ types are not applicable here, so remove."
  [related-urls]
  (let [related-urls (expected-iso-19115-2-related-urls related-urls)]
    (seq (for [related-url

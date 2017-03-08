@@ -42,7 +42,8 @@
           vector))
 
 (defn- get-url-type-by-type
- "Get the url-type based on "
+ "Get the url-type based on type. Return default there is no applicable
+ url content type for the type."
  [type subtype]
  (if-let [url-content-type (su/type->url-content-type type)]
    {:URLContentType url-content-type

@@ -155,7 +155,7 @@
   (let [contacts (conversion-util/expected-contact-information-urls
                    (mapv #(contact->expected % role->expected)
                        (concat (:ContactGroups c) (:ContactPersons c)))
-                   "Data")]
+                   "DataContactURL")]
     (when (seq contacts)
       contacts)))
 

@@ -129,7 +129,7 @@
       (update :OnlineResource dif-online-resource)
       check-nil-pub-ref))
 
-(defn- expected-url-type
+(defn- expected-dif-url-type
  "Perform a roundtrip of the URLContentType, Type, and Subtype to get the values back.
  Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}"
  [related-url]
@@ -143,7 +143,7 @@
   [related-urls]
   (when (seq related-urls)
     (seq (for [related-url related-urls
-               :let [url-type (expected-url-type related-url)]]
+               :let [url-type (expected-dif-url-type related-url)]]
            (cmn/map->RelatedUrlType
             (merge
              url-type

@@ -53,12 +53,17 @@
      :Fees (value-of distributor-element distributor-fees-xpath)}))
 
 (defn- get-index-or-nil
+ "Get the index of the key in the description. Return nil if the key does not
+ exist in the description"
  [description key]
  (let [index (.indexOf description key)]
   (when (>= index 0)
    index)))
 
 (defn- parse-url-types-from-description
+ "In ISO, since there are not separate fields for the types, they are put in the
+ description in the format 'Description: X URLContentType: Y Type: Z Subtype: A'
+ Parse all available elements out from the description string."
  [description]
  (when description
   (let [description-index (get-index-or-nil description "Description:")
@@ -67,7 +72,7 @@
         subtype-index (get-index-or-nil description "Subtype:")]
    (if (and (nil? description-index)(nil? url-content-type-index)
             (nil? type-index) (nil? subtype-index))
-    {:Description description}
+    {:Description description} ; Description not formatted like above, so just description
     {:Description (when description-index
                    (let [desc (subs description
                                description-index
@@ -88,6 +93,8 @@
                  (str/trim (subs subtype (inc (.indexOf subtype ":"))))))}))))
 
 (defn- parse-service-urls
+ "Parse service URLs from service location. These are most likely dups of the
+ distribution urls, but may contain additional type info."
  [doc sanitize?]
  (for [service (select doc service-url-path)
        :let [local-name (value-of service "srv:serviceType/gco:LocalName")]
@@ -123,8 +130,8 @@
     :Description (:Description types-and-desc)}))
 
 (defn- parse-publication-urls
+ "Parse PublicationURL and CollectionURL from the publication location."
  [doc sanitize?]
- (proto-repl.saved-values/save 56)
  (for [url (select doc publication-url-path)
        :let [description (char-string-value url "gmd:description")]
        :when (and (some? description)
@@ -138,6 +145,8 @@
    :Subtype (:Subtype types-and-desc)}))
 
 (defn- parse-online-and-service-urls
+ "Parse online and service urls. Service urls may be a dup of distribution urls,
+ but may contain additional needed type information. Filter out dup service URLs."
  [doc sanitize?]
  (let [service-urls (parse-service-urls doc sanitize?)
        online-urls (parse-online-urls doc sanitize? service-urls)

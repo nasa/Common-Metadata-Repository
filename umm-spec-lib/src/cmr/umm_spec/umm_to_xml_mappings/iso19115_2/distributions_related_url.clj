@@ -30,6 +30,9 @@
   (filter #(= "DistributionURL" (:URLContentType %)) related-urls))
 
 (defn- generate-description-with-types
+ "In ISO, we don't have separate fields to store the types, we put them in
+ the description string. Create a description string that contains the
+ description, URLContentType, type, and subtype"
  [related-url]
  (let [{:keys [URLContentType Type Subtype Description]} related-url
        description (if Description
@@ -120,6 +123,8 @@
            :codeListValue "download"}]]]]]]]]))
 
 (defn generate-publication-related-urls
+ "PublicatonURL and CollectionURL go in the same section as the Publication
+ References. Write URLs with these types there."
  [c]
  (for [publication-url (filter #(or (= "CollectionURL" (:URLContentType %))
                                     (= "PublicationURL" (:URLContentType %)))

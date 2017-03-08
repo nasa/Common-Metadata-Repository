@@ -273,7 +273,7 @@
             "$ref": "#/definitions/RelatedURLContentTypeEnum"
         },
         "Type": {
-            "description": "An keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
             "$ref": "#/definitions/RelatedUrlTypeEnum"
         },
         "Subtype": {

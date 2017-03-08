@@ -37,6 +37,7 @@
 
 
 (defn- generate-valid-type-and-subtype-for-url-content-type
+ "Generate a valid URLContentType, Type, and Subtype combo given the URLContentType"
  [url-content-type]
  (let [valid-types (gen/elements (spec-util/valid-types-for-url-content-type url-content-type))
        types (gen/sample valid-types 1)
