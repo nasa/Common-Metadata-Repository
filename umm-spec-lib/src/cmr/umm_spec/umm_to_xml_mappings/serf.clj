@@ -1,14 +1,16 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.serf
   "Defines mappings from a UMM record into SERF XML"
-  (:require [cmr.common.xml.gen :refer :all]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm-spec.xml-to-umm-mappings.serf :as utx]
-            [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
-            [clojure.set :as set]
-            [cmr.common.util :as util]
-            [clojure.string :as str]
-            [clojure.string :as str]
-            [clj-time.format :as time-format]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clj-time.format :as time-format]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.dif-util :as dif-util]
+   [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
+   [cmr.umm-spec.xml-to-umm-mappings.serf :as utx]))
 
 (def serf-xml-namespaces
   "Contains a map of the SERF namespaces used when generating SERF XML"
@@ -58,7 +60,9 @@
   [s]
   (for [related-url (:RelatedUrls s)]
     [:Related_URL
-     (when-let [[type subtype] (:Relation related-url)]
+     (when-let [[type subtype] (dif-util/umm-url-type->dif-umm-content-type
+                                 (util/remove-nil-keys
+                                  (select-keys related-url [:URLContentType :Type :Subtype])))]
        [:URL_Content_Type
         [:Type type]
         [:Subtype subtype]])

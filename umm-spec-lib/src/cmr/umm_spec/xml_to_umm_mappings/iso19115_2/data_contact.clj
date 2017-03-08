@@ -6,6 +6,7 @@
   [cmr.common.xml.simple-xpath :refer [select text]]
   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as related-url]
+  [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as util]))
 
 (def point-of-contact-xpath
@@ -58,14 +59,24 @@
    :PostalCode (char-string-value address "gmd:postalCode")
    :Country (char-string-value address "gmd:country")}))
 
+(defn- parse-urls
+ [contact-info-xml url-content-type sanitize?]
+ (for [url (select contact-info-xml "gmd:onlineResource/gmd:CI_OnlineResource")
+       :let [name (char-string-value url "gmd:name")
+             url-link (value-of url "gmd:linkage/gmd:URL")]]
+   {:URL (when url-link (url/format-url url-link sanitize?))
+    :Description (char-string-value url "gmd:description")
+    :URLContentType url-content-type
+    :Type "HOME PAGE"}))
+
 (defn- parse-contact-information
  "Parse contact information from XML"
- [contact-info-xml sanitize?]
+ [contact-info-xml url-content-type sanitize?]
  {:ContactMechanisms (remove nil? (concat
                                          (parse-phone-contact-info contact-info-xml)
                                          (parse-email-contact contact-info-xml)))
   :Addresses [(parse-addresses contact-info-xml)]
-  :RelatedUrls (related-url/parse-online-urls contact-info-xml "gmd:onlineResource/gmd:CI_OnlineResource" sanitize?)
+  :RelatedUrls (parse-urls contact-info-xml url-content-type sanitize?)
   :ServiceHours (char-string-value contact-info-xml "gmd:hoursOfService")
   :ContactInstruction (char-string-value contact-info-xml "gmd:contactInstructions")})
 
@@ -129,7 +140,9 @@
        :let [organization-name (char-string-value contact "gmd:organisationName")
              individual-name (char-string-value contact "gmd:individualName")
              contact-info (parse-contact-information
-                           (first (select contact "gmd:contactInfo/gmd:CI_Contact")) sanitize?)
+                           (first (select contact "gmd:contactInfo/gmd:CI_Contact"))
+                           "DataContactURL"
+                           sanitize?)
              non-dc-affiliation (char-string-value contact "gmd:positionName")]]
   (when (or individual-name organization-name)
    (if individual-name
@@ -158,6 +171,7 @@
     {:Roles [(get iso-data-center-role->umm-role (value-of data-center "gmd:role/gmd:CI_RoleCode"))]
      :ContactInformation (parse-contact-information
                           (first (select data-center "gmd:contactInfo/gmd:CI_Contact"))
+                          "DataCenterURL"
                           sanitize?)}
     (if (or data-center-name (not sanitize?))
      data-center-name

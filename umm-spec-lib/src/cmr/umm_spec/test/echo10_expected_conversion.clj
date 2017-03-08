@@ -15,6 +15,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
+
 (defn- fixup-echo10-data-dates
   [data-dates]
   (seq
@@ -40,22 +41,43 @@
           su/convert-empty-record-to-nil
           vector))
 
+(defn- get-url-type-by-type
+ "Get the url-type based on type. Return default there is no applicable
+ url content type for the type."
+ [type subtype]
+ (if-let [url-content-type (su/type->url-content-type type)]
+   {:URLContentType url-content-type
+    :Type type
+    :Subtype subtype}
+   su/default-url-type))
+
+(defn- expected-related-url-type
+ "Expected related url URLContentType, Type, and Subtype based on whether an
+ access url, browse url, or online resource url"
+ [related-url]
+ (let [{:keys [URLContentType Type Subtype]} related-url]
+  (condp = URLContentType
+   "DistributionURL" (if (= "GET DATA" Type)
+                       (dissoc related-url :Subtype)
+                       (if Subtype
+                        (merge related-url (get-url-type-by-type Type Subtype))
+                        related-url))
+   "VisualizationURL" (-> related-url
+                          (assoc :Type "GET RELATED VISUALIZATION")
+                          (dissoc :Subtype))
+   (if Subtype
+    (merge related-url (get-url-type-by-type Type Subtype))
+    related-url))))
+
 (defn- expected-echo10-related-urls
-  [related-urls]
-  (when (seq related-urls)
-    (for [related-url related-urls
-          :let [[rel] (:Relation related-url)]]
+ [related-urls]
+ (when (seq related-urls)
+   (for [related-url related-urls]
+    (cmn/map->RelatedUrlType
      (-> related-url
-         (update-in [:FileSize] (fn [file-size]
-                                  (when (and file-size
-                                             (= rel "GET RELATED VISUALIZATION"))
-                                    (when-let [byte-size (ru-gen/convert-to-bytes
-                                                          (:Size file-size) (:Unit file-size))]
-                                      (assoc file-size :Size (/ (int byte-size) 1024) :Unit "KB")))))
-         (update-in [:Relation] (fn [[rel]]
-                                  (when (conversion-util/relation-set rel)
-                                    [rel])))
-         (update :URL url/format-url true)))))
+         expected-related-url-type
+         (dissoc :Relation :FileSize)
+         (update :URL url/format-url true))))))
 
 (defn- expected-echo10-reorder-related-urls
   "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."
@@ -145,7 +167,8 @@
   (when (seq contact-persons)
     (flatten
      (conversion-util/expected-contact-information-urls
-       (mapv expected-echo10-contact-person contact-persons)))))
+       (mapv expected-echo10-contact-person contact-persons)
+       "DataContactURL"))))
 
 (defn- expected-echo10-data-center
   "Returns an expected data center for each role. ECHO10 only allows for 1 role per
@@ -167,7 +190,8 @@
   (if (seq data-centers)
     (flatten
      (conversion-util/expected-contact-information-urls
-       (mapv expected-echo10-data-center data-centers)))
+       (mapv expected-echo10-data-center data-centers)
+       "DataCenterURL"))
     [su/not-provided-data-center]))
 
 (defn- expected-metadata-dates

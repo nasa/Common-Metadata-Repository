@@ -186,7 +186,8 @@
     umm-spec-util/not-provided-url
     (some (fn [related-url]
            (let [{:keys [url type]} related-url]
-            (when (= "VIEW PROJECT HOME PAGE" type)
+            (when (or (= "PROJECT HOME PAGE" type) ; UMM-C terminology
+                      (= "VIEW PROJECT HOME PAGE" type)) ; ECHO-10 terminology
                url)))
          related-urls)))
 

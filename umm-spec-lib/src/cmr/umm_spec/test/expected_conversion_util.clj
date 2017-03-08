@@ -129,14 +129,28 @@
       (update :OnlineResource dif-online-resource)
       check-nil-pub-ref))
 
+(defn- expected-dif-url-type
+ "Perform a roundtrip of the URLContentType, Type, and Subtype to get the values back.
+ Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}"
+ [related-url]
+ (let [url-type (util/remove-nil-keys
+                 (select-keys related-url [:URLContentType :Type :Subtype]))
+       dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)]
+  (get dif-util/dif-url-content-type->umm-url-types dif-content-type su/default-url-type)))
+
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
   [related-urls]
   (when (seq related-urls)
-    (seq (for [related-url related-urls]
-           (-> related-url
-               (assoc :FileSize nil :MimeType nil)
-               (update :URL #(url/format-url % true)))))))
+    (seq (for [related-url related-urls
+               :let [url-type (expected-dif-url-type related-url)]]
+           (cmn/map->RelatedUrlType
+            (merge
+             url-type
+             (-> related-url
+                 (assoc :FileSize nil :MimeType nil)
+                 (update-in [:URL] #(url/format-url % true))
+                 (dissoc :URLContentType :Type :Subtype :Relation))))))))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."
@@ -158,17 +172,22 @@
 
 (defn- expected-related-urls
   "Format all of the URLs in RelatedUrls, returns a list of RelatedUrls"
-  [related-urls]
+  [related-urls url-content-type]
   (seq (for [ru related-urls]
-         (assoc ru :URL (url/format-url (:URL ru) true)))))
+         (-> ru
+             (assoc :URL (url/format-url (:URL ru) true))
+             (assoc :URLContentType url-content-type)
+             (assoc :Type "HOME PAGE")
+             (dissoc :Subtype)))))
 
 (defn expected-contact-information-urls
   "Format all of the URLs in ContactInformation"
-  [records]
+  [records url-content-type]
   (seq (for [record records]
          (if (and (some? (:ContactInformation record))
                   (seq (:RelatedUrls (:ContactInformation record))))
-           (update-in record [:ContactInformation :RelatedUrls] expected-related-urls)
+           (update-in record [:ContactInformation :RelatedUrls]
+             #(expected-related-urls % url-content-type))
            record))))
 
 (defn expected-data-center-urls
@@ -176,10 +195,10 @@
   the contact groups contact info, and the contact persons contact info"
   [data-centers]
   (def data-centers data-centers)
-  (seq (for [dc (expected-contact-information-urls data-centers)]
+  (seq (for [dc (expected-contact-information-urls data-centers "DataCenterURL")]
          (-> dc
-             (update :ContactPersons expected-contact-information-urls)
-             (update :ContactGroups expected-contact-information-urls)))))
+             (update :ContactPersons expected-contact-information-urls "DataContactURL")
+             (update :ContactGroups expected-contact-information-urls "DataContactURL")))))
 
 (defn dif-expected-data-language
   "DIF and DIF10 do conversions on data language, since they only accept certain formats of

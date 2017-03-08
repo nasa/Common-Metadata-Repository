@@ -74,11 +74,15 @@
   (when-let [related-urls (seq (select doc "/DIF/Related_URL"))]
     (for [related-url related-urls
           url (values-at related-url "URL")
-          :let [description (value-of related-url "Description")]]
-         {:URL (url/format-url url sanitize?)
-          :Description (value-of related-url "Description")
-          :Relation [(value-of related-url "URL_Content_Type/Type")
-                     (value-of related-url "URL_Content_Type/Subtype")]})))
+          :let [description (value-of related-url "Description")
+                type (value-of related-url "URL_Content_Type/Type")
+                subtype (value-of related-url "URL_Content_Type/Subtype")
+                url-type (get dif-util/dif-url-content-type->umm-url-types
+                              [type subtype] su/default-url-type)]]
+      (merge
+       url-type
+       {:URL (url/format-url url sanitize?)
+        :Description description}))))
 
 (defn parse-temporal-extents
  "Return a list of temporal extents from the XML doc"

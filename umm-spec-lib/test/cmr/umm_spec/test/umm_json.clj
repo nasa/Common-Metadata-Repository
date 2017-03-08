@@ -19,7 +19,9 @@
                    {:ShortName "Platform"
                     :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
-     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"})]
+     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"
+                                                 :URLContentType "DistributionURL"
+                                                 :Type "GET DATA"})]
      :DataCenters [u/not-provided-data-center]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
@@ -39,7 +41,9 @@
     {:EntryTitle "Test Service"
      :EntryId "Entry ID Goes Here"
      :Abstract "An Abstract UMM-S Test Example"
-     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"})]
+     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"
+                                                 :URLContentType "DistributionURL"
+                                                 :Type "GET DATA"})]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :ServiceKeywords [(umm-s/map->ServiceKeywordType {:Category "cat" :Topic "top" :Term "ter" :ServiceSpecificName "SSN"})]}))
 
@@ -50,7 +54,9 @@
                    {:ShortName "Platform"
                     :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
-     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"})]
+     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"
+                                                 :URLContentType "DistributionURL"
+                                                 :Type "GET DATA"})]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 

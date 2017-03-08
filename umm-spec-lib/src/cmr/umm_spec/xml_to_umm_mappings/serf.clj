@@ -6,6 +6,7 @@
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of not-provided]]))
@@ -111,13 +112,16 @@
 (defn- parse-actual-related-urls
   "Parse a SERF RelatedURL element into a map"
   [doc sanitize?]
-  (if-let [related-urls (select doc "/SERF/Related_URL")]
-   (for [related-url related-urls
-         url (map #(url/format-url % sanitize?) (values-at related-url "URL"))]
-    {:URL url
-     :Description (value-of related-url "Description")
-     :Relation [(value-of related-url "URL_Content_Type/Type")
-                (value-of related-url "URL_Content_Type/Subtype")]})))
+  (for [related-url (select doc "/SERF/Related_URL")
+        url (map #(url/format-url % sanitize?) (values-at related-url "URL"))
+        :let [type (value-of related-url "URL_Content_Type/Type")
+              subtype (value-of related-url "URL_Content_Type/Subtype")
+              url-type (get dif-util/dif-url-content-type->umm-url-types
+                        [type subtype] su/default-url-type)]]
+    (merge
+     url-type
+     {:URL url
+      :Description (value-of related-url "Description")})))
 
 (defn- parse-multimedia-samples
   "Parse a SERF Multimedia Sample element into a RelatedURL map"
@@ -125,16 +129,17 @@
   (for [multimedia-sample (select doc "/SERF/Multimedia_Sample")]
     {:URL (url/format-url (value-of multimedia-sample "URL") sanitize?)
      :MimeType (value-of multimedia-sample "Format")
-     :Description (value-of multimedia-sample "Description")}))
+     :Description (value-of multimedia-sample "Description")
+     :URLContentType "VisualizationURL"
+     :Type "GET RELATED VISUALIZATION"}))
 
 (defn- parse-related-urls
   "Parse SERF Related URLs and Multimedia Samples into a UMM RelatedUrls object"
   [doc sanitize?]
   (let [actual-urls (parse-actual-related-urls doc sanitize?)
         multimedia-urls (parse-multimedia-samples doc sanitize?)]
-    (if-let [related-urls (seq (concat actual-urls multimedia-urls))]
-      related-urls
-      [su/not-provided-related-url])))
+    (when-let [related-urls (seq (concat actual-urls multimedia-urls))]
+      related-urls)))
 
 (defn- parse-metadata-associations
   "Parse a SERF document and return a UMM-S Metadata Associations element"

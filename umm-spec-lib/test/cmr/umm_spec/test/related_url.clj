@@ -8,19 +8,26 @@
 
 (deftest related-url-types
   (let [r1 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
-                                     :Relation ["GET DATA"]
+                                     :URLContentType "DistributionURL"
+                                     :Type "GET DATA"
                                      :MimeType "application/xml"})
         r2 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
-                                     :Relation ["GET RELATED VISUALIZATION"]
+                                     :URLContentType "VisualizationURL"
+                                     :Type "GET RELATED VISUALIZATION"
                                      :MimeType "Text/rtf"})
         r3 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
-                                     :Relation ["VIEW RELATED INFORMATION"]
+                                     :URLContentType "PublicationURL"
+                                     :Type "VIEW RELATED INFORMATION"
                                      :MimeType "application/json"})
         r4 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
-                                     :Relation ["OPENDAP DATA ACCESS"]
+                                     :URLContentType "DistributionURL"
+                                     :Type "GET SERVICE"
+                                     :Subtype "OPENDAP DATA ACCESS"
                                      :MimeType "Text/csv"})
         r5 (cmn/map->RelatedUrlType {:URLs ["cmr.earthdata.nasa.gov"]
-                                     :Relation ["OPENDAP DATA ACCESS" "GET RELATED VISUALIZATION"]
+                                     :URLContentType "VisualizationURL"
+                                     :Type "GET RELATED VISUALIZATION"
+                                     :Subtype "GIBS"
                                      :MimeType "Text/csv"})
         urls [r1 r2 r3 r4 r5]]
 
@@ -34,5 +41,5 @@
       (is (= [r3 r4] (related-url/resource-urls urls))))
 
     (testing "Atom link types"
-      (is (= ["data" "browse" "metadata" "documentation" "browse"]
+      (is (= ["data" "browse" "documentation" "metadata" "browse"]
              (map :link-type (related-url/atom-links urls)))))))
