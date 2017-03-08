@@ -30,6 +30,9 @@
 (def browse-graphic-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:graphicOverview/gmd:MD_BrowseGraphic")
 
+(def service-url-path
+ "/gmi:MI_Metadata/gmd:identificationInfo/srv:SV_ServiceIdentification")
+
 (defn parse-distributions
   "Returns the distributions parsed from the given xml document."
   [doc sanitize?]
@@ -78,23 +81,50 @@
                (let [subtype (subs description subtype-index)]
                  (str/trim (subs subtype (inc (.indexOf subtype ":"))))))}))))
 
-(defn parse-online-urls
+(defn- parse-service-urls
+ [doc sanitize?]
+ (for [service (select doc service-url-path)
+       :let [local-name (value-of service "srv:serviceType/gco:LocalName")]
+       :when (str/includes? local-name "RelatedURL")
+       :let [url-types (parse-url-types-from-description local-name)
+             url (first (select service
+                          (str "srv:containsOperations/srv:SV_OperationMetadata/"
+                               "srv:connectPoint/gmd:CI_OnlineResource")))
+             url-link (value-of url "gmd:linkage/gmd:URL")]]
+   (merge url-types
+     {:URL (when url-link (url/format-url url-link sanitize?))
+      :Description (char-string-value url "gmd:description")})))
+
+(defn- parse-online-urls
   "Parse ISO online resource urls"
-  [doc sanitize?]
+  [doc sanitize? service-urls]
   (for [url (select doc distributor-online-url-xpath)
         :let [name (char-string-value url "gmd:name")
               code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
               url-link (value-of url "gmd:linkage/gmd:URL")
+              url-link (when url-link (url/format-url url-link sanitize?))
               opendap-type (when (= code "GET DATA : OPENDAP DATA (DODS)")
                             "GET SERVICE")
               types-and-desc (parse-url-types-from-description
-                              (char-string-value url "gmd:description"))]]
-   {:URL (when url-link (url/format-url url-link sanitize?))
+                              (char-string-value url "gmd:description"))
+              service-url (some #(= url-link (:URL %)) service-urls)]]
+   {:URL url-link
     :URLContentType "DistributionURL"
-    :Type (or opendap-type (:Type types-and-desc) "GET DATA")
-    :Subtype (if opendap-type "OPENDAP DATA (DODS)" (:Subtype types-and-desc))
+    :Type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")
+    :Subtype (if opendap-type
+              "OPENDAP DATA (DODS)"
+              (or (:Subtype types-and-desc) (:Subtype service-url)))
     :Description (:Description types-and-desc)}))
 
+(defn- parse-online-and-service-urls
+ [doc sanitize?]
+ (let [service-urls (parse-service-urls doc sanitize?)
+       online-urls (parse-online-urls doc sanitize? service-urls)
+       online-url-urls (set (map :URL online-urls))
+       service-urls (seq (remove #(contains? online-url-urls (:URL %)) service-urls))]
+  (concat
+   online-urls
+   service-urls)))
 
 (defn- parse-browse-graphics
   "Parse browse graphic urls"
@@ -115,5 +145,5 @@
 (defn parse-related-urls
   "Parse related-urls present in the document"
   [doc sanitize?]
-  (seq (concat (parse-online-urls doc sanitize?)
+  (seq (concat (parse-online-and-service-urls doc sanitize?)
                (parse-browse-graphics doc sanitize?))))

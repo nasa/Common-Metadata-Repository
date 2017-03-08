@@ -82,6 +82,43 @@
            {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
             :codeListValue code}]]]])))
 
+(defn generate-service-related-url
+ "Write 'GET SERVICE' related urls to an additional area of ISO"
+ [related-urls]
+ (for [service-url (filter #(and (= "DistributionURL" (:URLContentType %))
+                                 (= "GET SERVICE" (:Type %)))
+                           related-urls)
+       :let [{:keys [URL Description]} service-url
+             url-type-desc (generate-description-with-types
+                             (dissoc service-url :Description))]] ; Don't want description
+  [:gmd:identificationInfo
+   [:srv:SV_ServiceIdentification
+    [:gmd:citation {:gco:nilReason "missing"}]
+    [:gmd:abstract {:gco:nilReason "missing"}]
+    [:srv:serviceType
+     [:gco:LocalName (str "RelatedURL " url-type-desc)]]
+    [:srv:couplingType
+     [:srv:SV_CouplingType
+      {:codeList "" :codeListValue ""} "tight"]]
+    [:srv:containsOperations
+     [:srv:SV_OperationMetadata
+      [:srv:operationName {:gco:nilReason "missing"}]
+      [:srv:DCP {:gco:nilReason "unknown"}]
+      [:srv:connectPoint
+       [:gmd:CI_OnlineResource
+        [:gmd:linkage
+         [:gmd:URL URL]]
+        [:gmd:protocol
+         (char-string (url/protocol URL))]
+        (if Description
+          [:gmd:description
+           (char-string Description)]
+          [:gmd:description {:gco:nilReason "missing"}])
+        [:gmd:function
+         [:gmd:CI_OnLineFunctionCode
+          {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
+           :codeListValue "download"}]]]]]]]]))
+
 (defn generate-distributions
   "Returns content generator instructions for distributions in the given umm-c"
   [c]

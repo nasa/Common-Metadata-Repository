@@ -299,9 +299,9 @@
                      [:gmd:role
                       [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
                                          :codeListValue ""} "authority"]]]]]])
-                 [:gmd:code [:gco:CharacterString (:DOI doi)]]
-                 [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-                 [:gmd:description [:gco:CharacterString "DOI"]]]])]]
+               [:gmd:code [:gco:CharacterString (:DOI doi)]]
+               [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
+               [:gmd:description [:gco:CharacterString "DOI"]]]])]]
          [:gmd:abstract (char-string (if (or abstract version-description)
                                        (str abstract iso/version-description-separator version-description)
                                        su/not-provided))]
@@ -363,6 +363,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
+       (dru/generate-service-related-url (:RelatedUrls c))
        (aa/generate-content-info-additional-attributes additional-attributes)
        [:gmd:contentInfo
         [:gmd:MD_ImageDescription
