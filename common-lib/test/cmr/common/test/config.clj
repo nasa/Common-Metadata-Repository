@@ -147,6 +147,6 @@
    :type Long})
 
 (deftest test-check-env-vars
-  (is (false? (c/check-env-vars {"CMR_TEST_DEFAULT_JOB_START_DELAY" "common-lib test defconfig",
-                                 "CMR_TEST_HEALTH_CHECK_TIMEOUT_SECONDS" "common-lib test defconfig"})))
-  (is (true? (c/check-env-vars {"CMR_NOTRecognizable" "not recognized"}))))
+  (is (false? (c/check-env-vars {:cmr-test-default-job-start-delay "common-lib test defconfig",
+                                 :cmr-test-health-check-timeout-seconds "common-lib test defconfig"})))
+  (is (true? (c/check-env-vars {:cmr-not-recognizable "not recognized"}))))
