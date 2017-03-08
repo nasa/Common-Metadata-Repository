@@ -7,7 +7,7 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [environ.core :refer [env]]))
+   [environ.core :as environ]))
 
 (defonce ^{:private true
            :doc "An atom containing a map of explicitly set config values."
@@ -39,7 +39,7 @@
   "Returns the value of the environment variable. Here specifically to enable testing of this
   namespace."
   [env-name]
-  (env (csk/->kebab-case-keyword env-name)))
+  (environ/env (csk/->kebab-case-keyword env-name)))
 
 (defn config-value*
   "Retrieves the currently configured value for the name or the default value. A parser function
@@ -208,10 +208,10 @@
            [value#]
            (set-config-value! ~config-name-key value#))))))
 
-(defconfig defn-timed-debug 
+(defconfig defn-timed-debug
   "This sets the switch for the logging of the debug info from defn-timed macro.
    If it is set to true, the debug info will be logged."
-  {:default false 
+  {:default false
    :type Boolean})
 
 (defn check-env-vars
@@ -219,13 +219,14 @@
   If any are unrecognized a warning message is logged. Usually this should be called at the start
   of an application when it first starts up. "
   ([]
-   (check-env-vars (env)))
+   (check-env-vars environ/env))
   ([env-var-map]
    (let [known-env-vars (for [[_ sub-map] @configs-atom
                               [config-key _] sub-map]
                           (config-name->env-name config-key))
-         cmr-env-vars (filter #(.startsWith ^String % "CMR_")
-                              (keys env-var-map))
+         cmr-env-vars (map csk/->SCREAMING_SNAKE_CASE_STRING
+                           (filter #(.startsWith (name %) "cmr-")
+                                   (keys env-var-map)))
          unknown-vars (set/difference (set cmr-env-vars) (set known-env-vars))]
      (if (seq unknown-vars)
        (do
