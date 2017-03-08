@@ -3,8 +3,8 @@
   (:require
    [cmr.common.util :refer [update-in-each]]))
 
-(defn remove-it-now
-  "Remove the :CenterPoint"
+(defn dissoc-center-point
+  "Remove the :CenterPoint element from the path"
   [m path]
   (if (not= nil (get-in m path))
     (update-in-each m path #(dissoc % :CenterPoint))
@@ -14,8 +14,7 @@
   "Remove :CenterPoint from :BoundingRectangles, :GPolyons and :Lines
   to comply with UMM spec v1.9"
   [spatial-extent]
-  (remove-it-now
-    (remove-it-now
-      (remove-it-now spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
-      [:HorizontalSpatialDomain :Geometry :GPolygons])
-    [:HorizontalSpatialDomain :Geometry :Lines]))
+  (-> spatial-extent
+    (dissoc-center-point [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
+    (dissoc-center-point [:HorizontalSpatialDomain :Geometry :GPolygons])
+    (dissoc-center-point [:HorizontalSpatialDomain :Geometry :Lines])))
