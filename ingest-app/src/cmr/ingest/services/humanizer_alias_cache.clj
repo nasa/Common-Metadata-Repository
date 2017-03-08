@@ -7,6 +7,7 @@
    [clojure.string :as str]
    [cmr.common.cache :as cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.util :as util]
    [cmr.transmit.humanizer :as humanizer]))
 
 (def humanizer-alias-cache-key
@@ -143,6 +144,31 @@
                               % instr-key instr-name-key instr-alias-map) plats)]
     (assoc collection plat-key updated-plats)))
 
+(defn update-collection-with-sensor-aliases
+  "Returns the collection with humanizer instrument aliases added.
+   Go through each platform and update the platform with all the instrument aliases"
+  [collection umm-spec-collection? humanizer-alias-map]
+  (let [plat-key (if umm-spec-collection?
+                   :Platforms
+                   :platforms)
+        sensor-key (if umm-spec-collection?
+                    :ComposedOf
+                    :sensors)
+        instr-key (if umm-spec-collection?
+                    :Instruments
+                    :instruments)
+        sensor-name-key (if umm-spec-collection?
+                         :ShortName
+                         :short-name)
+        instr-alias-map (get humanizer-alias-map "instrument")
+        plats (get collection plat-key)
+        updated-plats (map #(util/update-in-all
+                             %
+                             [instr-key]
+                             update-element-with-subelement-aliases sensor-key sensor-name-key instr-alias-map)
+                           plats)]
+    (assoc collection plat-key updated-plats)))
+
 (defn update-collection-with-aliases
   "Returns the collection with humanizer aliases added."
   [context collection umm-spec-collection?]
@@ -152,4 +178,5 @@
         ;; instrument alias update needs to be after the platform as we want to add them
         ;; to all the platform instruments, including the alias platform's instruments.
         (update-collection-with-instrument-aliases umm-spec-collection? humanizer-alias-map)
-        (update-collection-with-tile-aliases umm-spec-collection? humanizer-alias-map))))
+        (update-collection-with-tile-aliases umm-spec-collection? humanizer-alias-map)
+        (update-collection-with-sensor-aliases umm-spec-collection? humanizer-alias-map))))
