@@ -145,8 +145,8 @@
     (assoc collection plat-key updated-plats)))
 
 (defn update-collection-with-sensor-aliases
-  "Returns the collection with humanizer instrument aliases added.
-   Go through each platform and update the platform with all the instrument aliases"
+  "Returns the collection with humanizer instrument aliases added to sensors.
+   Go through each platform and update the platform with all the instrument aliases for the child instruments."
   [collection umm-spec-collection? humanizer-alias-map]
   (let [plat-key (if umm-spec-collection?
                    :Platforms
