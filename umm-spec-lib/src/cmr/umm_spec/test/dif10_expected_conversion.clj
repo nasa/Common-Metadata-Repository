@@ -132,6 +132,8 @@
           (dissoc :Relation)
           (dissoc :Title)
           (dissoc :FileSize)
+          (assoc :URLContentType "DataCenterURL")
+          (assoc :Type "HOME PAGE")
           (cmn/map->RelatedUrlType))]
      nil)))
 
@@ -182,7 +184,8 @@
   "Returns the expected DIF 10 data center contact persons or contact groups for the given UMM collection."
   (let [expected-contacts
         (conversion-util/expected-contact-information-urls
-         (mapv #(contact->expected-dif10-collection %) contacts))]
+         (mapv #(contact->expected-dif10-collection %) contacts)
+         "DataContactURL")]
     (when (seq expected-contacts)
       expected-contacts)))
 

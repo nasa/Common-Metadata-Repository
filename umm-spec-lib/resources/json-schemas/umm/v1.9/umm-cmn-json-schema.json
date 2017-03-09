@@ -268,16 +268,17 @@
           "minLength": 1,
           "maxLength": 4000
         },
-        "Relation": {
-          "description": "An array of keywords describing the relation of the online resource to this resource.",
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 2,
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          }
+        "URLContentType": {
+            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').",
+            "$ref": "#/definitions/RelatedURLContentTypeEnum"
+        },
+        "Type": {
+            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').",
+            "$ref": "#/definitions/RelatedUrlTypeEnum"
+        },
+        "Subtype": {
+            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').",
+            "$ref": "#/definitions/RelatedURLSubTypeEnum"
         },
         "URL": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
@@ -296,7 +297,7 @@
           "$ref": "#/definitions/FileSizeType"
         }
       },
-      "required": ["URL"]
+      "required": ["URL", "URLContentType", "Type"]
     },
     "OnlineResourceType": {
       "type": "object",
@@ -1129,9 +1130,6 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "CenterPoint": {
-          "$ref": "#/definitions/PointType"
-        },
         "WestBoundingCoordinate": {
           "$ref": "#/definitions/LongitudeType"
         },
@@ -1151,9 +1149,6 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "CenterPoint": {
-          "$ref": "#/definitions/PointType"
-        },
         "Boundary": {
           "$ref": "#/definitions/BoundaryType"
         },
@@ -1203,9 +1198,6 @@
             "$ref": "#/definitions/PointType"
           },
           "minItems": 2
-        },
-        "CenterPoint": {
-          "$ref": "#/definitions/PointType"
         }
       },
       "required": ["Points"]
@@ -1451,6 +1443,39 @@
     "GranuleSpatialRepresentationEnum": {
       "type": "string",
       "enum": ["CARTESIAN", "GEODETIC", "ORBIT", "NO_SPATIAL"]
+    },
+    "RelatedURLContentTypeEnum": {
+      "type": "string",
+      "enum": ["CollectionURL", "PublicationURL", "DataCenterURL", "DistributionURL", "DataContactURL", "VisualizationURL"]
+    },
+    "RelatedUrlTypeEnum": {
+      "type": "string",
+      "enum": ["GET DATA", "GET SERVICE", "GET RELATED VISUALIZATION", "DATA SET LANDING PAGE", "DOI",
+               "EXTENDED METADATA", "PROFESSIONAL HOME PAGE", "PROJECT HOME PAGE", "VIEW RELATED INFORMATION",
+               "HOME PAGE"]
+    },
+    "RelatedURLSubTypeEnum": {
+      "type": "string",
+      "enum": ["DATACAST URL", "EARTHDATA SEARCH", "ECHO", "EDG", "EOSDIS DATA POOL", "GDS", "GIOVANNI", "KML",
+               "LAADS", "LANCE", "LAS", "MIRADOR", "MODAPS", "NOAA CLASS", "ON-LINE ARCHIVE", "REVERB",
+               "ACCESS MAP VIEWER", "ACCESS MOBILE APP", "ACCESS WEB SERVICE", "DIF", "MAP SERVICE", "NOMADS",
+               "OPENDAP DATA", "OPENDAP DATA (DODS)", "OPENDAP DIRECTORY (DODS)", "OpenSearch", "SERF", "SOFTWARE PACKAGE",
+               "SSW", "SUBSETTER", "THREADS CATALOG", "THREADS DATA", "THREDDS DIRECTORY", "WEB COVERAGE SERVICE (WCS)",
+               "WEB FEATURE SERVICE (WFS)", "WEB MAP FOR TIME SERIES", "WEB MAP SERVICE (WMS)", "WORKFLOW (SERVICE CHAIN)",
+               "GIBS", "ALGORITHM THEORETICAL BASIS DOCUMENT", "CALIBRATION DATA DOCUMENTATION", "DATA QUALITY",
+               "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
+               "PROCESSING HISTORY", "PRODUCTION VERSION HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE",
+               "PRODUCT HISTORY", "PUBLICATIONS", "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS", "READ-ME",
+               "RECIPE", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
+               "SCIENCE DATA PRODUCT VALIDATION", "USER FEEDBACK", "USER'S GUIDE"]
+    },
+    "URLMimeTypeEnum": {
+      "type": "string",
+      "enum": ["application/json", "application/xml", "application/x-netcdf", "application/gml+xml",
+               "application/vnd.google-earch.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
+               "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
+               "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
+               "image/vnd.collada+xml", "text/html", "text/plain"]
     }
   }
 }

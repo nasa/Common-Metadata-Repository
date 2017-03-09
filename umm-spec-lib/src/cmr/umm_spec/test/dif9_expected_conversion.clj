@@ -74,9 +74,8 @@
                                :CoordinateSystem "CARTESIAN"
                                :Points nil
                                :Lines nil
-                               :GPolygons nil)
-                    (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
-                                    :CenterPoint nil))]
+                               :GPolygons nil))]
+                
     (if (seq (get-in spatial [:HorizontalSpatialDomain :Geometry :BoundingRectangles]))
       spatial
       (assoc spatial :SpatialCoverageType nil :HorizontalSpatialDomain nil))))
@@ -154,7 +153,8 @@
   [c]
   (let [contacts (conversion-util/expected-contact-information-urls
                    (mapv #(contact->expected % role->expected)
-                       (concat (:ContactGroups c) (:ContactPersons c))))]
+                       (concat (:ContactGroups c) (:ContactPersons c)))
+                   "DataContactURL")]
     (when (seq contacts)
       contacts)))
 
@@ -176,7 +176,9 @@
   (when-let [related-url (:URL (first (:RelatedUrls contact-info)))]
     (cmn/map->ContactInformationType
        {:RelatedUrls [(cmn/map->RelatedUrlType
-                        {:URL related-url})]})))
+                       {:URLContentType "DataCenterURL"
+                        :Type "HOME PAGE"
+                        :URL related-url})]})))
 
 (defn- expected-dif-data-centers
   "Returns the expected DIF parsed data centers for the given UMM collection."

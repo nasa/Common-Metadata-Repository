@@ -32,7 +32,6 @@
         (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
         (update-in [:HorizontalSpatialDomain :Geometry]
                    assoc :CoordinateSystem "GEODETIC" :Points nil :GPolygons nil :Lines nil)
-        (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
         conversion-util/prune-empty-maps)
     (cmn/map->SpatialExtentType su/not-provided-spatial-extent)))
 

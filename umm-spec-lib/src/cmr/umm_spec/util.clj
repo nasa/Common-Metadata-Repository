@@ -30,6 +30,39 @@
 (def SHORTNAME_MAX
   85)
 
+;; Putting this here for now - might need to be moved. Will be needed for
+;; validation, but currently needed for UMM record sanitization
+(def valid-types-for-url-content-type
+ {"CollectionURL" ["DATA SET LANDING PAGE" "DOI" "EXTENDED METADATA" "PROFESSIONAL HOME PAGE" "PROJECT HOME PAGE"]
+  "DataCenterURL" ["HOME PAGE"]
+  "DataContactURL" ["HOME PAGE"]
+  "DistributionURL" ["GET DATA" "GET SERVICE"]
+  "PublicationURL" ["VIEW RELATED INFORMATION"]
+  "VisualizationURL" ["GET RELATED VISUALIZATION"]})
+
+(def valid-subtypes-for-type
+ {"GET DATA" ["GIOVANNI" "LAADS" "LANCE" "REVERB" "DATACAST URL" "LAS" "MIRADOR" "NOAA CLASS" "ECHO" "MODAPS" "EARTHDATA SEARCH" "EOSDIS DATA POOL" "KML" "GDS" "EDG" "ON-LINE ARCHIVE"]
+  "GET SERVICE" ["OPENDAP DATA" "OPENDAP DIRECTORY (DODS)" "SOFTWARE PACKAGE" "ACCESS MOBILE APP" "MAP SERVICE" "THREADS CATALOG" "SUBSETTER" "OpenSearch" "WEB MAP SERVICE (WMS)" "DIF" "NOMADS" "OPENDAP DATA (DODS)" "SSW" "WEB COVERAGE SERVICE (WCS)" "WEB FEATURE SERVICE (WFS)" "WORKFLOW (SERVICE CHAIN)" "SERF" "ACCESS MAP VIEWER" "THREADS DATA" "ACCESS WEB SERVICE" "THREDDS DIRECTORY" "WEB MAP FOR TIME SERIES"]
+  "VIEW RELATED INFORMATION" ["DATA USAGE" "RECIPE" "USER'S GUIDE" "REQUIREMENTS AND DESIGN" "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS" "ALGORITHM THEORETICAL BASIS DOCUMENT" "PRODUCTION VERSION HISTORY" "PUBLICATIONS" "READ-ME" "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION" "PRODUCT HISTORY" "PROCESSING HISTORY" "USER FEEDBACK" "PI DOCUMENTATION" "GENERAL DOCUMENTATION" "CASE STUDY" "CALIBRATION DATA DOCUMENTATION" "DELIVERABLES CHECKLIST" "DATA QUALITY" "SCIENCE DATA PRODUCT VALIDATION" "HOW-TO" "PRODUCT USAGE" "PRODUCT QUALITY ASSESSMENT"]
+  "GET RELATED VISUALIZATION" ["GIBS" "GIOVANNI"]})
+
+(def type->url-content-type
+ "Get the URLContentType from the type"
+ {"DATA SET LANDING PAGE" "CollectionURL"
+  "DOI" "CollectionURL"
+  "EXTENDED METADATA" "CollectionURL"
+  "PROFESSIONAL HOME PAGE" "CollectionURL"
+  "PROJECT HOME PAGE" "CollectionURL"
+  "GET DATA" "DistributionURL"
+  "GET SERVICE" "DistributionURL"
+  "VIEW RELATED INFORMATION" "PublicationURL"
+  "GET RELATED VISUALIZATION" "VisualizationURL"})
+
+(def default-url-type
+ {:URLContentType "PublicationURL"
+  :Type "VIEW RELATED INFORMATION"
+  :Subtype "GENERAL DOCUMENTATION"})
+
 (def ^:private umm-contact-mechanism-correction-map
   {"phone" "Telephone"
    "Phone" "Telephone"
@@ -59,7 +92,8 @@
 (def not-provided-related-url
   "Place holder to use when a related url is not provided."
   (cmn/map->RelatedUrlType
-    {:URL not-provided-url}))
+   (merge default-url-type
+    {:URL not-provided-url})))
 
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"

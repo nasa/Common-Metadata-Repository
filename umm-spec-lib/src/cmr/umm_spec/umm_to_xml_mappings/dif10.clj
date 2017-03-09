@@ -5,6 +5,7 @@
     [clj-time.format :as f]
     [clojure.set :as set]
     [clojure.string :as str]
+    [cmr.common.util :as util]
     [cmr.common.xml.gen :as gen]
     [cmr.umm-spec.date-util :as date]
     [cmr.umm-spec.dif-util :as dif-util]
@@ -175,12 +176,14 @@
   can come from DIF10 Related_URLs or Multimedia_Sample elements, we write out only to Related_URLs."
   [c]
   (if-let [urls (:RelatedUrls c)]
-    (for [related-url urls]
+    (for [related-url urls
+          :let [[type subtype] (dif-util/umm-url-type->dif-umm-content-type
+                                (util/remove-nil-keys
+                                 (select-keys related-url [:URLContentType :Type :Subtype])))]]
       [:Related_URL
-       (when-let [[type subtype] (:Relation related-url)]
-         [:URL_Content_Type
-          [:Type type]
-          [:Subtype subtype]])
+       [:URL_Content_Type
+        [:Type type]
+        [:Subtype subtype]]
        [:URL (get related-url :URL u/not-provided-url)]
        [:Description (:Description related-url)]])
     ;; Default Related URL to add if none exist

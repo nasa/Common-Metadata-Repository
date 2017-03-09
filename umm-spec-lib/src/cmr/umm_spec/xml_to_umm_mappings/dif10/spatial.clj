@@ -15,28 +15,20 @@
     {:Longitude (Double. (value-of el "Point_Longitude"))
      :Latitude  (Double. (value-of el "Point_Latitude"))}))
 
-(defn- parse-center-point-of
-  [el]
-  (parse-point (first (select el "Center_Point"))))
-
 (defn- parse-line
   [el]
-  ;; DIF 10's Line uses CenterPoint where other shapes use Center_Point
-  {:CenterPoint (parse-point (first (select el "CenterPoint")))
-   :Points (map parse-point (select el "Point"))})
+  {:Points (map parse-point (select el "Point"))})
 
 (defn- parse-polygon
   [el]
-  {:CenterPoint (parse-center-point-of el)
-   :Boundary {:Points (u/open-clockwise->closed-counter-clockwise (map parse-point (select el "Boundary/Point")))}
+  {:Boundary {:Points (u/open-clockwise->closed-counter-clockwise (map parse-point (select el "Boundary/Point")))}
    :ExclusiveZone {:Boundaries (for [boundary (select el "Exclusive_Zone/Boundary")]
                                  {:Points (u/open-clockwise->closed-counter-clockwise
                                             (map parse-point (select boundary "Point")))})}})
 
 (defn- parse-bounding-rect
   [el]
-  (merge {:CenterPoint (parse-center-point-of el)
-          :NorthBoundingCoordinate (value-of el "Northernmost_Latitude")
+  (merge {:NorthBoundingCoordinate (value-of el "Northernmost_Latitude")
           :SouthBoundingCoordinate (value-of el "Southernmost_Latitude")
           :EastBoundingCoordinate (value-of el "Easternmost_Longitude")
           :WestBoundingCoordinate (value-of el "Westernmost_Longitude")}))

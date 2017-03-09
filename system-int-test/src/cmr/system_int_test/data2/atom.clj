@@ -214,7 +214,7 @@
 (def resource-type->link-type-uri
   {"GET DATA" "http://esipfed.org/ns/fedsearch/1.1/data#"
    "GET RELATED VISUALIZATION" "http://esipfed.org/ns/fedsearch/1.1/browse#"
-   "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/metadata#"
+   "ALGORITHM INFO" "http://esipfed.org/ns/fedsearch/1.1/documentation#"
    "VIEW PROJECT HOME PAGE" "http://esipfed.org/ns/fedsearch/1.1/metadata#"})
 
 (defn- add-attribs
@@ -227,10 +227,13 @@
   parsing and granule's related url uses umm-lib for parsing and the title is parsed differently."
   [related-url concept-type]
   (let [{:keys [type url title mime-type size inherited]} related-url
+        rel (if type
+             (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#")
+             "http://esipfed.org/ns/fedsearch/1.1/documentation#") ; The UMM spec default is a doc URL
         attribs (-> {}
                     (add-attribs :inherited inherited)
                     (add-attribs :size size)
-                    (add-attribs :rel (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#"))
+                    (add-attribs :rel rel)
                     (add-attribs :type mime-type)
                     (add-attribs :hreflang "en-US")
                     (add-attribs :href url))
@@ -271,7 +274,7 @@
         ;; DIF9 doesn't support DataDates in umm-spec-lib:
         ;;  So its insert-time and update-time are nil.
         update-time (when-not (= :dif format-key)
-                      (get-in collection [:data-provider-timestamps :update-time])) 
+                      (get-in collection [:data-provider-timestamps :update-time]))
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         coordinate-system (when spatial-representation
                             (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))

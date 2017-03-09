@@ -115,13 +115,21 @@
   [related-urls]
   (when (seq related-urls)
     (seq (for [related-url related-urls]
-           (-> related-url
-               (assoc :MimeType nil :FileSize nil)
-               (update-in [:Relation]
-                          (fn [[rel]]
-                            (when (conversion-util/relation-set rel)
-                              [rel])))
-               (update :URL #(url/format-url % true)))))))
+          (-> related-url
+              (assoc :MimeType nil :FileSize nil)
+              (update :URL #(url/format-url % true)))))))
+
+(defn- expected-collection-related-urls
+ "Update the collection top level RelatedUrls. Do processing not applicable
+ for data center/data contact RelatedUrls. DataCenter and DataContact URL
+ types are not applicable here, so remove."
+ [related-urls]
+ (let [related-urls (expected-iso-19115-2-related-urls related-urls)]
+   (seq (for [related-url
+              (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
+                      related-urls)]
+          (-> related-url
+              (update :Description #(when % (str/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -139,9 +147,6 @@
   [spatial-extent]
   (-> spatial-extent
       (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
-      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] assoc :CenterPoint nil)
       (update-in [:VerticalSpatialDomains] #(take 1 %))
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       conversion-util/prune-empty-maps))
@@ -158,15 +163,14 @@
 
 (defn- normalize-bounding-rectangle
   [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
-           EastBoundingCoordinate SouthBoundingCoordinate
-           CenterPoint]}]
+           EastBoundingCoordinate SouthBoundingCoordinate]}]
+
   (let [{:keys [west north east south]} (m/mbr WestBoundingCoordinate
                                                NorthBoundingCoordinate
                                                EastBoundingCoordinate
                                                SouthBoundingCoordinate)]
     (cmn/map->BoundingRectangleType
-      {:CenterPoint CenterPoint
-       :WestBoundingCoordinate west
+      {:WestBoundingCoordinate west
        :NorthBoundingCoordinate north
        :EastBoundingCoordinate east
        :SouthBoundingCoordinate south})))
@@ -278,9 +282,12 @@
 
 (defn- expected-iso-contact-information
  "Returns expected contact information - 1 address, only certain contact mechanisms are mapped"
- [contact-info]
+ [contact-info url-content-type]
  (-> contact-info
      (update :RelatedUrls expected-contact-info-related-urls)
+     (update-in-each [:RelatedUrls] #(assoc % :URLContentType url-content-type))
+     (update-in-each [:RelatedUrls] #(assoc % :Type "HOME PAGE"))
+     (update-in-each [:RelatedUrls] #(dissoc % :Subtype))
      (update :ContactMechanisms expected-iso-contact-mechanisms)
      (update :Addresses #(take 1 %))))
 
@@ -330,7 +337,7 @@
      (dissoc :Uuid)
      (assoc :Roles [role])
      update-person-names
-     (update :ContactInformation expected-iso-contact-information)))
+     (update :ContactInformation #(expected-iso-contact-information % "DataContactURL"))))
 
 (defn- expected-contact-group
  "Return an expected ISO contact group"
@@ -338,7 +345,7 @@
  (-> group
      (dissoc :Uuid)
      (assoc :Roles ["User Services"])
-     (update :ContactInformation expected-iso-contact-information)))
+     (update :ContactInformation #(expected-iso-contact-information % "DataContactURL"))))
 
 (defn- expected-iso-data-center
  "Expected data center - trim whitespace from short name and long name, update contact info"
@@ -348,7 +355,7 @@
      (assoc :ContactGroups nil)
      (assoc :Uuid nil)
      update-short-and-long-name
-     (update :ContactInformation expected-iso-contact-information)
+     (update :ContactInformation #(expected-iso-contact-information % "DataCenterURL"))
      cmn/map->DataCenterType))
 
 (defn- expected-data-center-contacts
@@ -395,7 +402,7 @@
       (update :Distributions expected-iso-19115-2-distributions)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update :PublicationReferences iso-19115-2-publication-reference)
-      (update :RelatedUrls expected-iso-19115-2-related-urls)
+      (update :RelatedUrls expected-collection-related-urls)
       (update :AdditionalAttributes expected-iso19115-additional-attributes)
       (update :MetadataAssociations group-metadata-assocations)
       (update :ISOTopicCategories update-iso-topic-categories)

@@ -9,6 +9,7 @@
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
+   [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :refer [versions current-version]]))
 
@@ -225,12 +226,14 @@
       migrate-doi-up
       related-url/dissoc-titles-from-contact-information
       (update :RelatedUrls related-url/array-of-urls->url)
+      (update-in-each [:RelatedUrls] related-url/relation->url-content-type)
       (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
       (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)
       (update :DataCenters related-url/migrate-data-centers-up)
       (update :ContactGroups related-url/migrate-contacts-up)
       (update :ContactPersons related-url/migrate-contacts-up)
-      (update-in-each [:Platforms] update-in-each [:Instruments] migrate-sensor-to-instrument)))
+      (update-in-each [:Platforms] update-in-each [:Instruments] migrate-sensor-to-instrument)
+      (update-in [:SpatialExtent] spatial-extent/remove-center-point)))
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
