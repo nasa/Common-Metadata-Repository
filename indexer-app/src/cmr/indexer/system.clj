@@ -3,7 +3,6 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [clojure.string :as str]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
@@ -47,16 +46,20 @@
   {:default 5
    :type Long})
 
+(defconfig log-level
+  "App logging level"
+  {:default "info"})
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger-with-log-level (log-level))
              :db (es/create-elasticsearch-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
              :relative-root-url (transmit-config/indexer-relative-root-url)
              :caches {af/acl-cache-key (af/create-consistent-acl-cache
-                                         [:catalog-item :system-object :provider-object])
+                                        [:catalog-item :system-object :provider-object])
                       index-set/index-set-cache-key (consistent-cache/create-consistent-cache
                                                      {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)})
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
@@ -66,10 +69,10 @@
                       metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
-                          `system-holder
-                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                           (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")
-                           jvm-info/log-jvm-statistics-job])
+                         `system-holder
+                         [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
+                          (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")
+                          jvm-info/log-jvm-statistics-job])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))
