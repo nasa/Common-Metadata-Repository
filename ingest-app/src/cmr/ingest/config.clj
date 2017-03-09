@@ -11,7 +11,7 @@
 
 (defconfig ingest-password
   "Ingest database password"
-  {***REMOVED***})
+  {})
 
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"

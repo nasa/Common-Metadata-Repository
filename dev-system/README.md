@@ -12,7 +12,7 @@ You can setup locally for running the CMR in memory by doing the following. You'
 
 ## Setting up profiles.clj
 
-You will need to create profiles.clj in dev-system in order to set the METADATA_DB user password.  This can be accomplished by copying the contents of profiles.example.clj into profiles.clj.  Make sure to change the value of :cmr-metadata-db-password.
+You will need to create profiles.clj in dev-system in order to set multiple environment variable passwords.  This can be accomplished by copying the contents of profiles.example.clj into a new file called profiles.clj.  Make sure to edit the CHANGE_ME values.
 
 ## Security of dev system
 
