@@ -1295,6 +1295,7 @@ The following fields are indexed for keyword search:
     * Directory Names
     * Archive centers
     * Additional attribute names, data types, values, and descriptions
+    * detailed locations
     * Spatial keywords
     * Temporal keywords
     * ISO Topic Categories

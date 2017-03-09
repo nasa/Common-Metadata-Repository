@@ -18,15 +18,16 @@
   defined in KMS and won't be used for the matching. If a field is not present in the KMS hierarchy,
   we use a dummy value to indicate the field was not present, except for uuid which will be nil."
   [kms-index location-keyword]
-  (let [location-keyword-kebab-key (dissoc
-                                     (util/remove-nil-keys
-                                       (util/map-keys->kebab-case location-keyword))
-                                     :detailed-location)
+  (let [location-keyword-kebab-key (util/remove-nil-keys
+                                     (util/map-keys->kebab-case location-keyword))
         hierarchical-location (merge default-location
                                      location-keyword-kebab-key
                                      (kms-lookup/lookup-by-umm-c-keyword
-                                       kms-index :spatial-keywords location-keyword-kebab-key))
-        {:keys [category type subregion-1 subregion-2 subregion-3 uuid]} hierarchical-location]
+                                       kms-index :spatial-keywords (dissoc 
+                                                                     location-keyword-kebab-key
+                                                                     :detailed-location)))
+        {:keys [category type subregion-1 subregion-2 subregion-3 uuid detailed-location]} 
+          hierarchical-location]
     {:category category
      :category.lowercase (str/lower-case category)
      :type type
@@ -38,4 +39,6 @@
      :subregion-3 subregion-3
      :subregion-3.lowercase (str/lower-case subregion-3)
      :uuid uuid
-     :uuid.lowercase (when uuid (str/lower-case uuid))}))
+     :uuid.lowercase (when uuid (str/lower-case uuid))
+     :detailed-location detailed-location
+     :detailed-location.lowercase (util/safe-lowercase detailed-location)}))

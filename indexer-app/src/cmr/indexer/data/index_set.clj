@@ -159,12 +159,8 @@
    :subregion-2.lowercase m/string-field-mapping
    :subregion-3 m/string-field-mapping
    :subregion-3.lowercase m/string-field-mapping
-   ;; CMR-2991
-   ;; Note that we are not indexing detailed-location. Detailed-location is not part of KMS, but
-   ;; can be provided as part of the collection metadata from DIF9 and DIF10. Since we are still
-   ;; using umm-lib which use a single spatial-keyword string rather than the full hierarchy we do
-   ;; not have the detailed location information. Once we switch to using umm-spec-lib in ingest
-   ;; and indexer we can make Detailed location searchable.
+   :detailed-location m/string-field-mapping
+   :detailed-location.lowercase m/string-field-mapping
    :uuid m/string-field-mapping
    :uuid.lowercase m/string-field-mapping})
 

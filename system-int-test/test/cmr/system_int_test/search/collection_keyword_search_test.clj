@@ -579,7 +579,11 @@
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
                             (assoc :ISOTopicCategories ["environment" "health"])
                             (assoc :ShortName "CMR2652SN1")
-                            (assoc :EntryTitle "CMR2652ET1"))
+                            (assoc :EntryTitle "CMR2652ET1")
+                            (assoc :LocationKeywords
+                                   [(um/map->LocationKeywordType
+                                     {:Category "TestingCategory"
+                                      :DetailedLocation "Testing Detailed Location"})]))
                         {:format :umm-json
                          :accept-format :json})
         coll2 (d/ingest "PROV1"
@@ -640,7 +644,18 @@
 
         "testing iso-topic-category search - health"
         "health"
+        [coll1]
+
+        "testing detailed-location search - Testing Detailed Location"
+        "Testing Detailed Location"
         [coll1]))
+
+    (testing "Search collections by location keywords using JSON Query."
+      (are3 [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+        "Testing detailed-location search"
+        [coll1] {:location_keyword {:category "TestingCategory"
+                                    :detailed-location "Testing Detailed Location"}}))
 
     (testing "json query searchs"
       (are3 [keyword-str items]

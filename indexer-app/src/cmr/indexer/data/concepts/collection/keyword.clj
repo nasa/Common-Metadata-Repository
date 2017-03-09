@@ -56,6 +56,7 @@
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
+        detailed-locations (map :DetailedLocation (:LocationKeywords collection))
         spatial-keywords (lk/location-keywords->spatial-keywords
                           (:LocationKeywords collection))
         projects (for [{:keys [ShortName LongName]} (:Projects collection)]
@@ -124,6 +125,7 @@
                                   related-url-urls
                                   science-keywords
                                   short-name
+                                  detailed-locations
                                   spatial-keywords
                                   summary
                                   temporal-keywords
