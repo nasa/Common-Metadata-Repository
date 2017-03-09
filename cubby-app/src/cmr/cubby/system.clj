@@ -3,6 +3,7 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
+   [clojure.string :as str]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.web-server :as web]
@@ -22,6 +23,10 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defconfig cubby-log-level
+  "App logging level"
+  {})
+
 (def ^:private component-order
   "Defines the order to start the components."
   [:log :caches :db :scheduler :web :nrepl])
@@ -33,7 +38,9 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger
+                   (when-let [log-level (cubby-log-level)]
+                     {:level (keyword (str/lower-case log-level))}))
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/cubby-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (cubby-nrepl-port))

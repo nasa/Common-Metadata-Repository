@@ -1,6 +1,7 @@
 (ns cmr.search.system
   (:require
    [clojure.core.cache :as clj-cache]
+   [clojure.string :as str]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
@@ -50,6 +51,10 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defconfig search-log-level
+  "App logging level"
+  {})
+
 (def search-public-conf
   {:protocol (search-public-protocol)
    :host (search-public-host)
@@ -70,7 +75,9 @@
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
                         (dissoc :log :web :scheduler :unclustered-scheduler))
-        sys {:log (log/create-logger)
+        sys {:log (log/create-logger
+                   (when-let [log-level (search-log-level)]
+                     {:level (keyword (str/lower-case log-level))}))
 
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
@@ -99,13 +106,13 @@
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              :scheduler (jobs/create-scheduler
-                          `system-holder
-                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
-                           idx/refresh-index-names-cache-job
-                           hgrf/refresh-has-granules-map-job
-                           (metadata-cache/refresh-collections-metadata-cache-job)
-                           coll-cache/refresh-collections-cache-for-granule-acls-job
-                           jvm-info/log-jvm-statistics-job])}]
+                         `system-holder
+                         [(af/refresh-acl-cache-job "search-acl-cache-refresh")
+                          idx/refresh-index-names-cache-job
+                          hgrf/refresh-has-granules-map-job
+                          (metadata-cache/refresh-collections-metadata-cache-job)
+                          coll-cache/refresh-collections-cache-for-granule-acls-job
+                          jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:index-set :echo-rest :metadata-db :kms :cubby])))
 
 (defn start

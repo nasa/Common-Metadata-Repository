@@ -3,6 +3,7 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
+   [clojure.string :as str]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.web-server :as web]
@@ -24,6 +25,10 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defconfig virtual-product-log-level
+  "App logging level"
+  {})
+
 (def ^:private component-order
   "Defines the order to start the components."
   [:log :caches :queue-broker :scheduler :web :nrepl])
@@ -35,15 +40,17 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger
+                   (when-let [log-level (virtual-product-log-level)]
+                     {:level (keyword (str/lower-case log-level))}))
              :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
-                          `system-holder
-                          [jvm-info/log-jvm-statistics-job])}]
+                         `system-holder
+                         [jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start

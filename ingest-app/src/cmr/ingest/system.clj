@@ -3,6 +3,7 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
+   [clojure.string :as str]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -42,6 +43,10 @@
   "The protocol to use in documentation examples for the ingest application."
   {:default "http"})
 
+(defconfig ingest-log-level
+  "App logging level"
+  {})
+
 (def ingest-public-conf
   "Public ingest configuration used for generating example requests in documentation"
   {:protocol (ingest-public-protocol)
@@ -52,19 +57,21 @@
   ([]
    (create-system "ingest"))
   ([connection-pool-name]
-   (let [sys {:log (log/create-logger)
+   (let [sys {:log (log/create-logger
+                    (when-let [log-level (ingest-log-level)]
+                      {:level (keyword (str/lower-case log-level))}))
               :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (oracle/create-db (config/db-spec connection-pool-name))
               :scheduler (jobs/create-clustered-scheduler
-                           `system-holder :db
-                           (conj (ingest-jobs/jobs)
-                                 (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
-                                 jvm-info/log-jvm-statistics-job))
+                          `system-holder :db
+                          (conj (ingest-jobs/jobs)
+                                (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
+                                jvm-info/log-jvm-statistics-job))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        pc/providers-cache-key (pc/create-providers-cache)
                        af/acl-cache-key (af/create-consistent-acl-cache
-                                          [:catalog-item :system-object :provider-object])
+                                         [:catalog-item :system-object :provider-object])
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
@@ -73,7 +80,7 @@
               :ingest-public-conf ingest-public-conf
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections
-       sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
+      sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
 
 (def start
   "Performs side effects to initialize the system, acquire resources,

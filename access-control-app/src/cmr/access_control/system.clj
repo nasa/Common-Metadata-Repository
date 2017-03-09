@@ -3,6 +3,7 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
+   [clojure.string :as str]
    [cmr.access-control.api.routes :as routes]
    [cmr.access-control.config :as config]
    [cmr.access-control.data.access-control-index :as access-control-index]
@@ -44,6 +45,10 @@
   {:default 3011
    :type Long})
 
+(defconfig access-control-log-level
+  "App logging level"
+  {})
+
 (defn public-conf
   "Public access-control configuration used for generating example requests in documentation"
   []
@@ -63,7 +68,9 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger
+                   (when-let [log-level (access-control-log-level)]
+                     {:level (keyword (str/lower-case log-level))}))
              :search-index (search-index/create-elastic-search-index)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
