@@ -106,3 +106,11 @@
    (create-logger default-log-options))
   ([options]
    (map->Logger (merge default-log-options options))))
+
+(defn create-logger-with-log-level
+  "Creates a new logger with a logging level set to the given level.
+   level argument is a string with possible values of error, warn, info and debug."
+  [level]
+  (let [options (when level
+                  {:level (keyword (s/lower-case level))})]
+    (create-logger options)))

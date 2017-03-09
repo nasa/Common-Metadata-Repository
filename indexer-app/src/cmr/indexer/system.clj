@@ -3,7 +3,6 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [clojure.string :as str]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
@@ -47,16 +46,14 @@
   {:default 5
    :type Long})
 
-(defconfig indexer-log-level
+(defconfig log-level
   "App logging level"
-  {})
+  {:default "info"})
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger
-                   (when-let [log-level (indexer-log-level)]
-                     {:level (keyword (str/lower-case log-level))}))
+  (let [sys {:log (log/create-logger-with-log-level (log-level))
              :db (es/create-elasticsearch-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))

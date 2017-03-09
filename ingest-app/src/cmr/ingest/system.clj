@@ -3,7 +3,6 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [clojure.string :as str]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -43,9 +42,9 @@
   "The protocol to use in documentation examples for the ingest application."
   {:default "http"})
 
-(defconfig ingest-log-level
+(defconfig log-level
   "App logging level"
-  {})
+  {:default "info"})
 
 (def ingest-public-conf
   "Public ingest configuration used for generating example requests in documentation"
@@ -57,9 +56,7 @@
   ([]
    (create-system "ingest"))
   ([connection-pool-name]
-   (let [sys {:log (log/create-logger
-                    (when-let [log-level (ingest-log-level)]
-                      {:level (keyword (str/lower-case log-level))}))
+   (let [sys {:log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (oracle/create-db (config/db-spec connection-pool-name))

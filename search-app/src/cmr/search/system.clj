@@ -1,7 +1,6 @@
 (ns cmr.search.system
   (:require
    [clojure.core.cache :as clj-cache]
-   [clojure.string :as str]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.collection-renderer.services.collection-renderer :as collection-renderer]
@@ -51,9 +50,9 @@
   {:default nil
    :parser cfg/maybe-long})
 
-(defconfig search-log-level
+(defconfig log-level
   "App logging level"
-  {})
+  {:default "info"})
 
 (def search-public-conf
   {:protocol (search-public-protocol)
@@ -75,10 +74,7 @@
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
                         (dissoc :log :web :scheduler :unclustered-scheduler))
-        sys {:log (log/create-logger
-                   (when-let [log-level (search-log-level)]
-                     {:level (keyword (str/lower-case log-level))}))
-
+        sys {:log (log/create-logger-with-log-level (log-level))
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
              :embedded-systems {:metadata-db metadata-db}

@@ -3,7 +3,6 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [clojure.string :as str]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
@@ -33,9 +32,9 @@
   "Required for jobs"
   (atom nil))
 
-(defconfig metadata-db-log-level
+(defconfig log-level
   "App logging level"
-  {})
+  {:default "info"})
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -45,9 +44,7 @@
    (let [sys {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
-              :log (log/create-logger
-                    (when-let [log-level (metadata-db-log-level)]
-                      {:level (keyword (str/lower-case log-level))}))
+              :log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/metadata-db-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
               :parallel-chunk-size (config/parallel-chunk-size)

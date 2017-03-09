@@ -4,7 +4,6 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
    [clojure.core.async :as ca :refer [chan]]
-   [clojure.string :as str]
    [cmr.access-control.system :as ac-system]
    [cmr.acl.core :as acl]
    [cmr.bootstrap.api.routes :as routes]
@@ -36,9 +35,9 @@
   "Batch size to use when batching database operations."
   {:default 100 :type Long})
 
-(defconfig bootstrap-log-level
+(defconfig log-level
   "App logging level"
-  {})
+  {:default "info"})
 
 (def ^:private component-order
   "Defines the order to start the components."
@@ -64,9 +63,7 @@
         access-control (-> (ac-system/create-system)
                            (dissoc :log :web :queue-broker)
                            (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
-        sys {:log (log/create-logger
-                   (when-let [log-level (bootstrap-log-level)]
-                     {:level (keyword (str/lower-case log-level))}))
+        sys {:log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer
                                 :access-control access-control}
