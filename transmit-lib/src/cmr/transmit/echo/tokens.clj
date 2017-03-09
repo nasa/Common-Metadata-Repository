@@ -63,7 +63,10 @@
       401 (errors/throw-service-error
             :unauthorized
             (format "Token %s does not exist" token))
+          
       ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
       400 (errors/throw-service-errors :unauthorized (:errors (json/decode body true)))
-      (r/unexpected-status-error! status body))))
 
+      ;; occasional 404's were being returned, causing an unexpected-status-error and triggering an alert
+      404 (errors/throw-service-error :unauthorized (format "Token %s was not found" token))
+      (r/unexpected-status-error! status body))))
