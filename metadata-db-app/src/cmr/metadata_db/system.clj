@@ -8,7 +8,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common.api.web-server :as web]
-   [cmr.common.config :as cfg]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
