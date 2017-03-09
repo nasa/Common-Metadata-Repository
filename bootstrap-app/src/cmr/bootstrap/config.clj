@@ -10,7 +10,7 @@
 
 (defconfig bootstrap-password
   "Defines the bootstrap database password."
-  {***REMOVED***})
+  {})
 
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"
@@ -27,4 +27,3 @@
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
-

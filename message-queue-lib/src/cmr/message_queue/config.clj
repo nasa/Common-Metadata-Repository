@@ -26,7 +26,7 @@
 
 (defconfig rabbit-mq-password
   "The password for the rabbit mq user."
-  {***REMOVED***})
+  {})
 
 (defconfig rabbit-mq-ttls
   "The Time-To-Live (TTL) for each retry queue (in seconds)."

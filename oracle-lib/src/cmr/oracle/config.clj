@@ -11,18 +11,18 @@
   "Enables or disables fast connection failover in Oracle jdbc."
   {:default false
    :type Boolean})
- 
+
 (defconfig db-ons-config
   "db-ons-config"
   {:default ""})
 
 (defconfig sys-dba-username
   "system dba username"
-  {:default "sys as sysdba"})  
+  {:default "sys as sysdba"})
 
 (defconfig sys-dba-password
   "system dba password"
-  {***REMOVED***})
+  {})
 
 (defn sys-dba-db-spec
   []
