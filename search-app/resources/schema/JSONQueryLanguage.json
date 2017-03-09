@@ -222,6 +222,10 @@
 							"description": "Unique identifier for the location keyword within the GCMD Keyword Management System.",
 							"type": "string"
 						},
+                                                "detailed-location": {
+                                                        "description": "Uncontrolled keyword heirarchical level that contains the specific location where the collection data was taken from. Exists outside the heirarchy.",
+                                                        "type": "string"
+                                                },
 						"ignore_case": {
 							"$ref": "#/definitions/IgnoreCaseOption"
 						},
