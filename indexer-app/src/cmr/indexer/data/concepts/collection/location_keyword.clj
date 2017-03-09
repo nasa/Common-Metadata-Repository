@@ -23,9 +23,9 @@
         hierarchical-location (merge default-location
                                      location-keyword-kebab-key
                                      (kms-lookup/lookup-by-umm-c-keyword
-                                       kms-index :spatial-keywords (dissoc 
-                                                                     location-keyword-kebab-key
-                                                                     :detailed-location)))
+                                       kms-index 
+                                       :spatial-keywords 
+                                       (dissoc location-keyword-kebab-key :detailed-location)))
         {:keys [category type subregion-1 subregion-2 subregion-3 uuid detailed-location]} 
           hierarchical-location]
     {:category category
