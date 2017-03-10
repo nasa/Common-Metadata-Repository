@@ -175,6 +175,25 @@
     (info "Indexed" total "system concepts.")
     total))
 
+(defn index-concepts-by-id
+  "Index concepts of the given type for the given provider with the given concept-ids."
+  [system provider-id concept-type concept-ids]
+  (let [db-conn (helper/get-metadata-db-db system)
+        provider (get-provider-by-id {:system system} provider-id)
+        ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
+        ;; to prevent exceeding that. This should probably be done in the db namespace,
+        ;; but I want to avoid making changes beyond bootstrap-app for this functionality.
+        concept-id-batches (partition 1000 1000 [] concept-ids)
+        batches (apply concat (for [batch concept-id-batches]
+                                (db/find-concepts-in-batches db-conn 
+                                                            provider 
+                                                            {:concept-type concept-type :concept-id batch} 
+                                                            (:db-batch-size system))))
+        total (index/bulk-index {:system (helper/get-indexer system)} batches)]
+    (index/bulk-index {:system (helper/get-indexer system)} batches {:all-revisions-index? true})
+    (info "Indexed " total " concepts.")
+    total))
+
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
@@ -236,4 +255,11 @@
                    (let [{:keys [start-index]} (<!! channel)]
                      (index-system-concepts system start-index))
                    (catch Throwable e
-                     (error e (.getMessage e))))))))
+                     (error e (.getMessage e)))))))
+  (let [channel (:concept-id-channel system)]
+    (ca/thread (while true
+                (try ; log errors but keep the thread alive)
+                  (let [{:keys [provider-id concept-type concept-ids]} (<!! channel)]
+                    (index-concepts-by-id system provider-id concept-type concept-ids))
+                  (catch Throwable e
+                    (error e (.getMessage e))))))))

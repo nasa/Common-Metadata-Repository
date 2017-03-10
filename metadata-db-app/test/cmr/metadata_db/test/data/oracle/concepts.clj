@@ -98,6 +98,9 @@
       (finally
         (lifecycle/stop db nil)))))
 
+(deftest ifail
+  (testing "failure"
+    (is (= 1 0))))
 
 (deftest concept->insert-args-test
   (testing "collection insert-args"
