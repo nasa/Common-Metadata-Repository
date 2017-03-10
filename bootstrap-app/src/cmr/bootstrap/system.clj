@@ -35,6 +35,10 @@
   "Batch size to use when batching database operations."
   {:default 100 :type Long})
 
+(defconfig log-level
+  "App logging level"
+  {:default "info"})
+
 (def ^:private component-order
   "Defines the order to start the components."
   [:log :caches :db :scheduler :db-scheduler :web :nrepl])
@@ -59,7 +63,7 @@
         access-control (-> (ac-system/create-system)
                            (dissoc :log :web :queue-broker)
                            (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
-        sys {:log (log/create-logger)
+        sys {:log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer
                                 :access-control access-control}
@@ -83,6 +87,9 @@
 
              ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
              :system-concept-channel (chan 10)
+
+             ;; channel for processing bulk index requests by concept-id
+             :concept-id-channel (chan 10)
 
              ;; Channel for bootstrapping virtual products
              vp/channel-name (chan)

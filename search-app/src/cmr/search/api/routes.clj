@@ -315,13 +315,19 @@
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
+(def robots-txt-response
+  "Returns the robots.txt response."
+  {:status 200
+   :body (slurp (io/resource "public/robots.txt"))})
+
 (defn- build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
-      (GET "/robots.txt" req {:status 200
-                              :body (slurp (io/resource "public/robots.txt"))})
+      ;; Return robots.txt from the root /robots.txt and at the context (e.g. /search/robots.txt)
+      (GET "/robots.txt" req robots-txt-response)
 
       (context relative-root-url []
+        (GET "/robots.txt" req robots-txt-response)
 
         ;; Add routes for tagging
         tags-api/tag-api-routes

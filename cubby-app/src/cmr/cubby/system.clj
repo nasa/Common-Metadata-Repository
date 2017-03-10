@@ -22,6 +22,10 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defconfig log-level
+  "App logging level"
+  {:default "info"})
+
 (def ^:private component-order
   "Defines the order to start the components."
   [:log :caches :db :scheduler :web :nrepl])
@@ -33,7 +37,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger-with-log-level (log-level))
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/cubby-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (cubby-nrepl-port))
