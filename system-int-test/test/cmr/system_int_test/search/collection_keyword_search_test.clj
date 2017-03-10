@@ -582,7 +582,11 @@
                             (assoc :EntryTitle "CMR2652ET1")
                             (assoc :LocationKeywords
                                    [(um/map->LocationKeywordType
-                                     {:Category "TestingCategory"
+                                     {:Category "CONTINENT"
+                                      :Type "ASIA"
+                                      :Subregion1 "WESTERN ASIA"
+                                      :Subregion2 "MIDDLE EAST"
+                                      :Subregion3 "GAZA STRIP"
                                       :DetailedLocation "Testing Detailed Location"})]))
                         {:format :umm-json
                          :accept-format :json})
@@ -654,8 +658,12 @@
       (are3 [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
         "Testing detailed-location search"
-        [coll1] {:location_keyword {:category "TestingCategory"
-                                    :detailed-location "Testing Detailed Location"}}))
+        [coll1] {:location_keyword {:category "CONTINENT"
+                                    :type "ASIA"
+                                    :subregion_1 "WESTERN ASIA"
+                                    :subregion_2 "MIDDLE EAST"
+                                    :subregion_3 "GAZA STRIP"
+                                    :detailed_location "Testing Detailed Location"}}))
 
     (testing "json query searchs"
       (are3 [keyword-str items]
