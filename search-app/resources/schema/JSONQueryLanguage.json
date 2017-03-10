@@ -222,6 +222,10 @@
 							"description": "Unique identifier for the location keyword within the GCMD Keyword Management System.",
 							"type": "string"
 						},
+						"detailed_location": {
+							"description": "Filter collections by the detailed location subfield within UMM location keywords.",
+							"type": "string"
+						},
 						"ignore_case": {
 							"$ref": "#/definitions/IgnoreCaseOption"
 						},

@@ -579,7 +579,15 @@
                                      {:ShortName "CMR2654DNSN1" :LongName "CMR2654DNLN1"})])
                             (assoc :ISOTopicCategories ["environment" "health"])
                             (assoc :ShortName "CMR2652SN1")
-                            (assoc :EntryTitle "CMR2652ET1"))
+                            (assoc :EntryTitle "CMR2652ET1")
+                            (assoc :LocationKeywords
+                                   [(um/map->LocationKeywordType
+                                     {:Category "CONTINENT"
+                                      :Type "ASIA"
+                                      :Subregion1 "WESTERN ASIA"
+                                      :Subregion2 "MIDDLE EAST"
+                                      :Subregion3 "GAZA STRIP"
+                                      :DetailedLocation "Testing Detailed Location"})]))
                         {:format :umm-json
                          :accept-format :json})
         coll2 (d/ingest "PROV1"
@@ -640,7 +648,22 @@
 
         "testing iso-topic-category search - health"
         "health"
+        [coll1]
+
+        "testing detailed-location search - Testing Detailed Location"
+        "Testing Detailed Location"
         [coll1]))
+
+    (testing "Search collections by location keywords using JSON Query."
+      (are3 [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+        "Testing detailed-location search"
+        [coll1] {:location_keyword {:category "CONTINENT"
+                                    :type "ASIA"
+                                    :subregion_1 "WESTERN ASIA"
+                                    :subregion_2 "MIDDLE EAST"
+                                    :subregion_3 "GAZA STRIP"
+                                    :detailed_location "Testing Detailed Location"}}))
 
     (testing "json query searchs"
       (are3 [keyword-str items]
