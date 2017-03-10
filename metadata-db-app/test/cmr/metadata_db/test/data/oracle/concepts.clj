@@ -98,10 +98,6 @@
       (finally
         (lifecycle/stop db nil)))))
 
-(deftest ifail
-  (testing "failure"
-    (is (= 1 0))))
-
 (deftest concept->insert-args-test
   (testing "collection insert-args"
     (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
