@@ -102,6 +102,20 @@
     {:status 202
      :body {:message msg}}))
 
+(defn bulk-index-concepts-by-id
+  "Bulk index concepts of the given type for the given provider-id with the given concept-ids."
+  [context provider-id-concept-id-map params]
+  (let [provider-id (get provider-id-concept-id-map "provider_id")
+        concept-type (keyword (get provider-id-concept-id-map "concept_type"))
+        concept-ids (get provider-id-concept-id-map "concept_ids")
+        synchronous (synchronous? params)
+        result (bs/index-concepts-by-id context synchronous provider-id concept-type concept-ids)
+        msg (if synchronous
+              (str "Processed " result " concepts for bulk indexing.")
+              (str "Processing concepts for bulk indexing."))]
+    {:status 202
+     :body {:message msg}}))
+
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
@@ -165,7 +179,10 @@
           (bulk-index-data-later-than-date-time request-context params))
 
         (POST "/system_concepts" {:keys [request-context params]}
-          (bulk-index-system-concepts request-context params)))
+          (bulk-index-system-concepts request-context params))
+
+        (POST "/concepts" {:keys [request-context body params]}
+          (bulk-index-concepts-by-id request-context body params)))
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 
