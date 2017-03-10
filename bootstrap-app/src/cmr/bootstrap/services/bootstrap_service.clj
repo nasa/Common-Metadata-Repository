@@ -101,8 +101,8 @@
   [context synchronous provider-id concept-type concept-ids]
   (if synchronous
     (bulk/index-concepts-by-id (:system context) provider-id concept-type concept-ids)
-    (let [channel (get-in context [:sytem :system-concept-channel])]
-        (info "Adding bulk index request to system concepts channel.")
+    (let [channel (get-in context [:system :concept-id-channel])]
+        (info "Adding bulk index request to concept-id channel.")
       (go (>! channel {:provider-id provider-id :concept-type concept-type :concept-ids concept-ids})))))
 
 
