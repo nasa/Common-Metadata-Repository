@@ -183,14 +183,15 @@
         ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
         ;; to prevent exceeding that. This should probably be done in the db namespace,
         ;; but I want to avoid making changes beyond bootstrap-app for this functionality.
-        concept-id-batches (partition 1000 1000 [] concept-ids)
-        batches (apply concat (for [batch concept-id-batches]
-                                (db/find-concepts-in-batches db-conn 
-                                                            provider 
-                                                            {:concept-type concept-type :concept-id batch} 
-                                                            (:db-batch-size system))))
-        total (index/bulk-index {:system (helper/get-indexer system)} batches)]
-    (index/bulk-index {:system (helper/get-indexer system)} batches {:all-revisions-index? true})
+        concept-id-batches (partition-all 1000 concept-ids)
+        concept-batches (for [batch concept-id-batches
+                              concept-batch (db/find-concepts-in-batches db-conn
+                                                                         provider
+                                                                         {:concept-type concept-type :concept-id batch}
+                                                                         (:db-batch-size system))]
+                          concept-batch)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+    (index/bulk-index {:system (helper/get-indexer system)} concept-batches {:all-revisions-index? true})
     (info "Indexed " total " concepts.")
     total))
 

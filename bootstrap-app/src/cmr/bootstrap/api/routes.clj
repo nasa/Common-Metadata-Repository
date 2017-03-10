@@ -103,11 +103,15 @@
      :body {:message msg}}))
 
 (defn bulk-index-concepts-by-id
-  "Bulk index concepts of the given type for the given provider-id with the given concept-ids."
-  [context provider-id-concept-id-map params]
-  (let [provider-id (get provider-id-concept-id-map "provider_id")
-        concept-type (keyword (get provider-id-concept-id-map "concept_type"))
-        concept-ids (get provider-id-concept-id-map "concept_ids")
+  "Bulk index concepts of the given type for the given provider-id with the given concept-ids.
+  The request-details-map should contain the following:
+    provider-id  - \"the id of the provider for all the concepts\"
+    concept_type - the concept type for all the concepts, e.g., \"granule\", \"collection\", etc.
+    concept_ids  - a vector of concept ids."
+  [context request-details-map params]
+  (let [provider-id (get request-details-map "provider_id")
+        concept-type (keyword (get request-details-map "concept_type"))
+        concept-ids (get request-details-map "concept_ids")
         synchronous (synchronous? params)
         result (bs/index-concepts-by-id context synchronous provider-id concept-type concept-ids)
         msg (if synchronous
