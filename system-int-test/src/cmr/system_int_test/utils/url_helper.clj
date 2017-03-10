@@ -339,6 +339,10 @@
           (transmit-config/bootstrap-port)
           date-time))
 
+(defn bulk-index-concepts-url
+  []
+  (format "http://localhost:%s/bulk_index/concepts" (transmit-config/bootstrap-port)))
+
 (defn bulk-index-provider-url
   []
   (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))

@@ -88,6 +88,9 @@
              ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
              :system-concept-channel (chan 10)
 
+             ;; channel for processing bulk index requests by concept-id
+             :concept-id-channel (chan 10)
+
              ;; Channel for bootstrapping virtual products
              vp/channel-name (chan)
 
