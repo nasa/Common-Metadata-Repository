@@ -111,7 +111,7 @@ NOTE from CMR-1908 that when reindexing a provider the collections are not reind
 
   	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id":"C123-FIX_PROV1"}' http://localhost:3006/bulk_index/collections
 
-### Bulk index concpets by concept-id
+### Bulk index concepts by concept-id - for indexing multiple specific items
 
     curl -XPOST -H "Content-Type: application/json" "http://localhost:3006/bulk_index/concepts"
     -d '{"provider_id": "PROV1", "concept_type":"collection", "concept_ids":["C123-PROV1","C124-PROV1"]}'
