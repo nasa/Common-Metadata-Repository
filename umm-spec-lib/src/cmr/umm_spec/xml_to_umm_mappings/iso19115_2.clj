@@ -182,7 +182,7 @@
              (first (select party "gmd:contactInfo/gmd:CI_Contact/gmd:onlineResource/gmd:CI_OnlineResource"))]
     {:Linkage (url/format-url (value-of online-resource "gmd:linkage/gmd:URL") sanitize?)
      :Protocol (char-string-value online-resource "gmd:protocol")
-     :ApplicationProtocol (char-string-value online-resource "gmd:applicationProfile")
+     :ApplicationProfile (char-string-value online-resource "gmd:applicationProfile")
      :Name (su/with-default (char-string-value online-resource ":gmd:name") sanitize?)
      :Description (su/with-default (char-string-value online-resource "gmd:description") sanitize?)
      :Function (value-of online-resource "gmd:function/gmd:CI_OnLineFunctionCode")})))
