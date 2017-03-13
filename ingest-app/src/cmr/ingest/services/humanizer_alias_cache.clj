@@ -19,9 +19,10 @@
   []
   (stl-cache/create-single-thread-lookup-cache))
 
-(defn- retrieve-humanizer-alias-map
-  "Returns the alias map like the following. Note: All the replacement_value are UPPER-CASED,
-   so when using this map to get all the non-humanized source values for a given collection's platform,
+(defn- create-humanizer-alias-map
+  "Creates a map of humanizer aliases by type from the humanizer map and returns in the format below.
+   Note: All the replacement_value are UPPER-CASED, so when using this map to get
+   all the non-humanized source values for a given collection's platform,
    tile, or instrument, they need to be UPPER-CASED as well.
    {\"platform\" {\"TERRA\" [\"AM-1\" \"am-1\" \"AM 1\"] \"OTHERPLATFORMS\" [\"otheraliases\"]}
     \"tiling_system_name\" {\"TILE\" [\"tile_1\" \"tile_2\"] \"OTHERTILES\" [\"otheraliases\"]}
@@ -48,16 +49,15 @@
   (let [cache (cache/context->cache context humanizer-alias-cache-key)
         humanizer (humanizer/get-humanizers context)]
     (cache/set-value cache humanizer-alias-cache-key
-                 (retrieve-humanizer-alias-map humanizer))))
+                 (create-humanizer-alias-map humanizer))))
 
 (defn get-humanizer-alias-map
   "Returns the humanizer alias map"
   [context]
-  (let [cache (cache/context->cache context humanizer-alias-cache-key)
-        humanizer (humanizer/get-humanizers context)]
+  (let [cache (cache/context->cache context humanizer-alias-cache-key)]
     (cache/get-value cache
                  humanizer-alias-cache-key
-                 #(retrieve-humanizer-alias-map humanizer))))
+                 #(create-humanizer-alias-map (humanizer/get-humanizers context)))))
 
 (defn- get-field-aliases
   "Returns field aliases for a given element's fields, field-name-key and a field-alias-map.
