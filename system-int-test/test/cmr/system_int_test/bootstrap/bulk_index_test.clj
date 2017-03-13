@@ -54,6 +54,17 @@
      (is (= 201 (:status coll)))
      (merge umm (select-keys coll [:concept-id :revision-id])))))
 
+(defn- ingest-collection
+  "Saves and indexes a collection"
+  ([n]
+   (ingest-collection n {}))
+  ([n attributes]
+   (let [unique-str (str "coll" n)]
+     (d/ingest "PROV1"
+               (dc/collection (merge {:entry-title "ASTER L2 Surface Emissivity V003"
+                                      :native-id "NID-1"}
+                                     attributes))))))
+  
 (defn- save-granule
   "Saves a granule concept"
   ([n collection]
@@ -383,6 +394,58 @@
 
     ;; Re-enable message publishing.
     (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
+
+(deftest bulk-delete-by-concept-id 
+  (s/only-with-real-database
+    (let [coll1 (save-collection 1)
+          coll2 (save-collection 2 {})
+          colls (map :concept-id [coll1 coll2])
+          gran1 (save-granule 1 coll2)
+          gran2 (save-granule 2 coll2 {})
+          tag1 (save-tag 1)
+          tag2 (save-tag 2 {})
+          acl1 (save-acl 1
+                         {:extra-fields {:acl-identity "system:token"
+                                         :target-provider-id "PROV1"}}
+                         "TOKEN")
+          acl2 (save-acl 2
+                         {:extra-fields {:acl-identity "system:group"
+                                         :target-provider-id "PROV1"}}
+                         "GROUP")
+          group1 (save-group 1)
+          group2 (save-group 2 {})]
+
+      (bootstrap/bulk-delete-concepts "PROV1" :collection [(:concept-id coll1)])
+      (bootstrap/bulk-delete-concepts "PROV1" :granule [(:concept-id gran2)])
+      (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
+      
+      ;; Commented out until ACLs and groups are supported in the delete by concept-id API
+      ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
+      ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
+
+      (index/wait-until-indexed)
+
+      (testing "Concepts are deleted"
+        ;; Collections and granules
+        (are3 [concept-type expected]
+          (d/refs-match? expected (search/find-refs concept-type {}))
+
+          "Collections"
+          :collection [coll2]
+
+          "Granules"
+          :granule [gran1])
+
+        (are3 [expected-tags]
+            (let [result-tags (update
+                                (tags/search {})
+                                :items
+                                (fn [items]
+                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
+              (tags/assert-tag-search expected-tags result-tags))
+    
+            "Tags"
+            [tag2])))))
 
 (deftest bulk-index-after-date-time
   (s/only-with-real-database
