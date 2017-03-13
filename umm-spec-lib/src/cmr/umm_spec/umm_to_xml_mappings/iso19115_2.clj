@@ -191,7 +191,7 @@
                [:gmd:linkage
                 [:gmd:URL (:Linkage online-resource)]]
                [:gmd:protocol (char-string (:Protocol online-resource))]
-               [:gmd:applicationProfile (char-string (:ApplicationProtocol online-resource))]
+               [:gmd:applicationProfile (char-string (:ApplicationProfile online-resource))]
                [:gmd:name (char-string (:Name online-resource))]
                [:gmd:description (char-string (:Description online-resource))]
                [:gmd:function

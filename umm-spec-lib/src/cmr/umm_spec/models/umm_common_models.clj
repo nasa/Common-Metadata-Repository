@@ -657,7 +657,7 @@
     Protocol
 
     ;; The application protocol of the online resource.
-    ApplicationProtocol
+    ApplicationProfile
 
     ;; The name of the online resource.
     Name
