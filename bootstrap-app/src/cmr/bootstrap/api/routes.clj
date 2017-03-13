@@ -120,6 +120,20 @@
     {:status 202
      :body {:message msg}}))
 
+(defn bulk-delete-concepts-from-index-by-id
+  "Delete concepts from the indexes by concept-id."
+  [context request-details-map params]
+  (let [provider-id (get request-details-map "provider_id")
+        concept-type (keyword (get request-details-map "concept_type"))
+        concept-ids (get request-details-map "concept_ids")
+        synchronous (synchronous? params)
+        result (bs/delete-concepts-from-index-by-id context synchronous provider-id concept-type concept-ids)
+        msg (if synchronous
+              (str "Processed " result "conccepts for bulk deletion from indexes.")
+              (str "Processing concepts for bulk deletion from indexes."))]
+    {:status 202
+     :body {:message msg}}))
+
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
@@ -186,7 +200,11 @@
           (bulk-index-system-concepts request-context params))
 
         (POST "/concepts" {:keys [request-context body params]}
-          (bulk-index-concepts-by-id request-context body params)))
+          (bulk-index-concepts-by-id request-context body params))
+
+        (DELETE "/concepts" {:keys [request-context body params]}
+          (bulk-delete-concepts-from-index-by-id request-context body params)))
+        
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 

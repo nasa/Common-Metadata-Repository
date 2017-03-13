@@ -45,6 +45,22 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn bulk-delete-concepts
+  "Call the bootstrap app to bulk delete concepts by id."
+  [provider-id concept-type concept-ids]
+  (let [response (client/request
+                   {:method :delete
+                    :query-params {:synchronous true}
+                    :url (url/bulk-index-concepts-url)
+                    :body (json/generate-string {:provider_id provider-id
+                                                 :concept_type concept-type
+                                                 :concept_ids concept-ids})
+                    :content-type :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn bulk-index-provider
   "Call the bootstrap app to bulk index a provider."
   [provider-id]
