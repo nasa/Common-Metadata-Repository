@@ -115,10 +115,10 @@
     (bulk/delete-concepts-by-id (:system context) provider-id concept-type concept-ids)
     (let [channel (get-in context [:system :concept-id-channel])]
       (info "Adding bulk delete reqeust to concept-id channel.")
-      (go (>! channel {:provider-id provider-id} 
-                      :concept-type concept-type
-                      :request :delete
-                      :concept-ids concept-ids)))))
+      (go (>! channel {:provider-id provider-id 
+                       :concept-type concept-type
+                       :request :delete
+                       :concept-ids concept-ids})))))))))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
