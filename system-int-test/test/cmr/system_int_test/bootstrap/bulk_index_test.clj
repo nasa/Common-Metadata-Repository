@@ -53,17 +53,6 @@
      ;; Make sure the concept was saved successfully
      (is (= 201 (:status coll)))
      (merge umm (select-keys coll [:concept-id :revision-id])))))
-
-(defn- ingest-collection
-  "Saves and indexes a collection"
-  ([n]
-   (ingest-collection n {}))
-  ([n attributes]
-   (let [unique-str (str "coll" n)]
-     (d/ingest "PROV1"
-               (dc/collection (merge {:entry-title "ASTER L2 Surface Emissivity V003"
-                                      :native-id "NID-1"}
-                                     attributes))))))
   
 (defn- save-granule
   "Saves a granule concept"
@@ -399,7 +388,7 @@
   (s/only-with-real-database
     (let [coll1 (save-collection 1)
           coll2 (save-collection 2 {})
-          colls (map :concept-id [coll1 coll2])
+          coll3 (save-collection 3 {})
           gran1 (save-granule 1 coll2)
           gran2 (save-granule 2 coll2 {})
           tag1 (save-tag 1)
@@ -415,7 +404,7 @@
           group1 (save-group 1)
           group2 (save-group 2 {})]
 
-      (bootstrap/bulk-delete-concepts "PROV1" :collection [(:concept-id coll1)])
+      (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1 coll3]))
       (bootstrap/bulk-delete-concepts "PROV1" :granule [(:concept-id gran2)])
       (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
       

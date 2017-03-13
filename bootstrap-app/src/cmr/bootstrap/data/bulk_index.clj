@@ -203,7 +203,9 @@
                     :provider-id provider-id
                     :deleted true
                     :concept-type concept-type
-                    ;; add fake transaction-id and revision-id to generate valid _version for ES doc
+                    ;; Add fake transaction-id and revision-id to generate valid _version for ES doc.
+                    ;; No ES document is actually saved (we are deleting), but DELETE operations still
+                    ;; need a valid _version field, which is obtained from these.
                     :transaction-id 1
                     :revision-id 1})
         concept-batches (partition-all (:db-batch-size system) concepts)

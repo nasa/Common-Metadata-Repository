@@ -105,7 +105,7 @@
       (info "Adding bulk index request to concept-id channel.")
       (go (>! channel {:provider-id provider-id 
                        :concept-type concept-type 
-                       :requst :index 
+                       :request :index 
                        :concept-ids concept-ids})))))
 
 (defn delete-concepts-from-index-by-id
@@ -118,7 +118,7 @@
       (go (>! channel {:provider-id provider-id 
                        :concept-type concept-type
                        :request :delete
-                       :concept-ids concept-ids})))))))))
+                       :concept-ids concept-ids})))))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
