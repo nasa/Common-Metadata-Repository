@@ -43,19 +43,6 @@
       "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:contactInfo/"
       "gmd:CI_Contact/gmd:onlineResource/CI_OnlineResource"))
 
-(defn parse-distributions
-  "Returns the distributions parsed from the given xml document."
-  [doc sanitize?]
-  (for [distributor-element (select doc distributor-xpath)]
-    {:DistributionMedia (value-of distributor-element distributor-media-xpath)
-     :Sizes (for [transfer-el (select distributor-element distributor-transfer-options-xpath)
-                  :let [size (value-of transfer-el "gmd:transferSize/gco:Real")]]
-              {:Size size
-               :Unit (or (value-of transfer-el "gmd:unitsOfDistribution/gco:CharacterString")
-                         (when (and sanitize? size) "MB"))})
-     :DistributionFormat (value-of distributor-element distributor-format-xpath)
-     :Fees (value-of distributor-element distributor-fees-xpath)}))
-
 (defn- get-index-or-nil
  "Get the index of the key in the description. Return nil if the key does not
  exist in the description"
@@ -139,9 +126,8 @@
  (for [url (select doc publication-and-collection-url-path)
        :let [description (char-string-value url "gmd:description")]
        :when (and (some? description)
-                  (str/includes? description "PublicationURL"))
-       :let [types-and-desc (parse-url-types-from-description description)
-             url-content-type (or (:URLContentType types-and-desc) "PublicationURL")]]
+                  (not (str/includes? description "PublicationReference")))
+       :let [types-and-desc (parse-url-types-from-description description)]]
   {:URL (value-of url "gmd:linkage/gmd:URL")
    :Description (:Description types-and-desc)
    :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")
