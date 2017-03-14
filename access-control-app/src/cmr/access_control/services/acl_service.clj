@@ -75,6 +75,11 @@
     (let [new-concept (merge (acl-util/acl->base-concept context acl)
                             {:concept-id concept-id
                               :native-id (:native-id existing-concept)})
+          existing (edn/read-string (:metadata existing-concept))
+          ;; if user does not have system group read access, add back in any system groups the ACL currently has
+          newer-concept (when-not (acl-auth/has-system-access? :read "GROUPS")
+                          ;;TODO make sure the regex does not match non system groups for a provider like CMR-1 (is a dash valid in a provider name?)
+                          (merge new-concept (filter #(re-matches #"^CMR-" (:group-id %)) (:group-permissions existing))))
           resp (mdb/save-concept context new-concept)]
       ;; index the saved ACL synchronously
       (index/index-acl context
