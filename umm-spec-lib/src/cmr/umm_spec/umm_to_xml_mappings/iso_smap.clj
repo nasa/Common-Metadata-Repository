@@ -1,12 +1,14 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
-  (:require [clojure.string :as str]
-            [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
-            [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.date-util :as du]
-            [cmr.umm-spec.util :as su :refer [with-default char-string]]))
+  (:require 
+    [clojure.string :as str]
+    [cmr.common.xml.gen :refer :all]
+    [cmr.umm-spec.date-util :as du]
+    [cmr.umm-spec.iso-keywords :as kws]
+    [cmr.umm-spec.iso19115-2-util :as iso]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.distributions-related-url :as dru]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
+    [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
 (def iso-smap-xml-namespaces
   {:xmlns:gmd "http://www.isotc211.org/2005/gmd"
@@ -152,6 +154,7 @@
            [:gmd:title (char-string "DataSetId")]
            (generate-data-dates c)]]
          [:gmd:abstract (char-string "DataSetId")]
+         (dru/generate-browse-urls c)
          [:gmd:aggregationInfo
           [:gmd:MD_AggregateInformation
            [:gmd:aggregateDataSetIdentifier
@@ -161,7 +164,14 @@
             [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
                                           :codeListValue "largerWorkCitation"}
              "largerWorkCitation"]]]]
+         (dru/generate-publication-related-urls c)           
          [:gmd:language (char-string "eng")]]]
+       (dru/generate-service-related-url (:RelatedUrls c))
+       (let [related-url-distributions (dru/generate-distributions c)]
+        (when related-url-distributions
+         [:gmd:distributionInfo
+          [:gmd:MD_Distribution
+           related-url-distributions]]))    
        [:gmd:dataQualityInfo
         [:gmd:DQ_DataQuality
          [:gmd:scope

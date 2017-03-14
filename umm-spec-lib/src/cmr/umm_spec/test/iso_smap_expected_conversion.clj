@@ -3,6 +3,7 @@
  (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
+   [clojure.string :as str]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -12,7 +13,28 @@
    [cmr.umm-spec.related-url :as ru-gen]
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]))
+
+(defn- expected-iso-smap-related-urls
+  [related-urls]
+  (when (seq related-urls)
+    (seq (for [related-url related-urls]
+          (-> related-url
+              (assoc :MimeType nil :FileSize nil)
+              (update :URL #(url/format-url % true)))))))
+
+(defn- expected-collection-related-urls
+ "Update the collection top level RelatedUrls. Do processing not applicable
+ for data center/data contact RelatedUrls. DataCenter and DataContact URL
+ types are not applicable here, so remove."
+ [related-urls]
+ (let [related-urls (expected-iso-smap-related-urls related-urls)]
+   (seq (for [related-url
+              (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
+                      related-urls)]
+          (-> related-url
+              (update :Description #(when % (str/trim %))))))))
 
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all
@@ -78,7 +100,7 @@
         (assoc :Projects nil)
         (assoc :PublicationReferences nil)
         (assoc :AncillaryKeywords nil)
-        (assoc :RelatedUrls nil)
+        (update :RelatedUrls expected-collection-related-urls) 
         (assoc :ISOTopicCategories nil)
         ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
         ;; Platform Characteristics are also not supported.
