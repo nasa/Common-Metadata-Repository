@@ -195,6 +195,24 @@
     (info "Indexed " total " concepts.")
     total))
 
+(defn delete-concepts-by-id
+  "Delete the concepts of the given type for the given provder with the given concept-ids."
+  [system provider-id concept-type concept-ids]
+  (let [concepts (for [concept-id concept-ids]
+                   {:concept-id concept-id
+                    :provider-id provider-id
+                    :deleted true
+                    :concept-type concept-type
+                    ;; Add fake transaction-id and revision-id to generate valid _version for ES doc.
+                    ;; No ES document is actually saved (we are deleting), but DELETE operations still
+                    ;; need a valid _version field, which is obtained from these.
+                    :transaction-id 1
+                    :revision-id 1})
+        concept-batches (partition-all (:db-batch-size system) concepts)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches {:force-version? true})]
+    (info "Deleted " total " concepts")
+    total))
+
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
@@ -260,7 +278,9 @@
   (let [channel (:concept-id-channel system)]
     (ca/thread (while true
                 (try ; log errors but keep the thread alive)
-                  (let [{:keys [provider-id concept-type concept-ids]} (<!! channel)]
-                    (index-concepts-by-id system provider-id concept-type concept-ids))
+                  (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
+                    (if (= request :delete)
+                      (delete-concepts-by-id system provider-id concept-type concept-ids)
+                      (index-concepts-by-id system provider-id concept-type concept-ids)))
                   (catch Throwable e
                     (error e (.getMessage e))))))))

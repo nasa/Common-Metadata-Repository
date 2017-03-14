@@ -18,7 +18,7 @@
 
 (def processor-xpath
  (str "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:processStep/"
-      "gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty"))
+      "gmi:LE_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty"))
 
 (def iso-data-center-role->umm-role
  {"custodian" "ARCHIVER"

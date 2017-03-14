@@ -311,21 +311,21 @@
      :revision-id revision-id
      :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
      :native-id native-id
-     :native-id.lowercase (str/lower-case native-id)
+     :native-id.lowercase (util/safe-lowercase native-id)
      :user-id user-id
      :short-name short-name
      :short-name.lowercase (util/safe-lowercase short-name)
      :entry-id entry-id
-     :entry-id.lowercase (str/lower-case entry-id)
+     :entry-id.lowercase (util/safe-lowercase entry-id)
      :entry-title entry-title
-     :entry-title.lowercase (str/lower-case entry-title)
+     :entry-title.lowercase (util/safe-lowercase entry-title)
      :version-id version-id
      :version-id.lowercase (util/safe-lowercase version-id)
      :deleted (boolean deleted)
      :provider-id provider-id
-     :provider-id.lowercase (str/lower-case provider-id)
+     :provider-id.lowercase (util/safe-lowercase provider-id)
      :revision-date2 revision-date
-     :metadata-format (name (mt/format-key format))
+     :metadata-format (when format (name (mt/format-key format)))
      :permitted-group-ids tombstone-permitted-group-ids}))
 
 (defmethod es/parsed-concept->elastic-doc :collection

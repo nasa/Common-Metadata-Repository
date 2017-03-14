@@ -311,13 +311,13 @@
           "maxLength": 1024
         },
         "Protocol": {
-          "description": "The protocol of the linkage for the online resource.",
+          "description": "The protocol of the linkage for the online resource, such as https, svn, ftp, etc.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
-        "ApplicationProtocol": {
-          "description": "The application protocol of the online resource.",
+        "ApplicationProfile": {
+          "description": "The application profile holds the name of the application that can service the data. For example if the URL points to a word document, then the applicationProfile is MS-Word.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
@@ -335,7 +335,7 @@
           "maxLength": 1024
         },
         "Function": {
-          "description": "The function of the online resource.",
+          "description": "The function of the online resource. In ISO where this class originated the valid values are: download, information, offlineAccess, order, and search.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
@@ -1463,7 +1463,7 @@
                "SSW", "SUBSETTER", "THREADS CATALOG", "THREADS DATA", "THREDDS DIRECTORY", "WEB COVERAGE SERVICE (WCS)",
                "WEB FEATURE SERVICE (WFS)", "WEB MAP FOR TIME SERIES", "WEB MAP SERVICE (WMS)", "WORKFLOW (SERVICE CHAIN)",
                "GIBS", "ALGORITHM THEORETICAL BASIS DOCUMENT", "CALIBRATION DATA DOCUMENTATION", "DATA QUALITY",
-               "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
+               "CASE STUDY", "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
                "PROCESSING HISTORY", "PRODUCTION VERSION HISTORY", "PRODUCT QUALITY ASSESSMENT", "PRODUCT USAGE",
                "PRODUCT HISTORY", "PUBLICATIONS", "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS", "READ-ME",
                "RECIPE", "REQUIREMENTS AND DESIGN", "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION",
