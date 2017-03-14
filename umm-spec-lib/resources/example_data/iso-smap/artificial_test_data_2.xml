@@ -803,7 +803,7 @@
                     <gmd:citation></gmd:citation>
                     <gmd:abstract></gmd:abstract>
                     <srv:serviceType>
-                        <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE Subtype:...</gco:LocalName>
+                        <gco:LocalName>RelatedURL URLContentType: DistributionURL Type: GET SERVICE Subtype: SSW</gco:LocalName>
                     </srv:serviceType>
                     <srv:couplingType>
                         <srv:SV_CouplingType codeList="" codeListValue="">tight</srv:SV_CouplingType>
