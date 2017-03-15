@@ -5,6 +5,10 @@
            [clojure.string :as str]
            [clojure.java.io :as io]))
 
+(def assets-path
+  "Defines path to cmr_metadata_preview gem assets"
+  "cmr_metadata_preview/assets")
+
 (defn- resource-or-not-found
   "Returns a URL to the resource on the classpath or throws a not found error"
   [resource]
@@ -25,8 +29,8 @@
       (GET "/:resource" {{resource :resource} :params}
         {:status 200
          :headers {"content-type" "application/javascript"}
-         :body (slurp (resource-or-not-found (str "public/javascripts/" resource)))}))
-
+         :body (slurp (resource-or-not-found
+                       (str assets-path "/javascripts/cmr_metadata_preview/" resource)))}))
     (context "/stylesheets" []
       (GET "/:resource" {{resource :resource} :params}
         {:status 200
@@ -34,11 +38,18 @@
          :body
          (replace-relative-root-url
           system
-          (slurp (resource-or-not-found (str "public/stylesheets/" resource))))}))
-
-    (context "/images" []
+          (slurp (resource-or-not-found
+                  (str assets-path "/stylesheets/cmr_metadata_preview/" resource))))}))
+    (context "/images/cmr_metadata_preview" []
       (GET "/:resource" {{resource :resource} :params}
         {:status 200
          :headers {"content-type" (str "image/" (last (str/split resource #"\.")))}
-         :body (io/input-stream (resource-or-not-found (str "public/images/" resource)))}))))
-
+         :body (io/input-stream
+                (resource-or-not-found (str assets-path "/images/cmr_metadata_preview/" resource)))}))
+    (context "/assets/cmr_metadata_preview/ed-images" []
+      (GET "/:resource" {{resource :resource} :params}
+        {:status 200
+         :headers {"content-type" (str "image/" (last (str/split resource #"\.")))}
+         :body (io/input-stream
+                (resource-or-not-found
+                 (str assets-path "/images/cmr_metadata_preview/ed-images/" resource)))}))))

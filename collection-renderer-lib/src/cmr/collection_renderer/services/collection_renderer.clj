@@ -86,5 +86,3 @@
                ;; Arguments for collection preview. See the ERB file for documentation.
                {"umm_json" umm-json
                 "relative_root_url" (context->relative-root-url context)})))
-
-

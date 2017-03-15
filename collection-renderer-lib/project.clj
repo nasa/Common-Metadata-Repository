@@ -62,7 +62,9 @@
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}}
-  :aliases {"install-gems" ~(install-gems-command gem-versions)
+  :aliases {"install-gems" ["shell"
+                            "support/install_gems.sh"
+                            "https://git@git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git"]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]})
