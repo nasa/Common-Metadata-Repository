@@ -5,6 +5,14 @@
            [clojure.string :as str]
            [clojure.java.io :as io]))
 
+(def cmr-metadata-preview-gem
+  "Define the cmr_metadata_preview gem name. Update this when a new version of the gem is created."
+  "cmr_metadata_preview-0.0.1")
+
+; (def assets-path
+;   "Defines path to cmr_metadata_preview gem assets"
+;   (format "gems/%s/app/assets" cmr-metadata-preview-gem))
+
 (def assets-path
   "Defines path to cmr_metadata_preview gem assets"
   "cmr_metadata_preview/assets")
