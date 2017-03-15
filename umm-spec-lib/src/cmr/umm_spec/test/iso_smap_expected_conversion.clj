@@ -17,24 +17,25 @@
    [cmr.umm-spec.util :as su]))
 
 (defn- expected-iso-smap-related-urls
+  "The expected RelatedUrl value when converting from umm-C to iso-smap
+   and back to umm-C"
   [related-urls]
-  (when (seq related-urls)
-    (seq (for [related-url related-urls]
-          (-> related-url
-              (assoc :MimeType nil :FileSize nil)
-              (update :URL #(url/format-url % true)))))))
+  (seq (for [related-url related-urls]
+         (-> related-url
+             (assoc :MimeType nil :FileSize nil)
+             (update :URL #(url/format-url % true))))))
 
 (defn- expected-collection-related-urls
- "Update the collection top level RelatedUrls. Do processing not applicable
- for data center/data contact RelatedUrls. DataCenter and DataContact URL
- types are not applicable here, so remove."
- [related-urls]
- (let [related-urls (expected-iso-smap-related-urls related-urls)]
-   (seq (for [related-url
-              (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
-                      related-urls)]
-          (-> related-url
-              (update :Description #(when % (str/trim %))))))))
+  "Update the collection top level RelatedUrls. Do processing not applicable
+  for data center/data contact RelatedUrls. DataCenter and DataContact URL
+  types are not applicable here, so remove."
+  [related-urls]
+  (let [related-urls (expected-iso-smap-related-urls related-urls)]
+    (seq (for [related-url
+                (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
+                        related-urls)]
+           (-> related-url
+               (update :Description #(when % (str/trim %))))))))
 
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all

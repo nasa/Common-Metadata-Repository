@@ -6,7 +6,7 @@
     [cmr.umm-spec.date-util :as du]
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.distributions-related-url :as dru]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
@@ -154,7 +154,7 @@
            [:gmd:title (char-string "DataSetId")]
            (generate-data-dates c)]]
          [:gmd:abstract (char-string "DataSetId")]
-         (dru/generate-browse-urls c)
+         (sdru/generate-browse-urls c)
          [:gmd:aggregationInfo
           [:gmd:MD_AggregateInformation
            [:gmd:aggregateDataSetIdentifier
@@ -164,10 +164,10 @@
             [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
                                           :codeListValue "largerWorkCitation"}
              "largerWorkCitation"]]]]
-         (dru/generate-publication-related-urls c)           
+         (sdru/generate-publication-related-urls c)           
          [:gmd:language (char-string "eng")]]]
-       (dru/generate-service-related-url (:RelatedUrls c))
-       (let [related-url-distributions (dru/generate-distributions c)]
+       (sdru/generate-service-related-url (:RelatedUrls c))
+       (let [related-url-distributions (sdru/generate-distributions c)]
         (when related-url-distributions
          [:gmd:distributionInfo
           [:gmd:MD_Distribution
