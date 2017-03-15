@@ -1,12 +1,11 @@
-(ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url
-  "Functions for generating ISO19115-2 XML elements from UMM related-url records."
-  (:require [clojure.string :as str]
-            [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.url :as url]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.util :as su :refer [char-string]]))
-
+(ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url
+  "Functions for generating ISO XML elements from UMM related-url records."
+  (:require 
+    [clojure.string :as str]
+    [cmr.common.xml.gen :refer :all]
+    [cmr.umm-spec.iso19115-2-util :as iso]
+    [cmr.umm-spec.url :as url]
+    [cmr.umm-spec.util :refer [char-string]]))
 
 (def type->name
   "Mapping of related url type to online resource name"
