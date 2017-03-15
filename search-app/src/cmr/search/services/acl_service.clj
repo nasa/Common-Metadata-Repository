@@ -34,7 +34,7 @@
   * :entry-title"
   [context concepts]
   (when (seq concepts)
-    (if (tc/echo-system-token?)
+    (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token
       concepts
       (let [acls (acl-helper/get-acls-applicable-to-token context)
