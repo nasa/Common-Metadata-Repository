@@ -12,7 +12,7 @@
     [c]
     "Extracts keywords and keyword like values from keyword conditions and conditions which apply
      to keywords scoring. Returns 2 sequences of keywords - one list from the
-     keyword condition and one from fields.")
+     keyword condition and one from fields in the format {:keywords [...] :field-keywords [...]}")
   (contains-keyword-condition?
    [c]
    "Returns true if the query contains a keyword condition?"))
