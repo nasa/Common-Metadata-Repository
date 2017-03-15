@@ -57,8 +57,11 @@
                          :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
         p5 (dc/platform {:short-name "fo&nA"})
         p6 (dc/platform {:short-name "spo~nA"})
+        p7 (dc/platform {:short-name "platform7"
+                         :instruments [(dc/instrument {:short-name "INST7"})]})
         pboost (dc/platform {:short-name "boost"})
         pr1 (dc/projects "project-short-name")
+        pr2 (dc/projects "Proj-2")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
                                  :term "Term1"
@@ -103,7 +106,10 @@
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "OTHER"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "OTHER"}))
         coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :short-name "Space!Laser"}))
-        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :organizations [org]}))
+        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6"
+                                                :organizations [org]
+                                                :projects pr2
+                                                :platforms [p7]}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
 
@@ -407,6 +413,23 @@
         "provider-id"
         {:keyword "PROV1"} [provider-boost provider-boost provider-boost provider-boost]))
 
+   (testing "Combine keyword and param boosts"
+     ;; Check that the scores are very close to account for slight difference in
+     ;; number coming from elastic.
+     (are3 [params score]
+        (is (< (Math/abs
+                (double (- (/ score 2.0)
+                           (:score (first (:refs (search/find-refs :collection params)))))))
+               0.0000001))
+
+
+       "combine keyword, data center, and instrument"
+       {:keyword "Proj-2" :data-center "Some&Place" :instrument "INST7"}
+       (* project-boost data-center-boost instrument-boost)
+
+       "instrument search and instrument keyword only results in one instrument boost"
+       {:keyword "INST7" :instrument "INST7"} instrument-boost)
+
     (testing "Specified boosts on fields"
       (are3 [params scores] (is (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection params)))))
@@ -425,7 +448,7 @@
         "instrument short-name"
         {:keyword (:short-name (first (:instruments p1))) :boosts {:instrument 5.0}} [5.0]
 
-        ;; In UMM-C sensors are now instruments. All instruments (instruments + child instruments, 
+        ;; In UMM-C sensors are now instruments. All instruments (instruments + child instruments,
         ;; aka sensors) are indexed as both instruments and sensors until sensors search goes
         ;; away. Since they are instruments, there is no longer a sensor boost, but instrument
         ;; boost will be used.
@@ -563,7 +586,7 @@
 
     (testing "JSON negated keyword search does not return score"
       (let [refs (search/find-refs-with-json-query :collection {} {:not {:keyword "Laser"}})]
-        (is (not-any? :score (:refs refs)))))))
+        (is (not-any? :score (:refs refs))))))))
 
 ;; This test is separated out from the rest of the keyword search tests because we need to
 ;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using.

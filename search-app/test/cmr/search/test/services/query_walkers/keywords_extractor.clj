@@ -34,10 +34,11 @@
                  (qm/string-condition :processing-level-id "processing-level-id")
                  (qm/string-condition :data-center "data-center")
                  (qm/string-condition :archive-center "archive-center"))))
-        expected-keywords ["foo" "bar" "platform1" "platform2" "project" "instrument" "sensor"
-                           "category" "topic" "term" "variable-level-1" "variable-level-2"
-                           "variable-level-3" "any" "two-d-coordinate-system-name"
-                           "processing-level-id" "data-center" "archive-center"]]
+        expected-keywords {:keywords ["foo" "bar"]
+                           :field-keywords ["platform1" "platform2" "project" "instrument" "sensor"
+                                            "category" "topic" "term" "variable-level-1" "variable-level-2"
+                                            "variable-level-3" "any" "two-d-coordinate-system-name"
+                                            "processing-level-id" "data-center" "archive-center"]}]
     (ke/extract-keywords query)))
 
 (deftest contains-keyword-condition-test

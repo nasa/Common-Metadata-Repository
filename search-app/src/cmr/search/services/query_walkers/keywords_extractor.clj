@@ -10,17 +10,22 @@
   (extract-keywords-seq
     [c]
     "Extracts keywords and keyword like values from keyword conditions and conditions which apply
-     to keywords scoring. Returns a sequence of the keywords.")
+     to keywords scoring. Returns 2 sequences of distinct keywords - one list from the
+     keyword condition and one from fields.")
   (contains-keyword-condition?
    [c]
    "Returns true if the query contains a keyword condition?"))
 
 (defn extract-keywords
   "Extracts keywords and keyword like values from keyword conditions and conditions which apply
-   to keywords scoring. Returns a sequence of the distinct keywords or nil if there are none."
+   to keywords scoring. Returns 2 sequences of distinct keywords - one list from the
+   keyword condition and one from fields. The lists are nil if no keywords exist.
+   The format is {:keywords [...] :field-keywords [...]}"
   [c]
-  (when-let [keywords (seq (extract-keywords-seq c))]
-    (distinct keywords)))
+  (when-let [keywords (seq (remove nil? (flatten (extract-keywords-seq c))))]
+    (let [keyword-groups (group-by :from-keyword keywords)]
+      {:keywords (seq (distinct (mapcat :keywords (get keyword-groups true))))
+       :field-keywords (seq (distinct (mapcat :keywords (get keyword-groups false))))})))
 
 (def ^:private keyword-string-fields
   "This defines the set of string condition fields that we will extract keyword terms from. Any condition
@@ -61,7 +66,7 @@
   cmr.common_app.services.search.query_model.ConditionGroup
   (extract-keywords-seq
    [{:keys [conditions]}]
-   (mapcat extract-keywords-seq conditions))
+   (map extract-keywords-seq conditions))
   (contains-keyword-condition?
    [{:keys [conditions]}]
    (reduce (fn [_ condition]
@@ -84,7 +89,8 @@
   (extract-keywords-seq
    [{:keys [field query-str]}]
    (when (= field :keyword)
-     (extract-keywords-seq-from-value query-str)))
+     {:keywords (extract-keywords-seq-from-value query-str)
+      :from-keyword true}))
   (contains-keyword-condition?
    [{:keys [field]}]
    (= field :keyword))
@@ -94,7 +100,8 @@
   (extract-keywords-seq
    [{:keys [field value]}]
    (when (contains? keyword-string-fields field)
-     (extract-keywords-seq-from-value value)))
+     {:keywords (extract-keywords-seq-from-value value)
+      :from-keyword false}))
   (contains-keyword-condition?
    [_]
    false)
@@ -104,7 +111,8 @@
   (extract-keywords-seq
    [{:keys [field values]}]
    (when (contains? keyword-string-fields field)
-     (mapcat extract-keywords-seq-from-value values)))
+     {:keywords (mapcat extract-keywords-seq-from-value values)
+      :from-keyword false}))
   (contains-keyword-condition?
    [_]
    false)
@@ -126,4 +134,3 @@
   (contains-keyword-condition?
    [this]
    false))
-
