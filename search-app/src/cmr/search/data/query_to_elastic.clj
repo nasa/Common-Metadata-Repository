@@ -236,16 +236,17 @@
         core-query (q2e/condition->elastic condition concept-type)]
     (let [keywords (keywords-in-query query)]
       (if-let [all-keywords (seq (concat (:keywords keywords) (:field-keywords keywords)))]
-        (let [_ (validate-keyword-wildcards all-keywords)]
-         ;; Forces score to be returned even if not sorting by score.
-         {:track_scores true
-          ;; function_score query allows us to compute a custom relevance score for each document
-          ;; matched by the primary query. The final document relevance is given by multiplying
-          ;; a boosting term for each matching filter in a set of filters.
-          :query {:function_score {:score_mode :multiply
-                                   :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
-                                   :query {:filtered {:query (eq/match-all)
-                                                      :filter core-query}}}}})
+       (do
+        (validate-keyword-wildcards all-keywords)
+        ;; Forces score to be returned even if not sorting by score.
+        {:track_scores true
+         ;; function_score query allows us to compute a custom relevance score for each document
+         ;; matched by the primary query. The final document relevance is given by multiplying
+         ;; a boosting term for each matching filter in a set of filters.
+         :query {:function_score {:score_mode :multiply
+                                  :functions (k2e/keywords->boosted-elastic-filters keywords boosts)
+                                  :query {:filtered {:query (eq/match-all)
+                                                     :filter core-query}}}}})
        (if boosts
          (errors/throw-service-errors :bad-request ["Relevance boosting is only supported for keyword queries"])
          {:query {:filtered {:query (eq/match-all)
