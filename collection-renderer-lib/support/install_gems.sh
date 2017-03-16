@@ -15,6 +15,9 @@ remove_dir ()
 
 # clean up temp gem directory first
 remove_dir $tmpGemDir
+# unset env vars that might cause warning messages
+unset GEM_HOME
+unset GEM_PATH
 
 # clone cmr_metadata_preview from repo and install the gems
 git clone $1 $tmpGemDir
