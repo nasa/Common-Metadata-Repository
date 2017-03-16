@@ -1,7 +1,8 @@
 (ns cmr.search.services.acl-service
   "Performs ACL related tasks for the search application"
-  (:require [cmr.search.services.acls.acl-helper :as acl-helper]
-            [cmr.transmit.config :as tc]))
+  (:require
+    [cmr.search.services.acls.acl-helper :as acl-helper]
+    [cmr.transmit.config :as tc]))
 
 (defmulti acls-match-concept?
   "Returns true if any of the acls match the concept."

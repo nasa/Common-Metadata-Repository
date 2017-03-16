@@ -43,20 +43,20 @@
 (deftest collection-search-with-no-acls-test
   ;; system token can see all collections with no ACLs
   (let [guest-token (e/login-guest (s/context))
-        c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
-                                                  :access-value 1})
+        c1-echo (d/ingest "PROV1"
+                          (dc/collection {:entry-title "c1-echo" :access-value 1})
                           {:format :echo10})
-        c1-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c1-dif"
-                                                     :access-value 1})
+        c1-dif (d/ingest "PROV1"
+                         (dc/collection-dif {:entry-title "c1-dif" :access-value 1})
                          {:format :dif})
-        c1-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "c1-dif10"
-                                                         :access-value 1})
+        c1-dif10 (d/ingest "PROV1"
+                           (dc/collection-dif10 {:entry-title "c1-dif10" :access-value 1})
                            {:format :dif10})
-        c1-iso (d/ingest "PROV1" (dc/collection {:entry-title "c1-iso"
-                                                 :access-value 1})
+        c1-iso (d/ingest "PROV1"
+                         (dc/collection {:entry-title "c1-iso" :access-value 1})
                          {:format :iso19115})
-        c1-smap (d/ingest "PROV1" (dc/collection {:entry-title "c1-smap"
-                                                  :access-value 1})
+        c1-smap (d/ingest "PROV1"
+                          (dc/collection {:entry-title "c1-smap" :access-value 1})
                           {:format :iso-smap})]
     (index/wait-until-indexed)
 
