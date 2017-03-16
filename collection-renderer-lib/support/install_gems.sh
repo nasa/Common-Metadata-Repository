@@ -20,9 +20,9 @@ remove_dir $tmpGemDir
 git clone $1 $tmpGemDir
 currDir=$PWD
 cd $tmpGemDir
-java -cp /Users/yliu10/.m2/repository/org/jruby/jruby-complete/$jruby_version/jruby-complete-$jruby_version.jar org.jruby.Main -S gem build *.gemspec
+java -cp $HOME/.m2/repository/org/jruby/jruby-complete/$jruby_version/jruby-complete-$jruby_version.jar org.jruby.Main -S gem build *.gemspec
 echo "Installing gems..."
-java -cp /Users/yliu10/.m2/repository/org/jruby/jruby-complete/$jruby_version/jruby-complete-$jruby_version.jar org.jruby.Main -S gem install $gemName -i ../gems
+java -cp $HOME/.m2/repository/org/jruby/jruby-complete/$jruby_version/jruby-complete-$jruby_version.jar org.jruby.Main -S gem install $gemName -i ../gems
 
 # cleanup temp gem directory
 cd $currDir
