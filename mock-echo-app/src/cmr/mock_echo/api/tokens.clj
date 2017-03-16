@@ -94,9 +94,9 @@
         (GET "/token_info" {context :request-context headers :headers }
           (if (= "expired-token" token-id)
             ;; echo-rest returns status code 400 for request with expired token
-            (ah/status-bad-request {:errors ["Token [expired-token] has expired."]}))
+            (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
             (do
               (ah/require-sys-admin-token headers)
-              (ah/status-ok (get-token-info context token-id))))))
+              (ah/status-ok (get-token-info context token-id)))))))
     (GET "/availability" {context :request-context}
       {:status 200})))

@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.acls.collection-acl-search-test
   "Tests searching for collections with ACLs in place"
   (:require
-    [cmr.common-app.test.side-api :as side] 
+    [cmr.common-app.test.side-api :as side]
     [clojure.test :refer :all]
     [clojure.string :as str]
     [cmr.common.services.messages :as msg]
