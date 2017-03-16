@@ -143,7 +143,7 @@
            [:gmd:CI_OnlineResource
             [:gmd:linkage
              [:gmd:URL (:URL publication-url)]]
-            [:gmd:description (char-string (str "PublicationURL " description))]]]]]
+            [:gmd:description (char-string description)]]]]]
         [:gmd:role
          [:gmd:CI_RoleCode
           {:codeList "" :codeListValue ""}]]]]]]

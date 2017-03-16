@@ -35,26 +35,12 @@
   (str "/gmd:DS_Series/gmd:seriesMetadata"
        "/gmi:MI_Metadata/gmd:identificationInfo/srv:SV_ServiceIdentification"))
 
-(def publication-and-collection-url-path
+(def publication-url-path
  (str "/gmd:DS_Series/gmd:seriesMetadata"
       "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:aggregationInfo/"
       "gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation/"
       "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:contactInfo/"
       "gmd:CI_Contact/gmd:onlineResource/CI_OnlineResource"))
-
-(defn- parse-publication-and-collection-urls
- "Parse PublicationURL and CollectionURL from the publication/collection location."
- [doc sanitize?]
- (for [url (select doc publication-and-collection-url-path)
-       :let [description (char-string-value url "gmd:description")]
-       :when (and (some? description)
-                  (not (str/includes? description "PublicationReference")))
-       :let [types-and-desc (sdru/parse-url-types-from-description description)]]
-  {:URL (value-of url "gmd:linkage/gmd:URL")
-   :Description (:Description types-and-desc)
-   :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")
-   :Type (or (:Type types-and-desc) "VIEW RELATED INFORMATION")
-   :Subtype (:Subtype types-and-desc)}))
 
 (defn parse-related-urls
   "Parse related-urls present in the document"
@@ -62,4 +48,4 @@
   (seq (concat (sdru/parse-online-and-service-urls
                  doc sanitize? service-url-path distributor-online-url-xpath)
                (sdru/parse-browse-graphics doc sanitize? browse-graphic-xpath)
-               (parse-publication-and-collection-urls doc sanitize?))))
+               (sdru/parse-publication-urls doc sanitize? publication-url-path))))
