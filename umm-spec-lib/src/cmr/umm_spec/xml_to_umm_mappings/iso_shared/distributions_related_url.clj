@@ -112,3 +112,17 @@
       :Type "GET RELATED VISUALIZATION"
       :Subtype (:Subtype types-and-desc)}))
 
+(defn parse-publication-urls
+ "Parse PublicationURL and CollectionURL from the publication location."
+ [doc sanitize? publication-url-path]
+ (for [url (select doc publication-url-path)
+       :let [description (char-string-value url "gmd:description")]
+       :when (and (some? description)
+                  (not (str/includes? description "PublicationReference:")))
+       :let [types-and-desc (parse-url-types-from-description description)
+             url-content-type (or (:URLContentType types-and-desc) "PublicationURL")]]
+  {:URL (value-of url "gmd:linkage/gmd:URL")
+   :Description (:Description types-and-desc)
+   :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")
+   :Type (or (:Type types-and-desc) "VIEW RELATED INFORMATION")
+   :Subtype (:Subtype types-and-desc)}))

@@ -50,25 +50,10 @@
      :DistributionFormat (value-of distributor-element distributor-format-xpath)
      :Fees (value-of distributor-element distributor-fees-xpath)}))
 
-(defn- parse-publication-urls
- "Parse PublicationURL and CollectionURL from the publication location."
- [doc sanitize?]
- (for [url (select doc publication-url-path)
-       :let [description (char-string-value url "gmd:description")]
-       :when (and (some? description)
-                  (str/includes? description "PublicationURL"))
-       :let [types-and-desc (sdru/parse-url-types-from-description description)
-             url-content-type (or (:URLContentType types-and-desc) "PublicationURL")]]
-  {:URL (value-of url "gmd:linkage/gmd:URL")
-   :Description (:Description types-and-desc)
-   :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")
-   :Type (or (:Type types-and-desc) "VIEW RELATED INFORMATION")
-   :Subtype (:Subtype types-and-desc)}))
-
 (defn parse-related-urls
   "Parse related-urls present in the document"
   [doc sanitize?]
   (seq (concat (sdru/parse-online-and-service-urls 
                  doc sanitize? service-url-path distributor-online-url-xpath)
                (sdru/parse-browse-graphics doc sanitize? browse-graphic-xpath)
-               (parse-publication-urls doc sanitize?))))
+               (sdru/parse-publication-urls doc sanitize? publication-url-path))))
