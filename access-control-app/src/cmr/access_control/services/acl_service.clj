@@ -75,7 +75,6 @@
     (let [new-concept (merge (acl-util/acl->base-concept context acl)
                             {:concept-id concept-id
                               :native-id (:native-id existing-concept)})
-          existing (edn/read-string (:metadata existing-concept))
           resp (mdb/save-concept context new-concept)]
       ;; index the saved ACL synchronously
       (index/index-acl context
