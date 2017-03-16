@@ -56,6 +56,7 @@
   "A mapping of UMM RelatedURL's type to ECHO10 OnlineResource's type.
   This list is used for generating ECHO10 OnlineResources from UMM RelatedURLs."
   {"GET DATA" "DATA ACCESS"
+   "GET SERVICE" "SOFTWARE"
    "GET RELATED VISUALIZATION" "BROWSE"
    "VIEW RELATED INFORMATION" "USER SUPPORT"
    "OPENDAP DATA ACCESS" "GET DATA : OPENDAP DATA (DODS)"

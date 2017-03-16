@@ -76,15 +76,16 @@
     (cmn/map->RelatedUrlType
      (-> related-url
          expected-related-url-type
-         (dissoc :Relation :FileSize)
+         (dissoc :Relation :FileSize :MimeType)
          (update :URL url/format-url true))))))
 
 (defn- expected-echo10-reorder-related-urls
   "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."
   [umm-coll]
-  (seq (concat (ru-gen/downloadable-urls (:RelatedUrls umm-coll))
-               (ru-gen/resource-urls (:RelatedUrls umm-coll))
-               (ru-gen/browse-urls (:RelatedUrls umm-coll)))))
+  (seq (map #(dissoc % :FileSize :MimeType)
+            (concat (ru-gen/downloadable-urls (:RelatedUrls umm-coll))
+                    (ru-gen/resource-urls (:RelatedUrls umm-coll))
+                    (ru-gen/browse-urls (:RelatedUrls umm-coll))))))
 
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."

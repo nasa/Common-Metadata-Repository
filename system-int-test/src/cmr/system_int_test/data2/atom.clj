@@ -226,7 +226,8 @@
   "Returns the atom link of the given related url. Collection's related url uses umm-spec-lib for
   parsing and granule's related url uses umm-lib for parsing and the title is parsed differently."
   [related-url concept-type]
-  (let [{:keys [type url title mime-type size inherited]} related-url
+  (let [{:keys [type url title size inherited]} related-url
+        mime-type (get-in related-url [:GetService :MimeType])
         rel (if type
              (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#")
              "http://esipfed.org/ns/fedsearch/1.1/documentation#") ; The UMM spec default is a doc URL

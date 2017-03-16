@@ -116,7 +116,6 @@
   (when (seq related-urls)
     (seq (for [related-url related-urls]
           (-> related-url
-              (assoc :MimeType nil :FileSize nil)
               (update :URL #(url/format-url % true)))))))
 
 (defn- expected-collection-related-urls
@@ -129,6 +128,7 @@
               (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
                       related-urls)]
           (-> related-url
+              (dissoc :FileSize :MimeType)
               (update :Description #(when % (str/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values

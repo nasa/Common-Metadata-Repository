@@ -82,7 +82,12 @@
       (merge
        url-type
        {:URL (url/format-url url sanitize?)
-        :Description description}))))
+        :Description description}
+       (when (= "DistributionURL" (:URLContentType url-type))
+         (case (:Type url-type)
+           "GET DATA" {:GetData nil}
+           "GET SERVICE" {:GetService nil}
+           nil))))))
 
 (defn parse-temporal-extents
  "Return a list of temporal extents from the XML doc"

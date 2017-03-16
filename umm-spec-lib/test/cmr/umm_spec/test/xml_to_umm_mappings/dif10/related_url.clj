@@ -27,10 +27,10 @@
              :Type "GET RELATED VISUALIZATION"}
             {:URL "http://reverb.echo.nasa.gov/reverb/"
              :Description "Interface to search, discover, and access EOS data products, and invoke available data services."
-             :MimeType nil
              :URLContentType "DistributionURL"
              :Type "GET DATA"
-             :Subtype "REVERB"}]
+             :Subtype "REVERB"
+             :GetData nil}]
            (ru/parse-related-urls
              "<DIF>
                 <Multimedia_Sample>

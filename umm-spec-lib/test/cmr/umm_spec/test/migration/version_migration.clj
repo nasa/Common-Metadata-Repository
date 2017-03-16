@@ -1,17 +1,18 @@
 (ns cmr.umm-spec.test.migration.version-migration
-  (:require [clojure.test :refer :all]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.test.test-check-ext :as ext :refer [defspec]]
-            [cmr.umm-spec.versioning :as v]
-            [cmr.umm-spec.migration.version-migration :as vm]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]
-            [clojure.test.check.generators :as gen]
-            [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
-            [cmr.umm-spec.umm-spec-core :as core]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-            [cmr.umm-spec.util :as u]))
+  (:require
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.test.test-check-ext :as ext :refer [defspec]]
+   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.test.umm-generators :as umm-gen]
+   [cmr.umm-spec.umm-spec-core :as core]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.versioning :as v]
+   [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (def umm-1-9-related-urls
   {:ContactGroups [{:Roles ["Investigator"]}
@@ -19,8 +20,7 @@
                    :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                        :URLContentType "DataContactURL"
                                                        :Type "HOME PAGE"
-                                                       :URL "www.contact.group.foo.com"
-                                                       :MimeType "application/html"}]
+                                                       :URL "www.contact.group.foo.com"}]
                                         :ServiceHours "Weekdays 9AM - 5PM"
                                         :ContactInstruction "sample contact group instruction"
                                         :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
@@ -35,19 +35,29 @@
                   :Type "GET DATA"
                   :Subtype "ECHO"
                   :URL "www.contact.group.foo.com"
-                  :MimeType "application/html"}]
+                  :GetData {:Size 10.0
+                            :Unit "MB"
+                            :Format "Not provided"}}
+                 {:Description "Contact group related url description"
+                  :URLContentType "DistributionURL"
+                  :Type "GET SERVICE"
+                  :Subtype "ECHO"
+                  :URL "www.contact.group.foo.com"
+                  :GetService {:MimeType "application/html"
+                               :FullName "Not provided"
+                               :DataID "Not provided"
+                               :Protocol "Not provided"
+                               :URI "Not provided"}}]
    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                          :URLContentType "DataContactURL"
                                                          :Type "HOME PAGE"
-                                                         :URL "www.contact.foo.com"
-                                                         :MimeType "application/html"}
+                                                         :URL "www.contact.foo.com"}
                                                         {:Description "Contact related url description"
                                                          :URLContentType "DataContactURL"
                                                          :Type "HOME PAGE"
-                                                         :URL "www.contact.shoo.com"
-                                                         :MimeType "application/html"}]
+                                                         :URL "www.contact.shoo.com"}]
                                           :ServiceHours "Weekdays 9AM - 5PM"
                                           :ContactInstruction "sample contact instruction"
                                           :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -67,13 +77,11 @@
                                     :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                         :URLContentType "DataContactURL"
                                                                         :Type "HOME PAGE"
-                                                                        :URL "www.contact.shoo.com"
-                                                                        :MimeType "application/html"}
+                                                                        :URL "www.contact.shoo.com"}
                                                                        {:Description "Contact related url description"
                                                                         :URLContentType "DataContactURL"
                                                                         :Type "HOME PAGE"
-                                                                        :URL "www.contact.shoo.com"
-                                                                        :MimeType "application/html"}]
+                                                                        :URL "www.contact.shoo.com"}]
                                                          :ServiceHours "Weekdays 9AM - 5PM"
                                                          :ContactInstruction "sample contact instruction"
                                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -96,13 +104,11 @@
                                     :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                         :URLContentType "DataContactURL"
                                                                         :Type "HOME PAGE"
-                                                                        :URL "www.contact.shoo.com"
-                                                                        :MimeType "application/html"}
+                                                                        :URL "www.contact.shoo.com"}
                                                                        {:Description "Contact related url description"
                                                                         :URLContentType "DataContactURL"
                                                                         :Type "HOME PAGE"
-                                                                        :URL "www.contact.shoo.com"
-                                                                        :MimeType "application/html"}]
+                                                                        :URL "www.contact.shoo.com"}]
                                                          :ServiceHours "Weekdays 9AM - 5PM"
                                                          :ContactInstruction "sample contact instruction"
                                                          :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -121,13 +127,11 @@
                   :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                       :URLContentType "DataCentertURL"
                                                       :Type "HOME PAGE"
-                                                      :URL "www.contact.foo.com"
-                                                      :MimeType "application/html"}
+                                                      :URL "www.contact.foo.com"}
                                                      {:Description "Contact related url description"
                                                       :URLContentType "DataCentertURL"
                                                       :Type "HOME PAGE"
-                                                      :URL "www.contact.shoo.com"
-                                                      :MimeType "application/html"}]
+                                                      :URL "www.contact.shoo.com"}]
                                        :ServiceHours "Weekdays 9AM - 5PM"
                                        :ContactInstruction "sample contact instruction"
                                        :ContactMechanisms [{:Type "Telephone" :Value "301-851-1234"}
@@ -143,8 +147,7 @@
                                    :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                                        :URLContentType "DataContactURL"
                                                                        :Type "HOME PAGE"
-                                                                       :URL "www.contact.group.foo.com"
-                                                                       :MimeType "application/html"}]
+                                                                       :URL "www.contact.group.foo.com"}]
                                                         :ServiceHours "Weekdays 9AM - 5PM"
                                                         :ContactInstruction "sample contact group instruction"
                                                         :ContactMechanisms [{:Type "Fax" :Value "301-851-1234"}]
@@ -194,6 +197,12 @@
                  {:Description "Contact group related url description"
                   :Title "Just when you thought titles couldn't get any better"
                   :Relation ["GET DATA"]
+                  :URLs ["www.contact.group.foo.com" "www.google.com"]
+                  :MimeType "application/html"
+                  :FileSize {:Size 10.0 :Unit "MB"}}
+                 {:Description "Contact group related url description"
+                  :Title "Just when you thought titles couldn't get any better"
+                  :Relation ["GET SERVICE"]
                   :URLs ["www.contact.group.foo.com" "www.google.com"]
                   :MimeType "application/html"}
                  {:Description "Contact group related url description"
@@ -811,9 +820,8 @@
             {:OnlineResource {:Linkage "www.foo.com" :Name u/not-provided :Description u/not-provided}}]
            (:PublicationReferences result)))))
 
-(deftest migrate-1_8-related-urls-up-to-1_9
+(deftest migrate-1-8-related-urls-up-to-1-9
   (let [result (vm/migrate-umm {} :collection "1.8" "1.9" umm-1-8-collection)]
-
     (let [data-center-contact-persons (:RelatedUrls (first (map :ContactInformation (first (map :ContactPersons (:DataCenters result))))))
           data-center-contact-groups (:RelatedUrls (:ContactInformation (first (second (next (map :ContactGroups (:DataCenters result)))))))
           data-center-contact-information (:RelatedUrls (second (next (map :ContactInformation (:DataCenters result)))))
@@ -824,68 +832,82 @@
                :URLContentType "PublicationURL"
                :Type "VIEW RELATED INFORMATION"
                :Subtype "USER FEEDBACK"
-               :URL "www.contact.group.foo.com"
-               :MimeType "application/html"}
+               :URL "www.contact.group.foo.com"}
               {:Description "Contact group related url description"
                :URLContentType "DistributionURL"
                :Type "GET DATA"
                :Subtype nil
                :URL "www.contact.group.foo.com"
-               :MimeType "application/html"}
+               :GetData {:Size 10.0
+                         :Unit "MB"
+                         :Format "Not provided"}}
               {:Description "Contact group related url description"
                :URLContentType "DistributionURL"
                :Type "GET DATA"
                :Subtype nil
                :URL "www.google.com"
-               :MimeType "application/html"}
+               :GetData {:Size 10.0
+                         :Unit "MB"
+                         :Format "Not provided"}}
+              {:Description "Contact group related url description"
+               :URLContentType "DistributionURL"
+               :Type "GET SERVICE"
+               :Subtype nil
+               :URL "www.contact.group.foo.com"
+               :GetService {:MimeType "application/html"
+                            :FullName "Not provided"
+                            :DataID "Not provided"
+                            :Protocol "Not provided"
+                            :URI "Not provided"}}
+              {:Description "Contact group related url description"
+               :URLContentType "DistributionURL"
+               :Type "GET SERVICE"
+               :Subtype nil
+               :URL "www.google.com"
+               :GetService {:MimeType "application/html"
+                            :FullName "Not provided"
+                            :DataID "Not provided"
+                            :Protocol "Not provided"
+                            :URI "Not provided"}}
               {:Description "Contact group related url description"
                :URLContentType "PublicationURL"
                :Type "VIEW RELATED INFORMATION"
                :Subtype "GENERAL DOCUMENTATION"
-               :URL "www.contact.group.foo.com"
-               :MimeType "application/html"}]
+               :URL "www.contact.group.foo.com"}]
              collection-urls))
-      (is (= [{:MimeType "application/html"
-               :URL "www.contact.foo.com"
+      (is (= [{:URL "www.contact.foo.com"
                :Description "Contact related url description"
                :URLContentType "DataContactURL"
                :Type "HOME PAGE"}
               {:Description "Contact related url description"
-               :MimeType "application/html"
                :URL "www.contact.shoo.com"
                :URLContentType "DataContactURL"
                :Type "HOME PAGE"}]
              data-center-contact-persons))
       (is (= [{:Description "Contact group related url description"
                :URL "www.contact.group.foo.com"
-               :MimeType "application/html"
                :URLContentType "DataContactURL"
                :Type "HOME PAGE"}]
              data-center-contact-groups))
-      (is (= [{:MimeType "application/html",
-               :URL "www.contact.foo.com",
+      (is (= [{:URL "www.contact.foo.com",
                :Description "Contact related url description"
                :URLContentType "DataCenterURL"
                :Type "HOME PAGE"}
               {:Description "Contact related url description",
-               :MimeType "application/html",
                :URL "www.contact.shoo.com"
                :URLContentType "DataCenterURL"
                :Type "HOME PAGE"}]
              data-center-contact-information))
-      (is (= [{:MimeType "application/html",
-               :URL "www.contact.foo.com",
+      (is (= [{:URL "www.contact.foo.com",
                :Description "Contact related url description"
                :URLContentType "DataContactURL"
                :Type "HOME PAGE"}
               {:Description "Contact related url description",
-               :MimeType "application/html",
                :URL "www.contact.shoo.com"
                :URLContentType "DataContactURL"
                :Type "HOME PAGE"}]
              collection-contact-persons))
-      (is (= [{:MimeType "application/html",
-               :URL "www.contact.group.foo.com",
+      (is (= [{:URL "www.contact.group.foo.com",
                :Description "Contact group related url description"
                :URLContentType "DataContactURL"
                :Type "HOME PAGE"}]
@@ -1019,7 +1041,7 @@
     (is (= {:VerticalSpatialDomain {}}
            (:SpatialExtent result)))))
 
-(deftest migrate-1_9-down-to-1_8
+(deftest migrate-1-9-down-to-1-8
   (let [result (vm/migrate-umm {} :collection "1.9" "1.8"
                                {:DOI {:Authority ";'", :DOI "F19,L"}
                                 :CollectionCitations [{:SeriesName ">np", :Creator "^", :ReleasePlace ";CUhWxe", :Title "u8,#XJA4U=",
@@ -1051,7 +1073,7 @@
                           :MimeType "text/html"}}]
            (:PublicationReferences result)))
     ;; Default RelatedUrls is added
-     (is (= [u/not-provided-related-url] (:RelatedUrls result)))))
+    (is (= [u/not-provided-related-url] (:RelatedUrls result)))))
 
 (deftest migrate-1_8-instruments-up-to-1_9
   (let [result (vm/migrate-umm {} :collection "1.8" "1.9"
@@ -1093,31 +1115,31 @@
                                       {:ShortName "Sensor 2"}]}]}]
            (:Platforms result))))
 
-  (deftest migrate-1_9-related-urls-down-to-1_8
+  (deftest migrate-1-9-related-urls-down-to-1-8
     (let [result (vm/migrate-umm {} :collection "1.9" "1.8" umm-1-9-related-urls)
           data-center-contact-persons (get-in (first (:ContactPersons (first (:DataCenters result)))) [:ContactInformation :RelatedUrls])
           data-center-contact-groups (get-in (first (:ContactGroups (nth (:DataCenters result) 2))) [:ContactInformation :RelatedUrls])
           collection-contact-persons (get-in (first (:ContactPersons result)) [:ContactInformation :RelatedUrls])]
       (is (= [{:Description "Contact group related url description"
+               :FileSize {:Unit "MB"
+                          :Size 10.0}
                :Relation ["GET DATA" "ECHO"]
-               :MimeType "application/html"
-               :URLs ["www.contact.group.foo.com"]}]
+               :URLs ["www.contact.group.foo.com"]}
+              {:Description "Contact group related url description"
+                       :Relation ["GET SERVICE" "ECHO"]
+                       :URLs ["www.contact.group.foo.com"]
+               :MimeType "application/html"}]
              (:RelatedUrls result)))
-      (is (= [{:MimeType "application/html",
-               :URLs ["www.contact.shoo.com"],
+      (is (= [{:URLs ["www.contact.shoo.com"],
                :Description "Contact related url description"}
-              {:MimeType "application/html",
-               :URLs ["www.contact.shoo.com"],
+              {:URLs ["www.contact.shoo.com"],
                :Description "Contact related url description"}]
              data-center-contact-persons))
-      (is (= [{:MimeType "application/html",
-               :URLs ["www.contact.group.foo.com"],
+      (is (= [{:URLs ["www.contact.group.foo.com"],
                :Description "Contact group related url description"}]
              data-center-contact-groups))
-      (is (= [{:MimeType "application/html",
-               :URLs ["www.contact.foo.com"],
+      (is (= [{:URLs ["www.contact.foo.com"],
                :Description "Contact related url description"}
-              {:MimeType "application/html",
-               :URLs ["www.contact.shoo.com"],
+              {:URLs ["www.contact.shoo.com"],
                :Description "Contact related url description"}]
              collection-contact-persons)))))

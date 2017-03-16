@@ -690,12 +690,6 @@
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
    ;; the URL of the collection landing page, the URL of the download site for the collection).
    URL
-
-   ;; The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).
-   MimeType
-
-   ;; The estimated or average size of a file downloaded from this site.
-   FileSize
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 

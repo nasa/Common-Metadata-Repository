@@ -26,14 +26,25 @@
                            :let [type (value-of related-url "URL_Content_Type/Type")
                                  subtype (value-of related-url "URL_Content_Type/Subtype")
                                  url-types (get dif-util/dif-url-content-type->umm-url-types
-                                             [type subtype] su/default-url-type)]]
+                                             [type subtype] su/default-url-type)
+                                 mime-type (value-of related-url "Mime_Type")
+                                 protocol (value-of related-url "Protocol")]]
                        (merge
                         url-types
                         {:URL (if-let [url (url/format-url (value-of related-url "URL") sanitize?)]
                                  url
                                  (when sanitize? su/not-provided-url))
-                         :Description (value-of related-url "Description")
-                         :MimeType (value-of related-url "Mime_Type")}))
+                         :Description (value-of related-url "Description")}
+                        (when (= "DistributionURL" (:URLContentType url-types))
+                          (case (:Type url-types)
+                            "GET DATA" {:GetData nil}
+                            "GET SERVICE" {:GetService (when (or mime-type protocol)
+                                                         {:MimeType mime-type
+                                                          :FullName (su/with-default nil sanitize?)
+                                                          :DataID (su/with-default nil sanitize?)
+                                                          :Protocol protocol
+                                                          :URI (su/with-default nil sanitize?)})}
+                           nil))))                               
         related-urls (when-not (= su/not-provided-url (:URL (first related-urls)))
                          related-urls)]
     (when (or multimedia-urls related-urls)

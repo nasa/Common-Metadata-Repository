@@ -121,14 +121,18 @@
     (merge
      url-type
      {:URL url
-      :Description (value-of related-url "Description")})))
+      :Description (value-of related-url "Description")}
+     (when url-type "DistributionURL"
+       (case type
+         "GET DATA" {:GetData nil}
+         "GET SERVICE" {:GetService nil}
+         nil)))))
 
 (defn- parse-multimedia-samples
   "Parse a SERF Multimedia Sample element into a RelatedURL map"
   [doc sanitize?]
   (for [multimedia-sample (select doc "/SERF/Multimedia_Sample")]
     {:URL (url/format-url (value-of multimedia-sample "URL") sanitize?)
-     :MimeType (value-of multimedia-sample "Format")
      :Description (value-of multimedia-sample "Description")
      :URLContentType "VisualizationURL"
      :Type "GET RELATED VISUALIZATION"}))

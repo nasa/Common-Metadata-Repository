@@ -62,7 +62,8 @@
   encode-types=true will encode the Type and Subtype into the description field."
   [online-resource-url open-tag encode-types]
   (when online-resource-url
-   (let [{:keys [URL Description Type]} online-resource-url
+   (let [{:keys [URL Description Type]}  online-resource-url
+         {:keys [Checksum]} (:GetData online-resource-url)
          description (if encode-types
                       (generate-description-with-types online-resource-url)
                       Description)
@@ -78,12 +79,29 @@
           (char-string name)]
          (if description
            [:gmd:description
-            (char-string description)]
+            (char-string (if Checksum
+                           (str description (format " Checksum: %s" Checksum))
+                           description))]
            [:gmd:description {:gco:nilReason "missing"}])
          [:gmd:function
           [:gmd:CI_OnLineFunctionCode
            {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
             :codeListValue code}]]]])))
+
+(defn- generate-operation-description
+  "Generate operation description from GetService values"
+  [MimeType DataID DataType]
+  (let [operation-description (if MimeType
+                                (format "MimeType: %s" MimeType)
+                                "")
+        operation-description (if DataID
+                                (str operation-description (format "DataID: %s" DataID))
+                                operation-description)
+        operation-description (if DataType
+                                (str operation-description (format "DataType: %s" DataType))
+                                operation-description)]
+    (when-not (empty? operation-description)
+      operation-description)))
 
 (defn generate-service-related-url
  "Write 'GET SERVICE' related urls to an additional area of ISO"
@@ -91,7 +109,10 @@
  (for [service-url (filter #(and (= "DistributionURL" (:URLContentType %))
                                  (= "GET SERVICE" (:Type %)))
                            related-urls)
-       :let [{:keys [URL Description]} service-url
+       :let [{URL :URL Description :Description} service-url
+             {:keys [MimeType Protocol DataID DataType URI]}  (:GetService service-url)
+             URI (remove #(= URL %) URI)
+             operation-description (generate-operation-description MimeType DataID DataType)
              url-type-desc (generate-description-with-types
                              (dissoc service-url :Description))]] ; Don't want description
   [:gmd:identificationInfo
@@ -105,14 +126,22 @@
       {:codeList "" :codeListValue ""} "tight"]]
     [:srv:containsOperations
      [:srv:SV_OperationMetadata
+      (when operation-description
+        [:srv:operationDescription
+         (char-string operation-description)])
       [:srv:operationName {:gco:nilReason "missing"}]
       [:srv:DCP {:gco:nilReason "unknown"}]
       [:srv:connectPoint
+       (when URI
+         (for [uri URI]
+           [:gmd:CI_OnlineResource
+            [:gmd:linkage
+             [:gmd:URL URL]]]))
        [:gmd:CI_OnlineResource
         [:gmd:linkage
          [:gmd:URL URL]]
         [:gmd:protocol
-         (char-string (url/protocol URL))]
+         (or Protocol (char-string (url/protocol URL)))]
         (if Description
           [:gmd:description
            (char-string Description)]
