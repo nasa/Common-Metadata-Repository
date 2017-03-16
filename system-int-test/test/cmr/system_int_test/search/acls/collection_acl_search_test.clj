@@ -42,7 +42,8 @@
 
 (deftest collection-search-with-no-acls-test
   ;; system token can see all collections with no ACLs
-  (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
+  (let [guest-token (e/login-guest (s/context))
+        c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
                                                   :access-value 1})
                           {:format :echo10})
         c1-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c1-dif"
@@ -59,8 +60,12 @@
                           {:format :iso-smap})]
     (index/wait-until-indexed)
 
+    ;;;;system token sees everything
     (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso c1-smap]
-                       (search/find-refs :collection {:token (tc/echo-system-token)})))))
+                       (search/find-refs :collection {:token (tc/echo-system-token)})))
+    ;;guest user sees nothing
+    (is (d/refs-match? []
+                       (search/find-refs :collection {:token guest-token})))))
 
 (deftest collection-search-with-restriction-flag-acls-test
   ;; grant restriction flag acl
