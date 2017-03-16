@@ -9,13 +9,9 @@
   "Define the cmr_metadata_preview gem name. Update this when a new version of the gem is created."
   "cmr_metadata_preview-0.0.1")
 
-; (def assets-path
-;   "Defines path to cmr_metadata_preview gem assets"
-;   (format "gems/%s/app/assets" cmr-metadata-preview-gem))
-
 (def assets-path
   "Defines path to cmr_metadata_preview gem assets"
-  "cmr_metadata_preview/assets")
+  (format "gems/%s/app/assets" cmr-metadata-preview-gem))
 
 (defn- resource-or-not-found
   "Returns a URL to the resource on the classpath or throws a not found error"

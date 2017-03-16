@@ -10,9 +10,9 @@ require 'set'
 require 'active_support/all'
 require 'action_view'
 require 'action_dispatch'
-require 'cmr_metadata_preview/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
-require 'cmr_metadata_preview/helpers/cmr_metadata_preview/options_helper'
-require 'cmr_metadata_preview/helpers/cmr_metadata_preview/data_contacts_helper'
+require 'gems/cmr_metadata_preview-0.0.1/app/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
+require 'gems/cmr_metadata_preview-0.0.1/app/helpers/cmr_metadata_preview/options_helper'
+require 'gems/cmr_metadata_preview-0.0.1/app/helpers/cmr_metadata_preview/data_contacts_helper'
 
 include ActionView::Helpers
 include ActionDispatch::Routing
@@ -32,7 +32,7 @@ def edit_collection_path(*args)
 end
 
 def resource_prefix
-  "cmr_metadata_preview/views/"
+  "gems/cmr_metadata_preview-0.0.1/app/views/"
 end
 
 ####################################################################################################
