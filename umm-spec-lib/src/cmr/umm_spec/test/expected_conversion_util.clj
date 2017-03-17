@@ -149,7 +149,7 @@
              url-type
              (-> related-url
                  (update-in [:URL] #(url/format-url % true))
-                 (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetService :GetData))))))))
+                 (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData))))))))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."
