@@ -390,7 +390,6 @@
                               :headers
                               (get "Content-Type"))
         granule-search-response (search/find-refs :granule {:concept-id gran-concept-id})]
-    (println ingest-collection-response)
     (testing "Collection ingested and indexed successfully as version 1.2 UMM JSON"
       (is (= 201 (:status ingest-collection-response)))
       (is (= "application/vnd.nasa.cmr.umm+json;version=1.2; charset=utf-8"
