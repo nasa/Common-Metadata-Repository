@@ -4,6 +4,7 @@
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking]]
+   [cmr.common.util :as util]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
@@ -74,6 +75,30 @@
      :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["Investigator"]
                                                      :GroupName "ABC"})]}))
 
+(defn- remove-get-service-and-get-data-nils
+  "Removes nil values in GetService and GetData added by json->umm to RelatedUrls"
+  [umm]
+  (let [remove-nils (fn [ru]
+                      (let [get-service (:GetService ru)
+                            get-data (:GetData ru)
+                            url-content-type (:URLContentType ru)
+                            type (:Type ru)]
+                        (cond
+                          (and (nil? get-data) (nil? get-service))
+                          (dissoc ru :GetService :GetData)
+                          (and (= "DistributionURL" url-content-type) (= "GET SERVICE" type) (nil? get-service))
+                          (dissoc ru :GetData)
+                          (and (= "DistributionURL" url-content-type) (= "GET DATA" type) (nil? get-data))
+                          (dissoc ru :GetService)
+                          :else ru)))]
+    (-> umm
+        (util/update-in-all [:RelatedUrls] remove-nils)
+        (util/update-in-all [:ContactGroups :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:ContactPersons :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:DataCenters :ContactGroups :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls] remove-nils))))
+
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929
 
@@ -104,7 +129,8 @@
     [umm-c-record (gen/no-shrink umm-gen/umm-c-generator)]
     (let [json (uj/umm->json umm-c-record)
           _ (is (empty? (js/validate-umm-json json :collection)))
-          parsed (uj/json->umm {} :collection json)]
+          parsed (uj/json->umm {} :collection json)
+          parsed (remove-get-service-and-get-data-nils parsed)]
       (is (= umm-c-record parsed)))))
 
 (deftest all-umm-s-records
@@ -112,7 +138,8 @@
     [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
     (let [json (uj/umm->json umm-s-record)
           _ (is (empty? (js/validate-umm-json json :service)))
-          parsed (uj/json->umm {} :service json)]
+          parsed (uj/json->umm {} :service json)
+          parsed (remove-get-service-and-get-data-nils parsed)]
       (is (= umm-s-record parsed)))))
 
 (deftest validate-json-with-extra-fields

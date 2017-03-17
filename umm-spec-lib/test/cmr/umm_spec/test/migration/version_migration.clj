@@ -46,8 +46,7 @@
                   :GetService {:MimeType "application/html"
                                :FullName "Not provided"
                                :DataID "Not provided"
-                               :Protocol "Not provided"
-                               :URI "Not provided"}}]
+                               :Protocol "Not provided"}}]
    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
@@ -857,8 +856,7 @@
                :GetService {:MimeType "application/html"
                             :FullName "Not provided"
                             :DataID "Not provided"
-                            :Protocol "Not provided"
-                            :URI "Not provided"}}
+                            :Protocol "Not provided"}}
               {:Description "Contact group related url description"
                :URLContentType "DistributionURL"
                :Type "GET SERVICE"
@@ -867,8 +865,7 @@
                :GetService {:MimeType "application/html"
                             :FullName "Not provided"
                             :DataID "Not provided"
-                            :Protocol "Not provided"
-                            :URI "Not provided"}}
+                            :Protocol "Not provided"}}                            
               {:Description "Contact group related url description"
                :URLContentType "PublicationURL"
                :Type "VIEW RELATED INFORMATION"

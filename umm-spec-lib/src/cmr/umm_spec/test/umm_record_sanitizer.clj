@@ -51,16 +51,16 @@
    and Type != GET DATA"
   [related-url]
   (if (and (= (:Type related-url) "GET DATA") (= "DistributionURL" (:URLContentType related-url)))
-    related-url
-    (dissoc related-url :GetData)))
+    (dissoc related-url :GetService)
+    (dissoc related-url :GetData :GetService)))
 
 (defn- sanitize-get-service
   "Removes GetService from relate-url if URLContentType != DistributionURL
    and Type != GET SERVICE"
   [related-url]
   (if (and (= (:Type related-url) "GET SERVICE") (= "DistributionURL" (:URLContentType related-url)))
-    related-url
-    (dissoc related-url :GetService)))
+    (dissoc related-url :GetData)
+    (dissoc related-url :GetService :GetData)))
 
 (defn- sanitize-get-service-and-get-data
   "For any URLContentType and Type combination that shouldn't have GetService or GetData fields,
