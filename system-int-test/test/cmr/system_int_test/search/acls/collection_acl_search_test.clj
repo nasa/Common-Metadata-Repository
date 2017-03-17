@@ -33,7 +33,7 @@
   (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"}))
 
 (deftest invalid-security-token-test
-  (is (= {:errors ["Token ABC123 in request header does not exist"], :status 401}
+  (is (= {:errors ["Token ABC123 does not exist"], :status 401}
          (search/find-refs :collection {:token "ABC123"}))))
 
 (deftest expired-security-token-test
@@ -394,7 +394,7 @@
 
     ;; A logged out token is normally not useful
     (e/logout (s/context) user2-token)
-    (is (= {:errors ["Token ABC-2 in request header does not exist"], :status 401}
+    (is (= {:errors ["Token ABC-2 does not exist"], :status 401}
            (search/find-refs :collection {:token user2-token})))
 
     ;; Use user1-token so it will be cached
