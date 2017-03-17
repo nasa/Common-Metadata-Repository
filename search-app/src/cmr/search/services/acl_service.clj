@@ -1,6 +1,8 @@
 (ns cmr.search.services.acl-service
   "Performs ACL related tasks for the search application"
-  (:require [cmr.search.services.acls.acl-helper :as acl-helper]))
+  (:require
+    [cmr.search.services.acls.acl-helper :as acl-helper]
+    [cmr.transmit.config :as tc]))
 
 (defmulti acls-match-concept?
   "Returns true if any of the acls match the concept."
@@ -33,12 +35,13 @@
   * :entry-title"
   [context concepts]
   (when (seq concepts)
-    (let [acls (acl-helper/get-acls-applicable-to-token context)
-          applicable-field (-> concepts first :concept-type concept-type->applicable-field)
-          applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
-      (doall (remove nil? (pmap (fn [concept]
-                                  (when (acls-match-concept? context applicable-acls concept)
-                                    concept))
-                                concepts))))))
-
-
+    (if (tc/echo-system-token? context)
+      ;;return all concepts if running with the system token
+      concepts
+      (let [acls (acl-helper/get-acls-applicable-to-token context)
+            applicable-field (-> concepts first :concept-type concept-type->applicable-field)
+            applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
+        (doall (remove nil? (pmap (fn [concept]
+                                    (when (acls-match-concept? context applicable-acls concept)
+                                      concept))
+                                  concepts)))))))

@@ -1,8 +1,10 @@
 (ns cmr.transmit.config
   "Contains functions for retrieving application connection information from environment variables"
   (:require [cmr.common.config :as cfg :refer [defconfig]]
+            [cmr.common.util :as util]
             [cmr.transmit.connection :as conn]
             [camel-snake-kebab.core :as csk]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants for help in testing.
@@ -126,15 +128,17 @@
   [context]
   (assoc context :token (echo-system-token)))
 
-(defn echo-system-token?
-  "Returns true if the token passed in (or config map) is the echo system user's token"
-  [token-or-context]
-  (or (= (echo-system-token) token-or-context)
-      (= (echo-system-token) (:token token-or-context))))
-
 (defconfig echo-system-username
   "The ECHO system token to use for request to ECHO."
   {:default "ECHO_SYS"})
+
+(defn echo-system-token?
+  "Returns true if the token passed in (or config map) is the echo system user's token or another
+  token belonging to the ECHO system user"
+  [token-or-context]
+  (or (= (echo-system-token) token-or-context)
+      (= (echo-system-token) (:token token-or-context))
+      (= (echo-system-username) (util/lazy-get token-or-context :user-id))))
 
 (defconfig administrators-group-name
   "The name of the Administrators group which the echo system user belongs to."

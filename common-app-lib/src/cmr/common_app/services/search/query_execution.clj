@@ -5,7 +5,8 @@
             [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]))
+            [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
+            [cmr.transmit.config :as tc]))
 
 (defmulti add-acl-conditions-to-query
   "Adds conditions to the query to enforce ACLs."
@@ -82,7 +83,7 @@
         [context processed-query] (concept-type-specific-query-processing
                                     context pre-processed-query)
         elastic-results (->> processed-query
-                             (#(if (:skip-acls? %)
+                             (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
                                  %
                                  (add-acl-conditions-to-query context %)))
                              (c2s/reduce-query context)

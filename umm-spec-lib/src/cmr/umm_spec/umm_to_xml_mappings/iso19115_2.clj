@@ -193,7 +193,7 @@
                [:gmd:protocol (char-string (:Protocol online-resource))]
                [:gmd:applicationProfile (char-string (:ApplicationProfile online-resource))]
                [:gmd:name (char-string (:Name online-resource))]
-               [:gmd:description (char-string (:Description online-resource))]
+               [:gmd:description (char-string (str (:Description online-resource) " PublicationReference:"))]
                [:gmd:function
                 [:gmd:CI_OnLineFunctionCode
                  {:codeList (str (:iso iso/code-lists) "#CI_OnLineFunctionCode")

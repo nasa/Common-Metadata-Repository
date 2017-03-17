@@ -90,7 +90,7 @@
   (-> online-resource
       (update :Linkage #(url/format-url % true))
       (update :Name #(su/with-default % true))
-      (update :Description #(su/with-default % true)))))
+      (update :Description #(str (su/with-default % true) " PublicationReference:")))))
 
 (defn- iso-19115-2-publication-reference
   "Returns the expected value of a parsed ISO-19115-2 publication references"
