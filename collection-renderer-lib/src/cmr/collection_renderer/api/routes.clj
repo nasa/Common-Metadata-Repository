@@ -1,9 +1,10 @@
 (ns cmr.collection-renderer.api.routes
   "Defines routes for fetching resources used in the Collection HTML"
-  (require [compojure.core :refer :all]
-           [cmr.common.services.errors :as errors]
-           [clojure.string :as str]
-           [clojure.java.io :as io]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [cmr.common.services.errors :as errors]
+   [compojure.core :refer :all]))
 
 (def cmr-metadata-preview-gem
   "Define the cmr_metadata_preview gem name. Update this when a new version of the gem is created."
