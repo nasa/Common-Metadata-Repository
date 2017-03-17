@@ -1961,17 +1961,19 @@ Collection search results are scored when any of the following parameters are se
 
 Any terms found in the those parameters are used to score results across other fields in the search results. A term is a contiguous set of characters not containing whitespace. A series of filters are executed against each document. Each of these has an associated boost value. The boost values of all the filters that match a given document are multiplied together to get the final document score.
 
+The terms are separated between keywords found in the keywords field and additional terms found in the fields listed above.
+
 The filters are case insensitive, support wild-cards * and ?, and are given below:
 
-1. All terms are contained in the long-name field OR one of the terms exactly matches the short-name field - weight 1.4
-2. The term field is a single string that exactly matches the entry-id field - weight 1.4
-3. All terms are contained in the Project/long-name field OR one of the terms exactly matches the Project/short-name field - weight 1.3
-4. All terms are contained in the Platform/long-name field OR one of the terms exactly matches the Platform/short-name field - weight 1.3
-5. All terms are contained in the Platform/Instrument/long-name field OR one of the terms exactly matches the Platform/Instrument/short-name field - weight 1.2
-6. All terms are contained in the Platform/Instrument/Sensor/long-name field OR one of the terms exactly matches the Platform/Instrument/Sensor/short-name field - weight 1.2
-7. The term field is a single string that exactly matches the science-keyword field - weight 1.2
-8. The term field is a single string that exactly matches the spatial-keyword field - weight 1.1
-9. The term field is a single string that exactly matches the temporal-keyword field  - weight 1.1
+1. All keyword terms are contained in the long-name field OR one of the keyword terms exactly matches the short-name field OR one of the additional terms is contained in the short-name or long-name - weight 1.4
+2. The keyword term field is a single string that exactly matches the entry-id field OR one of the additional terms is contained in the entry-id - weight 1.4
+3. All keyword terms are contained in the Project/long-name field OR one of the keyword terms exactly matches the Project/short-name field OR one of the additional terms is contained in the Project/short-name or Project/long-name - weight 1.3
+4. All keyword terms are contained in the Platform/long-name field OR one of the terms exactly matches the Platform/short-name field OR one of the additional terms is contained in the Platform/short-name or Platform/long-name - weight 1.3
+5. All keyword terms are contained in the Platform/Instrument/long-name field OR one of the keyword terms exactly matches the Platform/Instrument/short-name field OR one of the additional terms is contained in the Platform/Instrument/short-name or Platform/Instrument/long-name - weight 1.2
+6. All keyword terms are contained in the Platform/Instrument/Sensor/long-name field OR one of the keyword terms exactly matches the Platform/Instrument/Sensor/short-name field OR one of the additional terms is contained in the Platform/Instrument/Sensor/short-name or Platform/Instrument/Sensor/long-name - weight 1.2
+7. The keyword term field is a single string that exactly matches the science-keyword field OR an additional term is contained in the science-keyword field - weight 1.2
+8. The keyword term field is a single string that exactly matches the spatial-keyword field OR an additional term is contained in the spatial-keyword field - weight 1.1
+9. The keyword term field is a single string that exactly matches the temporal-keyword field OR an additional term is contained in the temporal-keyword field - weight 1.1
 
 ### <a name="facets"></a> Facets
 

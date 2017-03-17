@@ -190,14 +190,15 @@
   [length]
   (cond
     (> length 241) 0
-    (and (> length 121) (<= length 241)) 10
-    (and (> length 61) (<= length 121)) 16
-    (and (> length 41) (<= length 61)) 22
-    (and (> length 21) (<= length 41)) 26
-    (and (> length 7) (<= length 21)) 36
-    (and (> length 5) (<= length 7)) 66
-    (= length 5) 83
-    (and (> length 0) (<= length 4)) 118))
+    (and (> length 182) (<= length 241)) 5
+    (and (> length 110) (<= length 182)) 10
+    (and (> length 74) (<= length 110)) 13
+    (and (> length 40) (<= length 74)) 16
+    (and (> length 16) (<= length 40)) 22
+    (and (> length 7) (<= length 16)) 36
+    (and (> length 5) (<= length 7)) 60
+    (= length 5) 75
+    (and (> length 0) (<= length 4)) 115))
 
 (def KEYWORD_WILDCARD_NUMBER_MAX
   "Maximum number of keyword strings with wildcards allowed by the CMR.
