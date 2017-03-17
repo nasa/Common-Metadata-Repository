@@ -3,6 +3,10 @@
    classpath issues"
   "9.1.8.0")
 
+(def cmr-metadata-preview-repo
+  "Defines the repo url of cmr_metadata_preview project"
+  "***REMOVED***scm/cmr/cmr_metadata_preview.git")
+
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
   "gems")
@@ -29,7 +33,8 @@
                       (pjstadig.humane-test-output/activate!)]}}
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
-                            "***REMOVED***scm/cmr/cmr_metadata_preview.git"]
+                            ~jruby-version
+                            ~cmr-metadata-preview-repo]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]})
