@@ -1,26 +1,33 @@
 (ns cmr.search.services.query-walkers.keywords-extractor
   "Defines protocols and functions to extract keywords from a query."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [clojure.string :as str]
-            [cmr.search.models.query :as qm]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common.services.errors :as errors]
+   [cmr.search.models.query :as qm]))
 
 (defprotocol ExtractKeywords
   "Defines a function to extract keywords"
   (extract-keywords-seq
     [c]
     "Extracts keywords and keyword like values from keyword conditions and conditions which apply
-     to keywords scoring. Returns a sequence of the keywords.")
+     to keywords scoring. Returns 2 sequences of keywords - one list from the
+     keyword condition and one from fields in the format {:keywords [...] :field-keywords [...]}")
   (contains-keyword-condition?
    [c]
    "Returns true if the query contains a keyword condition?"))
 
 (defn extract-keywords
   "Extracts keywords and keyword like values from keyword conditions and conditions which apply
-   to keywords scoring. Returns a sequence of the distinct keywords or nil if there are none."
+   to keywords scoring. Returns 2 sequences of distinct keywords - one list from the
+   keyword condition and one from fields. The lists are nil if no keywords exist.
+   The format is {:keywords [...] :field-keywords [...]}"
   [c]
-  (when-let [keywords (seq (extract-keywords-seq c))]
-    (distinct keywords)))
+  (let [keywords (extract-keywords-seq c)]
+   (when (or (seq (:keywords keywords)) (seq (:field-keywords keywords)))
+    (-> keywords
+        (update :keywords #(seq (distinct %)))
+        (update :field-keywords #(seq (distinct %)))))))
 
 (def ^:private keyword-string-fields
   "This defines the set of string condition fields that we will extract keyword terms from. Any condition
@@ -61,7 +68,7 @@
   cmr.common_app.services.search.query_model.ConditionGroup
   (extract-keywords-seq
    [{:keys [conditions]}]
-   (mapcat extract-keywords-seq conditions))
+   (apply merge-with concat (map extract-keywords-seq conditions)))
   (contains-keyword-condition?
    [{:keys [conditions]}]
    (reduce (fn [_ condition]
@@ -84,7 +91,7 @@
   (extract-keywords-seq
    [{:keys [field query-str]}]
    (when (= field :keyword)
-     (extract-keywords-seq-from-value query-str)))
+     {:keywords (extract-keywords-seq-from-value query-str)}))
   (contains-keyword-condition?
    [{:keys [field]}]
    (= field :keyword))
@@ -94,7 +101,7 @@
   (extract-keywords-seq
    [{:keys [field value]}]
    (when (contains? keyword-string-fields field)
-     (extract-keywords-seq-from-value value)))
+     {:field-keywords (extract-keywords-seq-from-value value)}))
   (contains-keyword-condition?
    [_]
    false)
@@ -104,7 +111,7 @@
   (extract-keywords-seq
    [{:keys [field values]}]
    (when (contains? keyword-string-fields field)
-     (mapcat extract-keywords-seq-from-value values)))
+     {:field-keywords (mapcat extract-keywords-seq-from-value values)}))
   (contains-keyword-condition?
    [_]
    false)
@@ -126,4 +133,3 @@
   (contains-keyword-condition?
    [this]
    false))
-
