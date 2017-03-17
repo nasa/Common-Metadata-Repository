@@ -175,7 +175,7 @@
         (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
         (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
         (url/search-read-caches-url) "xsl-transformer-templates" []
-        (url/search-read-caches-url) "token-user-id" [])
+        (url/search-read-caches-url) "token-user-id" ["ABC-1" "ABC-2"])
       (s/only-with-real-database
        (testing "list cache keys for bootstrap"
          (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]

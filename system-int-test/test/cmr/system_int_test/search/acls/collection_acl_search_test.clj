@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.acls.collection-acl-search-test
   "Tests searching for collections with ACLs in place"
   (:require
-    [cmr.common-app.test.side-api :as side] 
+    [cmr.common-app.test.side-api :as side]
     [clojure.test :refer :all]
     [clojure.string :as str]
     [cmr.common.services.messages :as msg]
@@ -16,7 +16,9 @@
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]))
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.transmit.config :as tc]))
+
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
@@ -31,12 +33,39 @@
   (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"}))
 
 (deftest invalid-security-token-test
-  (is (= {:errors ["Token ABC123 does not exist"], :status 401}
+  (is (= {:errors ["Token ABC123 in request header does not exist"], :status 401}
          (search/find-refs :collection {:token "ABC123"}))))
 
 (deftest expired-security-token-test
   (is (= {:errors ["Token [expired-token] has expired."], :status 401}
          (search/find-refs :collection {:token "expired-token"}))))
+
+(deftest collection-search-with-no-acls-test
+  ;; system token can see all collections with no ACLs
+  (let [guest-token (e/login-guest (s/context))
+        c1-echo (d/ingest "PROV1"
+                          (dc/collection {:entry-title "c1-echo" :access-value 1})
+                          {:format :echo10})
+        c1-dif (d/ingest "PROV1"
+                         (dc/collection-dif {:entry-title "c1-dif" :access-value 1})
+                         {:format :dif})
+        c1-dif10 (d/ingest "PROV1"
+                           (dc/collection-dif10 {:entry-title "c1-dif10" :access-value 1})
+                           {:format :dif10})
+        c1-iso (d/ingest "PROV1"
+                         (dc/collection {:entry-title "c1-iso" :access-value 1})
+                         {:format :iso19115})
+        c1-smap (d/ingest "PROV1"
+                          (dc/collection {:entry-title "c1-smap" :access-value 1})
+                          {:format :iso-smap})]
+    (index/wait-until-indexed)
+
+    ;;;;system token sees everything
+    (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso c1-smap]
+                       (search/find-refs :collection {:token (tc/echo-system-token)})))
+    ;;guest user sees nothing
+    (is (d/refs-match? []
+                       (search/find-refs :collection {:token guest-token})))))
 
 (deftest collection-search-with-restriction-flag-acls-test
   ;; grant restriction flag acl
@@ -365,7 +394,7 @@
 
     ;; A logged out token is normally not useful
     (e/logout (s/context) user2-token)
-    (is (= {:errors ["Token ABC-2 does not exist"], :status 401}
+    (is (= {:errors ["Token ABC-2 in request header does not exist"], :status 401}
            (search/find-refs :collection {:token user2-token})))
 
     ;; Use user1-token so it will be cached

@@ -13,7 +13,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
@@ -49,6 +50,24 @@
     (ingest/create-provider {:provider-guid "provguid4" :provider-id "PROV4"} {:grant-all-search? false})
     (ingest/create-provider {:provider-guid "provguid5" :provider-id "PROV5"} {:grant-all-search? false})))
 
+(deftest granule-search-with-no-acls-test
+  ;; system token can see all granules with no ACLs
+  (let [guest-token (e/login-guest (s/context))
+        coll1 (make-coll 1 "PROV1")
+        coll2 (make-coll 2 "PROV1")
+        gran1 (make-gran 1 coll1)
+        gran2 (make-gran 2 coll1 {:access-value 1000.0})
+        gran3 (make-gran 3 coll2)
+        gran4 (make-gran 4 coll2 {:access-value 9.0})
+        gran5 (make-gran 5 coll2 {:access-value 10.0})]
+    (index/wait-until-indexed)
+
+    ;;system token sees everything
+    (is (d/refs-match? [gran1 gran2 gran3 gran4 gran5]
+                       (search/find-refs :granule {:token (tc/echo-system-token)})))
+    ;;guest sees nothing
+    (is (d/refs-match? []
+                       (search/find-refs :granule {:token guest-token})))))
 
 (deftest granule-search-with-acls-test
   ;; -- PROV1 --

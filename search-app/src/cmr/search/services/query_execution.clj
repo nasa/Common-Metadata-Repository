@@ -16,7 +16,8 @@
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fv2rf]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
    [cmr.search.services.query-walkers.collection-query-resolver :as r]
-   [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver])
+   [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver]
+   [cmr.transmit.config :as tc])
   (:import
    (cmr.common_app.services.search.query_model StringCondition StringsCondition)))
 
@@ -114,7 +115,7 @@
                              (c2s/reduce-query context))
         elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
-        query-results (if (:skip-acls? query)
+        query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
                         query-results
                         (update-in query-results [:items]
                                    (partial acl-service/filter-concepts context)))]
