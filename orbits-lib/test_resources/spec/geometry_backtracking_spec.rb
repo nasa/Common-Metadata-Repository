@@ -1,6 +1,6 @@
 require 'orbits'
-require 'spec_helper'
-require 'mock_geometries'
+# require 'spec_helper'
+# require 'mock_geometries'
 
 # This test is commented out now because it doesn't work. As part of an update to CMR-1168 these tests
 # broke and that was missed. I don't have enough knowledge currently to fix them I'm leaving the tests
