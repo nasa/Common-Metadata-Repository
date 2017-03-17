@@ -57,6 +57,6 @@
   "Parse related-urls present in the document"
   [doc sanitize?]
   (seq (concat (sdru/parse-online-and-service-urls
-                 doc sanitize? service-url-path distributor-online-url-xpath)
+                 doc sanitize? service-url-path distributor-online-url-xpath service-online-resource-xpath)
                (sdru/parse-browse-graphics doc sanitize? browse-graphic-xpath)
                (sdru/parse-publication-urls doc sanitize? publication-url-path))))

@@ -118,6 +118,16 @@
           (-> related-url
               (update :URL #(url/format-url % true)))))))
 
+(defn- expected-related-url-get-service
+  "Returns related-url with the expected GetService"
+  [related-url]
+  (if (nil? (:GetService related-url))
+    (dissoc related-url :GetService)
+    (if (and (= "DistributionURL" (:URLContentType related-url))
+             (= "GET SERVICE" (:Type related-url)))
+        related-url
+        (dissoc related-url :GetService))))
+
 (defn- expected-collection-related-urls
  "Update the collection top level RelatedUrls. Do processing not applicable
  for data center/data contact RelatedUrls. DataCenter and DataContact URL
@@ -129,6 +139,7 @@
                       related-urls)]
           (-> related-url
               (dissoc :FileSize :MimeType :GetData)
+              expected-related-url-get-service
               (update :Description #(when % (str/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
@@ -287,7 +298,7 @@
      (update :RelatedUrls expected-contact-info-related-urls)
      (update-in-each [:RelatedUrls] #(assoc % :URLContentType url-content-type))
      (update-in-each [:RelatedUrls] #(assoc % :Type "HOME PAGE"))
-     (update-in-each [:RelatedUrls] #(dissoc % :Subtype))
+     (update-in-each [:RelatedUrls] #(dissoc % :Subtype :GetData :GetService))
      (update :ContactMechanisms expected-iso-contact-mechanisms)
      (update :Addresses #(take 1 %))))
 

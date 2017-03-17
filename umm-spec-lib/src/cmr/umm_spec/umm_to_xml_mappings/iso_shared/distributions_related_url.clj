@@ -122,22 +122,19 @@
       {:codeList "" :codeListValue ""} "tight"]]
     [:srv:containsOperations
      [:srv:SV_OperationMetadata
+      [:srv:operationName {:gco:nilReason "missing"}]
+      [:srv:DCP {:gco:nilReason "unknown"}]
       (when operation-description
         [:srv:operationDescription
          (char-string operation-description)])
-      [:srv:operationName {:gco:nilReason "missing"}]
-      [:srv:DCP {:gco:nilReason "unknown"}]
       [:srv:connectPoint
-       (when URI
-         (for [uri URI]
-           [:gmd:CI_OnlineResource
-            [:gmd:linkage
-             [:gmd:URL URL]]]))
        [:gmd:CI_OnlineResource
         [:gmd:linkage
          [:gmd:URL URL]]
         [:gmd:protocol
-         (or Protocol (char-string (url/protocol URL)))]
+         (if Protocol
+           (char-string Protocol)
+           (char-string (url/protocol URL)))]
         (if Description
           [:gmd:description
            (char-string Description)]
@@ -145,7 +142,14 @@
         [:gmd:function
          [:gmd:CI_OnLineFunctionCode
           {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
-           :codeListValue "download"}]]]]]]]]))
+           :codeListValue "download"}]]]
+       (when URI
+         (for [uri URI]
+           [:gmd:CI_OnlineResource
+            [:gmd:linkage
+             [:gmd:URL uri]]]))]]]]]))
+
+
 
 (defn generate-publication-related-urls
  "PublicatonURL and CollectionURL go in the same section as the Publication

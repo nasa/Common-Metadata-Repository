@@ -62,7 +62,7 @@
     related-url
     (dissoc related-url :GetService)))
 
-(defn- sanitzie-get-service-and-get-data
+(defn- sanitize-get-service-and-get-data
   "For any URLContentType and Type combination that shouldn't have GetService or GetData fields,
    the fields are removed and the related-url is returned"
   [related-url]
@@ -80,8 +80,10 @@
           (assoc-in [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
           (assoc-in [:RelatedUrl :Type] Type)
           (assoc-in [:RelatedUrl :Subtype] Subtype)
-          (update-in :RelatedUrl dissoc :GetData)
-          (update-in :RelatedUrl dissoc :GetService)))
+          ;; These two fields cannot ever exist in a CollectionCitations or
+          ;; PublicationReferences RelatedUrl
+          (update :RelatedUrl dissoc :GetData)
+          (update :RelatedUrl dissoc :GetService)))
     entry))
 
 (defn- sanitize-related-urls
@@ -93,7 +95,7 @@
                (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru))]]
     (merge
      (-> ru
-         sanitzie-get-service-and-get-data
+         sanitize-get-service-and-get-data
          (assoc :URL (first (gen/sample test/file-url-string 1))))
      type-subtype))))
 

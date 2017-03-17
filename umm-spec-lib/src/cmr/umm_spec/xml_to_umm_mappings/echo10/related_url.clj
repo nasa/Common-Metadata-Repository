@@ -169,11 +169,13 @@
      (when (= "DistributionURL" (:URLContentType url-type))
        (case (:Type url-type)
          "GET DATA" {:GetData nil}
-         "GET SERVICE" {:GetService (when mime-type
+         "GET SERVICE" {:GetService (when-not (or (= "Not provided" mime-type)
+                                                  (nil? mime-type))
                                       {:MimeType mime-type
                                        :FullName (su/with-default nil sanitize?)
                                        :DataID (su/with-default nil sanitize?)
-                                       :Protocol (su/with-default nil sanitize?)})}                                       
+                                       :DataType (su/with-default nil sanitize?)
+                                       :Protocol (su/with-default nil sanitize?)})}
          nil)))))
 
 (defn- parse-online-access-urls

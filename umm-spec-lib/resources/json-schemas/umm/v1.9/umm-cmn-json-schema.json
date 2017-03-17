@@ -342,7 +342,7 @@
             "Protocol": {
                 "description": "The protocol of the service.",
                 "type": "string",
-                "enum": ["HTTP", "HTTPS", "FTP", "FTPS"]
+                "enum": ["HTTP", "HTTPS", "FTP", "FTPS", "Not provided"]
             },
             "FullName": {
                 "description": "The full name of the service.",
@@ -1551,7 +1551,7 @@
                "application/vnd.google-earch.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
                "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
-               "image/vnd.collada+xml", "text/html", "text/plain"]
+               "image/vnd.collada+xml", "text/html", "text/plain", "Not provided"]
     },
     "GetDataTypeFormatEnum": {
       "type": "string",

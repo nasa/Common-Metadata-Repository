@@ -69,6 +69,18 @@
     (merge related-url (get-url-type-by-type Type Subtype))
     related-url))))
 
+(defn- expected-related-url-get-service
+  "Returns related-url with the expected GetService"
+  [related-url]
+  (if (nil? (:GetService related-url))
+    (dissoc related-url :GetService)
+    (if (and (= "DistributionURL" (:URLContentType related-url))
+             (= "GET SERVICE" (:Type related-url)))
+        (if (= "Not provided" (get-in related-url [:GetService :MimeType]))
+          (dissoc related-url :GetService)
+          related-url)
+        (dissoc related-url :GetService))))
+
 (defn- expected-echo10-related-urls
  [related-urls]
  (when (seq related-urls)
@@ -77,6 +89,7 @@
      (-> related-url
          expected-related-url-type
          (dissoc :Relation :FileSize :MimeType :GetData)
+         expected-related-url-get-service
          (update :URL url/format-url true))))))
 
 (defn- expected-echo10-reorder-related-urls

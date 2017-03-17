@@ -42,10 +42,13 @@
       "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:contactInfo/"
       "gmd:CI_Contact/gmd:onlineResource/CI_OnlineResource"))
 
+(def service-online-resource-xpath (str "srv:containsOperations/srv:SV_OperationMetadata/"
+                                        "srv:connectPoint/gmd:CI_OnlineResource"))
+
 (defn parse-related-urls
   "Parse related-urls present in the document"
   [doc sanitize?]
   (seq (concat (sdru/parse-online-and-service-urls
-                 doc sanitize? service-url-path distributor-online-url-xpath)
+                 doc sanitize? service-url-path distributor-online-url-xpath service-online-resource-xpath)
                (sdru/parse-browse-graphics doc sanitize? browse-graphic-xpath)
                (sdru/parse-publication-urls doc sanitize? publication-url-path))))
