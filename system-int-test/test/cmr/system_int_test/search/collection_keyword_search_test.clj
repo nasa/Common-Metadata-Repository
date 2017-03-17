@@ -521,7 +521,7 @@
                                                 :boosts {:short-name 2.0}})
             {:keys [status errors]} resp]
         (is (= 400 status))
-        (is (= "The CMR permits a maximum of 26 keywords with wildcards in a search, given the max length of the keyword being 22. Your query contains 27 keywords with wildcards" (first errors)))))
+        (is (= "The CMR permits a maximum of 22 keywords with wildcards in a search, given the max length of the keyword being 22. Your query contains 27 keywords with wildcards" (first errors)))))
 
     (testing "keyword with too many wildcard is an error."
       (let [resp (search/find-refs :collection {:provider "PROV1"
