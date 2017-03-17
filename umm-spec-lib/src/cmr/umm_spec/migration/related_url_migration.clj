@@ -5,7 +5,7 @@
    [cmr.umm-spec.util :as util]))
 
 (defn- migrate-to-get-data
-  "migrate from 1.9 to 1.8 GetData"
+  "migrate from 1.8 to 1.9 GetData"
   [related-url]
   (let [size (get-in related-url [:FileSize :Size])
         unit (get-in related-url [:FileSize :Unit])]
@@ -19,7 +19,7 @@
           (dissoc related-url :MimeType :FileSize)))))
 
 (defn- migrate-to-get-service
-  "migrate from 1.9 to 1.8 GetService"
+  "migrate from 1.8 to 1.9 GetService"
   [related-url]
   (if-let [mime-type (get related-url :MimeType)]
     (-> related-url

@@ -142,12 +142,20 @@
                    :URLContentType "DistributionURL"
                    :Type "GET DATA"
                    :Subtype "ECHO"
-                   :GetData nil}
+                   :GetData {:Format "ascii"
+                             :Size 10.0
+                             :Unit "MB"
+                             :Fees "fees"}}
                   {:Description "Related url 3 description "
                    :URL "www.foo.com"
                    :URLContentType "DistributionURL"
                    :Type "GET SERVICE"
-                   :GetService nil}
+                   :GetService {:MimeType "application/json"
+                                :DataID "dataid"
+                                :DataType "datatype"
+                                :Protocol "HTTP"
+                                :FullName "fullname"
+                                :URI ["www.foo.com"]}}
                   {:Description "Related url 2 description"
                    :URL "www.foo.com"
                    :URLContentType "VisualizationURL"
