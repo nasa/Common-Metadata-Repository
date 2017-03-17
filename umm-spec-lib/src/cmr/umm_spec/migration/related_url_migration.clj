@@ -23,8 +23,7 @@
           (assoc-in [:GetData :Unit] unit)
           (assoc-in [:GetData :Format] "Not provided"))
       (-> related-url
-          (remove-mime-type-and-file-size)
-          (assoc :GetData nil)))))
+          (remove-mime-type-and-file-size)))))
 
 (defn- migrate-to-get-service
   "migrate from 1.9 to 1.8 GetService"
@@ -38,8 +37,7 @@
         (assoc-in [:GetService :Protocol] "Not provided")
         (assoc-in [:GetService :URI] "Not provided"))
     (-> related-url
-        (remove-mime-type-and-file-size)
-        (assoc :GetService nil))))
+        (remove-mime-type-and-file-size))))
 
 (defn- migrate-from-get-data
   "migrate from 1.9 to 1.8 GetData"
@@ -48,15 +46,19 @@
         unit (get-in related-url [:GetData :Unit])]
     (if (and size unit)
       (-> related-url
-        (assoc-in [:FileSize :Size] size)
-        (assoc-in [:FileSize :Unit] unit))
-      related-url)))
+          (assoc-in [:FileSize :Size] size)
+          (assoc-in [:FileSize :Unit] unit)
+          (dissoc :GetData :GetService))
+      (-> related-url
+          (dissoc :GetData :GetService)))))
 
 (defn- migrate-from-get-service
   "migrate from 1.9 to 1.8 GetService"
   [related-url]
   (let [mime-type (get-in related-url [:GetService :MimeType])]
-    (assoc related-url :MimeType mime-type)))
+    (-> related-url
+        (assoc :MimeType mime-type)
+        (dissoc :GetService :GetData))))
 
 (defn migrate-url-content-types-up
   "migrate from 1.9 to 1.8 based on URLContentType and Type"
@@ -78,7 +80,7 @@
       (case type
         "GET DATA" (migrate-from-get-data related-url)
         "GET SERVICE" (migrate-from-get-service related-url))
-      related-url)))      
+      related-url)))
 
 (defn- url-content-type->relation
  "Convert the Type and Subtype of the URLContentType to Relation"

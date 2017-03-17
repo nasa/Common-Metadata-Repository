@@ -76,7 +76,7 @@
     (cmn/map->RelatedUrlType
      (-> related-url
          expected-related-url-type
-         (dissoc :Relation :FileSize :MimeType)
+         (dissoc :Relation :FileSize :MimeType :GetData)
          (update :URL url/format-url true))))))
 
 (defn- expected-echo10-reorder-related-urls

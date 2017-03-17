@@ -128,7 +128,7 @@
               (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
                       related-urls)]
           (-> related-url
-              (dissoc :FileSize :MimeType)
+              (dissoc :FileSize :MimeType :GetData)
               (update :Description #(when % (str/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values

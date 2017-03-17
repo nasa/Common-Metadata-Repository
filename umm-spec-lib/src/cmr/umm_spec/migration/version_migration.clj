@@ -238,7 +238,6 @@
 
 (defmethod migrate-umm-version [:collection "1.9" "1.8"]
   [context c & _]
-  (proto-repl.saved-values/save 1)
   (-> c
       migrate-doi-down
       related-url/migrate-down-from-1_9

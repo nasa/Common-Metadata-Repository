@@ -24,6 +24,10 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defconfig log-level
+  "App logging level"
+  {:default "info"})
+
 (def ^:private component-order
   "Defines the order to start the components."
   [:log :caches :queue-broker :scheduler :web :nrepl])
@@ -35,15 +39,15 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger-with-log-level (log-level))
              :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
-                          `system-holder
-                          [jvm-info/log-jvm-statistics-job])}]
+                         `system-holder
+                         [jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start

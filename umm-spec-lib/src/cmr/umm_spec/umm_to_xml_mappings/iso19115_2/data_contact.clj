@@ -7,7 +7,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.util :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
-   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as related-url]))
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as related-url]))
 
 (def translated-contact-mechanism-types
  {"Direct Line" "Telephone"

@@ -1,16 +1,18 @@
 (ns cmr.umm-spec.test.umm-json
-  (:require [clojure.test :refer :all]
-            [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]]
-            [cmr.umm-spec.umm-json :as uj]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [cmr.umm-spec.models.umm-service-models :as umm-s]
-            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-            [clj-time.core :as t]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]
-            [clojure.test.check.generators :as gen]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext :refer [checking]]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.models.umm-service-models :as umm-s]
+   [cmr.umm-spec.test.umm-generators :as umm-gen]
+   [cmr.umm-spec.test.umm-record-sanitizer :as san]
+   [cmr.umm-spec.umm-json :as uj]
+   [cmr.umm-spec.util :as u]
+   [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (def minimal-example-umm-c-record
   "This is the minimum valid UMM-C."

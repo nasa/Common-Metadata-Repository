@@ -46,6 +46,30 @@
   {:Type (first types)
    :Subtype (first subtypes)}))
 
+(defn- sanitize-get-data
+  "Removes GetData from relate-url if URLContentType != DistributionURL
+   and Type != GET DATA"
+  [related-url]
+  (if (and (= (:Type related-url) "GET DATA") (= "DistributionURL" (:URLContentType related-url)))
+    related-url
+    (dissoc related-url :GetData)))
+
+(defn- sanitize-get-service
+  "Removes GetService from relate-url if URLContentType != DistributionURL
+   and Type != GET SERVICE"
+  [related-url]
+  (if (and (= (:Type related-url) "GET SERVICE") (= "DistributionURL" (:URLContentType related-url)))
+    related-url
+    (dissoc related-url :GetService)))
+
+(defn- sanitzie-get-service-and-get-data
+  "For any URLContentType and Type combination that shouldn't have GetService or GetData fields,
+   the fields are removed and the related-url is returned"
+  [related-url]
+  (-> related-url
+      sanitize-get-service
+      sanitize-get-data))
+
 (defn- sanitize-related-url
   "Returns a single sanitized RelatedUrl"
   [entry]
@@ -55,7 +79,9 @@
       (-> entry
           (assoc-in [:RelatedUrl :URL] (gen/sample test/file-url-string 1))
           (assoc-in [:RelatedUrl :Type] Type)
-          (assoc-in [:RelatedUrl :Subtype] Subtype)))
+          (assoc-in [:RelatedUrl :Subtype] Subtype)
+          (update-in :RelatedUrl dissoc :GetData)
+          (update-in :RelatedUrl dissoc :GetService)))
     entry))
 
 (defn- sanitize-related-urls
@@ -66,7 +92,9 @@
          :let [type-subtype
                (generate-valid-type-and-subtype-for-url-content-type (:URLContentType ru))]]
     (merge
-     (assoc ru :URL (first (gen/sample test/file-url-string 1)))
+     (-> ru
+         sanitzie-get-service-and-get-data
+         (assoc :URL (first (gen/sample test/file-url-string 1))))
      type-subtype))))
 
 (defn- sanitize-contact-informations

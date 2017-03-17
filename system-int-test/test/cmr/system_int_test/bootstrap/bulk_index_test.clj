@@ -53,7 +53,7 @@
      ;; Make sure the concept was saved successfully
      (is (= 201 (:status coll)))
      (merge umm (select-keys coll [:concept-id :revision-id])))))
-
+  
 (defn- save-granule
   "Saves a granule concept"
   ([n collection]
@@ -312,6 +312,130 @@
    ;; Re-enable message publishing.
    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true)))
 
+
+(deftest bulk-index-by-concept-id
+  (s/only-with-real-database
+    ;; Disable message publishing so items are not indexed.
+    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
+    (let [;; saved but not indexed
+          coll1 (save-collection 1)
+          coll2 (save-collection 2 {})
+          colls (map :concept-id [coll1 coll2])
+          gran1 (save-granule 1 coll1)
+          gran2 (save-granule 2 coll2 {})
+          tag1 (save-tag 1)
+          tag2 (save-tag 2 {})
+          acl1 (save-acl 1
+                         {:extra-fields {:acl-identity "system:token"
+                                         :target-provider-id "PROV1"}}
+                         "TOKEN")
+          acl2 (save-acl 2
+                         {:extra-fields {:acl-identity "system:group"
+                                         :target-provider-id "PROV1"}}
+                         "GROUP")
+          group1 (save-group 1)
+          group2 (save-group 2 {})]
+
+      (bootstrap/bulk-index-concepts "PROV1" :collection colls)
+      (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
+      (bootstrap/bulk-index-concepts "PROV1" :tag [(:concept-id tag1)])
+      
+      ;; Commented out until ACLs and groups are supported in the index by concept-id API
+      ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
+      ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
+
+      (index/wait-until-indexed)
+
+      (testing "Concepts are indexed."
+        ;; Collections and granules
+        (are3 [concept-type expected]
+          (d/refs-match? expected (search/find-refs concept-type {}))
+
+          "Collections"
+          :collection [coll1 coll2]
+
+          "Granules"
+          :granule [gran2])
+        
+
+        ;; Commented out until ACLs and groups are supported in the index by concept-id API
+        ; ;; ACLs
+        ; (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+        ;       items (:items response)]
+        ;   (search-results-match? items [acl2]))
+
+        ; ;; ;; Groups
+        ; (let [response (ac/search-for-groups (u/conn-context) {})
+        ;       ;; Need to filter out admin group created by fixture
+        ;       items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
+        ;   (search-results-match? items [group2]))
+
+        (are3 [expected-tags]
+          (let [result-tags (update
+                              (tags/search {})
+                              :items
+                              (fn [items]
+                                (map #(select-keys % [:concept-id :revision-id]) items)))]
+            (tags/assert-tag-search expected-tags result-tags))
+  
+          "Tags"
+          [tag1])))
+
+    ;; Re-enable message publishing.
+    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
+
+(deftest bulk-delete-by-concept-id 
+  (s/only-with-real-database
+    (let [coll1 (save-collection 1)
+          coll2 (save-collection 2 {})
+          coll3 (save-collection 3 {})
+          gran1 (save-granule 1 coll2)
+          gran2 (save-granule 2 coll2 {})
+          tag1 (save-tag 1)
+          tag2 (save-tag 2 {})
+          acl1 (save-acl 1
+                         {:extra-fields {:acl-identity "system:token"
+                                         :target-provider-id "PROV1"}}
+                         "TOKEN")
+          acl2 (save-acl 2
+                         {:extra-fields {:acl-identity "system:group"
+                                         :target-provider-id "PROV1"}}
+                         "GROUP")
+          group1 (save-group 1)
+          group2 (save-group 2 {})]
+
+      (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1 coll3]))
+      (bootstrap/bulk-delete-concepts "PROV1" :granule [(:concept-id gran2)])
+      (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
+      
+      ;; Commented out until ACLs and groups are supported in the delete by concept-id API
+      ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
+      ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
+
+      (index/wait-until-indexed)
+
+      (testing "Concepts are deleted"
+        ;; Collections and granules
+        (are3 [concept-type expected]
+          (d/refs-match? expected (search/find-refs concept-type {}))
+
+          "Collections"
+          :collection [coll2]
+
+          "Granules"
+          :granule [gran1])
+
+        (are3 [expected-tags]
+            (let [result-tags (update
+                                (tags/search {})
+                                :items
+                                (fn [items]
+                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
+              (tags/assert-tag-search expected-tags result-tags))
+    
+            "Tags"
+            [tag2])))))
+
 (deftest bulk-index-after-date-time
   (s/only-with-real-database
     ;; Disable message publishing so items are not indexed.
@@ -480,7 +604,7 @@
            {:concept-id (:concept-id gran1)} :granule [ummg1]
            {:concept-id (:concept-id gran2)} :granule []
            {:concept-id (:concept-id gran3)} :granule []))))
-   
+
    ;; Re-enable message publishing.
    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
 

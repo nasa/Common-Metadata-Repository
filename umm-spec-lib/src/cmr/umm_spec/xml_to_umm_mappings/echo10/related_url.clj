@@ -173,8 +173,7 @@
                                       {:MimeType mime-type
                                        :FullName (su/with-default nil sanitize?)
                                        :DataID (su/with-default nil sanitize?)
-                                       :Protocol (su/with-default nil sanitize?)
-                                       :URI (su/with-default nil sanitize?)})}
+                                       :Protocol (su/with-default nil sanitize?)})}                                       
          nil)))))
 
 (defn- parse-online-access-urls

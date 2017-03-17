@@ -44,6 +44,10 @@
   {:default 3011
    :type Long})
 
+(defconfig log-level
+  "App logging level"
+  {:default "info"})
+
 (defn public-conf
   "Public access-control configuration used for generating example requests in documentation"
   []
@@ -63,7 +67,7 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger)
+  (let [sys {:log (log/create-logger-with-log-level (log-level))
              :search-index (search-index/create-elastic-search-index)
              :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))

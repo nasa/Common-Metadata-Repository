@@ -124,7 +124,7 @@
                              :Publisher "publisher"
                              :OnlineResource {:Linkage "www.foo.com"
                                               :Protocol "http"
-                                              :ApplicationProtocol "http"
+                                              :ApplicationProfile "http"
                                               :Name "Resource Name"
                                               :Description "Resource Desc"
                                               :Function "function"}

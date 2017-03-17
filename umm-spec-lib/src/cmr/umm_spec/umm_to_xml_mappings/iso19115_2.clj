@@ -11,7 +11,7 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
-   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
@@ -191,7 +191,7 @@
                [:gmd:linkage
                 [:gmd:URL (:Linkage online-resource)]]
                [:gmd:protocol (char-string (:Protocol online-resource))]
-               [:gmd:applicationProfile (char-string (:ApplicationProtocol online-resource))]
+               [:gmd:applicationProfile (char-string (:ApplicationProfile online-resource))]
                [:gmd:name (char-string (:Name online-resource))]
                [:gmd:description (char-string (:Description online-resource))]
                [:gmd:function
@@ -317,7 +317,7 @@
          (data-contact/generate-data-center-contact-groups (:DataCenters c))
          (data-contact/generate-contact-persons (:ContactPersons c))
          (data-contact/generate-contact-groups (:ContactGroups c))
-         (dru/generate-browse-urls c)
+         (sdru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (kws/generate-iso19115-descriptive-keywords
            "theme" (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
@@ -331,7 +331,7 @@
          (generate-user-constraints c)
          (ma/generate-non-source-metadata-associations c)
          (generate-publication-references (:PublicationReferences c))
-         (dru/generate-publication-related-urls c)
+         (sdru/generate-publication-related-urls c)
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
          (for [topic-category (:ISOTopicCategories c)]
            [:gmd:topicCategory
@@ -364,7 +364,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (dru/generate-service-related-url (:RelatedUrls c))
+       (sdru/generate-service-related-url (:RelatedUrls c))
        (aa/generate-content-info-additional-attributes additional-attributes)
        [:gmd:contentInfo
         [:gmd:MD_ImageDescription
@@ -374,7 +374,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (let [related-url-distributions (dru/generate-distributions c)
+       (let [related-url-distributions (sdru/generate-distributions c)
              data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
         (when (or related-url-distributions data-center-distributors)
          [:gmd:distributionInfo

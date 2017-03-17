@@ -175,6 +175,44 @@
     (info "Indexed" total "system concepts.")
     total))
 
+(defn index-concepts-by-id
+  "Index concepts of the given type for the given provider with the given concept-ids."
+  [system provider-id concept-type concept-ids]
+  (let [db-conn (helper/get-metadata-db-db system)
+        provider (get-provider-by-id {:system system} provider-id)
+        ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
+        ;; to prevent exceeding that. This should probably be done in the db namespace,
+        ;; but I want to avoid making changes beyond bootstrap-app for this functionality.
+        concept-id-batches (partition-all 1000 concept-ids)
+        concept-batches (for [batch concept-id-batches
+                              concept-batch (db/find-concepts-in-batches db-conn
+                                                                         provider
+                                                                         {:concept-type concept-type :concept-id batch}
+                                                                         (:db-batch-size system))]
+                          concept-batch)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+    (index/bulk-index {:system (helper/get-indexer system)} concept-batches {:all-revisions-index? true})
+    (info "Indexed " total " concepts.")
+    total))
+
+(defn delete-concepts-by-id
+  "Delete the concepts of the given type for the given provder with the given concept-ids."
+  [system provider-id concept-type concept-ids]
+  (let [concepts (for [concept-id concept-ids]
+                   {:concept-id concept-id
+                    :provider-id provider-id
+                    :deleted true
+                    :concept-type concept-type
+                    ;; Add fake transaction-id and revision-id to generate valid _version for ES doc.
+                    ;; No ES document is actually saved (we are deleting), but DELETE operations still
+                    ;; need a valid _version field, which is obtained from these.
+                    :transaction-id 1
+                    :revision-id 1})
+        concept-batches (partition-all (:db-batch-size system) concepts)
+        total (index/bulk-index {:system (helper/get-indexer system)} concept-batches {:force-version? true})]
+    (info "Deleted " total " concepts")
+    total))
+
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
@@ -236,4 +274,13 @@
                    (let [{:keys [start-index]} (<!! channel)]
                      (index-system-concepts system start-index))
                    (catch Throwable e
-                     (error e (.getMessage e))))))))
+                     (error e (.getMessage e)))))))
+  (let [channel (:concept-id-channel system)]
+    (ca/thread (while true
+                (try ; log errors but keep the thread alive)
+                  (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
+                    (if (= request :delete)
+                      (delete-concepts-by-id system provider-id concept-type concept-ids)
+                      (index-concepts-by-id system provider-id concept-type concept-ids)))
+                  (catch Throwable e
+                    (error e (.getMessage e))))))))

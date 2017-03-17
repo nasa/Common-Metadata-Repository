@@ -351,11 +351,10 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing GeodeticModelType)
 
-;; This entity stores the reference frame or system from which altitudes (elevations) are measured.
-;; The information contains the datum name, distance units and encoding method, which provide the
-;; definition for the system. This table also stores the characteristics of the reference frame or
-;; system from which depths are measured. The additional information in the table are geometry
-;; reference data etc.
+;; This entity stores the reference frame or system from which horizontal and vertical spatial
+;; domains are measured. The horizontal reference frame includes a Geodetic Model, Geographic
+;; Coordinates, and Local Coordinates. The Vertical reference frame includes altitudes (elevations)
+;; and depths.
 (defrecord SpatialInformationType
   [
    VerticalCoordinateSystem

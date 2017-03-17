@@ -228,5 +228,3 @@
 (comment
 
   (last (gen/sample umm-c-generator 10)))
-
-

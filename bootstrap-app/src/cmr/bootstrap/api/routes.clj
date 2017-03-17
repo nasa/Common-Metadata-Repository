@@ -102,6 +102,38 @@
     {:status 202
      :body {:message msg}}))
 
+(defn bulk-index-concepts-by-id
+  "Bulk index concepts of the given type for the given provider-id with the given concept-ids.
+  The request-details-map should contain the following:
+    provider-id  - \"the id of the provider for all the concepts\"
+    concept_type - the concept type for all the concepts, e.g., \"granule\", \"collection\", etc.
+    concept_ids  - a vector of concept ids."
+  [context request-details-map params]
+  (let [provider-id (get request-details-map "provider_id")
+        concept-type (keyword (get request-details-map "concept_type"))
+        concept-ids (get request-details-map "concept_ids")
+        synchronous (synchronous? params)
+        result (bs/index-concepts-by-id context synchronous provider-id concept-type concept-ids)
+        msg (if synchronous
+              (str "Processed " result " concepts for bulk indexing.")
+              (str "Processing concepts for bulk indexing."))]
+    {:status 202
+     :body {:message msg}}))
+
+(defn bulk-delete-concepts-from-index-by-id
+  "Delete concepts from the indexes by concept-id."
+  [context request-details-map params]
+  (let [provider-id (get request-details-map "provider_id")
+        concept-type (keyword (get request-details-map "concept_type"))
+        concept-ids (get request-details-map "concept_ids")
+        synchronous (synchronous? params)
+        result (bs/delete-concepts-from-index-by-id context synchronous provider-id concept-type concept-ids)
+        msg (if synchronous
+              (str "Processed " result "conccepts for bulk deletion from indexes.")
+              (str "Processing concepts for bulk deletion from indexes."))]
+    {:status 202
+     :body {:message msg}}))
+
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
@@ -165,7 +197,14 @@
           (bulk-index-data-later-than-date-time request-context params))
 
         (POST "/system_concepts" {:keys [request-context params]}
-          (bulk-index-system-concepts request-context params)))
+          (bulk-index-system-concepts request-context params))
+
+        (POST "/concepts" {:keys [request-context body params]}
+          (bulk-index-concepts-by-id request-context body params))
+
+        (DELETE "/concepts" {:keys [request-context body params]}
+          (bulk-delete-concepts-from-index-by-id request-context body params)))
+        
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 
