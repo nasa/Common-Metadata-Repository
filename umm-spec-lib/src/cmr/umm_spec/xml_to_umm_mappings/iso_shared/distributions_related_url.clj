@@ -49,24 +49,26 @@
                (let [subtype (subs description subtype-index)]
                  (str/trim (subs subtype (inc (.indexOf subtype ":"))))))}))))
 
-
 (defn- parse-operation-description
   "Parses operationDescription string, returns MimeType, DataID, and DataType"
   [operation-description]
-  (if operation-description
-    (let [split-operation-description (when operation-description
-                                              (str/split operation-description #" "))
-          mime-type-index (get-index-or-nil operation-description "MimeType:")
-          mime-type (when mime-type-index
-                      (nth operation-description (inc mime-type-index)))
-          dataid-index (get-index-or-nil operation-description "DataID:")
-          dataid (when dataid-index
-                   (nth operation-description (inc dataid-index)))
-          data-type-index (get-index-or-nil operation-description "DateType:")
-          data-type (when data-type-index
-                      (nth operation-description (inc data-type-index)))]
-      [mime-type dataid data-type])
-    [nil nil nil]))
+  (when operation-description
+    (let [mime-type-index (get-index-or-nil operation-description "MimeType:")
+          data-id-index (get-index-or-nil operation-description "DataID:")
+          data-type-index (get-index-or-nil operation-description "DataType:")]
+      {:MimeType (when mime-type-index
+                   (let [mime-type (subs operation-description
+                                    mime-type-index
+                                    (or data-id-index data-type-index (count operation-description)))]
+                     (str/trim (subs mime-type (inc (.indexOf mime-type ":"))))))
+       :DataID (when data-id-index
+                 (let [data-id (subs operation-description
+                                          data-id-index
+                                          (or data-type-index (count operation-description)))]
+                   (str/trim (subs data-id (inc (.indexOf data-id ":"))))))
+       :DataType (when data-type-index
+                   (let [data-type (subs operation-description data-type-index)]
+                     (str/trim (subs data-type (inc (.indexOf data-type ":"))))))})))
 
 (defn parse-service-urls
   "Parse service URLs from service location. These are most likely dups of the
@@ -81,21 +83,26 @@
               url (first (select service service-online-resource-xpath))
               url-link (value-of url "gmd:linkage/gmd:URL")
               full-name (value-of service "srv:containsOperations/srv:SV_OperationMetadata/srv:operationName/gco:CharacterString")
-              protocol (value-of service (str service-online-resource-xpath "gmd:protocol/gco:CharacterString"))
+              protocol (value-of url "gmd:protocol/gco:CharacterString")
+              ;;http is currently invalid in the schema, use HTTP instead
+              protocol (if (= "http" protocol)
+                         "HTTP"
+                         protocol)
               operation-description (value-of service "srv:containsOperations/srv:SV_OperationMetadata/srv:operationDescription/gco:CharacterString")
-              [mime-type dataid data-type] (parse-operation-description operation-description)]]
+              ; [MimeType DataID DataType] [nil nil nil]]]
+              {:keys [MimeType DataID DataType]} (parse-operation-description operation-description)]]
 
     (merge url-types
            {:URL (when url-link (url/format-url url-link sanitize?))
             :Description (char-string-value url "gmd:description")}
            (util/remove-nil-keys
-            {:GetService (when (or mime-type full-name dataid protocol data-type
+            {:GetService (when (or MimeType full-name DataID protocol DataType
                                   (not (empty? uris)))
-                           {:MimeType (su/with-default mime-type sanitize?)
+                           {:MimeType (su/with-default MimeType sanitize?)
                             :FullName (su/with-default full-name sanitize?)
-                            :DataID (su/with-default dataid sanitize?)
+                            :DataID (su/with-default DataID sanitize?)
                             :Protocol (su/with-default protocol sanitize?)
-                            :DataType (su/with-default data-type sanitize?)
+                            :DataType (su/with-default DataType sanitize?)
                             :URI (when-not (empty? uris)
                                    uris)})}))))
 
@@ -111,7 +118,7 @@
                             "GET SERVICE")
               types-and-desc (parse-url-types-from-description
                               (char-string-value url "gmd:description"))
-              service-url (some #(= url-link (:URL %)) service-urls)
+              service-url (first (filter #(= url-link (:URL %)) service-urls))
               type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")]]
     (merge
      {:URL url-link

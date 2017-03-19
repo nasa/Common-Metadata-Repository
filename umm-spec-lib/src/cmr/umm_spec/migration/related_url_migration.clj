@@ -25,8 +25,9 @@
     (-> related-url
         (dissoc related-url :MimeType :FileSize)
         (assoc-in [:GetService :MimeType] mime-type)
-        (assoc-in [:GetService :FullName])util/not-provided
-        (assoc-in [:GetService :DataID])util/not-provided
+        (assoc-in [:GetService :FullName] util/not-provided)
+        (assoc-in [:GetService :DataID] util/not-provided)
+        (assoc-in [:GetService :DataType] util/not-provided)
         (assoc-in [:GetService :Protocol] util/not-provided))
     (-> related-url
         (dissoc related-url :MimeType :FileSize))))

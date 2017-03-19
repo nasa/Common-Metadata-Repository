@@ -78,7 +78,13 @@
              (= "GET SERVICE" (:Type related-url)))
         (if (= "Not provided" (get-in related-url [:GetService :MimeType]))
           (dissoc related-url :GetService)
-          related-url)
+          (-> related-url
+            ;;Parse json inserts a nil in URI when it is not present, so add here.
+            (assoc-in [:GetService :URI] nil)
+            (assoc-in [:GetService :Protocol] su/not-provided)
+            (assoc-in [:GetService :DataID] su/not-provided)
+            (assoc-in [:GetService :DataType] su/not-provided)
+            (assoc-in [:GetService :FullName] su/not-provided)))
         (dissoc related-url :GetService))))
 
 (defn- expected-echo10-related-urls
@@ -95,10 +101,9 @@
 (defn- expected-echo10-reorder-related-urls
   "returns the RelatedUrls reordered - based on the order when echo10 is generated from umm."
   [umm-coll]
-  (seq (map #(dissoc % :FileSize :MimeType)
-            (concat (ru-gen/downloadable-urls (:RelatedUrls umm-coll))
-                    (ru-gen/resource-urls (:RelatedUrls umm-coll))
-                    (ru-gen/browse-urls (:RelatedUrls umm-coll))))))
+  (seq (concat (ru-gen/downloadable-urls (:RelatedUrls umm-coll))
+               (ru-gen/resource-urls (:RelatedUrls umm-coll))
+               (ru-gen/browse-urls (:RelatedUrls umm-coll)))))
 
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."

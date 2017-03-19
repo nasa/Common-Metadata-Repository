@@ -42,9 +42,9 @@
                                                          {:MimeType mime-type
                                                           :FullName (su/with-default nil sanitize?)
                                                           :DataID (su/with-default nil sanitize?)
-                                                          :Protocol protocol
-                                                          :URI (su/with-default nil sanitize?)})}
-                           nil))))                               
+                                                          :DataType (su/with-default nil sanitize?)
+                                                          :Protocol protocol})}
+                           nil))))
         related-urls (when-not (= su/not-provided-url (:URL (first related-urls)))
                          related-urls)]
     (when (or multimedia-urls related-urls)

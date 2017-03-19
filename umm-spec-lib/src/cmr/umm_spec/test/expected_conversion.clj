@@ -155,7 +155,7 @@
                                 :DataType "datatype"
                                 :Protocol "HTTP"
                                 :FullName "fullname"
-                                :URI ["www.foo.com"]}}
+                                :URI ["www.foo.com", "www.bar.com"]}}
                   {:Description "Related url 2 description"
                    :URL "www.foo.com"
                    :URLContentType "VisualizationURL"

@@ -121,12 +121,20 @@
 (defn- expected-related-url-get-service
   "Returns related-url with the expected GetService"
   [related-url]
-  (if (nil? (:GetService related-url))
-    (dissoc related-url :GetService)
-    (if (and (= "DistributionURL" (:URLContentType related-url))
-             (= "GET SERVICE" (:Type related-url)))
-        related-url
-        (dissoc related-url :GetService))))
+  (let [URI (if (empty? (get-in related-url [:GetService :URI]))
+              [(:URL related-url)]
+              (get-in related-url [:GetService :URI]))]
+      (if (and (= "DistributionURL" (:URLContentType related-url))
+               (= "GET SERVICE" (:Type related-url)))
+          (if (nil? (:GetService related-url))
+            (assoc related-url :GetService {:MimeType su/not-provided
+                                            :Protocol su/not-provided
+                                            :FullName su/not-provided
+                                            :DataID su/not-provided
+                                            :DataType su/not-provided
+                                            :URI URI})
+            (assoc-in related-url [:GetService :URI] URI))
+          (dissoc related-url :GetService))))
 
 (defn- expected-collection-related-urls
  "Update the collection top level RelatedUrls. Do processing not applicable

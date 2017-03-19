@@ -856,6 +856,7 @@
                :GetService {:MimeType "application/html"
                             :FullName "Not provided"
                             :DataID "Not provided"
+                            :DataType "Not provided"
                             :Protocol "Not provided"}}
               {:Description "Contact group related url description"
                :URLContentType "DistributionURL"
@@ -864,8 +865,9 @@
                :URL "www.google.com"
                :GetService {:MimeType "application/html"
                             :FullName "Not provided"
+                            :DataType "Not provided"
                             :DataID "Not provided"
-                            :Protocol "Not provided"}}                            
+                            :Protocol "Not provided"}}
               {:Description "Contact group related url description"
                :URLContentType "PublicationURL"
                :Type "VIEW RELATED INFORMATION"
