@@ -85,7 +85,7 @@
         (assoc-in [:GetService :DataID] su/not-provided)
         (assoc-in [:GetService :DataType] su/not-provided)
         (assoc-in [:GetService :FullName] su/not-provided))
-    (dissoc related-rul :GetService)))
+    (dissoc related-url :GetService)))
 
 (defn- expected-echo10-related-urls
  [related-urls]
