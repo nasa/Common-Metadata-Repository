@@ -129,7 +129,7 @@
       (update :OnlineResource dif-online-resource)
       check-nil-pub-ref))
 
-(defn- expected-dif-url-type
+(defn expected-dif-url-type
  "Perform a roundtrip of the URLContentType, Type, and Subtype to get the values back.
  Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}"
  [related-url]
@@ -138,40 +138,18 @@
        dif-content-type (dif-util/umm-url-type->dif-umm-content-type url-type)]
   (get dif-util/dif-url-content-type->umm-url-types dif-content-type su/default-url-type)))
 
-(defn- expected-related-url-get-service
-  "Returns related-url with the expected values in GetService"
-  [related-url]
-  (let [mime-type (get-in related-url [:GetService :MimeType])
-        protocol (get-in related-url [:GetService :Protocol])
-        related-url (-> related-url
-                        (assoc-in [:GetService :DataType] su/not-provided)
-                        (assoc-in [:GetService :DataID] su/not-provided)
-                        (assoc-in [:GetService :FullName] su/not-provided)
-                        (update :GetService dissoc :URI))]
-    (cond
-      (and mime-type protocol) related-url
-      mime-type (assoc-in related-url [:GetService :Protocol] su/not-provided)
-      protocol (assoc-in related-url [:GetService :MimeType] su/not-provided)
-      :else
-      (dissoc related-url :GetService))))
-
 (defn expected-related-urls-for-dif-serf
   "Expected Related URLs for DIF and SERF concepts"
-  [related-urls format]
+  [related-urls]
   (when (seq related-urls)
     (seq (for [related-url related-urls
                :let [url-type (expected-dif-url-type related-url)]]
            (cmn/map->RelatedUrlType
             (merge
              url-type
-             (if (= :dif10 format)
-               (-> related-url
-                   (update-in [:URL] #(url/format-url % true))
-                   (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData)
-                   expected-related-url-get-service)
-               (-> related-url
-                   (update-in [:URL] #(url/format-url % true))
-                   (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData :GetService)))))))))
+             (-> related-url
+                 (update-in [:URL] #(url/format-url % true))
+                 (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData :GetService))))))))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."

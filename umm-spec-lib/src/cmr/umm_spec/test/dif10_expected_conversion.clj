@@ -1,20 +1,22 @@
 (ns cmr.umm-spec.test.dif10-expected-conversion
  "DIF 10 specific expected conversion functionality"
- (:require [clj-time.core :as t]
-           [clj-time.format :as f]
-           [cmr.umm-spec.util :as su]
-           [cmr.umm-spec.json-schema :as js]
-           [cmr.common.util :as util :refer [update-in-each]]
-           [clojure.string :as str]
-           [cmr.umm-spec.date-util :as date]
-           [cmr.umm-spec.models.umm-common-models :as cmn]
-           [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-           [cmr.umm-spec.related-url :as ru-gen]
-           [cmr.umm-spec.location-keywords :as lk]
-           [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm-spec.models.umm-collection-models :as umm-c]
-           [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
-           [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
+ (:require
+  [clj-time.core :as t]
+  [clj-time.format :as f]
+  [clojure.string :as str]
+  [cmr.common.util :as util :refer [update-in-each]]
+  [cmr.umm-spec.date-util :as date]
+  [cmr.umm-spec.json-schema :as js]
+  [cmr.umm-spec.location-keywords :as lk]
+  [cmr.umm-spec.models.umm-collection-models :as umm-c]
+  [cmr.umm-spec.models.umm-common-models :as cmn]
+  [cmr.umm-spec.related-url :as ru-gen]
+  [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+  [cmr.umm-spec.test.location-keywords-helper :as lkt]
+  [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
+  [cmr.umm-spec.url :as url]
+  [cmr.umm-spec.util :as su]
+  [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
 
 (def dif10-roles
  {"Technical Contact" "Technical Contact"
@@ -228,6 +230,37 @@
    (conversion-util/create-date-type
     (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE")])
 
+(defn- expected-related-url-get-service
+  "Returns related-url with the expected values in GetService"
+  [related-url]
+  (let [mime-type (get-in related-url [:GetService :MimeType])
+        protocol (get-in related-url [:GetService :Protocol])
+        related-url (-> related-url
+                        (assoc-in [:GetService :DataType] su/not-provided)
+                        (assoc-in [:GetService :DataID] su/not-provided)
+                        (assoc-in [:GetService :FullName] su/not-provided)
+                        (update :GetService dissoc :URI))]
+    (cond
+      (and mime-type protocol) related-url
+      mime-type (assoc-in related-url [:GetService :Protocol] su/not-provided)
+      protocol (assoc-in related-url [:GetService :MimeType] su/not-provided)
+      :else
+      (dissoc related-url :GetService))))
+
+(defn expected-related-urls-for-dif10
+  "Expected Related URLs for DIF and SERF concepts"
+  [related-urls]
+  (when (seq related-urls)
+    (seq (for [related-url related-urls
+               :let [url-type (conversion-util/expected-dif-url-type related-url)]]
+           (cmn/map->RelatedUrlType
+            (merge
+             url-type
+             (-> related-url
+                 (update-in [:URL] #(url/format-url % true))
+                 (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData)
+                 expected-related-url-get-service)))))))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -249,7 +282,7 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
-      (update-in [:RelatedUrls] conversion-util/expected-related-urls-for-dif-serf :dif10)
+      (update-in [:RelatedUrls] expected-related-urls-for-dif10)
       ;; DIF 10 required element
       (update-in [:Abstract] #(or % su/not-provided))
       ;; CMR-2716 SpatialKeywords are replaced by LocationKeywords

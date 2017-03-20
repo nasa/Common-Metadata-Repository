@@ -138,7 +138,7 @@
   [umm-service]
   (-> umm-service
       (update-in [:AdditionalAttributes] convert-serf-additional-attributes)
-      (update :RelatedUrls conversion-util/expected-related-urls-for-dif-serf :serf)
+      (update :RelatedUrls conversion-util/expected-related-urls-for-dif-serf)
       (update-in [:MetadataDates] expected-metadata-dates-for-serf)
       (update-in-each [:ServiceCitation] expected-serf-service-citation)
       (update-in [:ServiceCitation] remove-empty-objects)
