@@ -72,20 +72,20 @@
 (defn- expected-related-url-get-service
   "Returns related-url with the expected GetService"
   [related-url]
-  (if (nil? (:GetService related-url))
-    (dissoc related-url :GetService)
-    (if (and (= "DistributionURL" (:URLContentType related-url))
-             (= "GET SERVICE" (:Type related-url)))
-        (if (= "Not provided" (get-in related-url [:GetService :MimeType]))
-          (dissoc related-url :GetService)
-          (-> related-url
-            ;;Parse json inserts a nil in URI when it is not present, so add here.
-            (assoc-in [:GetService :URI] nil)
-            (assoc-in [:GetService :Protocol] su/not-provided)
-            (assoc-in [:GetService :DataID] su/not-provided)
-            (assoc-in [:GetService :DataType] su/not-provided)
-            (assoc-in [:GetService :FullName] su/not-provided)))
-        (dissoc related-url :GetService))))
+  (if (and (:GetService related-url)
+           (= "DistributionURL" (:URLContentType related-url))
+           (= "GET SERVICE" (:Type related-url))
+           ;;MimeType is the only value that maps from echo10, so we can assume the GetService
+           ;;map should be empty if MimeType is not provided.
+           (not (= "Not provided" (get-in related-url [:GetService :MimeType]))))
+    (-> related-url
+        ;;The following fields are not applicable to ECHO10 format, and are always filled with default values.
+        (assoc-in [:GetService :URI] nil)
+        (assoc-in [:GetService :Protocol] su/not-provided)
+        (assoc-in [:GetService :DataID] su/not-provided)
+        (assoc-in [:GetService :DataType] su/not-provided)
+        (assoc-in [:GetService :FullName] su/not-provided))
+    (dissoc related-rul :GetService)))
 
 (defn- expected-echo10-related-urls
  [related-urls]
