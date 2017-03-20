@@ -2,20 +2,26 @@
   "Contains functions for generating keyword search components for elastic.
   Keyword queries are done as follows:
   1. The keywords string is split on whitespace and lower-cased to generate a list of keywords.
+  Additional keywords are pulled from additional query fields (see keyword-string-fields in
+  cmr.search.services.query-walkers.keywords-extractor) and a separate list is created of those.
+  The keyword list is in the format: {:keywords [...] :field-keywords [...]}
   2. This keyword list is stored in the main query record to make it accessible during the final
   query generation. See step 6 for how this is used.
   3. The keyword list is used to construct a primary query by joining all the keywords with
   spaces.
   4. A query_string query is constructed from the primary query against the :keyword field.
   This query is included in the main query like any other parameter query.
-  5. When the main query is converted to an elasticsearch query, if the keywords list is nil,
+  5. When the main query is converted to an elasticsearch query, if the keyword lists are nil,
   then the query generation proceeds as before, resulting in a filtered query with a 'match_all'
   as the primary query and the parameters' conditions converted to elasticsearch queries that are
   embedded in the filter.
-  6. If the keyword list is not nil, then a 'function score query' is contructed. This consists
+  6. If the keyword lists are not nil, then a 'function score query' is contructed. This consists
   of two parts, a primary query (which is generated as before) and multiple filter queries.
   The primary query determines which documents are returned. The filters
   are used to compute the relevance for each document matching the primary queries.
+  Relevance filters are created from keywords as well as the field-keywords.
+  For example, if data-center is in the search params, we want to apply a boost if we
+  find the data center name in the project, etc.
 
   A sample function score query:
 
@@ -91,8 +97,14 @@
   [regex-field exact-field keywords boost]
   {:weight boost
    ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
-   :filter {:or [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
-                 {:or (map (partial keyword-exact-match-filter exact-field) keywords)}]}})
+   :filter {:or (concat
+                 (when-let [keywords (:keywords keywords)]
+                  [{:and (map (partial keyword-regexp-filter regex-field) keywords)}
+                   {:or (map (partial keyword-exact-match-filter exact-field) keywords)}])
+                 (when-let [field-keywords (:field-keywords keywords)]
+                  [{:or (concat
+                         (map (partial keyword-regexp-filter regex-field) field-keywords)
+                         (map (partial keyword-regexp-filter exact-field) field-keywords))}]))}})
 
 (defn- science-keywords-or-filter
   "Create an or filter containing the science keyword fields related to keyword searches"
@@ -107,14 +119,21 @@
   [keywords boost]
   {:weight boost
    :filter {:nested {:path :science-keywords
-                     :filter {:or (science-keywords-or-filter (str/join " " keywords))}}}})
+                     :filter {:or (concat
+                                   (when-let [keywords (:keywords keywords)]
+                                    (science-keywords-or-filter (str/join " " keywords)))
+                                   (when-let [field-keywords (:field-keywords keywords)]
+                                    (mapcat science-keywords-or-filter field-keywords)))}}}})
 
 (defn- keywords->boosted-exact-match-filter
   "Create a boosted filter for keyword searches that requires an exact match on the given field"
   [field keywords boost]
-  (let [keyword (str/join " " keywords)]
-    {:weight boost
-     :filter (keyword-exact-match-filter field keyword)}))
+  {:weight boost
+   :filter {:or (concat
+                 (when-let [keywords (:keywords keywords)]
+                  [(keyword-exact-match-filter field (str/join " " keywords))])
+                 (when-let [field-keywords (:field-keywords keywords)]
+                  [{:or (map (partial keyword-regexp-filter field) field-keywords)}]))}})
 
 (defn get-boost
   "Get the boost value for the given field."
