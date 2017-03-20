@@ -14,7 +14,7 @@
 
 ;; Intentional space before version and empty CSV line for testing
 (def sample-usage-csv
-  "Product, Version,Hosts\nAMSR-L1A,3,4\nAG_VIRTUAL,3.2,6\nMAPSS_MOD04_L2,N/A,87\n")
+  "Product, Version,Hosts\r\nAMSR-L1A,3,4\nAG_VIRTUAL,3.2,6\nMAPSS_MOD04_L2,N/A,87\n")
 
 (def sample-usage-data
   [{:short-name "AMSR-L1A"
