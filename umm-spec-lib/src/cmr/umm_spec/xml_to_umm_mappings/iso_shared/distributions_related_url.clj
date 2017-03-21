@@ -2,10 +2,12 @@
   "Functions for parsing UMM related-url records out of ISO XML documents."
   (:require
    [clojure.string :as str]
+   [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer :all]
    [cmr.umm-spec.iso19115-2-util :refer :all]
-   [cmr.umm-spec.url :as url]))
+   [cmr.umm-spec.url :as url]
+   [cmr.umm-spec.util :as su]))
 
 (defn get-index-or-nil
  "Get the index of the key in the description. Return nil if the key does not
@@ -47,21 +49,62 @@
                (let [subtype (subs description subtype-index)]
                  (str/trim (subs subtype (inc (.indexOf subtype ":"))))))}))))
 
+(defn- parse-operation-description
+  "Parses operationDescription string, returns MimeType, DataID, and DataType"
+  [operation-description]
+  (when operation-description
+    (let [mime-type-index (get-index-or-nil operation-description "MimeType:")
+          data-id-index (get-index-or-nil operation-description "DataID:")
+          data-type-index (get-index-or-nil operation-description "DataType:")]
+      {:MimeType (when mime-type-index
+                   (let [mime-type (subs operation-description
+                                    mime-type-index
+                                    (or data-id-index data-type-index (count operation-description)))]
+                     (str/trim (subs mime-type (inc (.indexOf mime-type ":"))))))
+       :DataID (when data-id-index
+                 (let [data-id (subs operation-description
+                                          data-id-index
+                                          (or data-type-index (count operation-description)))]
+                   (str/trim (subs data-id (inc (.indexOf data-id ":"))))))
+       :DataType (when data-type-index
+                   (let [data-type (subs operation-description data-type-index)]
+                     (str/trim (subs data-type (inc (.indexOf data-type ":"))))))})))
+
 (defn parse-service-urls
- "Parse service URLs from service location. These are most likely dups of the
- distribution urls, but may contain additional type info."
- [doc sanitize? service-url-path]
- (for [service (select doc service-url-path)
-       :let [local-name (value-of service "srv:serviceType/gco:LocalName")]
-       :when (str/includes? local-name "RelatedURL")
-       :let [url-types (parse-url-types-from-description local-name)
-             url (first (select service
-                          (str "srv:containsOperations/srv:SV_OperationMetadata/"
-                               "srv:connectPoint/gmd:CI_OnlineResource")))
-             url-link (value-of url "gmd:linkage/gmd:URL")]]
-   (merge url-types
-     {:URL (when url-link (url/format-url url-link sanitize?))
-      :Description (char-string-value url "gmd:description")})))
+  "Parse service URLs from service location. These are most likely dups of the
+  distribution urls, but may contain additional type info."
+  [doc sanitize? service-url-path service-online-resource-xpath]
+  (for [service (select doc service-url-path)
+        :let [local-name (value-of service "srv:serviceType/gco:LocalName")]
+        :when (str/includes? local-name "RelatedURL")
+        :let [url-types (parse-url-types-from-description local-name)
+              uris (mapv #(value-of % "gmd:linkage/gmd:URL")
+                         (select service service-online-resource-xpath))
+              url (first (select service service-online-resource-xpath))
+              url-link (value-of url "gmd:linkage/gmd:URL")
+              full-name (value-of service "srv:containsOperations/srv:SV_OperationMetadata/srv:operationName/gco:CharacterString")
+              protocol (value-of url "gmd:protocol/gco:CharacterString")
+              ;;http is currently invalid in the schema, use HTTP instead
+              protocol (if (= "http" protocol)
+                         "HTTP"
+                         protocol)
+              operation-description (value-of service "srv:containsOperations/srv:SV_OperationMetadata/srv:operationDescription/gco:CharacterString")
+              ; [MimeType DataID DataType] [nil nil nil]]]
+              {:keys [MimeType DataID DataType]} (parse-operation-description operation-description)]]
+
+    (merge url-types
+           {:URL (when url-link (url/format-url url-link sanitize?))
+            :Description (char-string-value url "gmd:description")}
+           (util/remove-nil-keys
+            {:GetService (when (or MimeType full-name DataID protocol DataType
+                                  (not (empty? uris)))
+                           {:MimeType (su/with-default MimeType sanitize?)
+                            :FullName (su/with-default full-name sanitize?)
+                            :DataID (su/with-default DataID sanitize?)
+                            :Protocol (su/with-default protocol sanitize?)
+                            :DataType (su/with-default DataType sanitize?)
+                            :URI (when-not (empty? uris)
+                                   uris)})}))))
 
 (defn parse-online-urls
   "Parse ISO online resource urls"
@@ -75,20 +118,28 @@
                             "GET SERVICE")
               types-and-desc (parse-url-types-from-description
                               (char-string-value url "gmd:description"))
-              service-url (some #(= url-link (:URL %)) service-urls)]]
-   {:URL url-link
-    :URLContentType "DistributionURL"
-    :Type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")
-    :Subtype (if opendap-type
-              "OPENDAP DATA (DODS)"
-              (or (:Subtype types-and-desc) (:Subtype service-url)))
-    :Description (:Description types-and-desc)}))
+              service-url (first (filter #(= url-link (:URL %)) service-urls))
+              type (or opendap-type (:Type types-and-desc) (:Type service-url) "GET DATA")]]
+    (merge
+     {:URL url-link
+      :URLContentType "DistributionURL"
+      :Type type
+      :Subtype (if opendap-type
+                "OPENDAP DATA (DODS)"
+                (or (:Subtype types-and-desc) (:Subtype service-url)))
+      :Description (:Description types-and-desc)}
+     (case type
+       "GET DATA" {:GetData nil}
+       "GET SERVICE" (if (some #(not (= "Not provided" %)) (vals (:GetService service-url)))
+                       {:GetService (:GetService service-url)}
+                       {:GetService nil})
+       nil))))
 
 (defn parse-online-and-service-urls
  "Parse online and service urls. Service urls may be a dup of distribution urls,
  but may contain additional needed type information. Filter out dup service URLs."
- [doc sanitize? service-url-path distributor-online-url-xpath ]
- (let [service-urls (parse-service-urls doc sanitize? service-url-path)
+ [doc sanitize? service-url-path distributor-online-url-xpath service-online-resource-xpath]
+ (let [service-urls (parse-service-urls doc sanitize? service-url-path service-online-resource-xpath)
        online-urls (parse-online-urls doc sanitize? service-urls distributor-online-url-xpath)
        online-url-urls (set (map :URL online-urls))
        service-urls (seq (remove #(contains? online-url-urls (:URL %)) service-urls))]

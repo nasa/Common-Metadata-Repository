@@ -139,17 +139,25 @@
     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
     :RelatedUrls [{:Description "Related url description"
                    :URL "www.foo.com"
-                   :MimeType "mime type"
                    :URLContentType "DistributionURL"
                    :Type "GET DATA"
-                   :Subtype "ECHO"}
+                   :Subtype "ECHO"
+                   :GetData {:Format "ascii"
+                             :Size 10.0
+                             :Unit "MB"
+                             :Fees "fees"}}
                   {:Description "Related url 3 description "
                    :URL "www.foo.com"
                    :URLContentType "DistributionURL"
-                   :Type "GET SERVICE"}
+                   :Type "GET SERVICE"
+                   :GetService {:MimeType "application/json"
+                                :DataID "dataid"
+                                :DataType "datatype"
+                                :Protocol "HTTP"
+                                :FullName "fullname"
+                                :URI ["www.foo.com", "www.bar.com"]}}
                   {:Description "Related url 2 description"
                    :URL "www.foo.com"
-                   :FileSize {:Size 10.0 :Unit "MB"}
                    :URLContentType "VisualizationURL"
                    :Type "GET RELATED VISUALIZATION"
                    :Subtype "GIBS"}]
@@ -190,7 +198,6 @@
                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                      :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                          :URL "www.contact.group.foo.com"
-                                                         :MimeType "application/html"
                                                          :URLContentType "DataContactURL"
                                                          :Type "HOME PAGE"}]
                                           :ServiceHours "Weekdays 9AM - 5PM"
@@ -206,7 +213,6 @@
                       :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                       :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                           :URL "www.contact.foo.com"
-                                                          :MimeType "application/html"
                                                           :URLContentType "DataContactURL"
                                                           :Type "HOME PAGE"}]
                                            :ServiceHours "Weekdays 9AM - 5PM"
@@ -227,7 +233,6 @@
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :URL "www.contact.foo.com"
-                                                                         :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
                                                                          :Type "HOME PAGE"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
@@ -251,7 +256,6 @@
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                                          :URL "www.contact.shoes.com"
-                                                                         :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
                                                                          :Type "HOME PAGE"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
@@ -271,7 +275,6 @@
                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
                                                        :URL "www.contact.shoo.com"
-                                                       :MimeType "application/html"
                                                        :URLContentType "DataCenterURL"
                                                        :Type "HOME PAGE"}]
                                         :ServiceHours "Weekdays 9AM - 5PM"
@@ -288,7 +291,6 @@
                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                                     :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
                                                                         :URL "www.contact.group.foo.com"
-                                                                        :MimeType "application/html"
                                                                         :URLContentType "DataContactURL"
                                                                         :Type "HOME PAGE"}]
 

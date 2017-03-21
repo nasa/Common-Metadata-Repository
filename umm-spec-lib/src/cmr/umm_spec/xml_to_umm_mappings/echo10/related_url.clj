@@ -160,12 +160,23 @@
   (for [resource (select doc "/Collection/OnlineResources/OnlineResource")
         :let [resource-type (value-of resource "Type")
               url-type (get-url-type resource-type)
-              description (value-of resource "Description")]]
+              description (value-of resource "Description")
+              mime-type (value-of resource "MimeType")]]
     (merge
      url-type
      {:URL (url/format-url (value-of resource "URL") sanitize?)
-      :Description description
-      :MimeType (value-of resource "MimeType")})))
+      :Description description}
+     (when (= "DistributionURL" (:URLContentType url-type))
+       (case (:Type url-type)
+         "GET DATA" {:GetData nil}
+         "GET SERVICE" {:GetService (when-not (or (= "Not provided" mime-type)
+                                                  (nil? mime-type))
+                                      {:MimeType mime-type
+                                       :FullName (su/with-default nil sanitize?)
+                                       :DataID (su/with-default nil sanitize?)
+                                       :DataType (su/with-default nil sanitize?)
+                                       :Protocol (su/with-default nil sanitize?)})}
+         nil)))))
 
 (defn- parse-online-access-urls
   "Parse online access urls"
@@ -173,19 +184,16 @@
   (for [resource (select doc "/Collection/OnlineAccessURLs/OnlineAccessURL")]
     {:URL (url/format-url (value-of resource "URL") sanitize?)
      :Description (value-of resource "URLDescription")
-     :MimeType (value-of resource "MimeType")
      :URLContentType "DistributionURL"
-     :Type "GET DATA"}))
+     :Type "GET DATA"
+     :GetData nil}))
 
 (defn- parse-browse-urls
   "Parse browse urls"
   [doc sanitize?]
-  (for [resource (select doc "/Collection/AssociatedBrowseImageUrls/ProviderBrowseUrl")
-        :let [file-size (value-of resource "FileSize")]]
+  (for [resource (select doc "/Collection/AssociatedBrowseImageUrls/ProviderBrowseUrl")]
     {:URL (url/format-url (value-of resource "URL") sanitize?)
-     :FileSize (when file-size {:Size (/ (Long. file-size) 1024) :Unit "KB"})
      :Description (value-of resource "Description")
-     :MimeType (value-of resource "MimeType")
      :URLContentType "VisualizationURL"
      :Type "GET RELATED VISUALIZATION"}))
 

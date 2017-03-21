@@ -193,5 +193,5 @@
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
-  [context metadata options]
+  [context metadata options]  
   (js/parse-umm-c (parse-echo10-xml context metadata options)))

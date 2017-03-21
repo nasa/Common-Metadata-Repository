@@ -1,16 +1,19 @@
 (ns cmr.umm-spec.test.umm-json
-  (:require [clojure.test :refer :all]
-            [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]]
-            [cmr.umm-spec.umm-json :as uj]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [cmr.umm-spec.models.umm-service-models :as umm-s]
-            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-            [clj-time.core :as t]
-            [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]
-            [clojure.test.check.generators :as gen]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext :refer [checking]]
+   [cmr.common.util :as util]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.models.umm-service-models :as umm-s]
+   [cmr.umm-spec.test.umm-generators :as umm-gen]
+   [cmr.umm-spec.test.umm-record-sanitizer :as san]
+   [cmr.umm-spec.umm-json :as uj]
+   [cmr.umm-spec.util :as u]
+   [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (def minimal-example-umm-c-record
   "This is the minimum valid UMM-C."
@@ -72,6 +75,34 @@
      :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["Investigator"]
                                                      :GroupName "ABC"})]}))
 
+(defn- remove-get-service-and-get-data-nils
+  "Removes nil values in GetService and GetData added by json->umm to RelatedUrls,
+  this is needed to prevent failures caused by json->umm parser.  It will add in :GetService
+  and :GetData that shouldn't be there because it is calling the contructor for RelatedUrlType defrecord.
+  So we remove them because they should only be present when URLContentType = DistributionURL and
+  Type = GET DATA or GET SERVICE."
+  [umm]
+  (let [remove-nils (fn [ru]
+                      (let [get-service (:GetService ru)
+                            get-data (:GetData ru)
+                            url-content-type (:URLContentType ru)
+                            type (:Type ru)]
+                        (cond
+                          (and (nil? get-data) (nil? get-service))
+                          (dissoc ru :GetService :GetData)
+                          (and (= "DistributionURL" url-content-type) (= "GET SERVICE" type) (nil? get-service))
+                          (dissoc ru :GetData)
+                          (and (= "DistributionURL" url-content-type) (= "GET DATA" type) (nil? get-data))
+                          (dissoc ru :GetService)
+                          :else ru)))]
+    (-> umm
+        (util/update-in-all [:RelatedUrls] remove-nils)
+        (util/update-in-all [:ContactGroups :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:ContactPersons :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:DataCenters :ContactGroups :ContactInformation :RelatedUrls] remove-nils)
+        (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls] remove-nils))))
+
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929
 
@@ -102,7 +133,8 @@
     [umm-c-record (gen/no-shrink umm-gen/umm-c-generator)]
     (let [json (uj/umm->json umm-c-record)
           _ (is (empty? (js/validate-umm-json json :collection)))
-          parsed (uj/json->umm {} :collection json)]
+          parsed (uj/json->umm {} :collection json)
+          parsed (remove-get-service-and-get-data-nils parsed)]
       (is (= umm-c-record parsed)))))
 
 (deftest all-umm-s-records
@@ -110,7 +142,8 @@
     [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
     (let [json (uj/umm->json umm-s-record)
           _ (is (empty? (js/validate-umm-json json :service)))
-          parsed (uj/json->umm {} :service json)]
+          parsed (uj/json->umm {} :service json)
+          parsed (remove-get-service-and-get-data-nils parsed)]
       (is (= umm-s-record parsed)))))
 
 (deftest validate-json-with-extra-fields

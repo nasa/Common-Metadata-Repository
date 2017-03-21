@@ -1,6 +1,6 @@
 (ns cmr.ingest.api.translation
   "Defines an API for translating metadata between formats."
-  (:require 
+  (:require
     [clojure.test.check.generators :as test-check-gen]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]

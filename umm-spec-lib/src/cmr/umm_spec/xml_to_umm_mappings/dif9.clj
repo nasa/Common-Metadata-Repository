@@ -83,7 +83,7 @@
        url-type
        {:URL (url/format-url url sanitize?)
         :Description description}))))
-
+       
 (defn parse-temporal-extents
  "Return a list of temporal extents from the XML doc"
  [doc sanitize?]

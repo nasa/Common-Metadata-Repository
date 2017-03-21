@@ -116,8 +116,25 @@
   (when (seq related-urls)
     (seq (for [related-url related-urls]
           (-> related-url
-              (assoc :MimeType nil :FileSize nil)
               (update :URL #(url/format-url % true)))))))
+
+(defn- expected-related-url-get-service
+  "Returns related-url with the expected GetService"
+  [related-url]
+  (let [URI (if (empty? (get-in related-url [:GetService :URI]))
+              [(:URL related-url)]
+              (get-in related-url [:GetService :URI]))]
+      (if (and (= "DistributionURL" (:URLContentType related-url))
+               (= "GET SERVICE" (:Type related-url)))
+          (if (nil? (:GetService related-url))
+            (assoc related-url :GetService {:MimeType su/not-provided
+                                            :Protocol su/not-provided
+                                            :FullName su/not-provided
+                                            :DataID su/not-provided
+                                            :DataType su/not-provided
+                                            :URI URI})
+            (assoc-in related-url [:GetService :URI] URI))
+          (dissoc related-url :GetService))))
 
 (defn- expected-collection-related-urls
  "Update the collection top level RelatedUrls. Do processing not applicable
@@ -129,6 +146,8 @@
               (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %))
                       related-urls)]
           (-> related-url
+              (dissoc :FileSize :MimeType :GetData)
+              expected-related-url-get-service
               (update :Description #(when % (str/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
@@ -287,7 +306,7 @@
      (update :RelatedUrls expected-contact-info-related-urls)
      (update-in-each [:RelatedUrls] #(assoc % :URLContentType url-content-type))
      (update-in-each [:RelatedUrls] #(assoc % :Type "HOME PAGE"))
-     (update-in-each [:RelatedUrls] #(dissoc % :Subtype))
+     (update-in-each [:RelatedUrls] #(dissoc % :Subtype :GetData :GetService))
      (update :ContactMechanisms expected-iso-contact-mechanisms)
      (update :Addresses #(take 1 %))))
 

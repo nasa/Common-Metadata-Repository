@@ -6,8 +6,8 @@
 (def DOCUMENTATION_MIME_TYPES
   "Mime Types that indicate the RelatedURL is of documentation type"
   #{"Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
-   "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
-   "Application/rtf" "Application/wordperfect5.1"})
+    "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
+    "Application/rtf" "Application/wordperfect5.1"})
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
@@ -76,11 +76,11 @@
 (defn- related-url->atom-link
   "Returns the atom link of the given related-url"
   [related-url]
-  (let [{url :URL mime-type :MimeType {:keys [Size Unit]} :FileSize} related-url
+  (let [{url :URL {:keys [MimeType]} :GetService {:keys [Size Unit]} :GetData} related-url
         size (when (or Size Unit) (str Size Unit))]
     {:href url
      :link-type (related-url->link-type related-url)
-     :mime-type mime-type
+     :mime-type MimeType
      :size size}))
 
 (defn atom-links
@@ -94,11 +94,13 @@
   (when-let [urls (seq (downloadable-urls related-urls))]
     [:OnlineAccessURLs
      (for [related-url urls
-           :let [{:keys [Description MimeType URL]} related-url]]
+           :let [{:keys [Description URL]} related-url
+                 MimeType (get-in related-url [:GetService :MimeType])]]
        [:OnlineAccessURL
         [:URL URL]
         [:URLDescription Description]
-        [:MimeType MimeType]])]))
+        (when MimeType
+          [:MimeType MimeType])])]))
 
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM related urls entry."
@@ -106,12 +108,14 @@
   (when-let [urls (seq (resource-urls related-urls))]
     [:OnlineResources
      (for [related-url urls
-           :let [{:keys [Description MimeType]} related-url]]
+           :let [{:keys [Description]} related-url
+                 MimeType (get-in related-url [:GetService :MimeType])]]
        [:OnlineResource
         [:URL (:URL related-url)]
         [:Description Description]
         [:Type (related-url->online-resource-type related-url)]
-        [:MimeType MimeType]])]))
+        (when MimeType
+          [:MimeType MimeType])])]))
 
 (defn convert-to-bytes
   [size unit]
@@ -132,8 +136,10 @@
   (when-let [urls (seq (browse-urls related-urls))]
      [:AssociatedBrowseImageUrls
       (for [related-url urls
-            :let [{:keys [Description MimeType]} related-url]]
+            :let [{:keys [Description]} related-url
+                  MimeType (get-in related-url [:GetService :MimeType])]]
         [:ProviderBrowseUrl
          [:URL (:URL related-url)]
          [:Description Description]
-         [:MimeType MimeType]])]))
+         (when MimeType
+           [:MimeType MimeType])])]))

@@ -1,11 +1,11 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url
   "Functions for generating ISO XML elements from UMM related-url records."
-  (:require 
+  (:require
     [clojure.string :as str]
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.iso19115-2-util :as iso]
     [cmr.umm-spec.url :as url]
-    [cmr.umm-spec.util :refer [char-string]]))
+    [cmr.umm-spec.util :as su :refer [char-string]]))
 
 (def type->name
   "Mapping of related url type to online resource name"
@@ -61,7 +61,7 @@
   encode-types=true will encode the Type and Subtype into the description field."
   [online-resource-url open-tag encode-types]
   (when online-resource-url
-   (let [{:keys [URL Description Type]} online-resource-url
+   (let [{:keys [URL Description Type]}  online-resource-url
          description (if encode-types
                       (generate-description-with-types online-resource-url)
                       Description)
@@ -84,13 +84,24 @@
            {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
             :codeListValue code}]]]])))
 
+(defn- generate-operation-description
+  "Generate operation description from GetService values"
+  [MimeType DataID DataType]
+  (let [operation-description (format "MimeType: %s " (su/with-default MimeType))
+        operation-description (str operation-description (format "DataID: %s " (su/with-default DataID)))
+        operation-description (str operation-description (format "DataType: %s " (su/with-default DataType)))]
+    (str/trim operation-description)))
+
 (defn generate-service-related-url
  "Write 'GET SERVICE' related urls to an additional area of ISO"
  [related-urls]
  (for [service-url (filter #(and (= "DistributionURL" (:URLContentType %))
                                  (= "GET SERVICE" (:Type %)))
                            related-urls)
-       :let [{:keys [URL Description]} service-url
+       :let [{URL :URL Description :Description} service-url
+             {:keys [MimeType Protocol FullName DataID DataType URI]}  (:GetService service-url)
+             URI (remove #(= URL %) URI)
+             operation-description (generate-operation-description MimeType DataID DataType)
              url-type-desc (generate-description-with-types
                              (dissoc service-url :Description))]] ; Don't want description
   [:gmd:identificationInfo
@@ -104,14 +115,21 @@
       {:codeList "" :codeListValue ""} "tight"]]
     [:srv:containsOperations
      [:srv:SV_OperationMetadata
-      [:srv:operationName {:gco:nilReason "missing"}]
+      (if FullName
+        [:srv:operationName (char-string FullName)]
+        [:srv:operationName {:gco:nilReason "missing"}])
       [:srv:DCP {:gco:nilReason "unknown"}]
+      (when operation-description
+        [:srv:operationDescription
+         (char-string operation-description)])
       [:srv:connectPoint
        [:gmd:CI_OnlineResource
         [:gmd:linkage
          [:gmd:URL URL]]
         [:gmd:protocol
-         (char-string (url/protocol URL))]
+         (if Protocol
+           (char-string Protocol)
+           (char-string su/not-provided))]
         (if Description
           [:gmd:description
            (char-string Description)]
@@ -119,7 +137,13 @@
         [:gmd:function
          [:gmd:CI_OnLineFunctionCode
           {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
-           :codeListValue "download"}]]]]]]]]))
+           :codeListValue "download"}]]]]
+      (when URI
+        (for [uri URI]
+          [:srv:connectPoint
+           [:gmd:CI_OnlineResource
+            [:gmd:linkage
+             [:gmd:URL uri]]]]))]]]]))
 
 (defn generate-publication-related-urls
  "PublicatonURL and CollectionURL go in the same section as the Publication
