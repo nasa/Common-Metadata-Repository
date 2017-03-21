@@ -60,7 +60,7 @@
    :SpatialExtent s/spatial-extent-validation
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
    :TilingIdentificationSystems tiling-identification-system-validations
-   :RelatedUrls (v/every url/urls-validation)
+   :RelatedUrls (v/every url/related-url-validations)
    :CollectionCitations (v/every {:OnlineResource {:Linkage url/url-validation}})
    :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})
    :DataCenters (v/every url/data-center-url-validation)

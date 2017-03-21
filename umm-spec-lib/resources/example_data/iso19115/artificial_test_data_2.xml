@@ -181,7 +181,7 @@ Main NCEI website providing links to access data and data services.
                 <gco:CharacterString>Calibrated normalized synthetic aperture radar cross section measures multilooked onto a 1 km grid that conforms to the SMAP spacecraft path. Version Description: </gco:CharacterString>
             </gmd:abstract>
             <gmd:purpose gco:nilReason="missing">
-                <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil 
+                <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil
                             moisture retrieval requirements as well as support other scientific studies while keeping the file sizes manageable for most scientific data users</gco:CharacterString>
             </gmd:purpose>
             <gmd:status>
@@ -261,7 +261,7 @@ Main NCEI website providing links to access data and data services.
                         <gmd:CI_RoleCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
                     </gmd:role>
                 </gmd:CI_ResponsibleParty>
-            </gmd:pointOfContact> 
+            </gmd:pointOfContact>
             <gmd:graphicOverview>
                 <gmd:MD_BrowseGraphic>
                     <gmd:fileName>
@@ -429,7 +429,7 @@ Main NCEI website providing links to access data and data services.
                                     <gmd:URL>http://www.collectionurl1.com</gmd:URL>
                                     </gmd:linkage>
                                     <gmd:description>
-                                    <gco:CharacterString>Description: Some Descriptive Text URLContentType: CollectionURL Type: VIEW RELATED INFORMATION</gco:CharacterString>
+                                    <gco:CharacterString>Description: Some Descriptive Text URLContentType: CollectionURL Type: EXTENDED METADATA</gco:CharacterString>
                                     </gmd:description>
                                     </gmd:CI_OnlineResource>
                                     </gmd:onlineResource>
@@ -710,5 +710,3 @@ Main NCEI website providing links to access data and data services.
         </gmi:MI_AcquisitionInformation>
     </gmi:acquisitionInformation>
 </gmi:MI_Metadata>
-
-
