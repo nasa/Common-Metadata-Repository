@@ -79,7 +79,7 @@
    "DataCenterURL" {"HOME PAGE" []}
    "DataContactURL" {"HOME PAGE" []}})
 
-(defn valid-url-content-types-combo?
+(defn- valid-url-content-types-combo?
   "Returns true if valid Type and SubType for URLContentType, nil otherwise."
   [url-content-type type sub-type]
   (when (and (some #(= type %) (keys (get valid-url-content-types-map url-content-type)))
@@ -87,7 +87,7 @@
                  (some #(= sub-type %) (get-in valid-url-content-types-map [url-content-type type]))))
     true))
 
-(defn related-url-type-validation
+(defn- related-url-type-validation
   "Validate the Type and SubType being valid for the accompanying URLContentType"
   [field-path value]
   (let [{:keys [URLContentType Type SubType]} value]
