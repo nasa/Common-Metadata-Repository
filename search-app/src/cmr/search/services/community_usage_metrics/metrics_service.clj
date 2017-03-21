@@ -19,9 +19,10 @@
    version-col - the index of the Version in each CSV line
    hosts-col - the index of the Hosts in each CSV line"
   [csv-header]
-  {:product-col (.indexOf csv-header "Product")
-   :version-col (.indexOf csv-header "Version")
-   :hosts-col (.indexOf csv-header "Hosts")})
+  (let [csv-header (mapv str/trim csv-header)]
+   {:product-col (.indexOf csv-header "Product")
+    :version-col (.indexOf csv-header "Version")
+    :hosts-col (.indexOf csv-header "Hosts")}))
 
 (defn- read-csv-column
   "Read a column from the csv, if the column is exists. Otherwise, return nil."
@@ -33,26 +34,27 @@
   "Convert a line in the csv file to a community usage metric. Only storing short-name (product),
    version (can be 'N/A' or a version number), and access-count (hosts)"
   [csv-line product-col version-col hosts-col]
-  (let [short-name (read-csv-column csv-line product-col)
-        version (read-csv-column csv-line version-col)]
-    {:short-name (if (seq short-name)
-                   short-name
-                   (errors/throw-service-error :invalid-data
-                     "Error parsing 'Product' CSV Data. Product may not be empty."))
-     :version version
-     :access-count (let [access-count (read-csv-column csv-line hosts-col)]
-                     (if (seq access-count)
-                       (try
-                         (Integer/parseInt (str/replace access-count "," "")) ; Remove commas in large ints
-                         (catch java.lang.NumberFormatException e
-                           (errors/throw-service-error :invalid-data
-                             (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
-                                          "[%s]. Hosts must be an integer.")
-                               short-name version))))
-                      (errors/throw-service-error :invalid-data
-                        (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
-                                      "[%s]. Hosts may not be empty.")
-                          short-name version))))}))
+  (when (seq (remove empty? csv-line)) ; Don't process empty lines
+   (let [short-name (read-csv-column csv-line product-col)
+         version (read-csv-column csv-line version-col)]
+     {:short-name (if (seq short-name)
+                    short-name
+                    (errors/throw-service-error :invalid-data
+                      "Error parsing 'Product' CSV Data. Product may not be empty."))
+      :version version
+      :access-count (let [access-count (read-csv-column csv-line hosts-col)]
+                      (if (seq access-count)
+                        (try
+                          (Integer/parseInt (str/replace access-count "," "")) ; Remove commas in large ints
+                          (catch java.lang.NumberFormatException e
+                            (errors/throw-service-error :invalid-data
+                              (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                           "[%s]. Hosts must be an integer.")
+                                short-name version))))
+                       (errors/throw-service-error :invalid-data
+                         (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                       "[%s]. Hosts may not be empty.")
+                           short-name version))))})))
 
 (defn- validate-and-read-csv
   "Validate the ingested community usage metrics csv and if valid, return the data lines read
