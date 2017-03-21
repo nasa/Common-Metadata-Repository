@@ -84,7 +84,7 @@
   [url-content-type type sub-type]
   (when (and (some #(= type %) (keys (get valid-url-content-types-map url-content-type)))
              (or (nil? sub-type)
-                 (some (partial = sub-type) (get-in valid-url-content-types-map [url-content-type type]))))
+                 (some #(= sub-type %) (get-in valid-url-content-types-map [url-content-type type]))))
     true))
 
 (defn related-url-type-validation
