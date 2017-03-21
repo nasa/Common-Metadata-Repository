@@ -49,9 +49,9 @@
 (record-pretty-printer/enable-record-pretty-printing ProjectType)
 
 ;; Information about the device used to measure or record data in this collection, including direct
-;; human observation. In cases where instruments have a single sensor or the instrument and sensor
-;; are used synonymously (e.g. AVHRR), both Instrument and Sensor should be recorded. The Sensor
-;; information is represented in a separate section.
+;; human observation. In cases where instruments have a single child instrument or the instrument
+;; and child instrument are used synonymously (e.g. AVHRR), both Instrument and ComposedOf should be
+;; recorded. The child instrument information is represented in a separate section.
 (defrecord InstrumentType
   [
    ShortName
@@ -95,6 +95,26 @@
    Boundaries
   ])
 (record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
+
+;; Child object on an instrument. Has all the same fields as instrument, minus the list of child
+;; instruments.
+(defrecord InstrumentChildType
+  [
+   ShortName
+
+   LongName
+
+   ;; Instrument-specific characteristics, e.g., Wavelength, SwathWidth, Field of View. The
+   ;; characteristic names must be unique on this instrument; however the names do not have to be
+   ;; unique across instruments.
+   Characteristics
+
+   ;; The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal
+   ;; Emission and Reflective Radiometer, Clouds and the Earth's Radiant Energy System, Human
+   ;; Observation).
+   Technique
+  ])
+(record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
 
 ;; Information about a two-dimensional tiling system related to this collection.
 (defrecord TilingIdentificationSystemType
@@ -231,14 +251,14 @@
    ;; The title of the collection; this is the same as the collection Entry Title.
    Title
 
+   ;; The URL of the landing page for the collection.
+   OnlineResource
+
    ;; The name of the individual or organization that made the collection available for release.
    Publisher
 
    ;; The date when the collection was made available for release.
    ReleaseDate
-
-   ;; The online resource related to the landing page of the collection.
-   OnlineResource
 
    ;; The volume or issue number of the publication (if applicable).
    IssueIdentification
@@ -411,6 +431,26 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
 
+;; Represents the information needed for a DistributionURL where data is retrieved.
+(defrecord GetDataType
+  [
+   ;; The format of the data.
+   Format
+
+   ;; The size of the data.
+   Size
+
+   ;; Unit of information, together with Size determines total size in bytes of the data.
+   Unit
+
+   ;; The fee for ordering the collection data. The fee is entered as a number, in US Dollars.
+   Fees
+
+   ;; The checksum, usually a SHA1 or md5 checksum for the data file.
+   Checksum
+  ])
+(record-pretty-printer/enable-record-pretty-printing GetDataType)
+
 (defrecord GeometryType
   [
    CoordinateSystem
@@ -424,25 +464,6 @@
    Lines
   ])
 (record-pretty-printer/enable-record-pretty-printing GeometryType)
-
-;; Information about the instrument excluding fields used in the top level instrument element
-(defrecord InstrumentChildType
-  [
-   ShortName
-
-   LongName
-
-   ;; Instrument-specific characteristics, e.g., Wavelength, SwathWidth, Field of View. The
-   ;; characteristic names must be unique on this instrument; however the names do not have to be
-   ;; unique across instruments.
-   Characteristics
-
-   ;; The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal
-   ;; Emission and Reflective Radiometer, Clouds and the Earth's Radiant Energy System, Human
-   ;; Observation).
-   Technique
-  ])
-(record-pretty-printer/enable-record-pretty-printing InstrumentChildType)
 
 ;; The longitude and latitude values of a spatially referenced point in degrees.
 (defrecord PointType
@@ -483,11 +504,11 @@
    ;; The publication volume number.
    Volume
 
+   ;; The URL of the website related to the bibliographic citation.
+   OnlineResource
+
    ;; The publisher of the publication.
    Publisher
-
-   ;; The online resource related to the bibliographic citation.
-   OnlineResource
 
    ;; The ISBN of the publication.
    ISBN
@@ -618,6 +639,31 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing CharacteristicType)
 
+;; Describes the online resource pertaining to the data.
+(defrecord OnlineResourceType
+  [
+   ;; The URL of the website related to the online resource.
+   Linkage
+
+   ;; The protocol of the linkage for the online resource, such as https, svn, ftp, etc.
+   Protocol
+
+   ;; The application profile holds the name of the application that can service the data. For
+   ;; example if the URL points to a word document, then the applicationProfile is MS-Word.
+   ApplicationProfile
+
+   ;; The name of the online resource.
+   Name
+
+   ;; The description of the online resource.
+   Description
+
+   ;; The function of the online resource. In ISO where this class originated the valid values are:
+   ;; download, information, offlineAccess, order, and search.
+   Function
+  ])
+(record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
+
 ;; Information which describes the temporal range or extent of a specific collection.
 (defrecord TemporalExtentType
   [
@@ -647,29 +693,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
-;; Describes the online resource pertaining to the data.
-(defrecord OnlineResourceType
-  [
-    ;; The URL of the website related to the online resource.
-    Linkage
-
-    ;; The protocol of the linkage for the online resource.
-    Protocol
-
-    ;; The application protocol of the online resource.
-    ApplicationProfile
-
-    ;; The name of the online resource.
-    Name
-
-    ;; The description of the online resource.
-    Description
-
-    ;; The function of the online resource.
-    Function
-  ])
-(record-pretty-printer/enable-record-pretty-printing OnlineResourceType)
-
 ;; Represents Internet sites that contain information related to the data, as well as related
 ;; Internet sites such as project home pages, related data archives/servers, metadata extensions,
 ;; online software packages, web mapping services, and calibration/validation data.
@@ -678,24 +701,29 @@
    ;; Description of the web page at this URL.
    Description
 
-   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
+   ;; A keyword describing the distinct content type of the online resource to this resource. (e.g.,
+   ;; 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL').
    URLContentType
 
-   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
+   ;; A keyword describing the type of the online resource to this resource. This helps the GUI to
+   ;; know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION').
    Type
 
-   ;; A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI').
+   ;; A keyword describing the subtype of the online resource to this resource. This further helps
+   ;; the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP',
+   ;; 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW',
+   ;; 'ESI').
    Subtype
 
    ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
    ;; the URL of the collection landing page, the URL of the download site for the collection).
    URL
 
-   ;; The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).
-   MimeType
+   ;; The data distribution information for the relevant web page (e.g., browse, media).
+   GetData
 
-   ;; The estimated or average size of a file downloaded from this site.
-   FileSize
+   ;; The service distribution for the relevant web page (e.g., OPeNDAP, OpenSearch, WCS, WFS, WMS).
+   GetService
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 
@@ -753,6 +781,30 @@
    PeriodCycleDurationValue
   ])
 (record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
+
+;; Represents a Service through a URL where the service will act on data and return the result to
+;; the caller.
+(defrecord GetServiceType
+  [
+   ;; The mime type of the service.
+   MimeType
+
+   ;; The protocol of the service.
+   Protocol
+
+   ;; The full name of the service.
+   FullName
+
+   ;; The data identifier of the data provided by the service. Typically, this is a file name.
+   DataID
+
+   ;; The data type of the data provided by the service.
+   DataType
+
+   ;; The URI of the data provided by the service.
+   URI
+  ])
+(record-pretty-printer/enable-record-pretty-printing GetServiceType)
 
 ;; This entity contains the physical address details for the contact.
 (defrecord AddressType

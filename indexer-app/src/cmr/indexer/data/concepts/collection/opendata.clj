@@ -29,9 +29,9 @@
 (defn related-url->opendata-related-url
   "Returns the opendata related url for the given collection related url"
   [related-url]
-  (let [{:keys [Title Description Type Subtype URL MimeType FileSize]} related-url
-        {:keys [Size Unit]} FileSize
-        size (when (or Size Unit) (str Size Unit))]
+  (let [{:keys [Title Description Type Subtype URL]} related-url
+        MimeType (get-in related-url [:GetService :MimeType])
+        size (get-in related-url [:GetData :Size])]
     ;; See CMR-3446. The current UMM JSON RelatedUrlType is flawed in that there can be multiple
     ;; URLs, but only a single Title, MimeType and FileSize. This model doesn't make sense.
     ;; Talked to Erich and he said that we are going to change the model.

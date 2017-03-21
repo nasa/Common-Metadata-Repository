@@ -198,7 +198,7 @@
   "Add required RelatedUrls in version 1.8 if missing in version 1.9"
   [c]
   (if (seq (:RelatedUrls c))
-    c 
+    c
     (assoc c :RelatedUrls [u/not-provided-related-url])))
 
 (defn- migrate-sensor-to-instrument
@@ -229,6 +229,7 @@
       (update-in-each [:RelatedUrls] related-url/relation->url-content-type)
       (update-in-each [:PublicationReferences] related-url/migrate-related-url-to-online-resource)
       (update-in-each [:CollectionCitations] related-url/migrate-related-url-to-online-resource)
+      (update-in-each [:RelatedUrls] related-url/migrate-url-content-types-up)
       (update :DataCenters related-url/migrate-data-centers-up)
       (update :ContactGroups related-url/migrate-contacts-up)
       (update :ContactPersons related-url/migrate-contacts-up)

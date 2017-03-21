@@ -220,7 +220,7 @@
       (assert-cache-state {}))
 
     (testing "Fetching older UMM json will not cache it"
-      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] "1.2")
+      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] "1.2")     
       (assert-cache-state {}))
 
     (testing "Fetching newest UMM json not in cache will cache it"
@@ -456,9 +456,9 @@
            [-180 90 0 -90] [g2 g3]))))
 
 (deftest search-collection-various-formats
-  (let [ru1 (dc/related-url {:type "GET DATA" :mime-type "application/json" :url "http://example.com"})
-        ru2 (dc/related-url {:type "GET DATA" :mime-type "text/xml" :url "http://example2.com"})
-        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :mime-type "application/xml" :url "http://example.com/browse"})
+  (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA" :url "http://example2.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
         ru4 (dc/related-url {:type "VIEW PROJECT HOME PAGE" :url "http://example.com"})
         pr1 (dc/projects "project-short-name1" "project-short-name2" "project-short-name3")
         p1 (dc/personnel "John" "Smith" "jsmith@nasa.gov")

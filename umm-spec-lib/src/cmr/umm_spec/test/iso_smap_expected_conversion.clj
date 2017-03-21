@@ -22,7 +22,6 @@
   [related-urls]
   (seq (for [related-url related-urls]
          (-> related-url
-             (assoc :MimeType nil :FileSize nil)
              (update :URL #(url/format-url % true))))))
 
 (defn- expected-collection-related-urls
@@ -101,7 +100,7 @@
         (assoc :Projects nil)
         (assoc :PublicationReferences nil)
         (assoc :AncillaryKeywords nil)
-        (update :RelatedUrls expected-collection-related-urls) 
+        (update :RelatedUrls expected-collection-related-urls)
         (assoc :ISOTopicCategories nil)
         ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
         ;; Platform Characteristics are also not supported.

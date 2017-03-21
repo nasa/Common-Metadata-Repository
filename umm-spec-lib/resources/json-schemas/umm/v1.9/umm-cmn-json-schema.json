@@ -286,18 +286,94 @@
           "minLength": 1,
           "maxLength": 1024
         },
-        "MimeType": {
-          "description": "The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 50
+        "GetData": {
+               "description": "The data distribution information for the relevant web page (e.g., browse, media).",
+               "$ref": "#/definitions/GetDataType"
         },
-        "FileSize": {
-          "description": "The estimated or average size of a file downloaded from this site.",
-          "$ref": "#/definitions/FileSizeType"
+        "GetService": {
+            "description": "The service distribution for the relevant web page (e.g., OPeNDAP, OpenSearch, WCS, WFS, WMS).",
+            "$ref": "#/definitions/GetServiceType"
         }
       },
       "required": ["URL", "URLContentType", "Type"]
+    },
+    "GetDataType": {
+        "description": "Represents the information needed for a DistributionURL where data is retrieved.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "Format": {
+                "description": "The format of the data.",
+                "$ref": "#/definitions/GetDataTypeFormatEnum"
+            },
+            "Size": {
+                "description": "The size of the data.",
+               "type": "number"
+            },
+            "Unit": {
+                "description": "Unit of information, together with Size determines total size in bytes of the data.",
+                "type": "string",
+                "enum": ["KB", "MB", "GB", "TB", "PB"]
+            },
+            "Fees": {
+                "description": "The fee for ordering the collection data.  The fee is entered as a number, in US Dollars.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "Checksum": {
+                "description": "The checksum, usually a SHA1 or md5 checksum for the data file.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50
+            }
+        },
+        "required": ["Format", "Size", "Unit"]
+    },
+    "GetServiceType": {
+        "description": "Represents a Service through a URL where the service will act on data and return the result to the caller.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "MimeType": {
+                "description": "The mime type of the service.",
+                "$ref": "#/definitions/URLMimeTypeEnum"
+            },
+            "Protocol": {
+                "description": "The protocol of the service.",
+                "type": "string",
+                "enum": ["HTTP", "HTTPS", "FTP", "FTPS", "Not provided"]
+            },
+            "FullName": {
+                "description": "The full name of the service.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "DataID": {
+                "description": "The data identifier of the data provided by the service. Typically, this is a file name.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "DataType": {
+                "description": "The data type of the data provided by the service.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+            },
+            "URI": {
+                "description": "The URI of the data provided by the service.",
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1024
+                },
+                "minItems": 1
+            }
+        },
+        "required": [ "MimeType", "Protocol", "FullName", "DataID", "DataType"]
     },
     "OnlineResourceType": {
       "type": "object",
@@ -1475,7 +1551,11 @@
                "application/vnd.google-earch.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
                "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
-               "image/vnd.collada+xml", "text/html", "text/plain"]
+               "image/vnd.collada+xml", "text/html", "text/plain", "Not provided"]
+    },
+    "GetDataTypeFormatEnum": {
+      "type": "string",
+      "enum": ["ascii", "binary", "GRIB", "BUFR", "HDF4", "HDF5", "HDF-EOS4", "HDF-EOS5", "jpeg", "png", "tiff", "geotiff", "kml", "Not provided"]
     }
   }
 }

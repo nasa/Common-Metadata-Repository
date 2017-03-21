@@ -129,7 +129,7 @@
       (update :OnlineResource dif-online-resource)
       check-nil-pub-ref))
 
-(defn- expected-dif-url-type
+(defn expected-dif-url-type
  "Perform a roundtrip of the URLContentType, Type, and Subtype to get the values back.
  Returns {:URLContentType 'X' :Type 'Y' :Subtype 'Z'}"
  [related-url]
@@ -148,9 +148,8 @@
             (merge
              url-type
              (-> related-url
-                 (assoc :FileSize nil :MimeType nil)
                  (update-in [:URL] #(url/format-url % true))
-                 (dissoc :URLContentType :Type :Subtype :Relation))))))))
+                 (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData :GetService))))))))
 
 (def bounding-rectangles-path
   "The path in UMM to bounding rectangles."

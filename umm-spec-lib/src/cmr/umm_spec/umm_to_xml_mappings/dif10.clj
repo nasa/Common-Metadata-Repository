@@ -179,13 +179,17 @@
     (for [related-url urls
           :let [[type subtype] (dif-util/umm-url-type->dif-umm-content-type
                                 (util/remove-nil-keys
-                                 (select-keys related-url [:URLContentType :Type :Subtype])))]]
+                                 (select-keys related-url [:URLContentType :Type :Subtype])))
+                mime-type (get-in related-url [:GetService :MimeType])
+                protocol (get-in related-url [:GetService :Protocol])]]
       [:Related_URL
        [:URL_Content_Type
         [:Type type]
         [:Subtype subtype]]
+       [:Protocol protocol]
        [:URL (get related-url :URL u/not-provided-url)]
-       [:Description (:Description related-url)]])
+       [:Description (:Description related-url)]
+       [:Mime_Type mime-type]])
     ;; Default Related URL to add if none exist
     [:Related_URL
      [:URL u/not-provided-url]]))

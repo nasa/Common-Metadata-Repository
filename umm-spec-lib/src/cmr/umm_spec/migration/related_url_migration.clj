@@ -4,6 +4,88 @@
    [cmr.common.util :refer [update-in-each]]
    [cmr.umm-spec.util :as util]))
 
+(defn- migrate-to-get-data
+  "migrate from 1.8 to 1.9 GetData"
+  [related-url]
+  (let [size (get-in related-url [:FileSize :Size])
+        unit (get-in related-url [:FileSize :Unit])]
+    (if (or size unit)
+      (-> related-url
+          (dissoc related-url :MimeType :FileSize)
+          (assoc-in [:GetData :Size] size)
+          (assoc-in [:GetData :Unit] unit)
+          (assoc-in [:GetData :Format] util/not-provided))
+      (-> related-url
+          (dissoc related-url :MimeType :FileSize)))))
+
+(defn- migrate-to-get-service
+  "migrate from 1.8 to 1.9 GetService"
+  [related-url]
+  (if-let [mime-type (get related-url :MimeType)]
+    (-> related-url
+        (dissoc related-url :MimeType :FileSize)
+        (assoc-in [:GetService :MimeType] mime-type)
+        (assoc-in [:GetService :FullName] util/not-provided)
+        (assoc-in [:GetService :DataID] util/not-provided)
+        (assoc-in [:GetService :DataType] util/not-provided)
+        (assoc-in [:GetService :Protocol] util/not-provided))
+    (-> related-url
+        (dissoc related-url :MimeType :FileSize))))
+
+(defn- migrate-from-get-data
+  "migrate from 1.9 to 1.8 GetData"
+  [related-url]
+  (let [size (get-in related-url [:GetData :Size])
+        unit (get-in related-url [:GetData :Unit])]
+    (if (and size unit)
+      (-> related-url
+          (assoc-in [:FileSize :Size] size)
+          (assoc-in [:FileSize :Unit] unit)
+          (dissoc :GetData :GetService))
+      (-> related-url
+          (dissoc :GetData :GetService)))))
+
+(defn- migrate-from-get-service
+  "migrate from 1.9 to 1.8 GetService"
+  [related-url]
+  (let [mime-type (get-in related-url [:GetService :MimeType])]
+    (-> related-url
+        (assoc :MimeType mime-type)
+        (dissoc :GetService :GetData))))
+
+(defn migrate-url-content-types-up
+  "migrate from 1.9 to 1.8 based on URLContentType and Type"
+  [related-url]
+  (let [url-content-type (get related-url :URLContentType)
+        type (get related-url :Type)]
+    (if (= "DistributionURL" url-content-type)
+      (case type
+        "GET DATA" (migrate-to-get-data related-url)
+        "GET SERVICE" (migrate-to-get-service related-url))
+      (dissoc related-url :MimeType :FileSize))))
+
+(defn migrate-url-content-types-down
+  "migrate from 1.9 to 1.8 based on URLContentType and Type"
+  [related-url]
+  (let [url-content-type (get related-url :URLContentType)
+        type (get related-url :Type)]
+    (if (= "DistributionURL" url-content-type)
+      (case type
+        "GET DATA" (migrate-from-get-data related-url)
+        "GET SERVICE" (migrate-from-get-service related-url))
+      related-url)))
+
+(defn- url-content-type->relation
+ "Convert the Type and Subtype of the URLContentType to Relation"
+ [related-url]
+ (let [{:keys [Type Subtype]} related-url
+       relation (if Subtype
+                 [Type Subtype]
+                 [Type])]
+  (-> related-url
+      (assoc :Relation relation)
+      (dissoc :URLContentType :Type :Subtype :GetData :GetService))))
+
 (defn migrate-related-url-to-online-resource
   "Migrate the RelatedUrl in the element to Online Resource.
   Applies to RelatedUrls in UMM spec v1.8 and lower."
@@ -29,17 +111,6 @@
                             :MimeType "text/html"})
         (dissoc :OnlineResource))
     element))
-
-(defn- url-content-type->relation
- "Convert the Type and Subtype of the URLContentType to Relation"
- [related-url]
- (let [{:keys [Type Subtype]} related-url
-       relation (if Subtype
-                 [Type Subtype]
-                 [Type])]
-  (-> related-url
-      (assoc :Relation relation)
-      (dissoc :URLContentType :Type :Subtype))))
 
 (defn relation->url-content-type
  "Get the URLContentType from relation or use default if a conversion is not
@@ -97,7 +168,7 @@
                (-> related-url
                    (assoc :URLContentType "DataContactURL")
                    (assoc :Type "HOME PAGE")
-                   (dissoc :Relation)))))
+                   (dissoc :Relation :GetData :GetService :FileSize :MimeType)))))
           contact))
         contacts))
 
@@ -126,7 +197,7 @@
                   (-> related-url
                       (assoc :URLContentType "DataCenterURL")
                       (assoc :Type "HOME PAGE")
-                      (dissoc :Relation))))))
+                      (dissoc :Relation :GetData :GetService :FileSize :MimeType))))))
         data-centers))
 
 (defn migrate-data-centers-down
@@ -149,6 +220,7 @@
   [collection]
   (-> collection
    (update :RelatedUrls url->array-of-urls)
+   (update-in-each [:RelatedUrls] migrate-url-content-types-down)
    (update-in-each [:RelatedUrls] url-content-type->relation)
    (update :ContactGroups migrate-contacts-down)
    (update :ContactPersons migrate-contacts-down)
