@@ -82,7 +82,7 @@
 (defn valid-url-content-types-combo?
   "Returns true if valid Type and SubType for URLContentType, nil otherwise."
   [url-content-type type sub-type]
-  (when (and (some (partial = type) (keys (get valid-url-content-types-map url-content-type)))
+  (when (and (some #(= type %) (keys (get valid-url-content-types-map url-content-type)))
              (or (nil? sub-type)
                  (some (partial = sub-type) (get-in valid-url-content-types-map [url-content-type type]))))
     true))
@@ -90,13 +90,11 @@
 (defn related-url-type-validation
   "Validate the Type and SubType being valid for the accompanying URLContentType"
   [field-path value]
-  (let [url-content-type (:URLContentType value)
-        type (:Type value)
-        sub-type (:SubType value)]
-    (when-not (valid-url-content-types-combo? url-content-type type sub-type)
+  (let [{:keys [URLContentType Type SubType]} value]
+    (when-not (valid-url-content-types-combo? URLContentType Type SubType)
       {field-path
        [(vu/escape-error-string (format "URLContentType: %s, Type: %s, SubType: %s is not a vaild URLContentType/Type/SubType combination."
-                                        url-content-type type sub-type))]})))
+                                        URLContentType Type SubType))]})))
 
 (defn url-validation
   "Validate the URL. Return nil if no errors and the field path and error if the URL
