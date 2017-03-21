@@ -175,5 +175,7 @@
   {:URL (value-of url "gmd:linkage/gmd:URL")
    :Description (:Description types-and-desc)
    :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")
+   ;; Type VIEW RELATED INFORMATION is invalid for many URLContentTypes, so this will fail
+   ;; URLContentType/Type/SubType custom validation for RelatedUrls.
    :Type (or (:Type types-and-desc) "VIEW RELATED INFORMATION")
    :Subtype (:Subtype types-and-desc)}))
