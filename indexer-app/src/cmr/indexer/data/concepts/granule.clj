@@ -15,7 +15,7 @@
    [cmr.indexer.data.concepts.spatial :as spatial]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]
-   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm.echo10.spatial :as umm-spatial]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed])
@@ -35,7 +35,7 @@
   "Retrieve the parent collection umm from the db"
   [context parent-collection-id]
   (let [concept (mdb/get-latest-concept context parent-collection-id)]
-    (assoc (umm-legacy/parse-concept context concept) :concept-id parent-collection-id)))
+    (assoc (umm-spec/parse-metadata context concept) :concept-id parent-collection-id)))
 
 (defn- get-parent-collection
   [context parent-collection-id]
@@ -62,7 +62,7 @@
 
 (defn spatial->elastic
   [parent-collection granule]
-  (when-let [gsr (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
+  (when-let [gsr (csk/->kebab-case-keyword (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation]))]
     (cond
       (or (= gsr :geodetic) (= gsr :cartesian))
       (let [geometries (seq (get-in granule [:spatial-coverage :geometries]))]
@@ -138,8 +138,8 @@
         browsable (not (empty? (ru/browse-urls related-urls)))
         update-time (get-in umm-granule [:data-provider-timestamps :update-time])
         update-time (index-util/date->elastic update-time)
-        {:keys [short-name version-id]} (:product parent-collection)
-        granule-spatial-representation (get-in parent-collection [:spatial-coverage :granule-spatial-representation])]
+        {:keys [ShortName Version EntryTitle]} parent-collection
+        granule-spatial-representation (get-in parent-collection [:SpatialExtent :GranuleSpatialRepresentation])]
     (merge {:concept-id concept-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id concept-id))
@@ -148,18 +148,18 @@
             :collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
             :collection-concept-seq-id-doc-values (:sequence-number (concepts/parse-concept-id parent-collection-id))
 
-            :entry-title (:entry-title parent-collection)
-            :entry-title.lowercase (s/lower-case (:entry-title parent-collection))
-            :entry-title.lowercase-doc-values (s/lower-case (:entry-title parent-collection))
+            :entry-title EntryTitle
+            :entry-title.lowercase (s/lower-case EntryTitle)
+            :entry-title.lowercase-doc-values (s/lower-case EntryTitle)
             :metadata-format (name (mt/base-mime-type-to-format format))
             :update-time update-time
             :coordinate-system (when granule-spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING granule-spatial-representation))
 
-            :short-name.lowercase (when short-name (s/lower-case short-name))
-            :short-name.lowercase-doc-values (when short-name (s/lower-case short-name))
-            :version-id.lowercase (when version-id (s/lower-case version-id))
-            :version-id.lowercase-doc-values (when version-id (s/lower-case version-id))
+            :short-name.lowercase (when ShortName (s/lower-case ShortName))
+            :short-name.lowercase-doc-values (when ShortName (s/lower-case ShortName))
+            :version-id.lowercase (when Version (s/lower-case Version))
+            :version-id.lowercase-doc-values (when Version (s/lower-case Version))
 
             :provider-id provider-id
             :provider-id-doc-values provider-id

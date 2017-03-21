@@ -357,7 +357,7 @@
        :dataset-id dataset-id
        :producer-granule-id producer-gran-id
        :updated (str update-time)
-       :coordinate-system coordinate-system
+       :coordinate-system (or coordinate-system "NO_SPATIAL") ; UMM-C defaults to NO_SPATIAL
        :size size
        :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
        :data-center (:provider-id (cu/parse-concept-id concept-id))

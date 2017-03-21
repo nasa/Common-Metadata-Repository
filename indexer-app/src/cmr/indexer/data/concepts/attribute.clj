@@ -1,7 +1,7 @@
 (ns cmr.indexer.data.concepts.attribute
   "Contains functions for converting attributes into a elastic documents"
   (:require
-    [camel-snake-kebab.core :as csk] 
+    [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
     [clojure.string :as str]
     [cmr.common.services.errors :as errors]
@@ -69,8 +69,8 @@
 (defn psa-refs->elastic-docs
   "Converts the psa-refs into a list of elastic documents"
   [collection granule]
-  (let [parent-type-map (into {} (for [psa (:product-specific-attributes collection)]
-                                   [(:name psa) (:data-type psa)]))]
+  (let [parent-type-map (into {} (for [psa (:AdditionalAttributes collection)]
+                                   [(:Name psa) (csk/->kebab-case-keyword (:DataType psa))]))]
     (mapcat (fn [psa-ref]
               (let [type (parent-type-map (:name psa-ref))]
                 (when-not type
@@ -85,7 +85,7 @@
 (defn- aa->nested-docs
   "Converts an AdditionalAttribute into the portion going in an elastic document"
   [aa]
-  (let [{Group :Group Name :Name DataType :DataType parsed-value ::aa/parsed-value} 
+  (let [{Group :Group Name :Name DataType :DataType parsed-value ::aa/parsed-value}
         (aa/attribute-with-parsed-value aa)
         data-type (csk/->kebab-case-keyword DataType)
         field-name (type->field-name data-type)
@@ -108,10 +108,3 @@
   (let [{:keys [name data-type parsed-value description]} psa
         parsed-value (when parsed-value (data-type value->elastic-value parsed-value))]
     (filter identity [name parsed-value description])))
-
-(defn psas->keywords
-  [collection]
-  "Converts the psas into a vector to be used in keyword searches"
-  (mapcat psa->keywords (:product-specific-attributes collection)))
-
-

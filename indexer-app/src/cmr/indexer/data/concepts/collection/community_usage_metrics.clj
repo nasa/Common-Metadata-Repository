@@ -4,7 +4,6 @@
     [cheshire.core :as json]
     [clojure.string :as str]
     [cmr.common.util :as util]
-    [cmr.common-app.humanizer :as humanizer]
     [cmr.indexer.data.concepts.collection.science-keyword :as sk]
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]))
 

@@ -3,8 +3,7 @@
     [clojure.test :refer :all]
     [cmr.common.util :as util]
     [cmr.ingest.validation.additional-attribute-validation :as v]
-    [cmr.umm-spec.additional-attribute :as aa]
-    [cmr.umm.umm-collection :as c]))
+    [cmr.umm-spec.additional-attribute :as aa]))
 
 (deftest aa-range-reduced-test
   (util/are2
