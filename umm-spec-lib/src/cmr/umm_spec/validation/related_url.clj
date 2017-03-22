@@ -51,7 +51,7 @@
        [(vu/escape-error-string (format "Only URLContentType: DistributionURL Type: GET SERVICE can contain GetService, RelatedUrl contains URLContentType: %s Type: %s" URLContentType Type))]})))
 
 (defn- get-data-validation
-  "Validates that DistributionURL URLContentType with GET SERVICE types are the only
+  "Validates that DistributionURL URLContentType with GET DATA types are the only
   RelatedUrls that contain GetData"
   [field-path value]
   (let [{:keys [URLContentType Type GetData]} value]
