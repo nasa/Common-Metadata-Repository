@@ -7,6 +7,7 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as duc]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -18,56 +19,56 @@
                        hu/save-sample-humanizers-fixture]))
 
 (deftest collection-update-additional-attributes-general-test
-  (let [a1 (dc/psa {:name "string" :data-type :string})
-        a2 (dc/psa {:name "boolean" :data-type :boolean})
-        a3 (dc/psa {:name "int" :data-type :int :value 5})
-        a4 (dc/psa {:name "float" :data-type :float :min-value 1.0 :max-value 10.0})
-        a5 (dc/psa {:name "datetime" :data-type :datetime})
-        a6 (dc/psa {:name "date" :data-type :date})
-        a7 (dc/psa {:name "time" :data-type :time})
-        a8 (dc/psa {:name "dts" :data-type :datetime-string})
-        a9 (dc/psa {:name "moo" :data-type :string})
+  (let [a1 (duc/psa {:name "string" :data-type "STRING"})
+        a2 (duc/psa {:name "boolean" :data-type "BOOLEAN"})
+        a3 (duc/psa {:name "int" :data-type "INT" :value 5})
+        a4 (duc/psa {:name "float" :data-type "FLOAT" :min-value 1.0 :max-value 10.0})
+        a5 (duc/psa {:name "datetime" :data-type "DATETIME"})
+        a6 (duc/psa {:name "date" :data-type "DATE"})
+        a7 (duc/psa {:name "time" :data-type "TIME"})
+        a8 (duc/psa {:name "dts" :data-type "DATETIME_STRING"})
+        a9 (duc/psa {:name "moo" :data-type "STRING"})
 
-        coll (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :product-specific-attributes [a1 a2 a3 a4 a5 a6 a7 a8 a9]}))
-        gran1 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "string" ["alpha"])]}))
-        gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "boolean" ["true"])]}))
-        gran3 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "int" ["2"])]}))
-        gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "float" ["2.0"])]}))
-        gran5 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "datetime" ["2012-01-01T01:02:03Z"])]}))
-        gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "date" ["2012-01-02Z"])]}))
-        gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "time" ["01:02:03Z"])]}))
-        gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                  [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
+        coll (d/ingest "PROV1" (duc/collection
+                                 {:EntryTitle "parent-collection"
+                                  :ShortName "S1"
+                                  :Version "V1"
+                                  :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8 a9]}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "string" ["alpha"])]}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "boolean" ["true"])]}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "int" ["2"])]}))
+        gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "float" ["2.0"])]}))
+        gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "datetime" ["2012-01-01T01:02:03Z"])]}))
+        gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "date" ["2012-01-02Z"])]}))
+        gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "time" ["01:02:03Z"])]}))
+        gran8 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                      [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
         ;; The following collection and granule are added to verify that the validation is using
         ;; the collection concept id for searching granules. If we don't use the collection concept
         ;; id during granule search the test that changes additional attribute with name "int" to
         ;; a range of [1 10] would have failed.
-        coll1 (d/ingest "PROV1" (dc/collection
-                                  {:entry-title "parent-collection-1"
-                                   :product-specific-attributes [a3]}))
-        gran9 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
-                                                   [(dg/psa "int" ["20"])]}))]
+        coll1 (d/ingest "PROV1" (duc/collection
+                                  {:EntryTitle "parent-collection-1"
+                                   :AdditionalAttributes [a3]}))
+        gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:product-specific-attributes
+                                                                                       [(dg/psa "int" ["20"])]}))]
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
       (are3
         [additional-attributes]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                           {:entry-title "parent-collection"
-                                            :short-name "S1"
-                                            :version-id "V1"
-                                            :product-specific-attributes additional-attributes}))
+        (let [response (d/ingest "PROV1" (duc/collection
+                                           {:EntryTitle "parent-collection"
+                                            :ShortName "S1"
+                                            :Version "V1"
+                                            :AdditionalAttributes additional-attributes}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -75,38 +76,38 @@
         [a1 a2 a3 a4 a5 a6 a7 a8 a9]
 
         "Add an additional attribute is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (dc/psa {:name "alpha" :data-type :int})]
+        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (duc/psa {:name "alpha" :data-type "INT"})]
 
         "Removing an additional attribute that is not referenced by any granule is OK."
         [a1 a2 a3 a4 a5 a6 a7 a8]
 
         "Changing the type of an additional attribute that is not referenced by any granule is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 (dc/psa {:name "moo" :data-type :int})]
+        [a1 a2 a3 a4 a5 a6 a7 a8 (duc/psa {:name "moo" :data-type "INT"})]
 
         "Changing the value of an additional attribute is OK."
-        [a1 a2 (dc/psa {:name "int" :data-type :int :value 10}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (duc/psa {:name "int" :data-type "INT" :value 10}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute value to a range is OK."
-        [a1 a2 (dc/psa {:name "int" :data-type :int :min-value 1 :max-value 10}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (duc/psa {:name "int" :data-type "INT" :min-value 1 :max-value 10}) a4 a5 a6 a7 a8 a9]
 
         "Removing the value/range of an additional attribute is OK."
-        [a1 a2 (dc/psa {:name "int" :data-type :int}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (duc/psa {:name "int" :data-type "INT"}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute range to a value is OK."
-        [a1 a2 a3 (dc/psa {:name "float" :data-type :float :value 1.0}) a5 a6 a7 a8 a9]
+        [a1 a2 a3 (duc/psa {:name "float" :data-type "FLOAT" :value 1.0}) a5 a6 a7 a8 a9]
 
         "Extending additional attribute range is OK."
-        [a1 a2 a3 (dc/psa {:name "float" :data-type :float :min-value 0.0 :max-value 99.0})
+        [a1 a2 a3 (duc/psa {:name "float" :data-type "FLOAT" :min-value 0.0 :max-value 99.0})
          a5 a6 a7 a8 a9]))
 
     (testing "Update collection failure cases"
       (are3
         [additional-attributes expected-errors]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                           {:entry-title "parent-collection"
-                                            :short-name "S1"
-                                            :version-id "V1"
-                                            :product-specific-attributes additional-attributes})
+        (let [response (d/ingest "PROV1" (duc/collection
+                                           {:EntryTitle "parent-collection"
+                                            :ShortName "S1"
+                                            :Version "V1"
+                                            :AdditionalAttributes additional-attributes})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -116,7 +117,7 @@
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Multiple validation errors."
-        [(dc/psa {:name "float" :data-type :float :min-value 5.0 :max-value 10.0})]
+        [(duc/psa {:name "float" :data-type "FLOAT" :min-value 5.0 :max-value 10.0})]
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [boolean] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [int] is referenced by existing granules, cannot be removed. Found 1 granules."
@@ -127,17 +128,17 @@
          "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range. Found 1 granules."]
 
         "Changing an additional attribute type that is referenced by its granules is invalid."
-        [(dc/psa {:name "string" :data-type :int}) a2 a3 a4 a5 a6 a7 a8 a9]
+        [(duc/psa {:name "string" :data-type "INT"}) a2 a3 a4 a5 a6 a7 a8 a9]
         ["Collection additional attribute [string] was of DataType [STRING], cannot be changed to [INT]. Found 1 granules."]))
 
     (testing "Delete the existing collection, then re-create it with any additional attributes is OK."
       (ingest/delete-concept (d/item->concept coll :echo10))
       (index/wait-until-indexed)
-      (let [response (d/ingest "PROV1" (dc/collection
-                                         {:entry-title "parent-collection"
-                                          :short-name "S1"
-                                          :version-id "V1"
-                                          :product-specific-attributes [a9]}))
+      (let [response (d/ingest "PROV1" (duc/collection
+                                         {:EntryTitle "parent-collection"
+                                          :ShortName "S1"
+                                          :Version "V1"
+                                          :AdditionalAttributes [a9]}))
             {:keys [status errors]} response]
         (is (= [200 nil] [status errors]))))))
 
@@ -600,43 +601,54 @@
             {:version-id "V11"}))))
 
 (deftest collection-update-temporal-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                :beginning-date-time "2001-01-01T12:00:00Z"
-                                                :ending-date-time "2010-05-11T12:00:00Z"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
-                                                :beginning-date-time "2000-01-01T12:00:00Z"}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset3"
-                                                :beginning-date-time "2000-01-01T12:00:00Z"}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"
-                                                :beginning-date-time "2001-01-01T12:00:00Z"
-                                                :ending-date-time "2010-05-11T12:00:00Z"}))
-        collNoGranule (d/ingest "PROV1" (dc/collection {:entry-title "Dataset-No-Granule"
-                                                        :beginning-date-time "1999-01-02T12:00:00Z"
-                                                        :ending-date-time "1999-05-01T12:00:00Z"}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                   :beginning-date-time "2010-01-01T12:00:00Z"
-                                                   :ending-date-time "2010-01-11T12:00:00Z"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
-                                                   :beginning-date-time "2010-01-31T12:00:00Z"
-                                                   :ending-date-time "2010-02-12T12:00:00Z"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
-                                                   :beginning-date-time "2010-02-03T12:00:00Z"
-                                                   :ending-date-time "2010-03-20T12:00:00Z"}))
-        gran4 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule4"
-                                                   :beginning-date-time "2010-03-12T12:00:00Z"}))
-        gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"}))
-        gran6 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule6"
-                                                   :beginning-date-time "2000-06-01T12:00:00Z"
-                                                   :ending-date-time "2000-08-01T12:00:00Z"}))
-        gran7 (d/ingest "PROV1" (dg/granule coll4 {:granule-ur "Granule7"
-                                                   :beginning-date-time "2001-01-01T12:00:00Z"
-                                                   :ending-date-time "2010-05-11T12:00:00Z"}))
+  (let [coll1 (d/ingest "PROV1" (duc/collection {:Entry-Title "Dataset1"
+                                                 :ShortName "S1"
+                                                 :TemporalExtents [(duc/temporal 
+                                                                     {:beginning-date-time "2001-01-01T12:00:00Z"
+                                                                      :ending-date-time "2010-05-11T12:00:00Z"})]}))
+        coll2 (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset2"
+                                                :ShortName "S2"
+                                                :TemporalExtents [(duc/temporal
+                                                                    {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
+        coll3 (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset3"
+                                                :ShortName "S3"
+                                                :TemporalExtents [(duc/temporal
+                                                                    {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
+        coll4 (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset4"
+                                                :ShortName "S4"
+                                                :TemporalExtents [(duc/temporal
+                                                                    {:beginning-date-time "2001-01-01T12:00:00Z"
+                                                                     :ending-date-time "2010-05-11T12:00:00Z"})]}))
+        collNoGranule (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset-No-Granule"
+                                                        :ShortName "SNo"
+                                                        :TemporalExtents [(duc/temporal
+                                                                            {:beginning-date-time "1999-01-02T12:00:00Z"
+                                                                             :ending-date-time "1999-05-01T12:00:00Z"})]}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"
+                                                                                       :beginning-date-time "2010-01-01T12:00:00Z"
+                                                                                       :ending-date-time "2010-01-11T12:00:00Z"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule2"
+                                                                                       :beginning-date-time "2010-01-31T12:00:00Z"
+                                                                                       :ending-date-time "2010-02-12T12:00:00Z"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule3"
+                                                                                       :beginning-date-time "2010-02-03T12:00:00Z"
+                                                                                       :ending-date-time "2010-03-20T12:00:00Z"}))
+        gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1" {:granule-ur "Granule4"
+                                                                                       :beginning-date-time "2010-03-12T12:00:00Z"}))
+        gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule5"}))
+        gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:granule-ur "Granule6"
+                                                                                       :beginning-date-time "2000-06-01T12:00:00Z"
+                                                                                       :ending-date-time "2000-08-01T12:00:00Z"}))
+        gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll4 "C1-PROV1" {:granule-ur "Granule7"
+                                                                                      :beginning-date-time "2001-01-01T12:00:00Z"
+                                                                                      :ending-date-time "2010-05-11T12:00:00Z"}))
         update-collection (fn [coll new-temporal-params]
                             (let [new-coll (-> coll
                                                (assoc :revision-id nil)
-                                               (assoc :temporal
-                                                      (when new-temporal-params
-                                                        (dc/temporal new-temporal-params))))]
+                                               (assoc :TemporalExtents
+                                                      (when (not= {:beginning-date-time nil :ending-date-time nil}
+                                                                  new-temporal-params) 
+                                                        [(duc/temporal new-temporal-params)])))]
                               (d/ingest "PROV1" new-coll {:allow-failure? true})))]
     (index/wait-until-indexed)
 
@@ -645,8 +657,8 @@
         [coll beginning-date-time ending-date-time]
         (let [response (update-collection
                          coll
-                         {:beginning-date-time beginning-date-time
-                          :ending-date-time ending-date-time})
+                          {:beginning-date-time beginning-date-time
+                           :ending-date-time ending-date-time})
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -685,8 +697,8 @@
         [coll beginning-date-time ending-date-time expected-errors]
         (let [response (update-collection
                          coll
-                         {:beginning-date-time beginning-date-time
-                          :ending-date-time ending-date-time})
+                          {:beginning-date-time beginning-date-time
+                           :ending-date-time ending-date-time})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
 
@@ -712,31 +724,31 @@
 
 (deftest collection-update-platform-test
   (let [;; Platform Terra is the humanized alias of AM-1
-        coll (d/ingest "PROV1" (dc/collection
-                                {:entry-title "parent-collection"
-                                 :short-name "S1"
-                                 :version-id "V1"
-                                 :platforms (dc/platforms "p1" "p2" "AM-1" "p4")}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection2"
-                                  :short-name "S2"
-                                  :version-id "V2"
-                                  :platforms (dc/platforms "p4" "Terra")}))]
-    (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "p1")}))
-    (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "p2" "AM-1")}))
-    (d/ingest "PROV1" (dg/granule coll {:platform-refs (dg/platform-refs "AM-1")}))
-    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs (dg/platform-refs "p4")}))
-    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs (dg/platform-refs "Terra")}))
+        coll (d/ingest "PROV1" (duc/collection
+                                {:EntryTitle "parent-collection"
+                                 :ShortName "S1"
+                                 :Version "V1"
+                                 :Platforms (duc/platforms "p1" "p2" "AM-1" "p4")}))
+        coll2 (d/ingest "PROV1" (duc/collection
+                                 {:EntryTitle "parent-collection2"
+                                  :ShortName "S2"
+				  :Version "V2"
+                                  :Platforms (duc/platforms "p4" "Terra")}))]
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p2" "AM-1")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "AM-1")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "p4")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "Terra")}))
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
       (are3
         [platforms]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                          {:entry-title "parent-collection"
-                                           :short-name "S1"
-                                           :version-id "V1"
-                                           :platforms (apply dc/platforms platforms)}))
+        (let [response (d/ingest "PROV1" (duc/collection
+                                          {:EntryTitle "parent-collection"
+                                           :ShortName "S1"
+                                           :Version "V1"
+                                           :Platforms (apply duc/platforms platforms)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -752,11 +764,11 @@
     (testing "Update collection failure cases"
       (are3
         [platforms expected-errors]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                          {:entry-title "parent-collection2"
-                                           :short-name "S2"
-                                           :version-id "V2"
-                                           :platforms (apply dc/platforms platforms)})
+        (let [response (d/ingest "PROV1" (duc/collection
+                                          {:EntryTitle "parent-collection2"
+                                           :ShortName "S2"
+                                           :Version "V2"
+                                           :Platforms (apply duc/platforms platforms)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -771,24 +783,23 @@
 
 (deftest collection-update-tile-test
   (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE" 
-        coll (d/ingest "PROV1" (dc/collection
-                                {:entry-title "parent-collection"
-                                 :short-name "S1"
-                                 :version-id "V1"
-                                 :two-d-coordinate-systems (dc/two-ds "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
-    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
-    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
-    (d/ingest "PROV1" (dg/granule coll {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
+        coll (d/ingest "PROV1" (duc/collection
+                                {:EntryTitle "parent-collection"
+                                 :ShortName "S1"
+                                 :Version "V1"
+                                 :TilingIdentificationSystems (duc/two-ds "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
     (index/wait-until-indexed)
-
     (testing "Update collection successful cases"
       (are3
         [tile-names]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                          {:entry-title "parent-collection"
-                                           :short-name "S1"
-                                           :version-id "V1"
-                                           :two-d-coordinate-systems (apply dc/two-ds tile-names)}))
+        (let [response (d/ingest "PROV1" (duc/collection
+                                          {:EntryTitle "parent-collection"
+                                           :ShortName "S1"
+                                           :Version "V1"
+                                           :TilingIdentificationSystems (apply duc/two-ds tile-names)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -804,11 +815,11 @@
     (testing "Update collection failure cases"
       (are3
         [tile-names expected-errors]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                          {:entry-title "parent-collection"
-                                           :short-name "S2"
-                                           :version-id "V2"
-                                           :two-d-coordinate-systems (apply dc/two-ds tile-names)})
+        (let [response (d/ingest "PROV1" (duc/collection
+                                          {:EntryTitle "parent-collection"
+                                           :ShortName "S2"
+                                           :Version "V2"
+                                           :TilingIdentificationSystems (apply duc/two-ds tile-names)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -823,32 +834,32 @@
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
-        coll (d/ingest "PROV1" (dc/collection
-                                {:entry-title "parent-collection"
-                                 :short-name "S1"
-                                 :version-id "V1"
-                                 :platforms [(dc/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
-                                             (dc/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection2"
-                                  :short-name "S2"
-                                  :version-id "V2"
-                                  :platforms [(dc/platform-with-instrument-and-sensors "p2" "i2" "s1" "GPS RECEIVERS")]}))]
-    (d/ingest "PROV1" (dg/granule coll {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
-    (d/ingest "PROV1" (dg/granule coll {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
-    (d/ingest "PROV1" (dg/granule coll {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
-    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "s1")]}))
-    (d/ingest "PROV1" (dg/granule coll2 {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "GPS RECEIVERS")]}))
+        coll (d/ingest "PROV1" (duc/collection
+                                {:EntryTitle "parent-collection"
+                                 :ShortName "S1"
+                                 :Version "V1"
+                                 :Platforms [(duc/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
+                                             (duc/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
+        coll2 (d/ingest "PROV1" (duc/collection
+                                 {:EntryTitle "parent-collection2"
+                                  :ShortName "S2"
+                                  :Version "V2"
+                                  :Platforms [(duc/platform-with-instrument-and-sensors "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "s1")]}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "GPS RECEIVERS")]}))
     (index/wait-until-indexed)
     (testing "Update collection successful cases"
       (are3
         [plat-instruments-1 plat-instruments-2]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                          {:entry-title "parent-collection"
-                                           :short-name "S1"
-                                           :version-id "V1"
-                                           :platforms [(apply dc/platform-with-instruments plat-instruments-1)
-                                                       (apply dc/platform-with-instruments plat-instruments-2)]}))
+        (let [response (d/ingest "PROV1" (duc/collection
+                                          {:EntryTitle "parent-collection"
+                                           :ShortName "S1"
+                                           :Version "V1"
+                                           :Platforms [(apply duc/platform-with-instruments plat-instruments-1)
+                                                       (apply duc/platform-with-instruments plat-instruments-2)]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -872,11 +883,11 @@
     (testing "Update collection failure cases"
       (are3
         [plat-instr-sensors expected-errors]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                          {:entry-title "parent-collection2"
-                                           :short-name "S2"
-                                           :version-id "V2"
-                                           :platforms [(apply dc/platform-with-instrument-and-sensors plat-instr-sensors)]})
+        (let [response (d/ingest "PROV1" (duc/collection
+                                          {:EntryTitle "parent-collection2"
+                                           :ShortName "S2"
+                                           :Version "V2"
+                                           :Platforms [(apply duc/platform-with-instrument-and-sensors plat-instr-sensors)]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))

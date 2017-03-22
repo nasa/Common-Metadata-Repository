@@ -2,9 +2,9 @@
   "Search CMR granules by day night flag"
   (:require
     [clojure.test :refer :all]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as duc]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -13,18 +13,18 @@
 
 
 (deftest search-by-day-night
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV2" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:day-night "DAY"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:day-night "NIGHT"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:day-night "BOTH"}))
-        gran4 (d/ingest "PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))
-        gran5 (d/ingest "PROV2" (dg/granule coll2 {:day-night "DAY"}))
-        gran6 (d/ingest "PROV2" (dg/granule coll2 {:day-night "DAY"}))
-        gran7 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
-        gran8 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
-        gran9 (d/ingest "PROV2" (dg/granule coll2 {:day-night "BOTH"}))
-        gran10 (d/ingest "PROV2" (dg/granule coll2 {:day-night "UNSPECIFIED"}))]
+  (let [coll1 (d/ingest "PROV1" (duc/collection {:EntryTitle "ET1" :ShortName "S1"}))
+        coll2 (d/ingest "PROV2" (duc/collection {:EntryTitle "ET2" :ShortName "S2"}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:day-night "DAY"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:day-night "NIGHT"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:day-night "BOTH"}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:day-night "UNSPECIFIED"}))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:day-night "DAY"}))
+        gran6 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:day-night "DAY"}))
+        gran7 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:day-night "BOTH"}))
+        gran8 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:day-night "BOTH"}))
+        gran9 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:day-night "BOTH"}))
+        gran10 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:day-night "UNSPECIFIED"}))]
     (index/wait-until-indexed)
 
     (testing "search by day-night-flag"
