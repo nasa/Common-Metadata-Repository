@@ -69,20 +69,6 @@
   [attribs]
   (umm-cmn/map->ScienceKeywordType attribs))
 
-(defn sensor
-  "Return a child instrument based on short-name"
-  [attribs]
-  (umm-cmn/map->InstrumentType (merge {:ShortName (d/unique-str "short-name")}
-                                      attribs)))
-
-(defn sensors
-  "Return a sequence of child instruments with the given short names"
-  [& short-names]
-  (map #(umm-cmn/map->InstrumentType
-          {:ShortName %
-           :LongName (d/unique-str "long-name")})
-       short-names))
-
 (defn instrument
   "Return an instrument based on instrument attribs"
   [attribs]
@@ -100,7 +86,7 @@
 (defn instrument-with-sensors
   "Return an instrument, with a sequence of child instruments"
   [short-name & child-instrument-short-names]
-  (let [childinstruments (apply sensors child-instrument-short-names)]
+  (let [childinstruments (apply instruments child-instrument-short-names)]
     (umm-cmn/map->InstrumentType {:ShortName short-name
                                   :LongName (d/unique-str "long-name")
                                   :ComposedOf childinstruments})))
