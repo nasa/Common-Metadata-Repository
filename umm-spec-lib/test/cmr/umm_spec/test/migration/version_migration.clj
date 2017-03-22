@@ -1112,33 +1112,33 @@
                             :NumberOfSensors 5
                             :Sensors [{:ShortName "Sensor 1"}
                                       {:ShortName "Sensor 2"}]}]}]
-           (:Platforms result))))
+           (:Platforms result)))))
 
-  (deftest migrate-1-9-related-urls-down-to-1-8
-    (let [result (vm/migrate-umm {} :collection "1.9" "1.8" umm-1-9-related-urls)
-          data-center-contact-persons (get-in (first (:ContactPersons (first (:DataCenters result)))) [:ContactInformation :RelatedUrls])
-          data-center-contact-groups (get-in (first (:ContactGroups (nth (:DataCenters result) 2))) [:ContactInformation :RelatedUrls])
-          collection-contact-persons (get-in (first (:ContactPersons result)) [:ContactInformation :RelatedUrls])]
-      (is (= [{:Description "Contact group related url description"
-               :FileSize {:Unit "MB"
-                          :Size 10.0}
-               :Relation ["GET DATA" "ECHO"]
-               :URLs ["www.contact.group.foo.com"]}
-              {:Description "Contact group related url description"
-                       :Relation ["GET SERVICE" "ECHO"]
-                       :URLs ["www.contact.group.foo.com"]
-               :MimeType "application/html"}]
-             (:RelatedUrls result)))
-      (is (= [{:URLs ["www.contact.shoo.com"],
-               :Description "Contact related url description"}
-              {:URLs ["www.contact.shoo.com"],
-               :Description "Contact related url description"}]
-             data-center-contact-persons))
-      (is (= [{:URLs ["www.contact.group.foo.com"],
-               :Description "Contact group related url description"}]
-             data-center-contact-groups))
-      (is (= [{:URLs ["www.contact.foo.com"],
-               :Description "Contact related url description"}
-              {:URLs ["www.contact.shoo.com"],
-               :Description "Contact related url description"}]
-             collection-contact-persons)))))
+(deftest migrate-1-9-related-urls-down-to-1-8
+  (let [result (vm/migrate-umm {} :collection "1.9" "1.8" umm-1-9-related-urls)
+        data-center-contact-persons (get-in (first (:ContactPersons (first (:DataCenters result)))) [:ContactInformation :RelatedUrls])
+        data-center-contact-groups (get-in (first (:ContactGroups (nth (:DataCenters result) 2))) [:ContactInformation :RelatedUrls])
+        collection-contact-persons (get-in (first (:ContactPersons result)) [:ContactInformation :RelatedUrls])]
+    (is (= [{:Description "Contact group related url description"
+             :FileSize {:Unit "MB"
+                        :Size 10.0}
+             :Relation ["GET DATA" "ECHO"]
+             :URLs ["www.contact.group.foo.com"]}
+            {:Description "Contact group related url description"
+                     :Relation ["GET SERVICE" "ECHO"]
+                     :URLs ["www.contact.group.foo.com"]
+             :MimeType "application/html"}]
+           (:RelatedUrls result)))
+    (is (= [{:URLs ["www.contact.shoo.com"],
+             :Description "Contact related url description"}
+            {:URLs ["www.contact.shoo.com"],
+             :Description "Contact related url description"}]
+           data-center-contact-persons))
+    (is (= [{:URLs ["www.contact.group.foo.com"],
+             :Description "Contact group related url description"}]
+           data-center-contact-groups))
+    (is (= [{:URLs ["www.contact.foo.com"],
+             :Description "Contact related url description"}
+            {:URLs ["www.contact.shoo.com"],
+             :Description "Contact related url description"}]
+           collection-contact-persons))))
