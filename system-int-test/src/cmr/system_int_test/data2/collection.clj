@@ -265,7 +265,7 @@
                                                              :instruments [(instrument {:short-name "inst"})]})]
                                       :projects (projects "proj")
                                       :spatial-coverage (spatial {:gsr :cartesian})
-                                      :related-urls [(related-url {:type nil :url "htt://www.foo.com"})]
+                                      :related-urls [(related-url {:type nil :url "http://www.foo.com"})]
                                       :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                       :ending-date-time "1967-12-12T07:00:00.000-05:00"}
          attribs (merge required-extra-dif10-fields attribs)]

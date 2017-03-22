@@ -7,7 +7,7 @@
 
 (defconfig ingest-username
   "Ingest database username"
-  {***REMOVED***})
+  {:default "CMR_INGEST"})
 
 (defconfig ingest-password
   "Ingest database password"
@@ -44,4 +44,4 @@
 
 (defconfig return-umm-spec-validation-errors
   "Flag for whether or not UMM Spec validation errors should be returned for collections."
-  {:default false :type Boolean})
+  {:default true :type Boolean})

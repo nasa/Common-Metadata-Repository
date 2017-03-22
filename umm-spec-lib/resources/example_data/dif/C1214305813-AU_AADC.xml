@@ -327,5 +327,10 @@ Zinc</Abstract>
       <Name>metadata.keyword_version</Name>
       <Value>8.1</Value>
     </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>GranuleSpatialRepresentation</Name>
+      <Value>CARTESIAN</Value>
+    </Metadata>
   </Extended_Metadata>
 </DIF>

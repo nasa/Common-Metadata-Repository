@@ -29,21 +29,21 @@
 (defn platform-not-matches-kms-keywords
   [platform]
   (format "Platform short name [%s] and long name [%s] was not a valid keyword combination."
-          (:short-name platform) (:long-name platform)))
+          (:ShortName platform) (:LongName platform)))
 
 (defn instrument-not-matches-kms-keywords
   [instrument]
   (format "Instrument short name [%s] and long name [%s] was not a valid keyword combination."
-          (:short-name instrument) (:long-name instrument)))
+          (:ShortName instrument) (:LongName instrument)))
 
 (defn project-not-matches-kms-keywords
   [project-map]
   (format "Project short name [%s] and long name [%s] was not a valid keyword combination."
-          (:short-name project-map) (:long-name project-map)))
+          (:ShortName project-map) (:LongName project-map)))
 
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
-  [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
+  [:Category :Topic :Term :VariableLevel1 :VariableLevel2 :VariableLevel3])
 
 (defn- science-keyword->human-attrib-list
   "Converts a science keyword into a human readable list of attributes with their values."

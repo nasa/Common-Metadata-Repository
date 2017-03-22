@@ -18,8 +18,10 @@
                     \"CHAD\" {:category \"CONTINENT\" :type \"AFRICA\" :subregion-1 \"WESTERN AFRICA\"
                               :subregion-2 \"CHAD\" :uuid \"456\"}}}"
   (:require
-   [cmr.common.util :as util]
-   [clojure.string :as str]))
+   [camel-snake-kebab.core :as csk]
+   [camel-snake-kebab.extras :as csk-extras]
+   [clojure.string :as str]
+   [cmr.common.util :as util]))
 
 (def kms-scheme->fields-for-umm-c-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
@@ -131,6 +133,7 @@
   "Takes a keyword as represented in UMM-C and returns the KMS keyword. Comparison is made case
   insensitively."
   [kms-index keyword-scheme umm-c-keyword]
-  (let [comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
+  (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+        comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
                                                             keyword-scheme))]
     (get-in kms-index [:umm-c-index keyword-scheme comparison-map])))

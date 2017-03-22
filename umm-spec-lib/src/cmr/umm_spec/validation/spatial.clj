@@ -2,6 +2,7 @@
   "Defines validations for UMM spatial elements."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cmr.common.util :as util]
    [cmr.spatial.validation :as sv]
    [cmr.umm-spec.spatial-conversion :as sc]
    [cmr.common.validations.core :as v]))
@@ -30,6 +31,17 @@
   (if (get-in spatial-extent path)
     (update-in spatial-extent path (fn [geometry] (map #(assoc % :coord-system coord-sys) geometry)))
     spatial-extent))
+
+(defn- validate-spatial-representation
+ "Validate that the granule spatial representation is valid if the spatial extent
+ has geometries"
+ [field-path spatial-extent]
+ (let [granule-spatial-representation (:GranuleSpatialRepresentation spatial-extent)
+       geometry (util/remove-nil-keys
+                 (dissoc (get-in spatial-extent [:HorizontalSpatialDomain :Geometry]) :CoordinateSystem))]
+  (when (and (not (empty? geometry))
+             (nil? granule-spatial-representation))
+   {field-path ["Granule Spatial Representation must be supplied."]})))
 
 (defn- set-geometries-spatial-representation
   "Attach the coordinate system to each geometry to make it available during validation."
@@ -61,10 +73,11 @@
 
 (def spatial-extent-validation
   "Validation for the SpatialExtent of a umm-spec collection."
-  (v/pre-validation set-geometries-spatial-representation
+  [validate-spatial-representation
+   (v/pre-validation set-geometries-spatial-representation
     {:HorizontalSpatialDomain
      {:Geometry
       {:GPolygons (v/every polygon-validation)
        :Points (v/every point-validation)
        :Lines (v/every line-validation)
-       :BoundingRectangles (v/every bounding-rectangle-validation)}}}))
+       :BoundingRectangles (v/every bounding-rectangle-validation)}}})])

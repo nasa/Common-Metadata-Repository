@@ -159,35 +159,53 @@
           "Atm" "aIRBORNE Topographic Mapper"))
 
   (testing "Science Keyword validation"
-    (are [attribs]
+    (are [attribs attribs-umm-c]
          (let [sk (dc/science-keyword attribs)]
            (assert-invalid-keywords
              {:science-keywords [sk]}
              ["ScienceKeywords" 0]
-             [(msg/science-keyword-not-matches-kms-keywords sk)]))
+             [(msg/science-keyword-not-matches-kms-keywords attribs-umm-c)]))
 
          {:category "foo"
           :topic "DATA ANALYSIS AND VISUALIZATION"
           :term "GEOGRAPHIC INFORMATION SYSTEMS"}
+         {:Category "foo"
+          :Topic "DATA ANALYSIS AND VISUALIZATION"
+          :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
 
          {:category "EARTH SCIENCE SERVICES"
           :topic "foo"
           :term "GEOGRAPHIC INFORMATION SYSTEMS"}
+         {:Category "EARTH SCIENCE SERVICES"
+          :Topic "foo"
+          :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
 
          {:category "EARTH SCIENCE SERVICES"
           :topic "DATA ANALYSIS AND VISUALIZATION"
           :term "foo"}
+         {:Category "EARTH SCIENCE SERVICES"
+          :Topic "DATA ANALYSIS AND VISUALIZATION"
+          :Term "foo"}
 
          {:category "EARTH SCIENCE SERVICES"
           :topic "DATA ANALYSIS AND VISUALIZATION"
           :term "GEOGRAPHIC INFORMATION SYSTEMS"
           :variable-level-1 "foo"}
+         {:Category "EARTH SCIENCE SERVICES"
+          :Topic "DATA ANALYSIS AND VISUALIZATION"
+          :Term "GEOGRAPHIC INFORMATION SYSTEMS"
+          :VariableLevel1 "foo"}
 
          {:category "EARTH SCIENCE"
           :topic "ATMOSPHERE"
           :term "AEROSOLS"
           :variable-level-1 "AEROSOL OPTICAL DEPTH/THICKNESS"
           :variable-level-2 "foo"}
+         {:Category "EARTH SCIENCE"
+          :Topic "ATMOSPHERE"
+          :Term "AEROSOLS"
+          :VariableLevel1 "AEROSOL OPTICAL DEPTH/THICKNESS"
+          :VariableLevel2 "foo"}
 
          {:category "EARTH SCIENCE"
           :topic "ATMOSPHERE"
@@ -195,11 +213,20 @@
           :variable-level-1 "SURFACE TEMPERATURE"
           :variable-level-2 "MAXIMUM/MINIMUM TEMPERATURE"
           :variable-level-3 "foo"}
+         {:Category "EARTH SCIENCE"
+          :Topic "ATMOSPHERE"
+          :Term "ATMOSPHERIC TEMPERATURE"
+          :VariableLevel1 "SURFACE TEMPERATURE"
+          :VariableLevel2 "MAXIMUM/MINIMUM TEMPERATURE"
+          :VariableLevel3 "foo"}
 
          ;; Invalid combination. Topic is valid but not with these other terms
          {:category "EARTH SCIENCE SERVICES"
           :topic "ATMOSPHERE"
-          :term "GEOGRAPHIC INFORMATION SYSTEMS"})
+          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
+         {:Category "EARTH SCIENCE SERVICES"
+          :Topic "ATMOSPHERE"
+          :Term "GEOGRAPHIC INFORMATION SYSTEMS"})
 
     (are [attribs]
          (assert-valid-keywords {:science-keywords [(dc/science-keyword attribs)]})
@@ -233,4 +260,3 @@
           :variable-level-1 "SuRFACE TEMPERATURE"
           :variable-level-2 "MAXiMUM/MiNiMUM TEMPERATURE"
           :variable-level-3 "24 HOUR MAXiMUM TEMPERATURE"})))
-

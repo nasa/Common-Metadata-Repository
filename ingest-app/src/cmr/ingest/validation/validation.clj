@@ -74,14 +74,14 @@
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    {:platforms [(match-kms-keywords-validation
+    {:Platforms [(match-kms-keywords-validation
                   kms-index :platforms msg/platform-not-matches-kms-keywords)
-                 (v/every {:instruments (match-kms-keywords-validation
+                 (v/every {:Instruments (match-kms-keywords-validation
                                          kms-index :instruments
                                          msg/instrument-not-matches-kms-keywords)})]
-     :science-keywords (match-kms-keywords-validation
+     :ScienceKeywords (match-kms-keywords-validation
                          kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
-     :projects (match-kms-keywords-validation
+     :Projects (match-kms-keywords-validation
                 kms-index :projects msg/project-not-matches-kms-keywords)}))
 
 (defn validate-concept-metadata
@@ -93,21 +93,7 @@
                                                  (:metadata concept))
                      (umm/validate-concept-xml concept))))
 
-(defn validate-collection-umm
-  [context collection validate-keywords?]
-  ;; Log any errors from the keyword validation if we are not returning them to the client.
-  ;; Move the keyword validations to validate-collection-umm-spec when this function is removed
-  (when-not validate-keywords?
-    (when-let [errors (seq (v/validate (keyword-validations context) collection))]
-      (warn (format "Collection with entry title [%s] had the following keyword validation errors: %s"
-                    (:entry-title collection) (pr-str errors)))))
-  ;; Validate the collection and throw errors that will be sent to the client.
-  (if-errors-throw :invalid-data (umm-validation/validate-collection
-                                   collection
-                                   (when validate-keywords?
-                                     [(keyword-validations context)]))))
-
-(defn- validate-collection-umm-spec-schema
+(defn validate-collection-umm-spec-schema
   "Validate the collection against the JSON schema and throw errors if configured or return
   a list of warnings"
   [collection validation-options]
@@ -120,7 +106,7 @@
         (warn "UMM-C JSON-Schema Validation Errors: " (pr-str (vec err-messages)))
         err-messages))))
 
-(defn- umm-spec-validate-collection
+(defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions and throw errors if configured or return
   a list of warnings"
   [collection validation-options context]
@@ -131,15 +117,6 @@
     (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors))
       (errors/throw-service-errors :invalid-data err-messages)
       (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages))))))
-
-(defn validate-collection-umm-spec
-  "Validate UMM-C record and return list of warnings if warnings are turned on (:validate-umm? or
-  return-umm-json-validation-errors are true)"
-  [context collection validation-options]
-  ;; Add keyword validations from validate-collection-umm here when validate-collection-umm is removed
-
-  (seq (concat (validate-collection-umm-spec-schema collection validation-options)
-               (umm-spec-validate-collection collection validation-options context))))
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,

@@ -31,7 +31,7 @@
 (comment
 
 
-  ((let [xml (dif10/umm->dif10-xml user/failing-value)]
+  ((let [xml (dif10/umm->dif10-xml failing-value)]
      (c/validate-xml xml))))
 
 
@@ -40,7 +40,7 @@
 (defn- related-urls->expected-parsed
   [related-urls]
   (if (empty? related-urls)
-    [(umm-c/map->RelatedURL {:url umm-c/not-provided})]
+    [(umm-c/map->RelatedURL {:url "Not%20provided"})]
     related-urls))
 
 (defn- spatial-coverage->expected-parsed
@@ -158,7 +158,8 @@
 
 (defn- remove-not-provided
   [values sub-key]
-  (seq (remove #(= (sub-key %) umm-c/not-provided) values)))
+  (seq (remove #(or (= (sub-key %) umm-c/not-provided)
+                    (= (sub-key %) "Not%20provided")) values)))
 
 (defn remove-dif10-place-holder-fields
   "Remove dummy fields from a UMM record which would come in when a generated UMM is converted to
@@ -249,6 +250,7 @@
        parsed-echo10 (echo10-c/parse-collection echo10-xml)
        expected-parsed (test-echo10/umm->expected-parsed-echo10
                          (remove-unsupported-fields collection))]
+   (is (= expected-parsed parsed-dif10))
    [expected-parsed
     parsed-dif10
     (and (= expected-parsed parsed-echo10)

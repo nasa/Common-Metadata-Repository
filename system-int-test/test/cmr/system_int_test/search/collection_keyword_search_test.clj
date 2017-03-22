@@ -95,7 +95,7 @@
         tdcs1 (dc/two-d "XYZ")
         tdcs2 (dc/two-d "twoduniq")
         org (dc/org :archive-center "Some&Place")
-        url1 (dc/related-url {:url "cmr.earthdata.nasa.gov"
+        url1 (dc/related-url {:url "http://cmr.earthdata.nasa.gov"
                               :description "Earthdata"})
         url2 (dc/related-url {:url "http://nsidc.org/"
                               :description "Home page of National Snow and Ice Data Center"})

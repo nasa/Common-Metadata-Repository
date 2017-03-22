@@ -130,19 +130,7 @@
             coll-attr
             ["AdditionalAttributes"]
             ["Additional Attributes must be unique. This contains duplicates named [bool]."]
-            {:validate-umm-c true}
-
-            "Set Cmr-Validate-Umm-C header to false - schema validation passed, umm-spec validation error is not returned"
-            coll-attr
-            ["ProductSpecificAttributes"]
-            ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
-            {:validate-umm-c false}
-
-            "Do not set Cmr-Validate-Umm-C header - schema validation passed, umm-spec validation error is not returned"
-            coll-attr
-            ["ProductSpecificAttributes"]
-            ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]
-            nil)))
+            {:validate-umm-c true})))
 
   (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
@@ -204,8 +192,7 @@
         :geodetic
         [(m/mbr -180 45 180 46)]
         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "BoundingRectangles" 0]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"])))
-  (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
+        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
 (deftest umm-spec-validation-warnings
   ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection.

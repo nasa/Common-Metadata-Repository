@@ -91,7 +91,7 @@
                     :projects projects
                     :spatial-coverage (dc/spatial {:gsr :geodetic})
                     :two-d-coordinate-systems [two-d-cs]
-                    :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                    :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                     :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                     :ending-date-time "1967-12-12T07:00:00.000-05:00"}
 
@@ -107,7 +107,7 @@
                    :projects projects
                    :spatial-coverage (dc/spatial {:gsr :geodetic})
                    :two-d-coordinate-systems [two-d-cs]
-                   :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                   :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                    :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-12-12T07:00:00.000-05:00"}
 
@@ -285,7 +285,7 @@
                      :projects projects
                      :spatial-coverage (dc/spatial {:gsr :geodetic})
                      :two-d-coordinate-systems [c-two-d-cs-A]
-                     :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                     :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                      :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                      :ending-date-time "1967-12-12T07:00:00.000-05:00"}
         coll-data-B {:entry-title "short_name_B_version"
@@ -300,7 +300,7 @@
                      :projects projects
                      :spatial-coverage (dc/spatial {:gsr :geodetic})
                      :two-d-coordinate-systems [c-two-d-cs-B]
-                     :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                     :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                      :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                      :ending-date-time "1967-12-12T07:00:00.000-05:00"}
         gran-data-A {:platform-refs [pr1]
@@ -334,7 +334,7 @@
           gran-A-for-echo10-coll-A
 
           "A granule ingested in collection A with NewName is rejected"
-          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [REPLACEMENT_TILE]."]
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [REPLACEMENT_TILE]."]
           gran-B-for-echo10-coll-A
 
           "A granule ingested in collection B with OldName is permitted"
@@ -404,7 +404,7 @@
                      :projects projects
                      :spatial-coverage (dc/spatial {:gsr :geodetic})
                      :two-d-coordinate-systems [c-two-d-cs]
-                     :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                     :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                      :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                      :ending-date-time "1967-12-12T07:00:00.000-05:00"}
         coll-data-B {:entry-title "short_name_B_version"
@@ -419,7 +419,7 @@
                      :projects projects
                      :spatial-coverage (dc/spatial {:gsr :geodetic})
                      :two-d-coordinate-systems [c-two-d-cs]
-                     :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                     :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                      :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                      :ending-date-time "1967-12-12T07:00:00.000-05:00"}
         gran-data-A {:platform-refs [prA]
@@ -500,7 +500,7 @@
                    :projects projects
                    :spatial-coverage (dc/spatial {:gsr :geodetic})
                    :two-d-coordinate-systems [two-d-cs]
-                   :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                   :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                    :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-12-12T07:00:00.000-05:00"}
         gran-data {:platform-refs [pr1]
@@ -542,7 +542,7 @@
           gran-for-echo10-coll
 
           "DIF collection"
-          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."]
           gran-for-dif-coll
 
           "DIF10 collection"
@@ -551,12 +551,12 @@
 
 
           "ISO19115 collection"
-          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."]
           gran-for-iso19115-coll
 
           "ISO-SMAP collection"
-          ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
-           "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."
+           "The following list of Additional Attributes did not exist in the referenced parent collection: [a-float]."
            "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
           gran-for-iso-smap-coll)))
 
@@ -597,7 +597,7 @@
                    :projects projects
                    :spatial-coverage (dc/spatial {:gsr :geodetic})
                    :two-d-coordinate-systems [two-d-cs]
-                   :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                   :related-urls [(dc/related-url {:type "type" :url "http://www.foo.com"})]
                    :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                    :ending-date-time "1967-12-12T07:00:00.000-05:00"}
         gran-data {:platform-refs [pr1]
@@ -653,7 +653,9 @@
                     :science-keywords [(dc/science-keyword {:category "upcase"
                                                             :topic "Cool"
                                                             :term "Mild"})]
-                    :spatial-coverage (dc/spatial {:sr :cartesian, :geometries [m/whole-world]})
+                    :spatial-coverage (dc/spatial {:sr :cartesian
+                                                   :geometries [m/whole-world]
+                                                   :gsr :no-spatial})
                     :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                     :ending-date-time "1967-12-12T07:00:00.000-05:00"}
 

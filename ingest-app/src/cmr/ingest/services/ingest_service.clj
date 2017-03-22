@@ -48,13 +48,9 @@
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
         sanitized-collection (spec/parse-metadata context :collection format metadata)
-
-    ;; Validate against the UMM Spec validation rules
-        warnings (v/validate-collection-umm-spec context collection validation-options)]
-    ;; Using the legacy UMM validation rules (for now)
-    (v/validate-collection-umm context
-                               (umm-legacy/parse-concept context collection-concept)
-                               (:validate-keywords? validation-options))
+        ;; Return warnings for schema validation errors going from xml -> UMM
+        warnings (v/validate-collection-umm-spec-schema collection validation-options)]
+    (v/umm-spec-validate-collection collection validation-options context)
     ;; The sanitized UMM Spec collection is returned so that ingest does not fail
     {:collection sanitized-collection
      :warnings warnings}))
@@ -148,11 +144,12 @@
   "Validate a granule concept along with a parent collection. Throws a service error if any
   validation issues are found."
   [context concept parent-collection-concept]
-  (let [collection (errors/handle-service-errors
+  (let [collection (:collection
+                    (errors/handle-service-errors
                      #(validate-and-parse-collection-concept context parent-collection-concept false)
                      (fn [type errors ex]
                        (errors/throw-service-errors
-                         type (map msg/invalid-parent-collection-for-validation errors)) ex))]
+                         type (map msg/invalid-parent-collection-for-validation errors)) ex)))]
     (validate-granule context concept
                       (constantly [parent-collection-concept
                                    collection

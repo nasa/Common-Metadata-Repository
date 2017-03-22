@@ -246,5 +246,3 @@
     :related-urls h/online-access-urls-validation}
    projects-reference-collection
    spatial-matches-granule-spatial-representation])
-
-

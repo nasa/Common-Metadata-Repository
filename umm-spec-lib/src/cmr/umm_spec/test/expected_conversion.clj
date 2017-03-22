@@ -122,7 +122,7 @@
                              :ReportNumber "25"
                              :Volume "volume"
                              :Publisher "publisher"
-                             :OnlineResource {:Linkage "www.foo.com"
+                             :OnlineResource {:Linkage "http://www.foo.com"
                                               :Protocol "http"
                                               :ApplicationProfile "http"
                                               :Name "Resource Name"
@@ -138,26 +138,18 @@
     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
     :RelatedUrls [{:Description "Related url description"
-                   :URL "www.foo.com"
+                   :URL "http://www.foo.com"
+                   :MimeType "mime type"
                    :URLContentType "DistributionURL"
                    :Type "GET DATA"
-                   :Subtype "ECHO"
-                   :GetData {:Format "ascii"
-                             :Size 10.0
-                             :Unit "MB"
-                             :Fees "fees"}}
+                   :Subtype "ECHO"}
                   {:Description "Related url 3 description "
-                   :URL "www.foo.com"
+                   :URL "http://www.foo.com"
                    :URLContentType "DistributionURL"
-                   :Type "GET SERVICE"
-                   :GetService {:MimeType "application/json"
-                                :DataID "dataid"
-                                :DataType "datatype"
-                                :Protocol "HTTP"
-                                :FullName "fullname"
-                                :URI ["www.foo.com", "www.bar.com"]}}
+                   :Type "GET SERVICE"}
                   {:Description "Related url 2 description"
-                   :URL "www.foo.com"
+                   :URL "http://www.foo.com"
+                   :FileSize {:Size 10.0 :Unit "MB"}
                    :URLContentType "VisualizationURL"
                    :Type "GET RELATED VISUALIZATION"
                    :Subtype "GIBS"}]
@@ -197,7 +189,8 @@
     :ContactGroups [{:Roles ["Investigator"]
                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                      :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
-                                                         :URL "www.contact.group.foo.com"
+                                                         :URL "http://www.contact.group.foo.com"
+                                                         :MimeType "application/html"
                                                          :URLContentType "DataContactURL"
                                                          :Type "HOME PAGE"}]
                                           :ServiceHours "Weekdays 9AM - 5PM"
@@ -212,7 +205,8 @@
     :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                       :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                       :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                          :URL "www.contact.foo.com"
+                                                          :URL "http://www.contact.foo.com"
+                                                          :MimeType "application/html"
                                                           :URLContentType "DataContactURL"
                                                           :Type "HOME PAGE"}]
                                            :ServiceHours "Weekdays 9AM - 5PM"
@@ -232,7 +226,8 @@
                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                         :URL "www.contact.foo.com"
+                                                                         :URL "http://www.contact.foo.com"
+                                                                         :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
                                                                          :Type "HOME PAGE"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
@@ -255,7 +250,8 @@
                    :ContactPersons [{:Roles ["Data Center Contact" "Technical Contact" "Science Contact"]
                                      :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc83f"
                                      :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                                         :URL "www.contact.shoes.com"
+                                                                         :URL "http://www.contact.shoes.com"
+                                                                         :MimeType "application/html"
                                                                          :URLContentType "DataContactURL"
                                                                          :Type "HOME PAGE"}]
                                                           :ServiceHours "Weekdays 9AM - 5PM"
@@ -274,7 +270,8 @@
                    :ShortName "NSIDC"
                    :Uuid "aa63353f-8686-4175-9296-f6685a04a6da"
                    :ContactInformation {:RelatedUrls [{:Description "Contact related url description"
-                                                       :URL "www.contact.shoo.com"
+                                                       :URL "http://www.contact.shoo.com"
+                                                       :MimeType "application/html"
                                                        :URLContentType "DataCenterURL"
                                                        :Type "HOME PAGE"}]
                                         :ServiceHours "Weekdays 9AM - 5PM"
@@ -290,7 +287,8 @@
                    :ContactGroups [{:Roles ["Investigator"]
                                     :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
                                     :ContactInformation {:RelatedUrls [{:Description "Contact group related url description"
-                                                                        :URL "www.contact.group.foo.com"
+                                                                        :URL "http://www.contact.group.foo.com"
+                                                                        :MimeType "application/html"
                                                                         :URLContentType "DataContactURL"
                                                                         :Type "HOME PAGE"}]
 
