@@ -10,7 +10,6 @@
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
    [cmr.search.services.humanizers.humanizer-service :as hs]
-   [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import
    (java.io StringWriter)))

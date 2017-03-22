@@ -97,8 +97,7 @@
                        msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
     [coll-concept
      (spec/parse-metadata
-      context :collection (:format coll-concept) (:metadata coll-concept))
-     (umm-legacy/parse-concept context coll-concept)]))
+      context :collection (:format coll-concept) (:metadata coll-concept))]))
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
@@ -127,12 +126,10 @@
 
    (let [granule (umm-legacy/parse-concept context concept)
          [parent-collection-concept
-          umm-spec-collection
-          umm-lib-collection] (fetch-parent-collection-concept-fn
+          umm-spec-collection](fetch-parent-collection-concept-fn
                                context concept granule)]
      ;; UMM Validation
      (v/validate-granule-umm-spec context umm-spec-collection granule)
-     (v/validate-granule-umm context umm-lib-collection granule)
 
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
@@ -152,8 +149,7 @@
                          type (map msg/invalid-parent-collection-for-validation errors)) ex)))]
     (validate-granule context concept
                       (constantly [parent-collection-concept
-                                   collection
-                                   (umm-legacy/parse-concept context parent-collection-concept)]))))
+                                   collection]))))
 
 (defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
