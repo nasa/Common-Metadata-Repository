@@ -5,7 +5,7 @@
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-collection :as duc]
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.metadata-db-util :as mdb]))
@@ -48,7 +48,7 @@
                                                                             "plain-group-guid3"])
         super-admin-token (e/login (s/context) "super-admin" ["ingest-super-admin-group-guid"])
         non-existant-token "not-exist"
-        collection (d/ingest "PROV1" (data-umm-c/collection {})  {:token provider-admin-update-token})
+        collection (d/ingest "PROV1" (duc/collection {})  {:token provider-admin-update-token})
         ingested-concept (mdb/get-concept (:concept-id collection))
 
         granule (d/item->concept (dg/granule-with-umm-spec-collection collection "C1-PROV1"))]
@@ -88,14 +88,14 @@
 
     (testing "ingest collection update permissions"
       (are [token]
-           (ingest-succeeded? (d/ingest "PROV1" (data-umm-c/collection {}) {:token token
-                                                                            :allow-failure? true}))
+           (ingest-succeeded? (d/ingest "PROV1" (duc/collection {}) {:token token
+                                                                    :allow-failure? true}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (d/ingest "PROV1" (data-umm-c/collection {}) {:token token
-                                                                                 :allow-failure? true})))
+           (not (ingest-succeeded? (d/ingest "PROV1" (duc/collection {}) {:token token
+                                                                         :allow-failure? true})))
            guest-token
            user-token
            super-admin-token

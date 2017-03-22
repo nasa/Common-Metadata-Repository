@@ -7,7 +7,7 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-collection :as duc]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -19,17 +19,17 @@
                        hu/save-sample-humanizers-fixture]))
 
 (deftest collection-update-additional-attributes-general-test
-  (let [a1 (data-umm-c/additional-attribute {:Name "string" :DataType "STRING"})
-        a2 (data-umm-c/additional-attribute {:Name "boolean" :DataType "BOOLEAN"})
-        a3 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :value 5})
-        a4 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
-        a5 (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME"})
-        a6 (data-umm-c/additional-attribute {:Name "date" :DataType "DATE"})
-        a7 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"})
-        a8 (data-umm-c/additional-attribute {:Name "dts" :DataType "DATETIME_STRING"})
-        a9 (data-umm-c/additional-attribute {:Name "moo" :DataType "STRING"})
+  (let [a1 (duc/psa {:name "string" :data-type "STRING"})
+        a2 (duc/psa {:name "boolean" :data-type "BOOLEAN"})
+        a3 (duc/psa {:name "int" :data-type "INT" :value 5})
+        a4 (duc/psa {:name "float" :data-type "FLOAT" :min-value 1.0 :max-value 10.0})
+        a5 (duc/psa {:name "datetime" :data-type "DATETIME"})
+        a6 (duc/psa {:name "date" :data-type "DATE"})
+        a7 (duc/psa {:name "time" :data-type "TIME"})
+        a8 (duc/psa {:name "dts" :data-type "DATETIME_STRING"})
+        a9 (duc/psa {:name "moo" :data-type "STRING"})
 
-        coll (d/ingest "PROV1" (data-umm-c/collection
+        coll (d/ingest "PROV1" (duc/collection
                                  {:EntryTitle "parent-collection"
                                   :ShortName "S1"
                                   :Version "V1"
@@ -54,7 +54,7 @@
         ;; the collection concept id for searching granules. If we don't use the collection concept
         ;; id during granule search the test that changes additional attribute with name "int" to
         ;; a range of [1 10] would have failed.
-        coll1 (d/ingest "PROV1" (data-umm-c/collection
+        coll1 (d/ingest "PROV1" (duc/collection
                                   {:EntryTitle "parent-collection-1"
                                    :AdditionalAttributes [a3]}))
         gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:product-specific-attributes
@@ -64,7 +64,7 @@
     (testing "Update collection successful cases"
       (are3
         [additional-attributes]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                            {:EntryTitle "parent-collection"
                                             :ShortName "S1"
                                             :Version "V1"
@@ -76,34 +76,34 @@
         [a1 a2 a3 a4 a5 a6 a7 a8 a9]
 
         "Add an additional attribute is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (data-umm-c/additional-attribute {:Name "alpha" :DataType "INT"})]
+        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (duc/psa {:name "alpha" :data-type "INT"})]
 
         "Removing an additional attribute that is not referenced by any granule is OK."
         [a1 a2 a3 a4 a5 a6 a7 a8]
 
         "Changing the type of an additional attribute that is not referenced by any granule is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 (data-umm-c/additional-attribute {:Name "moo" :DataType "INT"})]
+        [a1 a2 a3 a4 a5 a6 a7 a8 (duc/psa {:name "moo" :data-type "INT"})]
 
         "Changing the value of an additional attribute is OK."
-        [a1 a2 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :Value 10}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (duc/psa {:name "int" :data-type "INT" :value 10}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute value to a range is OK."
-        [a1 a2 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (duc/psa {:name "int" :data-type "INT" :min-value 1 :max-value 10}) a4 a5 a6 a7 a8 a9]
 
         "Removing the value/range of an additional attribute is OK."
-        [a1 a2 (data-umm-c/additional-attribute {:Name "int" :DataType "INT"}) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (duc/psa {:name "int" :data-type "INT"}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute range to a value is OK."
-        [a1 a2 a3 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :Value 1.0}) a5 a6 a7 a8 a9]
+        [a1 a2 a3 (duc/psa {:name "float" :data-type "FLOAT" :value 1.0}) a5 a6 a7 a8 a9]
 
         "Extending additional attribute range is OK."
-        [a1 a2 a3 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin 0.0 :ParameterRangeEnd 99.0})
+        [a1 a2 a3 (duc/psa {:name "float" :data-type "FLOAT" :min-value 0.0 :max-value 99.0})
          a5 a6 a7 a8 a9]))
 
     (testing "Update collection failure cases"
       (are3
         [additional-attributes expected-errors]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                            {:EntryTitle "parent-collection"
                                             :ShortName "S1"
                                             :Version "V1"
@@ -117,7 +117,7 @@
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Multiple validation errors."
-        [(data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin 5.0 :ParameterRangeEnd 10.0})]
+        [(duc/psa {:name "float" :data-type "FLOAT" :min-value 5.0 :max-value 10.0})]
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [boolean] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [int] is referenced by existing granules, cannot be removed. Found 1 granules."
@@ -128,13 +128,13 @@
          "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range. Found 1 granules."]
 
         "Changing an additional attribute type that is referenced by its granules is invalid."
-        [(data-umm-c/additional-attribute {:Name "string" :DataType "INT"}) a2 a3 a4 a5 a6 a7 a8 a9]
+        [(duc/psa {:name "string" :data-type "INT"}) a2 a3 a4 a5 a6 a7 a8 a9]
         ["Collection additional attribute [string] was of DataType [STRING], cannot be changed to [INT]. Found 1 granules."]))
 
     (testing "Delete the existing collection, then re-create it with any additional attributes is OK."
       (ingest/delete-concept (d/item->concept coll :echo10))
       (index/wait-until-indexed)
-      (let [response (d/ingest "PROV1" (data-umm-c/collection
+      (let [response (d/ingest "PROV1" (duc/collection
                                          {:EntryTitle "parent-collection"
                                           :ShortName "S1"
                                           :Version "V1"
@@ -601,27 +601,27 @@
             {:version-id "V11"}))))
 
 (deftest collection-update-temporal-test
-  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:Entry-Title "Dataset1"
+  (let [coll1 (d/ingest "PROV1" (duc/collection {:Entry-Title "Dataset1"
                                                  :ShortName "S1"
-                                                 :TemporalExtents [(data-umm-c/temporal-extent 
+                                                 :TemporalExtents [(duc/temporal 
                                                                      {:beginning-date-time "2001-01-01T12:00:00Z"
                                                                       :ending-date-time "2010-05-11T12:00:00Z"})]}))
-        coll2 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "Dataset2"
+        coll2 (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset2"
                                                 :ShortName "S2"
-                                                :TemporalExtents [(data-umm-c/temporal-extent
+                                                :TemporalExtents [(duc/temporal
                                                                     {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
-        coll3 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "Dataset3"
+        coll3 (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset3"
                                                 :ShortName "S3"
-                                                :TemporalExtents [(data-umm-c/temporal-extent
+                                                :TemporalExtents [(duc/temporal
                                                                     {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
-        coll4 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "Dataset4"
+        coll4 (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset4"
                                                 :ShortName "S4"
-                                                :TemporalExtents [(data-umm-c/temporal-extent
+                                                :TemporalExtents [(duc/temporal
                                                                     {:beginning-date-time "2001-01-01T12:00:00Z"
                                                                      :ending-date-time "2010-05-11T12:00:00Z"})]}))
-        collNoGranule (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "Dataset-No-Granule"
+        collNoGranule (d/ingest "PROV1" (duc/collection {:EntryTitle "Dataset-No-Granule"
                                                         :ShortName "SNo"
-                                                        :TemporalExtents [(data-umm-c/temporal-extent
+                                                        :TemporalExtents [(duc/temporal
                                                                             {:beginning-date-time "1999-01-02T12:00:00Z"
                                                                              :ending-date-time "1999-05-01T12:00:00Z"})]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"
@@ -648,7 +648,7 @@
                                                (assoc :TemporalExtents
                                                       (when (not= {:beginning-date-time nil :ending-date-time nil}
                                                                   new-temporal-params) 
-                                                        [(data-umm-c/temporal-extent new-temporal-params)])))]
+                                                        [(duc/temporal new-temporal-params)])))]
                               (d/ingest "PROV1" new-coll {:allow-failure? true})))]
     (index/wait-until-indexed)
 
@@ -724,16 +724,16 @@
 
 (deftest collection-update-platform-test
   (let [;; Platform Terra is the humanized alias of AM-1
-        coll (d/ingest "PROV1" (data-umm-c/collection
+        coll (d/ingest "PROV1" (duc/collection
                                 {:EntryTitle "parent-collection"
                                  :ShortName "S1"
                                  :Version "V1"
-                                 :Platforms (data-umm-c/platforms "p1" "p2" "AM-1" "p4")}))
-        coll2 (d/ingest "PROV1" (data-umm-c/collection
+                                 :Platforms (duc/platforms "p1" "p2" "AM-1" "p4")}))
+        coll2 (d/ingest "PROV1" (duc/collection
                                  {:EntryTitle "parent-collection2"
                                   :ShortName "S2"
 				  :Version "V2"
-                                  :Platforms (data-umm-c/platforms "p4" "Terra")}))]
+                                  :Platforms (duc/platforms "p4" "Terra")}))]
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p2" "AM-1")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "AM-1")}))
@@ -744,11 +744,11 @@
     (testing "Update collection successful cases"
       (are3
         [platforms]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                           {:EntryTitle "parent-collection"
                                            :ShortName "S1"
                                            :Version "V1"
-                                           :Platforms (apply data-umm-c/platforms platforms)}))
+                                           :Platforms (apply duc/platforms platforms)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -764,11 +764,11 @@
     (testing "Update collection failure cases"
       (are3
         [platforms expected-errors]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                           {:EntryTitle "parent-collection2"
                                            :ShortName "S2"
                                            :Version "V2"
-                                           :Platforms (apply data-umm-c/platforms platforms)})
+                                           :Platforms (apply duc/platforms platforms)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -783,11 +783,11 @@
 
 (deftest collection-update-tile-test
   (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE" 
-        coll (d/ingest "PROV1" (data-umm-c/collection
+        coll (d/ingest "PROV1" (duc/collection
                                 {:EntryTitle "parent-collection"
                                  :ShortName "S1"
                                  :Version "V1"
-                                 :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
+                                 :TilingIdentificationSystems (duc/two-ds "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
@@ -795,11 +795,11 @@
     (testing "Update collection successful cases"
       (are3
         [tile-names]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                           {:EntryTitle "parent-collection"
                                            :ShortName "S1"
                                            :Version "V1"
-                                           :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)}))
+                                           :TilingIdentificationSystems (apply duc/two-ds tile-names)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -815,11 +815,11 @@
     (testing "Update collection failure cases"
       (are3
         [tile-names expected-errors]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                           {:EntryTitle "parent-collection"
                                            :ShortName "S2"
                                            :Version "V2"
-                                           :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)})
+                                           :TilingIdentificationSystems (apply duc/two-ds tile-names)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -834,17 +834,17 @@
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
-        coll (d/ingest "PROV1" (data-umm-c/collection
+        coll (d/ingest "PROV1" (duc/collection
                                 {:EntryTitle "parent-collection"
                                  :ShortName "S1"
                                  :Version "V1"
-                                 :Platforms [(data-umm-c/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
-                                             (data-umm-c/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
-        coll2 (d/ingest "PROV1" (data-umm-c/collection
+                                 :Platforms [(duc/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
+                                             (duc/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
+        coll2 (d/ingest "PROV1" (duc/collection
                                  {:EntryTitle "parent-collection2"
                                   :ShortName "S2"
                                   :Version "V2"
-                                  :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+                                  :Platforms [(duc/platform-with-instrument-and-sensors "p2" "i2" "s1" "GPS RECEIVERS")]}))]
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
@@ -854,12 +854,12 @@
     (testing "Update collection successful cases"
       (are3
         [plat-instruments-1 plat-instruments-2]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                           {:EntryTitle "parent-collection"
                                            :ShortName "S1"
                                            :Version "V1"
-                                           :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
-                                                       (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
+                                           :Platforms [(apply duc/platform-with-instruments plat-instruments-1)
+                                                       (apply duc/platform-with-instruments plat-instruments-2)]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -883,11 +883,11 @@
     (testing "Update collection failure cases"
       (are3
         [plat-instr-sensors expected-errors]
-        (let [response (d/ingest "PROV1" (data-umm-c/collection
+        (let [response (d/ingest "PROV1" (duc/collection
                                           {:EntryTitle "parent-collection2"
                                            :ShortName "S2"
                                            :Version "V2"
-                                           :Platforms [(apply data-umm-c/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
+                                           :Platforms [(apply duc/platform-with-instrument-and-sensors plat-instr-sensors)]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
