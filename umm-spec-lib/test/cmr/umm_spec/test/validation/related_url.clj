@@ -73,7 +73,7 @@
       {:path [:RelatedUrls 6]
        :errors ["Only URLContentType: DistributionURL Type: GET DATA can contain GetData, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}
       {:path [:RelatedUrls 5]
-       :errors ["Only URLContentType: DistributionURL Type: GET SERVICE can contain GetData, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}])))
+       :errors ["Only URLContentType: DistributionURL Type: GET SERVICE can contain GetService, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}])))
 ;
 (deftest collection-data-center-related-urls-validation
   (testing "Valid related urls"
