@@ -4,7 +4,7 @@
     [clojure.test :refer :all]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as duc]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -13,8 +13,8 @@
 
 
 (deftest search-by-day-night
-  (let [coll1 (d/ingest "PROV1" (duc/collection {:EntryTitle "ET1" :ShortName "S1"}))
-        coll2 (d/ingest "PROV2" (duc/collection {:EntryTitle "ET2" :ShortName "S2"}))
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "ET1" :ShortName "S1"}))
+        coll2 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "ET2" :ShortName "S2"}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:day-night "DAY"}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:day-night "NIGHT"}))
         gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:day-night "BOTH"}))

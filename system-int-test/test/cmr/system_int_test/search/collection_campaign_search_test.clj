@@ -4,7 +4,7 @@
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.umm-spec-collection :as duc]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -12,13 +12,13 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-campaign-short-names
-  (let [coll1 (d/ingest "PROV1" (duc/collection {:EntryTitle "C1" :ShortName "S1"}))
-        coll2 (d/ingest "PROV1" (duc/collection {:Projects [] :EntryTitle "C2" :ShortName "S2"}))
-        coll3 (d/ingest "PROV1" (duc/collection {:Projects (duc/projects "ESI") :EntryTitle "C3" :ShortName "S3"}))
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "C1" :ShortName "S1"}))
+        coll2 (d/ingest "PROV1" (data-umm-c/collection {:Projects [] :EntryTitle "C2" :ShortName "S2"}))
+        coll3 (d/ingest "PROV1" (data-umm-c/collection {:Projects (data-umm-c/projects "ESI") :EntryTitle "C3" :ShortName "S3"}))
 
-        coll4 (d/ingest "PROV2" (duc/collection {:Projects (duc/projects "ESI" "Esi") :EntryTitle "C4" :ShortName "S4"}))
-        coll5 (d/ingest "PROV2" (duc/collection {:Projects (duc/projects "EVI" "EPI") :EntryTitle "C5" :ShortName "S5"}))
-        coll6 (d/ingest "PROV2" (duc/collection {:Projects (duc/projects "ESI" "EVI" "EPI") :EntryTitle "C6" :ShortName "S6"}))]
+        coll4 (d/ingest "PROV2" (data-umm-c/collection {:Projects (data-umm-c/projects "ESI" "Esi") :EntryTitle "C4" :ShortName "S4"}))
+        coll5 (d/ingest "PROV2" (data-umm-c/collection {:Projects (data-umm-c/projects "EVI" "EPI") :EntryTitle "C5" :ShortName "S5"}))
+        coll6 (d/ingest "PROV2" (data-umm-c/collection {:Projects (data-umm-c/projects "ESI" "EVI" "EPI") :EntryTitle "C6" :ShortName "S6"}))]
 
     (index/wait-until-indexed)
 
