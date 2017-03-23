@@ -11,47 +11,48 @@
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm-spec.temporal :as umm-spec-temporal]
     [cmr.umm-spec.util :as u]))
-(defn psa
-  "Creates a product specific attribute."
-  [psa]
-  (let [{:keys [name group description data-type value min-value max-value]} psa]
-    (if (or (some? min-value) (some? max-value))
-      (umm-cmn/map->AdditionalAttributeType
-        {:Name name
-         :Group group
-         :Description (or description "Generated")
-         :DataType data-type
-         :ParameterRangeBegin (aa/gen-value data-type min-value)
-         :ParameterRangeEnd (aa/gen-value data-type max-value)})
-      (umm-cmn/map->AdditionalAttributeType
-        {:Name name
-         :Group group
-         :Description (or description "Generated")
-         :DataType data-type
-         :Value (aa/gen-value data-type value)}))))
 
-(defn two-d
-  "Creates two-d-coordinate-system specific attribute"
+(defn additional-attribute 
+  "Creates an AdditionalAttribute"
+  [aa]
+  (let [{:keys [Name Group Description DataType Value ParameterRangeBegin ParameterRangeEnd]} aa]
+    (if (or (some? ParameterRangeBegin) (some? ParameterRangeEnd))
+      (umm-cmn/map->AdditionalAttributeType
+        {:Name Name
+         :Group Group
+         :Description (or Description "Generated")
+         :DataType DataType 
+         :ParameterRangeBegin (aa/gen-value DataType ParameterRangeBegin)
+         :ParameterRangeEnd (aa/gen-value DataType ParameterRangeEnd)})
+      (umm-cmn/map->AdditionalAttributeType
+        {:Name Name
+         :Group Group
+         :Description (or Description "Generated")
+         :DataType DataType 
+         :Value (aa/gen-value DataType Value)}))))
+
+(defn tiling-identification-system 
+  "Creates TilingIdentificationSystem specific attribute"
   [name]
   (umm-cmn/map->TilingIdentificationSystemType
     {:TilingIdentificationSystemName name
      :Coordinate1 {:MinimumValue 0.0 :MaximumValue 0.0}
      :Coordinate2 {:MinimumValue 0.0 :MaximumValue 0.0}}))
 
-(defn two-ds
-  "Returns a sequence of two-d-coordinate-systems with the given names"
+(defn tiling-identification-systems
+  "Returns a sequence of tiling-identification-systems with the given names"
   [& names]
-  (map two-d names))
+  (map tiling-identification-system names))
 
-(defn data-provider-timestamps 
+(defn data-dates 
   "Returns DataDates field of umm-spec collection"
   [datadates]
   (for [datadate datadates]
     (umm-cmn/map->DateType {:Date (p/parse-datetime (:Date datadate))
                             :Type (:Type datadate)}))) 
 
-(defn temporal
-  "Return a temporal with range date time of the given date times"
+(defn temporal-extent
+  "Return a temporal extent with the given date times"
   [attribs]
   (let [{:keys [beginning-date-time ending-date-time single-date-time ends-at-present?]} attribs
         begin (when beginning-date-time (p/parse-datetime beginning-date-time))
@@ -83,7 +84,7 @@
            :LongName (d/unique-str "long-name")})
        short-names))
 
-(defn instrument-with-sensors
+(defn instrument-with-childinstruments
   "Return an instrument, with a sequence of child instruments"
   [short-name & child-instrument-short-names]
   (let [childinstruments (apply instruments child-instrument-short-names)]
@@ -125,10 +126,10 @@
                                 :Type (d/unique-str "Type")
                                 :Instruments instruments})))
 
-(defn platform-with-instrument-and-sensors
-  "Return a platform with an instrument and a list of sensors"
+(defn platform-with-instrument-and-childinstruments
+  "Return a platform with an instrument and a list of child instruments"
   [plat-short-name instr-short-name & child-instrument-short-names]
-  (let [instr-with-sensors (apply instrument-with-sensors instr-short-name child-instrument-short-names)]
+  (let [instr-with-sensors (apply instrument-with-childinstruments instr-short-name child-instrument-short-names)]
     (umm-cmn/map->PlatformType {:ShortName plat-short-name
                                 :LongName (d/unique-str "long-name")
                                 :Type (d/unique-str "Type")
@@ -149,7 +150,7 @@
     {:ShortName project-sn
      :LongName (d/unique-str long-name)}))
 
-(defn org
+(defn data-center 
   "Return archive/ processing center"
   [roles center-name]
   (umm-cmn/map->DataCenterType
@@ -175,10 +176,10 @@
                                      :GranuleSpatialRepresentation gsr
                                      :OrbitParameters (when orbit (umm-cmn/map->OrbitParametersType orbit))})))
 
-(defn personnel
+(defn contact-person 
   "Creates a Personnel record for the opendata tests."
   ([first-name last-name email]
-   (personnel first-name last-name email "dummy"))
+   (contact-person first-name last-name email "dummy"))
   ([first-name last-name email role]
    (let [contacts (when email
                     [(umm-cmn/map->ContactInformationType 
@@ -230,3 +231,4 @@
          collection
          (assoc :provider-id provider-id :native-id native-id)
          (d/item->concept concept-format)))))
+
