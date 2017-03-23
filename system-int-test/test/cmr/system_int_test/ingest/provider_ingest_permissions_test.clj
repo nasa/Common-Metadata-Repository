@@ -1,13 +1,14 @@
 (ns cmr.system-int-test.ingest.provider-ingest-permissions-test
   "Verifies the correct provider ingest permissions are enforced"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false
@@ -47,10 +48,10 @@
                                                                             "plain-group-guid3"])
         super-admin-token (e/login (s/context) "super-admin" ["ingest-super-admin-group-guid"])
         non-existant-token "not-exist"
-        collection (d/ingest "PROV1" (dc/collection {})  {:token provider-admin-update-token})
+        collection (d/ingest "PROV1" (data-umm-c/collection {})  {:token provider-admin-update-token})
         ingested-concept (mdb/get-concept (:concept-id collection))
 
-        granule (d/item->concept (dg/granule collection))]
+        granule (d/item->concept (dg/granule-with-umm-spec-collection collection "C1-PROV1"))]
 
     (testing "ingest granule update permissions"
       (are [token]
@@ -87,14 +88,14 @@
 
     (testing "ingest collection update permissions"
       (are [token]
-           (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) {:token token
-                                                                    :allow-failure? true}))
+           (ingest-succeeded? (d/ingest "PROV1" (data-umm-c/collection {}) {:token token
+                                                                            :allow-failure? true}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) {:token token
-                                                                         :allow-failure? true})))
+           (not (ingest-succeeded? (d/ingest "PROV1" (data-umm-c/collection {}) {:token token
+                                                                                 :allow-failure? true})))
            guest-token
            user-token
            super-admin-token
