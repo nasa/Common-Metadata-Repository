@@ -6,6 +6,10 @@
  "place holder string value for not provided string field"
  "Not provided")
 
+(def not-provided-url)
+ "Placeholder valid url"
+ "Not%20provided"
+
 (defrecord Product
   [
    short-name

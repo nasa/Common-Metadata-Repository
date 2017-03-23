@@ -40,7 +40,7 @@
 (defn- related-urls->expected-parsed
   [related-urls]
   (if (empty? related-urls)
-    [(umm-c/map->RelatedURL {:url "Not%20provided"})]
+    [(umm-c/map->RelatedURL {:url umm-c/not-provided-url})]
     related-urls))
 
 (defn- spatial-coverage->expected-parsed
@@ -159,7 +159,7 @@
 (defn- remove-not-provided
   [values sub-key]
   (seq (remove #(or (= (sub-key %) umm-c/not-provided)
-                    (= (sub-key %) "Not%20provided")) values)))
+                    (= (sub-key %) umm-c/not-provided-url)) values)))
 
 (defn remove-dif10-place-holder-fields
   "Remove dummy fields from a UMM record which would come in when a generated UMM is converted to
