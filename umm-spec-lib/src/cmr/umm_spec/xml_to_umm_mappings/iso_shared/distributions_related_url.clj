@@ -175,5 +175,10 @@
   {:URL (value-of url "gmd:linkage/gmd:URL")
    :Description (:Description types-and-desc)
    :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")
-   :Type (or (:Type types-and-desc) "VIEW RELATED INFORMATION")
+   ;; Types are validated against the URLContentType, so if URLContentType is
+   ;; CollectionURL then use the valid DATA SET LANDING PAGE type, otherwise use
+   ;; VIEW RELATED INFORMATION which is valid for PublicationURL
+   :Type (or (:Type types-and-desc) (if (= (:URLContentType types-and-desc) "CollectionURL")
+                                      "DATA SET LANDING PAGE"
+                                      "VIEW RELATED INFORMATION"))
    :Subtype (:Subtype types-and-desc)}))

@@ -41,7 +41,7 @@
  [url-content-type]
  (let [valid-types (gen/elements (spec-util/valid-types-for-url-content-type url-content-type))
        types (gen/sample valid-types 1)
-       valid-subtypes (spec-util/valid-subtypes-for-type type)
+       valid-subtypes (spec-util/valid-subtypes-for-type url-content-type type)
        subtypes (when valid-subtypes (gen/sample (gen/elements valid-subtypes) 1))]
   {:Type (first types)
    :Subtype (first subtypes)}))

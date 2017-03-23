@@ -30,33 +30,94 @@
 (def SHORTNAME_MAX
   85)
 
-;; Putting this here for now - might need to be moved. Will be needed for
-;; validation, but currently needed for UMM record sanitization
-(def valid-types-for-url-content-type
- {"CollectionURL" ["DATA SET LANDING PAGE" "DOI" "EXTENDED METADATA" "PROFESSIONAL HOME PAGE" "PROJECT HOME PAGE"]
-  "DataCenterURL" ["HOME PAGE"]
-  "DataContactURL" ["HOME PAGE"]
-  "DistributionURL" ["GET DATA" "GET SERVICE"]
-  "PublicationURL" ["VIEW RELATED INFORMATION"]
-  "VisualizationURL" ["GET RELATED VISUALIZATION"]})
+(def valid-url-content-types-map
+  {"DistributionURL" {"GET SERVICE" ["DATACAST URL"
+                                     "EARTHDATA SEARCH"
+                                     "ECHO"
+                                     "EDG"
+                                     "EOSDIS DATA POOL"
+                                     "GDS"
+                                     "GIOVANNI"
+                                     "KML"
+                                     "LAADS"
+                                     "LANCE"
+                                     "LAS"
+                                     "MIRADOR"
+                                     "MODAPS"
+                                     "NOAA CLASS"
+                                     "ON-LINE ARCHIVE"
+                                     "REVERB"]
+                      "GET DATA" ["ACCESS MAP VIEWER"
+                                  "ACCESS MOBILE APP"
+                                  "ACCESS WEB SERVICE"
+                                  "DIF"
+                                  "MAP SERVICE"
+                                  "NOMADS"
+                                  "OPENDAP DATA"
+                                  "OPENDAP DATA (DODS)"
+                                  "OPENDAP DIRECTORY (DODS)"
+                                  "OpenSearch"
+                                  "SERF"
+                                  "SOFTWARE PACKAGE"
+                                  "SSW"
+                                  "SUBSETTER"
+                                  "THREDDS CATALOG"
+                                  "THREDDS DATA"
+                                  "THREDDS DIRECTORY"
+                                  "WEB COVERAGE SERVICE (WCS)"
+                                  "WEB FEATURE SERVICE (WFS)"
+                                  "WEB MAP FOR TIME SERIES"
+                                  "WEB MAP SERVICE (WMS)"
+                                  "WORKFLOW (SERVICE CHAIN)"]}
+   "VisualizationURL" {"GET RELATED VISUALIZATION" ["GIBS" "GIOVANNI"]}
+   "CollectionURL" {"DATA SET LANDING PAGE" []
+                    "DOI" []
+                    "EXTENDED METADATA" []
+                    "PROFESSIONAL HOME PAGE" []
+                    "PROJECT HOME PAGE" []}
+   "PublicationURL" {"VIEW RELATED INFORMATION" ["ALGORITHM THEORETICAL BASIS DOCUMENT"
+                                                 "CALIBRATION DATA DOCUMENTATION"
+                                                 "CASE STUDY"
+                                                 "DATA QUALITY"
+                                                 "DATA USAGE"
+                                                 "DELIVERABLES CHECKLIST"
+                                                 "GENERAL DOCUMENTATION"
+                                                 "HOW-TO"
+                                                 "PI DOCUMENTATION"
+                                                 "PROCESSING HISTORY"
+                                                 "PRODUCTION VERSION HISTORY"
+                                                 "PRODUCT QUALITY ASSESSMENT"
+                                                 "PRODUCT USAGE"
+                                                 "PRODUCT HISTORY"
+                                                 "PUBLICATIONS"
+                                                 "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS"
+                                                 "READ-ME"
+                                                 "RECIPE"
+                                                 "REQUIREMENTS AND DESIGN"
+                                                 "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"
+                                                 "SCIENCE DATA PRODUCT VALIDATION"
+                                                 "USER FEEDBACK"
+                                                 "USER'S GUIDE"]}
+   "DataCenterURL" {"HOME PAGE" []}
+   "DataContactURL" {"HOME PAGE" []}})
 
-(def valid-subtypes-for-type
- {"GET DATA" ["GIOVANNI" "LAADS" "LANCE" "REVERB" "DATACAST URL" "LAS" "MIRADOR" "NOAA CLASS" "ECHO" "MODAPS" "EARTHDATA SEARCH" "EOSDIS DATA POOL" "KML" "GDS" "EDG" "ON-LINE ARCHIVE"]
-  "GET SERVICE" ["OPENDAP DATA" "OPENDAP DIRECTORY (DODS)" "SOFTWARE PACKAGE" "ACCESS MOBILE APP" "MAP SERVICE" "THREADS CATALOG" "SUBSETTER" "OpenSearch" "WEB MAP SERVICE (WMS)" "DIF" "NOMADS" "OPENDAP DATA (DODS)" "SSW" "WEB COVERAGE SERVICE (WCS)" "WEB FEATURE SERVICE (WFS)" "WORKFLOW (SERVICE CHAIN)" "SERF" "ACCESS MAP VIEWER" "THREADS DATA" "ACCESS WEB SERVICE" "THREDDS DIRECTORY" "WEB MAP FOR TIME SERIES"]
-  "VIEW RELATED INFORMATION" ["DATA USAGE" "RECIPE" "USER'S GUIDE" "REQUIREMENTS AND DESIGN" "RADIOMETRIC AND GEOMETRIC CALIBRATION METHODS" "ALGORITHM THEORETICAL BASIS DOCUMENT" "PRODUCTION VERSION HISTORY" "PUBLICATIONS" "READ-ME" "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION" "PRODUCT HISTORY" "PROCESSING HISTORY" "USER FEEDBACK" "PI DOCUMENTATION" "GENERAL DOCUMENTATION" "CASE STUDY" "CALIBRATION DATA DOCUMENTATION" "DELIVERABLES CHECKLIST" "DATA QUALITY" "SCIENCE DATA PRODUCT VALIDATION" "HOW-TO" "PRODUCT USAGE" "PRODUCT QUALITY ASSESSMENT"]
-  "GET RELATED VISUALIZATION" ["GIBS" "GIOVANNI"]})
+(defn valid-types-for-url-content-type
+  "Returns all valid Types for URLContentType"
+  [url-content-type]
+  (keys (get valid-url-content-types-map url-content-type)))
 
-(def type->url-content-type
- "Get the URLContentType from the type"
- {"DATA SET LANDING PAGE" "CollectionURL"
-  "DOI" "CollectionURL"
-  "EXTENDED METADATA" "CollectionURL"
-  "PROFESSIONAL HOME PAGE" "CollectionURL"
-  "PROJECT HOME PAGE" "CollectionURL"
-  "GET DATA" "DistributionURL"
-  "GET SERVICE" "DistributionURL"
-  "VIEW RELATED INFORMATION" "PublicationURL"
-  "GET RELATED VISUALIZATION" "VisualizationURL"})
+(defn valid-subtypes-for-type
+  "Returns all SubTypes for URLContentType/Type combination"
+  [url-content-type type]
+  (get-in valid-url-content-types-map [url-content-type type]))
+
+(defn type->url-content-type
+  "Get the URLContentType from the type" 
+  [type]
+  (first
+    (for [url-content-type (keys valid-url-content-types-map)
+          :when (some #(= type %) (valid-types-for-url-content-type url-content-type))]
+      url-content-type)))
 
 (def default-url-type
  {:URLContentType "PublicationURL"
