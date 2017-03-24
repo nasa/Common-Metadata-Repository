@@ -5,7 +5,7 @@
 
 (def cmr-metadata-preview-repo
   "Defines the repo url of cmr_metadata_preview project"
-  "***REMOVED***scm/cmr/cmr_metadata_preview.git")
+  "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git")
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
@@ -13,7 +13,7 @@
 
 (defproject nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
   :description "Renders collections as HTML"
-  :url "***REMOVED***projects/CMR/repos/cmr/browse/collection-renderer-lib"
+  :url "***REMOVED***browse/collection-renderer-lib"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]

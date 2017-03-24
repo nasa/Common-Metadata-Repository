@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"
   :description "Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST."
-  :url "***REMOVED***projects/CMR/repos/cmr/browse/bootstrap-app"
+  :url "***REMOVED***browse/bootstrap-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [clj-http "2.0.0"]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]

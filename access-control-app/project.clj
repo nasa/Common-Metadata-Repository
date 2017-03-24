@@ -13,7 +13,7 @@
 
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
-  :url "***REMOVED***projects/CMR/repos/cmr/browse/access-control-app"
+  :url "***REMOVED***browse/access-control-app"
   :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
                            [compojure "1.5.1"]
                            [ring/ring-core "1.5.0"]

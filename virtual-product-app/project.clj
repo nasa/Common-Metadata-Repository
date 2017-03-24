@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"
   :description "Adds virtual products to the CMR."
-  :url "***REMOVED***projects/CMR/repos/cmr/browse/virtual-product-app"
+  :url "***REMOVED***browse/virtual-product-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]

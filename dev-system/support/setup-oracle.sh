@@ -7,6 +7,14 @@
 # non-zero exit code even though manually running lein create-user for an app returns 0 exit code
 # lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" create-user
 
+# Fail the script if the required environment variables are not set.
+if [ -z "${CMR_METADATA_DB_PASSWORD}" ] || 
+   [ -z "${CMR_BOOTSTRAP_PASSWORD}" ] || 
+   [ -z "${CMR_INGEST_PASSWORD}" ]; then
+  echo "Failed running the script because one or more of the following environment variables are not set: CMR_METADATA_DB_PASSWORD, CMR_BOOTSTRAP_PASSWORD and CMR_INGEST_PASSWORD" >&2
+ exit 1
+fi 
+
 date && echo "Creating database users" &&
 for i in metadata-db-app bootstrap-app ingest-app; do
   (cd $i && lein create-user)

@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"
   :description "Library containing application services code common to multiple CMR applications."
-  :url "***REMOVED***projects/CMR/repos/cmr/browse/common-app-lib"
+  :url "***REMOVED***browse/common-app-lib"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [compojure "1.5.1"]
                  [ring/ring-core "1.5.0"]

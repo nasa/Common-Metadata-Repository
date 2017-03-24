@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"
   :description "This is the indexer application for the CMR. It is responsible for indexing modified data into Elasticsearch."
-  :url "***REMOVED***projects/CMR/repos/cmr/browse/indexer-app"
+  :url "***REMOVED***browse/indexer-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]

@@ -89,7 +89,7 @@ See the DSL documentation and existing formats for examples.
 
 ### 6. Update the schemas in the EMFD project
 
-Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***projects/EMFD/repos/unified-metadata-model/
+Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***
 
 ## Adding a new schema version
 
@@ -120,7 +120,7 @@ Update any tests that use umm-spec.
 
 ### 6. Add the schema to the EMFD project
 
-Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***projects/EMFD/repos/unified-metadata-model/
+Update the EMFD project with the new directory. The repo can be located here: ***REMOVED***
 
 Create a pull request that includes the systems engineering team.
 
