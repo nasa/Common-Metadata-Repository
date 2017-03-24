@@ -94,6 +94,71 @@
               :warnings (:warnings response))
        response))))
 
+(defn umm-c-collection->concept
+  "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
+  ([collection]
+   (umm-c-collection->concept collection :echo10))
+  ([collection format-key]
+   (let [format (mime-types/format->mime-type format-key)]
+     (merge {:concept-type :collection
+             :provider-id (or (:provider-id collection) "PROV1")
+             :native-id (or (:native-id collection) (item->native-id collection))
+             :metadata (when-not (:deleted collection)
+                         (umm-spec/generate-metadata
+                          context
+                          (dissoc collection :provider-id) format-key))
+             :format format}
+            (when (:concept-id collection)
+              {:concept-id (:concept-id collection)})
+            (when (:revision-id collection)
+              {:revision-id (:revision-id collection)})))))
+
+(defn ingest-umm-spec-collection
+  "Ingests UMM-C collection. Returns it with concept-id, revision-id, and provider-id set on it.
+  Accepts a map of some optional arguments. The options are:
+
+  * :format - The XML Metadata format to use.
+  * :token - The token to use.
+  * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
+  * :client-id - The client-id to use
+  for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
+  Setting it to true will skip this check. Set it true when testing ingest failure cases.
+  * :validate-keywords - true or false to indicate if the validate keywords header should be sent
+  to enable keyword validation. Defaults to false.
+  * :validate-umm-c  - true to enable the return of the UMM-C validation errors. Otherwise, the config values
+  of return-umm-json-validation-errors and return-umm-spec-validation-errors will be used"
+  ([provider-id item]
+   (ingest provider-id item nil))
+  ([provider-id item options]
+   (let [format-key (get options :format :echo10)
+         response (ingest/ingest-concept
+                    (item->concept (assoc item :provider-id provider-id) format-key)
+                    (select-keys options [:token
+                                          :client-id
+                                          :user-id
+                                          :validate-keywords
+                                          :validate-umm-c
+                                          :accept-format
+                                          :warnings]))
+         status (:status response)]
+
+     ;; This allows this to be used from many places where we don't expect a failure but if there is
+     ;; one we'll be alerted immediately instead of through a side effect like searches failing.
+     (when (and (not (:allow-failure? options)) (not (#{200 201} status)))
+       (throw (Exception. (str "Ingest failed when expected to succeed: "
+                               (pr-str response)))))
+
+     (if (#{200 201} status)
+       (assoc item
+              :status status
+              :provider-id provider-id
+              :user-id (:user-id options)
+              :concept-id (:concept-id response)
+              :revision-id (:revision-id response)
+              :format-key format-key
+              :warnings (:warnings response))
+       response))))
+
 (defn remove-ingest-associated-keys
   "Removes the keys associated into the item from the ingest function."
   [item]

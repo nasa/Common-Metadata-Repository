@@ -2,17 +2,18 @@
   "CMR Ingest keyword validation integration tests"
   (:require
     [clojure.test :refer :all]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.common.util :refer [are2]]
+    [cmr.ingest.services.messages :as msg]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
-    [cmr.common.util :refer [are2]]
-    [cmr.ingest.services.messages :as msg]))
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (defn assert-invalid
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
-   (let [response (d/ingest "PROV1" (dc/collection coll-attributes)
+   (let [response (d/ingest "PROV1" (data-umm-c/collection coll-attributes)
                             (merge {:allow-failure? true} options))]
      (is (= {:status 422
              :errors [{:path field-path
@@ -23,9 +24,9 @@
   ([coll-attributes]
    (assert-valid coll-attributes nil))
   ([coll-attributes options]
-   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
+   (let [collection (assoc (data-umm-c/collection coll-attributes) :native-id (:native-id coll-attributes))
          provider-id (get coll-attributes :provider-id "PROV1")
-         response (d/ingest provider-id collection options)]
+         response (d/ingest-umm-spec-collection provider-id collection options)]
      (is (#{{:status 200} {:status 201}} (select-keys response [:status :errors]))))))
 
 (defn assert-invalid-keywords
@@ -41,8 +42,9 @@
 (deftest collection-keyword-validation-test
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
   (testing "Keyword validation using validation endpoint"
-    (let [concept (dc/collection-concept {:platforms [(dc/platform {:short-name "foo"
-                                                                    :long-name "Airbus A340-600"})]})
+    (let [concept (data-umm-c/collection-concept
+                   {:Platforms [(data-umm-c/platform {:ShortName "foo"
+                                                      :LongName "Airbus A340-600"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
@@ -53,7 +55,7 @@
   (testing "Project keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords
-            {:projects [(assoc (dc/project short-name "") :long-name long-name)]}
+            {:Projects [(assoc (data-umm-c/project short-name "") :LongName long-name)]}
             ["Projects" 0]
             [(format (str "Project short name [%s] and long name [%s]"
                           " was not a valid keyword combination.")
@@ -76,7 +78,7 @@
 
     (are2 [short-name long-name]
           (assert-valid-keywords
-            {:projects [(assoc (dc/project short-name "") :long-name long-name)]})
+            {:Projects [(assoc (dc/project short-name "") :long-name long-name)]})
           "Exact match"
           "EUDASM" "European Digital Archive of Soil Maps"
 
@@ -89,7 +91,7 @@
   (testing "Platform keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords
-            {:platforms [(dc/platform {:short-name short-name :long-name long-name})]}
+            {:Platforms [(dc/platform {:ShortName short-name :LongName long-name})]}
             ["Platforms" 0]
             [(format (str "Platform short name [%s] and long name [%s]"
                           " was not a valid keyword combination.")
@@ -109,7 +111,7 @@
 
     (are2 [short-name long-name]
           (assert-valid-keywords
-            {:platforms [(dc/platform {:short-name short-name :long-name long-name})]})
+            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name})]})
           "Exact match"
           "A340-600" "Airbus A340-600"
 
@@ -119,12 +121,12 @@
   (testing "Instrument keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords
-            {:platforms
-             [(dc/platform
-                {:short-name "A340-600"
-                 :long-name "Airbus A340-600"
-                 :instruments [(dc/instrument {:short-name short-name
-                                               :long-name long-name})]})]}
+            {:Platforms
+             [(data-umm-c/platform
+                {:ShortName "A340-600"
+                 :LongName "Airbus A340-600"
+                 :Instruments [(data-umm-c/instrument {:ShortName short-name
+                                                       :LongName long-name})]})]}
             ["Platforms" 0 "Instruments" 0]
             [(format (str "Instrument short name [%s] and long name [%s]"
                           " was not a valid keyword combination.")
@@ -143,12 +145,12 @@
 
     (are2 [short-name long-name]
           (assert-valid-keywords
-            {:platforms
-             [(dc/platform
-                {:short-name "A340-600"
-                 :long-name "Airbus A340-600"
-                 :instruments [(dc/instrument {:short-name short-name
-                                               :long-name long-name})]})]})
+            {:Platforms
+             [(data-umm-c/platform
+                {:ShortName "A340-600"
+                 :LongName "Airbus A340-600"
+                 :Instruments [(data-umm-c/instrument {:ShortName short-name
+                                                       :LongName long-name})]})]})
           "Exact match"
           "ATM" "Airborne Topographic Mapper"
 
@@ -159,60 +161,36 @@
           "Atm" "aIRBORNE Topographic Mapper"))
 
   (testing "Science Keyword validation"
-    (are [attribs attribs-umm-c]
-         (let [sk (dc/science-keyword attribs)]
+    (are [attribs]
+         (let [sk (data-umm-c/science-keyword attribs)]
            (assert-invalid-keywords
-             {:science-keywords [sk]}
+             {:ScienceKeywords [sk]}
              ["ScienceKeywords" 0]
-             [(msg/science-keyword-not-matches-kms-keywords attribs-umm-c)]))
+             [(msg/science-keyword-not-matches-kms-keywords attribs)]))
 
-         {:category "foo"
-          :topic "DATA ANALYSIS AND VISUALIZATION"
-          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
          {:Category "foo"
           :Topic "DATA ANALYSIS AND VISUALIZATION"
           :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
 
-         {:category "EARTH SCIENCE SERVICES"
-          :topic "foo"
-          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
          {:Category "EARTH SCIENCE SERVICES"
           :Topic "foo"
           :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
 
-         {:category "EARTH SCIENCE SERVICES"
-          :topic "DATA ANALYSIS AND VISUALIZATION"
-          :term "foo"}
          {:Category "EARTH SCIENCE SERVICES"
           :Topic "DATA ANALYSIS AND VISUALIZATION"
           :Term "foo"}
 
-         {:category "EARTH SCIENCE SERVICES"
-          :topic "DATA ANALYSIS AND VISUALIZATION"
-          :term "GEOGRAPHIC INFORMATION SYSTEMS"
-          :variable-level-1 "foo"}
          {:Category "EARTH SCIENCE SERVICES"
           :Topic "DATA ANALYSIS AND VISUALIZATION"
           :Term "GEOGRAPHIC INFORMATION SYSTEMS"
           :VariableLevel1 "foo"}
 
-         {:category "EARTH SCIENCE"
-          :topic "ATMOSPHERE"
-          :term "AEROSOLS"
-          :variable-level-1 "AEROSOL OPTICAL DEPTH/THICKNESS"
-          :variable-level-2 "foo"}
          {:Category "EARTH SCIENCE"
           :Topic "ATMOSPHERE"
           :Term "AEROSOLS"
           :VariableLevel1 "AEROSOL OPTICAL DEPTH/THICKNESS"
           :VariableLevel2 "foo"}
 
-         {:category "EARTH SCIENCE"
-          :topic "ATMOSPHERE"
-          :term "ATMOSPHERIC TEMPERATURE"
-          :variable-level-1 "SURFACE TEMPERATURE"
-          :variable-level-2 "MAXIMUM/MINIMUM TEMPERATURE"
-          :variable-level-3 "foo"}
          {:Category "EARTH SCIENCE"
           :Topic "ATMOSPHERE"
           :Term "ATMOSPHERIC TEMPERATURE"
@@ -220,43 +198,40 @@
           :VariableLevel2 "MAXIMUM/MINIMUM TEMPERATURE"
           :VariableLevel3 "foo"}
 
-         ;; Invalid combination. Topic is valid but not with these other terms
-         {:category "EARTH SCIENCE SERVICES"
-          :topic "ATMOSPHERE"
-          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
+         ;; Invalid combination. Topic is valid but not with these other Terms
          {:Category "EARTH SCIENCE SERVICES"
           :Topic "ATMOSPHERE"
           :Term "GEOGRAPHIC INFORMATION SYSTEMS"})
 
     (are [attribs]
-         (assert-valid-keywords {:science-keywords [(dc/science-keyword attribs)]})
+         (assert-valid-keywords {:ScienceKeywords [(data-umm-c/science-keyword attribs)]})
 
-         {:category "EARTH SCIENCE SERVICES"
-          :topic "DATA ANALYSIS AND VISUALIZATION"
-          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
+         {:Category "EARTH SCIENCE SERVICES"
+          :Topic "DATA ANALYSIS AND VISUALIZATION"
+          :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
 
-         {:category "EARTH SCIENCE SERVICES"
-          :topic "DATA ANALYSIS AND VISUALIZATION"
-          :term "GEOGRAPHIC INFORMATION SYSTEMS"
-          :variable-level-1 "MOBILE GEOGRAPHIC INFORMATION SYSTEMS"}
+         {:Category "EARTH SCIENCE SERVICES"
+          :Topic "DATA ANALYSIS AND VISUALIZATION"
+          :Term "GEOGRAPHIC INFORMATION SYSTEMS"
+          :VariableLevel1 "MOBILE GEOGRAPHIC INFORMATION SYSTEMS"}
 
-         {:category "EARTH SCIENCE"
-          :topic "ATMOSPHERE"
-          :term "AEROSOLS"
-          :variable-level-1 "AEROSOL OPTICAL DEPTH/THICKNESS"
-          :variable-level-2 "ANGSTROM EXPONENT"}
+         {:Category "EARTH SCIENCE"
+          :Topic "ATMOSPHERE"
+          :Term "AEROSOLS"
+          :VariableLevel1 "AEROSOL OPTICAL DEPTH/THICKNESS"
+          :VariableLevel2 "ANGSTROM EXPONENT"}
 
-         {:category "EARTH SCIENCE"
-          :topic "ATMOSPHERE"
-          :term "ATMOSPHERIC TEMPERATURE"
-          :variable-level-1 "SURFACE TEMPERATURE"
-          :variable-level-2 "MAXIMUM/MINIMUM TEMPERATURE"
-          :variable-level-3 "24 HOUR MAXIMUM TEMPERATURE"
-          :detailed-variable-level "This is ignored"}
+         {:Category "EARTH SCIENCE"
+          :Topic "ATMOSPHERE"
+          :Term "ATMOSPHERIC TEMPERATURE"
+          :VariableLevel1 "SURFACE TEMPERATURE"
+          :VariableLevel2 "MAXIMUM/MINIMUM TEMPERATURE"
+          :VariableLevel3 "24 HOUR MAXIMUM TEMPERATURE"
+          :DetailedVariable "This is ignored"}
 
-         {:category "EARTH SCiENCE"
-          :topic "ATMOsPHERE"
-          :term "ATMOSpHERIC TEMPERATURE"
-          :variable-level-1 "SuRFACE TEMPERATURE"
-          :variable-level-2 "MAXiMUM/MiNiMUM TEMPERATURE"
-          :variable-level-3 "24 HOUR MAXiMUM TEMPERATURE"})))
+         {:Category "EARTH SCiENCE"
+          :Topic "ATMOsPHERE"
+          :Term "ATMOSpHERIC TEMPERATURE"
+          :VariableLevel1 "SuRFACE TEMPERATURE"
+          :VariableLevel2 "MAXiMUM/MiNiMUM TEMPERATURE"
+          :VariableLevel3 "24 HOUR MAXiMUM TEMPERATURE"})))

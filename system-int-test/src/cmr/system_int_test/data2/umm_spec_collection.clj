@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.data2.umm-spec-collection
   "Contains data generators for example based testing in system integration tests."
-  (:require 
+  (:require
     [clj-time.core :as t]
     [clj-time.format :as f]
     [cmr.common.date-time-parser :as p]
@@ -12,7 +12,7 @@
     [cmr.umm-spec.temporal :as umm-spec-temporal]
     [cmr.umm-spec.util :as u]))
 
-(defn additional-attribute 
+(defn additional-attribute
   "Creates an AdditionalAttribute"
   [aa]
   (let [{:keys [Name Group Description DataType Value ParameterRangeBegin ParameterRangeEnd]} aa]
@@ -21,17 +21,17 @@
         {:Name Name
          :Group Group
          :Description (or Description "Generated")
-         :DataType DataType 
+         :DataType DataType
          :ParameterRangeBegin (aa/gen-value DataType ParameterRangeBegin)
          :ParameterRangeEnd (aa/gen-value DataType ParameterRangeEnd)})
       (umm-cmn/map->AdditionalAttributeType
         {:Name Name
          :Group Group
          :Description (or Description "Generated")
-         :DataType DataType 
+         :DataType DataType
          :Value (aa/gen-value DataType Value)}))))
 
-(defn tiling-identification-system 
+(defn tiling-identification-system
   "Creates TilingIdentificationSystem specific attribute"
   [name]
   (umm-cmn/map->TilingIdentificationSystemType
@@ -44,12 +44,12 @@
   [& names]
   (map tiling-identification-system names))
 
-(defn data-dates 
+(defn data-dates
   "Returns DataDates field of umm-spec collection"
   [datadates]
   (for [datadate datadates]
     (umm-cmn/map->DateType {:Date (p/parse-datetime (:Date datadate))
-                            :Type (:Type datadate)}))) 
+                            :Type (:Type datadate)})))
 
 (defn temporal-extent
   "Return a temporal extent with the given date times"
@@ -66,7 +66,7 @@
       (umm-spec-temporal/temporal {:SingleDateTimes [single]}))))
 
 (defn science-keyword
-  "Return a science keyword based on the given attributes." 
+  "Return a science keyword based on the given attributes."
   [attribs]
   (umm-cmn/map->ScienceKeywordType attribs))
 
@@ -150,11 +150,11 @@
     {:ShortName project-sn
      :LongName (d/unique-str long-name)}))
 
-(defn data-center 
+(defn data-center
   "Return archive/ processing center"
   [roles center-name]
   (umm-cmn/map->DataCenterType
-    {:Roles roles 
+    {:Roles roles
      :ShortName center-name}))
 
 (defn related-url
@@ -169,39 +169,41 @@
   [attributes]
   (let [{:keys [sc hsd vsds gsr orbit]} attributes]
     (umm-cmn/map->SpatialExtentType {:SpatialCoverageType sc
-                                     :HorizontalSpatialDomain 
+                                     :HorizontalSpatialDomain
                                        (when hsd (umm-cmn/map->HorizontalSpatialDomainType hsd))
-                                     :VerticalSpatialDomains 
+                                     :VerticalSpatialDomains
                                        (when vsds (map umm-cmn/map->VerticalSpatialDomainType vsds))
                                      :GranuleSpatialRepresentation gsr
                                      :OrbitParameters (when orbit (umm-cmn/map->OrbitParametersType orbit))})))
 
-(defn contact-person 
+(defn contact-person
   "Creates a Personnel record for the opendata tests."
   ([first-name last-name email]
    (contact-person first-name last-name email "dummy"))
   ([first-name last-name email role]
    (let [contacts (when email
-                    [(umm-cmn/map->ContactInformationType 
+                    [(umm-cmn/map->ContactInformationType
                        {:ContactMechanisms [(umm-cmn/map->ContactMechanismType
                                               {:Type :email
-                                               :Value email})]})])]                                            
+                                               :Value email})]})])]
      (umm-cmn/map->ContactPersonType {:FirstName first-name
                                       :LastName last-name
                                       :ContactInformation contacts
                                       :Roles [role]}))))
 
-(def minimal-umm-c 
+(def minimal-umm-c
   "This is the minimum valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
-                 {:ShortName "Platform"
-                  :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+                 {:ShortName "A340-600" :LongName "Airbus A340-600"})]
    :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
    :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"
                                                :URLContentType "DistributionURL"
                                                :Type "GET DATA"})]
    :DataCenters [u/not-provided-data-center]
-   :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+   :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
+                      {:Category "EARTH SCIENCE SERVICES"
+                       :Topic "DATA ANALYSIS AND VISUALIZATION"
+                       :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
    :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
    :ShortName "short"
@@ -229,5 +231,4 @@
      (-> attribs
          collection
          (assoc :provider-id provider-id :native-id native-id)
-         (d/item->concept concept-format)))))
-
+         (d/umm-c-collection->concept concept-format)))))
