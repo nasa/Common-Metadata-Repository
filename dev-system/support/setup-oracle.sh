@@ -11,7 +11,7 @@
 if [ -z "${CMR_METADATA_DB_PASSWORD}" ] || 
    [ -z "${CMR_BOOTSTRAP_PASSWORD}" ] || 
    [ -z "${CMR_INGEST_PASSWORD}" ]; then
-  echo "The following environment variables need to be set before running this script: CMR_METADATA_DB_PASSWORD, CMR_BOOTSTRAP_PASSWORD and CMR_INGEST_PASSWORD" >&2
+  echo "Failed running the script because one or more of the following environment variables are not set: CMR_METADATA_DB_PASSWORD, CMR_BOOTSTRAP_PASSWORD and CMR_INGEST_PASSWORD" >&2
  exit 1
 fi 
 
