@@ -3,8 +3,8 @@
   (:require 
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -12,31 +12,57 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-platform
-  (let [p1 (dc/platform {:short-name "platform_Sn A"})
-        p2 (dc/platform {:short-name "platform_Sn B"})
-        p3 (dc/platform {:short-name "platform_SnA"})
-        p4 (dc/platform {:short-name "platform_Snx"})
-        p5 (dc/platform {:short-name "PLATFORM_X"})
-        p6 (dc/platform {:short-name "platform_x"})
+  (let [p1 (data-umm-c/platform {:ShortName "platform_Sn A"})
+        p2 (data-umm-c/platform {:ShortName "platform_Sn B"})
+        p3 (data-umm-c/platform {:ShortName "platform_SnA"})
+        p4 (data-umm-c/platform {:ShortName "platform_Snx"})
+        p5 (data-umm-c/platform {:ShortName "PLATFORM_X"})
+        p6 (data-umm-c/platform {:ShortName "platform_x"})
 
         ;; Platforms to verify the ability to search by KMS platform subfields
-        p7 (dc/platform {:short-name "DMSP 5B/F3"})
-        p8 (dc/platform {:short-name "diaDEM-1d"})
+        p7 (data-umm-c/platform {:ShortName "DMSP 5B/F3"})
+        p8 (data-umm-c/platform {:ShortName "diaDEM-1d"})
 
-        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1 p7]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2 p8]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
-        coll4 (d/ingest "PROV2" (dc/collection {:platforms [p3]}))
-        coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
-        coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "PROV2" (dc/collection {}))
+        coll1 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p7]
+                                                        :EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p2 p8]
+                                                        :EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll3 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p2]
+                                                        :EntryTitle "E3"
+                                                        :ShortName "S3"
+                                                        :Version "V3"}))
+        coll4 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p3]
+                                                        :EntryTitle "E4"
+                                                        :ShortName "S4"
+                                                        :Version "V4"}))
+        coll5 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p4]
+                                                        :EntryTitle "E5"
+                                                        :ShortName "S5"
+							:Version "V5"}))
+        coll6 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p5]
+                                                        :EntryTitle "E6"
+                                                        :ShortName "S6"
+                                                        :Version "V6"}))
+        coll7 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p6]
+                                                        :EntryTitle "E7"
+                                                        :ShortName "S7"
+                                                        :Version "V7"}))
+        coll8 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E8"
+                                                        :ShortName "S8"
+                                                        :Version "V8"}))
         ;; Added to test SMAP ISO platform and instrument support - note that this collection is
         ;; found in KMS with a category of "Earth Observation Satellites"
         coll9 (d/ingest-concept-with-metadata-file "data/iso_smap/sample_smap_iso_collection.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
-                                                    :format-key :iso-smap})]
+                                                    :format-key :iso-smap
+                                                    :EntryTitle "E9"
+                                                    :ShortName "S9"
+                                                    :Version "V9"})]
 
     (index/wait-until-indexed)
 
@@ -129,38 +155,67 @@
            [coll1] {:platform {:any "7ed12e98*" :pattern true}}))))
 
 (deftest search-by-instrument
-  (let [i1 (dc/instrument {:short-name "instrument_Sn A"})
-        i2 (dc/instrument {:short-name "instrument_Sn B"})
-        i3 (dc/instrument {:short-name "instrument_SnA"})
-        i4 (dc/instrument {:short-name "instrument_Snx"})
-        i5 (dc/instrument {:short-name "InstruMENT_X"})
-        i6 (dc/instrument {:short-name "instrument_x"})
+  (let [i1 (data-umm-c/instrument {:ShortName "instrument_Sn A"})
+        i2 (data-umm-c/instrument {:ShortName "instrument_Sn B"})
+        i3 (data-umm-c/instrument {:ShortName "instrument_SnA"})
+        i4 (data-umm-c/instrument {:ShortName "instrument_Snx"})
+        i5 (data-umm-c/instrument {:ShortName "InstruMENT_X"})
+        i6 (data-umm-c/instrument {:ShortName "instrument_x"})
 
         ;; Instruments to verify the ability to search by KMS instrument subfields
-        i7 (dc/instrument {:short-name "atm"})
-        i8 (dc/instrument {:short-name "LVIS"})
+        i7 (data-umm-c/instrument {:ShortName "atm"})
+        i8 (data-umm-c/instrument {:ShortName "LVIS"})
 
-        p1 (dc/platform {:short-name "platform_1" :instruments [i1 i7]})
-        p2 (dc/platform {:short-name "platform_2" :instruments [i2 i8]})
-        p3 (dc/platform {:short-name "platform_3" :instruments [i3]})
-        p4 (dc/platform {:short-name "platform_4" :instruments [i4]})
-        p5 (dc/platform {:short-name "platform_5" :instruments [i1 i2]})
-        p6 (dc/platform {:short-name "platform_6" :instruments [i5]})
-        p7 (dc/platform {:short-name "platform_7" :instruments [i6]})
-        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
-        coll4 (d/ingest "PROV2" (dc/collection {:platforms [p3]}))
-        coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
-        coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "PROV2" (dc/collection {:platforms [p7]}))
-        coll9 (d/ingest "PROV2" (dc/collection {}))
+        p1 (data-umm-c/platform {:ShortName "platform_1" :Instruments [i1 i7]})
+        p2 (data-umm-c/platform {:ShortName "platform_2" :Instruments [i2 i8]})
+        p3 (data-umm-c/platform {:ShortName "platform_3" :Instruments [i3]})
+        p4 (data-umm-c/platform {:ShortName "platform_4" :Instruments [i4]})
+        p5 (data-umm-c/platform {:ShortName "platform_5" :Instruments [i1 i2]})
+        p6 (data-umm-c/platform {:ShortName "platform_6" :Instruments [i5]})
+        p7 (data-umm-c/platform {:ShortName "platform_7" :Instruments [i6]})
+        coll1 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1]
+                                                        :EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
+                                                        :EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll3 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p2]
+                                                        :EntryTitle "E3"
+                                                        :ShortName "S3"
+                                                        :Version "V3"}))
+        coll4 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p3]
+                                                        :EntryTitle "E4"
+                                                        :ShortName "S4"
+                                                        :Version "V4"}))
+        coll5 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p4]
+                                                        :EntryTitle "E5"
+                                                        :ShortName "S5"
+                                                        :Version "V5"}))
+        coll6 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p5]
+                                                        :EntryTitle "E6"
+                                                        :ShortName "S6"
+                                                        :Version "V6"}))
+        coll7 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p6]
+                                                        :EntryTitle "E7"
+                                                        :ShortName "S7"
+                                                        :Version "V7"}))
+        coll8 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p7]
+                                                        :EntryTitle "E8"
+                                                        :ShortName "S8"
+                                                        :Version "V8"}))
+        coll9 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E9"
+                                                        :ShortName "S9"
+                                                        :Version "V9"}))
         ;; Added to test SMAP ISO platform and instrument support
         coll10 (d/ingest-concept-with-metadata-file "data/iso_smap/sample_smap_iso_collection.xml"
                                                     {:provider-id "PROV1"
                                                      :concept-type :collection
-                                                     :format-key :iso-smap})]
+                                                     :format-key :iso-smap
+                                                     :EntryTitle "E10"
+                                                     :ShortName "S10"
+                                                     :Version "V10"})]
 
     (index/wait-until-indexed)
 
@@ -260,37 +315,68 @@
            [coll1 coll2] {:instrument {:any "c2428a35*" :pattern true}}))))
 
 (deftest search-by-sensor-short-names
-  (let [s1 (dc/sensor {:short-name "sensor_Sn A"})
-        s2 (dc/sensor {:short-name "sensor_Sn B"})
-        s3 (dc/sensor {:short-name "sensor_SnA"})
-        s4 (dc/sensor {:short-name "sensor_Snx"})
-        s5 (dc/sensor {:short-name "sensor_x"})
-        s6 (dc/sensor {:short-name "SenSOR_X"})
-        i1 (dc/instrument {:short-name "instrument_1" :sensors [s1]})
-        i2 (dc/instrument {:short-name "instrument_2" :sensors [s2]})
-        i3 (dc/instrument {:short-name "instrument_3" :sensors [s3]})
-        i4 (dc/instrument {:short-name "instrument_4" :sensors [s4]})
-        i5 (dc/instrument {:short-name "instrument_5" :sensors [s1 s2]})
-        i6 (dc/instrument {:short-name "instrument_6" :sensors [s5]})
-        i7 (dc/instrument {:short-name "instrument_7" :sensors [s6]})
-        p1 (dc/platform {:short-name "platform_1" :instruments [i1]})
-        p2 (dc/platform {:short-name "platform_2" :instruments [i2]})
-        p3 (dc/platform {:short-name "platform_3" :instruments [i3]})
-        p4 (dc/platform {:short-name "platform_4" :instruments [i4]})
-        p5 (dc/platform {:short-name "platform_5" :instruments [i5]})
-        p6 (dc/platform {:short-name "platform_6" :instruments [i1 i2]})
-        p7 (dc/platform {:short-name "platform_7" :instruments [i6]})
-        p8 (dc/platform {:short-name "platform_8" :instruments [i7]})
-        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
-        coll4 (d/ingest "PROV2" (dc/collection {:platforms [p3]}))
-        coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
-        coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
-        coll8 (d/ingest "PROV2" (dc/collection {:platforms [p7]}))
-        coll9 (d/ingest "PROV2" (dc/collection {:platforms [p8]}))
-        coll10 (d/ingest "PROV2" (dc/collection {}))]
+  (let [;; child instrument
+        s1 (data-umm-c/instrument {:ShortName "sensor_Sn A"})
+        s2 (data-umm-c/instrument {:ShortName "sensor_Sn B"})
+        s3 (data-umm-c/instrument {:ShortName "sensor_SnA"})
+        s4 (data-umm-c/instrument {:ShortName "sensor_Snx"})
+        s5 (data-umm-c/instrument {:ShortName "sensor_x"})
+        s6 (data-umm-c/instrument {:ShortName "SenSOR_X"})
+        ;; instrument
+        i1 (data-umm-c/instrument {:ShortName "instrument_1" :ComposedOf [s1]})
+        i2 (data-umm-c/instrument {:ShortName "instrument_2" :ComposedOf [s2]})
+        i3 (data-umm-c/instrument {:ShortName "instrument_3" :ComposedOf [s3]})
+        i4 (data-umm-c/instrument {:ShortName "instrument_4" :ComposedOf [s4]})
+        i5 (data-umm-c/instrument {:ShortName "instrument_5" :ComposedOf [s1 s2]})
+        i6 (data-umm-c/instrument {:ShortName "instrument_6" :ComposedOf [s5]})
+        i7 (data-umm-c/instrument {:ShortName "instrument_7" :ComposedOf [s6]})
+        p1 (data-umm-c/platform {:ShortName "platform_1" :Instruments [i1]})
+        p2 (data-umm-c/platform {:ShortName "platform_2" :Instruments [i2]})
+        p3 (data-umm-c/platform {:ShortName "platform_3" :Instruments [i3]})
+        p4 (data-umm-c/platform {:ShortName "platform_4" :Instruments [i4]})
+        p5 (data-umm-c/platform {:ShortName "platform_5" :Instruments [i5]})
+        p6 (data-umm-c/platform {:ShortName "platform_6" :Instruments [i1 i2]})
+        p7 (data-umm-c/platform {:ShortName "platform_7" :Instruments [i6]})
+        p8 (data-umm-c/platform {:ShortName "platform_8" :Instruments [i7]})
+        coll1 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1]
+                                                        :EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
+                                                        :EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll3 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p2]
+                                                        :EntryTitle "E3"
+                                                        :ShortName "S3"
+                                                        :Version "V3"}))
+        coll4 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p3]
+                                                        :EntryTitle "E4"
+                                                        :ShortName "S4"
+                                                        :Version "V4"}))
+        coll5 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p4]
+                                                        :EntryTitle "E5"
+                                                        :ShortName "S5"
+                                                        :Version "V5"}))
+        coll6 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p5]
+                                                        :EntryTitle "E6"
+                                                        :ShortName "S6"
+                                                        :Version "V6"}))
+        coll7 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p6]
+                                                        :EntryTitle "E7"
+                                                        :ShortName "S7"
+                                                        :Version "V7"}))
+        coll8 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p7]
+                                                        :EntryTitle "E8"
+                                                        :ShortName "S8"
+                                                        :Version "V8"}))
+        coll9 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p8]
+                                                        :EntryTitle "E9"
+                                                        :ShortName "S9"
+                                                        :Version "V9"}))
+        coll10 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E10"
+                                                        :ShortName "S10"
+                                                        :Version "V10"}))]
 
     (index/wait-until-indexed)
 

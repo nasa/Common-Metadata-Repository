@@ -18,9 +18,9 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.serialize :as srl]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -127,16 +127,24 @@
 
 
 (deftest spatial-search-test
-  (let [geodetic-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))
-        cartesian-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :cartesian})}))
+  (let [geodetic-coll (d/ingest "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                                                                :EntryTitle "E1"
+                                                                :ShortName "S1"
+                                                                :Version "V1"}))
+        cartesian-coll (d/ingest "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "CARTESIAN"})
+                                                                 :EntryTitle "E2"
+                                                                 :ShortName "S2"
+                                                                 :Version "V2"}))
+        geodetic-coll-cid (get-in geodetic-coll [:concept-id])
+        cartesian-coll-cid (get-in cartesian-coll [:concept-id])
         make-gran (fn [ur & shapes]
                     (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
-                      (d/ingest "PROV1" (dg/granule geodetic-coll
+                      (d/ingest "PROV1" (dg/granule-with-umm-spec-collection geodetic-coll geodetic-coll-cid 
                                                     {:granule-ur ur
                                                      :spatial-coverage (apply dg/spatial shapes)}))))
         make-cart-gran (fn [ur & shapes]
                          (let [shapes (map (partial umm-s/set-coordinate-system :cartesian) shapes)]
-                           (d/ingest "PROV1" (dg/granule cartesian-coll
+                           (d/ingest "PROV1" (dg/granule-with-umm-spec-collection cartesian-coll cartesian-coll-cid 
                                                          {:granule-ur ur
                                                           :spatial-coverage (apply dg/spatial shapes)}))))
 
@@ -414,10 +422,11 @@
          normal-poly-cart]))))
 
 (deftest no-lr-spatial-search-test
-  (let [geodetic-coll (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))
+  (let [geodetic-coll (d/ingest "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})}))
+        geodetic-coll-cid (get-in geodetic-coll [:concept-id])
         make-gran (fn [ur & shapes]
                     (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
-                      (d/ingest "PROV1" (dg/granule geodetic-coll
+                      (d/ingest "PROV1" (dg/granule-with-umm-spec-collection geodetic-coll geodetic-coll-cid 
                                                     {:granule-ur ur
                                                      :spatial-coverage (apply dg/spatial shapes)}))))
         no-lr (make-gran "no-lr" (polygon 0.0 0.0, -179.9998 -89.9999, 0.0 -89.9999, 0.0 0.0))]

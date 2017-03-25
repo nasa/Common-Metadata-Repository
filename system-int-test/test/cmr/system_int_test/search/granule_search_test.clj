@@ -1,18 +1,19 @@
 (ns cmr.system-int-test.search.granule-search-test
   "Integration test for CMR granule search"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as s]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.common.services.messages :as msg]
-            [cmr.search.services.messages.common-messages :as smsg]
-            [cmr.common-app.services.search.messages :as cmsg]
-            [cmr.common-app.services.search.messages :as vmsg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require 
+    [clojure.string :as s]
+    [clojure.test :refer :all]
+    [cmr.common-app.services.search.messages :as cmsg]
+    [cmr.common-app.services.search.messages :as vmsg]
+    [cmr.common.services.messages :as msg]
+    [cmr.search.services.messages.common-messages :as smsg]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "CMR_T_PROV"}))
 
@@ -21,17 +22,23 @@
   (doseq [p ["PROV1" "PROV2" "CMR_T_PROV"]]
     (ingest/create-provider {:provider-guid (str "guid-" p) :provider-id p}))
 
-  (def coll1 (d/ingest "PROV1" (dc/collection {})))
-  (def gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))))
+  (def coll1 (d/ingest "PROV1" (data-umm-c/collection {})))
+  (def gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"}))))
 
 (deftest search-by-provider-id
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV2" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "Granule5"}))]
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "Granule4"}))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "Granule5"}))]
     (index/wait-until-indexed)
     (testing "search by non-existent provider id."
       (is (d/refs-match?
@@ -70,15 +77,27 @@
                          (search/find-refs-with-aql :granule [] {:dataCenterId "PROV1"}))))))
 
 (deftest search-by-dataset-id
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "OneCollectionV1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "AnotherCollectionV1"}))
-        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "OneCollectionV1"}))
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "OtherCollectionV1"}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "PROV2" (dg/granule coll3 {:granule-ur "Granule4"}))
-        gran5 (d/ingest "PROV2" (dg/granule coll4 {:granule-ur "Granule5"}))]
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "OneCollectionV1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "AnotherCollectionV1"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll3 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "OneCollectionV1"
+                                                        :ShortName "S3"
+                                                        :Version "V3"}))
+        coll4 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "OtherCollectionV1"
+                                                        :ShortName "S4"
+                                                        :Version "V4"}))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
+        coll3-cid (get-in coll3 [:concept-id])
+        coll4-cid (get-in coll4 [:concept-id])
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 coll3-cid {:granule-ur "Granule4"}))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll4 coll4-cid {:granule-ur "Granule5"}))]
     (index/wait-until-indexed)
 
     (testing "search granule by dataset id."
@@ -155,15 +174,21 @@
                   :granule-ur "sampleur3"}]})
 
 (deftest search-by-granule-ur
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV2" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"}))
-        gran4 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "Granule3"}))
-        gran5 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR1"}))
-        gran6 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "SampleUR2"}))
-        gran7 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur33"}))]
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "Granule3"}))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "SampleUR1"}))
+        gran6 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "SampleUR2"}))
+        gran7 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "sampleur33"}))]
     (index/wait-until-indexed)
 
     (testing "search granule by granule ur."
@@ -230,14 +255,20 @@
 
 
 (deftest search-by-cloud-cover
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV2" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 120}))
-        gran4 (d/ingest "PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
-        gran5 (d/ingest "PROV2" (dg/granule coll2 {:cloud-cover 0.0}))
-        gran6 (d/ingest "PROV2" (dg/granule coll2 {:granule-ur "sampleur3"}))]
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:cloud-cover 0.8}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:cloud-cover 30.0}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:cloud-cover 120}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:cloud-cover -60.0}))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:cloud-cover 0.0}))
+        gran6 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "sampleur3"}))]
     (index/wait-until-indexed)
     (testing "search granules with valid cloud-cover value"
       (are [cloud-cover items]
@@ -296,14 +327,18 @@
 
 ;; exclude granules by echo_granule_id or concept_id (including parent concept_id) params
 (deftest exclude-granules-by-echo-granule-n-concept-ids
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV2" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 0.8}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 30.0}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:cloud-cover 120}))
-        gran4 (d/ingest "PROV2" (dg/granule coll2 {:cloud-cover -60.0}))
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
         coll1-cid (get-in coll1 [:concept-id])
         coll2-cid (get-in coll2 [:concept-id])
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:cloud-cover 0.8}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:cloud-cover 30.0}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:cloud-cover 120}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:cloud-cover -60.0}))
         gran1-cid (get-in gran1 [:concept-id])
         gran2-cid (get-in gran2 [:concept-id])
         gran3-cid (get-in gran3 [:concept-id])
@@ -337,15 +372,19 @@
 
 ;; Find granules by echo_granule_id, echo_collection_id and concept_id params
 (deftest search-by-concept-id
-  (let [coll1 (d/ingest "PROV1" (dc/collection))
-        coll2 (d/ingest "PROV2" (dc/collection))
-        gran1 (d/ingest "PROV1" (dg/granule coll1))
-        gran2 (d/ingest "PROV1" (dg/granule coll1))
-        gran3 (d/ingest "PROV1" (dg/granule coll1))
-        gran4 (d/ingest "PROV2" (dg/granule coll2))
-        gran5 (d/ingest "PROV2" (dg/granule coll2))
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
         coll1-cid (get-in coll1 [:concept-id])
         coll2-cid (get-in coll2 [:concept-id])
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid))
         gran1-cid (get-in gran1 [:concept-id])
         gran2-cid (get-in gran2 [:concept-id])
         gran3-cid (get-in gran3 [:concept-id])

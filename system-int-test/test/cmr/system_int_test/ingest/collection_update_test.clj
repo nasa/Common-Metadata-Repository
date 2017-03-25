@@ -143,30 +143,30 @@
         (is (= [200 nil] [status errors]))))))
 
 (deftest collection-update-additional-attributes-int-range-test
-  (let [a1 (dc/psa {:name "int" :data-type :int :min-value 1 :max-value 10})
-        coll (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :product-specific-attributes [a1]}))
-        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "int" ["2"])]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "int" ["5"])]}))]
+  (let [a1 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10}) 
+        coll (d/ingest "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "parent-collection"
+                                  :ShortName "S1"
+                                  :Version "V1"
+                                  :AdditionalAttributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "int" ["2"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "int" ["5"])]}))]
     (index/wait-until-indexed)
 
     (testing "successful cases"
       (are3
         [range]
         (let [response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes [(dc/psa {:name "int"
-                                                                           :data-type :int
-                                                                           :min-value (first range)
-                                                                           :max-value (second range)})]}))
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "int"
+                                                                                             :DataType "INT" 
+                                                                                             :ParameterRangeBegin (first range)
+                                                                                             :ParameterRangeEnd (second range)})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -183,14 +183,14 @@
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [int] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes [(dc/psa {:name "int"
-                                                                           :data-type :int
-                                                                           :min-value (first range)
-                                                                           :max-value (second range)})]})
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "int"
+                                                                                             :DataType "INT" 
+                                                                                             :ParameterRangeBegin (first range)
+                                                                                             :ParameterRangeEnd (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -202,30 +202,30 @@
         "invalid min & max" [3 4] 2))))
 
 (deftest collection-update-additional-attributes-float-range-test
-  (let [a1 (dc/psa {:name "float" :data-type :float :min-value -10.0 :max-value 10.0})
-        coll (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :product-specific-attributes [a1]}))
-        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "float" ["-2.0"])]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "float" ["5.0"])]}))]
+  (let [a1 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin -10.0 :ParameterRangeEnd 10.0})
+        coll (d/ingest "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "parent-collection"
+                                  :ShortName "S1"
+                                  :Version "V1"
+                                  :AdditionalAttributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "float" ["-2.0"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "float" ["5.0"])]}))]
     (index/wait-until-indexed)
 
     (testing "successful cases"
       (are3
         [range]
         (let [response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes [(dc/psa {:name "float"
-                                                                           :data-type :float
-                                                                           :min-value (first range)
-                                                                           :max-value (second range)})]}))
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "float"
+                                                                                             :DataType "FLOAT"
+                                                                                             :ParameterRangeBegin (first range)
+                                                                                             :ParameterRangeEnd (second range)})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -241,14 +241,14 @@
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes [(dc/psa {:name "float"
-                                                                           :data-type :float
-                                                                           :min-value (first range)
-                                                                           :max-value (second range)})]})
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "float"
+                                                                                             :DataType "FLOAT"
+                                                                                             :ParameterRangeBegin (first range)
+                                                                                             :ParameterRangeEnd (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -263,32 +263,32 @@
 
 (deftest collection-update-additional-attributes-datetime-range-test
   (let [parse-fn (partial psa/parse-value :datetime)
-        a1 (dc/psa {:name "datetime" :data-type :datetime
-                    :min-value (parse-fn "2012-02-01T01:02:03Z")
-                    :max-value (parse-fn "2012-11-01T01:02:03Z")})
-        coll (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :product-specific-attributes [a1]}))
-        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "datetime" ["2012-04-01T01:02:03Z"])]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "datetime" ["2012-08-01T01:02:03Z"])]}))]
+        a1 (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME" 
+                                             :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z") 
+                                             :ParameterRangeEnd (parse-fn "2012-11-01T01:02:03Z")})
+        coll (d/ingest "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "parent-collection"
+                                  :ShortName "S1"
+                                  :Version "V1"
+                                  :AdditionalAttributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "datetime" ["2012-04-01T01:02:03Z"])]})) 
+        gran2 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "datetime" ["2012-08-01T01:02:03Z"])]}))] 
     (index/wait-until-indexed)
 
     (testing "successful cases"
       (are3
         [range]
         (let [response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes
-                                    [(dc/psa {:name "datetime" :data-type :datetime
-                                              :min-value (parse-fn (first range))
-                                              :max-value (parse-fn (second range))})]}))
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "datetime"
+                                                                                             :DataType "DATETIME"
+                                                                                             :ParameterRangeBegin (parse-fn (first range))
+                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -304,15 +304,15 @@
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [datetime] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes
-                                    [(dc/psa {:name "datetime" :data-type :datetime
-                                              :min-value (parse-fn (first range))
-                                              :max-value (parse-fn (second range))})]})
-                                 {:allow-failure? true})
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "datetime"
+                                                                                             :DataType "DATETIME"
+                                                                                             :ParameterRangeBegin (parse-fn (first range))
+                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}) 
+                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
@@ -444,29 +444,29 @@
         "invalid min & max" ["04:02:03.001Z" "06:02:02.999Z"] 2))))
 
 (deftest collection-update-project-test
-  (let [coll (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :projects (dc/projects "p1" "p2" "p3" "p4")}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                  {:entry-title "parent-collection2"
-                                   :projects (dc/projects "p4")}))
-        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p1"]}))
-        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p2" "p3"]}))
-        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p3"]}))
-        _ (d/ingest "PROV1" (dg/granule coll2 {:project-refs ["p4"]}))]
+  (let [coll (d/ingest "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "parent-collection"
+                                  :ShortName "S1"
+                                  :Version "V1"
+                                  :Projects (data-umm-c/projects "p1" "p2" "p3" "p4")}))
+        coll2 (d/ingest "PROV1" (data-umm-c/collection
+                                  {:EntryTitle "parent-collection2"
+                                   :Projects (data-umm-c/projects "p4")}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p1"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p2" "p3"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p3"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:project-refs ["p4"]}))]
 
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
       (are3
         [projects]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                           {:entry-title "parent-collection"
-                                            :short-name "S1"
-                                            :version-id "V1"
-                                            :projects (apply dc/projects projects)}))
+        (let [response (d/ingest "PROV1" (data-umm-c/collection
+                                           {:EntryTitle "parent-collection"
+                                            :ShortName "S1"
+                                            :Version "V1"
+                                            :Projects (apply data-umm-c/projects projects)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -479,11 +479,11 @@
     (testing "Update collection failure cases"
       (are3
         [projects expected-errors]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                           {:entry-title "parent-collection"
-                                            :short-name "S1"
-                                            :version-id "V1"
-                                            :projects (apply dc/projects projects)})
+        (let [response (d/ingest "PROV1" (data-umm-c/collection
+                                           {:EntryTitle "parent-collection"
+                                            :ShortName "S1"
+                                            :Version "V1"
+                                            :Projects (apply data-umm-c/projects projects)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -494,53 +494,51 @@
 
 (deftest collection-update-granule-spatial-representation-test
   (let [make-coll (fn [entry-title spatial-params]
-                    (d/ingest "PROV1" (dc/collection {:entry-title entry-title
-                                                      :spatial-coverage (when spatial-params
-                                                                          (dc/spatial spatial-params))})))
+                    (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle entry-title
+                                                              :ShortName (d/unique-str "short-name")
+                                                              :SpatialExtent (when spatial-params
+                                                                               (data-umm-c/spatial spatial-params))})))
         make-gran (fn [coll spatial]
-                    (d/ingest "PROV1" (dg/granule coll {:spatial-coverage
-                                                        (when spatial (dg/spatial spatial))})))
+                    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage
+                                                                                            (when spatial (dg/spatial spatial))})))
 
         ;; Geodetic test collections
-        coll-geodetic-no-grans (make-coll "coll-geodetic-no-grans" {:gsr :geodetic})
-        coll-geodetic-with-grans (make-coll "coll-geodetic-with-grans" {:gsr :geodetic})
+        coll-geodetic-no-grans (make-coll "coll-geodetic-no-grans" {:gsr "GEODETIC"})
+        coll-geodetic-with-grans (make-coll "coll-geodetic-with-grans" {:gsr "GEODETIC"})
         gran1 (make-gran coll-geodetic-with-grans (p/point 10 22))
 
         ;; Cartesian test collections
-        coll-cartesian-no-grans (make-coll "coll-cartesian-no-grans" {:gsr :cartesian})
-        coll-cartesian-with-grans (make-coll "coll-cartesian-with-grans" {:gsr :cartesian})
+        coll-cartesian-no-grans (make-coll "coll-cartesian-no-grans" {:gsr "CARTESIAN"})
+        coll-cartesian-with-grans (make-coll "coll-cartesian-with-grans" {:gsr "CARTESIAN"})
         gran2 (make-gran coll-cartesian-with-grans (p/point 10 22))
-
         ;; Orbit test collections
-        orbit-params {:swath-width 1450
-                      :period 98.88
-                      :inclination-angle 98.15
-                      :number-of-orbits 0.5
-                      :start-circular-latitude -90}
-        coll-orbit-no-grans (make-coll "coll-orbit-no-grans" {:gsr :orbit :orbit orbit-params})
-        coll-orbit-with-grans (make-coll "coll-orbit-with-grans" {:gsr :orbit :orbit orbit-params})
+        orbit-params {:SwathWidth 1450
+                      :Period 98.88
+                      :InclinationAngle 98.15
+                      :NumberOfOrbits 0.5
+                      :StartCircularLatitude -90}
+        coll-orbit-no-grans (make-coll "coll-orbit-no-grans" {:gsr "ORBIT" :orbit orbit-params})
+        coll-orbit-with-grans (make-coll "coll-orbit-with-grans" {:gsr "ORBIT" :orbit orbit-params})
         gran3 (make-gran coll-orbit-with-grans (dg/orbit -158.1 81.8 :desc  -81.8 :desc))
-
         ;; No Spatial test collections
-        coll-no-spatial-no-grans  (make-coll "coll-no-spatial-no-grans" nil)
-        coll-no-spatial-with-grans  (make-coll "coll-no-spatial-with-grans" nil)
+        coll-no-spatial-no-grans  (make-coll "coll-no-spatial-no-grans" {:gsr "NO_SPATIAL"})
+        coll-no-spatial-with-grans  (make-coll "coll-no-spatial-with-grans" {:gsr "NO_SPATIAL"})
         gran4 (make-gran coll-no-spatial-with-grans nil)
-
         update-collection (fn [coll new-spatial-params]
                             (let [updated-coll (dissoc coll :revision-id)
                                   updated-coll (assoc updated-coll
-                                                      :spatial-coverage (when new-spatial-params
-                                                                          (dc/spatial new-spatial-params)))]
+                                                      :SpatialExtent (when new-spatial-params
+                                                                       (data-umm-c/spatial new-spatial-params)))]
                               (d/ingest "PROV1" updated-coll {:allow-failure? true})))]
 
     (index/wait-until-indexed)
     (testing "Updates allowed with no granules"
       (are [coll new-spatial-params]
            (= 200 (:status (update-collection coll new-spatial-params)))
-           coll-geodetic-no-grans {:gsr :cartesian}
-           coll-cartesian-no-grans {:gsr :geodetic}
-           coll-orbit-no-grans {:gsr :geodetic}
-           coll-no-spatial-no-grans {:gsr :geodetic}))
+           coll-geodetic-no-grans {:gsr "CARTESIAN"}
+           coll-cartesian-no-grans {:gsr "GEODETIC"}
+           coll-orbit-no-grans {:gsr "GEODETIC"}
+           coll-no-spatial-no-grans {:gsr "GEODETIC"}))
 
     (testing "Updates not permitted with granules"
       (are [coll new-spatial-params prev-gsr new-gsr]
@@ -551,31 +549,31 @@
                                 prev-gsr new-gsr)]}
               (update-collection coll new-spatial-params))
 
-           coll-geodetic-with-grans {:gsr :cartesian} "GEODETIC" "CARTESIAN"
-           coll-geodetic-with-grans nil "GEODETIC" "NO_SPATIAL"
-           coll-geodetic-with-grans {:gsr :orbit :orbit orbit-params} "GEODETIC" "ORBIT"
-           coll-cartesian-with-grans {:gsr :geodetic} "CARTESIAN" "GEODETIC"
-           coll-orbit-with-grans {:gsr :geodetic} "ORBIT" "GEODETIC"
-           coll-no-spatial-with-grans {:gsr :geodetic} "NO_SPATIAL" "GEODETIC"))))
+           coll-geodetic-with-grans {:gsr "CARTESIAN"} "GEODETIC" "CARTESIAN"
+           coll-geodetic-with-grans {:gsr "NO_SPATIAL"} "GEODETIC" "NO_SPATIAL"
+           coll-geodetic-with-grans {:gsr "ORBIT" :orbit orbit-params} "GEODETIC" "ORBIT"
+           coll-cartesian-with-grans {:gsr "GEODETIC"} "CARTESIAN" "GEODETIC"
+           coll-orbit-with-grans {:gsr "GEODETIC"} "ORBIT" "GEODETIC"
+           coll-no-spatial-with-grans {:gsr "GEODETIC"} "NO_SPATIAL" "GEODETIC"))))
 
 (deftest collection-update-unique-identifiers-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                :short-name "S1"
-                                                :version-id "V1"
-                                                :native-id "coll1"}))
-        collNoGranule (d/ingest "PROV1" (dc/collection {:entry-title "Dataset-No-Granule"
-                                                        :short-name "S2"
-                                                        :version-id "V2"
-                                                        :native-id "coll2"}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))]
+  (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "Dataset1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"
+                                                        :native-id "coll1"}))
+        collNoGranule (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "Dataset-No-Granule"
+                                                                :ShortName "S2"
+                                                                :Version "V2"
+                                                                :native-id "coll2"}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule2"}))]
     (index/wait-until-indexed)
 
     (testing "Update unique identifiers of collection without granules is OK"
-      (let [response (d/ingest "PROV1" (dc/collection {:entry-title "New Dataset-No-Granule"
-                                                       :short-name "S22"
-                                                       :version-id "V22"
-                                                       :native-id "coll2"}))
+      (let [response (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "New Dataset-No-Granule"
+                                                               :ShortName "S22"
+                                                               :Version "V22"
+                                                               :native-id "coll2"}))
             {:keys [status errors]} response]
         (= [200 nil] [status errors])))
 
@@ -583,22 +581,22 @@
       ;; For CMR-2403 we decided to temporary allow collection identifiers to be updated even
       ;; with existing granules for the collection. We will change this with CMR-2485.
       (are3 [identifier-map]
-            (let [response (d/ingest "PROV1" (dc/collection (merge {:entry-title "Dataset1"
-                                                                    :short-name "S1"
-                                                                    :version-id "V1"
-                                                                    :native-id "coll1"}
-                                                                  identifier-map)))
+            (let [response (d/ingest "PROV1" (data-umm-c/collection (merge {:EntryTitle "Dataset1"
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"
+                                                                            :native-id "coll1"}
+                                                                           identifier-map)))
                   {:keys [status errors]} response]
               (is (= [200 nil] [status errors])))
 
-            "Update entry-title of collection with granules"
-            {:entry-title "New Dataset1"}
+            "Update EntryTitle of collection with granules"
+            {:EntryTitle "New Dataset1"}
 
-            "Update short-name of collection with granules"
-            {:short-name "S11"}
+            "Update ShortName of collection with granules"
+            {:ShortName "S11"}
 
-            "Update version-id of collection with granules"
-            {:version-id "V11"}))))
+            "Update Version of collection with granules"
+            {:Version "V11"}))))
 
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest "PROV1" (data-umm-c/collection {:Entry-Title "Dataset1"

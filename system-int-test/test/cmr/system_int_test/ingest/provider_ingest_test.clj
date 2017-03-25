@@ -7,9 +7,9 @@
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as u]
     [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -108,13 +108,19 @@
 (deftest delete-provider-test
   (testing "delete provider"
     (let [token (e/login-guest (cmr.system-int-test.system/context))
-          coll1 (d/ingest "PROV1" (dc/collection))
-          gran1 (d/ingest "PROV1" (dg/granule coll1))
-          gran2 (d/ingest "PROV1" (dg/granule coll1))
-          coll2 (d/ingest "PROV1" (dc/collection))
-          gran3 (d/ingest "PROV1" (dg/granule coll2))
-          coll3 (d/ingest "PROV2" (dc/collection))
-          gran4 (d/ingest "PROV2" (dg/granule coll3))
+          coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                          :ShortName "S1"
+                                                          :Version "V1"}))
+          gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1"))
+          gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1"))
+          coll2 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                          :ShortName "S2"
+                                                          :Version "V2"}))
+          gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1"))
+          coll3 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E3"
+                                                          :ShortName "S3"
+                                                          :Version "V3"}))
+          gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1"))
           ;; create an access group to test cascading deletes
           access-group (u/map-keys->kebab-case
                         (access-control/create-group
