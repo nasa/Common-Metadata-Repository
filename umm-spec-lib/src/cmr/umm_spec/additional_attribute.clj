@@ -129,7 +129,17 @@
   (when value
     (f/unparse (f/formatters :hour-minute-second-ms) value)))
 
+(defmethod gen-value "TIME" 
+  [data-type value]
+  (when value
+    (f/unparse (f/formatters :hour-minute-second-ms) value)))
+
 (defmethod gen-value :date
+  [data-type value]
+  (when value
+    (f/unparse (f/formatters :date) value)))
+
+(defmethod gen-value "DATE" 
   [data-type value]
   (when value
     (f/unparse (f/formatters :date) value)))

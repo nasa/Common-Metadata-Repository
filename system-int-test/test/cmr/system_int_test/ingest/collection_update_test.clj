@@ -4,14 +4,13 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.spatial.point :as p]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.umm.collection.product-specific-attribute :as psa]))
+   [cmr.umm-spec.additional-attribute :as aa]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
@@ -262,7 +261,7 @@
         "invalid & very cleose to max" [nil (Double/longBitsToDouble (dec (Double/doubleToLongBits 5.0)))] 1))))
 
 (deftest collection-update-additional-attributes-datetime-range-test
-  (let [parse-fn (partial psa/parse-value :datetime)
+  (let [parse-fn (partial aa/parse-value "DATETIME")
         a1 (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME" 
                                              :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z") 
                                              :ParameterRangeEnd (parse-fn "2012-11-01T01:02:03Z")})
@@ -323,33 +322,33 @@
         "invalid min & max" ["2012-04-01T01:02:03.001Z" "2012-08-01T01:02:02.999Z"] 2))))
 
 (deftest collection-update-additional-attributes-date-range-test
-  (let [parse-fn (partial psa/parse-value :date)
-        a1 (dc/psa {:name "date" :data-type :date
-                    :min-value (parse-fn "2012-02-02Z")
-                    :max-value (parse-fn "2012-11-02Z")})
-        coll (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :product-specific-attributes [a1]}))
-        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "date" ["2012-04-02Z"])]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "date" ["2012-08-02Z"])]}))]
+  (let [parse-fn (partial aa/parse-value "DATE")
+        a1 (data-umm-c/additional-attribute {:Name "date" :DataType "DATE"
+                                             :ParameterRangeBegin (parse-fn "2012-02-02Z")
+                                             :ParameterRangeEnd (parse-fn "2012-11-02Z")})
+        coll (d/ingest "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "parent-collection"
+                                  :ShortName "S1"
+                                  :Version "V1"
+                                  :AdditionalAttributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "date" ["2012-04-02Z"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "date" ["2012-08-02Z"])]}))]
     (index/wait-until-indexed)
 
     (testing "successful cases"
       (are3
         [range]
         (let [response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes
-                                    [(dc/psa {:name "date" :data-type :date
-                                              :min-value (parse-fn (first range))
-                                              :max-value (parse-fn (second range))})]}))
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "date"
+                                                                                             :DataType "DATE"
+                                                                                             :ParameterRangeBegin (parse-fn (first range))
+                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -365,15 +364,15 @@
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [date] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes
-                                    [(dc/psa {:name "date" :data-type :date
-                                              :min-value (parse-fn (first range))
-                                              :max-value (parse-fn (second range))})]})
-                                 {:allow-failure? true})
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "date"
+                                                                                             :DataType "DATE"
+                                                                                             :ParameterRangeBegin (parse-fn (first range))
+                                                                                             :ParameterRangeEnd (parse-fn (second range))})]})
+                                  {:allow-failure? true}) 
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
@@ -384,32 +383,35 @@
         "invalid min & max" ["2012-04-03Z" "2012-08-01Z"] 2))))
 
 (deftest collection-update-additional-attributes-time-range-test
-  (let [parse-fn (partial psa/parse-value :time)
-        a1 (dc/psa {:name "time" :data-type :time :min-value (parse-fn "01:02:03Z")
-                    :max-value (parse-fn "11:02:03Z")})
-        coll (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "parent-collection"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :product-specific-attributes [a1]}))
-        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "time" ["04:02:03Z"])]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "time" ["06:02:03Z"])]}))]
+  (let [parse-fn (partial aa/parse-value "TIME")
+        _ (println (str (dg/psa "time" ["04:02:03Z"])))
+        a1 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME" 
+                                             :ParameterRangeBegin (parse-fn "01:02:03Z")
+                                             :ParameterRangeEnd (parse-fn "11:02:03Z")})
+        coll (d/ingest "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "parent-collection"
+                                  :ShortName "S1"
+                                  :Version "V1"
+                                  :AdditionalAttributes [a1]}))
+        _ (println (str (dg/psa "time" ["04:02:03Z"])))
+        gran1 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "time" ["04:02:03Z"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
+                                                                                     [(dg/psa "time" ["06:02:03Z"])]}))]
     (index/wait-until-indexed)
 
     (testing "successful cases"
       (are3
         [range]
         (let [response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes
-                                    [(dc/psa {:name "time" :data-type :time
-                                              :min-value (parse-fn (first range))
-                                              :max-value (parse-fn (second range))})]}))
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "time"
+                                                                                             :DataType "TIME"
+                                                                                             :ParameterRangeBegin (parse-fn (first range))
+                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -425,15 +427,15 @@
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [time] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
-                                 (dc/collection
-                                   {:entry-title "parent-collection"
-                                    :short-name "S1"
-                                    :version-id "V1"
-                                    :product-specific-attributes
-                                    [(dc/psa {:name "time" :data-type :time
-                                              :min-value (parse-fn (first range))
-                                              :max-value (parse-fn (second range))})]})
-                                 {:allow-failure? true})
+                                 (data-umm-c/collection
+                                   {:EntryTitle "parent-collection"
+                                    :ShortName "S1"
+                                    :Version "V1"
+                                    :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "time"
+                                                                                             :DataType "TIME"
+                                                                                             :ParameterRangeBegin (parse-fn (first range))
+                                                                                             :ParameterRangeEnd (parse-fn (second range))})]})
+                                  {:allow-failure? true}) 
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
