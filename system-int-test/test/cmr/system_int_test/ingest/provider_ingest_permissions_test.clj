@@ -48,7 +48,7 @@
                                                                             "plain-group-guid3"])
         super-admin-token (e/login (s/context) "super-admin" ["ingest-super-admin-group-guid"])
         non-existant-token "not-exist"
-        collection (d/ingest "PROV1" (data-umm-c/collection {})  {:token provider-admin-update-token})
+        collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {})  {:token provider-admin-update-token})
         ingested-concept (mdb/get-concept (:concept-id collection))
 
         granule (d/item->concept (dg/granule-with-umm-spec-collection collection "C1-PROV1"))]
@@ -88,13 +88,13 @@
 
     (testing "ingest collection update permissions"
       (are [token]
-           (ingest-succeeded? (d/ingest "PROV1" (data-umm-c/collection {}) {:token token
+           (ingest-succeeded? (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:token token
                                                                             :allow-failure? true}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (d/ingest "PROV1" (data-umm-c/collection {}) {:token token
+           (not (ingest-succeeded? (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}) {:token token
                                                                                  :allow-failure? true})))
            guest-token
            user-token

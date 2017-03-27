@@ -23,35 +23,35 @@
         p7 (data-umm-c/platform {:ShortName "DMSP 5B/F3"})
         p8 (data-umm-c/platform {:ShortName "diaDEM-1d"})
 
-        coll1 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p7]
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p7]
                                                         :EntryTitle "E1"
                                                         :ShortName "S1"
                                                         :Version "V1"}))
-        coll2 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p2 p8]
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p2 p8]
                                                         :EntryTitle "E2"
                                                         :ShortName "S2"
                                                         :Version "V2"}))
-        coll3 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p2]
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p2]
                                                         :EntryTitle "E3"
                                                         :ShortName "S3"
                                                         :Version "V3"}))
-        coll4 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p3]
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p3]
                                                         :EntryTitle "E4"
                                                         :ShortName "S4"
                                                         :Version "V4"}))
-        coll5 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p4]
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p4]
                                                         :EntryTitle "E5"
                                                         :ShortName "S5"
 							:Version "V5"}))
-        coll6 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p5]
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p5]
                                                         :EntryTitle "E6"
                                                         :ShortName "S6"
                                                         :Version "V6"}))
-        coll7 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p6]
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p6]
                                                         :EntryTitle "E7"
                                                         :ShortName "S7"
                                                         :Version "V7"}))
-        coll8 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E8"
+        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E8"
                                                         :ShortName "S8"
                                                         :Version "V8"}))
         ;; Added to test SMAP ISO platform and instrument support - note that this collection is
@@ -173,39 +173,39 @@
         p5 (data-umm-c/platform {:ShortName "platform_5" :Instruments [i1 i2]})
         p6 (data-umm-c/platform {:ShortName "platform_6" :Instruments [i5]})
         p7 (data-umm-c/platform {:ShortName "platform_7" :Instruments [i6]})
-        coll1 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1]
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1]
                                                         :EntryTitle "E1"
                                                         :ShortName "S1"
                                                         :Version "V1"}))
-        coll2 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
                                                         :EntryTitle "E2"
                                                         :ShortName "S2"
                                                         :Version "V2"}))
-        coll3 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p2]
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p2]
                                                         :EntryTitle "E3"
                                                         :ShortName "S3"
                                                         :Version "V3"}))
-        coll4 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p3]
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p3]
                                                         :EntryTitle "E4"
                                                         :ShortName "S4"
                                                         :Version "V4"}))
-        coll5 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p4]
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p4]
                                                         :EntryTitle "E5"
                                                         :ShortName "S5"
                                                         :Version "V5"}))
-        coll6 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p5]
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p5]
                                                         :EntryTitle "E6"
                                                         :ShortName "S6"
                                                         :Version "V6"}))
-        coll7 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p6]
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p6]
                                                         :EntryTitle "E7"
                                                         :ShortName "S7"
                                                         :Version "V7"}))
-        coll8 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p7]
+        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p7]
                                                         :EntryTitle "E8"
                                                         :ShortName "S8"
                                                         :Version "V8"}))
-        coll9 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E9"
+        coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E9"
                                                         :ShortName "S9"
                                                         :Version "V9"}))
         ;; Added to test SMAP ISO platform and instrument support
@@ -338,43 +338,43 @@
         p6 (data-umm-c/platform {:ShortName "platform_6" :Instruments [i1 i2]})
         p7 (data-umm-c/platform {:ShortName "platform_7" :Instruments [i6]})
         p8 (data-umm-c/platform {:ShortName "platform_8" :Instruments [i7]})
-        coll1 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1]
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1]
                                                         :EntryTitle "E1"
                                                         :ShortName "S1"
                                                         :Version "V1"}))
-        coll2 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p2]
                                                         :EntryTitle "E2"
                                                         :ShortName "S2"
                                                         :Version "V2"}))
-        coll3 (d/ingest "PROV1" (data-umm-c/collection {:Platforms [p2]
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p2]
                                                         :EntryTitle "E3"
                                                         :ShortName "S3"
                                                         :Version "V3"}))
-        coll4 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p3]
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p3]
                                                         :EntryTitle "E4"
                                                         :ShortName "S4"
                                                         :Version "V4"}))
-        coll5 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p4]
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p4]
                                                         :EntryTitle "E5"
                                                         :ShortName "S5"
                                                         :Version "V5"}))
-        coll6 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p5]
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p5]
                                                         :EntryTitle "E6"
                                                         :ShortName "S6"
                                                         :Version "V6"}))
-        coll7 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p6]
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p6]
                                                         :EntryTitle "E7"
                                                         :ShortName "S7"
                                                         :Version "V7"}))
-        coll8 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p7]
+        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p7]
                                                         :EntryTitle "E8"
                                                         :ShortName "S8"
                                                         :Version "V8"}))
-        coll9 (d/ingest "PROV2" (data-umm-c/collection {:Platforms [p8]
+        coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p8]
                                                         :EntryTitle "E9"
                                                         :ShortName "S9"
                                                         :Version "V9"}))
-        coll10 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E10"
+        coll10 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E10"
                                                         :ShortName "S10"
                                                         :Version "V10"}))]
 

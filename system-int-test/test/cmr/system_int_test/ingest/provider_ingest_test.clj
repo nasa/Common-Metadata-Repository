@@ -108,16 +108,16 @@
 (deftest delete-provider-test
   (testing "delete provider"
     (let [token (e/login-guest (cmr.system-int-test.system/context))
-          coll1 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+          coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                           :ShortName "S1"
                                                           :Version "V1"}))
           gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1"))
           gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1"))
-          coll2 (d/ingest "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+          coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                           :ShortName "S2"
                                                           :Version "V2"}))
           gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1"))
-          coll3 (d/ingest "PROV2" (data-umm-c/collection {:EntryTitle "E3"
+          coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E3"
                                                           :ShortName "S3"
                                                           :Version "V3"}))
           gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1"))

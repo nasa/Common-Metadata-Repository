@@ -127,11 +127,11 @@
 
 
 (deftest spatial-search-test
-  (let [geodetic-coll (d/ingest "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                                                                 :EntryTitle "E1"
                                                                 :ShortName "S1"
                                                                 :Version "V1"}))
-        cartesian-coll (d/ingest "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "CARTESIAN"})
+        cartesian-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "CARTESIAN"})
                                                                  :EntryTitle "E2"
                                                                  :ShortName "S2"
                                                                  :Version "V2"}))
@@ -422,7 +422,7 @@
          normal-poly-cart]))))
 
 (deftest no-lr-spatial-search-test
-  (let [geodetic-coll (d/ingest "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})}))
+  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})}))
         geodetic-coll-cid (get-in geodetic-coll [:concept-id])
         make-gran (fn [ur & shapes]
                     (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
