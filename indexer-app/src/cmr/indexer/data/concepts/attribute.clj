@@ -69,8 +69,8 @@
 (defn psa-refs->elastic-docs
   "Converts the psa-refs into a list of elastic documents"
   [collection granule]
-  (let [parent-type-map (into {} (for [psa (:AdditionalAttributes collection)]
-                                   [(:Name psa) (csk/->kebab-case-keyword (:DataType psa))]))]
+  (let [parent-type-map (into {} (for [aa (:AdditionalAttributes collection)]
+                                   [(:Name aa) (csk/->kebab-case-keyword (:DataType aa))]))]
     (mapcat (fn [psa-ref]
               (let [type (parent-type-map (:name psa-ref))]
                 (when-not type
@@ -102,9 +102,9 @@
   [collection]
   (mapcat aa->nested-docs (:AdditionalAttributes collection)))
 
-(defn psa->keywords
+(defn aa->keywords
   "Converts a PSA into a vector of terms to be used in keyword searches"
-  [psa]
-  (let [{:keys [name data-type parsed-value description]} psa
+  [aa]
+  (let [{:keys [name data-type parsed-value description]} aa
         parsed-value (when parsed-value (data-type value->elastic-value parsed-value))]
     (filter identity [name parsed-value description])))

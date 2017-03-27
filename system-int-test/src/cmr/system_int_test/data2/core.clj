@@ -55,9 +55,9 @@
   * :format - The XML Metadata format to use.
   * :token - The token to use.
   * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
-  * :client-id - The client-id to use
   for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
   Setting it to true will skip this check. Set it true when testing ingest failure cases.
+  * :client-id - The client-id to use
   * :validate-keywords - true or false to indicate if the validate keywords header should be sent
   to enable keyword validation. Defaults to false.
   * :validate-umm-c  - true to enable the return of the UMM-C validation errors. Otherwise, the config values
@@ -120,9 +120,9 @@
   * :format - The XML Metadata format to use.
   * :token - The token to use.
   * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
-  * :client-id - The client-id to use
   for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
   Setting it to true will skip this check. Set it true when testing ingest failure cases.
+  * :client-id - The client-id to use
   * :validate-keywords - true or false to indicate if the validate keywords header should be sent
   to enable keyword validation. Defaults to false.
   * :validate-umm-c  - true to enable the return of the UMM-C validation errors. Otherwise, the config values
@@ -132,7 +132,7 @@
   ([provider-id item options]
    (let [format-key (get options :format :echo10)
          response (ingest/ingest-concept
-                    (item->concept (assoc item :provider-id provider-id) format-key)
+                    (umm-c-collection->concept (assoc item :provider-id provider-id) format-key)
                     (select-keys options [:token
                                           :client-id
                                           :user-id

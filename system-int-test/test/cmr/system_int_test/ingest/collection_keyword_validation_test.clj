@@ -4,7 +4,6 @@
     [clojure.test :refer :all]
     [cmr.common.util :refer [are2]]
     [cmr.ingest.services.messages :as msg]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.ingest-util :as ingest]))
@@ -13,7 +12,7 @@
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
-   (let [response (d/ingest "PROV1" (data-umm-c/collection coll-attributes)
+   (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-attributes)
                             (merge {:allow-failure? true} options))]
      (is (= {:status 422
              :errors [{:path field-path
@@ -78,7 +77,7 @@
 
     (are2 [short-name long-name]
           (assert-valid-keywords
-            {:Projects [(assoc (dc/project short-name "") :long-name long-name)]})
+            {:Projects [(assoc (data-umm-c/project short-name "") :LongName long-name)]})
           "Exact match"
           "EUDASM" "European Digital Archive of Soil Maps"
 
@@ -91,7 +90,7 @@
   (testing "Platform keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords
-            {:Platforms [(dc/platform {:ShortName short-name :LongName long-name})]}
+            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name})]}
             ["Platforms" 0]
             [(format (str "Platform short name [%s] and long name [%s]"
                           " was not a valid keyword combination.")

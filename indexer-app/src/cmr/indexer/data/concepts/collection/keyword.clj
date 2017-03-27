@@ -89,7 +89,7 @@
                                (:TilingIdentificationSystems collection))
         data-centers (map :ShortName (:DataCenters collection))
         science-keywords (mapcat sk/science-keyword->keywords (:ScienceKeywords collection))
-        attrib-keywords (mapcat #(attrib/psa->keywords (util/map-keys->kebab-case %))
+        attrib-keywords (mapcat #(attrib/aa->keywords (util/map-keys->kebab-case %))
                                 (:AdditionalAttributes collection))
         related-url-urls (map :URL related-urls)
         related-url-titles (map :Title related-urls)

@@ -196,9 +196,6 @@
   {:Platforms [(umm-cmn/map->PlatformType
                  {:ShortName "A340-600" :LongName "Airbus A340-600"})]
    :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
-   :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"
-                                               :URLContentType "DistributionURL"
-                                               :Type "GET DATA"})]
    :DataCenters [u/not-provided-data-center]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
