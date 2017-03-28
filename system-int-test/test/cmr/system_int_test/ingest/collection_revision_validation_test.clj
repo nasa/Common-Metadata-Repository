@@ -25,15 +25,13 @@
              response))))
  
   (testing "attempting to ingest using an non-integer revision id returns an error"
-    (let [response (ingest/ingest-concept (data-umm-c/collection-concept {:EntryTitle "E2" :ShortName "S2" :concept-id "C2-PROV1"
-                                                                  :revision-id "NaN"}))]
+    (let [response (ingest/ingest-concept (data-umm-c/collection-concept {:EntryTitle "E2" :ShortName "S2" :concept-id "C2-PROV1" :revision-id "NaN"}))]
       (is (= {:status 422
               :errors [(msg/invalid-revision-id "NaN")]}
              response))))
   
   (testing "attempting to ingest using a negative revision id returns an error"
-    (let [response (ingest/ingest-concept (data-umm-c/collection-concept {:EntryTitle "E3" :ShortName "S3" :concept-id "C2-PROV1"
-                                                                  :revision-id "-1"}))]
+    (let [response (ingest/ingest-concept (data-umm-c/collection-concept {:EntryTitle "E3" :ShortName "S3" :concept-id "C2-PROV1" :revision-id "-1"}))]
       (is (= {:status 422
               :errors [(msg/invalid-revision-id "-1")]}
              response))))
