@@ -218,8 +218,7 @@
   ([]
    (collection {}))
   ([attribs]
-   (let [umm-c (merge minimal-umm-c attribs)]
-     (umm-c/map->UMM-C (merge minimal-umm-c attribs)))))
+    (umm-c/map->UMM-C (merge minimal-umm-c attribs))))
 
 (defn collection-concept
   "Returns the collection for ingest with the given attributes"

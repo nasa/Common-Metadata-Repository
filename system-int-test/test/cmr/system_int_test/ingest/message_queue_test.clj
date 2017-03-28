@@ -1,16 +1,17 @@
 (ns cmr.system-int-test.ingest.message-queue-test
   "Tests behavior of ingest and indexer under different message queue failure scenarios."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.index-util :as index-util]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-            [cmr.indexer.config :as indexer-config]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.indexer.config :as indexer-config]
+    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.index-util :as index-util]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -19,20 +20,21 @@
 (defn- ingest-coll
   "Ingests the collection."
   [coll]
-  (d/ingest "PROV1" coll))
+  (d/ingest-umm-spec-collection "PROV1" coll))
 
 (defn- make-coll
   "Creates and ingests a collection using the unique number given."
   [n]
-  (ingest-coll (dc/collection {:concept-id (str "C" n "-PROV1")
-                               :entry-title (str "ET" n)
-                               :native-id (str "ET" n)})))
+  (ingest-coll (data-umm-c/collection {:concept-id (str "C" n "-PROV1")
+                                       :ShortName (d/unique-str "SN")
+                                       :EntryTitle (str "ET" n)
+                                       :native-id (str "ET" n)})))
 
 (defn- delete-coll
   "Creates a tombstone for the given collection."
   [collection]
   (ingest/delete-concept (assoc collection
-                                :native-id (:entry-title collection)
+                                :native-id (:EntryTitle collection)
                                 :provider-id "PROV1"
                                 :concept-type :collection)))
 
@@ -44,9 +46,9 @@
 (defn- make-gran
   "Creates and ingests a granule using the unique number given."
   [coll n]
-  (ingest-gran (dg/granule coll {:granule-ur (str "GR" n)
-                                 :native-id (str "GR" n)
-                                 :concept-id (str "G" n "-PROV1")})))
+  (ingest-gran (dg/granule-with-umm-spec-collection coll coll {:granule-ur (str "GR" n)
+                                                               :native-id (str "GR" n)
+                                                               :concept-id (str "G" n "-PROV1")})))
 
 (defn- delete-gran
   "Creates a tombstone for the given granule."
@@ -171,7 +173,7 @@
      (testing "When unable to publish a message on the queue the ingest fails."
        (testing "Update concept"
          (index-util/set-message-queue-publish-timeout 0)
-         (let [collection (d/ingest "PROV1" (dc/collection) {:allow-failure? true})]
+         (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection) {:allow-failure? true})]
           ;; Verify ingest received a failed status code
            (is (= 503 (:status collection)))
            (index-util/wait-until-indexed)
@@ -180,7 +182,7 @@
 
        (testing "Delete concept"
          (index-util/set-message-queue-publish-timeout 10000)
-         (let [collection (d/ingest "PROV1" (dc/collection))
+         (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection))
                _ (index-util/set-message-queue-publish-timeout 0)
                response (ingest/delete-concept (d/item->concept collection))]
           ;; Verify ingest received a failed status code
@@ -273,7 +275,7 @@
   (cmr.demos.helpers/curl "http://localhost:3003/collections.xml?page_size=0")
   ;; 4.) Ingest a bunch of collections - note you will want to be ready to restart things quickly
   (doseq [_ (range 150)]
-    (ingest/ingest-concept (dc/collection-concept {})))
+    (ingest/ingest-concept (data-umm-c/collection-concept {})))
   ;; 5.) You can monitor the queues at http://localhost:15672/#/queues to see that there are some
   ;; messages on the various queues. You can adjust the sleep time to longer in step #1 if you
   ;; do not see messages on all of the queues.

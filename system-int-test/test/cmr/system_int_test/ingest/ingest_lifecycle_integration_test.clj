@@ -1,25 +1,26 @@
 (ns cmr.system-int-test.ingest.ingest-lifecycle-integration-test
   "Tests the Ingest lifecycle of a granules and collections. Verifies that at each point the correct
   data is indexed and searchable."
-  (:require [clojure.test :refer :all]
-            [clj-time.format :as f]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.common.util :refer [are2]]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]
-            [clj-time.core :as t]
-            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [cmr.common.mime-types :as mt]
-            [cheshire.core :as json]))
+  (:require
+    [cheshire.core :as json]
+    [clj-time.core :as t]
+    [clj-time.format :as f]
+    [clojure.test :refer :all]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :refer [are2]]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]
+    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]
+    [cmr.umm-spec.versioning :as ver]
+    [cmr.umm.collection.entry-id :as eid]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -62,6 +63,11 @@
   (let [response (ingest/validate-concept (d/item->concept umm-record))]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
+(defn assert-valid-umm-spec-collection
+  [umm-spec-collection]
+  (let [response (ingest/validate-concept (d/umm-c-collection->concept umm-spec-collection))]
+    (is (= {:status 200} (select-keys response [:status :errors])))))
+
 (defn assert-granule-with-parent-collection-valid
   "Asserts that when the granule and optional collection concept are valid. The collection concept
   can be passed as a third argument and it will be sent along with the granule instead of using a
@@ -74,15 +80,15 @@
   "Validates and ingests the collection. Allow the revision-id to be determined by metadata-db
   rather than passing one in."
   [coll]
-  (assert-valid coll)
-  (let [response (d/ingest "PROV1" (dissoc coll :revision-id))]
+  (assert-valid-umm-spec-collection coll)
+  (let [response (d/ingest-umm-spec-collection "PROV1" (dissoc coll :revision-id))]
     (is (#{200 201} (:status response)))
     response))
 
 (defn make-coll
   "Creates, validates, and ingests a collection using the unique number given"
   [n]
-  (ingest-coll (dc/collection {:entry-title (str "ET" n)})))
+  (ingest-coll (data-umm-c/collection {:ShortName (str "SN" n) :EntryTitle (str "ET" n)})))
 
 (defn update-coll
   "Validates and updates the collection with the given attributes"
@@ -104,7 +110,7 @@
 (defn make-gran
   "Creates, validates, and ingests a granule using the unique number given"
   [coll n]
-  (ingest-gran coll (dg/granule coll {:granule-ur (str "GR" n)})))
+  (ingest-gran coll (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:granule-ur (str "GR" n)})))
 
 (defn update-gran
   "Validates and updates the granule with the given attributes"
@@ -277,29 +283,25 @@
         coll3 (make-coll 3)]
     ;; The collections can be found
     (assert-collections-and-granules-found [coll1 coll2 coll3] [])
-
     ;; Insert granules
     (let [gr1 (make-gran coll1 1)
           gr2 (make-gran coll1 2)
           gr3 (make-gran coll2 3)
           gr4 (make-gran coll2 4)]
       (assert-collections-and-granules-found [coll1 coll2 coll3] [gr1 gr2 gr3 gr4])
-
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; Updates
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (let [;; Update a collection
-            coll2 (update-coll coll2 {:projects (dc/projects "ESI")})
+            coll2 (update-coll coll2 {:Projects (data-umm-c/projects "ESI")})
             ;; Update a granule
             gr1 (update-gran coll1 gr1 {:data-granule (dg/data-granule {:day-night "DAY"})})]
         ;; All items can still be found
         (assert-collections-and-granules-found [coll1 coll2 coll3] [gr1 gr2 gr3 gr4])
-
         ;; Updated collections and granule are found with specific parameters
         (assert-collections-found [coll2] {:project "ESI"})
         (assert-granules-found [gr1] {:day-night-flag "DAY"})
-
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
         ;; Deletion and Recreation
         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
