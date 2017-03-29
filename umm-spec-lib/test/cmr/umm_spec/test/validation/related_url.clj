@@ -3,12 +3,14 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.services.errors :as e]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.models.umm-collection-models :as coll]
    [cmr.umm-spec.models.umm-common-models :as c]
    [cmr.umm-spec.related-url :as url]
    [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]
    [cmr.umm-spec.util :as su]
-   [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
+   [cmr.umm-spec.validation.umm-spec-validation-core :as v]
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as echo10-url]))
 
 (deftest collection-related-urls-validation
   (testing "Valid related urls"
@@ -310,41 +312,50 @@
                                            :Type Type
                                            :SubType SubType}]})))))))
 
-; CollectionCitations and PublicationReferences don't use RelatedUrls anymore.
-; Commenting these tests out for now, but will fix them later.
+(deftest collection-collection-citations-related-urls-validation
+  (testing "Valid related urls"
+    (h/assert-valid (coll/map->UMM-C
+                     {:CollectionCitations
+                      [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
+                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"}}]})))
+  (testing "Multiple invalid related urls"
+    (h/assert-multiple-invalid
+     (coll/map->UMM-C
+      {:CollectionCitations
+       [{:OnlineResource {:Linkage "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"}}
+        {:OnlineResource {:Linkage "http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"}}]})
+     [{:path [:CollectionCitations 0 :OnlineResource :Linkage]
+       :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
+      {:path [:CollectionCitations 1 :OnlineResource :Linkage]
+       :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
 
-; (deftest collection-collection-citations-related-urls-validation
-;   (testing "Valid related urls"
-;     (h/assert-valid (coll/map->UMM-C
-;                      {:CollectionCitations
-;                       [{:RelatedUrl {:URLs ["http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"]}}
-;                        {:RelatedUrl {:URLs ["http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
-;                                             "http://www.cbd.int/"]}}]})))
-;   (testing "Multiple invalid related urls"
-;     (h/assert-multiple-invalid
-;      (coll/map->UMM-C
-;       {:CollectionCitations
-;        [{:RelatedUrl {:URLs ["http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"]}}
-;         {:RelatedUrl {:URLs ["http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"]}}]})
-;      [{:path [:CollectionCitations 0 :RelatedUrl :URLs 0]
-;        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
-;       {:path [:CollectionCitations 1 :RelatedUrl :URLs 0]
-;        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
-;
-; (deftest collection-publication-references-related-urls-validation
-;   (testing "Valid related urls"
-;     (h/assert-valid (coll/map->UMM-C
-;                      {:PublicationReferences
-;                       [{:RelatedUrl {:URLs ["http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"]}}
-;                        {:RelatedUrl {:URLs ["http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
-;                                             "http://www.cbd.int/"]}}]})))
-;   (testing "Multiple invalid related urls"
-;     (h/assert-multiple-invalid
-;      (coll/map->UMM-C
-;       {:PublicationReferences
-;        [{:RelatedUrl {:URLs ["http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"]}}
-;         {:RelatedUrl {:URLs ["http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"]}}]})
-;      [{:path [:PublicationReferences 0 :RelatedUrl :URLs 0]
-;        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
-;       {:path [:PublicationReferences 1 :RelatedUrl :URLs 0]
-;        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
+(deftest collection-publication-references-related-urls-validation
+  (testing "Valid related urls"
+    (h/assert-valid (coll/map->UMM-C
+                     {:PublicationReferences
+                      [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
+                       {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"}}]})))
+  (testing "Multiple invalid related urls"
+    (h/assert-multiple-invalid
+     (coll/map->UMM-C
+      {:PublicationReferences
+       [{:OnlineResource {:Linkage "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"}}
+        {:OnlineResource {:Linkage "http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"}}]})
+     [{:path [:PublicationReferences 0 :OnlineResource :Linkage]
+       :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
+      {:path [:PublicationReferences 1 :OnlineResource :Linkage]
+       :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
+
+(deftest dif-valid-url-types
+ (testing "Valid URL Types to convert to"
+  (doseq [url-type (vals dif-util/dif-url-content-type->umm-url-types)]
+   (h/assert-valid (coll/map->UMM-C {:RelatedUrls [(merge
+                                                    url-type
+                                                    {:URL "https://www.foo.com"})]})))))
+
+(deftest echo10-valid-url-types
+ (testing "Valid URL Types to convert to"
+  (doseq [url-type (vals echo10-url/online-resource-type->related-url-types)]
+   (h/assert-valid (coll/map->UMM-C {:RelatedUrls [(merge
+                                                    url-type
+                                                    {:URL "https://www.foo.com"})]})))))
