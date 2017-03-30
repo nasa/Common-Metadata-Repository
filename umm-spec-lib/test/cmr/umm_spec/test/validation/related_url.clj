@@ -347,14 +347,14 @@
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}])))
 
 (deftest dif-valid-url-types
- (testing "Valid URL Types to convert to"
+ (testing "DIF hard-coded conversion table contains valid combinations"
   (doseq [url-type (vals dif-util/dif-url-content-type->umm-url-types)]
    (h/assert-valid (coll/map->UMM-C {:RelatedUrls [(merge
                                                     url-type
                                                     {:URL "https://www.foo.com"})]})))))
 
 (deftest echo10-valid-url-types
- (testing "Valid URL Types to convert to"
+ (testing "ECHO10 hard-coded conversion table contains valid combinations"
   (doseq [url-type (vals echo10-url/online-resource-type->related-url-types)]
    (h/assert-valid (coll/map->UMM-C {:RelatedUrls [(merge
                                                     url-type
