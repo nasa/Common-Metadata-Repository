@@ -102,6 +102,48 @@ Main NCEI website providing links to access data and data services.
             </gmd:role>
         </gmd:CI_ResponsibleParty>
     </gmd:contact>
+    <gmd:contact>
+      <gmd:CI_ResponsibleParty>
+        <gmd:individualName>
+            <gco:CharacterString>Terry Haran</gco:CharacterString>
+        </gmd:individualName>
+        <gmd:contactInfo>
+            <gmd:CI_Contact>
+                <gmd:address>
+                    <gmd:CI_Address>
+                        <gmd:deliveryPoint>
+                            <gco:CharacterString>CIRES, 449 UCB</gco:CharacterString>
+                        </gmd:deliveryPoint>
+                        <gmd:deliveryPoint>
+                            <gco:CharacterString>University of Colorado</gco:CharacterString>
+                        </gmd:deliveryPoint>
+                        <gmd:city>
+                            <gco:CharacterString>Boulder</gco:CharacterString>
+                        </gmd:city>
+                        <gmd:administrativeArea>
+                            <gco:CharacterString>CO</gco:CharacterString>
+                        </gmd:administrativeArea>
+                        <gmd:postalCode>
+                            <gco:CharacterString>80309-0449</gco:CharacterString>
+                        </gmd:postalCode>
+                    </gmd:CI_Address>
+                </gmd:address>
+                <gmd:onlineResource>
+                    <gmd:CI_OnlineResource>
+                        <gmd:linkage>
+                            <gmd:URL>http://nsidc.org</gmd:URL>
+                        </gmd:linkage>
+                        <gmd:name gco:nilReason="missing"/>
+                        <gmd:description gco:nilReason="missing"/>
+                    </gmd:CI_OnlineResource>
+                </gmd:onlineResource>
+            </gmd:CI_Contact>
+        </gmd:contactInfo>
+        <gmd:role>
+            <gmd:CI_RoleCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="principalInvestigator">principalInvestigator</gmd:CI_RoleCode>
+        </gmd:role>
+    </gmd:CI_ResponsibleParty>
+    </gmd:contact>
     <gmd:dateStamp>
         <gco:DateTime>1970-01-01T00:00:00.000Z</gco:DateTime>
     </gmd:dateStamp>

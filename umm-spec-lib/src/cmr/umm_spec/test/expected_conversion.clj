@@ -245,7 +245,6 @@
                                                                        :PostalCode "20771"
                                                                        :Country "U.S.A."}]}
                                      :FirstName "John"
-                                     :MiddleName "D"
                                      :LastName "Smith"}]
                    :ContactInformation {:ContactMechanisms [{:Type "Twitter" :Value "@lpdaac"}]}}
                   {:Roles ["ARCHIVER" "DISTRIBUTOR"]

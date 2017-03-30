@@ -123,6 +123,8 @@
    0 (when sanitize?
       {:LastName util/not-provided})
    1 {:LastName name}
+   2 {:FirstName (first names)
+      :LastName (last names)}
    {:FirstName (first names)
     :MiddleName (str/join " " (subvec names 1 (dec num-names)))
     :LastName (last names)})))
