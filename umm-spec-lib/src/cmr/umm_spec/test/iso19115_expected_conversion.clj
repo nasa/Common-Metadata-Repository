@@ -346,7 +346,7 @@
     (-> person
         (assoc :FirstName (first names))
         (assoc :MiddleName (str/join " " (subvec names 1 (dec num-names))))
-        (update :MiddleName #(when (not (empty? %)) %)) ; nil if empty
+        (update :MiddleName #(when (seq %) %)) ; nil if empty
         (assoc :LastName (last names))))))
 
 (defn- expected-contact-person
