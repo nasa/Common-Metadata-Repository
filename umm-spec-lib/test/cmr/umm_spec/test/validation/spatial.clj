@@ -53,3 +53,11 @@
         (helpers/assert-multiple-invalid (coll-with-geometry {:CoordinateSystem "GEODETIC" :Points [valid-point invalid-point] :BoundingRectangles [invalid-mbr]}
                                                              "GEODETIC")
                                      expected-errors)))))
+
+(deftest collection-orbit-parameters
+ (testing "Missing orbit params"
+  (helpers/assert-invalid
+   (coll/map->UMM-C {:SpatialExtent {:GranuleSpatialRepresentation "ORBIT"}})
+   [:SpatialExtent]
+   [(str "Orbit Parameters must be defined for a collection "
+         "whose granule spatial representation is ORBIT.")])))

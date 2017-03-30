@@ -52,6 +52,15 @@
           (set-spatial-representation [:HorizontalSpatialDomain :Geometry :GPolygons] coord-sys)
           (set-spatial-representation [:HorizontalSpatialDomain :Geometry :Lines] coord-sys)))))
 
+(defn orbit-collection-has-orbit-parameters
+  "Validates the existence of orbit parameters when the granule spatial representation is orbit"
+  [field-path spatial-extent]
+  (let [{:keys [GranuleSpatialRepresentation OrbitParameters]} spatial-extent]
+    (if (and (= GranuleSpatialRepresentation "ORBIT") (nil? OrbitParameters))
+      {field-path
+       [(str "Orbit Parameters must be defined for a collection "
+             "whose granule spatial representation is ORBIT.")]})))
+
 (defn point-validation
   "Validates point for umm-spec spatial geometry."
   [field-path point]
@@ -74,6 +83,7 @@
 (def spatial-extent-validation
   "Validation for the SpatialExtent of a umm-spec collection."
   [validate-spatial-representation
+   orbit-collection-has-orbit-parameters
    (v/pre-validation set-geometries-spatial-representation
     {:HorizontalSpatialDomain
      {:Geometry
