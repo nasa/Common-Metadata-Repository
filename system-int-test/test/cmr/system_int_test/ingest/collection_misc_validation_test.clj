@@ -5,6 +5,8 @@
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
+    [cmr.common-app.test.side-api :as side]
+    [cmr.ingest.config :as icfg]
     [clojure.java.io :as io]))
 
 (defn assert-valid
@@ -30,6 +32,7 @@
   ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
   ;; points. We should reject it because UMM requires a spatial coordinate reference.
   (testing "A collection with spatial data but no representation should fail ingest validation"
+    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
     (let [bad-metadata (slurp (io/resource
                                 "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
           {:keys [status errors]}
@@ -38,7 +41,8 @@
       (is (= 422 status))
       (is (= [{:errors ["Granule Spatial Representation must be supplied."]
                :path ["SpatialExtent"]}]
-             errors)))))
+             errors)))
+    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))))
 
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"

@@ -28,7 +28,7 @@
 (def context (lkt/setup-context-for-test))
 
 (def write-errors-to-file
-  false)
+  true)
 
 (def CSV_FILENAME
   "ops_umm_translation_errors.csv")
@@ -166,7 +166,7 @@
   "Translate collection from native format to UMM-C"
   [record]
   (let [{:keys [metadata-format metadata concept-id]} record]
-    (umm/parse-metadata context :collection metadata-format metadata {:sanitize? true})))
+    (umm/parse-metadata context :collection metadata-format metadata {:sanitize? false})))
 
 (defn- validate-record-schemas
   "Validate a record against the XML schema if applicable and UMM JSON schema. For records in umm-json
@@ -218,7 +218,7 @@
    (concat
      (extract-errors-from-collection (:collection record)) ; Errors from translating to UMM
      (map reformat-error-message (validate-record-schemas record))
-     (umm-validation/validate-collection record))))
+     (umm-validation/validate-collection (:collection record)))))
 
 (defn- translate-and-validation-collection
   "For a search result record, translate the metadata to UMM, validate the metadata and UMM record
@@ -336,7 +336,7 @@
 
 (comment
  ;; Translate and validate a specific collection by concept-id
- (def record (get-collection "C1221497060-SCIOPS"))
+ (def record (get-collection "C1000000320-SEDAC"))
  (translate-and-validation-collection record)
  (translate-record-to-umm record)
  (:metadata-format record)

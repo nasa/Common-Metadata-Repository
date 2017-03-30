@@ -49,8 +49,8 @@
         collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
         sanitized-collection (spec/parse-metadata context :collection format metadata)
         ;; Return warnings for schema validation errors going from xml -> UMM
-        warnings (v/validate-collection-umm-spec-schema collection validation-options)]
-    (v/umm-spec-validate-collection collection validation-options context)
+        warnings (v/validate-collection-umm-spec-schema collection validation-options)
+        warnings (concat warnings (v/umm-spec-validate-collection collection validation-options context))]
     ;; The sanitized UMM Spec collection is returned so that ingest does not fail
     {:collection sanitized-collection
      :warnings warnings}))
@@ -65,7 +65,7 @@
                                                                              validation-options)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
-    ;; Validate ingest business rule through umm-spec-lib
+    ;; Validate ingest business rules through umm-spec-lib
     (v/validate-business-rules
      context (assoc coll-concept :umm-concept collection))
     {:concept coll-concept

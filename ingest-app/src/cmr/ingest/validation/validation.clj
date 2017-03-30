@@ -126,10 +126,7 @@
                            (humanizer-alias-cache/update-collection-with-aliases
                              context collection true)
                            granule))]
-    (if (config/return-umm-spec-validation-errors)
-      (if-errors-throw :invalid-data errors)
-      (warn (format "Granule with Granule UR [%s] had the following UMM Spec validation errors: %s"
-                        (:granule-ur granule) (pr-str (vec errors)))))))
+    (if-errors-throw :invalid-data errors)))
 
 (defn validate-granule-umm
   "Validates a UMM granule record using rules defined in UMM with a UMM collection record,
