@@ -1,24 +1,27 @@
 (ns cmr.system-int-test.utils.ingest-util
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [clojure.data :as d]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.mime-types :as mt]
-            [cmr.umm.echo10.echo10-collection :as c]
-            [cmr.umm.echo10.granule :as g]
-            [cmr.system-int-test.data2.provider-holdings :as ph]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.access-control :as ac]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.mock-echo.client.echo-util :as echo-util]
-            [cmr.common.util :as util]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util])
+  (:require
+   [clojure.test :refer :all]
+   [clj-http.client :as client]
+   [clojure.string :as str]
+   [cheshire.core :as json]
+   [clojure.data :as d]
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.common.mime-types :as mt]
+   [cmr.umm.echo10.echo10-collection :as c]
+   [cmr.umm.echo10.granule :as g]
+   [cmr.system-int-test.data2.provider-holdings :as ph]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.access-control :as ac]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.ingest.config :as icfg])
   (:import [java.lang.NumberFormatException]))
 
 (defn disable-ingest-writes
@@ -475,6 +478,13 @@
            (create-provider provider-map {:grant-all-search? grant-all-search?
                                           :grant-all-ingest? grant-all-ingest?})))
        (f)))))
+
+(defn umm-spec-validation-fixture
+ "Turn umm-spec validation on, run test, then turn it off"
+ [f]
+ (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
+ (f)
+ (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
 
 (defn clear-caches
   "Clears caches in the ingest application"
