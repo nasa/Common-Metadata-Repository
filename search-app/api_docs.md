@@ -1932,7 +1932,7 @@ supported, not granule search.
     curl -XPOST -H "Content-Type: application/json" %CMR-ENDPOINT%/collections
     -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
                                                   { "and": [{ "project": "test-project",
-                                                              "platform": "mars-satellite" }]}]}},
+                                                              "platform": {"short_name": "mars-satellite"}}]}]}},
                                 { "bounding_box": [-45,15,0,25],
                                   "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
 ### <a name="search-with-aql"></a> Search with AQL
