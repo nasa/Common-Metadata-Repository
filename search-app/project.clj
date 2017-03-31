@@ -34,27 +34,42 @@
                  :timeout 120000}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles
-  {:dev {:dependencies [[ring-mock "0.1.5"]
-                        [org.clojure/tools.namespace "0.2.11"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [criterium "0.4.4"]
-                        [pjstadig/humane-test-output "0.8.1"]
-                        ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.3"]]
-         :jvm-opts ^:replace ["-server"]
-         :source-paths ["src" "dev" "test"]
-         :injections [(require 'pjstadig.humane-test-output)
-                      (pjstadig.humane-test-output/activate!)]}
+  :profiles {
+    :dev {:dependencies [[ring-mock "0.1.5"]
+                         [org.clojure/tools.namespace "0.2.11"]
+                         [org.clojars.gjahad/debug-repl "0.3.3"]
+                         [criterium "0.4.4"]
+                         [pjstadig/humane-test-output "0.8.1"]
+                         ;; Must be listed here as metadata db depends on it.
+                         [drift "1.5.3"]]
+          :jvm-opts ^:replace ["-server"]
+          :source-paths ["src" "dev" "test"]
+          :injections [(require 'pjstadig.humane-test-output)
+                       (pjstadig.humane-test-output/activate!)]}
 
-   ;; This profile specifically here for generating documentation. It's faster than using the regular
-   ;; profile. An agent pool is being started when using the default profile which causes the wait of
-   ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
-   ;; Generate docs with: lein with-profile docs generate-docs
-   :docs {}
+    ;; This profile specifically here for generating documentation. It's
+    ;; faster than using the regular profile. An agent pool is being started
+    ;; when using the default profile which causes the wait of 60 seconds
+    ;; before allowing the JVM to shutdown since no call to shutdown-agents is
+    ;; made. Generate docs with: lein with-profile docs generate-docs
+    :docs {}
 
-   :uberjar {:main cmr.search.runner
-             :aot :all}}
+    :uberjar {:main cmr.search.runner
+              :aot :all}
+
+    ;; This profile is used for linting and static analisys. To run for this
+    ;; project, use `lein lint` from inside the project directory. To run for
+    ;; all projects at the same time, use the same command but from the top-
+    ;; level directory.
+    :lint {
+      :source-paths ^:replace ["src"]
+      :test-paths ^:replace []
+      :plugins [[jonase/eastwood "0.2.3"]
+                [lein-ancient "0.6.10"]
+                [lein-bikeshed "0.4.1"]
+                [lein-kibit "0.1.2"]
+                [lein-shell "0.4.0"]
+                [venantius/yagni "0.1.4"]]}}
 
   :aliases {"generate-docs"
             ["exec" "-ep"
@@ -81,4 +96,12 @@
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]})
+            "test-out" ["test2junit"]
+            ;; Linting aliases
+            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                          ["with-profile" "lint" "kibit"]]
+            "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
+            "bikeshed" ["with-profile" "lint" "bikeshed"]
+            "yagni" ["with-profile" "lint" "yagni"]
+            "check-deps" ["with-profile" "lint" "ancient"]
+            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
