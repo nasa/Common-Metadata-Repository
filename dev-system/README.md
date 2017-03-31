@@ -9,9 +9,9 @@ You can setup locally for running the CMR in memory by doing the following.
 You'll need a URS username that's been granted access to the repository. After
 this has completed you can start a REPL in dev-system.
 
-1. git clone ***REMOVED***
-2. cd cmr
-3. dev-system/support/setup_local_dev.sh
+1. `git clone git@github.com:nasa/Common-Metadata-Repository.git`
+2. `cd cmr`
+3. `dev-system/support/setup_local_dev.sh`
 
 ## Setting up profiles.clj
 

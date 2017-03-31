@@ -70,6 +70,10 @@ running the CMR as a single process or as multiple processes.
 4. `lein repl`
 5. Once given a Clojure prompt, run `(reset)`
 
+Note that the `reset` action could potentially take a while, not only due to
+the code reloading for a large number of namespaces, but for bootstrapping
+services as well as starting up worker threads.
+
 #### Building and Running CMR Dev System from a Jar
 
 1. `cd cmr/dev-system`
