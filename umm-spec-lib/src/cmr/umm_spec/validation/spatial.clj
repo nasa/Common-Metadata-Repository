@@ -56,7 +56,7 @@
   "Validates the existence of orbit parameters when the granule spatial representation is orbit"
   [field-path spatial-extent]
   (let [{:keys [GranuleSpatialRepresentation OrbitParameters]} spatial-extent]
-    (if (and (= GranuleSpatialRepresentation "ORBIT") (nil? OrbitParameters))
+    (when (and (= GranuleSpatialRepresentation "ORBIT") (nil? OrbitParameters))
       {field-path
        [(str "Orbit Parameters must be defined for a collection "
              "whose granule spatial representation is ORBIT.")]})))
