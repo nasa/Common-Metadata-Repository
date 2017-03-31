@@ -7,20 +7,23 @@
     [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as ac]
+    [cmr.common.date-time-parser :as p]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
-    [cmr.transmit.config :as transmit-config]
     [cmr.common.util :as util]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.search-util :as search]
+    [cmr.transmit.config :as transmit-config]
+    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm-spec.test.expected-conversion :as exc]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-spec-core :as umm-spec]))
@@ -36,13 +39,13 @@
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
-    (let [concept (dc/collection-concept {})
+    (let [concept (data-umm-c/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id))))
   (testing "ingest of a concept with a revision id"
-    (let [concept (dc/collection-concept {:revision-id 5})
+    (let [concept (data-umm-c/collection-concept {:revision-id 5})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (= 5 revision-id))
@@ -57,7 +60,7 @@
 (deftest collection-ingest-user-id-test
   (testing "ingest of new concept"
     (util/are2 [ingest-headers expected-user-id]
-      (let [concept (dc/collection-concept {})
+      (let [concept (data-umm-c/collection-concept {})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
         (index/wait-until-indexed)
         (assert-user-id concept-id revision-id expected-user-id))
@@ -79,7 +82,7 @@
                 ingest-header2 expected-user-id2
                 ingest-header3 expected-user-id3
                 ingest-header4 expected-user-id4]
-      (let [concept (dc/collection-concept {})
+      (let [concept (data-umm-c/collection-concept {})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-header1)]
         (ingest/ingest-concept concept ingest-header2)
         (ingest/delete-concept concept ingest-header3)
@@ -105,7 +108,7 @@
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test
   (testing "collection"
-    (let [concept (dc/collection-concept {})
+    (let [concept (data-umm-c/collection-concept {})
           response (ingest/delete-concept concept {:raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
       (is (re-find #"Collection with native id \[.*?\] in provider \[PROV1\] does not exist"
@@ -114,7 +117,7 @@
 ;; Collection with concept-id ingest and update scenarios.
 (deftest collection-w-concept-id-ingest-test
   (let [supplied-concept-id "C1000-PROV1"
-        concept (dc/collection-concept {:concept-id supplied-concept-id
+        concept (data-umm-c/collection-concept {:concept-id supplied-concept-id
                                         :native-id "Atlantic-1"})]
     (testing "ingest of a new concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
@@ -141,12 +144,16 @@
 ;; Verify that the accept header works
 (deftest collection-ingest-accept-header-response-test
   (testing "json response"
-    (let [concept (dc/collection-concept {:concept-id "C1200000000-PROV1"})
+    (let [concept (data-umm-c/collection-concept {:EntryTitle "E1"
+                                                  :ShortName "S1"
+                                                  :concept-id "C1200000000-PROV1"})
           response (ingest/ingest-concept concept {:accept-format :json :raw? true})]
       (is (= {:concept-id (:concept-id concept) :revision-id 1}
              (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
   (testing "xml response"
-    (let [concept (dc/collection-concept {:concept-id "C1200000001-PROV1"})
+    (let [concept (data-umm-c/collection-concept {:EntryTitle "E2"
+                                                  :ShortName "S2" 
+                                                  :concept-id "C1200000001-PROV1"})
           response (ingest/ingest-concept concept {:accept-format :xml :raw? true})]
       (is (= {:concept-id (:concept-id concept) :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
@@ -154,13 +161,13 @@
 ;; Verify that the accept header works with returned errors
 (deftest collection-ingest-with-errors-accept-header-test
   (testing "json response"
-    (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+    (let [concept-with-empty-body  (assoc (data-umm-c/collection-concept {}) :metadata "")
           response (ingest/ingest-concept concept-with-empty-body
                                           {:accept-format :json :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
       (is (re-find #"XML content is too short." (first errors)))))
   (testing "xml response"
-    (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+    (let [concept-with-empty-body  (assoc (data-umm-c/collection-concept {}) :metadata "")
           response (ingest/ingest-concept concept-with-empty-body
                                           {:accept-format :xml :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
@@ -169,7 +176,7 @@
 ;; Verify that XML is returned for ingest errros when the headers aren't set
 (deftest collection-ingest-with-errors-no-accept-header-test
   (testing "xml response"
-    (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+    (let [concept-with-empty-body  (assoc (data-umm-c/collection-concept {}) :metadata "")
           response (ingest/ingest-concept concept-with-empty-body
                                           {:raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
@@ -178,15 +185,17 @@
 ;; Verify that the accept header works with deletions
 (deftest delete-collection-with-accept-header-test
   (testing "json response"
-    (let [coll1 (d/ingest "PROV1" (dc/collection))
-          response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
+    (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                              :ShortName "S1"}))
+          response (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :json
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
   (testing "xml response"
-    (let [coll1 (d/ingest "PROV1" (dc/collection))
+    (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                              :ShortName "S2"}))
           _ (index/wait-until-indexed)
-          response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
+          response (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :xml
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
@@ -194,7 +203,7 @@
 ;; Verify that XML is returned for deletion errros when the accept header isn't set
 (deftest collection-deletion-with-errors-no-accept-header-test
   (testing "xml response"
-    (let [concept (dc/collection-concept {})
+    (let [concept (data-umm-c/collection-concept {})
           response (ingest/delete-concept concept {:raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
       (is (re-find #"Collection with native id \[.*?\] in provider \[PROV1\] does not exist"
@@ -203,18 +212,24 @@
 ;; Verify that xml response is returned for ingests of xml content type
 (deftest collection-ingest-with-reponse-format-from-content-type
   (testing "echo10"
-    (let [concept (dc/collection-concept {:concept-id "C1-PROV1"} :echo10)
+    (let [concept (data-umm-c/collection-concept {:EntryTitle "E1"
+                                                  :ShortName "S1"
+                                                  :concept-id "C1-PROV1"} :echo10)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C1-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
   (testing "dif"
-    (let [concept (d/item->concept (assoc (dc/collection-dif {:concept-id "C2-PROV1"})
+    (let [concept (d/umm-c-collection->concept (assoc (data-umm-c/collection {:EntryTitle "E2"
+                                                                  :ShortName "S2"
+                                                                  :concept-id "C2-PROV1"})
                                           :provider-id "PROV1") :dif)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C2-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
   (testing "iso"
-    (let [concept (dc/collection-concept {:concept-id "C3-PROV1"} :iso-smap)
+    (let [concept (data-umm-c/collection-concept {:EntryTitle "E3"
+                                                  :ShortName "S3"
+                                                  :concept-id "C3-PROV1"} :iso-smap)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C3-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
@@ -222,67 +237,67 @@
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
 ;; a concatenation of short name and version ID.
 (deftest collection-w-entry-id-validation-test
-  (let [coll1-1 (dc/collection-dif {:concept-id "C1-PROV1"
-                                    :short-name "EID-1"
-                                    :entry-title "ET-1"
-                                    :native-id "NID-1"})
-        coll1-2 (assoc-in coll1-1 [:product :short-name] "EID-2")
-        coll1-3 (dc/collection-dif {:concept-id "C3-PROV1"
-                                    :short-name "EID-3"
-                                    :entry-title "ET-3"
-                                    :native-id "NID-3"})
-        coll1-4 (assoc-in coll1-3 [:product :short-name] "EID-4")
+  (let [coll1-1 (data-umm-c/collection {:concept-id "C1-PROV1"
+                                        :ShortName "EID-1"
+                                        :EntryTitle "ET-1"
+                                        :native-id "NID-1"})
+        coll1-2 (assoc-in coll1-1 [:ShortName] "EID-2")
+        coll1-3 (data-umm-c/collection {:concept-id "C3-PROV1"
+                                        :ShortName "EID-3"
+                                        :EntryTitle "ET-3"
+                                        :native-id "NID-3"})
+        coll1-4 (assoc-in coll1-3 [:ShortName] "EID-4")
         ;; ingest the collections/granules for test
-        _ (d/ingest "PROV1" coll1-1 {:format :dif})
-        coll3 (d/ingest "PROV1" coll1-3 {:format :dif})
-        gran1 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule2"}))]
+        _ (d/ingest-umm-spec-collection "PROV1" coll1-1 {:format :dif})
+        coll3 (d/ingest-umm-spec-collection "PROV1" coll1-3 {:format :dif})
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule2"}))]
     (index/wait-until-indexed)
 
     (testing "update the collection with a different entry-id is OK"
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest "PROV1" coll1-2 {:format :dif})]
+            (d/ingest-umm-spec-collection "PROV1" coll1-2 {:format :dif})]
         (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "update the collection that has granules with a different entry-id is allowed"
       ;; For CMR-2403 we decided to temporary allow collection identifiers to be updated even
       ;; with existing granules for the collection. We will change this with CMR-2485.
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest "PROV1" coll1-4 {:format :dif :allow-failure? true})]
+            (d/ingest-umm-spec-collection "PROV1" coll1-4 {:format :dif :allow-failure? true})]
         (is (= ["C3-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection latest revision within the same provider is invalid"
-      (let [{:keys [status errors]} (d/ingest "PROV1"
+      (let [{:keys [status errors]} (d/ingest-umm-spec-collection "PROV1"
                                               (assoc coll1-2
                                                      :concept-id "C2-PROV1"
                                                      :native-id "NID-2"
-                                                     :entry-title "EID-2")
+                                                     :EntryTitle "EID-2")
                                               {:format :dif :allow-failure? true})]
-        (is (= [409 ["The Entry Id [EID-2] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
+        (is (= [409 ["The Entry Id [EID-2_V1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection, but not the latest revision within the same provider is OK"
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest "PROV1"
+            (d/ingest-umm-spec-collection "PROV1"
                       (assoc coll1-1
                              :concept-id "C2-PROV1"
                              :native-id "NID-2"
-                             :entry-title "EID-2")
+                             :EntryTitle "EID-2")
                       {:format :dif :allow-failure? true})]
         (is (= ["C2-PROV1" 1 201 nil] [concept-id revision-id status errors]))))
 
     (testing "entry-id and entry-title constraint violations return multiple errors"
-      (let [{:keys [status errors]} (d/ingest "PROV1"
+      (let [{:keys [status errors]} (d/ingest-umm-spec-collection "PROV1"
                                               (assoc coll1-2
                                                      :concept-id "C5-PROV1"
                                                      :native-id "NID-5")
                                               {:format :dif :allow-failure? true})]
         (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."
-                     "The Entry Id [EID-2] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
+                     "The Entry Id [EID-2_V1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
-      (let [{:keys [status]} (d/ingest "PROV2"
+      (let [{:keys [status]} (d/ingest-umm-spec-collection "PROV2"
                                        (assoc coll1-2 :concept-id "C1-PROV2")
                                        {:format :dif})]
         (is (= 201 status))))))
@@ -292,7 +307,7 @@
 (deftest repeat-same-collection-ingest-test
   (testing "ingest same concept n times ..."
     (let [n 4
-          concept (dc/collection-concept {})
+          concept (data-umm-c/collection-concept {})
           created-concepts (take n (repeatedly n #(ingest/ingest-concept concept)))]
       (index/wait-until-indexed)
       (is (apply = (map :concept-id created-concepts)))
@@ -301,20 +316,21 @@
 (deftest update-collection-with-different-formats-test
   (testing "update collection in different formats ..."
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
-      (let [coll (d/ingest "PROV1"
-                           (dc/collection {:short-name "S1"
-                                           :version-id "V1"
-                                           :entry-title "ET1"
-                                           :long-name "L4"
-                                           :summary (name coll-format)
+      (let [coll (d/ingest-umm-spec-collection "PROV1"
+                           (data-umm-c/collection {:ShortName "S1"
+                                           :Version "V1"
+                                           :EntryTitle "ET1"
+                                           :LongName "L4"
+                                           :Abstract (name coll-format)
                                            ;; The following fields are needed for DIF to pass xml validation
-                                           :science-keywords [(dc/science-keyword {:category "upcase"
-                                                                                   :topic "Cool"
-                                                                                   :term "Mild"})]
-                                           :organizations [(dc/org :distribution-center "Larc")]
+                                           :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                                                                                   :Topic "Cool"
+                                                                                   :Term "Mild"})]
+                                           :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
                                            ;; The following fields are needed for DIF10 to pass xml validation
-                                           :beginning-date-time "1965-12-12T12:00:00Z"
-                                           :ending-date-time "1967-12-12T12:00:00Z"})
+                                           :TemporalExtents [(data-umm-c/temporal-extent 
+                                                               {:beginning-date-time "1965-12-12T12:00:00Z"
+                                                                :ending-date-time "1967-12-12T12:00:00Z"})]})
                            {:format coll-format})]
         (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
@@ -322,7 +338,7 @@
 
 ;; Verify ingest behaves properly if empty body is presented in the request.
 (deftest empty-collection-ingest-test
-  (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+  (let [concept-with-empty-body  (assoc (data-umm-c/collection-concept {}) :metadata "")
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
     (index/wait-until-indexed)
     (is (= status 400))
@@ -330,9 +346,10 @@
 
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test
-  (let [coll (dc/collection {:delete-time "2000-01-01T12:00:00Z"})
+  (let [coll (data-umm-c/collection {:DataDates [(umm-cmn/map->DateType {:Date (p/parse-datetime "2000-01-01T12:00:00Z")
+                                                                        :Type "DELETE"})]})
         {:keys [status errors]} (ingest/ingest-concept
-                                  (d/item->concept (assoc coll :provider-id "PROV1") :echo10))]
+                                  (d/umm-c-collection->concept (assoc coll :provider-id "PROV1") :echo10))]
     (index/wait-until-indexed)
     (is (= status 422))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
@@ -340,7 +357,7 @@
 (deftest delete-collection-test-old
   (testing "It should be possible to delete existing concept and the operation without revision id should
            result in revision id 1 greater than max revision id of the concept prior to the delete"
-           (let [concept (dc/collection-concept {})
+           (let [concept (data-umm-c/collection-concept {})
                  ingest-result (ingest/ingest-concept concept)
                  delete-result (ingest/delete-concept concept)
                  ingest-revision-id (:revision-id ingest-result)
@@ -348,7 +365,7 @@
              (index/wait-until-indexed)
              (is (= (inc ingest-revision-id) delete-revision-id))))
   (testing "Deleting existing concept with a revision-id should respect the revision id"
-    (let [concept (dc/collection-concept {})
+    (let [concept (data-umm-c/collection-concept {})
           ingest-result (ingest/ingest-concept concept)
           delete-result (ingest/delete-concept concept {:revision-id 5})
           delete-revision-id (:revision-id delete-result)]
@@ -357,15 +374,17 @@
       (is (mdb/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
 
 (deftest delete-collection-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection))
-        gran1 (d/ingest "PROV1" (dg/granule coll1))
-        gran2 (d/ingest "PROV1" (dg/granule coll1))
-        coll2 (d/ingest "PROV1" (dc/collection))
-        gran3 (d/ingest "PROV1" (dg/granule coll2))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                            :ShortName "S1"}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                            :ShortName "S2"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2)))]
     (index/wait-until-indexed)
 
     ;; delete collection
-    (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1 :echo10)))))
+    (is (= 200 (:status (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10)))))
     (index/wait-until-indexed)
 
     (is (:deleted (mdb/get-concept (:concept-id coll1))) "The collection should be deleted")
@@ -391,8 +410,10 @@
 
 (deftest delete-collection-acls-test
   ;; Ingest a collection under PROV1.
-  (let [coll1 (d/ingest "PROV1" (dc/collection))
-        coll2 (d/ingest "PROV1" (dc/collection))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                                            :ShortName "S1"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+                                                                            :ShortName "S2"}))
         token (e/login-guest (s/context))]
 
     ;; wait for the collections to be indexed so that ACLs will be valid
@@ -409,37 +430,37 @@
                           :catalog_item_identity {:name "coll1 ACL"
                                                   :provider_id "PROV1"
                                                   :collection_applicable true
-                                                  :collection_identifier {:entry_titles [(:entry-title coll1)]}}})
+                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
     (ac/create-acl token {:group_permissions [{:user_type "guest"
                                                :permissions ["read"]}]
                           :catalog_item_identity {:name "coll1/coll2 ACL"
                                                   :provider_id "PROV1"
                                                   :collection_applicable true
-                                                  :collection_identifier {:entry_titles [(:entry-title coll1) (:entry-title coll2)]}}})
+                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1) (:EntryTitle coll2)]}}})
     (index/wait-until-indexed)
     ;; Verify that the ACLs are found in Access Control Service search.
     (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
       (is (= [1 1] (map :revision_id results)))
       (is (= ["coll1 ACL" "coll1/coll2 ACL"] (map :name results))))
     ;; Delete the collection via ingest.
-    (ingest/delete-concept (d/item->concept coll1 :echo10))
+    (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10))
     (index/wait-until-indexed)
     ;; Verify that those ACLs are NOT found.
     (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
       (is (= [2] (map :revision_id results)))
       (is (= ["coll1/coll2 ACL"] (map :name results)))
-      (is (= [(:entry-title coll2)]
+      (is (= [(:EntryTitle coll2)]
              (-> (ac/get-acl token (:concept_id (first results)))
                  :catalog_item_identity
                  :collection_identifier
                  :entry_titles))))))
 
 (deftest delete-deleted-collection-with-new-revision-id-returns-404
-  (let [coll (d/ingest "PROV1" (dc/collection))
+  (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection))
         concept-id (:concept-id coll)
-        native-id (:entry-title coll)
-        coll-del1 (ingest/delete-concept (d/item->concept coll :echo10) {:revision-id 5})
-        coll-del2 (ingest/delete-concept (d/item->concept coll :echo10) {:revision-id 7})]
+        native-id (:EntryTitle coll)
+        coll-del1 (ingest/delete-concept (d/umm-c-collection->concept coll :echo10) {:revision-id 5})
+        coll-del2 (ingest/delete-concept (d/umm-c-collection->concept coll :echo10) {:revision-id 7})]
     (is (= 200 (:status coll-del1)))
     (is (= 404 (:status coll-del2)))
     (is (= [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
@@ -453,7 +474,7 @@
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
-  (let [concept (assoc (dc/collection-concept {})
+  (let [concept (assoc (data-umm-c/collection-concept {})
                        :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
@@ -461,7 +482,7 @@
 
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
-  (let [concept-with-no-content-type  (assoc (dc/collection-concept {}) :format "")
+  (let [concept-with-no-content-type  (assoc (data-umm-c/collection-concept {}) :format "")
         response (ingest/ingest-concept concept-with-no-content-type {:accept-format :json :raw? true})
         status (:status response)
         {:keys [errors]} (ingest/parse-ingest-body :json response)]
@@ -471,7 +492,7 @@
 
 ;; Verify ingest behaves properly if request contains invalid content type.
 (deftest invalid-content-type-ingest-test
-  (let [concept (assoc (dc/collection-concept {}) :format "blah")
+  (let [concept (assoc (data-umm-c/collection-concept {}) :format "blah")
         response (ingest/ingest-concept concept {:accept-format :json :raw? true})
         status (:status response)
         {:keys [errors]} (ingest/parse-ingest-body :json response)]
@@ -482,7 +503,7 @@
 ;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-collection-with-slash-in-native-id-test
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
-        collection (dc/collection-concept {:entry-title crazy-id})
+        collection (data-umm-c/collection-concept {:EntryTitle crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
         ingested-concept (mdb/get-concept concept-id)]
     (index/wait-until-indexed)
@@ -497,8 +518,10 @@
 
 (deftest schema-validation-test
   (are [concept-format validation-errors]
-       (let [concept (dc/collection-concept
-                       {:beginning-date-time "2010-12-12T12:00:00Z"} concept-format)
+       (let [concept (data-umm-c/collection-concept
+                       {:TemporalExtents [(data-umm-c/temporal-extent 
+                                            {:beginning-date-time "2010-12-12T12:00:00Z"})]} 
+                       concept-format) 
              {:keys [status errors]}
              (ingest/ingest-concept
                (assoc concept
@@ -516,18 +539,8 @@
        :echo10 ["Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
                 "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
 
-       :dif [(str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
-                  "starting with element 'Summary'. "
-                  "One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_Language, "
-                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Originating_Center, "
-                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Center}' is expected.")]
-
        :dif10 ["Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
-               "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."
-               (str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found starting with element 'Summary'."
-                    " One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Dataset_Language,"
-                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Originating_Center,"
-                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Organization}' is expected.")]
+               "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."]
 
        :iso19115 [(str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
                        "starting with element 'gmd:XXXX'. One of "
@@ -605,9 +618,9 @@
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters
-  (let [project (dc/project "p1" (str "A long name longer than eighty characters should not result"
+  (let [project (data-umm-c/project "p1" (str "A long name longer than eighty characters should not result"
                                       " in a schema validation error"))
-        concept (assoc (dc/collection-concept {:projects [project]})
+        concept (assoc (data-umm-c/collection-concept {:projects [project]})
                        :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
