@@ -1,6 +1,9 @@
 #!/bin/sh
-# This script is used to setup CMR for local development. It assumes you have cloned the whole repo,
-# installed leiningen and Java
+# This script is used to setup CMR for local development. It assumes you have
+# cloned the whole repo, installed leiningen and Java.
+#
+# Additionally, this script assumes it is being executed in the parent
+# directory of the the dev-system project.
 
 date && echo "Installing all apps" &&
 lein modules do clean, install, clean

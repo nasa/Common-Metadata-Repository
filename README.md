@@ -65,8 +65,8 @@ running the CMR as a single process or as multiple processes.
    instructions in `oracle-lib/README.md`. The CMR must have these libraries to
    build but it does not depend on Oracle DB when running locally. It uses a
    local in memory database by default.
-2. `cd cmr/dev-system`
-3. `./support/setup_local_dev.sh`
+2. `cd cmr`
+3. `./dev-system/support/setup_local_dev.sh`
 4. `lein repl`
 5. Once given a Clojure prompt, run `(reset)`
 
