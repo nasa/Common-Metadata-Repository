@@ -14,6 +14,8 @@
    ;; This is required as an attempt to avoid NoClassDefFoundError occasionally during startup.
    ;; See CMR-3156
    (oracle.security.o5logon O5Logon)
+   ;;
+   ;(oracle.dms.console DMSConsole)
    (oracle.ucp.admin UniversalConnectionPoolManagerImpl)
    (oracle.ucp.jdbc PoolDataSourceFactory)))
 

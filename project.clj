@@ -25,5 +25,7 @@
                                         "metadata-db-app"
                                         "search-app"
                                         "virtual-product-app"
-                                        "es-spatial-plugin"]}}})
+                                        "es-spatial-plugin"]}}}
+  :aliases {
+    "lint" ["modules" "lint"]})
 
