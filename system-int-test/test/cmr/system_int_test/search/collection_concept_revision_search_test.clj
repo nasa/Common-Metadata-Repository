@@ -1,52 +1,48 @@
 (ns cmr.system-int-test.search.collection-concept-revision-search-test
   "Integration test for collection all revisions search"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :refer [are2] :as util]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [are2] :as util]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (def test-context (lkt/setup-context-for-test))
 
 (deftest search-collection-all-revisions
-  (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "eid1"
-                                                  :version-id "v1"
-                                                  :short-name "s1"}))
+  (let [coll1-1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "et1"
+                                                                              :Version "v1"
+                                                                              :ShortName "s1"}))
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
-                  :native-id (:entry-title coll1-1)}
+                  :native-id (:EntryTitle coll1-1)}
         coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
-        coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "eid1"
-                                                  :version-id "v2"
-                                                  :short-name "s1"}))
+        coll1-3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "et1"
+                                                                              :Version "v2"
+                                                                              :ShortName "s1"}))
 
-        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "eid2"
-                                                  :version-id "v1"
-                                                  :short-name "s2"}))
-        coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "eid2"
-                                                  :version-id "v2"
-                                                  :short-name "s2"}))
+        coll2-1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "et2"
+                                                                              :Version "v1"
+                                                                              :ShortName "s2"}))
+        coll2-2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "et2"
+                                                                              :Version "v2"
+                                                                              :ShortName "s2"}))
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
-                  :native-id (:entry-title coll2-2)}
+                  :native-id (:EntryTitle coll2-2)}
         coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
 
-        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et3"
-                                                :entry-id "eid3"
-                                                :version-id "v4"
-                                                :short-name "s1"}))]
+        coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "et3"
+                                                                            :Version "v4"
+                                                                            :ShortName "s1"}))]
     (index/wait-until-indexed)
     (testing "find-references-with-all-revisions parameter"
       (are2 [collections params]
@@ -128,13 +124,13 @@
         mime-type "application/vnd.nasa.cmr.umm+json;version=1.0"
         json (umm-spec/generate-metadata test-context coll4-umm mime-type)
         coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
-                                                 :concept-type :collection
-                                                 :format mime-type
-                                                 :native-id "coll"
-                                                 :metadata json})
+                                              :concept-type :collection
+                                              :format mime-type
+                                              :native-id "coll"
+                                              :metadata json})
         tombstone (ingest/delete-concept {:provider-id "PROV1"
-                                                  :concept-type :collection
-                                                  :native-id "coll"})
+                                          :concept-type :collection
+                                          :native-id "coll"})
         tombstone (assoc tombstone :deleted true)]
     (index/wait-until-indexed)
     (is (= (set (for [{:keys [concept-id revision-id]} [coll tombstone]]

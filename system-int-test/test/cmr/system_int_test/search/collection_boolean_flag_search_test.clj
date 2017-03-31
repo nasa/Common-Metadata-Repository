@@ -1,24 +1,28 @@
 (ns cmr.system-int-test.search.collection-boolean-flag-search-test
   "Integration tests for searching by downloadable and browsable"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-collection-by-downloadable
-  (let [ru1 (dc/related-url {:type "GET DATA"})
-        ru2 (dc/related-url {:type "GET RELATED VISUALIZATION"})
-        ru3 (dc/related-url {:type "VIEW RELATED INFORMATION"})
-        coll1 (d/ingest "PROV1" (dc/collection {:related-urls [ru1]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:related-urls [ru2]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:related-urls [ru3]}))
-        coll4 (d/ingest "PROV1" (dc/collection {:related-urls [ru2 ru3]}))
-        coll5 (d/ingest "PROV1" (dc/collection {:related-urls [ru1 ru2]}))
-        coll6 (d/ingest "PROV1" (dc/collection {}))]
+  (let [ru1 (data-umm-c/related-url {:URLContentType "DistributionURL"
+                                     :Type "GET DATA"})
+        ru2 (data-umm-c/related-url {:URLContentType "VisualizationURL"
+                                     :Type "GET RELATED VISUALIZATION"})
+        ru3 (data-umm-c/related-url {:URLContentType "PublicationURL"
+                                     :Type "VIEW RELATED INFORMATION"})
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:RelatedUrls [ru1]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:RelatedUrls [ru2]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:RelatedUrls [ru3]}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:RelatedUrls [ru2 ru3]}))
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:RelatedUrls [ru1 ru2]}))
+        coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 6 {}))]
 
     (index/wait-until-indexed)
 

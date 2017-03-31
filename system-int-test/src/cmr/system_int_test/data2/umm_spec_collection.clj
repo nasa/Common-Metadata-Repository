@@ -217,7 +217,15 @@
   ([]
    (collection {}))
   ([attribs]
-    (umm-c/map->UMM-C (merge minimal-umm-c attribs))))
+   (umm-c/map->UMM-C (merge minimal-umm-c attribs)))
+  ([index attribs]
+   (umm-c/map->UMM-C
+    (merge
+     minimal-umm-c
+     {:ShortName (str "Short Name " index)
+      :Version (str "V" index)
+      :EntryTitle (str "Entry Title " index)}
+     attribs))))
 
 (defn collection-concept
   "Returns the collection for ingest with the given attributes"

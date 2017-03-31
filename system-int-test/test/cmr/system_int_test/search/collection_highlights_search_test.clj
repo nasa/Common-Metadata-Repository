@@ -1,22 +1,24 @@
 (ns cmr.system-int-test.search.collection-highlights-search-test
   "This tests the highlighting capability when searching for collections"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]
-            [clojure.string :as str]
-            [clojure.set :as set]))
+  (:require
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (defn- make-coll
   "Helper for creating and ingesting a collection"
   [n & attribs]
-  (d/ingest "PROV1" (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))))
+  (d/ingest-umm-spec-collection "PROV1"
+   (data-umm-c/collection n (apply merge {:EntryTitle (str "coll" n)} attribs))))
 
 (defn- get-search-results-summaries
   "Returns a list of the highlighted-summary-snippets fields from a list of search results."
@@ -30,19 +32,19 @@
 (defn- ingest-collections-for-test
   "Ingest all of the collections that will be used for testing"
   []
-  (make-coll 1 {:summary "no highlights"})
-  (make-coll 2 {:summary (str "This summary has a lot of characters in it. **Findme** So many that "
-                              "elasticsearch will break this summary into multiple snippets. I may "
-                              "just have to keep typing until that happens. I will have to figure "
-                              "out what keyword to search for in order to make two different "
-                              "snippets have a match, but that seems (findme) doable. "
-                              "The quick brown fox jumped --findme-- over the lazy dog. "
-                              "Now is the time for all good men >>FINDME<< to come to the aid of "
-                              "the party.")})
-  (make-coll 3 {:summary "Match on 'collection'"})
-  (make-coll 4 {:summary "Match on 'ocean'."})
-  (make-coll 5 {:summary "Match on either 'ocean' or 'collection'."})
-  (make-coll 6 {:summary "Match on 'ocean collection'"})
+  (make-coll 1 {:Abstract "no highlights"})
+  (make-coll 2 {:Abstract (str "This summary has a lot of characters in it. **Findme** So many that "
+                               "elasticsearch will break this summary into multiple snippets. I may "
+                               "just have to keep typing until that happens. I will have to figure "
+                               "out what keyword to search for in order to make two different "
+                               "snippets have a match, but that seems (findme) doable. "
+                               "The quick brown fox jumped --findme-- over the lazy dog. "
+                               "Now is the time for all good men >>FINDME<< to come to the aid of "
+                               "the party.")})
+  (make-coll 3 {:Abstract "Match on 'collection'"})
+  (make-coll 4 {:Abstract "Match on 'ocean'."})
+  (make-coll 5 {:Abstract "Match on either 'ocean' or 'collection'."})
+  (make-coll 6 {:Abstract "Match on 'ocean collection'"})
   (index/wait-until-indexed))
 
 (deftest summary-highlighting-using-parameter-api
@@ -212,7 +214,7 @@
          mt/opendata)))
 
 (deftest special-characters-test
-  (make-coll 1 {:summary "MODIS/Terra dataset."})
+  (make-coll 1 {:Abstract "MODIS/Terra dataset."})
   (index/wait-until-indexed)
   (is (= #{["<em>MODIS</em>/<em>Terra</em> dataset."]}
          (get-search-results-summaries (search/find-concepts-in-json-with-json-query
@@ -228,7 +230,7 @@
         reserved-strings-with-different-behavior #{":" "?" "*"}]
     ;; Ingest one collection with a different reserved character for each collection. For example,
     ;; MODIS+TERRA, MODIS-TERRA, MODIS&&TERRA, etc.
-    (dorun (map-indexed #(make-coll (inc %1) {:summary (format "MODIS%sTERRA dataset." %2)})
+    (dorun (map-indexed #(make-coll (inc %1) {:Abstract (format "MODIS%sTERRA dataset." %2)})
                         reserved-strings))
     (index/wait-until-indexed)
 
@@ -260,4 +262,3 @@
                   :page-size 1000}
                  {:keyword (format "MODIS%sTERRA"
                                    reserved-string)}))))))))
-

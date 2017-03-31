@@ -1,31 +1,32 @@
-(ns cmr.system-int-test.search.collection-two-d-coord-name-search-test
+(ns cmr.system-int-test.search.collection-tiling-identification-system-search-test
   "Integration test for collection two d coordinate name search"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest search-by-two-d-coord-name
-  (let [two-d1 (dc/two-d "one CALIPSO")
-        two-d2 (dc/two-d "two CALIPSO")
-        two-d3 (dc/two-d "three CALIPSO")
-        two-d4 (dc/two-d "three Bravo")
-        two-d5 (dc/two-d "four Bravo")
-        coll1 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d1]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d2]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d3]}))
-        coll4 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d4]}))
-        coll5 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems [two-d2 two-d5]}))
-        coll6 (d/ingest "PROV1" (dc/collection {}))]
+(deftest search-by-tiling-identification-system-name
+  (let [tiling1 (data-umm-c/tiling-identification-system "one CALIPSO")
+        tiling2 (data-umm-c/tiling-identification-system "two CALIPSO")
+        tiling3 (data-umm-c/tiling-identification-system "three CALIPSO")
+        tiling4 (data-umm-c/tiling-identification-system "three Bravo")
+        tiling5 (data-umm-c/tiling-identification-system "four Bravo")
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:TilingIdentificationSystems [tiling1]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:TilingIdentificationSystems [tiling2]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:TilingIdentificationSystems [tiling3]}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:TilingIdentificationSystems [tiling4]}))
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:TilingIdentificationSystems [tiling2 tiling5]}))
+        coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 6 {}))]
     (index/wait-until-indexed)
 
-    (testing "two d coordinate search by two_d_coordinate_system_name parameter"
-      (are [items two-ds options]
-           (let [params (merge {"two_d_coordinate_system_name[]" two-ds}
+    (testing "tiling idenfitication system search by two_d_coordinate_system_name parameter"
+      (are [items tilings options]
+           (let [params (merge {"two_d_coordinate_system_name[]" tilings}
                                (when options
                                  {"options[two_d_coordinate_system_name]" options}))]
              (d/refs-match? items (search/find-refs :collection params)))
@@ -48,8 +49,8 @@
            [coll2 coll5] "two CALIPSO" {}))
 
     (testing "two d coordinate search by two_d_coordinate_system[name] parameter"
-      (are [items two-ds]
-           (let [params {"two_d_coordinate_system[name]" two-ds}]
+      (are [items tilings]
+           (let [params {"two_d_coordinate_system[name]" tilings}]
              (d/refs-match? items (search/find-refs :collection params)))
 
            ;; search by by two d coordinate system name - single value
@@ -74,8 +75,8 @@
                                             "two_d_coordinate_system[coordinates]" "dummy"}))))
 
     (testing "two d coordinate search by aql"
-      (are [items two-ds options]
-           (let [condition (merge {:TwoDCoordinateSystemName two-ds} options)]
+      (are [items tilings options]
+           (let [condition (merge {:TwoDCoordinateSystemName tilings} options)]
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
            ;; search by by two d coordinate system name - single value

@@ -1,12 +1,13 @@
 (ns cmr.system-int-test.search.collection-provider-short-name-search-test
   "Integration tests for searching collections with provider short names."
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer [are2]]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are2]]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture
                       [{:provider-guid "provguid1"
@@ -26,11 +27,11 @@
                         :short-name "WillbeUpdated"}]))
 
 (deftest search-collections-by-provider-short-name
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV2" (dc/collection {}))
-        coll3 (d/ingest "PROV3" (dc/collection {}))
-        coll4 (d/ingest "PROV4" (dc/collection {}))
-        coll5 (d/ingest "PROV5" (dc/collection {}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {}))
+        coll2 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 2 {}))
+        coll3 (d/ingest-umm-spec-collection "PROV3" (data-umm-c/collection 3 {}))
+        coll4 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection 4 {}))
+        coll5 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection 5 {}))]
     (index/wait-until-indexed)
 
     (testing "regular searches"
@@ -126,4 +127,3 @@
     "search with invalid options, pattern is not allowed"
     "provider 1" {"options[provider-short-name][pattern]" "true"}
     ["Parameter [provider_short_name] does not support search by pattern."]))
-
