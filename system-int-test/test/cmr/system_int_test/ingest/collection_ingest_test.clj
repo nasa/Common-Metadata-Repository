@@ -12,7 +12,6 @@
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as util]
     [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
