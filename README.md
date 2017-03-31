@@ -67,6 +67,7 @@ running the CMR as a single process or as multiple processes.
    local in memory database by default.
 2. `cd cmr`
 3. `./dev-system/support/setup_local_dev.sh`
+4. `cd dev-system`
 4. `lein repl`
 5. Once given a Clojure prompt, run `(reset)`
 
