@@ -158,7 +158,7 @@
 
 (def default-granule-spatial-representation
   "Default value for GranuleSpatialRepresentation"
-  "CARTESIAN")
+  "NO_SPATIAL")
 
 (def not-provided-temporal-extents
   "Default temporal extents to use if none is provided"

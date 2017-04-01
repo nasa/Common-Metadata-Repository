@@ -390,10 +390,8 @@
             ["SpatialCoverage" "Geometries"]
             ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"])
 
-         ;; in umm-spec the default GranuleSpatialRepresentation is "CARTESIAN" not "NO_SPATIAL"
-         ;; so the following test doesn't work anymore. 
-         ;; "parent collection has no spatial info"
-         ;; nil
+          "parent collection has no spatial info"
+          nil
 
           "parent collection GranuleSpatialRepresentation is NO_SPATIAL"
           "NO_SPATIAL")))
