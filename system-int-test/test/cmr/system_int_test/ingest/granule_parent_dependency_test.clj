@@ -9,7 +9,6 @@
     [cmr.indexer.system :as indexer-system]
     [cmr.spatial.mbr :as m]
     [cmr.spatial.polygon :as poly]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
