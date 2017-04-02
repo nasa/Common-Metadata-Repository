@@ -1,54 +1,55 @@
 (ns cmr.system-int-test.search.granule-orbit-number-search-test
   "Integration test for CMR granule orbit number search"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.common-app.services.search.messages :as m]
-            [cmr.search.services.messages.orbit-number-messages :as on-m]
-            [cmr.common.services.messages :as cm]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.common-app.services.search.messages :as m]
+    [cmr.common.services.messages :as cm]
+    [cmr.search.services.messages.orbit-number-messages :as on-m]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-granule-orbit-number
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
         gran1 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [ {:orbit-number  1
                                                                           :start-orbit-number 1.0
                                                                           :stop-orbit-number 1.0
                                                                           :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran2 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:orbit-number  1
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran3 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:start-orbit-number 1.0
                                                                          :stop-orbit-number 1.0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran4 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:orbit-number  2
                                                                          :start-orbit-number 2.0
                                                                          :stop-orbit-number 3.0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran5 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:start-orbit-number 2.7
                                                                          :stop-orbit-number 3.5
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran6 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:start-orbit-number 4.0
                                                                          :stop-orbit-number 5.0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran7 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:orbital-model-name "OrbitalModelName"
                                                                          :start-orbit-number 7.0
                                                                          :stop-orbit-number 10.0

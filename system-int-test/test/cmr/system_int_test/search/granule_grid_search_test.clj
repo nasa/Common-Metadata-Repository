@@ -1,114 +1,121 @@
 (ns cmr.system-int-test.search.granule-grid-search-test
   "Integration test for CMR granule grid search"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-granule-orbit-number
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems
-                                                [{:name "one CALIPSO"
-                                                  :coordinate-1 {:min-value 100
-                                                                 :max-value 200}
-                                                  :coordinate-2 {:min-value 300
-                                                                 :max-value 400}}]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems
-                                                [{:name "BRAVO"
-                                                  :coordinate-1 {:min-value 100
-                                                                 :max-value 200}
-                                                  :coordinate-2 {:min-value 300
-                                                                 :max-value 400}}]}))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:ShortName "S1"
+                                                                            :Version "V1"
+                                                                            :EntryTitle "E1"
+                                                                            :TilingIdentificationSystems
+                                                [{:TilingIdentificationSystemName "one CALIPSO"
+                                                  :Coordinate1 {:MinimumValue 100
+                                                                :MaximumValue 200}
+                                                  :Coordinate2 {:MinimumValue 300
+                                                                :MaximumValue 400}}]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:ShortName "S2"
+                                                                            :Version "V2"
+                                                                            :EntryTitle "E2"
+                                                                            :TilingIdentificationSystems
+                                                [{:TilingIdentificationSystemName "BRAVO"
+                                                  :Coordinate1 {:MinimumValue 100
+                                                                :MaximumValue 200}
+                                                  :Coordinate2 {:MinimumValue 300
+                                                                :MaximumValue 400}}]}))
         gran1 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 300
                                                              :end-coordinate-2 328})}))
         gran2 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 320
                                                              :end-coordinate-2 340})}))
         gran3 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 150
                                                              :end-coordinate-1 170
                                                              :start-coordinate-2 328
                                                              :end-coordinate-2 361})}))
         gran4 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 150
                                                              :end-coordinate-1 170
                                                              :start-coordinate-2 330
                                                              :end-coordinate-2 340})}))
         gran5 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 350
                                                              :end-coordinate-2 370})}))
         gran6 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 361
                                                              :end-coordinate-2 370})}))
         gran7 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 328})}))
         gran8 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 331})}))
         gran9 (d/ingest "PROV1"
-                        (dg/granule
-                          coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                        (dg/granule-with-umm-spec-collection
+                          coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                             {:name "one CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 361})}))
         gran10 (d/ingest "PROV1"
-                         (dg/granule
-                           coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                         (dg/granule-with-umm-spec-collection
+                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                              {:name "one CALIPSO"
                                                               :start-coordinate-1 110
                                                               :end-coordinate-1 130
                                                               :start-coordinate-2 329
                                                               :end-coordinate-2 360.0})}))
         gran11 (d/ingest "PROV1"
-                         (dg/granule
-                           coll2 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                         (dg/granule-with-umm-spec-collection
+                           coll2 (:concept-id coll2) {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                              {:name "BRAVO"
                                                               :start-coordinate-1 100
                                                               :end-coordinate-1 120
                                                               :start-coordinate-2 300
                                                               :end-coordinate-2 320})}))
-        gran12 (d/ingest "PROV1" (dg/granule coll1 {}))]
+        gran12 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {}))]
     (index/wait-until-indexed)
 
     (testing "search granules by grid"

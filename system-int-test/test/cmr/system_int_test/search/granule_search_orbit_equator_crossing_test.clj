@@ -1,43 +1,44 @@
 (ns cmr.system-int-test.search.granule-search-orbit-equator-crossing-test
   "Integration test for CMR granule temporal search"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.common-app.services.search.messages :as m]
-            [cmr.search.services.messages.orbit-number-messages :as on-m]
-            [cmr.common.services.messages :as cm]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.common-app.services.search.messages :as m]
+    [cmr.common.services.messages :as cm]
+    [cmr.search.services.messages.orbit-number-messages :as on-m]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-granule-orbit-equator-crossing-longitude
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
         gran1 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [ {:equator-crossing-longitude 0}]}))
         gran2 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude 90}]}))
         gran3 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude 135}]}))
         gran4 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude 180}]}))
         gran5 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -45}]}))
         gran6 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -90}]}))
         gran7 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -135}]}))
         gran8 (d/ingest "PROV1"
-                        (dg/granule coll1
+                        (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:equator-crossing-longitude -180}]}))]
     (index/wait-until-indexed)
 

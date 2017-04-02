@@ -11,9 +11,9 @@
    [cmr.common.util :refer [are3] :as util]
    [cmr.common.xml :as cx]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.fast-xml :as fx]
    [cmr.system-int-test.utils.index-util :as index]
@@ -41,7 +41,7 @@
   (let [metadata-xml (:body response)
         metadata-umm (-> (umm-c/parse-collection metadata-xml)
                          ;; parser prepends "gov.nasa.echo:" to entry-title for some reason
-                         (update-in [:entry-title]
+                         (update-in [:EntryTitle]
                                     (fn [entry-title]
                                       (str/replace entry-title "gov.nasa.echo:" "")))
                          ;; remove default added by parser
@@ -62,40 +62,36 @@
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
   (e/grant-registered-users (s/context) (e/gran-catalog-item-id "provguid1"))
 
-  (let [umm-coll1-1 (dc/collection {:entry-title "et1"
-                                    :entry-id "s1_v1"
-                                    :version-id "v1"
-                                    :short-name "s1"})
+  (let [umm-coll1-1 (data-umm-c/collection {:EntryTitle "et1"
+                                    :Version "v1"
+                                    :ShortName "s1"})
         umm-coll1-2 (-> umm-coll1-1
-                        (assoc-in [:product :version-id] "v2")
-                        (assoc :entry-id "s1_v2"))
-        umm-coll2-1 (dc/collection {:entry-title "et2"
-                                    :entry-id "s2_v2"
-                                    :version-id "v2"
-                                    :short-name "s2"})
+                        (assoc :Version "v2"))
+        umm-coll2-1 (data-umm-c/collection {:EntryTitle "et2"
+                                    :Version "v2"
+                                    :ShortName "s2"})
         umm-coll2-3 (-> umm-coll2-1
-                        (assoc-in [:product :version-id] "v6")
-                        (assoc :entry-id "s2_v6"))
+                        (assoc :Version "v6"))
 
-        umm-gran1-1 (dg/granule umm-coll2-1 {:access-value 1.0})
+        umm-gran1-1 (dg/granule-with-umm-spec-collection umm-coll2-1 (:concept-id umm-coll2-1) {:access-value 1.0})
         umm-gran1-2 (assoc umm-gran1-1 :access-value 2.0)
 
         ;; NOTE - most of the following bindings could be ignored with _, but they are assigned
         ;; to vars to make it easier to see what is being ingested.
 
         ;; Ingest a collection twice.
-        coll1-1 (d/ingest "PROV1" umm-coll1-1)
-        coll1-2 (d/ingest "PROV1" umm-coll1-2)
+        coll1-1 (d/ingest-umm-spec-collection "PROV1" umm-coll1-1)
+        coll1-2 (d/ingest-umm-spec-collection "PROV1" umm-coll1-2)
 
         ;; Ingest collection once, delete, then ingest again.
-        coll2-1 (d/ingest "PROV1" umm-coll2-1)
+        coll2-1 (d/ingest-umm-spec-collection "PROV1" umm-coll2-1)
         _ (ingest/delete-concept (d/item->concept coll2-1))
-        coll2-3 (d/ingest "PROV1" umm-coll2-3)
+        coll2-3 (d/ingest-umm-spec-collection "PROV1" umm-coll2-3)
 
         ;; Ingest a collection for PROV2 that is not visible to guests.
-        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et1"
-                                                :version-id "v1"
-                                                :short-name "s1"}))
+        coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "et1"
+                                                :Version "v1"
+                                                :ShortName "s1"}))
         ;; ingest granule twice
         gran1-1 (d/ingest "PROV1" umm-gran1-1)
         gran1-2 (d/ingest "PROV1" umm-gran1-2)

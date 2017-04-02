@@ -1,24 +1,25 @@
 (ns cmr.system-int-test.search.concept-search-with-post-test
   "Integration tests for searching concepts through POST request"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-with-post
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "OneShort"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:short-name "OnlyShort"
-                                                    :entry-title "Dataset2"}))
-        coll3 (d/ingest "PROV1" (dc/collection {:short-name "With Space"}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule 3"}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ShortName "OneShort"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ShortName "OnlyShort"
+                                                                              :EntryTitle "Dataset2"}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ShortName "With Space"}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:EntryTitle "Dataset4"}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule 3"}))]
 
     (index/wait-until-indexed)
 
@@ -73,12 +74,12 @@
                                                   :granule-ur "Granule2"}))))))
 
 (deftest search-with-post-legacy-style-range
-  (let [psa1 (dc/psa {:name "alpha" :data-type :string})
-        psa2 (dc/psa {:name "bravo" :data-type :string})
-        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
+  (let [psa1 (data-umm-c/additional-attribute {:Name "alpha" :DataType "STRING"})
+        psa2 (data-umm-c/additional-attribute {:Name "bravo" :DataType "STRING"})
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:AdditionalAttributes [psa1 psa2]}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
                                                                                      (dg/psa "bravo" ["cd" "bf"])]}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))]
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))]
 
     (index/wait-until-indexed)
 

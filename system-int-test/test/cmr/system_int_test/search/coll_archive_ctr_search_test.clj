@@ -3,8 +3,8 @@
   (:require 
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -12,28 +12,28 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-colls-by-archive-center-names
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV1" (dc/collection {:organizations []}))
-        coll3 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :processing-center "Larc")]}))
-        coll4 (d/ingest "PROV1" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:DataCenters []}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:DataCenters [(data-umm-c/data-center ["PROCESSOR"] "Larc")]}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:DataCenters [(data-umm-c/data-center ["ARCHIVER"] "Larc")]}))
 
-        coll5 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "SEDAC AC")
-                                                                (dc/org :processing-center "SEDAC PC")]}))
-        coll6 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 5 {:DataCenters [(data-umm-c/data-center ["ARCHIVER"] "SEDAC AC")
+                                                                (data-umm-c/data-center ["PROCESSOR"] "SEDAC PC")]}))
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 6 {:DataCenters [(data-umm-c/data-center ["ARCHIVER"] "Larc")]}))
 
-        coll7 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Sedac AC")
-                                                                (dc/org :processing-center "Sedac")]}))
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 7 {:DataCenters [(data-umm-c/data-center ["ARCHIVER"] "Sedac AC")
+                                                                (data-umm-c/data-center ["PROCESSOR"] "Sedac")]}))
         ;; KMS collections, but with different case for the short-names
-        kms-coll1 (d/ingest "PROV1"
-                            (dc/collection
-                              {:organizations [(dc/org :archive-center "Ucar/ncar/eoL/ceoPdm")]}))
-        kms-coll2 (d/ingest "PROV1"
-                            (dc/collection
-                              {:organizations [(dc/org :archive-center "Doi/uSGs/Cmg/wHSc")]}))
+        kms-coll1 (d/ingest-umm-spec-collection "PROV1"
+                            (data-umm-c/collection 8
+                              {:DataCenters [(data-umm-c/data-center ["ARCHIVER"] "Ucar/ncar/eoL/ceoPdm")]}))
+        kms-coll2 (d/ingest-umm-spec-collection "PROV1"
+                            (data-umm-c/collection 9
+                              {:DataCenters [(data-umm-c/data-center ["ARCHIVER"] "Doi/uSGs/Cmg/wHSc")]}))
         ;; DIF collections support distribution-center data centers
-        dif-coll1 (d/ingest "PROV1"
-                            (dc/collection-dif
-                              {:organizations [(dc/org :distribution-center "Dist center")]})
+        dif-coll1 (d/ingest-umm-spec-collection "PROV1"
+                            (data-umm-c/collection 10
+                              {:DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Dist center")]})
                             {:format :dif})]
 
     (index/wait-until-indexed)

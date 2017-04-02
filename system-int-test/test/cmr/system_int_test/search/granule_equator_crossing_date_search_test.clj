@@ -1,13 +1,14 @@
 (ns cmr.system-int-test.search.granule-equator-crossing-date-search-test
   "Integration test for CMR granule temporal search"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.common.services.messages :as cm]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.common.services.messages :as cm]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -22,10 +23,10 @@
 
 
 (deftest granule-equator-crossing-date
-  (let [coll (d/ingest "PROV1" (dc/collection {}))
+  (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
         make-gran (fn [crossing-date]
                     (d/ingest "PROV1"
-                              (dg/granule coll {:orbit-calculated-spatial-domains [{:equator-crossing-date-time crossing-date}]})))
+                              (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:orbit-calculated-spatial-domains [{:equator-crossing-date-time crossing-date}]})))
         g1 (make-gran "2011-02-01T12:00:00Z")
         g2 (make-gran "2011-02-02T12:00:00Z")
         g3 (make-gran "2011-02-02T12:00:01Z")

@@ -1,30 +1,31 @@
 (ns cmr.system-int-test.search.granule-timeline-test
   "This tests the granule timeline feature of the search api."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [clojure.string :as str]
-            [clj-time.core :as t]
-            [clj-time.coerce :as c]
-            [cheshire.core :as json]
-            [cmr.common.dev.util :as dev]
-            [cmr.common.concepts :as concepts]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+  (:require 
+    [cheshire.core :as json]
+    [clj-time.coerce :as c]
+    [clj-time.core :as t]
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.dev.util :as dev]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (defn make-gran
   ([coll n single-date-str]
-   (d/ingest "PROV1" (dg/granule coll {:granule-ur (str "gran" n)
+   (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:granule-ur (str "gran" n)
                                        :single-date-time single-date-str})))
   ([coll n start-date-str end-date-str]
-   (d/ingest "PROV1" (dg/granule coll {:granule-ur (str "gran" n)
-                                       :beginning-date-time start-date-str
-                                       :ending-date-time end-date-str}))))
+   (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:granule-ur (str "gran" n)
+                                                                                   :beginning-date-time start-date-str
+                                                                                   :ending-date-time end-date-str}))))
 
 (comment
   (do
@@ -32,11 +33,18 @@
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})))
 
 (deftest timeline-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                :beginning-date-time "1970-01-01T00:00:00Z"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
-                                                :beginning-date-time "1970-01-01T00:00:00Z"}))
-
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset1"
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"
+                                                                            :TemporalExtents
+                                                                             [(data-umm-c/temporal-extent
+                                                                                {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset2"
+                                                                            :ShortName "S2"
+                                                                            :Version "V2"
+                                                                            :TemporalExtents
+                                                                             [(data-umm-c/temporal-extent
+                                                                                {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
         ;; Coll1 granules
         ;; Date range granules
         gran1 (make-gran coll1 1 "2000-02-01T00:00:00Z" "2000-05-01T00:00:00Z")

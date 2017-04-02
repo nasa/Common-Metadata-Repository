@@ -3,73 +3,74 @@
   (:require
     [clojure.test :refer :all]
     [cmr.common.util :refer [are2]]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
 
-
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-periodic-temporal
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T00:00:00Z"}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:TemporalExtents
+                                                                            [(data-umm-c/temporal-extent
+                                                                              {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                                    :beginning-date-time "2000-01-01T12:00:00Z"
                                                    :ending-date-time "2000-02-14T12:00:00Z"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2"
                                                    :beginning-date-time "2000-02-14T12:00:00Z"
                                                    :ending-date-time "2000-02-15T12:00:00Z"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule3"
                                                    :beginning-date-time "2000-03-15T12:00:00Z"
                                                    :ending-date-time "2000-04-15T12:00:00Z"}))
-        gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
+        gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule4"
                                                    :beginning-date-time "2000-04-01T12:00:00Z"
                                                    :ending-date-time "2000-04-15T12:00:00Z"}))
-        gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"
+        gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5"
                                                    :beginning-date-time "2001-01-01T12:00:00Z"
                                                    :ending-date-time "2001-01-31T12:00:00Z"}))
-        gran6 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule6"
+        gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule6"
                                                    :beginning-date-time "2001-01-01T12:00:00Z"
                                                    :ending-date-time "2001-02-14T12:00:00Z"}))
-        gran7 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule7"
+        gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule7"
                                                    :beginning-date-time "2001-03-15T12:00:00Z"
                                                    :ending-date-time "2001-04-15T12:00:00Z"}))
-        gran8 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule8"
+        gran8 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule8"
                                                    :beginning-date-time "2001-04-01T12:00:00Z"
                                                    :ending-date-time "2001-04-15T12:00:00Z"}))
-        gran9 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule9"
+        gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule9"
                                                    :beginning-date-time "2002-01-01T12:00:00Z"
                                                    :ending-date-time "2002-01-31T12:00:00Z"}))
-        gran10 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule10"
+        gran10 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule10"
                                                     :beginning-date-time "2002-01-01T12:00:00Z"
                                                     :ending-date-time "2002-02-14T12:00:00Z"}))
-        gran11 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule11"
+        gran11 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule11"
                                                     :beginning-date-time "2002-03-14T12:00:00Z"
                                                     :ending-date-time "2002-04-15T12:00:00Z"}))
-        gran12 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule12"
+        gran12 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule12"
                                                     :beginning-date-time "2002-03-15T12:00:00Z"
                                                     :ending-date-time "2002-04-15T12:00:00Z"}))
-        gran13 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule13"
+        gran13 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule13"
                                                     :beginning-date-time "2002-04-01T12:00:00Z"
                                                     :ending-date-time "2002-04-15T12:00:00Z"}))
-        gran14 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule14"
+        gran14 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule14"
                                                     :beginning-date-time "1999-02-15T12:00:00Z"
                                                     :ending-date-time "1999-03-15T12:00:00Z"}))
-        gran15 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule15"
+        gran15 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule15"
                                                     :beginning-date-time "2003-02-15T12:00:00Z"
                                                     :ending-date-time "2003-03-15T12:00:00Z"}))
-        gran16 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule16"
+        gran16 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule16"
                                                     :beginning-date-time "1999-02-15T12:00:00Z"}))
-        gran17 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule17"
+        gran17 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule17"
                                                     :beginning-date-time "2001-02-15T12:00:00Z"}))
-        gran18 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule18"
+        gran18 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule18"
                                                     :beginning-date-time "2002-03-15T12:00:00Z"}))
-        gran19 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule19"
+        gran19 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule19"
                                                     :beginning-date-time "2001-11-15T12:00:00Z"
                                                     :ending-date-time "2001-12-15T12:00:00Z"}))
-        gran20 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule20"}))]
+        gran20 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule20"}))]
     (index/wait-until-indexed)
 
     (testing "Search granules with periodic temporal parameter"
@@ -134,23 +135,25 @@
            "2000-04-03T00:00:00Z" "2002-01-02T00:00:00Z" 93 2))))
 
 (deftest search-by-periodic-temporal-boundary-conditions
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T00:00:00Z"}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:TemporalExtents
+                                                                            [(data-umm-c/temporal-extent
+                                                                              {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                                    :beginning-date-time "2012-01-01T00:00:00Z"
                                                    :ending-date-time "2012-01-02T00:00:00Z"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2"
                                                    :beginning-date-time "2012-02-14T00:00:00Z"
                                                    :ending-date-time "2012-02-18T00:00:00Z"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule3"
                                                    :beginning-date-time "2012-04-08T00:00:00Z"
                                                    :ending-date-time "2012-04-09T00:00:00Z"}))
-        gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
+        gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule4"
                                                    :beginning-date-time "2012-04-21T00:00:00Z"
                                                    :ending-date-time "2012-04-22T00:00:00Z"}))
-        gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"
+        gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule5"
                                                    :beginning-date-time "2012-06-01T00:00:00Z"
                                                    :ending-date-time "2012-06-02T00:00:00Z"}))
-        gran6 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule6"
+        gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule6"
                                                    :beginning-date-time "2012-12-21T00:00:00Z"
                                                    :ending-date-time "2012-12-22T00:00:00Z"}))]
     (index/wait-until-indexed)
