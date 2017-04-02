@@ -31,9 +31,6 @@
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1
                                          {:ShortName "A"
                                           :Version "V1"
-                                          :Product {:ShortName "A"
-                                                    :LongName "A"
-                                                    :Version "V1"}
                                           :Platforms [(data-umm-c/platform
                                                        {:ShortName "TERRA"
                                                         :Instruments
@@ -41,15 +38,9 @@
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2
                                          {:ShortName "B"
                                           :Version "V2"
-                                          :Product {:ShortName "B"
-                                                    :LongName "B"
-                                                    :Version "V2"}
                                           :Platforms [(data-umm-c/platform {:ShortName "AM-1"})]}))
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
-                                         {:Product {:ShortName "C"
-                                                    :LongName "C"
-                                                    :Version "V3"}
-                                          :ShortName "C"
+                                         {:ShortName "C"
                                           :Version "V3"
                                           :Projects (data-umm-c/projects "USGS_SOFIA")
                                           :ScienceKeywords [{:Category "Bioosphere"
@@ -77,10 +68,7 @@
   (doseq [n (range (inc (hrs/humanizer-report-collection-batch-size)))]
     (d/ingest-umm-spec-collection "PROV1"
      (data-umm-c/collection n
-      {:Product {:ShortName "B"
-                 :LongName "B"
-                 :Version n}
-       :ShortName "B"
+      {:ShortName "B"
        :Version n
        :Platforms [(data-umm-c/platform {:ShortName "AM-1"})]})))
   (index/wait-until-indexed)
