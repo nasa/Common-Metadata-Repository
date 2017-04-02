@@ -1,14 +1,15 @@
 (ns cmr.system-int-test.search.aql-search-test
   "Integration test for AQL specific search issues. General AQL search tests will be included
   in other files by condition."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as s]
-            [cmr.search.services.messages.common-messages :as msg]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.string :as s]
+    [clojure.test :refer :all]
+    [cmr.search.services.messages.common-messages :as msg]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -58,8 +59,8 @@
 
 (deftest aql-pattern-search-test
   (let [make-coll (fn [n entry-title]
-                    (d/ingest "PROV1" (dc/collection {:short-name entry-title
-                                                      :entry-title (str "coll" n)})))
+                    (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection n {:ShortName entry-title
+                                                      :EntryTitle (str "coll" n)})))
         coll1 (make-coll 1 "SHORT")
         coll2 (make-coll 2 "SHO?RT")
         coll3 (make-coll 3 "SHO*RT")
@@ -109,7 +110,7 @@
 
 (deftest aql-search-with-query-parameters
   (let [make-coll (fn [n]
-                    (d/ingest "PROV1" (dc/collection {:entry-title (str n)})))
+                    (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection n {:EntryTitle (str n)})))
         coll1 (make-coll 1)
         coll2 (make-coll 2)
         coll3 (make-coll 3)
@@ -141,14 +142,14 @@
 
 
 (deftest aql-search-with-multiple-conditions
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-                                                :short-name "SHORT"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
-                                                :short-name "Long"}))
-        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset1"
-                                                :short-name "Short"}))
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset2"
-                                                :short-name "LongOne"}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset1"
+                                                :ShortName "SHORT"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset2"
+                                                :ShortName "Long"}))
+        coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "Dataset1"
+                                                :ShortName "Short"}))
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "Dataset2"
+                                                :ShortName "LongOne"}))]
     (index/wait-until-indexed)
 
     (testing "multiple conditions with aql"
