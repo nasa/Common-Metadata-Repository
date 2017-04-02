@@ -1,23 +1,24 @@
 (ns cmr.system-int-test.search.granule-search-producer-granule-id-test
   "Integration tests for searching by producer granule id"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+  (:require 
+    [clojure.test :refer :all]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-producer-granule-id
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV2" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:producer-gran-id "Granule1"}))
-        gran2 (d/ingest "PROV1" (dg/granule coll1 {:producer-gran-id "Granule2"}))
-        gran3 (d/ingest "PROV1" (dg/granule coll1 {:producer-gran-id "SpecialOne"}))
-        gran4 (d/ingest "PROV2" (dg/granule coll2 {:producer-gran-id "SpecialOne"}))
-        gran5 (d/ingest "PROV2" (dg/granule coll2 {:producer-gran-id "Granule15"}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"}))
+        coll2 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2" :ShortName "s2"}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:producer-gran-id "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:producer-gran-id "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:producer-gran-id "SpecialOne"}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:producer-gran-id "SpecialOne"}))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:producer-gran-id "Granule15"}))]
 
     (index/wait-until-indexed)
 
