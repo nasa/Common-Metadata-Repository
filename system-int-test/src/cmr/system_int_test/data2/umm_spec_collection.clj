@@ -191,8 +191,50 @@
                                       :ContactInformation contacts
                                       :Roles [role]}))))
 
+;; Used for testing warnings when reqired properties are missing.
+(def umm-c-missing-properties
+  "This is the UMM-C that misses required properties."
+  {:ShortName "short"
+   :Version "V1"
+   :EntryTitle "The entry title V5"
+   :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                       :Type "CREATE"})]
+   :Abstract "A very abstract collection"})
+
+(def umm-c-missing-properties-dif 
+  "This is the minimal valid UMM-C."
+  {:DataCenters [u/not-provided-data-center]
+   :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
+                      {:Category "EARTH SCIENCE SERVICES"
+                       :Topic "DATA ANALYSIS AND VISUALIZATION"
+                       :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
+   :ShortName "short"
+   :Version "V1"
+   :EntryTitle "The entry title V5"
+   :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                       :Type "CREATE"})]
+   :Abstract "A very abstract collection"})
+
+(def umm-c-missing-properties-dif10 
+  "This is the minimal valid UMM-C."
+  {:Platforms [(umm-cmn/map->PlatformType
+                 {:ShortName "A340-600" :LongName "Airbus A340-600"})]
+   :DataCenters [u/not-provided-data-center]
+   :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
+                      {:Category "EARTH SCIENCE SERVICES"
+                       :Topic "DATA ANALYSIS AND VISUALIZATION"
+                       :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
+   :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+   :ShortName "short"
+   :Version "V1"
+   :EntryTitle "The entry title V5"
+   :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                       :Type "CREATE"})]
+   :Abstract "A very abstract collection"
+   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
+
 (def minimal-umm-c
-  "This is the minimum valid UMM-C."
+  "This is the minimal valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
                  {:ShortName "A340-600" :LongName "Airbus A340-600"})]
    :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
@@ -202,7 +244,6 @@
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
                        :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
    :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-
    :ShortName "short"
    :Version "V1"
    :EntryTitle "The entry title V5"
@@ -211,6 +252,27 @@
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"
    :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
+
+(defn collection-missing-properties
+  "Returns a UmmCollection missing reqired properties"
+  ([]
+   (collection-missing-properties {}))
+  ([attribs]
+   (umm-c/map->UMM-C (merge umm-c-missing-properties attribs))))
+
+(defn collection-missing-properties-dif
+  "Returns a UmmCollection missing reqired properties"
+  ([]
+   (collection-missing-properties {}))
+  ([attribs]
+   (umm-c/map->UMM-C (merge umm-c-missing-properties-dif attribs))))
+
+(defn collection-missing-properties-dif10
+  "Returns a UmmCollection missing reqired properties"
+  ([]
+   (collection-missing-properties {}))
+  ([attribs]
+   (umm-c/map->UMM-C (merge umm-c-missing-properties-dif10 attribs))))
 
 (defn collection
   "Returns a UmmCollection from the given attribute map."
