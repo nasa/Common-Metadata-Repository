@@ -10,8 +10,7 @@
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
                  
 
-  :plugins [[test2junit "1.2.1"]
-            [vscode-test "0.1.0-SNAPSHOT"]]
+  :plugins [[test2junit "1.2.1"]]
   
 
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
