@@ -73,7 +73,7 @@
                 num-failing
                 num-error
                 slowest-tests]} analyzed-results
-        success? (= 0 (+ num-failing num-error))]
+        success? (zero? (+ num-failing num-error))]
     (when speak?
       (if success?
         (du/speak "Samantha" "Success")
@@ -92,8 +92,8 @@
 (defn failed-test-result?
   "Returns true if the test result was not successful."
   [test-result]
-  (or (> (:fail test-result) 0)
-      (> (:error test-result) 0)))
+  (or (pos? (:fail test-result))
+      (pos? (:error test-result))))
 
 (defn fail-fast?->test-results-handler
   "Returns a test results handler based on the value of fail-fast?.

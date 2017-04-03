@@ -29,43 +29,51 @@
        (info ~(str job-name " starting."))
        (let [start-time# (System/currentTimeMillis)]
          (try
-           (let [system-holder-var-name# (get (qc/from-job-data ~job-context-sym)
-                                              "system-holder-var-name")
-                 system-holder# (-> system-holder-var-name# symbol find-var var-get)
+           (let [system-holder-var-name# (get
+                                           (qc/from-job-data ~job-context-sym)
+                                           "system-holder-var-name")
+                 system-holder# (-> system-holder-var-name#
+                                    symbol
+                                    find-var
+                                    var-get)
                  ~system-sym (deref system-holder#)]
              ~@body)
            (catch Throwable e#
              (error e# ~(str job-name " caught exception."))))
-         (info ~(str job-name " complete in") (- (System/currentTimeMillis) start-time#) "ms")))))
+         (info ~(str
+                  job-name
+                  " complete in")
+                (- (System/currentTimeMillis) start-time#) "ms")))))
 
 (defmacro defjob
-  "Wrapper for quartzite defjob that adds a few extras. The code in defjob should take two
-  arguments for the quartz job context and the system. It will automatically log when the
-  job starts and stops and catch any exceptions and log them.
+  "Wrapper for quartzite defjob that adds a few extras. The code in defjob
+  should take two arguments for the quartz job context and the system. It will
+  automatically log when the job starts and stops and catch any exceptions and
+  log them.
 
   Example:
   (defjob CleanupJob
   [ctx system]
-  (do-some-cleanup system))
-  "
+  (do-some-cleanup system))"
   [jtype args & body]
   (defjob* `qj/defjob jtype args body))
 
 (defmacro def-stateful-job
-  "Defines a job that can only run a single instance at a time across a clustered set of applications
-  running quartz. The job will be persisted in the database. Has the same other extras as defjob.
+  "Defines a job that can only run a single instance at a time across a
+  clustered set of applications running quartz. The job will be persisted in
+  the database. Has the same other extras as defjob.
 
   Example:
   (def-stateful-job CleanupJob
   [ctx system]
-  (do-some-cleanup system))
-  "
+  (do-some-cleanup system))"
   [jtype args & body]
   (defjob* `qst/def-stateful-job jtype args body))
 
 (def quartz-clustering-properties
-  "A list of quartz properties that will allow it to run in a clustered mode. The property names
-  will all start with 'org.quartz.' which is elided for brevity."
+  "A list of quartz properties that will allow it to run in a clustered mode.
+  The property names will all start with 'org.quartz.' which is elided for
+  brevity."
 
   {;; Main scheduler properties
    "scheduler.instanceName"  "CMRScheduler"
@@ -90,8 +98,9 @@
    "dataSource.myDS.validationQuery" "select 0 from dual"})
 
 (defn- configure-quartz-clustering-system-properties
-  "Configures system properties so that quartz can use the database. This is only needed when an
-  application is going to run jobs that should only be run on a single instance at any given time."
+  "Configures system properties so that quartz can use the database. This is
+  only needed when an application is going to run jobs that should only be run
+  on a single instance at any given time."
   [db]
   ;; Configure the static properties
   (doseq [[k v] quartz-clustering-properties]
@@ -119,8 +128,9 @@
 
 (defmethod create-trigger :default
   [job-key job]
-  (errors/internal-error! (str "Job could not be scheduled. One of :interval or "
-                               ":daily-at-hour-and-minute should be set.")))
+  (errors/internal-error!
+    (str "Job could not be scheduled. One of :interval or "
+         ":daily-at-hour-and-minute should be set.")))
 
 (defmethod create-trigger :interval
   [job-key {:keys [start-delay interval]}]
@@ -131,7 +141,8 @@
     (qt/start-at (-> (or start-delay (default-job-start-delay))
                      t/seconds
                      t/from-now))
-    (qt/with-schedule (qcal/schedule (qcal/with-interval-in-seconds interval)))))
+    (qt/with-schedule
+      (qcal/schedule (qcal/with-interval-in-seconds interval)))))
 
 (defmethod create-trigger :daily-at-hour-and-minute
   [job-key {[hour minute] :daily-at-hour-and-minute}]
@@ -141,8 +152,8 @@
     (qt/with-schedule (qcron/daily-at-hour-and-minute hour minute))))
 
 (defn- try-to-schedule-job
-  "Attempts to schedule a job. Swallows the exception if there is an error. Returns
-  true if the job was successfully scheduled and false otherwise."
+  "Attempts to schedule a job. Swallows the exception if there is an error.
+  Returns true if the job was successfully scheduled and false otherwise."
   [scheduler job-key quartz-job trigger]
   (try
     ;; We delete existing jobs and recreate them
@@ -155,15 +166,16 @@
       false)))
 
 (defn- schedule-job
-  "Schedules a quartzite job (stopping existing job first). This can fail due to race conditions
-  with other nodes trying to schedule the job at the same time. We will retry up to 3 times to
-  schedule the job."
+  "Schedules a quartzite job (stopping existing job first). This can fail due
+  to race conditions with other nodes trying to schedule the job at the same
+  time. We will retry up to 3 times to schedule the job."
   [scheduler system-holder-var-name job]
   (let [{:keys [^Class job-type job-key]} job
         job-key (or job-key (str (.getSimpleName job-type) ".job"))
         quartz-job (qj/build
                      (qj/of-type job-type)
-                     (qj/using-job-data {"system-holder-var-name" system-holder-var-name})
+                     (qj/using-job-data
+                       {"system-holder-var-name" system-holder-var-name})
                      (qj/with-identity (qj/key job-key)))
         trigger (create-trigger job-key job)]
     (loop [max-tries 3]
@@ -171,11 +183,14 @@
         (if (pos? max-tries)
           (do
             (warn (format "Failed to schedule job [%s]. Retrying." job-key))
-            ;; Random sleep time to make it less likely that two nodes try to recreate the job
-            ;; at the same time. Sleeps between 0.5 seconds and 3 seconds.
+            ;; Random sleep time to make it less likely that two nodes try to
+            ;; recreate the job at the same time. Sleeps between 0.5 seconds
+            ;; and 3 seconds.
             (Thread/sleep (+ 500 (rand-int 2500)))
             (recur (dec max-tries)))
-          (warn (format "All retries to schedule job [%s] failed." job-key)))))))
+          (warn
+            (format
+              "All retries to schedule job [%s] failed." job-key)))))))
 
 (defprotocol JobRunner
   "Defines functions for pausing and resuming jobs"
@@ -191,9 +206,10 @@
 
 (defrecord JobScheduler
   [
-   ;; A var that will point to an atom to use to contain the system.
-   ;; Jobs need access to the system. There can be multiple systems running at once so there needs
-   ;; to be a separate var per system as a way for jobs to access it at run time.
+   ;; A var that will point to an atom to use to contain the system. Jobs need
+   ;; access to the system. There can be multiple systems running at once so
+   ;; there needs to be a separate var per system as a way for jobs to access
+   ;; it at run time.
    system-holder-var
 
    ;; The key used to store the jobs db in the system
@@ -209,7 +225,6 @@
    ;; Instance of a quartzite scheduler
    ^StdScheduler qz-scheduler]
 
-
   l/Lifecycle
 
   (start
@@ -217,29 +232,30 @@
     (when (:running? this)
       (errors/internal-error! "Job scheduler already running"))
     (if-let [jobs (:jobs this)]
-      (do
-        (let [system-holder-var (:system-holder-var this)
-              system-holder (-> system-holder-var find-var var-get)
-              system-holder-var-name (str (namespace system-holder-var) "/"
-                                          (name system-holder-var))]
-          (reset! system-holder system)
+      (let [system-holder-var (:system-holder-var this)
+            system-holder (-> system-holder-var find-var var-get)
+            system-holder-var-name (str (namespace system-holder-var) "/"
+                                        (name system-holder-var))]
+        (reset! system-holder system)
 
-          (when (:clustered? this)
-            (configure-quartz-clustering-system-properties (get system db-system-key)))
+        (when (:clustered? this)
+          (configure-quartz-clustering-system-properties
+            (get system db-system-key)))
 
-          ;; Start quartz
-          (let [scheduler (qs/start (qs/initialize))]
+        ;; Start quartz
+        (let [scheduler (qs/start (qs/initialize))]
 
-            ;; schedule all the jobs
-            (doseq [job jobs] (schedule-job scheduler system-holder-var-name job))
+          ;; schedule all the jobs
+          (doseq [job jobs]
+            (schedule-job scheduler system-holder-var-name job))
 
-            (when (paused? (assoc this :qz-scheduler scheduler))
-              (warn "All jobs are currently paused"))
+          (when (paused? (assoc this :qz-scheduler scheduler))
+            (warn "All jobs are currently paused"))
 
-            (assoc this
-                   :running? true
-                   :qz-scheduler scheduler))))
-      (errors/internal-error! "No jobs to schedule.")))
+          (assoc this
+                 :running? true
+                 :qz-scheduler scheduler)))
+    (errors/internal-error! "No jobs to schedule.")))
 
   (stop
     [this system]
@@ -269,7 +285,6 @@
   []
    ;; no fields
 
-
   l/Lifecycle
 
   (start
@@ -292,15 +307,15 @@
 
   (paused?
     [scheduler]
-    (info "Ignoring request to check if jobs are paused on non running scheduler.")
+    (info (str "Ignoring request to check if jobs are paused on non running "
+               "scheduler."))
     false))
 
-
 (defn create-scheduler
-  "Starts the quartz job processing. It will look for a sequence in :jobs in the system containing
-  a :job-type (a class), :interval keys and optionally :start-delay and :job-key. The job-key can be
-  set to override the default in cases where you want multiple instances of a job to run with the
-  same type."
+  "Starts the quartz job processing. It will look for a sequence in :jobs in
+  the system containing a :job-type (a class), :interval keys and optionally
+  :start-delay and :job-key. The job-key can be set to override the default in
+  cases where you want multiple instances of a job to run with the same type."
   [system-holder-var jobs]
   (map->JobScheduler
    {:system-holder-var system-holder-var
@@ -308,8 +323,8 @@
     :clustered? false}))
 
 (defn create-clustered-scheduler
-  "Starts the quartz job processing in clustered mode. The system should contain :jobs as described
-  in start."
+  "Starts the quartz job processing in clustered mode. The system should
+  contain :jobs as described in start."
   [system-holder-var db-system-key jobs]
   (map->JobScheduler
    {:system-holder-var system-holder-var
@@ -318,7 +333,8 @@
     :clustered? true}))
 
 (defn create-non-running-scheduler
-  "Creates an instance of a scheduler that does not run jobs at all. This is useful in situations
-  where an application will need a scheduler instance but we do not want jobs to run."
+  "Creates an instance of a scheduler that does not run jobs at all. This is
+  useful in situations where an application will need a scheduler instance but
+  we do not want jobs to run."
   []
   (->NonRunningJobScheduler))
