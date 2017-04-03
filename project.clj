@@ -27,5 +27,7 @@
                                         "virtual-product-app"
                                         "es-spatial-plugin"]}}}
   :aliases {
+    "kibit" ["modules" "kibit"]
+    "eastwood" ["modules" "eastwood"]
     "lint" ["modules" "lint"]})
 
