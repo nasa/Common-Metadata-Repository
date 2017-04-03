@@ -39,6 +39,27 @@
  {:default 20
   :type Long})
 
+(defconfig default-queue-visibility-timeout
+  "Default number of seconds SQS should wait after a message is read before making it visible to other
+  queue readers."
+  {:default 300
+   :type Long})
+
+(defconfig provider-queue-visibility-timeout
+  "Number of seconds SQS should wait after a message is read from a provider queue before making
+  it visible to other readers."
+  {:default 3600
+   :type Long})
+
+(defn queue-visibility-timeout
+  "Number of seconds SQS should wait after a message is read from a provider queue before making
+  it visible to other readers."
+  [queue-name]
+  (-> (if (str/includes? queue-name "provider")
+        (provider-queue-visibility-timeout)
+        (default-queue-visibility-timeout))
+      str))
+
 (def queue-arn-attribute
   "String used by the AWS SQS API to identify the attribute containing a queue's
   Amazon Resource Name"
@@ -138,7 +159,8 @@
        redrive-policy (str "{\"maxReceiveCount\":\"5\", \"deadLetterTargetArn\": \"" dlq-arn "\"}")
        ;; create the primary queue
        queue-url (.getQueueUrl (.createQueue sqs-client q-name))
-       q-attrs (HashMap. {"RedrivePolicy" redrive-policy "VisibilityTimeout" "30"})
+       q-attrs (HashMap. {"RedrivePolicy" redrive-policy 
+                          "VisibilityTimeout" (queue-visibility-timeout q-name)})
        set-queue-attrs-request (doto (SetQueueAttributesRequest.)
                                      (.setAttributes q-attrs)
                                      (.setQueueUrl queue-url))]

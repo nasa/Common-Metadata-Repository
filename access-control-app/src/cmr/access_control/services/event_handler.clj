@@ -11,7 +11,26 @@
     [cmr.transmit.config :as transmit-config]
     [cmr.common.concepts :as concepts]))
 
-(defmulti handle-event
+(defmulti handle-provider-event
+  "Handle the various messages that are posted to the provider queue.
+  Dispatches on the message action."
+  (fn [context {:keys [action] :as msg}]
+    (keyword action)))
+
+(defmethod handle-provider-event :provider-delete
+  [context {:keys [provider-id]}]
+  ;; The actual :access-group concept records are deleted from code within the metadata db
+  ;; app itself. We need to ensure that the groups are unindexed here too, or else they will
+  ;; still come up in search results, etc..
+  (index/unindex-groups-by-provider context provider-id)
+  ;; ACLs are also purged from metadata db in the same way.
+  (index/unindex-acls-by-provider context provider-id))
+
+;; Default ignores the provider event
+(defmethod handle-provider-event :default
+  [_ _])
+
+(defmulti handle-indexing-event
   "Handle the various messages that are posted to the indexing queue. Dispatches on a vector of
   action and concept type keywords like [:concept-delete :access-group]."
   (fn [context {:keys [action concept-id] :as msg}]
@@ -20,24 +39,23 @@
        (:concept-type (concepts/parse-concept-id concept-id)))]))
 
 ;; Default ignores the ingest event. There may be ingest events we don't care about.
-
-(defmethod handle-event :default
+(defmethod handle-indexing-event :default
   [_ _])
 
 ;;; Updates
 
-(defmethod handle-event [:concept-update :acl]
+(defmethod handle-indexing-event [:concept-update :acl]
   [context {:keys [concept-id revision-id]}]
   (index/index-acl context (mdb/get-concept context concept-id revision-id)))
 
-(defmethod handle-event [:concept-update :access-group]
+(defmethod handle-indexing-event [:concept-update :access-group]
   [context {:keys [concept-id revision-id]}]
   ;; NOTE: Even though groups are indexed synchronously in the group service, this will enable retries in
   ;; case of failure.
   (index/index-group context (mdb/get-concept context concept-id revision-id)))
 
 ;;; Deletes
-(defmethod handle-event [:concept-delete :access-group]
+(defmethod handle-indexing-event [:concept-delete :access-group]
   [context {:keys [concept-id]}]
   (doseq [acl-concept (acl-service/get-all-acl-concepts context)
           :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
@@ -55,20 +73,11 @@
                                        (remove #(= (:group-id %) concept-id) group-permissions))))))
   (index/unindex-group context concept-id))
 
-(defmethod handle-event [:concept-delete :acl]
+(defmethod handle-indexing-event [:concept-delete :acl]
   [context {:keys [concept-id]}]
   (index/unindex-acl context concept-id))
 
-(defmethod handle-event [:provider-delete nil]
-  [context {:keys [provider-id]}]
-  ;; The actual :access-group concept records are deleted from code within the metadata db
-  ;; app itself. We need to ensure that the groups are unindexed here too, or else they will
-  ;; still come up in search results, etc..
-  (index/unindex-groups-by-provider context provider-id)
-  ;; ACLs are also purged from metadata db in the same way.
-  (index/unindex-acls-by-provider context provider-id))
-
-(defmethod handle-event [:concept-delete :collection]
+(defmethod handle-indexing-event [:concept-delete :collection]
   [context {:keys [concept-id revision-id]}]
   (let [concept-map (mdb/get-concept context concept-id revision-id)
         collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)
@@ -96,5 +105,8 @@
   (let [queue-broker (get-in context [:system :queue-broker])]
     (dotimes [n (config/index-queue-listener-count)]
       (queue/subscribe queue-broker
+                       (config/provider-queue-name)
+                       #(handle-provider-event context %))
+      (queue/subscribe queue-broker
                        (config/index-queue-name)
-                       #(handle-event context %)))))
+                       #(handle-indexing-event context %)))))

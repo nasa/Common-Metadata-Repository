@@ -11,6 +11,10 @@
   "The ingest exchange to which provider change messages are published."
   {:default "cmr_ingest_provider.exchange"})
 
+(defconfig provider-queue-name
+  "The queue containing provider events"
+  {:default "cmr_access_control_provider.queue"})
+
 (defconfig index-queue-name
   "The queue containing ingest events for access control"
   {:default "cmr_access_control_index.queue"})
@@ -28,8 +32,8 @@
   "Returns the queue configuration for the application."
   []
   (assoc (rmq-conf/default-config)
-         :queues [(index-queue-name)]
+         :queues [(index-queue-name) (provider-queue-name)]
          :exchanges [(access-control-exchange-name)]
          :queues-to-exchanges {(index-queue-name) [(access-control-exchange-name)
-                                                   (provider-exchange-name)
-                                                   (concept-ingest-exchange-name)]}))
+                                                   (concept-ingest-exchange-name)]
+                               (provider-queue-name) [(provider-exchange-name)]}))

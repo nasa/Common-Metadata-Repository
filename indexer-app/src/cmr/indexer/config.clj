@@ -24,6 +24,15 @@
   {:default 2
    :type Long})
 
+(defconfig provider-queue-name
+  "The queue containing provider events like 'index provider collections'."
+  {:default "cmr_provider.queue"})
+
+(defconfig provider-queue-listener-count
+  "Number of worker threads to use for the queue listener for the provider queue"
+  {:default 2
+   :type Long})
+
 (defconfig ingest-exchange-name
   "The ingest exchange to which messages are published when collections and granules are ingested."
   {:default "cmr_ingest.exchange"})
@@ -42,12 +51,14 @@
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)
-                  (all-revisions-index-queue-name)]
+                  (all-revisions-index-queue-name)
+                  (provider-queue-name)]
          :exchanges [(ingest-exchange-name)
                      (deleted-collection-revision-exchange-name)
                      (provider-exchange-name)]
          :queues-to-exchanges
-         {(index-queue-name) [(ingest-exchange-name) (provider-exchange-name)]
+         {(index-queue-name) [(ingest-exchange-name)]
+          (provider-queue-name) [(provider-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
           ;; deleted collection revision exchange
           (all-revisions-index-queue-name) [(ingest-exchange-name)
