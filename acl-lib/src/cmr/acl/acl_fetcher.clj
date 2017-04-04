@@ -80,24 +80,27 @@
     ;; Otherwise we'd just silently fail to find any acls.
     (if-let [not-cached-oits (seq (set/difference
                                     (set object-identity-types)
-                                    (set (context->cached-object-identity-types context))))]
+                                    (set (context->cached-object-identity-types
+                                           context))))]
       (do
-        (info (str "The application is not configured to cache acls of the following"
-                   " object-identity-types so we will fetch them from ECHO each time they are needed. "
+        (info (str "The application is not configured to cache acls of the "
+                   "following object-identity-types so we will fetch them "
+                   "from ECHO each time they are needed. "
                    (pr-str not-cached-oits)))
         (echo-acls/get-acls-by-types context object-identity-types))
       ;; Fetch ACLs using a cache
-      (->> (cache/get-value
-             cache
-             acl-cache-key
-             #(echo-acls/get-acls-by-types
-                context
-                ;; All of the object identity types needed by the application are fetched. We want
-                ;; the cache to contain all of the acls needed.
-                (context->cached-object-identity-types context)))
-           (filter (fn [acl]
-                     (some #(get acl (echo-acls/acl-type->acl-key %))
-                           object-identity-types)))))
+      (filter
+        (fn [acl]
+          (some #(get acl (echo-acls/acl-type->acl-key %))
+                object-identity-types))
+        (cache/get-value
+          cache
+          acl-cache-key
+          #(echo-acls/get-acls-by-types
+             context
+             ;; All of the object identity types needed by the application are
+             ;; fetched. We want the cache to contain all of the acls needed.
+             (context->cached-object-identity-types context)))))
 
     ;; No cache is configured. Directly fetch the acls.
     (echo-acls/get-acls-by-types context object-identity-types)))
