@@ -180,15 +180,15 @@
                                                            (umm-cmn/map->PointType {:Longitude -1 :Latitude -1})
                                                            (umm-cmn/map->PointType {:Longitude 1 :Latitude -1})
                                                            (umm-cmn/map->PointType {:Longitude 1 :Latitude 1})]})
-                                     :ExclusiveZone 
-                                       (umm-cmn/map->ExclusiveZoneType 
+                                     :ExclusiveZone
+                                       (umm-cmn/map->ExclusiveZoneType
                                          {:Boundaries [(umm-cmn/map->BoundaryType
                                                          {:Points  [(umm-cmn/map->PointType {:Longitude 0 :Latitude 0})
                                                                     (umm-cmn/map->PointType {:Longitude 0.004 :Latitude 0})
                                                                     (umm-cmn/map->PointType {:Longitude 0.006 :Latitude 0.005})
                                                                     (umm-cmn/map->PointType {:Longitude 0.002 :Latitude 0.005})
                                                                     (umm-cmn/map->PointType {:Longitude 0 :Latitude 0})]})]})})]})}))
-    
+
     (testing "cartesian polygon"
       ;; The same shape from geodetic is valid as a cartesian.
       ;; Cartesian validation is not supported yet. See CMR-1172
@@ -206,21 +206,21 @@
 
     (testing "geodetic line"
       (assert-invalid-spatial
-        "GEODETIC" 
-        {:Geometry (umm-cmn/map->GeometryType 
-                     {:CoordinateSystem "GEODETIC" 
-                      :Lines [(umm-cmn/map->LineType 
+        "GEODETIC"
+        {:Geometry (umm-cmn/map->GeometryType
+                     {:CoordinateSystem "GEODETIC"
+                      :Lines [(umm-cmn/map->LineType
                                 {:Points [(umm-cmn/map->PointType {:Longitude 0 :Latitude 0})
                                           (umm-cmn/map->PointType {:Longitude 1 :Latitude 1})
                                           (umm-cmn/map->PointType {:Longitude 2 :Latitude 2})
-                                          (umm-cmn/map->PointType {:Longitude 1 :Latitude 1})]})]})}  
+                                          (umm-cmn/map->PointType {:Longitude 1 :Latitude 1})]})]})}
         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "Lines" 0]
         ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
 
     (testing "cartesian line"
       ;; Cartesian line validation isn't supported yet. See CMR-1172
       (assert-valid-spatial
-        "CARTESIAN" 
+        "CARTESIAN"
         {:Geometry (umm-cmn/map->GeometryType
                      {:CoordinateSystem "CARTESIAN"
                       :Lines [(umm-cmn/map->LineType
@@ -228,15 +228,16 @@
                                           (umm-cmn/map->PointType {:Longitude -180 :Latitude 0})]})]})}))
     (testing "bounding box"
       (assert-invalid-spatial
-        "GEODETIC" 
+        "GEODETIC"
         {:Geometry (umm-cmn/map->GeometryType
-                     {:CoordinateSystem "GEODETIC" 
+                     {:CoordinateSystem "GEODETIC"
                       :BoundingRectangles [(umm-cmn/map->BoundingRectangleType {:WestBoundingCoordinate -180
                                                                                 :NorthBoundingCoordinate 45
                                                                                 :EastBoundingCoordinate 180
                                                                                 :SouthBoundingCoordinate 46})]})}
         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "BoundingRectangles" 0]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
+        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
+    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))))
 
 (deftest umm-spec-validation-warnings
   ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection.
