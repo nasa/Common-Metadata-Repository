@@ -41,7 +41,7 @@
       ;; simulate a timeout error, set the timeout value to 0.
       (POST "/set-publish-timeout" {:keys [params]}
         (let [timeout (Integer/parseInt (:timeout params))
-              expect-timeout? (= timeout 0)]
+              expect-timeout? (zero? timeout)]
           (debug (format "Setting message queue publish timeout to %d ms" timeout))
           (config/set-publish-queue-timeout-ms! timeout)
           (wrapper/set-message-queue-timeout-expected!
