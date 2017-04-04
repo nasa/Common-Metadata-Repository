@@ -6,9 +6,9 @@
     [clojure.test :refer :all]
     [cmr.common.time-keeper :as tk]
     [cmr.common.util :refer [are2]]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.dev-system-util :as dev-system]
     [cmr.system-int-test.utils.index-util :as index]
@@ -25,53 +25,59 @@
 ;; values of the min and max granule of the collection or the collection's temporal values if the
 ;; collection has no granules
 (deftest search-by-temporal-limit-to-granules
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:EntryTitle "coll1"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
                                                 :beginning-date-time "2000-01-01T00:00:00Z"
-                                                :ending-date-time "2010-01-01T00:00:00Z"}))
-        c1-g1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g1"
+                                                :ending-date-time "2010-01-01T00:00:00Z"})]}))
+        c1-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g1"
                                                    :beginning-date-time "2003-01-01T00:00:00Z"
                                                    :ending-date-time "2004-01-01T00:00:00Z"}))
-        c1-g2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g2"
+        c1-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g2"
                                                    :beginning-date-time "2005-01-01T00:00:00Z"
                                                    :ending-date-time "2006-01-01T00:00:00Z"}))
-        c1-g3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g3"
+        c1-g3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g3"
                                                    :beginning-date-time "2007-01-01T00:00:00Z"
                                                    :ending-date-time "2008-01-01T00:00:00Z"}))
 
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:EntryTitle "coll2"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
                                                 :beginning-date-time "2001-01-01T00:00:00Z"
-                                                :ending-date-time "2005-01-01T00:00:00Z"}))
-        c2-g1 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g1"
+                                                :ending-date-time "2005-01-01T00:00:00Z"})]}))
+        c2-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "c2-g1"
                                                    :beginning-date-time "2001-01-01T00:00:00Z"
                                                    :ending-date-time "2002-01-01T00:00:00Z"}))
-        c2-g2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g2"
+        c2-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "c2-g2"
                                                    :beginning-date-time "2003-01-01T00:00:00Z"
                                                    :ending-date-time "2004-01-01T00:00:00Z"}))
 
         ;; Collection 3 has no granules
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:EntryTitle "coll3"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent { 
                                                 :beginning-date-time "2002-01-01T00:00:00Z"
-                                                :ending-date-time "2005-01-01T00:00:00Z"}))
+                                                :ending-date-time "2005-01-01T00:00:00Z"})]}))
 
         ;; Collection 4 has no granules and no end date.
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll4"
-                                                :beginning-date-time "2004-01-01T00:00:00Z"}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:EntryTitle "coll4"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
+                                                :beginning-date-time "2004-01-01T00:00:00Z"})]}))
 
         ;; Collection 5 has granules and no end date.
-        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll5"
-                                                :beginning-date-time "2004-01-01T00:00:00Z"}))
-        c5-g1 (d/ingest "PROV1" (dg/granule coll5 {:granule-ur "c5-g1"
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:EntryTitle "coll5"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
+                                                :beginning-date-time "2004-01-01T00:00:00Z"})]}))
+        c5-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll5 (:concept-id coll5) {:granule-ur "c5-g1"
                                                    :beginning-date-time "2006-01-01T00:00:00Z"
                                                    :ending-date-time "2007-01-01T00:00:00Z"}))
-        c5-g2 (d/ingest "PROV1" (dg/granule coll5 {:granule-ur "c5-g2"
+        c5-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll5 (:concept-id coll5) {:granule-ur "c5-g2"
                                                    :beginning-date-time "2008-01-01T00:00:00Z"}))
 
         ;; Coll6 is an NRT collection with granules that have temporal in recent time
-        coll6 (d/ingest "PROV1" (dc/collection {:entry-title "coll6"
-                                                :beginning-date-time "2006-01-01T00:00:00Z"}))
+        coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 6 {:EntryTitle "coll6"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
+                                                :beginning-date-time "2006-01-01T00:00:00Z"})]}))
         dt-2-days-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 2)))
         dt-1-day-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 1)))
-        c6-g1 (d/ingest "PROV1" (dg/granule coll6 {:granule-ur "c6-g1"
+        c6-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll6 (:concept-id coll6) {:granule-ur "c6-g1"
                                                    :beginning-date-time "2009-01-01T00:00:00Z"
                                                    :ending-date-time dt-2-days-ago}))]
     (index/wait-until-indexed)
@@ -125,16 +131,18 @@
 
 (deftest search-by-temporal-limit-to-granules-updates-are-handled-by-partial-refresh
   (s/only-with-in-memory-database
-   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:EntryTitle "coll1"
+                                                                               :TemporalExtents [(data-umm-c/temporal-extent {
                                                  :beginning-date-time "2000-01-01T00:00:00Z"
-                                                 :ending-date-time "2010-01-01T00:00:00Z"}))
-         c1-g2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g2"
+                                                 :ending-date-time "2010-01-01T00:00:00Z"})]}))
+         c1-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g2"
                                                     :beginning-date-time "2005-01-01T00:00:00Z"
                                                     :ending-date-time "2006-01-01T00:00:00Z"}))
-         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:EntryTitle "coll2"
+                                                                               :TemporalExtents [(data-umm-c/temporal-extent {
                                                  :beginning-date-time "1998-01-01T00:00:00Z"
-                                                 :ending-date-time "2010-01-01T00:00:00Z"}))
-         c2-g1 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g1"
+                                                 :ending-date-time "2010-01-01T00:00:00Z"})]}))
+         c2-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "c2-g1"
                                                     :beginning-date-time "1998-01-01T00:00:00Z"
                                                     :ending-date-time "1998-01-02T00:00:00Z"}))
          temporal-all-search {"temporal[]" "2000-01-01T00:00:00Z,2010-01-01T00:00:00Z"
@@ -160,15 +168,15 @@
      (let [;; This granule is ingested before partial indexing is run and it's in a timer period that
            ;; won't be found. We should make sure that coll2 isn't found now which indicates we're only
            ;; finding granules updated in about the last hour and reindexing only those collections
-           c2-g2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "c2-g2"
+           c2-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "c2-g2"
                                                       :beginning-date-time "2007-01-01T00:00:00Z"
                                                       :ending-date-time "2008-01-01T00:00:00Z"}))
            ;; Advance time 2 hours
            _ (dev-system/advance-time! (* 3600 2))
-           c1-g1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g1"
+           c1-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g1"
                                                       :beginning-date-time "2003-01-01T00:00:00Z"
                                                       :ending-date-time "2004-01-01T00:00:00Z"}))
-           c1-g3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "c1-g3"
+           c1-g3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g3"
                                                       :beginning-date-time "2007-01-01T00:00:00Z"
                                                       :ending-date-time "2008-01-01T00:00:00Z"}))]
        (index/wait-until-indexed)
@@ -192,46 +200,58 @@
        (is (d/refs-match? [coll1] (search/find-refs :collection temporal-after-search)))))))
 
 (deftest search-by-temporal
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:EntryTitle "Dataset1"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
                                                 :beginning-date-time "2010-01-01T12:00:00Z"
-                                                :ending-date-time "2010-01-11T12:00:00Z"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
+                                                :ending-date-time "2010-01-11T12:00:00Z"})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:EntryTitle "Dataset2"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
                                                 :beginning-date-time "2010-01-31T12:00:00Z"
-                                                :ending-date-time "2010-12-12T12:00:00Z"}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset3"
+                                                :ending-date-time "2010-12-12T12:00:00Z"})]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:EntryTitle "Dataset3"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
                                                 :beginning-date-time "2010-12-03T12:00:00Z"
-                                                :ending-date-time "2010-12-20T12:00:00Z"}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"
+                                                :ending-date-time "2010-12-20T12:00:00Z"})]}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:EntryTitle "Dataset4"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
                                                 :beginning-date-time "2010-12-12T12:00:00Z"
-                                                :ending-date-time "2011-01-03T12:00:00Z"}))
-        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset5"
+                                                :ending-date-time "2011-01-03T12:00:00Z"})]}))
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:EntryTitle "Dataset5"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
                                                 :beginning-date-time "2011-02-01T12:00:00Z"
-                                                :ending-date-time "2011-03-01T12:00:00Z"}))
-        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset6"
-                                                :beginning-date-time "2010-01-30T12:00:00Z"}))
-        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset7"
-                                                :beginning-date-time "2010-12-12T12:00:00Z"}))
-        coll8 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset8"
-                                                :beginning-date-time "2011-12-13T12:00:00Z"}))
+                                                :ending-date-time "2011-03-01T12:00:00Z"})]}))
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 6 {:EntryTitle "Dataset6"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
+                                                :beginning-date-time "2010-01-30T12:00:00Z"})]}))
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 7 {:EntryTitle "Dataset7"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
+                                                :beginning-date-time "2010-12-12T12:00:00Z"})]}))
+        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 8 {:EntryTitle "Dataset8"
+                                                                              :TemporalExtents [(data-umm-c/temporal-extent {
+                                                :beginning-date-time "2011-12-13T12:00:00Z"})]}))
         ;; With the switch from umm-lib to umm-spec-lib, collections without temporal info will be
-        ;; treated with a default start date of 1970-01-01T00:00:00
-        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "Dataset9"}))
-        coll10 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset10"
-                                                 :single-date-time "2010-05-01T00:00:00Z"}))
-        coll11 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset11"
-                                                 :single-date-time "1999-05-01T00:00:00Z"}))
+        ;; treated with a default start date of 1970-01-01T00:00:00.  
+        coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 9 {:EntryTitle "Dataset9" :TemporalExtents nil}))
+        coll10 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 10 {:EntryTitle "Dataset10"
+                                                                                :TemporalExtents [(data-umm-c/temporal-extent {
+                                                 :single-date-time "2010-05-01T00:00:00Z"})]}))
+        coll11 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 11 {:EntryTitle "Dataset11"
+                                                                                :TemporalExtents [(data-umm-c/temporal-extent {
+                                                 :single-date-time "1999-05-01T00:00:00Z"})]}))
 
         ;; Collection 12 is way in the past and has an ends at present flag set to false
-        coll12 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset12"
+        coll12 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 12 {:EntryTitle "Dataset12"
+                                                                                :TemporalExtents [(data-umm-c/temporal-extent {
                                                  :beginning-date-time "1965-12-12T12:00:00Z"
                                                  :ending-date-time "1966-01-03T12:00:00Z"
-                                                 :ends-at-present? false}))
+                                                 :ends-at-present? false})]}))
 
         ;; Collection 13 is way in the past and has an ends at present flag set to true
-        coll13 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset13"
+        coll13 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 13 {:EntryTitle "Dataset13"
+                                                                                :TemporalExtents [(data-umm-c/temporal-extent {
                                                  :beginning-date-time "1965-12-12T12:00:00Z"
                                                  :ending-date-time "1966-01-03T12:00:00Z"
-                                                 :ends-at-present? true}))]
+                                                 :ends-at-present? true})]}))]
     (index/wait-until-indexed)
 
     (testing "search by temporal params"

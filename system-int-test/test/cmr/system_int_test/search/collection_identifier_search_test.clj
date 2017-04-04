@@ -1,17 +1,18 @@
 (ns cmr.system-int-test.search.collection-identifier-search-test
   "Tests searching for collections using basic collection identifiers"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as s]
-            [clojure.java.shell :as shell]
-            [cmr.common.services.messages :as msg]
-            [cmr.common-app.services.search.messages :as cmsg]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]))
-
+  (:require 
+    [clojure.java.shell :as shell]
+    [clojure.string :as s]
+    [clojure.test :refer :all]
+    [cmr.common-app.services.search.messages :as cmsg]
+    [cmr.common.services.messages :as msg]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -19,10 +20,10 @@
 (comment
  (do
    ((ingest/reset-fixture {"provguid1" "PROV1"}) (constantly "done"))
-   (d/ingest "PROV1" (dc/collection
-                      {:short-name (str "S" 1)
-                       :version-id (str "V" 1)
-                       :entry-title (str "ET" 1)}))))
+   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                      {:ShortName (str "S" 1)
+                       :Version (str "V" 1)
+                       :EntryTitle (str "ET" 1)}))))
 
 
 (deftest identifier-search-test
@@ -33,10 +34,10 @@
   (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2] (for [p ["PROV1" "PROV2"]
                                         n (range 1 5)]
-                                    (d/ingest p (dc/collection
-                                                  {:short-name (str "S" n)
-                                                   :version-id (str "V" n)
-                                                   :entry-title (str "ET" n)})))
+                                    (d/ingest-umm-spec-collection p (data-umm-c/collection
+                                                  {:ShortName (str "S" n)
+                                                   :Version (str "V" n)
+                                                   :EntryTitle (str "ET" n)})))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-colls (concat all-prov1-colls all-prov2-colls)]
@@ -469,10 +470,10 @@
 ;; Create 2 collection sets of which only 1 set has processing-level-id
 (deftest processing-level-search-test
   (let [[c1-p1 c2-p1 c3-p1 c4-p1] (for [n (range 1 5)]
-                                    (d/ingest "PROV1" (dc/collection {})))
+                                    (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection n {})))
         ;; include processing level id
         [c1-p2 c2-p2 c3-p2 c4-p2] (for [n (range 1 5)]
-                                    (d/ingest "PROV2" (dc/collection {:processing-level-id (str n "B")})))
+                                    (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection n {:ProcessingLevel (umm-c/map->ProcessingLevelType {:Id (str n "B")})})))
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]]
     (index/wait-until-indexed)
     (testing "processing level search"
@@ -556,7 +557,7 @@
   (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2] (for [p ["PROV1" "PROV2"]
                                         n (range 1 5)]
-                                    (d/ingest p (dc/collection {})))
+                                    (d/ingest-umm-spec-collection p (data-umm-c/collection n {})))
         c1-p1-cid (get-in c1-p1 [:concept-id])
         c2-p1-cid (get-in c2-p1 [:concept-id])
         c3-p2-cid (get-in c3-p2 [:concept-id])
@@ -643,11 +644,11 @@
 
 
 (deftest search-with-slashes-in-dataset-id
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset/With/Slashes"}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset3"}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset/With/More/Slashes"}))
-        coll5 (d/ingest "PROV1" (dc/collection {}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:EntryTitle "Dataset1"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:EntryTitle "Dataset/With/Slashes"}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:EntryTitle "Dataset3"}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:EntryTitle "Dataset/With/More/Slashes"}))
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {}))]
 
     (index/wait-until-indexed)
 

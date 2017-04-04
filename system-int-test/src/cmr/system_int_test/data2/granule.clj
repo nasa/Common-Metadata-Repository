@@ -14,6 +14,17 @@
             Orbit
             DataProviderTimestamps]))
 
+(defn related-url
+  "Creates related url for online_only test"
+  ([]
+   (related-url nil))
+  ([attribs]
+   (let [description (d/unique-str "description")]
+     (c/map->RelatedURL (merge {:url (d/unique-str "http://example.com/file")
+                                :description description
+                                :title description}
+                               attribs)))))
+
 (defn psa
   "Creates product specific attribute ref"
   [name values]

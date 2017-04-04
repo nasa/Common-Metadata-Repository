@@ -13,7 +13,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-doi
-  (let [coll1 (d/ingest "PROV1"
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :ShortName "CMR3674SN1")
                             (assoc :EntryTitle "CMR3674ET1")
@@ -21,7 +21,7 @@
                                          {:DOI "doi1" :Authority "auth1"})))
                         {:format :umm-json
                          :accept-format :json})
-        coll2 (d/ingest "PROV1"
+        coll2 (d/ingest-umm-spec-collection "PROV1"
                         (-> exp-conv/example-collection-record
                             (assoc :ShortName "CMR3674SN2")
                             (assoc :EntryTitle "CMR3674ET2")

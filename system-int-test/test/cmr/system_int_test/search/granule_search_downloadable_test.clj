@@ -4,23 +4,23 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-granule-by-downloadable
-  (let [ru1 (dc/related-url {:type "GET DATA"})
-        ru2 (dc/related-url {:type "GET RELATED VISUALIZATION"})
-        ru3 (dc/related-url)
-        coll (d/ingest "PROV1" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
-        gran2 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2]}))
-        gran3 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru3]}))
-        gran4 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2 ru3]}))
-        gran5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
-        gran6 (d/ingest "PROV1" (dg/granule coll {}))]
+  (let [ru1 (dg/related-url {:type "GET DATA"})
+        ru2 (dg/related-url {:type "GET RELATED VISUALIZATION"})
+        ru3 (dg/related-url)
+        coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru1]}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru2]}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru3]}))
+        gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru2 ru3]}))
+        gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru1 ru2]}))
+        gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {}))]
 
     (index/wait-until-indexed)
 
@@ -38,16 +38,16 @@
              (search/find-refs :granule {:downloadable "wrong"}))))))
 
 (deftest search-granule-by-online-only
-  (let [ru1 (dc/related-url {:type "GET DATA"})
-        ru2 (dc/related-url {:type "GET RELATED VISUALIZATION"})
-        ru3 (dc/related-url)
-        coll (d/ingest "PROV1" (dc/collection {}))
-        gran1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
-        gran2 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2]}))
-        gran3 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru3]}))
-        gran4 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2 ru3]}))
-        gran5 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1 ru2]}))
-        gran6 (d/ingest "PROV1" (dg/granule coll {}))]
+  (let [ru1 (dg/related-url {:type "GET DATA"})
+        ru2 (dg/related-url {:type "GET RELATED VISUALIZATION"})
+        ru3 (dg/related-url)
+        coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru1]}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru2]}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru3]}))
+        gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru2 ru3]}))
+        gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:related-urls [ru1 ru2]}))
+        gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {}))]
 
     (index/wait-until-indexed)
 

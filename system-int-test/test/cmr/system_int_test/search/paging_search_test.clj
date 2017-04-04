@@ -5,8 +5,8 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.util :refer [are3]]
    [cmr.search.services.parameters.parameter-validation :as pm]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d2c]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
@@ -27,18 +27,18 @@
   "Set up the fixtures for tests."
   []
   (let [prov1-colls (doall (for [n (range prov1-collection-count)
-                                 :let [coll-r1 (d2c/ingest "PROV1" (dc/collection))]]
+                                 :let [coll-r1 (d2c/ingest-umm-spec-collection "PROV1" (data-umm-c/collection n {}))]]
                              [coll-r1
-                              (d2c/ingest "PROV1" (dissoc coll-r1 :revision-id))]))
+                              (d2c/ingest-umm-spec-collection "PROV1" (dissoc coll-r1 :revision-id))]))
         prov1-deleted-colls (doall (for [n (range prov1-deleted-collection-count)
-                                         :let [coll-r1 (d2c/ingest "PROV1" (dc/collection))]]
+                                         :let [coll-r1 (d2c/ingest-umm-spec-collection "PROV1" (data-umm-c/collection (+ 100 n) {}))]]
                                      (do
-                                       (ingest/delete-concept (d2c/item->concept coll-r1))
+                                       (ingest/delete-concept (d2c/umm-c-collection->concept coll-r1))
                                        [coll-r1 (assoc coll-r1 :deleted true
                                                        :revision-id 2)])))
 
         prov2-colls (doall (for [n (range prov2-collection-count)]
-                             (d2c/ingest "PROV2" (dc/collection))))]
+                             (d2c/ingest-umm-spec-collection "PROV2" (data-umm-c/collection n {}))))]
     (index/wait-until-indexed)
 
     (flatten (concat prov1-colls prov1-deleted-colls prov2-colls))))
@@ -135,8 +135,8 @@
   [collections]
   (sort-by identity
            (fn [c1 c2]
-             (let [et1 (:entry-title c1)
-                   et2 (:entry-title c2)
+             (let [et1 (:EntryTitle c1)
+                   et2 (:EntryTitle c2)
                    p1 (:provider-id c1)
                    p2 (:provider-id c2)
                    seq1 (concept-id->sequence-number (:concept-id c1))
@@ -198,8 +198,8 @@
 (deftest search-with-page-num
   (let [provider-id "PROV1"
         collections (doall (for [n (range 10)]
-                             (d2c/ingest provider-id
-                                         (dc/collection {}))))]
+                             (d2c/ingest-umm-spec-collection provider-id
+                                         (data-umm-c/collection n {}))))]
     (index/wait-until-indexed)
     (testing "Search with page_num."
       (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
