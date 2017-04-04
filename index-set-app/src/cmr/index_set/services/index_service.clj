@@ -56,7 +56,8 @@
            {(keyword index-name) (gen-valid-index-name prefix-id index-name)})))
 
 (defn prune-index-set
-  "Returns the index set with only the id, name, and a map of concept types to the index name map."
+  "Returns the index set with only the id, name, and a map of concept types to
+  the index name map."
   [index-set]
   (let [prefix (:id index-set)]
     {:id (:id index-set)
@@ -94,7 +95,7 @@
   [index-set]
   (let [index-set-id (get-in index-set [:index-set :id])
         json-index-set-str (json/generate-string index-set)]
-    (when-not (and (integer? index-set-id) (> index-set-id 0))
+    (when-not (and (integer? index-set-id) (pos? index-set-id))
       (m/invalid-id-msg index-set-id json-index-set-str))))
 
 (defn id-name-existence-check
@@ -156,7 +157,8 @@
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
 (defn create-index-set
-  "Create indices listed in index-set. Rollback occurs if indices creation or index-set doc indexing fails."
+  "Create indices listed in index-set. Rollback occurs if indices creation or
+  index-set doc indexing fails."
   [context index-set]
   (validate-requested-index-set context index-set false)
   (let [index-names (get-index-names index-set)
@@ -194,7 +196,8 @@
     (index-requested-index-set context index-set)))
 
 (defn delete-index-set
-  "Delete all indices having 'id_' as the prefix in the elastic, followed by index-set doc delete"
+  "Delete all indices having 'id_' as the prefix in the elastic, followed by
+  index-set doc delete"
   [context index-set-id]
   (let [index-names (get-index-names (get-index-set context index-set-id))
         {:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
@@ -208,8 +211,10 @@
   (if rebalancing-colls
     (if (contains? (set rebalancing-colls) concept-id)
       (errors/throw-service-error
-       :bad-request
-       (format "The index set already contains rebalancing collection [%s]" concept-id))
+        :bad-request
+        (format
+          "The index set already contains rebalancing collection [%s]"
+          concept-id))
       (conj rebalancing-colls concept-id))
     #{concept-id}))
 
@@ -220,18 +225,22 @@
     (if (contains? rebalancing-colls-set concept-id)
       (seq (disj rebalancing-colls-set concept-id))
       (errors/throw-service-error
-       :bad-request
-       (format "The index set does not contain the rebalancing collection [%s]" concept-id)))))
+        :bad-request
+        (format
+          "The index set does not contain the rebalancing collection [%s]"
+          concept-id)))))
 
 (defn- add-new-granule-index
-  "Adds a new granule index for the given collection. Validates the collection does not already have
-   an index."
+  "Adds a new granule index for the given collection. Validates the collection
+  does not already have an index."
   [index-set collection-concept-id]
   (let [existing-index-names (->> (get-in index-set [:index-set :granule :indexes]) (map :name) set)
         _ (when (contains? existing-index-names collection-concept-id)
             (errors/throw-service-error
              :bad-request
-             (format "The collection [%s] already has a separate granule index" collection-concept-id)))
+             (format
+               "The collection [%s] already has a separate granule index"
+               collection-concept-id)))
         individual-index-settings (get-in index-set [:index-set :granule :individual-index-settings])]
     (update-in index-set [:index-set :granule :indexes]
                conj
@@ -242,29 +251,43 @@
   "Marks the given collection as rebalancing in the index set."
   [context index-set-id concept-id]
   (let [index-set (get-index-set context index-set-id)
-        ;; Add the collection to the list of rebalancing collections. Also does validation.
-        index-set (update-in index-set [:index-set :granule :rebalancing-collections]
-                   add-rebalancing-collection concept-id)
+        ;; Add the collection to the list of rebalancing collections. Also
+        ;; does validation.
+        index-set (update-in
+                    index-set
+                    [:index-set :granule :rebalancing-collections]
+                    add-rebalancing-collection concept-id)
         index-set (add-new-granule-index index-set concept-id)]
 
-    ;; Update the index set. This will create the new collection indexes as needed.
+    ;; Update the index set. This will create the new collection indexes as
+    ;; needed.
     (update-index-set context index-set)))
 
 (defn finalize-collection-rebalancing
   "Removes the collection from the list of rebalancing collections"
   [context index-set-id concept-id]
   (let [index-set (get-index-set context index-set-id)
-        ;; Remove the collection from the list of rebalancing collections. Also does validation.
-        index-set (update-in index-set [:index-set :granule :rebalancing-collections]
-                   remove-rebalancing-collection concept-id)]
+        ;; Remove the collection from the list of rebalancing collections.
+        ;; Also does validation.
+        index-set (update-in
+                    index-set
+                    [:index-set :granule :rebalancing-collections]
+                    remove-rebalancing-collection
+                    concept-id)]
     (update-index-set context index-set)))
 
 (defn reset
-  "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
+  "Put elastic in a clean state after deleting indices associated with index-
+  sets and index-set docs."
   [context]
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))
-        index-set-ids (map #(first %) (es/get-index-set-ids (context->es-store context) index-name idx-mapping-type))]
+        index-set-ids (map
+                        first
+                        (es/get-index-set-ids
+                          (context->es-store context)
+                          index-name
+                          idx-mapping-type))]
     ;; delete indices assoc with index-set
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
@@ -278,5 +301,3 @@
     {:ok? ok?
      :dependencies {:elastic_search elastic-health
                     :echo echo-rest-health}}))
-
-
