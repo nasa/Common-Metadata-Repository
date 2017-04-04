@@ -70,7 +70,16 @@
             "test-out" ["test2junit"]
             ;; Linting aliases
             "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                          ["with-profile" "lint" "kibit"]]
+                          ["with-profile" "lint" "kibit"
+                           ;; XXX the following are placed here to implicitly
+                           ;; avoid cmr.ingest.validation, and in particular,
+                           ;; the `additional-attribute-validation` ns due to
+                           ;; it's use of namespace qualified keywords. This
+                           ;; is not yet supported by kibit:
+                           ;;     https://github.com/jonase/kibit/issues/14
+                           "src/cmr/ingest/api"
+                           "src/cmr/ingest/data"
+                           "src/cmr/ingest/services"]]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed"]
             "yagni" ["with-profile" "lint" "yagni"]
