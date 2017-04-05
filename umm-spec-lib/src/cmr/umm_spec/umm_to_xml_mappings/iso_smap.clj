@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
-  (:require 
+  (:require
     [clojure.string :as str]
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.date-util :as du]
@@ -105,7 +105,7 @@
                  [:gmd:organisationName [:gco:CharacterString authority]]
                  [:gmd:role
                   [:gmd:CI_RoleCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
-                                     :codeListValue ""} "authority"]]]]]]) 
+                                     :codeListValue ""} "authority"]]]]]])
              [:gmd:code [:gco:CharacterString (:DOI doi)]]
              [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
              [:gmd:description [:gco:CharacterString "DOI"]]]])]]
@@ -113,7 +113,9 @@
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status (generate-collection-progress c)]
          (kws/generate-iso-smap-descriptive-keywords
-           "theme" (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
+          kws/science-keyword-type (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
+         (kws/generate-iso-smap-descriptive-keywords
+          kws/location-keyword-type (map kws/location-keyword->iso-keyword-string (:LocationKeywords c)))
          [:gmd:descriptiveKeywords
           [:gmd:MD_Keywords
            (for [platform (:Platforms c)]
@@ -164,14 +166,14 @@
             [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
                                           :codeListValue "largerWorkCitation"}
              "largerWorkCitation"]]]]
-         (sdru/generate-publication-related-urls c)           
+         (sdru/generate-publication-related-urls c)
          [:gmd:language (char-string "eng")]]]
        (sdru/generate-service-related-url (:RelatedUrls c))
        (let [related-url-distributions (sdru/generate-distributions c)]
         (when related-url-distributions
          [:gmd:distributionInfo
           [:gmd:MD_Distribution
-           related-url-distributions]]))    
+           related-url-distributions]]))
        [:gmd:dataQualityInfo
         [:gmd:DQ_DataQuality
          [:gmd:scope

@@ -17,7 +17,7 @@
        "/gmd:identificationInfo/gmd:MD_DataIdentification"))
 
 (def citation-base-xpath
-  (str md-identification-base-xpath 
+  (str md-identification-base-xpath
        "/gmd:citation/gmd:CI_Citation"))
 
 (def short-name-identification-xpath
@@ -80,7 +80,7 @@
 (defn- parse-doi
   "There could be multiple CI_Citations. Each CI_Citation could contain multiple gmd:identifiers.
    Each gmd:identifier could contain at most ONE DOI. The doi-list below will contain something like:
-   [[nil] 
+   [[nil]
     [nil {:DOI \"doi1\" :Authority \"auth1\"} {:DOI \"doi2\" :Authority \"auth2\"}]
     [{:DOI \"doi3\" :Authority \"auth3\"]]
    We will pick the first DOI for now."
@@ -121,6 +121,7 @@
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
                             (when sanitize? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el sanitize?)
+       :LocationKeywords (kws/parse-location-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el sanitize?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C

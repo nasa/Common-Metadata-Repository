@@ -426,7 +426,6 @@
       (update :AdditionalAttributes expected-iso19115-additional-attributes)
       (update :MetadataAssociations group-metadata-assocations)
       (update :ISOTopicCategories update-iso-topic-categories)
-      (update :LocationKeywords conversion-util/fix-location-keyword-conversion)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
       (assoc :ContactPersons (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll)))

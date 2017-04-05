@@ -320,10 +320,9 @@
          (sdru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (kws/generate-iso19115-descriptive-keywords
-           "theme" (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
-         (kws/generate-iso19115-descriptive-keywords "place"
-                                                     (lk/location-keywords->spatial-keywords
-                                                      (:LocationKeywords c)))
+          kws/science-keyword-type (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
+         (kws/generate-iso19115-descriptive-keywords
+          kws/location-keyword-type (map kws/location-keyword->iso-keyword-string (:LocationKeywords c)))
          (kws/generate-iso19115-descriptive-keywords "temporal" (:TemporalKeywords c))
          (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
          (platform/generate-platform-keywords platforms)

@@ -18,6 +18,10 @@
   "String used in ISO19115-2 to indicate that a given science keyword field is not present."
   "NONE")
 
+(def nil-location-keyword-field
+  "String used in ISO-SMAP to indicate that a given location keyword field is not present."
+  "NONE")
+
 (def platform-categories
   "Category keywords that identifies a descriptive keyword as a platform.
   We are doing this because GCMD currently is not setting the proper value in the type element
@@ -37,6 +41,14 @@
 
 (def science-keyword-categories
   #{"EARTH SCIENCE" "EARTH SCIENCE SERVICES"})
+
+(def location-keyword-type
+  "String used to define the keyword type for location keywords."
+  "place")
+
+(def science-keyword-type
+  "String used to define the keyword type for location keywords."
+  "theme")
 
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO-19115-2 or SMAP keyword string."
@@ -89,10 +101,25 @@
                   (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
                   "/gmd:keyword/gco:CharacterString")))
 
+(defn parse-location-keywords
+  "Returns the location keywords parsed from the given xml document."
+  [md-data-id-el]
+  (when-let [location-keywords (seq (descriptive-keywords md-data-id-el location-keyword-type))]
+    (for [lk location-keywords
+          :let [[category type subregion1 subregion2 subregion3
+                 detailed-location] (map #(if (= nil-location-keyword-field %) nil %)
+                                         (str/split lk iso/keyword-separator-split))]]
+      {:Category category
+       :Type type
+       :Subregion1 subregion1
+       :Subregion2 subregion2
+       :Subregion3 subregion3
+       :DetailedLocation detailed-location})))
+
 (defn parse-science-keywords
   "Returns the science keywords parsed from the given xml document."
   [md-data-id-el sanitize?]
-  (if-let [science-keywords (seq (descriptive-keywords md-data-id-el "theme"))]
+  (if-let [science-keywords (seq (descriptive-keywords md-data-id-el science-keyword-type))]
     (for [sk science-keywords
           :let [[category topic term variable-level-1 variable-level-2 variable-level-3
                  detailed-variable] (map #(if (= nil-science-keyword-field %) nil %)
@@ -138,6 +165,19 @@
          detailed-variable :DetailedVariable} science-keyword]
     (->> [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]
          (map #(or % nil-science-keyword-field))
+         (str/join iso/keyword-separator-join))))
+
+(defn location-keyword->iso-keyword-string
+  "Returns an ISO location keyword string from the given location keyword."
+  [location-keyword]
+  (let [{category :Category
+         type :Type
+         subregion1 :Subregion1
+         subregion2 :Subregion2
+         subregion3 :Subregion3
+         detailed-location :DetailedLocation} location-keyword]
+    (->> [category type subregion1 subregion2 subregion3 detailed-location]
+         (map #(or % nil-location-keyword-field))
          (str/join iso/keyword-separator-join))))
 
 (defn- generate-descriptive-keywords
