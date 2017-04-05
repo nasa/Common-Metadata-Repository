@@ -31,7 +31,7 @@
 
     :uberjar {:main cmr.index-set.runner
               :aot :all}
-    ;; This profile is used for linting and static analisys. To run for this
+    ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
     ;; all projects at the same time, use the same command but from the top-
     ;; level directory.
