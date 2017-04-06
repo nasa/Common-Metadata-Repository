@@ -27,14 +27,6 @@
 (selmer/cache-off!)
 
 (defonce system nil)
-(defonce default-run-mode
-  (or (keyword (System/getProperty "cmr.runmode")) :in-memory))
-(defonce run-modes {:elastic default-run-mode
-                    :echo default-run-mode
-                    :db default-run-mode
-                    :messaging default-run-mode})
-(defonce legacy? false)
-(defonce aws? false)
 
 (defn configure-systems-logging
   "Configures the systems in the system map to the indicated level"
@@ -43,11 +35,24 @@
           (fn [app-map]
             (u/map-values #(assoc-in % [:log :level] level) app-map))))
 
+(defn- maybe-set-all-modes
+  "A utility function for (conditionally) setting all the values of a map to
+  the same value."
+  [all new-modes]
+  (let [old-modes @settings/run-modes]
+    (if (nil? all)
+      new-modes
+      (-> (fn [acc k v] (assoc acc k all))
+          (reduce-kv old-modes old-modes)
+          (dissoc :all)))))
+
 (defn set-modes!
   "Set the mode to use when starting/resetting. One or more modes may
   be set at a time by passing one or more of the following keyword
   arguments, where `VALUE` is any alowed run mode:
 
+  * `:all VALUE` - in this case, all other keys will be set to this
+    VALUE
   * `:elastic VALUE`
   * `:echo VALUE`
   * `:db VALUE`
@@ -62,25 +67,33 @@
   => (set-mode! :db :external)
   => (set-modes! :elastic :in-memory :echo :external)
   ```"
-  [& {:keys [elastic echo db messaging] :as new-modes}]
+  ;; Note that the keys are listed below as a means of self-documentation; they
+  ;; are not actually used individuall, but rather as a whole with the
+  ;; `new-modes` hash map.
+  [& {:keys [all elastic echo db messaging] :as new-modes}]
   (->> new-modes
+       (maybe-set-all-modes all)
        (remove #(nil? (val %)))
        (into {})
-       (merge run-modes)
-       (constantly)
-       (alter-var-root #'run-modes)))
+       (merge @settings/run-modes)
+       (reset! settings/run-modes)))
+
+(defn reset-modes!
+  "A convenience function for returning all run modes to the default state."
+  []
+  (set-modes! :all settings/default-run-mode))
 
 (defn set-legacy
   "Passing `true` to this function will cause legacy configuration to be used
   during starts/resets."
   [bool]
-  (alter-var-root #'legacy? (constantly bool)))
+  (reset! settings/legacy? bool))
 
 (defn set-aws
   "Passing `true` to this function will cause AWS queues to be used during
   starts/resets."
   [bool]
-  (alter-var-root #'aws? (constantly bool)))
+  (reset! settings/aws? bool))
 
 (defn set-logging-level!
   "Sets the logging level to the given setting. Puts the level in refresh-persistent-settings
@@ -124,41 +137,42 @@
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
   [& {:keys [elastic echo db messaging] :as new-modes}]
-  (when-not (empty? new-modes)
-    (apply set-modes! (mapcat seq new-modes)))
+
   (config/reset-config-values)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
   (system/set-gorilla-repl-port! 8090)
 
-  (system/set-dev-system-elastic-type! (:elastic run-modes))
-  ;; NOTE: External ECHO does not work with the automated tests. The automated
-  ;; tests expect they can interact with the Mock ECHO to setup users, acls,
-  ;; and other ECHO objects.
-  (system/set-dev-system-echo-type! (:echo run-modes))
-  ;; IMPORTANT: MAKE SURE YOU DISABLE SYMANTEC ANTIVIRUS BEFORE STARTING THE
-  ;; TESTS WITH EXTERNAL DB (re-enable them when you're done)
-  (system/set-dev-system-db-type! (:db run-modes))
-  ;; If you would like to run CMR with :aws instead of :in-memory or :external,
-  ;; be sure to call `(set-aws true)` in the REPL.
-  (if aws?
-    (system/set-dev-system-message-queue-type! :aws)
-    (system/set-dev-system-message-queue-type! (:messaging run-modes)))
+  (let [run-modes @settings/run-modes]
+    (when-not (empty? new-modes)
+      (apply set-modes! (mapcat seq new-modes)))
+
+    (system/set-dev-system-elastic-type! (:elastic run-modes))
+
+    (system/set-dev-system-echo-type! (:echo run-modes))
+    ;; IMPORTANT: MAKE SURE YOU DISABLE SYMANTEC ANTIVIRUS BEFORE STARTING THE
+    ;; TESTS WITH EXTERNAL DB (re-enable them when you're done)
+    (system/set-dev-system-db-type! (:db run-modes))
+    ;; If you would like to run CMR with :aws instead of :in-memory or :external,
+    ;; be sure to call `(set-aws true)` in the REPL.
+    (if @settings/aws?
+      (system/set-dev-system-message-queue-type! :aws)
+      (system/set-dev-system-message-queue-type! (:messaging run-modes))))
 
   (sit-sys/set-logging-level @settings/logging-level)
 
   ;; If you would like to run CMR with legacy support, then be sure to call
   ;; `(set-legacy true)` in the REPL. There is currently no lein profile or
   ;; command line option for this.
-  (when legacy?
+  (when @settings/legacy?
     (configure-for-legacy-services))
 
   (let [s (-> (system/create-system)
               (configure-systems-logging @settings/logging-level)
               ;; The following inclusion of public-conf data is done in order
               ;; to support search directory pages and their use of templates
-              ;; which (indirectly) make use of/require this data.
+              ;; which (indirectly) make use of/require app public-conf data.
               (assoc-in [:apps :search :public-conf]
                         {:protocol "http"
                          :host "localhost"
