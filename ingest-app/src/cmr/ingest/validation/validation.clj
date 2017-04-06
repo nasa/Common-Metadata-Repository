@@ -88,9 +88,13 @@
   [concept]
   (if-errors-throw :bad-request
                    (if (mt/umm-json? (:format concept))
-                     (umm-spec/validate-metadata (:concept-type concept)
-                                                 (:format concept)
-                                                 (:metadata concept))
+                     (let [umm-version (mt/version-of (:format concept))
+                           accept-version (config/ingest-accept-umm-version)]
+                       (if (>= 0 (compare umm-version accept-version))
+                         (umm-spec/validate-metadata (:concept-type concept)
+                                                     (:format concept)
+                                                     (:metadata concept))
+                         [(str "umm version is higher than ingest-accept-umm-version" (pr-str accept-version))]))
                      (umm/validate-concept-xml concept))))
 
 (defn validate-collection-umm-spec-schema

@@ -3,6 +3,7 @@
     [cmr.common.cache :as cache]
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.mime-types :as mt]
     [cmr.common.services.messages :as cmsg]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util :refer [defn-timed]]
@@ -55,11 +56,20 @@
     {:collection sanitized-collection
      :warnings warnings}))
 
+(defn- fix-ingest-concept-format 
+   "Fixes formats"
+  [fmt]
+  (if (mt/umm-json? fmt)
+    (if (mt/version-of fmt)
+      fmt 
+      (str fmt ";version=" (config/ingest-accept-umm-version)))
+    fmt))
+
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
   if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
   [context concept validation-options]
-  (let [concept (update-in concept [:format] ver/fix-concept-format)
+  (let [concept (update-in concept [:format] fix-ingest-concept-format)
         {:keys [collection warnings]} (validate-and-parse-collection-concept context
                                                                              concept
                                                                              validation-options)

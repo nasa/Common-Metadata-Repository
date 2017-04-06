@@ -5,6 +5,11 @@
             [cmr.oracle.connection :as conn]
             [cmr.message-queue.config :as rmq-conf]))
 
+(defconfig ingest-accept-umm-version
+  "Defines the latest umm version accepted by ingest - one version below the development version 
+   This environment variable needs to be manually set when newer UMM version becomes available"
+  {:default "1.9"}) 
+
 (defconfig ingest-username
   "Ingest database username"
   {:default "CMR_INGEST"})
