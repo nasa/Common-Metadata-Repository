@@ -11,7 +11,7 @@ is possible to run CMR locally without these.
 
 To do so, perform the following:
 
-1. Clone the repo: `git clone git@github.com:nasa/Common-Metadata-Repository.git`
+1. Clone the repo: `git clone git@github.com:nasa/Common-Metadata-Repository.git cmr`
 2. Switch to the working dir: `cd cmr`
 3. Copy `profiles.example.clj` to `profiles.clj`
 4. Configure `profiles.clj` (see below)
