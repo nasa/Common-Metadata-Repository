@@ -105,7 +105,19 @@
                 [lein-bikeshed "0.4.1"]
                 [lein-kibit "0.1.2"]
                 [lein-shell "0.4.0"]
-                [venantius/yagni "0.1.4"]]}}
+                [venantius/yagni "0.1.4"]]}
+    ;; The following run-* profiles are used in conjunction with other lein
+    ;; profiles to set the default CMR run mode and may be used in the
+    ;; following manner:
+    ;;
+    ;;   $ lein with-profile +run-external repl
+    ;;
+    ;; which will use dev and the other default profiles in addition to
+    ;; run-external (or whichever run mode profile is given).
+    :run-in-memory {
+      :jvm-opts ["-Dcmr.runmode=in-memory"]}
+    :run-external {
+      :jvm-opts ["-Dcmr.runmode=external"]}}
   :aliases {;; Creates the checkouts directory to the local projects
             "create-checkouts" ~create-checkouts-commands
             ;; Alias to test2junit for consistency with lein-test-out
