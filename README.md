@@ -97,7 +97,70 @@ once.
 4. `lein uberjar`
 5. `java -classpath ./target/<NAME OF SERVICE>-0.1.0-SNAPSHOT-standalone.jar <MAIN METHOD OF SERVICE>`
 
-# Code structure
+## Checking Dependencies, Static Analysis, and Tests
+
+There are several `lein` plugins that have been added to CMR for performing
+various tasks either at individual subproject levels, or at the top-level for
+all subprojects.
+
+#### `lein ancient`
+
+Some of the projects currently have support for checking if dependency versions
+are outdated. This is done with the `lein ancient` command, but will only work
+if the given subproject has added the ancient plugin in its `project.clj` file.
+
+#### Static Analysis and Linting
+
+At the individual, subproject level, the following commands are available:
+
+* `lein kibit`
+* `lein eastwood`
+* `lein lint` (a higher-order task combining `compile`, `kibit`, and
+  `eastwood`)
+* `lein bikeshed`
+* `lein yagni`
+
+Each of those is a `lein` alias that wraps the given command's use from the
+`lint` profile.
+
+Across all subprojects, the following are available for use from the top-level
+directory:
+
+* `lein kibit`
+* `lein eastwood`
+* `lein lint`
+
+Each of those is a `lein` alias that takes advantage of `lein modules` and the
+fact that all subprojects share the same static analysis commands.
+
+#### Testing CMR
+
+There are two modes of testing the CMR:
+
+* From the REPL
+* Utilizing the CI/CD script to run against an Oracle database
+
+For the first, the steps are as follows:
+
+1. Ensure you have set up your development environment in `dev-system`
+2. If you have built any `.jar` files, run `lein clean`
+3. Start the REPL: `lein repl`
+4. Once in the REPL, start the in-memory services: `(reset)`
+5. Run the tests: `(run-all-tests)` or `(run-all-tests-future)`
+
+Depending upon your IDE/editor, you may have shortcuts available to you for
+starting/restarting the services and/or running the tests. To find out what
+these are you can contact a CMR core dev.
+
+In order to run the tests against an Oracle database, it is recommended that
+you use an Oracle VM built specifically for this purpose. You will also need
+configuration and authentication information that will be set as environment
+variables. Be sure to contact a CMR core dev for this information. Once these
+are in place, you will be able to run the following:
+
+`./dev-system/support/build-and-test-ci.sh`
+
+## Code structure
 
 The CMR is made up of several small services called microservices. These are
 small purposed-based services that do a small set of things well.
