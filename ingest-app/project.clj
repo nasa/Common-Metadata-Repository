@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
 
-  :url "***REMOVED***browse/ingest-app"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
@@ -28,19 +28,32 @@
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
-         :jvm-opts ^:replace ["-server"]
-         :source-paths ["src" "dev" "test"]}
+  :profiles {
+    :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+          :jvm-opts ^:replace ["-server"]
+          :source-paths ["src" "dev" "test"]}
 
-   ;; This profile specifically here for generating documentation. It's faster than using the regular
-   ;; profile. An agent pool is being started when using the default profile which causes the wait of
-   ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
-   ;; Generate docs with: lein with-profile docs generate-docs
-   :docs {}
-   :uberjar {:main cmr.ingest.runner
-             :aot :all}}
+    ;; This profile specifically here for generating documentation. It's faster than using the regular
+    ;; profile. An agent pool is being started when using the default profile which causes the wait of
+    ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
+    ;; Generate docs with: lein with-profile docs generate-docs
+    :docs {}
+    :uberjar {:main cmr.ingest.runner
+              :aot :all}
+    ;; This profile is used for linting and static analysis. To run for this
+    ;; project, use `lein lint` from inside the project directory. To run for
+    ;; all projects at the same time, use the same command but from the top-
+    ;; level directory.
+    :lint {
+      :source-paths ^:replace ["src"]
+      :test-paths ^:replace []
+      :plugins [[jonase/eastwood "0.2.3"]
+                [lein-ancient "0.6.10"]
+                [lein-bikeshed "0.4.1"]
+                [lein-kibit "0.1.2"]
+                [lein-shell "0.4.0"]
+                [venantius/yagni "0.1.4"]]}}
 
   :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
                                                     (use 'cmr.common-app.api-docs)
@@ -54,4 +67,22 @@
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]})
+            "test-out" ["test2junit"]
+            ;; Linting aliases
+            "kibit" ["do" ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                          ["with-profile" "lint" "kibit"
+                           ;; XXX the following are placed here to implicitly
+                           ;; avoid cmr.ingest.validation, and in particular,
+                           ;; the `additional-attribute-validation` ns due to
+                           ;; it's use of namespace qualified keywords. This
+                           ;; is not yet supported by kibit:
+                           ;;     https://github.com/jonase/kibit/issues/14
+                           "src/cmr/ingest/api"
+                           "src/cmr/ingest/data"
+                           "src/cmr/ingest/services"]]
+            "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
+            "bikeshed" ["with-profile" "lint" "bikeshed"]
+            "yagni" ["with-profile" "lint" "yagni"]
+            "check-deps" ["with-profile" "lint" "ancient"]
+            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
+

@@ -25,5 +25,9 @@
                                         "metadata-db-app"
                                         "search-app"
                                         "virtual-product-app"
-                                        "es-spatial-plugin"]}}})
+                                        "es-spatial-plugin"]}}}
+  :aliases {
+    "kibit" ["modules" "kibit"]
+    "eastwood" ["modules" "eastwood"]
+    "lint" ["modules" "lint"]})
 

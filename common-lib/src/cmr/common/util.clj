@@ -27,9 +27,10 @@
 (defmacro are2
   "DEPRECATED. Use are3 instead.
 
-   Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
-   Wraps each tested expression in a testing block to identify what's being tested.
-   See clojure.template/do-template for an explanation of templates.
+   Based on the are macro from clojure.test. Checks multiple assertions with a
+   template expression. Wraps each tested expression in a testing block to
+   identify what's being tested. See clojure.template/do-template for an
+   explanation of templates.
 
    Example: (are2 [x y] (= x y)
                  \"The most basic case with 1\"
@@ -54,14 +55,17 @@
              (zero? (mod (count args) (inc (count argv))))))
     (let [testing-var (gensym "testing-msg")
           argv (vec (cons testing-var argv))]
-      `(template/do-template ~argv (test/testing ~testing-var (test/is ~expr)) ~@args))
-    (throw (IllegalArgumentException.
-             "The number of args doesn't match are2's argv or testing doc string may be missing."))))
+      `(template/do-template
+         ~argv (test/testing ~testing-var (test/is ~expr)) ~@args))
+    (throw
+      (IllegalArgumentException.
+        (str "The number of args doesn't match are2's argv or testing doc "
+             "string may be missing.")))))
 
 (defmacro are3
-  "Similar to the are2 macro with the exception that it expects that your assertion expressions will
-   be explicitly wrapped in is calls. This gives better error messages in the case of failures than
-   if ANDing them together.
+  "Similar to the are2 macro with the exception that it expects that your
+  assertion expressions will be explicitly wrapped in is calls. This gives
+  better error messages in the case of failures than if ANDing them together.
 
   Example: (are3 [x y]
              (do
@@ -94,8 +98,10 @@
     (let [testing-var (gensym "testing-msg")
           argv (vec (cons testing-var argv))]
       `(template/do-template ~argv (test/testing ~testing-var ~expr) ~@args))
-    (throw (IllegalArgumentException.
-             "The number of args doesn't match are3's argv or testing doc string may be missing."))))
+    (throw
+      (IllegalArgumentException.
+        (str "The number of args doesn't match are3's argv or testing doc "
+             "string may be missing.")))))
 
 (defn trunc
   "Returns the given string truncated to n characters."
@@ -110,9 +116,10 @@
 
 (defn sequence->fn
   [vals]
-  "Creates a stateful function that returns individual values from the sequence. It returns the first
-  value when called the first time, the second value on the second call and so on until the sequence
-  is exhausted of values. Returns nil forever after that.
+  "Creates a stateful function that returns individual values from the
+  sequence. It returns the first value when called the first time, the second
+  value on the second call and so on until the sequence is exhausted of
+  values. Returns nil forever after that.
 
       user=> (def my-ints (sequence->fn [1 2 3]))
       user=> (my-ints)
@@ -131,7 +138,8 @@
                            :next-vals (rest next-vals)}))))))
 
 (defmacro future-with-logging
-  "Creates a future that will log when a task starts and completes or if exceptions occur."
+  "Creates a future that will log when a task starts and completes or if
+  exceptions occur."
   [taskname & body]
   `(future
     (info "Starting " ~taskname)
@@ -146,16 +154,18 @@
         (info ~taskname " complete.")))))
 
 (defmacro time-execution
-  "Times the execution of the body and returns a tuple of time it took and the results"
+  "Times the execution of the body and returns a tuple of time it took and the
+  results."
   [& body]
   `(let [start# (System/currentTimeMillis)
          result# (do ~@body)]
      [(- (System/currentTimeMillis) start#) result#]))
 
 (defmacro defn-timed
-  "Creates a function that logs how long it took to execute the body. It supports multiarity functions
-  but only times how long the last listed arity version takes. This means it should be used with
-  multiarity functions where it calls itself with the extra arguments."
+  "Creates a function that logs how long it took to execute the body. It
+  supports multiarity functions but only times how long the last listed arity
+  version takes. This means it should be used with multiarity functions where
+  it calls itself with the extra arguments."
   [fn-name & fn-tail]
   (let [fn-name-str (name fn-name)
         ns-str (str *ns*)
@@ -167,7 +177,8 @@
         fn-tail (if (vector? (first fn-tail))
                   (list fn-tail)
                   fn-tail)
-        ;; extract other arities defined in the function which will not be timed.
+        ;; extract other arities defined in the function which will not be
+        ;; timed.
         other-arities (drop-last fn-tail)
         ;; extract the last arity definitions bindings and body
         [timed-arity-bindings & timed-arity-body] (last fn-tail)]
@@ -182,12 +193,15 @@
                (let [elapsed# (- (System/currentTimeMillis) start#)]
                  ;; CMR-3792. making defn-timed debug messages configurable
                  (when (= true (cfg/defn-timed-debug))
-                   (info (format
-                            "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#)))))))))))
+                   (info
+                     (format
+                       "Timed function %s/%s took %d ms."
+                       ~ns-str ~fn-name-str elapsed#)))))))))))
 
 (defn build-validator
-  "Creates a function that will call f with it's arguments. If f returns any errors then it will
-  throw a service error of the type given.
+  "Creates a function that will call f with it's arguments. If f returns any
+  errors then it will throw a service error of the type given.
+
   DEPRECATED: we should use the validations namespace"
   [error-type f]
   (fn [& args]
@@ -196,7 +210,9 @@
         (errors/throw-service-errors error-type errors)))))
 
 (defn apply-validations
-  "Applies the arguments to each validation concatenating all errors and returning them
+  "Applies the arguments to each validation concatenating all errors and
+  returning them
+
   DEPRECATED: we should use the validations namespace"
   [validations & args]
   (reduce (fn [errors validation]
@@ -207,22 +223,24 @@
           validations))
 
 (defn compose-validations
-  "Creates a function that will compose together a list of validation functions into a
-  single function that will perform all validations together
+  "Creates a function that will compose together a list of validation functions
+  into a single function that will perform all validations together
+
   DEPRECATED: we should use the validations namespace"
   [validation-fns]
   (partial apply-validations validation-fns))
 
 (defmacro record-fields
-  "Returns the set of fields in a record type as keywords. The record type passed in must be a java
-  class. Uses the getBasis function on record classes which returns a list of symbols of the fields of
-  the record."
+  "Returns the set of fields in a record type as keywords. The record type
+  passed in must be a java class. Uses the getBasis function on record classes
+  which returns a list of symbols of the fields of the record."
   [record-type]
   `(map keyword  ( ~(symbol (str record-type "/getBasis")))))
 
 (defn remove-map-keys
-  "Removes all keys from a map where the provided function returns true for the value of that key.
-  The supplied function must take a single value as an argument."
+  "Removes all keys from a map where the provided function returns true for the
+  value of that key. The supplied function must take a single value as an
+  argument."
   [f m]
   (apply dissoc m (for [[k v] m
                         :when (f v)]
@@ -247,11 +265,15 @@
   "Recursively removes maps with only nil values."
   [x]
   (cond
-    (map? x) (let [clean-map (remove-nil-keys (zipmap (keys x) (map remove-empty-maps (vals x))))]
-               (when (seq clean-map)
-                 clean-map))
-    (sequential? x) (keep remove-empty-maps x)
-    :else x))
+    (map? x)
+      (let [clean-map (remove-nil-keys
+                        (zipmap (keys x) (map remove-empty-maps (vals x))))]
+        (when (seq clean-map)
+          clean-map))
+    (sequential? x)
+      (keep remove-empty-maps x)
+    :else
+      x))
 
 (defn map-keys
   "Maps f over the keys in map m and updates all keys with the result of f.
@@ -269,7 +291,8 @@
       (into {} (map mapper m)))))
 
 (defn map-values
-  "Maps f over all the values in m returning a new map with the updated values"
+  "Maps f over all the values in m returning a new map with the updated
+  values."
   [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
@@ -292,8 +315,8 @@
           sequence))
 
 (defn any?
-  "Returns true if predicate f returns a truthy value against any of the items. This is very similar
-  to some but it's faster through it's use of reduce."
+  "Returns true if predicate f returns a truthy value against any of the items.
+  This is very similar to some but it's faster through it's use of reduce."
   [f items]
   (reduce (fn [_ i]
             (if (f i)
@@ -303,8 +326,12 @@
           items))
 
 (defn map-n
-  "Calls f with every step count elements from items. Equivalent to (map f (partition n step items))
-  but faster. Note that it drops partitions at the end that would be less than a length of n."
+  "Calls f with every step count elements from items. Equivalent to:
+
+      (map f (partition n step items))
+
+  but faster. Note that it drops partitions at the end that would be less than
+  a length of n."
   ([f n items]
    (map-n f n n items))
   ([f ^long n ^long step items]
@@ -318,7 +345,10 @@
              (recur (+ index step) (conj! results (f sub))))))))))
 
 (defn map-n-all
-  "Calls f with every step count elements from items. Equivalent to (map f (partition-all n step items))
+  "Calls f with every step count elements from items. Equivalent to:
+
+      (map f (partition-all n step items))
+
   but faster. Includes sets at the end that could be less than a lenght of n."
   ([f n items]
    (map-n-all f n n items))
@@ -333,11 +363,12 @@
              (recur (+ index step) (conj! results (f sub))))))))))
 
 (defn pmap-n-all
-  "Splits work up n ways across futures and executes it in parallel. Calls the function with a set of
-  n or fewer at the end. Not lazy - Items will be evaluated fully.
+  "Splits work up n ways across futures and executes it in parallel. Calls the
+  function with a set of n or fewer at the end. Not lazy - Items will be
+  evaluated fully.
 
-  Note that n is _not_ the number of threads that will be used. It's the number of items that will be
-  processed in each parallel batch."
+  Note that n is _not_ the number of threads that will be used. It's the number
+  of items that will be processed in each parallel batch."
   [f n items]
   (let [build-future (fn [subset]
                        (future
@@ -350,9 +381,11 @@
     (mapv deref futures)))
 
 (defn fast-map
-  "Eager version of pmap. Does error handling to throw the original error thrown in f. In pmap the
-   error thrown will be java.util.concurrent.ExecutionException which will mask the original exception.
-   This version will throw the original exception so it can be handled appropriately."
+  "Eager version of pmap. Does error handling to throw the original error
+  thrown in f. In pmap the  error thrown will be
+  java.util.concurrent.ExecutionException which will mask the original
+  exception. This version will throw the original exception so it can be
+  handled appropriately."
   [f values]
   (let [errors (atom nil)
         result (doall (pmap
@@ -368,15 +401,16 @@
       result)))
 
 (defn doall-recursive
-  "Recursively forces evaluation of any nested sequences. The regular doall will force evaluation
-   of a sequence but if elements of those sequences are things like maps which also contain lazy
-   sequences they would not be realized. This function will force all of them to be realized."
+  "Recursively forces evaluation of any nested sequences. The regular doall
+  will force evaluation of a sequence but if elements of those sequences are
+  things like maps which also contain lazy  sequences they would not be
+  realized. This function will force all of them to be realized."
   [v]
   (w/postwalk identity v))
 
 (defmacro while-let
-  "A macro that's similar to when let. It will continually evaluate the bindings and execute the body
-  until the binding results in a nil value."
+  "A macro that's similar to when let. It will continually evaluate the
+  bindings and execute the body until the binding results in a nil value."
   [bindings & body]
   `(loop []
      (when-let ~bindings
@@ -384,7 +418,8 @@
        (recur))))
 
 (defn double->string
-  "Converts a double to string without using exponential notation or loss of accuracy."
+  "Converts a double to string without using exponential notation or loss of
+  accuracy."
   [d]
   (when d (.format (DecimalFormat. "#.#####################") d)))
 
@@ -398,9 +433,10 @@
       false)))
 
 (defn rename-keys-with [m kmap merge-fn]
-  "Returns the map with the keys in kmap renamed to the vals in kmap. Values of renamed keys for which
-  there is already existing value will be merged using the merge-fn. merge-fn will be called with
-  the original keys value and the renamed keys value."
+  "Returns the map with the keys in kmap renamed to the vals in kmap. Values of
+  renamed keys for which there is already existing value will be merged using
+  the merge-fn. merge-fn will be called with the original keys value and the
+  renamed keys value."
   (let [rename-subset (select-keys m (keys kmap))
         renamed-subsets  (map (fn [[k v]]
                                 (set/rename-keys {k v} kmap))
@@ -409,10 +445,12 @@
     (reduce #(merge-with merge-fn %1 %2) m-without-renamed renamed-subsets)))
 
 (defn binary-search
-  "Does a binary search between minv and maxv searching for an acceptable value. middle-fn should
-  be a function taking two values and finding the midpoint. matches-fn should be a function taking a
-  value along with the current recursion depth. matches-fn should return a keyword of :less-than,
-  :greater-than, or :matches to indicate if the current value is an acceptable response."
+  "Does a binary search between minv and maxv searching for an acceptable
+  value. middle-fn should be a function taking two values and finding the
+  midpoint. matches-fn should be a function taking a value along with the
+  current recursion depth. matches-fn should return a keyword of :less-than,
+  :greater-than, or :matches to indicate if the current value is an acceptable
+  response."
   [minv maxv middle-fn matches-fn]
   (loop [minv minv
          maxv maxv
@@ -425,21 +463,24 @@
         matches-result))))
 
 (defn- compare-results-match?
-  "Returns true if the given values are in order based on the given matches-fn, otherwise returns false."
+  "Returns true if the given values are in order based on the given matches-fn,
+  otherwise returns false."
   [matches-fn values]
   (->> (partition 2 1 values)
        (map #(apply compare %))
        (every? matches-fn)))
 
 (defn greater-than?
-  "Returns true if the given values are in descending order. This is similar to core/> except it uses
-  compare function underneath and applies to other types other than just java.lang.Number."
+  "Returns true if the given values are in descending order. This is similar to
+  core/> except it uses compare function underneath and applies to other types
+  other than just java.lang.Number."
   [& values]
   (compare-results-match? pos? values))
 
 (defn less-than?
-  "Returns true if the given values are in ascending order. This is similar to core/< except it uses
-  compare function underneath and applies to other types other than just java.lang.Number."
+  "Returns true if the given values are in ascending order. This is similar to
+  core/< except it uses compare function underneath and applies to other types
+  other than just java.lang.Number."
   [& values]
   (compare-results-match? neg? values))
 
@@ -465,7 +506,8 @@
   (mapcat seq coll))
 
 (defn delete-recursively
-  "Recursively delete the directory or file by the given name. Does nothing if the file does not exist."
+  "Recursively delete the directory or file by the given name. Does nothing if
+  the file does not exist."
   [fname]
   (when (.exists (io/file fname))
     (letfn [(delete-recursive
@@ -476,15 +518,18 @@
       (delete-recursive (io/file fname)))))
 
 (defn string->lz4-bytes
-  "Compresses the string using LZ4 compression. Returns a map containing the compressed byte array
-   and the length of the original string in bytes. The decompression length is used during decompression.
-   LZ4 compression is faster than GZIP compression but uses more space."
+  "Compresses the string using LZ4 compression. Returns a map containing the
+  compressed byte array and the length of the original string in bytes. The
+  decompression length is used during decompression. LZ4 compression is
+  faster than GZIP compression but uses more space."
+
   [^String s]
   (let [data (.getBytes s "UTF-8")
         decompressed-length (count data)
         ^LZ4Factory factory (LZ4Factory/fastestInstance)
         ^LZ4Compressor compressor (.highCompressor factory)
-        max-compressed-length (.maxCompressedLength compressor decompressed-length)
+        max-compressed-length (.maxCompressedLength
+                                compressor decompressed-length)
         compressed (byte-array max-compressed-length)
         compressed-length (.compress compressor
                                      ;; Data to compress and size
@@ -495,7 +540,8 @@
      :compressed (Arrays/copyOf compressed compressed-length)}))
 
 (defn lz4-bytes->string
-  "Takes a map as returned by string->lz4-bytes and decompresses it back to the original string."
+  "Takes a map as returned by string->lz4-bytes and decompresses it back to the
+  original string."
   [lz4-info]
   (let [{:keys [^long decompressed-length
                 ^bytes compressed]} lz4-info
@@ -527,8 +573,8 @@
     (.toByteArray output)))
 
 (defn string->gzip-base64
-  "Converts a string to another string that is the base64 encoded bytes obtained by gzip
-  compressing the bytes of the original string."
+  "Converts a string to another string that is the base64 encoded bytes
+  obtained by gzip compressing the bytes of the original string."
   [input]
   (let [^bytes b64-bytes (-> input string->gzip-bytes b64/encode)]
    (String. b64-bytes (java.nio.charset.Charset/forName "UTF-8"))))
@@ -544,8 +590,9 @@
       slurp))
 
 (defn map->path-values
-  "Takes a map and returns a map of a sequence of paths through the map to values contained in that
-  map. A path is a sequence of keys to a value in the map like that taken by the get-in function.
+  "Takes a map and returns a map of a sequence of paths through the map to
+  values contained in that map. A path is a sequence of keys to a value in the
+  map like that taken by the get-in function.
 
   Example:
 
@@ -568,16 +615,17 @@
           matching-map)))
 
 (defn map-matches-path-values?
-  "Returns true if the map matches the given path values. Path values are described in the
-  map->path-values function documentation."
+  "Returns true if the map matches the given path values. Path values are
+  described in the map->path-values function documentation."
   [path-values m]
   (every? (fn [[path value]]
             (= (get-in m path) value))
           path-values))
 
 (defn filter-matching-maps
-  "Keeps all the maps which match the given matching map. The matching map is a set of nested maps
-  with keys and values. A map matches it if the matching map is a subset of the map."
+  "Keeps all the maps which match the given matching map. The matching map is a
+  set of nested maps with keys and values. A map matches it if the matching
+  map is a subset of the map."
   [matching-map maps]
   (let [path-values (map->path-values matching-map)]
     (filter #(map-matches-path-values? path-values %) maps)))
@@ -592,9 +640,10 @@
                              xs)))))
 
 (defn update-in-all
-  "For nested maps, this is identical to clojure.core/update-in. If it encounters
-   a sequential structure at one of the keys, though, it applies the update to each
-   value in the sequence. If it encounters nil at a parent key, it does nothing."
+  "For nested maps, this is identical to clojure.core/update-in. If it
+  encounters a sequential structure at one of the keys, though, it applies
+  the update to each value in the sequence. If it encounters nil at a parent
+  key, it does nothing."
   [m [k & ks] f & args]
   (let [v (get m k)]
     (if (nil? v)
@@ -608,15 +657,21 @@
           (assoc m k (apply f v args)))))))
 
 (defn get-in-all
-  "Similar to clojure.core/get-in, but iterates over sequence values found along
-  the key path and returns an array of all matching values."
+  "Similar to clojure.core/get-in, but iterates over sequence values found
+  along the key path and returns an array of all matching values.
+
+  This function handles the following conditions:
+   * Return empty results if the path can't be followed
+   * Return just the value if we're at the end of the path
+   * Iterate and recurse through sequences
+   * Recurse on ordinary keys (assumed to be maps)"
   [m [k & ks]]
   (let [v (get m k)]
     (cond
-      (nil? v) []                                    ;; Return empty results if the path can't be followed
-      (nil? ks) [v]                                  ;; Return just the value if we're at the end of the path
-      (sequential? v) (mapcat #(get-in-all %1 ks) v) ;; Iterate and recurse through sequences
-      :else (get-in-all v ks))))                     ;; Recurse on ordinary keys (assumed to be maps)
+      (nil? v) []
+      (nil? ks) [v]
+      (sequential? v) (mapcat #(get-in-all %1 ks) v)
+      :else (get-in-all v ks))))
 
 (defn- key->delay-name
   "Returns the key that the delay is stored in for a lazy value"
@@ -625,10 +680,11 @@
   (keyword (str "cmr.common.util/" (name k) "-delay")))
 
 (defmacro lazy-assoc
-  "Associates a value in a map in a way that the expression isn't evaluated until the value is
-  retrieved from the map. The value must be retrieved using lazy-get. A different key is built
-  using the one specified so that only lazy-get can be used to retrieve the value. It also allows
-  a map to contain either the original value with the same key and a lazily determined value."
+  "Associates a value in a map in a way that the expression isn't evaluated
+  until the value is retrieved from the map. The value must be retrieved using
+  lazy-get. A different key is built using the one specified so that only
+  lazy-get can be used to retrieve the value. It also allows a map to contain
+  either the original value with the same key and a lazily determined value."
   [m k value-expression]
   (let [delay-name (key->delay-name k)]
     `(assoc ~m ~delay-name (delay ~value-expression))))
@@ -639,8 +695,8 @@
   (some-> m (get (key->delay-name k)) deref))
 
 (defn get-real-or-lazy
-  "Retrieves the value directly from the map with the key k or if not set looks for a lazily
-  associated value."
+  "Retrieves the value directly from the map with the key k or if not set looks
+  for a lazily associated value."
   [m k]
   (or (get m k) (lazy-get m k)))
 
@@ -661,19 +717,23 @@
                  substr)))))))))
 
 (defn map-by
-  "Like group-by but assumes that all the keys returned by f will be unique per item."
+  "Like group-by but assumes that all the keys returned by f will be unique per
+  item."
   [f items]
   (into {} (for [item items] [(f item) item])))
 
 (defn truncate-nils
-  "Truncates the nil elements from the end of the given sequence, returns the truncated sequence.
-  e.g (truncate-nils [1 2 nil 3 nil nil]) => '(1 2 nil 3)"
+  "Truncates the nil elements from the end of the given sequence, returns the
+  truncated sequence. Example:
+
+    (truncate-nils [1 2 nil 3 nil nil]) => '(1 2 nil 3)"
   [coll]
   (reverse (drop-while nil? (reverse coll))))
 
 (defn map-longest
-  "Similar to map function, but applies the function to the longest of the sequences,
-  use the given default to pad the shorter sequences.
+  "Similar to map function, but applies the function to the longest of the
+  sequences, use the given default to pad the shorter sequences.
+
   See http://stackoverflow.com/questions/18940629/using-map-with-different-sized-collections-in-clojure"
   [f default & colls]
   (lazy-seq
@@ -683,8 +743,9 @@
         (apply map-longest f default (map rest colls))))))
 
 (defn key-sorted-map
-  "Creates an empty map whose keys are sorted by the order given. Keys not in the set will appear
-  after the specified keys. Keys must all be of the same type."
+  "Creates an empty map whose keys are sorted by the order given. Keys not in
+  the set will appear after the specified keys. Keys must all be of the same
+  type."
   [key-order]
   ;; Create a map of the keys to a numeric number indicating their position.
   (let [key-order-map (zipmap key-order (range))]
@@ -727,7 +788,8 @@
     (vec coll)))
 
 (defn seqify
-  "When x is non-nil, returns x if it is sequential, or else returns a sequential collection containing only x."
+  "When x is non-nil, returns x if it is sequential, or else returns a
+  sequential collection containing only x."
   [x]
   (when (some? x)
     (if (sequential? x)
@@ -751,14 +813,15 @@
 (defn compare-vectors
   "Compares two vectors of potentially unequal size. The default comparator
    for vectors considers length first, regardless of contents. compare-vectors
-   compares in a manner similar to strings, where contents are considered first.
+   compares in a manner similar to strings, where contents are considered
+   first.
 
    > (compare [1 2 3] [2 1]) => 1
    > (compare-vectors [1 2 3] [2 1]) => -1"
   [v0 v1]
   (let [len (min (count v0) (count v1))
         cmp (compare (subvec v0 0 len) (subvec v1 0 len))]
-    (if (or (= cmp 0) (= (count v0) (count v1)))
+    (if (or (zero? cmp) (= (count v0) (count v1)))
       (compare v0 v1)
       cmp)))
 
@@ -779,6 +842,6 @@
   ([] nil)
   ([x] x)
   ([x y]
-   (if (< 0 (compare x y)) x y))
+   (if (pos? (compare x y)) x y))
   ([x y & more]
    (reduce max-compare (max-compare x y) more)))

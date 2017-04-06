@@ -1,10 +1,12 @@
 (ns cmr.common.validations.core
-  "Validation framework created from scratch. Both bouncer and validateur are Clojure Validation
-  frameworks but they have bugs and limitations that made them inappropriate for use.
+  "Validation framework created from scratch. Both bouncer and validateur are
+  Clojure Validation frameworks but they have bugs and limitations that made
+  them inappropriate for use.
 
-  A validation is a function. It takes 2 arguments a field path vector and a value. It returns either
-  nil or a map of field paths to a list of errors. Maps and lists will automatically be converted
-  into record-validation or seq-of-validations."
+  A validation is a function. It takes 2 arguments a field path vector and a
+  value. It returns either nil or a map of field paths to a list of errors.
+  Maps and lists will automatically be converted into record-validation or
+  seq-of-validations."
   (:require [clojure.string :as str]
             [camel-snake-kebab.core :as csk]
             [cmr.common.services.errors :as errors]))
@@ -38,8 +40,6 @@
                                        :last "Jason"}
                                 :age "35"}))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Support functions
 
@@ -71,29 +71,35 @@
     (validate validation [] value))
   ([validation key-path value]
    (cond
-     (sequential? validation) (reduce (fn [error-map v]
-                                        (merge-with concat error-map (validate v key-path value)))
-                                      {}
-                                      validation)
-     (map? validation) (reduce (fn [error-map [k v]]
-                                 (merge error-map (validate v (conj key-path k) (get value k))))
-                               {}
-                               validation)
+     (sequential? validation)
+       (reduce
+         (fn [error-map v]
+           (merge-with concat error-map (validate v key-path value)))
+         {}
+         validation)
+     (map? validation)
+      (reduce
+        (fn [error-map [k v]]
+           (merge error-map (validate v (conj key-path k) (get value k))))
+        {}
+        validation)
      (fn? validation) (validation key-path value))))
 
 (defn validate!
-  "Validates the given value with the validation. If there are any errors they are thrown as a service
-  error"
+  "Validates the given value with the validation. If there are any errors
+  they are thrown as a service error"
   [validation value]
   (let [errors (validate validation [] value)]
     (when (seq errors)
-      (errors/throw-service-errors :bad-request (create-error-messages errors)))))
+      (errors/throw-service-errors
+        :bad-request (create-error-messages errors)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
 (defn first-failing
-  "Returns a validator that returns the output of the first validator in validators to return any errors."
+  "Returns a validator that returns the output of the first validator in
+  validators to return any errors."
   [& validators]
   (fn [key-path value]
     (loop [[v & more] validators]
@@ -104,8 +110,8 @@
             (recur more)))))))
 
 (defn pre-validation
-  "Runs a function on the value before validation begins. The result of prefn is passed to the
-  validation."
+  "Runs a function on the value before validation begins. The result of prefn
+  is passed to the validation."
   [prefn validation]
   (fn [field-path value]
     (validate validation field-path (prefn value))))
@@ -121,8 +127,8 @@
     {field-path [(required-msg)]}))
 
 (defn every
-  "Validate a validation against every item in a sequence. The field path will contain the index of
-  the item that had an error"
+  "Validate a validation against every item in a sequence. The field path will
+  contain the index of the item that had an error"
   [validation]
   (fn [field-path values]
     (let [error-maps (for [[idx value] (map-indexed vector values)]
@@ -157,17 +163,20 @@
   "Creates a validator within a specified range"
   [minv maxv]
   (fn [field-path value]
-    (when (and value (or (< (compare value minv) 0) (> (compare value maxv) 0)))
+    (when (and value (or (neg? (compare value minv))
+                         (pos? (compare value maxv))))
       {field-path [(within-range-msg minv maxv value)]})))
 
 (defn field-cannot-be-changed-msg
   [existing-value new-value]
-  (format "%%s cannot be modified. Attempted to change existing value [%s] to [%s]"
-          existing-value new-value))
+  (format
+    "%%s cannot be modified. Attempted to change existing value [%s] to [%s]"
+    existing-value new-value))
 
 (defn field-cannot-be-changed
-  "Validation that a field in a object has not been modified. Accepts optional nil-allowed? parameter
-  which indicates the validation should be skipped if the new value is nil."
+  "Validation that a field in a object has not been modified. Accepts optional
+  nil-allowed? parameter which indicates the validation should be skipped if
+  the new value is nil."
   ([field]
    (field-cannot-be-changed field false))
   ([field nil-allowed?]
@@ -182,7 +191,8 @@
           [(field-cannot-be-changed-msg existing-value new-value)]})))))
 
 (defn when-present
-  "Validation-transformer: Returns a validation which only runs validations when a value is present."
+  "Validation-transformer: Returns a validation which only runs validations
+  when a value is present."
   [validation]
   (fn [key-path v]
     (when (some? v)

@@ -26,7 +26,7 @@
   (let [{info :token} (json/decode body true)
         keys-specified (set (keys info))
         unknown-keys (set/difference keys-specified token-keys)]
-    (when (not (empty? unknown-keys))
+    (when (seq unknown-keys)
       (svc-errors/throw-service-error :invalid-data (str "Unkown keys used during login " (pr-str unknown-keys))))
     ;; Future enhancement: validate that min fields are provided
     (token-db/create context info)))

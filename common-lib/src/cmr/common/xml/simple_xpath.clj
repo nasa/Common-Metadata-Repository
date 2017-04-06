@@ -1,23 +1,25 @@
 (ns cmr.common.xml.simple-xpath
-  "Simple XPath is an XPath implementation that works against XML parsed with clojure.data.xml
-  and against Clojure records.
 
-  It has a limited support for the XPath specification. These are examples of XPaths that are
-  supported. See the tests for a full set of example XPaths.
+  "Simple XPath is an XPath implementation that works against XML parsed with
+  clojure.data.xml and against Clojure records.
+
+  It has a limited support for the XPath specification. These are examples of
+  XPaths that are supported. See the tests for a full set of example XPaths.
 
   * From root: /catalog/books/author
   * Within current context: author/name
   * Subselect by attribute equality: /catalog/books[@id='bk101']/author
   * Subselect by element equality: /catalog/books[price='5.95']/title
   * Subselect by child index: /catalog/books[1]/author
-  * Subselect by range of child indexes /catalog/books[2..4]/author.  Openended ranges like [2..]
-  are supported as well. (Note this is not a standard XPath feature.) Indexes are 1 based arrays. Both
-  start and end indexes are inclusive.
+  * Subselect by range of child indexes /catalog/books[2..4]/author.
+    Openended ranges like [2..] are supported as well. (Note this is not a
+    standard XPath feature.) Indexes are 1 based arrays. Both start and end
+    indexes are inclusive.
 
   Note that there will be undefined behavior if an unsupported XPath is used.
 
-  Note that simple XPath does not support namespaces in XPaths. It ignores any XPath tag name prefixes
-  i.e. /xsl:foo/xsl:bar is equivalent to /foo/bar.
+  Note that simple XPath does not support namespaces in XPaths. It ignores any
+  XPath tag name prefixes i.e. /xsl:foo/xsl:bar is equivalent to /foo/bar.
 
   ## Using with XML:
 
@@ -27,27 +29,30 @@
 
   ## Using with Clojure Data:
 
-  1. Create an XPath context with some Clojure data using `create-xpath-context-for-data`
+  1. Create an XPath context with some Clojure data using
+     `create-xpath-context-for-data`
   2. Parse the XPath using `parse-xpath`
   3. Evaluate the XPath against the XPath context using `evaluate`.
 
   ### How XPaths against Clojure Data work
 
-  An XPath like /catalog/books in XML would look for a root element called catalog with one or more
-  subelements called books. When using with Clojure data element tags are treated like looking for
-  keys in a set of nested maps. The first tag within data xpaths are ignored because it assumes the
-  first tag is the name of the data. For example evaluating /catalog/books would work with
-  `{:books [...]}` which assumes that the map is the catalog. The xpath would evaluate to the vector
-  the `:books` key refers to.
+  An XPath like /catalog/books in XML would look for a root element called
+  catalog with one or more subelements called books. When using with Clojure
+  data element tags are treated like looking for keys in a set of nested maps.
+  The first tag within data xpaths are ignored because it assumes the first
+  tag is the name of the data. For example evaluating /catalog/books would
+  work with `{:books [...]}` which assumes that the map is the catalog. The
+  xpath would evaluate to the vector the `:books` key refers to.
 
   ## XPath Contexts
 
-  XPath contexts are used as the input to evaluation and also are the output of evaluation. They
-  contain three pieces of information: a type (data or xml), the root of the data, and the context.
-  The type indicates whether the xpath context is used for Clojure data or parsed XML. The root of
-  the data is kept so that XPaths against the root can be evaluated (/catalog/books). The context
-  is used so that higher level XPaths may specify a location within the data to evaluate lower level
-  XPaths against.
+  XPath contexts are used as the input to evaluation and also are the output
+  of evaluation. They contain three pieces of information: a type (data or
+  xml), the root of the data, and the context. The type indicates whether the
+  xpath context is used for Clojure data or parsed XML. The root of the data
+  is kept so that XPaths against the root can be evaluated (/catalog/books).
+  The context is used so that higher level XPaths may specify a location
+  within the data to evaluate lower level XPaths against.
 
   The `:context` key always contains the result of an XPath evaluation."
   (:require
@@ -55,7 +60,7 @@
    [clojure.string :as str]
    [cmr.common.util :as u]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Selector creation functions
 ;; A selector is one part of an XPath.
 ;; foo/bar[1] would consist of the following selectors
@@ -85,8 +90,8 @@
      :end-index end-index}))
 
 (defn- parse-xpath-attrib-name
-  "Returns a namespaced keyword like :foo/bar from an xpath namespaced attribute selector like
-  \"foo:bar\"."
+  "Returns a namespaced keyword like :foo/bar from an xpath namespaced
+  attribute selector like \"foo:bar\"."
   [attrib-name]
   (let [[_ _ namespace-part name-part] (re-find #"((.*):)?(.*)" attrib-name)]
     (keyword namespace-part name-part)))
@@ -95,41 +100,56 @@
 (declare parse-xpath)
 
 (defn- create-attrib-val-equality-selector
-  "Creates a selector that selects elements with an attribute with a given value."
+  "Creates a selector that selects elements with an attribute with a given
+  value."
   [selector-str]
   (let [[_ xpath value] (re-matches #"(.+)='(.+)'" selector-str)
         parsed-xpath (parse-xpath xpath)]
     (when (not= (:source parsed-xpath) :from-context)
-      (throw (Exception. (str "Nested XPath selectors can not be from the root. XPath: " xpath))))
+      (throw
+        (Exception.
+          (str "Nested XPath selectors can not be from the root. XPath: "
+               xpath))))
     {:type :attrib-value-selector
      :selectors (:selectors parsed-xpath)
      :value value}))
 
 (defn- create-elem-val-equality-selector
-  "Creates a selector that selects elements which have a child element with a given value.
+  "Creates a selector that selects elements which have a child element with a
+  given value.
+
   Example: foo/bar[charlie/name='alpha']
-  charlie/name='alpha' is the selector in that case. charlie/name is an xpath and alpha is the value
-  that it will match on."
+
+  charlie/name='alpha' is the selector in that case. charlie/name is an xpath
+  and alpha is the value that it will match on."
   [selector-str]
   (let [[_ xpath element-value] (re-matches #"(.+)='(.+)'" selector-str)
         parsed-xpath (parse-xpath xpath)]
     (when (not= (:source parsed-xpath) :from-context)
-      (throw (Exception. (str "Nested XPath selectors can not be from the root. XPath: " xpath))))
+      (throw
+        (Exception.
+          (str "Nested XPath selectors can not be from the root. XPath: "
+               xpath))))
     {:type :element-value-selector
      :selectors (:selectors parsed-xpath)
      :element-value element-value}))
 
 (defn- create-elem-val-inequality-selector
-  "Creates a selector that selects elements which have a child element with a value not equal to
-  the given value.
+  "Creates a selector that selects elements which have a child element with a
+  value not equal to the given value.
+
   Example: foo/bar[charlie/name!='alpha']
-  charlie/name!='alpha' is the selector in that case. charlie/name is an xpath and alpha is the value
-  that it will match on."
+
+  charlie/name!='alpha' is the selector in that case. charlie/name is an xpath
+  and alpha is the value that it will match on."
   [selector-str]
   (let [[_ xpath element-value] (re-matches #"(.+)!='(.+)'" selector-str)
         parsed-xpath (parse-xpath xpath)]
     (when (not= (:source parsed-xpath) :from-context)
-      (throw (Exception. (str "Nested XPath selectors can not be from the root. XPath: " xpath))))
+      (throw
+        (Exception.
+          (str "Nested XPath selectors can not be from the root. XPath: "
+               xpath))))
     {:type :element-value-selector
      :selectors (:selectors parsed-xpath)
      :element-value element-value
@@ -138,19 +158,21 @@
 (defn- create-tag-name-selector
   "Creates a selector that selects elements with a specific tag name."
   [tag-name]
-  ;; This removes namespaces from XPath tag names. Simple XPath does not support them and simply
-  ;; ignores them. This is because it uses clojure.data.xml which does not preserve namespaces
-  ;; after parsing :(
+  ;; This removes namespaces from XPath tag names. Simple XPath does not
+  ;; support them and simply ignores them. This is because it uses
+  ;; clojure.data.xml which does not preserve namespaces after parsing :(
   (let [tag-name (keyword (last (str/split (str tag-name) #":")))]
     {:type :tag-selector
      :tag-name (keyword tag-name)}))
 
 (defn- create-attribute-name-selector
-  "Creates a selector that selects an attribute value with a specific name. This is usually the last
-  part of an xpath since you can't go any further down."
+  "Creates a selector that selects an attribute value with a specific name.
+  This is usually the last part of an xpath since you can't go any further
+  down."
   [attrib-name]
-  ;; This changes namespaces in XPath attribute names. clojure.data.xml will represent an attribute
-  ;; in a specific namespace like so :namespace/attribute-name
+  ;; This changes namespaces in XPath attribute names. clojure.data.xml will
+  ;; represent an attribute in a specific namespace like so :namespace
+  ;; /attribute-name
   (let [attrib-name (keyword (str/replace (name attrib-name) #":" "/"))]
     {:type :attrib-selector
      :attrib-name (keyword attrib-name)}))
@@ -164,7 +186,8 @@
   {:type :current-context})
 
 (defn- parse-element-sub-selector
-  "Parses an element selector that is within the square brackets of an xpath into a selector."
+  "Parses an element selector that is within the square brackets of an xpath
+  into a selector."
   [selector-str]
   (cond
     (re-matches #"\d+" selector-str)
@@ -183,10 +206,13 @@
     (create-elem-val-equality-selector selector-str)
 
     :else
-    (throw (IllegalArgumentException. (str "Unrecognized selector string form in xpath: " selector-str)))))
+    (throw
+      (IllegalArgumentException.
+        (str "Unrecognized selector string form in xpath: " selector-str)))))
 
 (defn- parse-xpath-element
-  "Parses an element of an XPath and returns a set of selectors from that element."
+  "Parses an element of an XPath and returns a set of selectors from that
+  element."
   [xpath-elem]
   (cond
     (= "/" xpath-elem)
@@ -198,17 +224,22 @@
     :else
     (if-let [[_ attrib-name] (re-matches #"@(.+)" xpath-elem)]
       [(create-attribute-name-selector attrib-name)]
-      (if-let [[_ tag-name element-selector-str] (re-matches #"([^\[]+)(?:\[(.+)\])?" xpath-elem)]
+      (if-let [[_ tag-name element-selector-str] (re-matches
+                                                   #"([^\[]+)(?:\[(.+)\])?"
+                                                   xpath-elem)]
         (let [tag-name-selector (create-tag-name-selector (keyword tag-name))]
           (if element-selector-str
-            [tag-name-selector (parse-element-sub-selector element-selector-str)]
+            [tag-name-selector
+             (parse-element-sub-selector element-selector-str)]
             [tag-name-selector]))
-        (throw (Exception. (str "XPath element was not recognized: " xpath-elem)))))))
+        (throw
+          (Exception.
+            (str "XPath element was not recognized: " xpath-elem)))))))
 
 (defn- join-split-selectors
-  "When we split an XPath by / that inadvertently splits subselectors that contain XPaths. This
-  function searches for subselectors that were split by finding non-closed subselectors and
-  joining them back together."
+  "When we split an XPath by / that inadvertently splits subselectors that
+  contain XPaths. This function searches for subselectors that were split by
+  finding non-closed subselectors and joining them back together."
   [parts]
   (loop [new-parts []
          parts parts
@@ -241,23 +272,25 @@
   (let [parts (join-split-selectors parts)
         [source parts] (if (= "/" (first parts))
                          [:from-root parts]
-                         ;; We add an initial / here because an xpath like "books" is inherently
-                         ;; within the top element.
+                         ;; We add an initial / here because an xpath like
+                         ;; "books" is inherently within the top element.
                          [:from-context (cons "/" parts)])
         selectors (u/mapcatv parse-xpath-element parts)
 
-        ;; This is a special case for when the last selector is an attribute value. We remove the
-        ;; child of selector preceeding it since attributes aren't in the children.
+        ;; This is a special case for when the last selector is an attribute
+        ;; value. We remove the child of selector preceeding it since
+        ;; attributes aren't in the children.
         last-selector (last selectors)
         selectors (if (= :attrib-selector (:type last-selector))
                     (if (> (count selectors) 2)
-                      (conj (subvec selectors 0 (- (count selectors) 2)) last-selector)
+                      (conj (subvec selectors 0 (- (count selectors) 2))
+                            last-selector)
                       [last-selector])
                     selectors)]
     {:source source
      :selectors selectors}))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML processors
 
 (defmulti process-xml-selector
@@ -268,16 +301,13 @@
 (defn- process-selectors
   "Applies multiple selectors to a set of elements"
   [source selectors processor-fn]
-  (reduce (fn [input selector]
-            (processor-fn input selector))
-          source
-          selectors))
+  (reduce processor-fn source selectors))
 
 (defmethod process-xml-selector :child-of
   [elements _]
   (persistent!
     (reduce (fn [v element]
-              (reduce #(conj! %1 %2) v (:content element)))
+              (reduce conj! v (:content element)))
             (transient [])
             elements)))
 
@@ -300,12 +330,16 @@
             (transient [])
             elements)))
 
-;; Select the elements which have attributes with a attribute name and value given
+;; Select the elements which have attributes with a attribute name and value
+;; given
 (defmethod process-xml-selector :attrib-value-selector
   [elements {:keys [selectors value]}]
   (filterv (fn [element]
-             (when-let [selected-value (first (process-selectors
-                                                [element] selectors process-xml-selector))]
+             (when-let [selected-value (first
+                                         (process-selectors
+                                           [element]
+                                           selectors
+                                           process-xml-selector))]
                (= selected-value value)))
            elements))
 
@@ -339,7 +373,7 @@
         []))
     []))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data processors
 
 (defn- as-vector
@@ -416,7 +450,7 @@
         []))
     []))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
 
 (defn create-xpath-context-for-xml
@@ -441,7 +475,8 @@
    :context [data]})
 
 (defn context
-  "Returns x as an XPath context (or itself if it is already an XPath context)."
+  "Returns x as an XPath context (or itself if it is already an XPath
+  context)."
   [x]
   (cond
     (xpath-context? x) x
@@ -473,13 +508,22 @@
   [xpath-context {:keys [source selectors original-xpath]}]
   (try
     (let [source-elements (cond
-                            (= source :from-root) [(:root xpath-context)]
-                            (= source :from-context) (:context xpath-context)
-                            :else (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+                            (= source :from-root)
+                              [(:root xpath-context)]
+                            (= source :from-context)
+                              (:context xpath-context)
+                            :else
+                              (throw
+                                (Exception.
+                                  (str "Unexpected source:" (pr-str source)))))]
       (assoc xpath-context
-             :context (process-selectors source-elements selectors process-xml-selector)))
+             :context
+             (process-selectors
+               source-elements selectors process-xml-selector)))
     (catch Exception e
-      (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
+      (throw
+        (Exception.
+          (str "Error processing xpath: " original-xpath) e)))))
 
 (defmethod evaluate-internal :data
   [xpath-context {:keys [source selectors original-xpath]}]
@@ -492,16 +536,22 @@
                  (:context xpath-context)
 
                  :else
-                 (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+                 (throw
+                   (Exception.
+                     (str "Unexpected source:" (pr-str source)))))]
       (assoc xpath-context
-             :context (process-selectors data selectors process-data-selector)))
+             :context
+             (process-selectors data selectors process-data-selector)))
     (catch Exception e
-      (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
+      (throw
+        (Exception.
+          (str "Error processing xpath: " original-xpath) e)))))
 
 (defn evaluate
-  "Returns the XPath context resulting from evaluating an XPath expression against XML or Clojure
-  data. The given context may be an XPath context, an XML string, or a Clojure data structure. The
-  given xpath-expression may be a string or a value as returned by parse-xpath."
+  "Returns the XPath context resulting from evaluating an XPath expression
+  against XML or Clojure data. The given context may be an XPath context, an
+  XML string, or a Clojure data structure. The given xpath-expression may be a
+  string or a value as returned by parse-xpath."
   [ctx xpath-expression]
   (let [xpath-expression (if (string? xpath-expression)
                            (parse-xpath xpath-expression)
@@ -512,10 +562,14 @@
   "Returns the text of all nodes selected in an XPath context."
   [context-or-node]
   (cond
-    (string? context-or-node) context-or-node
-    (xpath-context? context-or-node) (apply str (map text (:context context-or-node)))
-    (seq? context-or-node) (apply str (map text context-or-node))
-    (:content context-or-node) (str/join (map text (:content context-or-node)))))
+    (string? context-or-node)
+      context-or-node
+    (xpath-context? context-or-node)
+      (str/join (map text (:context context-or-node)))
+    (seq? context-or-node)
+      (str/join (map text context-or-node))
+    (:content context-or-node)
+      (str/join (map text (:content context-or-node)))))
 
 (defn select*
   "Returns all elements matching the XPath expression."
@@ -523,8 +577,9 @@
   (seq (:context (evaluate context xpath))))
 
 (defmacro select
-  "Returns all elements matching the XPath expression. Perform work of parsing XPath at compile time
-  if a string literal is passed in to improve performance at runtime."
+  "Returns all elements matching the XPath expression. Perform work of parsing
+  XPath at compile time if a string literal is passed in to improve
+  performance at runtime."
   [context xpath]
   (if (string? xpath)
     (let [parsed (parse-xpath xpath)]

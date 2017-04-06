@@ -94,12 +94,12 @@
   [sns-client exchange-name]
   (info "Calling SNS to get topic " exchange-name)
   (let [exchange-name (normalize-queue-name exchange-name)
-        topics (into [] (.getTopics (.listTopics sns-client)))]
-   (some (fn [topic]
-             (let [topic-arn (.getTopicArn topic)
-                   topic-name (arn->name topic-arn)]
-               (when (= exchange-name topic-name)
-                     topic)))
+        topics (vec (.getTopics (.listTopics sns-client)))]
+    (some (fn [topic]
+            (let [topic-arn (.getTopicArn topic)
+                  topic-name (arn->name topic-arn)]
+              (when (= exchange-name topic-name)
+                topic)))
      topics)))
 
 (def get-topic
@@ -295,7 +295,7 @@
     (let [exchange-name (normalize-queue-name exchange-name)
           topic (get-topic sns-client exchange-name)
           topic-arn (.getTopicArn topic)
-          subs (into [] (.getSubscriptions (.listSubscriptionsByTopic sns-client topic-arn)))]
+          subs (vec (.getSubscriptions (.listSubscriptionsByTopic sns-client topic-arn)))]
       (map (fn [sub]
                (->> sub
                     .getEndpoint

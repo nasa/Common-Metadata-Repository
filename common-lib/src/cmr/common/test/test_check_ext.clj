@@ -150,21 +150,20 @@
 
 
 (defn optional
-  "Returns either nil or the given generator. This should be used for optional fields"
+  "Returns either nil or the given generator. This should be used for optional
+  fields."
   [generator]
   (gen/one-of [(gen/return nil) generator]))
 
 (defn nil-if-empty
-  "Creates a generator that takes another sequence generator. If the sequence produced is empty then
-  a nil value will be returned"
+  "Creates a generator that takes another sequence generator. If the sequence
+  produced is empty then a nil value will be returned"
   [gen]
-  (gen/fmap #(when (not (empty? %))
-               %)
-            gen))
+  (gen/fmap #(when (seq %) %) gen))
 
 (defn model-gen
-  "Creates a generator for models. Takes the constructor function for the model and generators
-  for each argument."
+  "Creates a generator for models. Takes the constructor function for the model
+  and generators for each argument."
   [constructor & args]
   (gen/fmap (partial apply constructor) (apply gen/tuple args)))
 

@@ -35,4 +35,4 @@
         source (new StreamSource (new StringReader xml))
         result (new StreamResult (new StringWriter))]
     (.transform transformer source result)
-    (.toString (.getWriter result))))
+    (str (.getWriter result))))
