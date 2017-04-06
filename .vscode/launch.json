@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Clojure-Debug-Console-Local",
+            "type": "clojure",
+            "request": "launch",
+            "replPort": 8777,
+            "debugReplPort": 8778,
+            "debugPort": 8999,
+            "env": {
+                "CMR_BOOTSTRAP_PASSWORD": "CMR_BOOTSTRAP",
+                "CMR_METADATA_DB_USERNAME": "METADATA_DB",
+                "CMR_METADATA_DB_PASSWORD": "METADATA_DB",
+                "CMR_DB_URL": "thin:@localhost:1521:orcl"
+            },
+            "sideChannelPort": 8030,
+            "cwd": "${workspaceRoot}/dev-system",
+            "refreshOnLaunch": true,
+            "console": "internalConsole",
+            "commandLine": [
+                "/Users/dpzamora/bin/lein",
+                "with-profile",
+                "+debug-repl",
+                "repl",
+                ":headless",
+                ":port",
+                "8777"
+            ]
+        }
+    ]
+}
