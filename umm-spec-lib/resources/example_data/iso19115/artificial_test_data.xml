@@ -795,6 +795,7 @@ US DOC; NOAA; NESDIS; National Oceanographic Data Center
                     </gmd:thesaurusName>
                 </gmd:MD_Keywords>
             </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
                 <gmd:MD_Keywords>
                     <gmd:keyword>
                         <gmx:Anchor xlink:href="http://www.nodc.noaa.gov/cgi-bin/OAS/prd/seaname/details/72" xlink:actuate="onRequest">Indian Ocean</gmx:Anchor>
