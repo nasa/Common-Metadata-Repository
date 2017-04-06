@@ -94,7 +94,9 @@
                          (umm-spec/validate-metadata (:concept-type concept)
                                                      (:format concept)
                                                      (:metadata concept))
-                         [(str "umm version is higher than ingest-accept-umm-version" (pr-str accept-version))]))
+                         [(str "UMM JSON version " accept-version  " or lower can be ingested. "
+                               "Any version above that is considered in-development "
+                               "and cannot be ingested at this time.")]))
                      (umm/validate-concept-xml concept))))
 
 (defn validate-collection-umm-spec-schema

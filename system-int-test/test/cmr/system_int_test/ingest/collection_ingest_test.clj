@@ -617,7 +617,7 @@
         response (ingest/ingest-concept coll-map {:accept-format :json})
         _ (side/eval-form `(config/set-ingest-accept-umm-version! ~accepted-version))]
     (is (= 400 (:status response)))
-    (is (= [(str "umm version is higher than ingest-accept-umm-version\"" "1.8" "\"")]
+    (is (= [(str "UMM JSON version 1.8 or lower can be ingested. Any version above that is considered in-development and cannot be ingested at this time.")]
            (:errors response)))))
 
 (deftest ingest-invalid-umm-version

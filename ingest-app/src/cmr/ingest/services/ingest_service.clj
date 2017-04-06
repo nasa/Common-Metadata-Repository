@@ -59,11 +59,11 @@
 (defn- fix-ingest-concept-format 
    "Fixes formats"
   [fmt]
-  (if (mt/umm-json? fmt)
-    (if (mt/version-of fmt)
-      fmt 
-      (str fmt ";version=" (config/ingest-accept-umm-version)))
-    fmt))
+  (if (or 
+        (not (mt/umm-json? fmt)) 
+        (mt/version-of fmt))
+    fmt 
+    (str fmt ";version=" (config/ingest-accept-umm-version))))
 
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error

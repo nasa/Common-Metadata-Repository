@@ -6,8 +6,8 @@
             [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig ingest-accept-umm-version
-  "Defines the latest umm version accepted by ingest - one version below the development version 
-   This environment variable needs to be manually set when newer UMM version becomes available"
+  "Defines the latest umm version accepted by ingest - it's the latest official version.  
+   This environment variable needs to be manually set when newer UMM version becomes official"
   {:default "1.9"}) 
 
 (defconfig ingest-username
