@@ -3,9 +3,7 @@
             [cmr.common.services.errors :as svc-errors]
             [cheshire.core :as json]))
 
-(defmulti prepare-body
-  (fn [body]
-    (type body)))
+(defmulti prepare-body type)
 
 (defmethod prepare-body String
   [body]
@@ -36,4 +34,6 @@
 (defn require-sys-admin-token
   [headers]
   (when-not (get headers "echo-token")
-    (svc-errors/throw-service-error :unauthorized "User does not have requested access to [TOKEN].")))
+    (svc-errors/throw-service-error
+      :unauthorized
+      "User does not have requested access to [TOKEN].")))

@@ -28,7 +28,7 @@
   [dir]
   (let [d (io/file dir)
         files (seq (.listFiles d))]
-    (dorun (map #(-> % str touch-file) (filter #(not (.isDirectory ^java.io.File %)) files)))))
+    (dorun (map #(-> % str touch-file) (remove #(.isDirectory %) files)))))
 
 (defn speak
   "Says the specified text outloud."

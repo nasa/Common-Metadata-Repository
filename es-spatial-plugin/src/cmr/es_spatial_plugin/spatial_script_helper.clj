@@ -28,7 +28,7 @@
           false)
         (catch Throwable t
           (.printStackTrace t)
-          (.error logger (s/join "\n" (map #(.toString ^Object %) (.getStackTrace t))) nil)
+          (.error logger (s/join "\n" (map str (.getStackTrace t))) nil)
           (.info logger (pr-str ords-info) nil)
           (.info logger (pr-str ords) nil)
           (throw t))))

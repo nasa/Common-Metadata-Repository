@@ -27,7 +27,8 @@
 (defn verify-provider-exists
   "Verifies the given provider exists."
   [context provider-id]
-  (let [provider (->> (pc/get-providers-from-cache context)
+  (let [provider (->> context
+                      (pc/get-providers-from-cache)
                       (some #(when (= provider-id (:provider-id %)) %)))]
     (when-not provider
       (srvc-errors/throw-service-error

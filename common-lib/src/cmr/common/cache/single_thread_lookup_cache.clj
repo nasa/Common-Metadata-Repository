@@ -50,7 +50,7 @@
           ;; If a nil value is returned we just close the response
           ;; channel in that case and a nil will be read.
           (let [value (safely-get-value-or-exception delegate-cache key lookup-fn)]
-            (when (not (nil? value)) (async/>!! response-channel value)))
+            (when-not (nil? value) (async/>!! response-channel value)))
 
           (finally
             ;; Close the response channel whether a value was successfully written to the response

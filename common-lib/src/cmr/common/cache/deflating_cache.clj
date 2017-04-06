@@ -1,6 +1,7 @@
 (ns cmr.common.cache.deflating-cache
-  "An implementation of the cache that uses a deflating function to store data in a delegate cache.
-   An inflating function is used when retrieving data from the cache."
+  "An implementation of the cache that uses a deflating function to store data
+  in a delegate cache. An inflating function is used when retrieving data
+  from the cache."
   (:require
    [cmr.common.cache :as c]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
@@ -24,16 +25,16 @@
   (get-value
     [this key]
     (let [value (c/get-value delegate-cache key)]
-      (when (not (nil? value))
+      (when-not (nil? value)
         (inflate-fn value))))
 
   (get-value
     [this key lookup-fn]
     (let [value (c/get-value delegate-cache key
-                             ;; If we lookup a value then it needs to be deflated for storage
-                             ;; in the underlying cache.
+                             ;; If we lookup a value then it needs to be
+                             ;; deflated for storage in the underlying cache.
                              (comp deflate-fn lookup-fn))]
-      (when (not (nil? value))
+      (when-not (nil? value)
         (inflate-fn value))))
 
   (reset
@@ -42,11 +43,15 @@
 
   (set-value
     [this key value]
-    (c/set-value delegate-cache key (when (not (nil? value)) (deflate-fn value)))))
+    (c/set-value delegate-cache
+      key
+      (when-not (nil? value) (deflate-fn value)))))
+
 (record-pretty-printer/enable-record-pretty-printing DeflatingCache)
 
 (defn create-deflating-cache
-  "Create a deflating cache with the provided delegate-cache, inflate and deflate functions."
+  "Create a deflating cache with the provided delegate-cache, inflate and
+  deflate functions."
   [delegate-cache inflate-fn deflate-fn]
   (map->DeflatingCache {:delegate-cache delegate-cache
                         :inflate-fn inflate-fn

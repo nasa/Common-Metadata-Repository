@@ -77,5 +77,5 @@
   "Returns the elasticsearch health with timeout handling."
   [context elastic-key-in-context]
   (let [;; We add 1 second to allow get-elastic-health operation to timeout first
-        timeout-ms (* 1000 (+ 1 (hh/health-check-timeout-seconds)))]
+        timeout-ms (* 1000 (inc (hh/health-check-timeout-seconds)))]
     (hh/get-health #(health-fn context elastic-key-in-context) timeout-ms)))

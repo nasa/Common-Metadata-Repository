@@ -19,6 +19,31 @@
   []
   (stl-cache/create-single-thread-lookup-cache))
 
+(defn- humanizer-group-by-field
+  "A custom group-by function for use in the create-humanizer-alias-map
+  function."
+  [humanizer]
+  (group-by
+    :field
+    (map
+      #(select-keys % [:field :replacement_value :source_value])
+      (filter #(= (:type %) "alias") humanizer))))
+
+(defn- humanizer-group-by-replacement-value
+  "A custom group-by function for use in the create-humanizer-alias-map
+  function.
+
+  In particular, this function converts the value assciated with
+  :replacement_value to upper-case before group-by in order to cover the case
+  in humanizers.json where there are multiple :replacement_value that only
+  differ in upper-lower cases."
+  [v1]
+  (group-by
+    :replacement_value
+    (->>  v1
+          (map #(select-keys % [:replacement_value :source_value]))
+          (map #(update % :replacement_value str/upper-case)))))
+
 (defn- create-humanizer-alias-map
   "Creates a map of humanizer aliases by type from the humanizer map and returns in the format below.
    Note: All the replacement_value are UPPER-CASED, so when using this map to get
@@ -28,20 +53,13 @@
     \"tiling_system_name\" {\"TILE\" [\"tile_1\" \"tile_2\"] \"OTHERTILES\" [\"otheraliases\"]}
     \"instrument\" {\"INSTRUMENT\" [\"instr1\" \"instr2\"] \"OTHERINSTRUMENTS\" [\"otheraliases\"]}}"
   [humanizer]
-  (into {}
-        (for [[k1 v1]
-              (group-by :field
-                (map #(select-keys % [:field :replacement_value :source_value])
-                  (filter #(= (:type %) "alias") humanizer)))]
-          [k1 (into {}
-                    (for [[k2 v2]
-                          (group-by :replacement_value
-                            ;; upper-case the :replacement_value before group-by to cover the
-                            ;; case in humanizers.json where there are multiple :replacement_value
-                            ;; that only differ in upper-lower cases.
-                            (->> (map #(select-keys % [:replacement_value :source_value]) v1)
-                                 (map #(update % :replacement_value str/upper-case))))]
-                      [k2 (map :source_value v2)]))])))
+  (into
+    {}
+    (for [[k1 v1] (humanizer-group-by-field humanizer)]
+      [k1 (into
+            {}
+            (for [[k2 v2] (humanizer-group-by-replacement-value v1)]
+              [k2 (map :source_value v2)]))])))
 
 (defn refresh-cache
   "Refreshes the humanizer alias cache."

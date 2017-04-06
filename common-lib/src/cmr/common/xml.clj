@@ -46,7 +46,7 @@
   calling the function. This has not been optimized for speed. Works by recursively replacing elements
   that are the parents of the updated nodes. Calls updater-fn with the element and any supplied args."
   [element path updater-fn & args]
-  (if (= 0 (count path))
+  (if (zero? (count path))
     (apply updater-fn (cons element args))
     (let [tag (first path)
           rest-of-path (rest path)]
@@ -174,5 +174,5 @@
     (.setCharacterStream output (new StringWriter))
     (.setEncoding output "UTF-8")
     (.write writer document output)
-    (.toString (.getCharacterStream output))))
+    (str (.getCharacterStream output))))
 
