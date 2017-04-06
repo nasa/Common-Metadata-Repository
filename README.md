@@ -103,11 +103,26 @@ There are several `lein` plugins that have been added to CMR for performing
 various tasks either at individual subproject levels, or at the top-level for
 all subprojects.
 
-#### `lein ancient`
+#### Dependency Versions
 
-Some of the projects currently have support for checking if dependency versions
-are outdated. This is done with the `lein ancient` command, but will only work
-if the given subproject has added the ancient plugin in its `project.clj` file.
+The linting profile in each project also includes the `lein-ancient` plugin
+as well as an alias for it called `check-deps`. As such, each project may be
+checked for out-of-date dependency versions with the following:
+
+* `lein check-deps`
+
+Additionally, this same command is provided at the top-level for running
+against all projects at once. Note that this command fails with the first
+project that fails. If many subprojects are failing their dependency version
+checks and you wish to see all of these, you may use your system shell:
+
+```sh
+for DIR in `ls -1d */project.clj|xargs dirname`
+do
+  cd $DIR && echo "Checking $DIR ..." && lein check-deps
+  cd - &> /dev/null
+done
+```
 
 #### Static Analysis and Linting
 
