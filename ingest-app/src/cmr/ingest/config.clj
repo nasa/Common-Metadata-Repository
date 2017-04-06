@@ -1,9 +1,13 @@
 (ns cmr.ingest.config
-  "Contains functions to retrieve metadata db specific configuration - testing"
+  "Contains functions to retrieve metadata db specific configuration"
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.config :as oracle-config]
             [cmr.oracle.connection :as conn]
             [cmr.message-queue.config :as rmq-conf]))
+
+(defconfig ingest-accept-umm-version
+  "Testing build
+  {:default "1.9"}) 
 
 (defconfig ingest-username
   "Ingest database username"
