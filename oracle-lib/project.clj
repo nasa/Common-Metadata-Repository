@@ -60,7 +60,7 @@
             ;;   java.lang.ClassNotFoundException: oracle.dms.console.DMSConsole
             "eastwood" ["with-profile" "lint" "eastwood"
                         "{:namespaces [:source-paths] :exclude-namespaces [cmr.oracle.connection]}"]
-            "bikeshed" ["with-profile" "lint" "bikeshed"]
+            "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
