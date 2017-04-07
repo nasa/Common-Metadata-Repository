@@ -159,7 +159,7 @@
 (def and-option #{:and})
 (def and-or-option #{:and :or})
 (def string-plus-and-options #{:pattern :ignore-case :and})
-(def string-plus-and-exlude-options #{:exclude-collection :pattern :ignore-case :and})
+(def string-plus-and-exclude-options #{:exclude-collection :pattern :ignore-case :and})
 (def string-plus-or-options #{:pattern :ignore-case :or})
 
 (defmulti valid-parameter-options
