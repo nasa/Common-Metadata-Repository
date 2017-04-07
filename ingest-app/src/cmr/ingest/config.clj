@@ -5,6 +5,10 @@
             [cmr.oracle.connection :as conn]
             [cmr.message-queue.config :as rmq-conf]))
 
+(defconfig ingest-accept-umm-version
+  "Testing build
+  {:default "1.9"}) 
+
 (defconfig ingest-username
   "Ingest database username"
   {:default "CMR_INGEST"})
