@@ -22,7 +22,7 @@
 
 (defconfig rabbit-mq-user
   "The username to use when connecting to Rabbit MQ"
-  {***REMOVED***})
+  {:default "cmr"})
 
 (defconfig rabbit-mq-password
   "The password for the rabbit mq user."
