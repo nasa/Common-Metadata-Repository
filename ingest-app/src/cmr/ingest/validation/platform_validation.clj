@@ -16,10 +16,11 @@
         platform-aliases (mapcat #(get platform-alias-map %) (map str/upper-case current-platforms))
         ;; Only the deleted ones that are not part of the platform-aliases need to be validated.
         deleted-platform-names (s/difference
-                                 (set previous-platforms)
-                                 (set (concat current-platforms platform-aliases)))]
+                                (set previous-platforms)
+                                (set (concat current-platforms platform-aliases)))]
     (for [name deleted-platform-names]
       {:params {"platform[]" name
-                :collection-concept-id concept-id}
+                :collection-concept-id concept-id
+                "options[platform][exclude_collection]" "true"}
        :error-msg (format (str "Collection Platform [%s] is referenced by existing"
                                " granules, cannot be removed.") name)})))
