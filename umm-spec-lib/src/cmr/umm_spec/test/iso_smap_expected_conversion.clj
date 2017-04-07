@@ -114,7 +114,6 @@
                         :Technique nil)
         (update :ScienceKeywords expected-science-keywords)
         (update-in [:Platforms] normalize-smap-instruments)
-        (assoc :LocationKeywords nil)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
         (update :CollectionProgress su/with-default)))

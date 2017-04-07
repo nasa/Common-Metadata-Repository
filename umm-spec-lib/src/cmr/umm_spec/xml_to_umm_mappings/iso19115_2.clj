@@ -236,8 +236,7 @@
                     #"(?s)^(?!Restriction Comment:).+")
        su/USECONSTRAINTS_MAX
        sanitize?)
-      :LocationKeywords (lk/translate-spatial-keywords
-                         (kf/get-kms-index context) (kws/descriptive-keywords md-data-id-el "place"))
+      :LocationKeywords (kws/parse-location-keywords md-data-id-el)
       :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
       :DataLanguage (char-string-value md-data-id-el "gmd:language")
       :ISOTopicCategories (values-at doc topic-categories-xpath)
