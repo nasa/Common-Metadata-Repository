@@ -159,14 +159,15 @@
 (defmethod common-params/parameter->condition :inheritance
   [context concept-type param value options]
   (let [field-condition (common-params/parameter->condition context :collection param value options)        
-        collection-cond (if (= "true" (get-in options [param :exclude-collection]))
-                          (cqm/->MatchNoneCondition)
-                          (gc/and-conds
-                           [(qm/->CollectionQueryCondition field-condition)
-                            (cqm/map->MissingCondition {:field param})]))]                            
-    (gc/or-conds
-      [field-condition
-       collection-cond])))
+        exclude-collection (= "true" (get-in options [param :exclude-collection]))
+        collection-cond (gc/and-conds
+                         [(qm/->CollectionQueryCondition field-condition)
+                          (cqm/map->MissingCondition {:field param})])]
+    (if exclude-collection
+      field-condition
+      (gc/or-conds
+       [field-condition
+        collection-cond]))))
 
 (defmethod common-params/parameter->condition :updated-since
   [_context concept-type param value options]

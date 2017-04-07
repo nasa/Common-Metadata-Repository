@@ -734,6 +734,7 @@
                                                       :ShortName "S2"
                                                       :Version "V2"
                                                       :Platforms (data-umm-c/platforms "p4" "Terra")}))]
+    ;; CMR-3926 We need to make sure granules with no platfrom ref do not inherit their parent collection's instrument
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p2" "AM-1")}))
@@ -846,6 +847,8 @@
                                                       :ShortName "S2"
                                                       :Version "V2"
                                                       :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+    ;; CMR-3926 We need to make sure granules with no instrument ref or sensor ref do not inherit their parent collection's instrument or sensor
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))                                                        
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
@@ -854,49 +857,49 @@
     (index/wait-until-indexed)
     (testing "Update collection successful cases"
       (are3
-        [plat-instruments-1 plat-instruments-2]
-        (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                                              {:EntryTitle "parent-collection"
-                                                               :ShortName "S1"
-                                                               :Version "V1"
-                                                               :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
-                                                                           (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
-              {:keys [status errors]} response]
-          (is (= [200 nil] [status errors])))
-
-        "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
+       [plat-instruments-1 plat-instruments-2]
+       (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                             {:EntryTitle "parent-collection"
+                                                              :ShortName "S1"
+                                                              :Version "V1"
+                                                              :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
+                                                                          (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
+             {:keys [status errors]} response]
+         (is (= [200 nil] [status errors])))         
+         
+       "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
          Currently it's okay if it exists under other platforms."
-        ["p1-1" "i2" "GPS" "i4"]
-        ["p1-2" "i1" "i2" "GPS" "i4"]
-
-        "Adding an additional instrument is OK"
-        ["p1-1" "i1" "i2" "GPS" "i4" "i5"] 
-        ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
-
-        "Removing an instrument not referenced by any granule in the collection is OK"
-        ["p1-1" "i1" "i2" "GPS"] 
-        ["p1-2" "i1" "i2" "GPS"]
-
-        "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
-        ["p1-1" "i1" "i2" "Gps Receivers"] 
-        ["p1-2" "i1" "i2" "Gps Receivers"]))
+       ["p1-1" "i2" "GPS" "i4"]
+       ["p1-2" "i1" "i2" "GPS" "i4"]
+       
+       "Adding an additional instrument is OK"
+       ["p1-1" "i1" "i2" "GPS" "i4" "i5"] 
+       ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
+       
+       "Removing an instrument not referenced by any granule in the collection is OK"
+       ["p1-1" "i1" "i2" "GPS"] 
+       ["p1-2" "i1" "i2" "GPS"]
+       
+       "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
+       ["p1-1" "i1" "i2" "Gps Receivers"]
+       ["p1-2" "i1" "i2" "Gps Receivers"]))
 
     (testing "Update collection failure cases"
       (are3
-        [plat-instr-sensors expected-errors]
-        (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                                              {:EntryTitle "parent-collection2"
-                                                               :ShortName "S2"
-                                                               :Version "V2"
-                                                               :Platforms [(apply data-umm-c/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
-                                 {:allow-failure? true})
-              {:keys [status errors]} response]
-          (is (= [422 expected-errors] [status errors])))
- 
-        "Removing an instrument  that is referenced by a granule is invalid."
-        ["p2" "i2" "GPS RECEIVERS"]
-        ["Collection Child Instrument [s1] is referenced by existing granules, cannot be removed. Found 1 granules."]
-
-        "Updating an instrument  that is referenced by a granule by humanized alias back to its original value is invalid."
-        ["p2" "i2" "GPS" "s1"]
-        ["Collection Child Instrument [GPS RECEIVERS] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+       [plat-instr-sensors expected-errors]
+       (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                             {:EntryTitle "parent-collection2"
+                                                              :ShortName "S2"
+                                                              :Version "V2"
+                                                              :Platforms [(apply data-umm-c/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
+                                                    {:allow-failure? true})
+             {:keys [status errors]} response]
+         (is (= [422 expected-errors] [status errors])))
+       
+       "Removing an instrument  that is referenced by a granule is invalid."
+       ["p2" "i2" "GPS RECEIVERS"]
+       ["Collection Child Instrument [s1] is referenced by existing granules, cannot be removed. Found 1 granules."]
+       
+       "Updating an instrument  that is referenced by a granule by humanized alias back to its original value is invalid."
+       ["p2" "i2" "GPS" "s1"]
+       ["Collection Child Instrument [GPS RECEIVERS] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
