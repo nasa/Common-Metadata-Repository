@@ -1170,7 +1170,7 @@ The alias 'processing_level' also works for searching by processing level id.
 
 #### <a name="c-platform"></a> Find collections by platform
 
-This supports `pattern`, `ignore_case` and option `and`.
+This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`.
 
 Find collections matching 'platform' param value
 
@@ -1182,7 +1182,7 @@ Find collections matching any of the 'platform' param values
 
 #### <a name="c-instrument"></a> Find collections by instrument
 
-This supports `pattern`, `ignore_case` and option `and`.
+This supports `pattern`, `ignore_case`, `exclude_collection`  and option `and`.
 
 Find collections matching 'instrument' param value
 
@@ -1196,7 +1196,7 @@ Find collections matching any of the 'instrument' param values
 
 Sensor search is deprecated and should be replaced with instrument. Sensors are now child instruments on an instrument.
 
-This supports `pattern`, `ignore_case` and option `and`.
+This supports `pattern`, `ignore_case`, `exclude_collection`  and option `and`.
 
 Find collections matching 'sensor' param value
 
