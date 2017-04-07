@@ -871,15 +871,15 @@
          Currently it's okay if it exists under other platforms."
         ["p1-1" "i2" "GPS" "i4"]
         ["p1-2" "i1" "i2" "GPS" "i4"]
-        
+
         "Adding an additional instrument is OK"
         ["p1-1" "i1" "i2" "GPS" "i4" "i5"] 
         ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
-        
+
         "Removing an instrument not referenced by any granule in the collection is OK"
         ["p1-1" "i1" "i2" "GPS"] 
         ["p1-2" "i1" "i2" "GPS"]
-        
+
         "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
         ["p1-1" "i1" "i2" "Gps Receivers"]
         ["p1-2" "i1" "i2" "Gps Receivers"]))
@@ -899,7 +899,7 @@
         "Removing an instrument  that is referenced by a granule is invalid."
         ["p2" "i2" "GPS RECEIVERS"]
         ["Collection Child Instrument [s1] is referenced by existing granules, cannot be removed. Found 1 granules."]
-        
+
         "Updating an instrument  that is referenced by a granule by humanized alias back to its original value is invalid."
         ["p2" "i2" "GPS" "s1"]
         ["Collection Child Instrument [GPS RECEIVERS] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
