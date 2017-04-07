@@ -29,5 +29,6 @@
   :aliases {
     "kibit" ["modules" "kibit"]
     "eastwood" ["modules" "eastwood"]
-    "lint" ["modules" "lint"]})
+    "lint" ["modules" "lint"]
+    "check-deps" ["modules" "check-deps"]})
 
