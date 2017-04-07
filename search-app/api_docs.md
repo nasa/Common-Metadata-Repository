@@ -1660,13 +1660,13 @@ This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`.
 
 #### <a name="g-instrument"></a> Find granules by instrument
 
-This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`.
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?instrument\[\]=1B"
 
 #### <a name="g-sensor"></a> Find granules by sensor param
 
-This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`.
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?sensor\[\]=1B"
 
