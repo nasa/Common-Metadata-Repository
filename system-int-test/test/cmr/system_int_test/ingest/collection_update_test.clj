@@ -857,32 +857,32 @@
     (index/wait-until-indexed)
     (testing "Update collection successful cases"
       (are3
-       [plat-instruments-1 plat-instruments-2]
-       (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                                             {:EntryTitle "parent-collection"
-                                                              :ShortName "S1"
-                                                              :Version "V1"
-                                                              :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
-                                                                          (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
-             {:keys [status errors]} response]
-         (is (= [200 nil] [status errors])))         
+        [plat-instruments-1 plat-instruments-2]
+        (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                              {:EntryTitle "parent-collection"
+                                                                :ShortName "S1"
+                                                                :Version "V1"
+                                                                :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
+                                                                            (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
+              {:keys [status errors]} response]
+          (is (= [200 nil] [status errors])))         
 
-       "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
-         Currently it's okay if it exists under other platforms."
-       ["p1-1" "i2" "GPS" "i4"]
-       ["p1-2" "i1" "i2" "GPS" "i4"]
-       
-       "Adding an additional instrument is OK"
-       ["p1-1" "i1" "i2" "GPS" "i4" "i5"] 
-       ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
-       
-       "Removing an instrument not referenced by any granule in the collection is OK"
-       ["p1-1" "i1" "i2" "GPS"] 
-       ["p1-2" "i1" "i2" "GPS"]
-       
-       "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
-       ["p1-1" "i1" "i2" "Gps Receivers"]
-       ["p1-2" "i1" "i2" "Gps Receivers"]))
+        "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
+          Currently it's okay if it exists under other platforms."
+        ["p1-1" "i2" "GPS" "i4"]
+        ["p1-2" "i1" "i2" "GPS" "i4"]
+        
+        "Adding an additional instrument is OK"
+        ["p1-1" "i1" "i2" "GPS" "i4" "i5"] 
+        ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
+        
+        "Removing an instrument not referenced by any granule in the collection is OK"
+        ["p1-1" "i1" "i2" "GPS"] 
+        ["p1-2" "i1" "i2" "GPS"]
+        
+        "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
+        ["p1-1" "i1" "i2" "Gps Receivers"]
+        ["p1-2" "i1" "i2" "Gps Receivers"]))
 
     (testing "Update collection failure cases"
       (are3
