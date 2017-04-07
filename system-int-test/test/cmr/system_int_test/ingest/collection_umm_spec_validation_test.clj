@@ -236,8 +236,7 @@
                                                                                 :EastBoundingCoordinate 180
                                                                                 :SouthBoundingCoordinate 46})]})}
         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "BoundingRectangles" 0]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))))
+        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
 (deftest umm-spec-validation-warnings
   ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection.

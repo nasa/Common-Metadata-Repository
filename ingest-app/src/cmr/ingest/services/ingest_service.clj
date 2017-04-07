@@ -49,9 +49,9 @@
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
         sanitized-collection (spec/parse-metadata context :collection format metadata)
+        _ (v/umm-spec-validate-collection collection validation-options context)
         ;; Return warnings for schema validation errors going from xml -> UMM
-        warnings (v/validate-collection-umm-spec-schema collection validation-options)
-        warnings (concat warnings (v/umm-spec-validate-collection collection validation-options context))]
+        warnings (v/validate-collection-umm-spec-schema collection validation-options)]
     ;; The sanitized UMM Spec collection is returned so that ingest does not fail
     {:collection sanitized-collection
      :warnings warnings}))

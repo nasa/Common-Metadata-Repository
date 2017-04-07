@@ -32,7 +32,6 @@
   ;; ISO19115 allows you to ingest metadata with no spatial coordinate reference but have spatial
   ;; points. We should reject it because UMM requires a spatial coordinate reference.
   (testing "A collection with spatial data but no representation should fail ingest validation"
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
     (let [bad-metadata (slurp (io/resource
                                 "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
           {:keys [status errors]}
@@ -41,8 +40,7 @@
       (is (= 422 status))
       (is (= [{:errors ["Granule Spatial Representation must be supplied."]
                :path ["SpatialExtent"]}]
-             errors)))
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))))
+             errors)))))
 
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"
