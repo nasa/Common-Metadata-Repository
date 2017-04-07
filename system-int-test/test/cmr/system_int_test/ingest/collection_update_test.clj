@@ -865,7 +865,7 @@
                                                                 :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
                                                                             (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
               {:keys [status errors]} response]
-          (is (= [200 nil] [status errors])))         
+          (is (= [200 nil] [status errors])))
 
         "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
          Currently it's okay if it exists under other platforms."
@@ -895,7 +895,7 @@
                                                      {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
-        
+
         "Removing an instrument  that is referenced by a granule is invalid."
         ["p2" "i2" "GPS RECEIVERS"]
         ["Collection Child Instrument [s1] is referenced by existing granules, cannot be removed. Found 1 granules."]
