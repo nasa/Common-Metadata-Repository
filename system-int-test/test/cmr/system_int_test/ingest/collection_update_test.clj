@@ -868,7 +868,7 @@
           (is (= [200 nil] [status errors])))         
 
         "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
-          Currently it's okay if it exists under other platforms."
+         Currently it's okay if it exists under other platforms."
         ["p1-1" "i2" "GPS" "i4"]
         ["p1-2" "i1" "i2" "GPS" "i4"]
         
