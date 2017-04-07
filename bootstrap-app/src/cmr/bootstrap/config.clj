@@ -6,7 +6,7 @@
 
 (defconfig bootstrap-username
   "Defines the bootstrap database username."
-  {***REMOVED***})
+  {:default "cmr"})
 
 (defconfig bootstrap-password
   "Defines the bootstrap database password."

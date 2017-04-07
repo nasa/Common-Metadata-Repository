@@ -7,7 +7,7 @@
 
 (defconfig ingest-username
   "Ingest database username"
-  {***REMOVED***})
+  {:default "cmr"})
 
 (defconfig ingest-password
   "Ingest database password"
