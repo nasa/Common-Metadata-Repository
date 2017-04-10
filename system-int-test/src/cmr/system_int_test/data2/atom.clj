@@ -183,7 +183,7 @@
      :data-center (cx/string-at-path entry-elem [:dataCenter])
      :links (seq
               (atom-json-results-handler/remove-nonhdf-links
-                (seq (map :attrs (cx/elements-at-path entry-elem [:link])))))
+                (map :attrs (cx/elements-at-path entry-elem [:link]))))
      :orbit (parse-orbit-attribs (cx/attrs-at-path entry-elem [:orbit]))
      :orbit-calculated-spatial-domains (seq
                                          (map
@@ -366,7 +366,7 @@
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :links (seq 
                 (atom-json-results-handler/remove-nonhdf-links
-                  (seq (granule-related-urls->links related-urls))))
+                  (granule-related-urls->links related-urls)))
        :orbit (when orbit (into {} orbit))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
        :start (some->> (:temporal granule) (sed/start-date :granule))

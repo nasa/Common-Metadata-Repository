@@ -105,7 +105,7 @@
                        :data_center data-center
                        :time_start start-date
                        :time_end end-date
-                       :links (seq (remove-nonhdf-links (seq (map atom/atom-link->attribute-map atom-links))))
+                       :links (seq (remove-nonhdf-links (map atom/atom-link->attribute-map atom-links)))
                        :online_access_flag online-access-flag
                        :browse_flag browse-flag
                        :day_night_flag day-night
