@@ -13,6 +13,7 @@
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.util :as util]
+    [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.services.index-service :as index]
     [cmr.metadata-db.data.concepts :as db]
     [cmr.metadata-db.data.providers :as p]
@@ -195,8 +196,17 @@
     (info "Indexed " total " concepts.")
     total))
 
-(defn delete-concepts-by-id
+(defmulti delete-concepts-by-id
   "Delete the concepts of the given type for the given provder with the given concept-ids."
+  (fn [system provider-id concept-type concept-ids] concept-type))
+
+(defmethod delete-concepts-by-id :granule
+  [system _ _ concept-ids]
+  (let [query {:terms {:concept-id concept-ids}}
+        indexer-context {:system (helper/get-indexer system)}]
+    (es/delete-by-query indexer-context "_all" "granule" query)))
+
+(defmethod delete-concepts-by-id :default
   [system provider-id concept-type concept-ids]
   (let [concepts (for [concept-id concept-ids]
                    {:concept-id concept-id

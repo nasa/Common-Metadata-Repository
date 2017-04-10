@@ -109,7 +109,7 @@
                        :concept-ids concept-ids})))))
 
 (defn delete-concepts-from-index-by-id
-  "Bulk delete teh concepts given by the concept-ids from the indexes"
+  "Bulk delete the concepts given by the concept-ids from the indexes"
   [context synchronous provider-id concept-type concept-ids]
   (if synchronous
     (bulk/delete-concepts-by-id (:system context) provider-id concept-type concept-ids)

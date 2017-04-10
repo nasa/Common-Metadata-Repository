@@ -387,10 +387,14 @@
 (deftest bulk-delete-by-concept-id 
   (s/only-with-real-database
     (let [coll1 (save-collection 1)
-          coll2 (save-collection 2 {})
-          coll3 (save-collection 3 {})
+          coll2 (save-collection 2)
+          coll2-id (:concept-id coll2)
+          coll3 (save-collection 3)
           gran1 (save-granule 1 coll2)
-          gran2 (save-granule 2 coll2 {})
+          gran2 (save-granule 2 coll2)
+          gran3 (save-granule 3 coll2)
+          gran4 (save-granule 4 coll3)
+          gran5 (save-granule 5 coll3)
           tag1 (save-tag 1)
           tag2 (save-tag 2 {})
           acl1 (save-acl 1
@@ -404,8 +408,13 @@
           group1 (save-group 1)
           group2 (save-group 2 {})]
 
-      (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1 coll3]))
-      (bootstrap/bulk-delete-concepts "PROV1" :granule [(:concept-id gran2)])
+      ;; Force coll2 granules into their own index to make sure
+      ;; granules outside of 1_small_collections get deleted properly.
+      (bootstrap/start-rebalance-collection coll2-id)
+      (bootstrap/finalize-rebalance-collection coll2-id)
+
+      (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
+      (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
       (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
       
       ;; Commented out until ACLs and groups are supported in the delete by concept-id API
@@ -420,10 +429,10 @@
           (d/refs-match? expected (search/find-refs concept-type {}))
 
           "Collections"
-          :collection [coll2]
+          :collection [coll2 coll3]
 
           "Granules"
-          :granule [gran1])
+          :granule [gran2 gran5])
 
         (are3 [expected-tags]
             (let [result-tags (update
