@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"
   :description "Mocks out the ECHO REST API."
-  :url "***REMOVED***browse/mock-echo-app"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]

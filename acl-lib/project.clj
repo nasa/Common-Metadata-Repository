@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for retreiving and working with ACLs."
-  :url "***REMOVED***browse/acl-lib"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/acl-lib"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
 

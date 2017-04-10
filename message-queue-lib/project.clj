@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
-  :url "***REMOVED***browse/message-queue-lib"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]

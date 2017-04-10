@@ -13,7 +13,7 @@
 
 (defproject nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for connecting to and manipulating data in Oracle."
-  :url "***REMOVED***browse/oracle-lib"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/oracle-lib"
 
   ;; Dynamically include extra repositories in the project definition if configured.
   :repositories [["releases" ~extra-repository]]

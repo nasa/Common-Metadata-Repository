@@ -13,7 +13,7 @@
 
 (defproject nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
   :description "Renders collections as HTML"
-  :url "***REMOVED***browse/collection-renderer-lib"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/collection-renderer-lib"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
@@ -23,7 +23,7 @@
   :resource-paths ["resources" ~gem-install-path]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {
+  :profiles {}
     :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                          [proto-repl "0.3.1"]
                          [pjstadig/humane-test-output "0.8.1"]]
@@ -35,7 +35,7 @@
     ;; project, use `lein lint` from inside the project directory. To run for
     ;; all projects at the same time, use the same command but from the top-
     ;; level directory.
-    :lint {
+    :lint {}
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [[jonase/eastwood "0.2.3"]
@@ -43,7 +43,7 @@
                 [lein-bikeshed "0.4.1"]
                 [lein-kibit "0.1.2"]
                 [lein-shell "0.4.0"]
-                [venantius/yagni "0.1.4"]]}}
+                [venantius/yagni "0.1.4"]]
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
                             ~jruby-version
