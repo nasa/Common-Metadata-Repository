@@ -26,7 +26,9 @@
   "/")
 
 (def ^:private association-conflict-error-message
-  "Failed to %s tag [%s] with collection [%s] because it conflicted with a concurrent %s on the same tag and collection. This means that someone is sending the same request to the CMR at the same time.")
+  "Failed to %s tag [%s] with collection [%s] because it conflicted with a concurrent %s on the
+  same tag and collection. This means that someone is sending the same request to the CMR at the
+  same time.")
 
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
@@ -35,7 +37,7 @@
     (util/lazy-get context :user-id)
     (errors/throw-service-error :unauthorized msg/token-required-for-tag-modification)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
 
 (defn- tag->new-concept
@@ -50,12 +52,12 @@
    :revision-id 1
    :format mt/edn})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
 
 (defn create-tag
-  "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id of
-  the saved tag."
+  "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id
+  of the saved tag."
   [context tag-json-str]
   (let [user-id (context->user-id context)
         tag (-> (tv/create-tag-json->tag tag-json-str)
@@ -137,7 +139,8 @@
     {:concept-id concept-id, :revision-id revision-id}))
 
 (defn- delete-tag-association
-  "Delete the tag association with the given native-id using the given embedded metadata-db context."
+  "Delete the tag association with the given native-id using the given embedded metadata-db
+  context."
   [mdb-context native-id]
   (let [existing-concept (first (mdb-ss/find-concepts mdb-context
                                                       {:concept-type :tag-association
@@ -250,7 +253,8 @@
 
 (defn- update-tag-associations-with-query
   "Based on the input operation type (:insert or :delete), insert or delete tag associations
-  identified by the json query. Throws service error if the tag with the given tag key is not found."
+  identified by the json query. Throws service error if the tag with the given tag key is not
+  found."
   [context tag-key json-query operation]
   (let [tag-concept (fetch-tag-concept context tag-key)
         query (-> (jp/parse-json-query :collection {} json-query)

@@ -15,7 +15,8 @@
   true)
 
 (def concept-type->applicable-field
-  "A mapping of concept type to the field in the ACL indicating if it is collection or granule applicable."
+  "A mapping of concept type to the field in the ACL indicating if it is collection or granule
+  applicable."
   {:granule :granule-applicable
    :collection :collection-applicable})
 
