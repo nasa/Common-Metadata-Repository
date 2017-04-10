@@ -109,7 +109,9 @@
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           jvm-info/log-jvm-statistics-job])}]
-    (transmit-config/system-with-connections sys [:index-set :echo-rest :metadata-db :kms :cubby])))
+    (transmit-config/system-with-connections
+      sys
+      [:index-set :echo-rest :metadata-db :kms :cubby])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -121,7 +123,6 @@
                            (common-sys/start component-order))]
     (info "System started")
     started-system))
-
 
 (defn stop
   "Performs side effects to shut down the system and release its
