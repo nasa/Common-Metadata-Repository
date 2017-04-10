@@ -7,14 +7,14 @@
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [cmr.common.concepts :as cu]
-   [cmr.common.util :as util]
    [cmr.common.xml :as cx]
+   [cmr.common.util :as util]
+   [cmr.search.results-handlers.atom-json-results-handler :as atom-json-results-handler]
    [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.umm-spec.date-util :as date-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.facets :as facets]
    [cmr.system-int-test.data2.granule :as dg]
@@ -23,6 +23,7 @@
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
+   [cmr.umm-spec.date-util :as date-util]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s]))
 
@@ -181,7 +182,7 @@
      :original-format (cx/string-at-path entry-elem [:originalFormat])
      :data-center (cx/string-at-path entry-elem [:dataCenter])
      :links (seq
-              (remove (fn[x](not="application/x-hdfeos" (:type x)))
+              (atom-json-results-handler/remove-nonhdf-links
                 (seq (map :attrs (cx/elements-at-path entry-elem [:link])))))
      :orbit (parse-orbit-attribs (cx/attrs-at-path entry-elem [:orbit]))
      :orbit-calculated-spatial-domains (seq
@@ -364,7 +365,7 @@
        :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :links (seq 
-                (remove (fn[x](not= "application/x-hdfeos" (:type x)))
+                (atom-json-results-handler/remove-nonhdf-links
                   (seq (granule-related-urls->links related-urls))))
        :orbit (when orbit (into {} orbit))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)

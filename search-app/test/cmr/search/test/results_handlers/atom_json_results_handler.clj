@@ -5,6 +5,6 @@
 
 (deftest remove-nonhdf-links-test
   (is (= [{:type "application/x-hdfeos" :other "other"}]
-         (#'atom-json-results-handler/remove-nonhdf-links [{:type "application/x-hdfeos" :other "other"}
-                                                           {:type "other type" :other "other"}
-                                                           {:other "other"}]))))
+         (atom-json-results-handler/remove-nonhdf-links [{:type "application/x-hdfeos" :other "other"}
+                                                         {:type "other type" :other "other"}
+                                                         {:other "other"}]))))

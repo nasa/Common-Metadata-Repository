@@ -1,18 +1,20 @@
 (ns cmr.system-int-test.data2.atom-json
   "Contains helper functions for converting granules into the expected map of parsed json results."
-  (:require [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.echo10.spatial :as echo-s]
-            [cmr.system-int-test.data2.atom :as atom]
-            [cmr.system-int-test.data2.facets :as f]
-            [cmr.common.date-time-parser :as dtp]))
+  (:require 
+    [camel-snake-kebab.core :as csk]
+    [cheshire.core :as json]
+    [clojure.string :as str]
+    [cmr.common.date-time-parser :as dtp]
+    [cmr.common.util :as util]
+    [cmr.search.results-handlers.atom-json-results-handler :as atom-json-results-handler]
+    [cmr.spatial.line-string :as l]
+    [cmr.spatial.mbr :as m]
+    [cmr.spatial.point :as p]
+    [cmr.spatial.polygon :as poly]
+    [cmr.system-int-test.data2.atom :as atom]
+    [cmr.system-int-test.data2.facets :as f]
+    [cmr.umm.echo10.spatial :as echo-s]
+    [cmr.umm.umm-spatial :as umm-s]))
 
 (defn json-polygons->polygons
   [polygons]
@@ -147,7 +149,7 @@
        :size (parse-double granule-size)
        :original-format original-format
        :data-center data-center
-       :links (seq (remove (fn[x](not="application/x-hdfeos" (:type x))) (seq links)))
+       :links (seq (atom-json-results-handler/remove-nonhdf-links (seq links)))
        :orbit (parse-orbit orbit)
        :orbit-calculated-spatial-domains (seq (map parse-ocsd orbit-calculated-spatial-domains))
        :start (some-> time-start dtp/parse-datetime)

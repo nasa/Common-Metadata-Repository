@@ -83,7 +83,7 @@
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
 
-(defn- remove-nonhdf-links
+(defn remove-nonhdf-links
   "Remove the granule links whose type is not application/x-hdfeos"
   [links]
   (remove (fn[x](not="application/x-hdfeos" (:type x))) links))
