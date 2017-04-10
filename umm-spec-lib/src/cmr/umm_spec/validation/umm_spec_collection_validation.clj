@@ -59,10 +59,14 @@
    :ScienceKeywords (v/every science-keyword-validations)
    :SpatialExtent s/spatial-extent-validation
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
-   :TilingIdentificationSystems tiling-identification-system-validations
-   :RelatedUrls (v/every url/related-url-validations)
-   :CollectionCitations (v/every {:OnlineResource {:Linkage url/url-validation}})
-   :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})
-   :DataCenters (v/every url/data-center-url-validation)
-   :ContactPersons (v/every url/contact-persons-groups-contact-information-validations)
-   :ContactGroups (v/every url/contact-persons-groups-contact-information-validations)})
+   :TilingIdentificationSystems tiling-identification-system-validations})
+
+(def collection-validation-warnings
+ "Defines validations for collections that we want to return as warnings and not
+ as failures"
+ {:RelatedUrls (v/every url/related-url-validations)
+  :CollectionCitations (v/every {:OnlineResource {:Linkage url/url-validation}})
+  :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})
+  :DataCenters (v/every url/data-center-url-validation)
+  :ContactPersons (v/every url/contact-persons-groups-contact-information-validations)
+  :ContactGroups (v/every url/contact-persons-groups-contact-information-validations)})

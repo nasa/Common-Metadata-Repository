@@ -49,4 +49,4 @@
 
 (defconfig return-umm-spec-validation-errors
   "Flag for whether or not UMM Spec validation errors should be returned for collections."
-  {:default true :type Boolean})
+  {:default false :type Boolean})

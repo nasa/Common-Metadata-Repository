@@ -1,17 +1,18 @@
 (ns cmr.ingest.services.ingest-service
   (:require
+    [clojure.string :as str]
     [cmr.common.cache :as cache]
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
-    [cmr.common.services.messages :as cmsg]
     [cmr.common.services.errors :as errors]
+    [cmr.common.services.messages :as cmsg]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.ingest.config :as config]
     [cmr.ingest.data.ingest-events :as ingest-events]
     [cmr.ingest.data.provider-acl-hash :as pah]
-    [cmr.ingest.services.messages :as msg]
     [cmr.ingest.services.helper :as h]
+    [cmr.ingest.services.messages :as msg]
     [cmr.ingest.validation.validation :as v]
     [cmr.message-queue.services.queue :as queue]
     [cmr.oracle.connection :as conn]
@@ -20,10 +21,10 @@
     [cmr.transmit.indexer :as indexer]
     [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.metadata-db2 :as mdb2]
-    [cmr.umm.collection.entry-id :as eid]
     [cmr.umm-spec.legacy :as umm-legacy]
     [cmr.umm-spec.umm-spec-core :as spec]
-    [cmr.umm-spec.versioning :as ver]))
+    [cmr.umm-spec.versioning :as ver]
+    [cmr.umm.collection.entry-id :as eid]))
 
 (defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
@@ -51,18 +52,23 @@
         sanitized-collection (spec/parse-metadata context :collection format metadata)
         _ (v/umm-spec-validate-collection collection validation-options context)
         ;; Return warnings for schema validation errors going from xml -> UMM
-        warnings (v/validate-collection-umm-spec-schema collection validation-options)]
+        warnings (v/validate-collection-umm-spec-schema collection validation-options)
+        collection-warnings (v/umm-spec-validate-collection-warnings
+                             collection validation-options context)
+        collection-warnings (map #(str (:path %) " " (str/join " " (:errors %)))
+                                 collection-warnings)
+        warnings (concat warnings collection-warnings)]
     ;; The sanitized UMM Spec collection is returned so that ingest does not fail
     {:collection sanitized-collection
      :warnings warnings}))
 
-(defn- fix-ingest-concept-format 
+(defn- fix-ingest-concept-format
    "Fixes formats"
   [fmt]
-  (if (or 
-        (not (mt/umm-json? fmt)) 
+  (if (or
+        (not (mt/umm-json? fmt))
         (mt/version-of fmt))
-    fmt 
+    fmt
     (str fmt ";version=" (config/ingest-accept-umm-version))))
 
 (defn-timed validate-and-prepare-collection
