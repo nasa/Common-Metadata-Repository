@@ -1654,19 +1654,19 @@ Find granules with cloud cover numeric range set to min: -70.0 max: 120.0
 
 #### <a name="g-platform"></a> Find granules by platform
 
-This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`.
+This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`. The default behavior is that granules without platform values inherit their parent collection's platform.   This can be changed by specifying `exclude_collection` option with `options[platform][exclude_collection]=true`.
 
      curl "%CMR-ENDPOINT%/granules?platform\[\]=1B"
 
 #### <a name="g-instrument"></a> Find granules by instrument
 
-This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`.
+This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`. The default behavior is that granules without instrument values inherit their parent collection's instrument.   This can be changed by specifying `exclude_collection` option with `options[instrument][exclude_collection]=true`.
 
      curl "%CMR-ENDPOINT%/granules?instrument\[\]=1B"
 
 #### <a name="g-sensor"></a> Find granules by sensor param
 
-This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`.
+This supports `pattern`, `ignore_case`, `exclude_collection` and option `and`. The default behavior is that granules without sensor values inherit their parent collection's sensor.   This can be changed by specifying `exclude_collection` option with `options[sensor][exclude_collection]=true`.
 
      curl "%CMR-ENDPOINT%/granules?sensor\[\]=1B"
 
