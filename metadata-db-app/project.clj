@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
-  :url "***REMOVED***browse/metadata-db-app"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]

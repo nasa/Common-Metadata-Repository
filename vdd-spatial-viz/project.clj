@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"
   :description "A visualization tool for spatial areas."
-  :url "***REMOVED***browse/vdd-spatial-viz"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/vdd-spatial-viz"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [element84/vdd-core "0.1.2"]
                  [clj-coffee-script "1.1.0"]]

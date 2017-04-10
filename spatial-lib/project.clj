@@ -1,6 +1,6 @@
 (defproject nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
   :description "A spatial library for the CMR."
-  :url "***REMOVED***browse/spatial-lib"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/spatial-lib"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]

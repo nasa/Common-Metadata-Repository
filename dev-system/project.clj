@@ -45,7 +45,7 @@
 (defproject nasa-cmr/cmr-dev-system "0.1.0-SNAPSHOT"
   :description "Dev System combines together the separate microservices of the CMR into a single
                application to make it simpler to develop."
-  :url "***REMOVED***browse/dev-system"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]

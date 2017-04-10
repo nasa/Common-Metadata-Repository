@@ -4,7 +4,7 @@
 ;; All other lein tasks can use the default profile.
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
-  :url "***REMOVED***browse/search-app"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]

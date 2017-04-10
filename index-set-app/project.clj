@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-index-set-app "0.1.0-SNAPSHOT"
   :description "index-set app is a microservice enabling CMR system create/maintain a logical set of indexes in Elasticsearch
                for indexing and searching for concepts."
-  :url "***REMOVED***browse/index-set-app"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/index-set-app"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]

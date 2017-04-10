@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"
   :description "The Transmit Library is responsible for defining the common transmit
                 libraries that invoke services within the CMR projects."
-  :url "***REMOVED***browse/transmit-lib"
+  :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [clj-http "2.0.0"]
