@@ -147,7 +147,7 @@
        :size (parse-double granule-size)
        :original-format original-format
        :data-center data-center
-       :links (seq links)
+       :links (seq (remove (fn[x](not="application/x-hdfeos" (:type x))) (seq links)))
        :orbit (parse-orbit orbit)
        :orbit-calculated-spatial-domains (seq (map parse-ocsd orbit-calculated-spatial-domains))
        :start (some-> time-start dtp/parse-datetime)

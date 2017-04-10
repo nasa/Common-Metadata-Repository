@@ -180,7 +180,9 @@
      :size (cx/double-at-path entry-elem [:granuleSizeMB])
      :original-format (cx/string-at-path entry-elem [:originalFormat])
      :data-center (cx/string-at-path entry-elem [:dataCenter])
-     :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
+     :links (seq
+              (remove (fn[x](not="application/x-hdfeos" (:type x)))
+                (seq (map :attrs (cx/elements-at-path entry-elem [:link])))))
      :orbit (parse-orbit-attribs (cx/attrs-at-path entry-elem [:orbit]))
      :orbit-calculated-spatial-domains (seq
                                          (map
@@ -361,7 +363,9 @@
        :size size
        :original-format (atom-results-handler/metadata-format->atom-original-format (name format-key))
        :data-center (:provider-id (cu/parse-concept-id concept-id))
-       :links (seq (granule-related-urls->links related-urls))
+       :links (seq 
+                (remove (fn[x](not= "application/x-hdfeos" (:type x)))
+                  (seq (granule-related-urls->links related-urls))))
        :orbit (when orbit (into {} orbit))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
        :start (some->> (:temporal granule) (sed/start-date :granule))
