@@ -7,10 +7,12 @@
     [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as ac]
+    [cmr.common-app.test.side-api :as side]
     [cmr.common.date-time-parser :as p]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as util]
+    [cmr.ingest.config :as config]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -604,15 +606,29 @@
         response (ingest/ingest-concept coll-map {:accept-format :json})]
     (is (= 201 (:status response)))))
 
+(deftest ingest-higher-than-accepted-umm-version
+  (let [accepted-version (config/ingest-accept-umm-version)
+        _ (side/eval-form `(config/set-ingest-accept-umm-version! "1.8"))
+        coll-map {:provider-id  "PROV1"
+                  :native-id    "umm_json_coll_V1"
+                  :concept-type :collection
+                  :format       "application/vnd.nasa.cmr.umm+json;version=1.9"
+                  :metadata     "{\"foo\":\"bar\"}"}
+        response (ingest/ingest-concept coll-map {:accept-format :json})
+        _ (side/eval-form `(config/set-ingest-accept-umm-version! ~accepted-version))]
+    (is (= 400 (:status response)))
+    (is (= [(str "UMM JSON version 1.8 or lower can be ingested. Any version above that is considered in-development and cannot be ingested at this time.")]
+           (:errors response)))))
+
 (deftest ingest-invalid-umm-version
   (let [coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection
-                  :format       "application/vnd.nasa.cmr.umm+json;version=9000.1"
+                  :format       "application/vnd.nasa.cmr.umm+json;version=1.0009"
                   :metadata     "{\"foo\":\"bar\"}"}
         response (ingest/ingest-concept coll-map {:accept-format :json})]
     (is (= 400 (:status response)))
-    (is (= ["Unknown UMM JSON schema version: \"9000.1\""]
+    (is (= ["Unknown UMM JSON schema version: \"1.0009\""]
            (:errors response)))))
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
