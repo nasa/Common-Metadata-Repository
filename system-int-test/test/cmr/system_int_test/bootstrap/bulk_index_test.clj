@@ -409,7 +409,7 @@
           group2 (save-group 2 {})]
 
       ;; Force coll2 granules into their own index to make sure
-      ;; granules outside of 1_small_colletions get deleted properly.
+      ;; granules outside of 1_small_collections get deleted properly.
       (bootstrap/start-rebalance-collection coll2-id)
       (bootstrap/finalize-rebalance-collection coll2-id)
 
