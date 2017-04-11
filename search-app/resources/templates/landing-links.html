@@ -1,0 +1,14 @@
+{% extends "templates/base.html" %}
+
+{% block title %}CMR Search - Collections Landing Pages{% endblock %}
+
+{% block main-content %}
+<div class="inner cover">
+  <h1 class="cover-heading">Collections Landing Pages</h1>
+  <ul>
+  {% for link in links %}
+    <li><a href="{{ link.href }}">{{ link.text }}</a></li>
+  {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "templates/structure.html" %}
+
+{% block title %}CMR Search{% endblock %}
+
+{% block top-nav %}
+<div class="masthead clearfix">
+  <div class="inner">
+    <h3 class="masthead-brand"><a href="/">CMR</a></h3>
+    <ul class="nav masthead-nav">
+      <li><a href="/site/search_api_docs.html">API</a></li>
+      <li><a href="/site/collections/landing-pages">Landing Pages</a></li>
+      <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum">Forum</a></li>
+      <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/Common+Metadata+Repository+Home">Wiki</a></li>
+      <li><a href="https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide">Client Partner's Guide</a></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="mastfoot">
+  <div class="row">
+    <div class="col-lg-12">
+      <ul class="nav nav-justified">
+        <!-- This first list element is optional. It displays the version of the app/service currently deployed and displays it in an EUI badge component -->
+        <li>NASA Official: Stephen Berrick</li>
+        <li><a href="http://www.nasa.gov/FOIA/index.html">FOIA</a></li>
+        <li><a href="http://www.nasa.gov/about/highlights/HP_Privacy.html">NASA Privacy Policy</a></li>
+        <li><a href="http://www.usa.gov/">USA.gov</a></li>
+        <li><a href="javascript:feedback.showForm();">Feedback</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
