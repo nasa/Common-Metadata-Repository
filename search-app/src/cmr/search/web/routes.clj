@@ -1,8 +1,8 @@
 (ns cmr.search.web.routes
   "This namespace is the one responsible for combining the routes intended for
   use by libraries and applications (API routes) and the routes intended for
-  human consumption (site routes). It also provides routes that apply to both
-  (e.g., robots.txt)."
+  human, browser, or web crawler consumption (site routes). It also provides
+  routes that apply to both (e.g., robots.txt)."
   (:require
     [clojure.java.io :as io]
     [clojure.string :as str]
