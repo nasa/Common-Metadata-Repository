@@ -127,9 +127,9 @@
    :readable-granule-name cpv/string-plus-and-options
    :project cpv/string-plus-and-options
    :campaign cpv/string-plus-and-options
-   :platform cpv/string-plus-and-exclude-options
-   :sensor cpv/string-plus-and-exclude-options
-   :instrument cpv/string-plus-and-exclude-options
+   :platform cpv/string-plus-and-exclude-collection-options
+   :sensor cpv/string-plus-and-exclude-collection-options
+   :instrument cpv/string-plus-and-exclude-collection-options
    :collection-data-type cpv/string-param-options
    :day-night cpv/string-param-options
    :two-d-coordinate-system cpv/string-param-options
