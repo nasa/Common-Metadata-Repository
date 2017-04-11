@@ -479,13 +479,6 @@
                                           :grant-all-ingest? grant-all-ingest?})))
        (f)))))
 
-(defn umm-spec-validation-fixture
- "Turn umm-spec validation on, run test, then turn it off"
- [f]
- (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
- (f)
- (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false)))
-
 (defn clear-caches
   "Clears caches in the ingest application"
   []

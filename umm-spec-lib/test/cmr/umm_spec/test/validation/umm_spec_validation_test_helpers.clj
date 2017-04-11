@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.test.validation.umm-spec-validation-test-helpers
-  (:require [clojure.test :refer :all]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.umm-spec.models.umm-common-models :as c]
-            [cmr.umm-spec.models.umm-collection-models :as coll]
-            [cmr.common.services.errors :as e]
-            [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.umm-spec.models.umm-common-models :as c]
+   [cmr.umm-spec.models.umm-collection-models :as coll]
+   [cmr.common.services.errors :as e]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
 
 (defn assert-valid
   "Asserts that the given collection is valid."
@@ -26,6 +27,27 @@
   [collection expected-errors]
   (is (= (set (map e/map->PathErrors expected-errors))
          (set (v/validate-collection collection)))))
+
+(defn assert-warnings-valid
+  "Asserts that the given collection has no warnings."
+  [collection]
+  (is (empty? (v/validate-collection-warnings collection))))
+
+(defn assert-warnings-invalid
+  "Asserts that the given umm model is invalid and has the expected error messages.
+  field-path is the path within the metadata to the error. expected-errors is a list of string error
+  messages."
+  [collection field-path expected-errors]
+  (is (= [(e/map->PathErrors {:path field-path
+                              :errors (vec expected-errors)})]
+         (v/validate-collection-warnings collection))))
+
+(defn assert-warnings-multiple-invalid
+  "Asserts there are multiple errors at different paths invalid with the UMM. Expected errors
+  should be a list of maps with path and errors."
+  [collection expected-errors]
+  (is (= (set (map e/map->PathErrors expected-errors))
+         (set (v/validate-collection-warnings collection)))))
 
 (defn range-date-time
   "Returns a temporal range map given beginning and end date strings.

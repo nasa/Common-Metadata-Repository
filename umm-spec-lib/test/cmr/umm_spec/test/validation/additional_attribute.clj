@@ -44,7 +44,11 @@
         "DATETIME"
         "DATE_STRING"
         "TIME_STRING"
-        "DATETIME_STRING")))
+        "DATETIME_STRING"))
+    (testing "invalid data type"
+     (h/assert-invalid (coll-with-add-attribs [{:Name "foo" :DataType "F"}])
+      [:AdditionalAttributes 0 :DataType]
+      ["Additional Attribute Data Type [F] is not a valid data type."])))
 
   (testing "additional attributes values match data type"
     (testing "valid values"
@@ -155,13 +159,13 @@
           "FLOAT" "1.0" "3.0" "2.0"
           "INT" "1" "3" "2"
           "INT" "1" "1" "1"
-          "Boolean" nil nil "true"
+          "BOOLEAN" nil nil "true"
           "DATE" "1986-10-14" "1986-10-16" "1986-10-15"
           "TIME" "04:03:27.123Z" "04:03:29Z" "04:03:28Z"
           "DATETIME" "1986-10-14T04:03:27.0Z" "1986-10-14T04:03:29Z" "1986-10-14T04:03:28Z"
-          "Date_string" "1986-10-14" "1986-10-14" "1986-10-14"
-          "Time_string" "04:03:27.123" "04:03:27.123" "04:03:27.123"
-          "DatetimeString" "1986-10-14T04:03:27.0Z" "1986-10-14T04:03:27.0Z" "1986-10-14T04:03:27.0Z"))
+          "DATE_STRING" "1986-10-14" "1986-10-14" "1986-10-14"
+          "TIME_STRING" "04:03:27.123" "04:03:27.123" "04:03:27.123"
+          "DATETIME_STRING" "1986-10-14T04:03:27.0Z" "1986-10-14T04:03:27.0Z" "1986-10-14T04:03:27.0Z"))
 
       (testing "invalid range values"
         (testing "parameter range begin is greater than parameter range end"

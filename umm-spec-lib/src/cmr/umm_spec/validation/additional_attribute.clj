@@ -15,6 +15,21 @@
   "Set of data-types of additional attribute that require parameter range validations"
   #{"INT" "FLOAT" "DATETIME" "DATE" "TIME"})
 
+(def valid-data-types
+ "Set of valid data types of additional attributes"
+ #{"STRING", "FLOAT", "INT", "BOOLEAN", "DATE", "TIME", "DATETIME", "DATE_STRING", "TIME_STRING", "DATETIME_STRING"})
+
+(defn- data-type-validator
+  "Validates data-type is one of the valid product specific attribute data types.
+  NOTE: This is also handled by schema validation, but umm-spec schema validation
+  errors are warnings at this time. Put here to throw error"
+  [field-path value]
+  (when-not (some #{value} valid-data-types)
+    {field-path [(format "Additional Attribute %%s [%s] is not a valid data type."
+                         (if value
+                           value
+                           ""))]}))
+
 (defn- field-value-validation
   "Validates the given additional attribute field value matches the data type"
   [data-type field value]
@@ -87,7 +102,8 @@
 (def additional-attribute-validation
   "Defines the list of validation functions for validating additional attributes"
   [(vu/unique-by-name-validator :Name)
-   (v/every [values-match-data-type-validation
+   (v/every [{:DataType data-type-validator}
+             values-match-data-type-validation
              parameter-range-validation])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

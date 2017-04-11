@@ -66,7 +66,8 @@
   is not valid."
   [field-path value]
   (let [validator (UrlValidator. (into-array ["http" "ftp" "https" "file"]))]
-    (when (and (not= value su/not-provided-url)
+    (when (and (some? value)
+               (not= value su/not-provided-url)
                (not (.isValid validator value)))
       {field-path
        ;; Escape the %, because the error messages go through a format, which will throw an error

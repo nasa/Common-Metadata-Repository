@@ -45,6 +45,16 @@
      (v/validate (cons vc/collection-validations additional-validations)
                  collection))))
 
+(defn validate-collection-warnings
+ "Validates the umm record against the list of warnings - issues that we want
+ to convey to the user, but not consider failures."
+ ([collection]
+  (validate-collection-warnings collection nil))
+ ([collection additional-validations]
+  (validation-errors->path-errors
+    (v/validate (cons vc/collection-validation-warnings additional-validations)
+                collection))))
+
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."

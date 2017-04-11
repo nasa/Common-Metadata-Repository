@@ -119,7 +119,6 @@
                      [(data-umm-c/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})
                       (data-umm-c/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})]}]
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
-      (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))
       (are3 [coll-attributes field-path error options]
             (assert-invalid coll-attributes field-path error options)
 
@@ -128,8 +127,6 @@
             ["AdditionalAttributes"]
             ["Additional Attributes must be unique. This contains duplicates named [bool]."]
             {:validate-umm-c true})))
-
-  (side/eval-form `(icfg/set-return-umm-spec-validation-errors! true))
 
   (testing "Additional Attribute validation"
     (assert-invalid
@@ -236,8 +233,7 @@
                                                                                 :EastBoundingCoordinate 180
                                                                                 :SouthBoundingCoordinate 46})]})}
         ["SpatialExtent" "HorizontalSpatialDomain" "Geometry" "BoundingRectangles" 0]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
-    (side/eval-form `(icfg/set-return-umm-spec-validation-errors! false))))
+        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
 (deftest umm-spec-validation-warnings
   ;; By default the config return-umm-spec-validation-errors is false, so warnings are returned with the collection.
