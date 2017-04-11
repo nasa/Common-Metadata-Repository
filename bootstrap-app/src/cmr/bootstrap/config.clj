@@ -6,7 +6,7 @@
 
 (defconfig bootstrap-username
   "Defines the bootstrap database username."
-  {:default "cmr"})
+  {:default "CMR_BOOTSTRAP"})
 
 (defconfig bootstrap-password
   "Defines the bootstrap database password."
