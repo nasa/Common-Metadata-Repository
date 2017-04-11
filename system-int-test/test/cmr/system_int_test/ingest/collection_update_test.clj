@@ -29,10 +29,10 @@
         a9 (data-umm-c/additional-attribute {:Name "moo" :DataType "STRING"})
 
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection"
-                                  :ShortName "S1"
-                                  :Version "V1"
-                                  :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8 a9]}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8 a9]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                       [(dg/psa "string" ["alpha"])]}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
@@ -54,8 +54,8 @@
         ;; id during granule search the test that changes additional attribute with name "int" to
         ;; a range of [1 10] would have failed.
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                  {:EntryTitle "parent-collection-1"
-                                   :AdditionalAttributes [a3]}))
+                                                     {:EntryTitle "parent-collection-1"
+                                                      :AdditionalAttributes [a3]}))
         gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:product-specific-attributes
                                                                                        [(dg/psa "int" ["20"])]}))]
     (index/wait-until-indexed)
@@ -64,10 +64,10 @@
       (are3
         [additional-attributes]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                           {:EntryTitle "parent-collection"
-                                            :ShortName "S1"
-                                            :Version "V1"
-                                            :AdditionalAttributes additional-attributes}))
+                                                              {:EntryTitle "parent-collection"
+                                                               :ShortName "S1"
+                                                               :Version "V1"
+                                                               :AdditionalAttributes additional-attributes}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -103,10 +103,10 @@
       (are3
         [additional-attributes expected-errors]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                           {:EntryTitle "parent-collection"
-                                            :ShortName "S1"
-                                            :Version "V1"
-                                            :AdditionalAttributes additional-attributes})
+                                                              {:EntryTitle "parent-collection"
+                                                               :ShortName "S1"
+                                                               :Version "V1"
+                                                               :AdditionalAttributes additional-attributes})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -134,20 +134,20 @@
       (ingest/delete-concept (d/item->concept coll :echo10))
       (index/wait-until-indexed)
       (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                         {:EntryTitle "parent-collection"
-                                          :ShortName "S1"
-                                          :Version "V1"
-                                          :AdditionalAttributes [a9]}))
+                                                            {:EntryTitle "parent-collection"
+                                                             :ShortName "S1"
+                                                             :Version "V1"
+                                                             :AdditionalAttributes [a9]}))
             {:keys [status errors]} response]
         (is (= [200 nil] [status errors]))))))
 
 (deftest collection-update-additional-attributes-int-range-test
   (let [a1 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10}) 
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection"
-                                  :ShortName "S1"
-                                  :Version "V1"
-                                  :AdditionalAttributes [a1]}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :AdditionalAttributes [a1]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                       [(dg/psa "int" ["2"])]}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
@@ -203,10 +203,10 @@
 (deftest collection-update-additional-attributes-float-range-test
   (let [a1 (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :ParameterRangeBegin -10.0 :ParameterRangeEnd 10.0})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection"
-                                  :ShortName "S1"
-                                  :Version "V1"
-                                  :AdditionalAttributes [a1]}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :AdditionalAttributes [a1]}))
         gran1 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                      [(dg/psa "float" ["-2.0"])]}))
         gran2 (d/ingest "PROV1"(dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
@@ -266,10 +266,10 @@
                                              :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z") 
                                              :ParameterRangeEnd (parse-fn "2012-11-01T01:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection"
-                                  :ShortName "S1"
-                                  :Version "V1"
-                                  :AdditionalAttributes [a1]}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :AdditionalAttributes [a1]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                       [(dg/psa "datetime" ["2012-04-01T01:02:03Z"])]})) 
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
@@ -311,7 +311,7 @@
                                                                                              :DataType "DATETIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]}) 
-                                  {:allow-failure? true})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
@@ -327,10 +327,10 @@
                                              :ParameterRangeBegin (parse-fn "2012-02-02Z")
                                              :ParameterRangeEnd (parse-fn "2012-11-02Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection"
-                                  :ShortName "S1"
-                                  :Version "V1"
-                                  :AdditionalAttributes [a1]}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :AdditionalAttributes [a1]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                       [(dg/psa "date" ["2012-04-02Z"])]}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
@@ -372,7 +372,7 @@
                                                                                              :DataType "DATE"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]})
-                                  {:allow-failure? true}) 
+                                 {:allow-failure? true}) 
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
@@ -389,10 +389,10 @@
                                              :ParameterRangeBegin (parse-fn "01:02:03Z")
                                              :ParameterRangeEnd (parse-fn "11:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection"
-                                  :ShortName "S1"
-                                  :Version "V1"
-                                  :AdditionalAttributes [a1]}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :AdditionalAttributes [a1]}))
         _ (println (str (dg/psa "time" ["04:02:03Z"])))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                       [(dg/psa "time" ["04:02:03Z"])]}))
@@ -435,7 +435,7 @@
                                                                                              :DataType "TIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]})
-                                  {:allow-failure? true}) 
+                                 {:allow-failure? true}) 
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
@@ -447,13 +447,13 @@
 
 (deftest collection-update-project-test
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection"
-                                  :ShortName "S1"
-                                  :Version "V1"
-                                  :Projects (data-umm-c/projects "p1" "p2" "p3" "p4")}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :Projects (data-umm-c/projects "p1" "p2" "p3" "p4")}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                  {:EntryTitle "parent-collection2"
-                                   :Projects (data-umm-c/projects "p4")}))
+                                                     {:EntryTitle "parent-collection2"
+                                                      :Projects (data-umm-c/projects "p4")}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p1"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p2" "p3"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p3"]}))
@@ -465,10 +465,10 @@
       (are3
         [projects]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                           {:EntryTitle "parent-collection"
-                                            :ShortName "S1"
-                                            :Version "V1"
-                                            :Projects (apply data-umm-c/projects projects)}))
+                                                              {:EntryTitle "parent-collection"
+                                                               :ShortName "S1"
+                                                               :Version "V1"
+                                                               :Projects (apply data-umm-c/projects projects)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -482,10 +482,10 @@
       (are3
         [projects expected-errors]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                           {:EntryTitle "parent-collection"
-                                            :ShortName "S1"
-                                            :Version "V1"
-                                            :Projects (apply data-umm-c/projects projects)})
+                                                              {:EntryTitle "parent-collection"
+                                                               :ShortName "S1"
+                                                               :Version "V1"
+                                                               :Projects (apply data-umm-c/projects projects)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -497,9 +497,9 @@
 (deftest collection-update-granule-spatial-representation-test
   (let [make-coll (fn [entry-title spatial-params]
                     (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle entry-title
-                                                              :ShortName (d/unique-str "short-name")
-                                                              :SpatialExtent (when spatial-params
-                                                                               (data-umm-c/spatial spatial-params))})))
+                                                                                  :ShortName (d/unique-str "short-name")
+                                                                                  :SpatialExtent (when spatial-params
+                                                                                                   (data-umm-c/spatial spatial-params))})))
         make-gran (fn [coll spatial]
                     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:spatial-coverage
                                                                                             (when spatial (dg/spatial spatial))})))
@@ -560,22 +560,22 @@
 
 (deftest collection-update-unique-identifiers-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset1"
-                                                        :ShortName "S1"
-                                                        :Version "V1"
-                                                        :native-id "coll1"}))
+                                                                            :ShortName "S1"
+                                                                            :Version "V1"
+                                                                            :native-id "coll1"}))
         collNoGranule (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset-No-Granule"
-                                                                :ShortName "S2"
-                                                                :Version "V2"
-                                                                :native-id "coll2"}))
+                                                                                    :ShortName "S2"
+                                                                                    :Version "V2"
+                                                                                    :native-id "coll2"}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule2"}))]
     (index/wait-until-indexed)
 
     (testing "Update unique identifiers of collection without granules is OK"
       (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "New Dataset-No-Granule"
-                                                               :ShortName "S22"
-                                                               :Version "V22"
-                                                               :native-id "coll2"}))
+                                                                                   :ShortName "S22"
+                                                                                   :Version "V22"
+                                                                                   :native-id "coll2"}))
             {:keys [status errors]} response]
         (= [200 nil] [status errors])))
 
@@ -584,10 +584,10 @@
       ;; with existing granules for the collection. We will change this with CMR-2485.
       (are3 [identifier-map]
             (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection (merge {:EntryTitle "Dataset1"
-                                                                            :ShortName "S1"
-                                                                            :Version "V1"
-                                                                            :native-id "coll1"}
-                                                                           identifier-map)))
+                                                                                                :ShortName "S1"
+                                                                                                :Version "V1"
+                                                                                                :native-id "coll1"}
+                                                                                         identifier-map)))
                   {:keys [status errors]} response]
               (is (= [200 nil] [status errors])))
 
@@ -602,28 +602,28 @@
 
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Entry-Title "Dataset1"
-                                                 :ShortName "S1"
-                                                 :TemporalExtents [(data-umm-c/temporal-extent 
-                                                                     {:beginning-date-time "2001-01-01T12:00:00Z"
-                                                                      :ending-date-time "2010-05-11T12:00:00Z"})]}))
+                                                                            :ShortName "S1"
+                                                                            :TemporalExtents [(data-umm-c/temporal-extent 
+                                                                                                {:beginning-date-time "2001-01-01T12:00:00Z"
+                                                                                                 :ending-date-time "2010-05-11T12:00:00Z"})]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset2"
-                                                :ShortName "S2"
-                                                :TemporalExtents [(data-umm-c/temporal-extent
-                                                                    {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
+                                                                            :ShortName "S2"
+                                                                            :TemporalExtents [(data-umm-c/temporal-extent
+                                                                                                {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset3"
-                                                :ShortName "S3"
-                                                :TemporalExtents [(data-umm-c/temporal-extent
-                                                                    {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
+                                                                            :ShortName "S3"
+                                                                            :TemporalExtents [(data-umm-c/temporal-extent
+                                                                                                {:beginning-date-time "2000-01-01T12:00:00Z"})]}))
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset4"
-                                                :ShortName "S4"
-                                                :TemporalExtents [(data-umm-c/temporal-extent
-                                                                    {:beginning-date-time "2001-01-01T12:00:00Z"
-                                                                     :ending-date-time "2010-05-11T12:00:00Z"})]}))
+                                                                            :ShortName "S4"
+                                                                            :TemporalExtents [(data-umm-c/temporal-extent
+                                                                                                {:beginning-date-time "2001-01-01T12:00:00Z"
+                                                                                                 :ending-date-time "2010-05-11T12:00:00Z"})]}))
         collNoGranule (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset-No-Granule"
-                                                        :ShortName "SNo"
-                                                        :TemporalExtents [(data-umm-c/temporal-extent
-                                                                            {:beginning-date-time "1999-01-02T12:00:00Z"
-                                                                             :ending-date-time "1999-05-01T12:00:00Z"})]}))
+                                                                                    :ShortName "SNo"
+                                                                                    :TemporalExtents [(data-umm-c/temporal-extent
+                                                                                                        {:beginning-date-time "1999-01-02T12:00:00Z"
+                                                                                                         :ending-date-time "1999-05-01T12:00:00Z"})]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"
                                                                                        :beginning-date-time "2010-01-01T12:00:00Z"
                                                                                        :ending-date-time "2010-01-11T12:00:00Z"}))
@@ -640,8 +640,8 @@
                                                                                        :beginning-date-time "2000-06-01T12:00:00Z"
                                                                                        :ending-date-time "2000-08-01T12:00:00Z"}))
         gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll4 "C1-PROV1" {:granule-ur "Granule7"
-                                                                                      :beginning-date-time "2001-01-01T12:00:00Z"
-                                                                                      :ending-date-time "2010-05-11T12:00:00Z"}))
+                                                                                       :beginning-date-time "2001-01-01T12:00:00Z"
+                                                                                       :ending-date-time "2010-05-11T12:00:00Z"}))
         update-collection (fn [coll new-temporal-params]
                             (let [new-coll (-> coll
                                                (assoc :revision-id nil)
@@ -725,15 +725,17 @@
 (deftest collection-update-platform-test
   (let [;; Platform Terra is the humanized alias of AM-1
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                {:EntryTitle "parent-collection"
-                                 :ShortName "S1"
-                                 :Version "V1"
-                                 :Platforms (data-umm-c/platforms "p1" "p2" "AM-1" "p4")}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :Platforms (data-umm-c/platforms "p1" "p2" "AM-1" "p4")}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection2"
-                                  :ShortName "S2"
-				  :Version "V2"
-                                  :Platforms (data-umm-c/platforms "p4" "Terra")}))]
+                                                     {:EntryTitle "parent-collection2"
+                                                      :ShortName "S2"
+                                                      :Version "V2"
+                                                      :Platforms (data-umm-c/platforms "p4" "Terra")}))]
+    ;; CMR-3926 We need to make sure granules with no platfrom ref do not inherit their parent collection's instrument
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p1")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "p2" "AM-1")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "AM-1")}))
@@ -745,10 +747,10 @@
       (are3
         [platforms]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                          {:EntryTitle "parent-collection"
-                                           :ShortName "S1"
-                                           :Version "V1"
-                                           :Platforms (apply data-umm-c/platforms platforms)}))
+                                                              {:EntryTitle "parent-collection"
+                                                               :ShortName "S1"
+                                                               :Version "V1"
+                                                               :Platforms (apply data-umm-c/platforms platforms)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -765,10 +767,10 @@
       (are3
         [platforms expected-errors]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                          {:EntryTitle "parent-collection2"
-                                           :ShortName "S2"
-                                           :Version "V2"
-                                           :Platforms (apply data-umm-c/platforms platforms)})
+                                                              {:EntryTitle "parent-collection2"
+                                                               :ShortName "S2"
+                                                               :Version "V2"
+                                                               :Platforms (apply data-umm-c/platforms platforms)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -784,10 +786,10 @@
 (deftest collection-update-tile-test
   (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE" 
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                {:EntryTitle "parent-collection"
-                                 :ShortName "S1"
-                                 :Version "V1"
-                                 :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
@@ -796,10 +798,10 @@
       (are3
         [tile-names]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                          {:EntryTitle "parent-collection"
-                                           :ShortName "S1"
-                                           :Version "V1"
-                                           :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)}))
+                                                              {:EntryTitle "parent-collection"
+                                                               :ShortName "S1"
+                                                               :Version "V1"
+                                                               :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -816,10 +818,10 @@
       (are3
         [tile-names expected-errors]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                          {:EntryTitle "parent-collection"
-                                           :ShortName "S2"
-                                           :Version "V2"
-                                           :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)})
+                                                              {:EntryTitle "parent-collection"
+                                                               :ShortName "S2"
+                                                               :Version "V2"
+                                                               :TilingIdentificationSystems (apply data-umm-c/tiling-identification-systems tile-names)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
@@ -829,22 +831,24 @@
         ["Collection TilingIdentificationSystemName [Another_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
-        ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile" ]
+        ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile"]
         ["Collection TilingIdentificationSystemName [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                {:EntryTitle "parent-collection"
-                                 :ShortName "S1"
-                                 :Version "V1"
-                                 :Platforms [(data-umm-c/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
-                                             (data-umm-c/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
+                                                    {:EntryTitle "parent-collection"
+                                                     :ShortName "S1"
+                                                     :Version "V1"
+                                                     :Platforms [(data-umm-c/platform-with-instruments "p1-1" "i1" "i2" "GPS" "i4")
+                                                                 (data-umm-c/platform-with-instruments "p1-2" "i1" "i2" "GPS" "i4")]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                 {:EntryTitle "parent-collection2"
-                                  :ShortName "S2"
-                                  :Version "V2"
-                                  :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+                                                     {:EntryTitle "parent-collection2"
+                                                      :ShortName "S2"
+                                                      :Version "V2"
+                                                      :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
+    ;; CMR-3926 We need to make sure granules with no instrument ref or sensor ref do not inherit their parent collection's instrument or sensor
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))                                                        
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
@@ -855,11 +859,11 @@
       (are3
         [plat-instruments-1 plat-instruments-2]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                          {:EntryTitle "parent-collection"
-                                           :ShortName "S1"
-                                           :Version "V1"
-                                           :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
-                                                       (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
+                                                              {:EntryTitle "parent-collection"
+                                                                :ShortName "S1"
+                                                                :Version "V1"
+                                                                :Platforms [(apply data-umm-c/platform-with-instruments plat-instruments-1)
+                                                                            (apply data-umm-c/platform-with-instruments plat-instruments-2)]}))
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
@@ -877,21 +881,21 @@
         ["p1-2" "i1" "i2" "GPS"]
 
         "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
-        ["p1-1" "i1" "i2" "Gps Receivers"] 
+        ["p1-1" "i1" "i2" "Gps Receivers"]
         ["p1-2" "i1" "i2" "Gps Receivers"]))
 
     (testing "Update collection failure cases"
       (are3
         [plat-instr-sensors expected-errors]
         (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                                          {:EntryTitle "parent-collection2"
-                                           :ShortName "S2"
-                                           :Version "V2"
-                                           :Platforms [(apply data-umm-c/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
-                                 {:allow-failure? true})
+                                                              {:EntryTitle "parent-collection2"
+                                                               :ShortName "S2"
+                                                               :Version "V2"
+                                                               :Platforms [(apply data-umm-c/platform-with-instrument-and-childinstruments plat-instr-sensors)]})
+                                                     {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 expected-errors] [status errors])))
- 
+
         "Removing an instrument  that is referenced by a granule is invalid."
         ["p2" "i2" "GPS RECEIVERS"]
         ["Collection Child Instrument [s1] is referenced by existing granules, cannot be removed. Found 1 granules."]

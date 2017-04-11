@@ -158,12 +158,16 @@
 ;; or have not specified any value for the field and inherit it from their parent collection.
 (defmethod common-params/parameter->condition :inheritance
   [context concept-type param value options]
-  (let [field-condition (common-params/parameter->condition context :collection param value options)]
-    (gc/or-conds
-      [field-condition
-       (gc/and-conds
-         [(qm/->CollectionQueryCondition field-condition)
-          (cqm/map->MissingCondition {:field param})])])))
+  (let [field-condition (common-params/parameter->condition context :collection param value options)        
+        exclude-collection (= "true" (get-in options [param :exclude-collection]))
+        collection-cond (gc/and-conds
+                         [(qm/->CollectionQueryCondition field-condition)
+                          (cqm/map->MissingCondition {:field param})])]
+    (if exclude-collection
+      field-condition
+      (gc/or-conds
+       [field-condition
+        collection-cond]))))
 
 (defmethod common-params/parameter->condition :updated-since
   [_context concept-type param value options]

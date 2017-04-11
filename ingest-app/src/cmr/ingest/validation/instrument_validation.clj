@@ -43,7 +43,8 @@
                                           (set (concat current-parent-ins ins-aliases)))]
     (for [name deleted-parent-instrument-names]
       {:params {"instrument[]" name
-                :collection-concept-id concept-id}
+                :collection-concept-id concept-id
+                "options[instrument][exclude_collection]" "true"}
        :error-msg (format (str "Collection Instrument [%s] is referenced by existing"
                                " granules, cannot be removed.") name)})))
 
@@ -62,6 +63,7 @@
                                          (set (concat current-child-ins ins-aliases)))]
     (for [name deleted-child-instrument-names]
       {:params {"sensor[]" name
-                :collection-concept-id concept-id}
+                :collection-concept-id concept-id
+                "options[instrument][exclude_collection]" "true"}
        :error-msg (format (str "Collection Child Instrument [%s] is referenced by existing"
                                " granules, cannot be removed.") name)})))
