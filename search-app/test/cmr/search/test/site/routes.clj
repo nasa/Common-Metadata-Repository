@@ -25,6 +25,21 @@
       (testing "returns the welcome page HTML"
         (is (substring? "The CMR Search API" (:body response)))))))
 
+(deftest landing-links-page
+  (testing "landing links page returns content"
+    (let [path "/site/collections/landing-pages"
+          response (site (request :get (str "https://cmr.example.com/search" path)))]
+      (is (= (:status response) 200))
+      (is (substring? "Collections Landing Pages" (:body response)))
+      (is (substring? "Landing Pages for EOSDIS Collections" (:body response))))))
+
+(deftest eosdis-landing-links-page
+  (testing "eosdis collections landing links page returns content"
+    (let [path "/site/collections/eosdis-landing-pages"
+          response (site (request :get (str "https://cmr.example.com/search" path)))]
+      (is (= (:status response) 200))
+      (is (substring? "Landing Pages for EOSDIS Collections" (:body response))))))
+
 (deftest test-404
   (testing "a 404 is returned for a missing document"
     (is (= 404
