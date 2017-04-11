@@ -217,6 +217,13 @@
   []
   (format "http://localhost:%s/caches/clear-cache" (transmit-config/ingest-port)))
 
+(defn ingest-collection-bulk-update-url
+ "Bulk update collections"
+ [provider-id]
+ (format "http://localhost:%s/providers/%s/bulk-update/collections"
+  (transmit-config/ingest-port)
+  provider-id))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 
