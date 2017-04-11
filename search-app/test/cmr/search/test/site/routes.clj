@@ -15,9 +15,8 @@
   (testing "visited on a path without a trailing slash"
     (let [response (site (request :get "https://cmr.example.com/search"))]
       (testing "redirects permanently to the version with a trailing slash"
-        (is (= (:status response) 301))
-        (is (= (:headers response)
-               {"Location" "https://cmr.example.com/search/"})))))
+        (is (= (:status response) 200))
+        (is (= (:headers response) {})))))
 
   (testing "visited on a path with a trailing slash"
     (let [response (site (request :get "https://cmr.example.com/search/"))]

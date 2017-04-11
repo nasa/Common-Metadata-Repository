@@ -19,6 +19,13 @@
   {:status 200
    :body (selmer/render-file template data)})
 
+(defn home-page
+  ""
+  [request]
+  (render-template-ok
+    "templates/index.html"
+    (data/get-index request)))
+
 (defn landing-links-page
   ""
   [request]
@@ -42,6 +49,8 @@
         ;; but have the last entry as a 404 renderer, and as such, would
         ;; prevent any pages in the "site" context from rendering after that
         ;; point.
+        (GET "/" request
+          (home-page request))
         (GET "/site/collections/landing-pages" request
           (landing-links-page request))
         (GET "/site/collections/eosdis-landing-pages" request

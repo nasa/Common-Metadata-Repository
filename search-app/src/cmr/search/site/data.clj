@@ -2,6 +2,11 @@
   "The functions of this namespace are specifically responsible for generating
   data structures to be consumed by site page templates.")
 
+(defn get-index
+  ""
+  [request]
+  {})
+
 (defn get-landing-links
   ""
   [request]
