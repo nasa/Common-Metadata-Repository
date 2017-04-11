@@ -235,7 +235,6 @@
   ;; evaluation of the code during dynamic loading:
   ;; No implementation of method: :calculate-derived of protocol:
   ;; #'cmr.spatial.derived/DerivedCalculator found for class: cmr.spatial.geodetic_ring.GeodeticRing
-  ;; (Please see: ***REMOVED*** for more details)
   ;; The problems seems to be the presence of multiple versions of the same record class(GeodeticRing)
   ;; Investigation of the issue did not result in a fix for the issue till now.
   ;; Filed an issue to identify what is causing the compilation error: CMR-1306. (DU 03/17/2015)
