@@ -18,7 +18,11 @@
    [cmr.transmit.config :as transmit-config]
    [debugger.core]
    [proto-repl.saved-values] ;; For Proto REPL lib capabilities
-   [refresh-persistent-settings :as settings]))
+   [refresh-persistent-settings :as settings]
+   [selmer.parser :as selmer]))
+
+;; In the development environment, we want to see changes made to templates ...
+(selmer/cache-off!)
 
 (defonce system nil)
 
