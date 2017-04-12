@@ -30,6 +30,6 @@
   "Migrates the database down from version 5."
   []
   (println "migrations.005-create-bulk-update-tables down...")
-  (j/db-do-commands (config/db) "DROP TABLE CMR_INGEST.bulk_update_task_status")
   (j/db-do-commands (config/db) "DROP TABLE CMR_INGEST.bulk_update_coll_status")
+  (j/db-do-commands (config/db) "DROP TABLE CMR_INGEST.bulk_update_task_status")
   (j/db-do-commands (config/db) "DROP SEQUENCE CMR_INGEST.task_id_seq"))
