@@ -357,6 +357,17 @@
                   (pr-str concept-attribs) (:client-id request-context)))
     (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
 
+(defn- bulk-update-collections
+ "Bulk update collections - will update as more functionality is added"
+ [provider-id request]
+ (let [{:keys [body headers request-context]} request]
+  (verify-provider-exists request-context provider-id)
+  (generate-ingest-response
+   headers
+   {:status 200
+    :task-id "ABCDEF123"}))) ; hardcoded for now
+
+
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"
   (set-default-error-format
@@ -380,4 +391,9 @@
         (PUT "/" request
           (ingest-granule provider-id native-id request))
         (DELETE "/" request
-          (delete-granule provider-id native-id request))))))
+          (delete-granule provider-id native-id request)))
+
+      (context "/bulk-update" []
+       (context "/collections" []
+        (POST "/" request
+         (bulk-update-collections provider-id request)))))))

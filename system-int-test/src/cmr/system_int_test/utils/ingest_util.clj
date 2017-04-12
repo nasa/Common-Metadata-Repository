@@ -408,6 +408,51 @@
    (doseq [concept concepts]
      (is (#{404 200} (:status (delete-concept concept options)))))))
 
+(defmulti parse-bulk-update-body
+  "Parse the bulk update response body as a given format"
+  (fn [response-format body]
+    response-format))
+
+(defmethod parse-bulk-update-body :xml
+  [response-format response]
+  (try
+    (let [xml-elem (x/parse-str (:body response))]
+      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+        (parse-xml-error-response-elem xml-elem)
+        {:task-id (cx/string-at-path xml-elem [:task-id])}))
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
+
+(defmethod parse-bulk-update-body :json
+  [response-format response]
+  (try
+    (json/parse-string (:body response) true)
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
+
+(defn parse-bulk-update-response
+ "Parse an bulk update response and append a status"
+ [response options]
+ (if (get options :raw? false)
+   response
+   (assoc (parse-bulk-update-body (or (:accept-format options) :xml) response)
+          :status (:status response))))
+
+(defn bulk-update-collections
+ "Call ingest collection bulk update by provider"
+ ([provider-id request-body]
+  (bulk-update-collections provider-id request-body nil))
+ ([provider-id request-body options]
+  (let [accept-format (get options :accept-format :xml)
+        params {:method :post
+                :url (url/ingest-collection-bulk-update-url provider-id)
+                :body (json/generate-string request-body)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}
+        params (merge params (when accept-format {:accept accept-format}))
+        response (client/request params)]
+   (parse-ingest-response response options))))
+
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
