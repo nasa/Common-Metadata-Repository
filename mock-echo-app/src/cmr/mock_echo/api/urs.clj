@@ -1,15 +1,25 @@
 (ns cmr.mock-echo.api.urs
   "Defines routes for mocking URS"
-  (:require [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.mime-types :as mt]
-            [clojure.string :as str]
-            [cmr.common.services.errors :as errors]
-            [cmr.mock-echo.data.urs-db :as urs-db]
-            [clojure.data.codec.base64 :as b64]
-            [ring.util.response :as rsp]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.data.codec.base64 :as b64]
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.xml :as cx]
+   [cmr.mock-echo.data.urs-db :as urs-db]
+   [compojure.core :refer :all]
+   [ring.util.response :as rsp]))
+
+(defconfig cmr-urs-username
+  "A default username for the mock-echo dev environment"
+  {:default "mock_urs_username"})
+
+(defconfig cmr-urs-password
+  "A default username for the mock-echo dev environment"
+  {:default "mock_urs_password"})
 
 (defn get-user
   "Processes a request to get a user."
@@ -119,15 +129,12 @@
         [user pass] (and cred (str/split (str cred) #":" 2))]
     {:username user :password pass}))
 
-(def URS_USERNAME "mock-urs-username")
-(def URS_PASSWORD "mock-urs-password")
-
 (defn assert-urs-basic-auth-info
   "URS expects that a basic auth client username and password is sent. This verifies that requests
   sent include this information."
   [request]
   (let [{:keys [username password]} (decode-basic-auth request)]
-    (when-not (and (= username URS_USERNAME) (= password URS_PASSWORD))
+    (when-not (and (= username cmr-urs-username) (= password cmr-urs-password))
       (errors/throw-service-error :unauthorized "Bad URS authentication info"))))
 
 (defn build-routes [system]
