@@ -4,22 +4,19 @@
   human consumption (site routes). It also provides routes that apply to both
   (e.g., robots.txt)."
   (:require
-   ;; Third-party libs
-   [clojure.java.io :as io]
-   [compojure.core :refer :all]
-   [compojure.route :as route]
-   [ring.middleware.keyword-params :as keyword-params]
-   [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]
-
-   ;; CMR libs
-   [cmr.acl.core :as acl]
-   [cmr.common.api.errors :as errors]
-   [cmr.common.api.context :as context]
-   [cmr.common-app.api.routes :as common-routes]
-   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
-   [cmr.search.api.routes :as api-routes]
-   [cmr.search.site.routes :as site-routes]))
+    [clojure.java.io :as io]
+    [cmr.acl.core :as acl]
+    [cmr.common.api.errors :as errors]
+    [cmr.common.api.context :as context]
+    [cmr.common-app.api.routes :as common-routes]
+    [cmr.search.api.request-context-user-augmenter :as context-augmenter]
+    [cmr.search.api.routes :as api-routes]
+    [cmr.search.site.routes :as site-routes]
+    [compojure.core :refer :all]
+    [compojure.route :as route]
+    [ring.middleware.keyword-params :as keyword-params]
+    [ring.middleware.nested-params :as nested-params]
+    [ring.middleware.params :as params]))
 
 (defn copy-of-body-handler
   "Copies the body into a new attribute called :body-copy so that after a post
