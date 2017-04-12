@@ -31,21 +31,24 @@
         (GET "/site/docs/api"
              {context :request-context}
              (redirect
-               (str (config/application-public-root-url context)
-                    "site/search_api_docs.html")
-               307))
+              (str (config/application-public-root-url context)
+                   "site/search_api_docs.html")
+              307))
         (GET "/site/docs/site"
              {context :request-context}
              (redirect
-               (str (config/application-public-root-url context)
-                    "site/search_site_docs.html")
-               307))
+              (str (config/application-public-root-url context)
+                   "site/search_site_docs.html")
+              307))
         (GET "/site/collections/directory"
              {context :request-context}
              (pages/collections-directory context))
         (GET "/site/collections/directory/eosdis"
              {context :request-context}
              (pages/eosdis-collections-directory context))
+        (GET "/site/collections/directory/:provider-id/:tag"
+             [provider-id tag :as {context :request-context}]
+             (pages/proivider-tag-directory context provider-id tag))
         ;; Add routes for API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])

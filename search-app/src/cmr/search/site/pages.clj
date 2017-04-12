@@ -50,3 +50,12 @@
    context
    "templates/eosdis-directory-links.html"
    (data/get-eosdis-directory-links context)))
+
+(defn proivider-tag-landing
+  "Prepare the page that provides links to collection landing pages based
+  upon a provider and a tag."
+  [context provider-id tag]
+  (render-template-ok
+   context
+   "templates/provider-tag-landing-links.html"
+   (data/get-provider-tag-landing-links request provider-id tag)))
