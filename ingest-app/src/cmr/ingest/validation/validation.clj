@@ -113,16 +113,25 @@
         err-messages))))
 
 (defn umm-spec-validate-collection
-  "Validate collection through umm-spec validation functions and throw errors if configured or return
-  a list of warnings"
+  "Validate collection through umm-spec validation functions and throw errors"
   [collection validation-options context]
   (when-let [err-messages (seq (umm-spec-validation/validate-collection
                                 collection
                                 (when (:validate-keywords? validation-options)
                                   [(keyword-validations context)])))]
-    (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors))
-      (errors/throw-service-errors :invalid-data err-messages)
-      (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages))))))
+    (errors/throw-service-errors :invalid-data err-messages)))
+
+(defn umm-spec-validate-collection-warnings
+ "Validate umm-spec collection validation warnings functions - errors that we want
+ to report but we do not want to fail ingest."
+ [collection validation-options context]
+ (when-let [err-messages (seq (umm-spec-validation/validate-collection-warnings
+                               collection))]
+   (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors))
+     (errors/throw-service-errors :invalid-data err-messages)
+     (do
+      (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+      err-messages))))
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,

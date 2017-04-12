@@ -14,7 +14,8 @@
 
 (deftest collection-related-urls-validation
   (testing "Valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
                                      :URLContentType "DistributionURL"
                                      :Type "GET SERVICE"
@@ -25,7 +26,7 @@
                                      :SubType "USER'S GUIDE"}]})))
 
   (testing "Multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:RelatedUrls [{:URL "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"
                       :URLContentType "DistributionURL"
@@ -79,7 +80,8 @@
 ;
 (deftest collection-data-center-related-urls-validation
   (testing "Valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:DataCenters
                       [{:ContactInformation
                         {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
@@ -89,7 +91,7 @@
                                         :URLContentType "DataCenterURL"
                                         :Type "HOME PAGE"}]}}]})))
   (testing "Multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:DataCenters
        [{:ContactInformation
@@ -121,7 +123,8 @@
       {:path [:DataCenters 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}]))
   (testing "Contact Persons valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:DataCenters
                       [{:ContactPersons
                         [{:ContactInformation
@@ -132,7 +135,7 @@
                                           :URLContentType "DataContactURL"
                                           :Type "HOME PAGE"}]}}]}]})))
   (testing "Contact Persons multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:DataCenters
        [{:ContactPersons
@@ -165,7 +168,8 @@
       {:path [:DataCenters 0 :ContactPersons 0 :ContactInformation :RelatedUrls 1 :URL]
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}]))
   (testing "Contact Groups valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:DataCenters
                       [{:ContactGroups
                         [{:ContactInformation
@@ -176,7 +180,7 @@
                                           :URLContentType "DataContactURL"
                                           :Type "HOME PAGE"}]}}]}]})))
   (testing "Contact Groups multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:DataCenters
        [{:ContactGroups
@@ -211,7 +215,8 @@
 
 (deftest collection-contact-persons-related-urls-validation
   (testing "Valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:ContactPersons
                       [{:ContactInformation
                         {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
@@ -221,7 +226,7 @@
                                         :URLContentType "DataContactURL"
                                         :Type "HOME PAGE"}]}}]})))
   (testing "Multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:ContactPersons
        [{:ContactInformation
@@ -256,7 +261,8 @@
 
 (deftest collection-contact-groups-related-urls-validation
   (testing "Valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:ContactGroups
                       [{:ContactInformation
                         {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
@@ -266,7 +272,7 @@
                                         :URLContentType "DataContactURL"
                                         :Type "HOME PAGE"}]}}]})))
   (testing "Multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:ContactGroups
        [{:ContactInformation
@@ -314,12 +320,13 @@
 
 (deftest collection-collection-citations-related-urls-validation
   (testing "Valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:CollectionCitations
                       [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
                        {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"}}]})))
   (testing "Multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:CollectionCitations
        [{:OnlineResource {:Linkage "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"}}
@@ -331,12 +338,13 @@
 
 (deftest collection-publication-references-related-urls-validation
   (testing "Valid related urls"
-    (h/assert-valid (coll/map->UMM-C
+    (h/assert-warnings-valid
+     (coll/map->UMM-C
                      {:PublicationReferences
                       [{:OnlineResource {:Linkage "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"}}
                        {:OnlineResource {:Linkage "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"}}]})))
   (testing "Multiple invalid related urls"
-    (h/assert-multiple-invalid
+    (h/assert-warnings-multiple-invalid
      (coll/map->UMM-C
       {:PublicationReferences
        [{:OnlineResource {:Linkage "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"}}
@@ -349,13 +357,15 @@
 (deftest dif-valid-url-types
  (testing "DIF hard-coded conversion table contains valid combinations"
   (doseq [url-type (vals dif-util/dif-url-content-type->umm-url-types)]
-   (h/assert-valid (coll/map->UMM-C {:RelatedUrls [(merge
-                                                    url-type
-                                                    {:URL "https://www.foo.com"})]})))))
+   (h/assert-warnings-valid
+    (coll/map->UMM-C {:RelatedUrls [(merge
+                                     url-type
+                                     {:URL "https://www.foo.com"})]})))))
 
 (deftest echo10-valid-url-types
  (testing "ECHO10 hard-coded conversion table contains valid combinations"
   (doseq [url-type (vals echo10-url/online-resource-type->related-url-types)]
-   (h/assert-valid (coll/map->UMM-C {:RelatedUrls [(merge
-                                                    url-type
-                                                    {:URL "https://www.foo.com"})]})))))
+   (h/assert-warnings-valid
+    (coll/map->UMM-C {:RelatedUrls [(merge
+                                     url-type
+                                     {:URL "https://www.foo.com"})]})))))

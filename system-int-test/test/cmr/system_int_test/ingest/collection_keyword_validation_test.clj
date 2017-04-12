@@ -36,8 +36,7 @@
   [coll-attributes]
   (assert-valid coll-attributes {:validate-keywords true}))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                    ingest/umm-spec-validation-fixture)
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest collection-keyword-validation-test
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
