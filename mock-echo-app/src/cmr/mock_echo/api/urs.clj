@@ -10,16 +10,9 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.xml :as cx]
    [cmr.mock-echo.data.urs-db :as urs-db]
+   [cmr.transmit.config :as transmit-config]
    [compojure.core :refer :all]
    [ring.util.response :as rsp]))
-
-(defconfig cmr-urs-username
-  "A default username for the mock-echo dev environment"
-  {:default "mock_urs_username"})
-
-(defconfig cmr-urs-password
-  "A default username for the mock-echo dev environment"
-  {:default "mock_urs_password"})
 
 (defn get-user
   "Processes a request to get a user."
@@ -134,7 +127,7 @@
   sent include this information."
   [request]
   (let [{:keys [username password]} (decode-basic-auth request)]
-    (when-not (and (= username cmr-urs-username) (= password cmr-urs-password))
+    (when-not (and (= username (transmit-config/urs-username)) (= password (transmit-config/urs-password)))
       (errors/throw-service-error :unauthorized "Bad URS authentication info"))))
 
 (defn build-routes [system]
