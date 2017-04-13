@@ -89,7 +89,7 @@
 
     (route/not-found "Not Found")))
 
-(defn default-error-format-fn
+(defn default-error-format
   "Determine the format that errors should be returned in based on the default-format
   key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
   the default format has not been set to :xml."
@@ -103,7 +103,7 @@
       nested-params/wrap-nested-params
       api-errors/invalid-url-encoding-handler
       mp/wrap-multipart-params
-      (api-errors/exception-handler default-error-format-fn)
+      (api-errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
       (context/build-request-context-handler system)
       common-routes/pretty-print-response-handler

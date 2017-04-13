@@ -4,14 +4,11 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [cmr.acl.core :as acl]
-   [cmr.collection-renderer.api.routes :as collection-renderer-routes]
-   [cmr.common-app.api-docs :as api-docs]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.query-model :as common-qm]
    [cmr.common.api.context :as context]
-   [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
@@ -20,7 +17,6 @@
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.search.api.community-usage-metrics :as metrics-api]
-   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.tags-api :as tags-api]
@@ -48,19 +44,13 @@
    [cmr.search.services.acls.granule-acls]
 
    [cmr.search.services.health-service :as hs]
-   [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
    [cmr.umm-spec.versioning :as umm-version]
    [compojure.core :refer :all]
-   [compojure.route :as route]
    [inflections.core :as inf]
    [ring.middleware.json :as ring-json]
-   [ring.middleware.keyword-params :as keyword-params]
-   [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]
-   [ring.swagger.ui :as ring-swagger-ui]
    [ring.util.codec :as codec]
    [ring.util.request :as request]
    [ring.util.response :as r]))
@@ -115,7 +105,6 @@
               mt/echo10
               mt/iso19115
               mt/iso-smap}})
-
 
 (def find-by-concept-id-concept-types
   #{:collection :granule})
@@ -315,20 +304,10 @@
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
-(def robots-txt-response
-  "Returns the robots.txt response."
-  {:status 200
-   :body (slurp (io/resource "public/robots.txt"))})
-
-(defn- build-routes [system]
+(defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
-      ;; Return robots.txt from the root /robots.txt and at the context (e.g. /search/robots.txt)
-      (GET "/robots.txt" req robots-txt-response)
-
       (context relative-root-url []
-        (GET "/robots.txt" req robots-txt-response)
-
         ;; Add routes for tagging
         tags-api/tag-api-routes
 
@@ -337,21 +316,6 @@
 
         ;; Add routes for community usage metrics
         metrics-api/community-usage-metrics-routes
-
-        ;; Add routes for API documentation
-        (api-docs/docs-routes
-         (get-in system [:public-conf :protocol])
-         relative-root-url
-         "public/index.html")
-
-        ;; This is a temporary inclusion of the swagger UI until the dev portal is done.
-        (ring-swagger-ui/swagger-ui "/swagger_ui"
-                                    :swagger-docs (str relative-root-url "/site/swagger.json")
-                                    :validator-url nil)
-
-
-        ;; Routes for collection html resources
-        (collection-renderer-routes/resource-routes system)
 
         ;; Retrieve by cmr concept id or concept id and revision id
         ;; Matches URL paths of the form /concepts/:concept-id[/:revision-id][.:format],
@@ -422,71 +386,4 @@
          #(acl/verify-ingest-management-permission % :update))
 
         (GET "/tiles" {params :params context :request-context}
-          (find-tiles context params)))
-
-      (route/not-found "Not Found"))))
-
-(defn copy-of-body-handler
-  "Copies the body into a new attribute called :body-copy so that after a post of form content type
-  the original body can still be read. The default ring params reads the body and parses it and we
-  don't have access to it."
-  [f]
-  (fn [request]
-    (let [^String body (slurp (:body request))]
-      (f (assoc request
-                :body-copy body
-                :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
-
-(defn find-query-str-mixed-arity-param
-  "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
-  the query string. e.g. foo=1&foo[bar]=2 is mixed arity, so is foo[]=1&foo[bar]=2. foo=1&foo[]=2 is
-  not. Parameter with mixed arity will be flagged as invalid later."
-  [query-str]
-  (when query-str
-    (let [query-str (-> query-str
-                        (str/replace #"%5B" "[")
-                        (str/replace #"%5D" "]")
-                        (str/replace #"\[\]" ""))]
-      (last (some #(re-find % query-str)
-                  [#"(^|&)(.*?)=.*?\2\["
-                   #"(^|&)(.*?)\[.*?\2="])))))
-
-(defn mixed-arity-param-handler
-  "Detect query string with mixed arity and throws a 400 error. Mixed arity param is when a single
-  value param is mixed with multivalue. One specific case of this is for improperly expressed options
-  in the query string, e.g., granule_ur=*&granule_ur[pattern]=true. Ring parameter handling throws
-  500 error when it happens. This middleware handler returns a 400 error early to avoid the 500 error
-  from Ring."
-  [f]
-  (fn [request]
-    (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
-      (svc-errors/throw-service-errors
-        :bad-request
-        [(msg/mixed-arity-parameter-msg mixed-param)]))
-    (f request)))
-
-(defn default-error-format-fn
-  "Determine the format that errors should be returned in based on the request URI."
-  [{:keys [uri]} _e]
-  (if (or (re-find #"/caches" uri)
-          (re-find #"/keywords" uri))
-    mt/json
-    mt/xml))
-
-(defn make-api [system]
-  (-> (build-routes system)
-      ;; add-authentication-handler adds the token and client id for user to the context
-      ;; add-user-id-and-sids-handler lazy adds the user id and sids for that token
-      ;; Need to maintain this order (works backwards).
-      context-augmenter/add-user-id-and-sids-handler
-      acl/add-authentication-handler
-      keyword-params/wrap-keyword-params
-      nested-params/wrap-nested-params
-      errors/invalid-url-encoding-handler
-      mixed-arity-param-handler
-      (errors/exception-handler default-error-format-fn)
-      common-routes/add-request-id-response-handler
-      (context/build-request-context-handler system)
-      common-routes/pretty-print-response-handler
-      params/wrap-params
-      copy-of-body-handler))
+          (find-tiles context params))))))

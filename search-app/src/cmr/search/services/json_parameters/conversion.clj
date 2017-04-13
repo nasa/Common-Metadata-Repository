@@ -63,7 +63,7 @@
    :and :and
    :not :not})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
 (defn- concept-type-validation
@@ -103,7 +103,7 @@
     (errors/throw-service-error
       :bad-request "Temporal condition with only exclude_boundary is invalid.")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- query-condition-name->condition-type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -126,7 +126,10 @@
                           (:value value)
                           (case-sensitive-field? concept-type condition-name value)
                           (:pattern value))
-    (cqm/string-condition condition-name value (case-sensitive-field? concept-type condition-name) false)))
+    (cqm/string-condition condition-name
+                          value
+                          (case-sensitive-field? concept-type condition-name)
+                          false)))
 
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"

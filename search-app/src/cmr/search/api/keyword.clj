@@ -24,7 +24,6 @@
   keyword-map        A single GCMD keyword with each of its subfields as a key in a map. If the
                      keyword does not have a value for a subfield, that key will not be present in
                      the map."
-
   (:require [compojure.core :refer :all]
             [cheshire.core :as json]
             [camel-snake-kebab.core :as csk]

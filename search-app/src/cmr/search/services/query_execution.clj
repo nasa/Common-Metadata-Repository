@@ -52,7 +52,9 @@
        (or (nil? sort-keys) (= (cqm/default-sort-keys concept-type) sort-keys))))
 
 (defn- specific-items-from-elastic-query?
-  "Returns true if the query is only for specific items that will come directly from elastic search.
+  "Returns true if the query is only for specific items that will come directly from elastic
+  search.
+
   This query type is split out because it is faster to bypass ACLs and apply them afterwards
   than to apply them ahead of time to the query."
   [{:keys [result-format all-revisions?] :as query}]
@@ -104,7 +106,10 @@
         concept-ids (query->concept-ids query)
         items (metadata-cache/get-latest-formatted-concepts
                context concept-ids result-format skip-acls?)
-        results (results/map->Results {:hits (count items) :items items :result-format result-format})]
+        results (results/map->Results
+                  {:hits (count items)
+                   :items items
+                   :result-format result-format})]
     (common-qe/post-process-query-result-features context query nil results)))
 
 (defmethod common-qe/execute-query :specific-elastic-items

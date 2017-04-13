@@ -73,7 +73,6 @@
     cmr.search.validators.temporal
     cmr.search.validators.validation))
 
-
 (defn- sanitize-aql-params
   "When content-type is not set for aql searches, the aql will get mistakenly parsed into params.
   This function removes it, santizes the params and returns the end result."
@@ -84,7 +83,8 @@
 ;; CMR-2553 Remove this function.
 (defn- drop-ignored-params
   "At times, there are unsupported search params in parameter search that we simply want to ignore
-  rather than raise error. This function removes tag-namespace from the params and returns the params."
+  rather than raise error. This function removes tag-namespace from the params and returns the
+  params."
   [params]
   (let [drop-params-fn (fn [p]
                          (if (map? p)
@@ -129,7 +129,8 @@
 
                                            (psn/replace-provider-short-names context)
                                            (pv/validate-parameters concept-type)
-                                           (common-params/parse-parameter-query context concept-type)))
+                                           (common-params/parse-parameter-query
+                                             context concept-type)))
         [find-concepts-time results] (u/time-execution
                                        (common-search/find-concepts context
                                                                     concept-type
@@ -145,9 +146,9 @@
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
   (let [[query-creation-time query] (u/time-execution
-                                      (-> (jp/parse-json-query concept-type
-                                                               (common-params/sanitize-params params)
-                                                               json-query)))
+                                      (jp/parse-json-query concept-type
+                                                           (common-params/sanitize-params params)
+                                                           json-query))
 
         [find-concepts-time results] (u/time-execution
                                        (common-search/find-concepts context
@@ -189,7 +190,9 @@
   (errors/throw-service-error
     :not-found
     (format
-      "Concept with concept-id [%s] and revision-id [%s] could not be found." concept-id revision-id)))
+      "Concept with concept-id [%s] and revision-id [%s] could not be found."
+      concept-id
+      revision-id)))
 
 (defn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
@@ -220,7 +223,8 @@
   [context result-format concept-id revision-id]
   ;; We don't store revision id in the search index, so we can't use shortcuts for json/atom
   ;; like we do in find-concept-by-id.
-  (let [concept (metadata-cache/get-formatted-concept context concept-id revision-id result-format)]
+  (let [concept (metadata-cache/get-formatted-concept
+                  context concept-id revision-id result-format)]
     (when-not concept
       (throw-concept-revision-not-found concept-id revision-id))
     {:results (:metadata concept)
@@ -258,7 +262,6 @@
          results (qe/execute-query context query)]
      (:items results))))
 
-
 (defn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]
@@ -272,8 +275,12 @@
         ;; get a mapping of collection to granule count
         collection-granule-count (idx/get-collection-granule-counts context provider-ids)
         ;; combine the granule count into collections to form provider holdings
-        provider-holdings (map #(assoc % :granule-count (get collection-granule-count (:concept-id %) 0))
-                               collections)]
+        provider-holdings (map
+                            #(assoc % :granule-count (get
+                                                       collection-granule-count
+                                                       (:concept-id %)
+                                                       0))
+                            collections)]
     [provider-holdings
      (ph/provider-holdings->string
        (:result-format params) provider-holdings {:echo-compatible? (= "true" echo-compatible)})]))

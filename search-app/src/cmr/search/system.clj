@@ -9,7 +9,7 @@
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
-   [cmr.common.api.web-server :as web]
+   [cmr.common.api.web-server :as web-server]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -21,13 +21,13 @@
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
    [cmr.search.api.request-context-user-augmenter :as context-augmenter]
-   [cmr.search.api.routes :as routes]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.models.query :as q]
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
+   [cmr.search.web.routes :as routes]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -79,7 +79,7 @@
              ;; from oracle.
              :embedded-systems {:metadata-db metadata-db}
              :search-index (common-idx/create-elastic-search-index)
-             :web (web/create-web-server (transmit-config/search-port) routes/make-api)
+             :web (web-server/create-web-server (transmit-config/search-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
@@ -109,7 +109,9 @@
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           jvm-info/log-jvm-statistics-job])}]
-    (transmit-config/system-with-connections sys [:index-set :echo-rest :metadata-db :kms :cubby])))
+    (transmit-config/system-with-connections
+      sys
+      [:index-set :echo-rest :metadata-db :kms :cubby])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -121,7 +123,6 @@
                            (common-sys/start component-order))]
     (info "System started")
     started-system))
-
 
 (defn stop
   "Performs side effects to shut down the system and release its

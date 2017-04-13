@@ -5,22 +5,23 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+  :dependencies [[com.github.fge/json-schema-validator "2.2.6"]
+                 [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"]
-                 [ring/ring-core "1.5.0"]
-                 [ring/ring-json "0.4.0"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
+                 [net.sf.saxon/Saxon-HE "9.7.0-7"]
+                 [org.clojure/clojure "1.8.0"]
                  [org.clojure/data.csv "0.1.3"]
                  [org.clojure/tools.nrepl "0.2.12"]
-                 [net.sf.saxon/Saxon-HE "9.7.0-7"]
-                 [com.github.fge/json-schema-validator "2.2.6"]
+                 [ring/ring-core "1.5.0"]
+                 [ring/ring-json "0.4.0"]
+                 [selmer "1.10.7"]
 
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
