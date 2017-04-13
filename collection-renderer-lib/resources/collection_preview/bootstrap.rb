@@ -10,16 +10,18 @@ require 'set'
 require 'active_support/all'
 require 'action_view'
 require 'action_dispatch'
-require 'gems/cmr_metadata_preview-0.0.1/app/helpers/cmr_metadata_preview/cmr_metadata_preview_helper'
-require 'gems/cmr_metadata_preview-0.0.1/app/helpers/cmr_metadata_preview/options_helper'
-require 'gems/cmr_metadata_preview-0.0.1/app/helpers/cmr_metadata_preview/data_contacts_helper'
+require 'collection_preview/drafts_helper'
+require 'collection_preview/collections_helper'
+require 'collection_preview/pages_helper'
+require 'collection_preview/metadata_preview_helper'
 
 include ActionView::Helpers
 include ActionDispatch::Routing
 
-include CmrMetadataPreview::DataContactsHelper
-include CmrMetadataPreview::OptionsHelper
-include CmrMetadataPreview::CmrMetadataPreviewHelper
+include DraftsHelper
+include CollectionsHelper
+include PagesHelper
+include MetadataPreviewHelper
 
 
 ## Thesee need to work but they don't need to return real URLs.
@@ -29,10 +31,6 @@ end
 
 def edit_collection_path(*args)
   "http://example.com/edit_collection_path"
-end
-
-def resource_prefix
-  "gems/cmr_metadata_preview-0.0.1/app/views/"
 end
 
 ####################################################################################################
@@ -64,8 +62,7 @@ def partial_path_to_resource_path(partial_path)
   parts = partial_path.split("/")
   file_name = "_#{parts.last}.html.erb"
   parts = parts[0..-2] + [file_name]
-  relative_path = parts.join("/")
-  "#{resource_prefix}#{relative_path}"
+  parts.join("/")
 end
 
 # Renders an ERB template against a hashmap of variables.
@@ -98,3 +95,7 @@ def render(args)
     raise e
    end
 end
+
+
+
+

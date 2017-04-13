@@ -1,0 +1,122 @@
+<div class="preview-collection eui-accordion">
+  <div class="eui-accordion__header">
+    <h4 class="eui-accordion__title">Collection Citations Fields:</h4>
+    <div class="eui-accordion__icon" tabindex="0">
+      <i class="eui-icon eui-fa-chevron-circle-down"></i>
+      <span class="eui-sr-only">Toggle Collection Citations Fields</span>
+    </div>
+  </div>
+  <div class="eui-accordion__body">
+    <ul class="collection-citations-preview">
+      <% if metadata['CollectionCitations'] %>
+        <h5>
+          Collection Citations
+          <% if @draft.present? %>
+            <%= link_to '<i class="fa fa-edit"></i> <span class="is-hidden">Edit Collection Citations</span>'.html_safe, draft_edit_form_path(@draft, 'collection_citations', { anchor: 'collection-citation' }), { class: 'hash-link' } %>
+          <% end %>
+        </h5>
+
+        <ul class="collection-citation-cards cards">
+          <% metadata['CollectionCitations'].each do |citation| %>
+            <li class="card">
+              <div class="card-header">
+                <% if citation['Title'].blank? %>
+                  <h5 class="card-header-title">
+                    Collection citation title not provided
+                  </h5>
+                <% else %>
+                  <h5 class="card-header-title">
+                    <%= citation['Title'] %>
+                  </h5>
+                <% end %>
+                <% if citation['Version'] %>
+                  <span class="card-header-badge">
+                    <%= citation['Version'] %>
+                  </span>
+                <% end %>
+              </div>
+
+              <div class="card-body active">
+                <div class="card-body-details-full">
+                  <% if citation['Creator'] %>
+                    <p>
+                      <b>Created by: </b>
+                      <%= citation['Creator'] %>
+                    </p>
+                  <% end %>
+                  <% if citation['Editor'] %>
+                    <p>
+                      <b>Editor: </b>
+                      <%= citation['Editor'] %>
+                    </p>
+                  <% end %>
+                  <% if citation['Publisher'] %>
+                    <p>
+                      <b>Published by: </b>
+                      <%= citation['Publisher'] %>
+                    </p>
+                  <% end %>
+                  <% if citation['ReleaseDate'] %>
+                    <p>
+                      <b>Released: </b>
+                      <%= citation['ReleaseDate'].split('T')[0] %>
+                    </p>
+                  <% end %>
+                </div>
+              </div>
+
+              <% if citation['OtherCitationDetails'] %>
+                <div class="card-body">
+                  <div class="card-body-details-full">
+                    <p><%= citation['OtherCitationDetails'] %>
+                  </div>
+                </div>
+              <% end %>
+
+              <% if citation['RelatedUrl'] %>
+                <div class="card-body">
+                  <div class="card-body-details-full">
+                    <ul>
+                      <% if citation['RelatedUrl'] && citation['RelatedUrl']['URLs'] %>
+                        <% citation['RelatedUrl']['URLs'].each do |url| %>
+                          <li>
+                            <i class="fa fa-external-link"></i>
+                            <%= link_to url, url %>
+                          </li>
+                        <% end %>
+                      <% end %>
+                    </ul>
+                  </div>
+                </div>
+              <% end %>
+
+              <div class="card-navigation">
+                <ul>
+                  <li class="card-navigation-control">
+                    <a href="" class="card-navigation-control-back">
+                      <i class="fa fa-chevron-left"></i>
+                    </a>
+                  </li>
+                  <li class="card-navigation-pagination">
+                    <i class="fa fa-circle"></i>
+                    <% if citation['RelatedUrl']%>
+                      <i class="fa fa-circle-o"></i>
+                    <% end %>
+                    <% if citation['OtherCitationDetails']%>
+                      <i class="fa fa-circle-o"></i>
+                    <% end %>
+                  </li>
+                  <li class="card-navigation-control">
+                    <a href="" class="card-navigation-control-forward">
+                      <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </ul>
+  </div>
+</div>

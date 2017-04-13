@@ -1,0 +1,103 @@
+<div class="preview-collection eui-accordion">
+  <div class="eui-accordion__header">
+    <h4 class="eui-accordion__title">Acquisition Information Fields:</h4>
+    <div class="eui-accordion__icon" tabindex="0">
+      <i class="eui-icon eui-fa-chevron-circle-down"></i>
+      <span class="eui-sr-only">Toggle Acquisition Information Fields</span>
+    </div>
+  </div>
+  <div class="eui-accordion__body">
+    <h5>
+      Platforms
+      <% if @draft.present? %>
+        <%= link_to '<i class="fa fa-edit"></i> <span class="is-invisible">Edit Platforms"'.html_safe, draft_edit_form_path(@draft, 'acquisition_information', { anchor: 'platforms' }), { class: 'hash-link' } %>
+      <% end %>
+    </h5>
+    <% if metadata['Platforms'].blank? %>
+      <p class="empty-section">
+        No platforms or instruments have been added to this associated with this collection.
+      </p>
+    <% else %>
+      <ul class="platform-cards cards">
+        <% metadata['Platforms'].each do |platform| %>
+          <li class="card">
+            <div class="card-header">
+              <h5 class="card-header-title">
+                <%= platform['Type'] %>
+              </h5>
+              <% if platform['ShortName'] %>
+                <span class="card-header-badge">
+                  <%= platform['ShortName'] %>
+                </span>
+              <% end %>
+            </div>
+            <div class="card-body active">
+              <div class="card-body-details">
+                <h6>Instruments</h6>
+                <% if platform['Instruments'] %>
+                  <ul>
+                    <% platform['Instruments'].each do |instrument| %>
+                      <li><%= instrument['ShortName'] %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <% if metadata['Projects'] %>
+      <h5>
+        Projects
+        <% if @draft.present? %>
+          <%= link_to '<i class="fa fa-edit"></i> <span class="is-invisible">Edit Projects"'.html_safe, draft_edit_form_path(@draft, 'acquisition_information', { anchor: 'projects' }), { class: 'hash-link' } %>
+        <% end %>
+      </h5>
+      <table class="projects-table">
+        <thead>
+          <tr>
+            <th>Project Short Name</th>
+            <th>Campaigns</th>
+            <th>Project Dates</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% metadata['Projects'].each do |project| %>
+            <tr>
+              <% if project['ShortName'] %>
+                <td><%= project['ShortName'] %></td>
+              <% else %>
+                <td class="empty-section">No short name provided.</td>
+              <% end %>
+
+              <% if project['Campaigns'] %>
+                <td>
+                  <ul class="is-condensed">
+                    <% project['Campaigns'].each do |campaign| %>
+                      <li><%= campaign %></li>
+                    <% end %>
+                  </ul>
+                </td>
+              <% else %>
+                <td class="empty-section">No campaigns listed.</td>
+              <% end %>
+
+              <% if project['StartDate'] or project['EndDate'] %>
+                <td>
+                  <%= project['StartDate'].split('T')[0] %>
+                  <% if project['EndDate'] %>
+                    to <%= project['EndDate'].split('T')[0] %>
+                  <% end %>
+                </td>
+              <% else %>
+                <td class="empty-section">No dates provided.</td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+</div>

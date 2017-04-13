@@ -1,13 +1,15 @@
 (ns cmr.collection-renderer.services.collection-renderer
   "Defines a component which can be used to generate an HTML response of a UMM-C collection. Uses the
    MMT ERB code along with JRuby to generate it."
-  (:require
-   [clojure.java.io :as io]
-   [cmr.common.lifecycle :as l]
-   [cmr.umm-spec.umm-json :as umm-json])
-  (:import
-   (java.io ByteArrayInputStream)
-   (javax.script ScriptEngine ScriptEngineManager Invocable)))
+  (require [cmr.common.lifecycle :as l]
+           [clojure.java.io :as io]
+           [cmr.umm-spec.umm-json :as umm-json])
+  (import [javax.script
+           ScriptEngine
+           ScriptEngineManager
+           Invocable]
+          [java.io
+           ByteArrayInputStream]))
 
 (def system-key
   "The key to use when storing the collection renderer"
@@ -84,3 +86,5 @@
                ;; Arguments for collection preview. See the ERB file for documentation.
                {"umm_json" umm-json
                 "relative_root_url" (context->relative-root-url context)})))
+
+

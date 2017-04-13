@@ -35,16 +35,19 @@ metadata =  JSON.parse(umm_json)
 </head>
 
 <body class="">
+  <a href="#main-content" class="skip-nav">Skip to main content</a>
 
-  <main class="internal record" role="main">
-    <header>
-      <%= render partial: 'cmr_metadata_preview/metadata_header', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
-    </header>
+  <div class="wrapper">
 
-    <div class="row row-content">
-      <%= render partial: 'cmr_metadata_preview/metadata_preview', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
+    <div id="main-content">
+      <%= render partial: 'collection_preview/show', locals: { metadata: metadata, relative_root_url: relative_root_url} %>
     </div>
-  </main>
+
+    <div class="push">
+      <!-- For pushing the footer to the bottom of a page with minimal content -->
+    </div>
+  </div>
+
 
 </body>
 </html>
