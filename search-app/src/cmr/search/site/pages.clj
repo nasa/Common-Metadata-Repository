@@ -58,4 +58,4 @@
   (render-template-ok
    context
    "templates/provider-tag-landing-links.html"
-   (data/get-provider-tag-landing-links request provider-id tag)))
+   (data/get-provider-tag-landing-links context provider-id tag)))

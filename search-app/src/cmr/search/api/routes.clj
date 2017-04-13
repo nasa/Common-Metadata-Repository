@@ -206,11 +206,6 @@
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers body]
-  (println "*** context ***\n" context)
-  (println "*** path-w-extension ***\n" path-w-extension)
-  (println "*** params ***\n" params)
-  (println "*** headers ***\n" headers)
-  (println "*** body ***\n" body)
   (let [content-type-header (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
