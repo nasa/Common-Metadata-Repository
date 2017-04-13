@@ -8,6 +8,7 @@
    [clojure.data.xml :as x]
    [cmr.common.xml :as cx]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
    [cmr.umm.echo10.echo10-collection :as c]
    [cmr.umm.echo10.granule :as g]
    [cmr.system-int-test.data2.provider-holdings :as ph]
@@ -451,7 +452,106 @@
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
         response (client/request params)]
-   (parse-ingest-response response options))))
+   (parse-bulk-update-response response options))))
+
+(defmulti parse-bulk-update-provider-status-body
+  "Parse the bulk update provider status response body as a given format"
+  (fn [response-format body]
+    response-format))
+
+(defmethod parse-bulk-update-provider-status-body :xml
+  [response-format response]
+  (try
+    (let [xml-elem (x/parse-str (:body response))]
+      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+        (parse-xml-error-response-elem xml-elem)
+        {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
+                      (util/remove-nil-keys
+                       {:task-id (cx/string-at-path task [:task-id])
+                        :status (cx/string-at-path task [:status])
+                        :status-message (cx/string-at-path task [:status-message])})))}))
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
+
+(defmethod parse-bulk-update-provider-status-body :json
+  [response-format response]
+  (try
+    (json/parse-string (:body response) true)
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
+
+(defn parse-bulk-update-provider-status-response
+ "Parse an bulk update provider status response and append a status"
+ [response options]
+ (if (get options :raw? false)
+   response
+   (assoc (parse-bulk-update-provider-status-body (or (:accept-format options) :xml) response)
+          :status (:status response))))
+
+(defn bulk-update-provider-status
+ "Get the tasks and statuses by provider"
+ ([provider-id]
+  (bulk-update-provider-status provider-id nil))
+ ([provider-id options]
+  (let [accept-format (get options :accept-format :xml)
+        params {:method :get
+                :url (url/ingest-collection-bulk-update-status-url provider-id)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}
+        params (merge params (when accept-format {:accept accept-format}))
+        response (client/request params)]
+   (parse-bulk-update-provider-status-response response options))))
+
+(defmulti parse-bulk-update-task-status-body
+  "Parse the bulk update task status response body as a given format"
+  (fn [response-format body]
+    response-format))
+
+(defmethod parse-bulk-update-task-status-body :xml
+  [response-format response]
+  (try
+    (let [xml-elem (x/parse-str (:body response))]
+      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+        (parse-xml-error-response-elem xml-elem)
+        {:task-status (cx/string-at-path xml-elem [:task-status])
+         :status-message (cx/string-at-path xml-elem [:status-message])
+         :collection-statuses
+          (seq (for [status (cx/elements-at-path xml-elem [:collection-statuses :collection-status])]
+                (util/remove-nil-keys
+                 {:concept-id (cx/string-at-path status [:concept-id])
+                  :status (cx/string-at-path status [:status])
+                  :status-message (cx/string-at-path status [:status-message])})))}))
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
+
+(defmethod parse-bulk-update-task-status-body :json
+  [response-format response]
+  (try
+    (json/parse-string (:body response) true)
+    (catch Exception e
+      (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response))) e)))))
+
+(defn parse-bulk-update-task-status-response
+ "Parse an bulk update task status response and append a status"
+ [response options]
+ (if (get options :raw? false)
+   response
+   (assoc (parse-bulk-update-task-status-body (or (:accept-format options) :xml) response)
+          :status (:status response))))
+
+(defn bulk-update-task-status
+ "Get the tasks and statuses by provider"
+ ([provider-id task-id]
+  (bulk-update-task-status provider-id task-id nil))
+ ([provider-id task-id options]
+  (let [accept-format (get options :accept-format :xml)
+        params {:method :get
+                :url (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
+                :connection-manager (s/conn-mgr)
+                :throw-exceptions false}
+        params (merge params (when accept-format {:accept accept-format}))
+        response (client/request params)]
+   (parse-bulk-update-task-status-response response options))))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
