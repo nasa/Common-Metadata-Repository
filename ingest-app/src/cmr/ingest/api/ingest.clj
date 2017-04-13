@@ -11,6 +11,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.common.util :as util]
+   [cmr.common.xml.gen :refer :all]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]
@@ -367,6 +368,92 @@
    {:status 200
     :task-id "ABCDEF123"}))) ; hardcoded for now
 
+(defn- generate-xml-status-list
+ "Generate XML for a status list with the format
+ {:id :status :status-message}"
+ [result status-list-key status-key id-key]
+ (x/element status-list-key {}
+   (for [status (get result status-list-key)
+         :let [message (:status-message status)]]
+    (x/element status-key {}
+     (x/element id-key {} (get status id-key))
+     (x/element :status {} (:status status))
+     (when message
+      (x/element :status-message {} message))))))
+
+(defmulti generate-provider-tasks-response
+  "Convert a result to a proper response format"
+  (fn [headers result]
+    (get-ingest-result-format headers :xml)))
+
+(defmethod generate-provider-tasks-response :json
+  [headers result]
+  ;; No special processing needed
+  (generate-ingest-response headers result))
+
+(defmethod generate-provider-tasks-response :xml
+  [headers result]
+  ;; Create an xml response for a list of tasks
+  {:status (ingest-status-code result)
+   :headers {"Content-Type" (mt/format->mime-type :xml)}
+   :body (x/emit-str
+          (x/element :result {}
+           (generate-xml-status-list result :tasks :task :task-id)))})
+
+(defn- get-provider-tasks
+ "Get all tasks and statuses for provider - hardcoded for now"
+ [provider-id request]
+ (let [{:keys [headers request-context]} request]
+  (verify-provider-exists request-context provider-id)
+  (generate-provider-tasks-response
+   headers
+   {:status 200
+    :tasks [{:task-id "ABCDEF123"
+             :status "In Progress"}
+            {:task-id "12345678"
+             :status "Partial Fail"
+             :status-message "The following collections had errors: C-1, C-2"}
+            {:task-id "XYZ123456"
+             :status "Complete"}]})))
+
+(defmulti generate-provider-task-status-response
+  "Convert a result to a proper response format"
+  (fn [headers result]
+    (get-ingest-result-format headers :xml)))
+
+(defmethod generate-provider-task-status-response :json
+  [headers result]
+  ;; No special processing needed
+  (generate-ingest-response headers result))
+
+(defmethod generate-provider-task-status-response :xml
+  [headers result]
+  ;; Create an xml response for a list of tasks
+  {:status (ingest-status-code result)
+   :headers {"Content-Type" (mt/format->mime-type :xml)}
+   :body (x/emit-str
+          (x/element :result {}
+           (x/element :task-status {} (:task-status result))
+           (x/element :status-message {} (:status-message result))
+           (generate-xml-status-list result
+            :collection-statuses :collection-status :concept-id)))})
+
+(defn- get-provider-task-status
+ "Get the status for the given task for the provider - hardcoded for now"
+ [provider-id task-id request]
+ (let [{:keys [headers request-context]} request]
+  (verify-provider-exists request-context provider-id)
+  (generate-provider-task-status-response
+   headers
+   {:status 200
+    :task-status "Partial Fail"
+    :status-message "The following collections had errors: C-1, C-2"
+    :collection-statuses [{:concept-id "C1-PROV"
+                           :status "Failed"
+                           :status-message "Missing required properties"}
+                          {:concept-id "C2-PROV"
+                           :status "Failed"
+                           :status-message "Invalid XML"}]})))
 
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"
@@ -396,4 +483,9 @@
       (context "/bulk-update" []
        (context "/collections" []
         (POST "/" request
-         (bulk-update-collections provider-id request)))))))
+         (bulk-update-collections provider-id request))
+        (GET "/status" request ; Gets all tasks for provider
+         (get-provider-tasks provider-id request))
+        (context "/status/:task-id" [task-id]
+         (GET "/" request
+          (get-provider-task-status provider-id task-id request))))))))
