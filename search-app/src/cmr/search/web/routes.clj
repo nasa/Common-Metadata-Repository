@@ -57,7 +57,7 @@
       nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler
       api-routes/mixed-arity-param-handler
-      (errors/exception-handler api-routes/default-error-format-fn)
+      (errors/exception-handler api-routes/default-error-format)
       common-routes/add-request-id-response-handler
       (context/build-request-context-handler system)
       common-routes/pretty-print-response-handler

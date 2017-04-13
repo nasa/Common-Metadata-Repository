@@ -333,7 +333,7 @@
         [(msg/mixed-arity-parameter-msg mixed-param)]))
     (f request)))
 
-(defn default-error-format-fn
+(defn default-error-format
   "Determine the format that errors should be returned in based on the request URI."
   [{:keys [uri]} _e]
   (if (or (re-find #"/caches" uri)
