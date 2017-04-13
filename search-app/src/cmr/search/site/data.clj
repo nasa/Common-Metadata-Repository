@@ -10,6 +10,8 @@
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs."
   (:require
+   [cmr.common-app.services.search.query-execution :as query-exec]
+   [cmr.search.services.query-service :as query-svc]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -55,15 +57,15 @@
 (defn cmr-link
   "Given a CMR host and a concept ID, return the collection landing page for
   the given id."
-  [cmr-host concept-id]
-  (format "https://%s/concepts/%s.html" cmr-host concept-id))
+  [cmr-base-url concept-id]
+  (format "%sconcepts/%s.html" cmr-base-url concept-id))
 
 (defn make-href
   "Create the `href` part of a landing page link."
-  [item]
+  [cmr-base-url item]
   (if (has-doi? item)
     (doi-link (get-doi item))
-    (cmr-link "host" (get-in item [:meta :concept-id]))))
+    (cmr-link cmr-base-url (get-in item [:meta :concept-id]))))
 
 (defn get-long-name
   "Get a collection item's long name."
@@ -88,15 +90,15 @@
   landing page link.
 
   A generated link has the form `{:href ... :text ...}`."
-  [item]
-  {:href (make-href item)
+  [cmr-base-url item]
+  {:href (make-href cmr-base-url item)
    :text (make-text item)})
 
 (defn make-links
   "Given a collection from an elastic search query, generate landing page
   links appropriate for the collection."
-  [coll]
-  (map make-link coll))
+  [cmr-base-url coll]
+  (map (partial make-link cmr-base-url) coll))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Page data functions
@@ -143,4 +145,6 @@
            {:provider-name provider-id
             :provider-id provider-id
             :tag-name (get-tag-short-name tag)
-            :links (map make-link coll)})))
+            :links (make-links
+                    (config/application-public-root-url context)
+                    coll)})))
