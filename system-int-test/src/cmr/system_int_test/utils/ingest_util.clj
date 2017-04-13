@@ -606,29 +606,39 @@
   {:grant-all-search? true
    :grant-all-ingest? true})
 
-(defn reset-fixture
-  "Resets all the CMR systems then creates the given providers in ECHO and the CMR.
-  providers can be passed in two ways: 1) a map of provider-guids to provider-ids
-  {'provider-guid1' 'PROV1' 'provider-guid2' 'PROV2'}, or
+(defn setup-providers
+  "Creates the given providers in ECHO and the CMR. Providers can be passed in
+  two ways:
+  1) a map of provider-guids to provider-ids
+     {'provider-guid1' 'PROV1' 'provider-guid2' 'PROV2'}, or
   2) a list of provider attributes maps:
-  [{:provider-guid 'provider-guid1' :provider-id 'PROV1' :short-name 'provider short name'}...]"
+     [{:provider-guid 'provider-guid1' :provider-id 'PROV1'
+       :short-name 'provider short name'}...]"
+  [providers options]
+  (let [{:keys [grant-all-search? grant-all-ingest?]}
+         (merge reset-fixture-default-options options)
+       providers (if (sequential? providers)
+                     providers
+                     (for [[provider-guid provider-id] providers]
+                       {:provider-guid provider-guid
+                        :provider-id provider-id}))]
+     (doseq [provider-map providers]
+       (create-provider provider-map {:grant-all-search? grant-all-search?
+                                      :grant-all-ingest? grant-all-ingest?}))))
+(defn reset-fixture
+  "Resets all the CMR systems then uses the `setup-providers` function to
+  create a testing fixture.
+
+  For the format of the providers data structure, see `setup-providers`."
   ([]
    (reset-fixture {}))
   ([providers]
    (reset-fixture providers nil))
   ([providers options]
    (fn [f]
-     (let [{:keys [grant-all-search? grant-all-ingest?]}
-           (merge reset-fixture-default-options options)]
-       (dev-sys-util/reset)
-       (let [providers (if (sequential? providers)
-                         providers
-                         (for [[provider-guid provider-id] providers]
-                           {:provider-guid provider-guid :provider-id provider-id}))]
-         (doseq [provider-map providers]
-           (create-provider provider-map {:grant-all-search? grant-all-search?
-                                          :grant-all-ingest? grant-all-ingest?})))
-       (f)))))
+     (dev-sys-util/reset)
+     (setup-providers providers options)
+     (f))))
 
 (defn clear-caches
   "Clears caches in the ingest application"
