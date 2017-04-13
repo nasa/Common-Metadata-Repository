@@ -5,5 +5,10 @@
 {% block main-content %}
 <div class="inner cover">
   <h1 class="cover-heading">Landing Pages for the {{ provider-name}} {{ tag-name }} Collections</h1>
+  <ul>
+  {% for link in links %}
+    <li><a href="{{ link.href }}">{{ link.text }}</a></li>
+  {% endfor %}
+  </ul>
 </div>
 {% endblock %}
