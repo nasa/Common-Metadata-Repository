@@ -50,11 +50,15 @@
   (let [{:keys [format metadata]} collection-concept
         collection (spec/parse-metadata context :collection format metadata {:sanitize? false})
         sanitized-collection (spec/parse-metadata context :collection format metadata)
-        _ (v/umm-spec-validate-collection collection validation-options context)
+        ;; Throw errors for validation on sanitized collection
+        _ (v/umm-spec-validate-collection sanitized-collection validation-options context false)
         ;; Return warnings for schema validation errors going from xml -> UMM
         warnings (v/validate-collection-umm-spec-schema collection validation-options)
-        collection-warnings (v/umm-spec-validate-collection-warnings
-                             collection validation-options context)
+        ;; Return warnings for validation errors on collection without sanitization
+        collection-warnings (concat
+                             (v/umm-spec-validate-collection collection validation-options context true)
+                             (v/umm-spec-validate-collection-warnings
+                              collection validation-options context))
         collection-warnings (map #(str (:path %) " " (str/join " " (:errors %)))
                                  collection-warnings)
         warnings (concat warnings collection-warnings)]

@@ -113,13 +113,19 @@
         err-messages))))
 
 (defn umm-spec-validate-collection
-  "Validate collection through umm-spec validation functions and throw errors"
-  [collection validation-options context]
+  "Validate collection through umm-spec validation functions. If warn? flag is
+  true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
+  [collection validation-options context warn?]
   (when-let [err-messages (seq (umm-spec-validation/validate-collection
                                 collection
                                 (when (:validate-keywords? validation-options)
                                   [(keyword-validations context)])))]
-    (errors/throw-service-errors :invalid-data err-messages)))
+    (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors)
+            (not warn?))
+     (errors/throw-service-errors :invalid-data err-messages)
+     (do
+      (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+      err-messages))))
 
 (defn umm-spec-validate-collection-warnings
  "Validate umm-spec collection validation warnings functions - errors that we want
