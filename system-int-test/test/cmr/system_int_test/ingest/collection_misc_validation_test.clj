@@ -2,6 +2,7 @@
   "CMR Ingest miscellaneous validation integration tests"
   (:require
     [clojure.java.io :as io]
+    [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.common-app.test.side-api :as side]
     [cmr.ingest.config :as icfg]
@@ -34,13 +35,12 @@
   (testing "A collection with spatial data but no representation should fail ingest validation"
     (let [bad-metadata (slurp (io/resource
                                 "iso-samples/iso-spatial-data-missing-coordinate-system.iso19115"))
-          {:keys [status errors]}
+          {:keys [status warnings]}
           (ingest/ingest-concept (ingest/concept :collection "PROV1" "foo" :iso19115 bad-metadata))]
 
-      (is (= 422 status))
-      (is (= [{:errors ["Granule Spatial Representation must be supplied."]
-               :path ["SpatialExtent"]}]
-             errors)))))
+      (is (= 201 status))
+      (is (str/includes? warnings
+           "After translating item to UMM-C the metadata had the following issue: [:SpatialExtent] Granule Spatial Representation must be supplied.")))))
 
 (deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"
