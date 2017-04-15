@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [cmr.common.util :as util :refer [are2]]
+            [cmr.search.site.routes :as r]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -13,7 +14,13 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
             [cmr.umm-spec.models.umm-common-models :as cm]
-            [cmr.umm-spec.test.expected-conversion :as exp-conv]))
+            [cmr.umm-spec.test.expected-conversion :as exp-conv]
+            [ring.mock.request :refer :all]))
+
+(def ^:private base-url "https://cmr.example.com/search")
+(def ^:private site (#'cmr.search.site.routes/build-routes
+                     {:public-conf {:protocol "https"
+                                    :relative-root-url "/search"}}))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"
@@ -21,17 +28,63 @@
                                               "provguid3" "PROV3"})
                        tags/grant-all-tag-fixture]))
 
-;; XXX Add supporting functions for generating HTML links in the expected
-;; format
-; (defn gen-doi-link
-;   ""
-;   [doi-data]
-;   )
+(defn- substring?
+  [test-value string]
+  (.contains string test-value))
 
-; (defn gen-cmr-link
-;   ""
-;   [provider concept-id]
-;   )
+(defn- make-link
+  [{href :href text :text}]
+  (format "<li><a href=\"%s\">%s</a></li>" href text))
+
+(defn- make-links
+  [data]
+  (str/join
+    "\n"
+    (map make-link data)))
+
+(def expected-header-link
+  (make-link {:href "/site/collections/directory"
+              :text "Landing Pages"}))
+
+(def expected-top-level-links
+  (make-links [{:href "/site/collections/directory/eosdis"
+                :text "Directory for EOSDIS Collections"}]))
+
+(def expected-eosdis-level-links
+  (let [url-path "/site/collections/directory"
+        tag "gov.nasa.eosdis"]
+    (make-links [{:href (format "%s/%s/%s" url-path "PROV1" tag)
+                  :text "PROV1"}
+                 {:href (format "%s/%s/%s" url-path "PROV2" tag)
+                  :text "PROV2"}
+                 {:href (format "%s/%s/%s" url-path "PROV3" tag)
+                  :text "PROV3"}])))
+
+(def expected-provider1-level-links
+  (let [url-prefix "http://localhost:3003/concepts"]
+    (make-links [{:href (format "%s/%s" url-prefix "C1200000002-PROV1.html")
+                  :text "coll2 (s2)"}
+                 {:href (format "%s/%s" url-prefix "C1200000003-PROV1.html")
+                  :text "coll3 (s3)"}])))
+
+(def expected-provider2-level-links
+  (let [url-prefix "http://localhost:3003/concepts"]
+    (make-links [{:href (format "%s/%s" url-prefix "C1200000005-PROV2.html")
+                  :text "coll2 (s2)"}
+                 {:href (format "%s/%s" url-prefix "C1200000006-PROV2.html")
+                  :text "coll3 (s3)"}])))
+
+(def expected-provider3-level-links
+  (let [url-prefix "http://dx.doi.org"]
+    (make-links [{:href (format "%s/%s" url-prefix "doi5")
+                  :text "coll5 (s5)"}
+                 {:href (format "%s/%s" url-prefix "doi6")
+                  :text "coll6 (s6)"}])))
+
+(def notexpected-provider-level-link
+  (let [url-prefix "http://localhost:3003/concepts"]
+    (make-links [{:href (format "%s/%s" url-prefix "C1200000001-PROV1.html")
+                  :text "coll1 (s1)"}])))
 
 (defn setup-providers
   ""
@@ -52,20 +105,20 @@
                                 p
                                 (-> exp-conv/example-collection-record
                                     (assoc :ShortName (str "s" n))
-                                    (assoc :EntryTitle (str "coll" n)))
+                                    (assoc :EntryTitle (str "Collection Item " n)))
                                 {:format :umm-json
                                  :accept-format :json}))
          [c1-p3 c2-p3 c3-p3] (for [n (range 4 7)]
                                (d/ingest-umm-spec-collection
-                                "PROV3"
-                                (-> exp-conv/example-collection-record
-                                    (assoc :ShortName (str "s" n))
-                                    (assoc :EntryTitle (str "coll" n))
-                                    (assoc :DOI (cm/map->DoiType
-                                                  {:DOI (str "doi" n)
-                                                   :Authority (str "auth" n)})))
-                                {:format :umm-json
-                                 :accept-format :json}))]
+                                 "PROV3"
+                                 (-> exp-conv/example-collection-record
+                                     (assoc :ShortName (str "s" n))
+                                     (assoc :EntryTitle (str "Collection Item " n))
+                                     (assoc :DOI (cm/map->DoiType
+                                                   {:DOI (str "doi" n)
+                                                    :Authority (str "auth" n)})))
+                                 {:format :umm-json
+                                  :accept-format :json}))]
     ;; Wait until collections are indexed so tags can be associated with them
     (index/wait-until-indexed)
     ;; Use the following to generate html links that will be matched in tests
@@ -88,16 +141,42 @@
     (index/wait-until-indexed)
     [notag-colls nodoi-colls doi-colls tag-colls all-colls])))
 
-(deftest get-eosdis-landing-links
-  (testing "generate links from gov.nasa.eosdis-tagged collection data"
+(deftest check-testing-collections
+  (testing "sanity check for test collection setup"
     (setup-providers)
     (let [[notag-colls nodoi-colls doi-colls tag-colls all-colls] (setup-collections)]
-      ;; XXX test that items in the notag-colls don't have links
-      ;; XXX test that only items in the doi-colls have doi links
-      ;; XXX test that only items in tag-colls have links
-      ;; XXX test that only one provider is present in a provider links page
       (is (= (count notag-colls) 3))
       (is (= (count nodoi-colls) 6))
       (is (= (count doi-colls) 3))
       (is (= (count tag-colls) 6))
       (is (= (count all-colls) 9)))))
+
+(deftest header-link
+  (testing "check the link for landing pages in the header"
+    (let [url "https://cmr.example.com/search"
+          response (site (request :get url))]
+      (is (= (:status response) 200))
+      (is (substring? expected-header-link (:body response))))))
+
+(deftest top-level-links
+  (testing "check top level links"
+    (let [url (str base-url "/site/collections/directory")
+          response (site (request :get url))]
+      (is (= (:status response) 200))
+      (is (substring? expected-top-level-links (:body response)))
+      ;; This page should also have a header link
+      (is (substring? expected-header-link (:body response))))))
+
+; (deftest eosdis-level-links
+;   (testing "check eosdis level links"
+;     (let [url (str base-url "/site/collections/landing-pages/eosdis")
+;           response (site (request :get url))
+;           body (:body response)]
+;       (is (= (:status response) 200))
+;       (is (= body "XXX"))
+;       ;; XXX how do you set public-conf (or mock it) in cmr integration tests?
+;       ;; XXX is done by creating a custom system that's set up in a fixture?
+;       ;; XXX how do I reuse a system that's already set up in a fixture?
+;       (is (substring? expected-eosdis-level-links body))
+;       ;; This page should also have a header link
+;       (is (substring? expected-header-link body)))))

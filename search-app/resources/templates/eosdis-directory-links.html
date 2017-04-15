@@ -7,9 +7,7 @@
   <h1 class="cover-heading">Directory of Landing Pages for EOSDIS Collections</h1>
   <ul>
   {% for provider in providers %}
-    <li>
-      <a href="/site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a>
-    </li>
+    <li><a href="/site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a></li>
   {% endfor %}
   </ul>
 </div>
