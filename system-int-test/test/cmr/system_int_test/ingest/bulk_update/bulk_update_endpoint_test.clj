@@ -11,7 +11,8 @@
  "Default request body to use for testing"
  {:concept-ids ["C1", "C2", "C3"]
   :update-type "ADD_TO_EXISTING"
-  :update-field "SCIENCE_KEYWORDS"})
+  :update-field "SCIENCE_KEYWORDS"
+  :update-value "X"})
 
 (deftest bulk-update-collection-endpoint
  (testing "Response in JSON"
@@ -92,9 +93,22 @@
     :update-field "SCIENCE_KEYWORDS"
     :update-type "REPLACE"}
    400
-   ["/update-type instance value (\"REPLACE\") not found in enum (possible values: [\"ADD_TO_EXISTING\",\"CLEAR_FIELD\",\"CLEAR_ALL_AND_REPLACE\",\"FIND_AND_REMOVE\",\"FIND_AND_REPLACE\"])"])))
+   ["/update-type instance value (\"REPLACE\") not found in enum (possible values: [\"ADD_TO_EXISTING\",\"CLEAR_FIELD\",\"CLEAR_ALL_AND_REPLACE\",\"FIND_AND_REMOVE\",\"FIND_AND_REPLACE\"])"]
 
+   "Missing update value"
+   {:concept-ids ["C1", "C2", "C3"]
+    :update-field "SCIENCE_KEYWORDS"
+    :update-type "FIND_AND_REPLACE"}
+   400
+   ["An update value must be supplied when the update is of type FIND_AND_REPLACE"]
 
+   "Missing find value"
+   {:concept-ids ["C1", "C2", "C3"]
+    :update-field "SCIENCE_KEYWORDS"
+    :update-type "FIND_AND_REPLACE"
+    :update-value "X"}
+   400
+   ["A find value must be supplied when the update is of type FIND_AND_REPLACE"])))
 
 (deftest bulk-update-status-endpoint
  (testing "Response in JSON"
