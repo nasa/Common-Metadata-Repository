@@ -7,9 +7,11 @@
 
 (defn render-template-ok
   "A utility function for preparing template pages."
-  [template data]
-  {:status 200
-   :body (selmer/render-file template data)})
+  ([template]
+    (render-template-ok template {}))
+  ([template data]
+    {:status 200
+     :body (selmer/render-file template data)}))
 
 (defn home
   "Prepare the home page template."
@@ -17,6 +19,18 @@
   (render-template-ok
     "templates/index.html"
     (data/get-index request)))
+
+(defn search-docs
+  "Prepare the top-level search docs page."
+  [request]
+  (render-template-ok
+    "templates/search-docs.html"))
+
+(defn search-site-docs
+  "Prepare the site-specific (non-API) docs page."
+  [request]
+  (render-template-ok
+    "templates/search-site-docs.html"))
 
 (defn collections-directory
   "Prepare the page that links to all sub-directory pages.

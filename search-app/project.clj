@@ -92,8 +92,12 @@
                                swagger-target))
                        (generate
                          "CMR Search"
-                         "api_docs.md"
-                         "resources/public/site/search_api_docs.html")))]
+                         "docs/api.md"
+                         "resources/public/site/search_api_docs.html")
+                       (generate
+                         "CMR Search"
+                         "docs/site.md"
+                         "resources/public/site/search_site_docs.html")))]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out

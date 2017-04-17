@@ -4,6 +4,7 @@
   (:require
     ;; Third-party libs
     [compojure.core :refer :all]
+    [ring.util.response :refer [redirect]]
     [ring.swagger.ui :as ring-swagger-ui]
 
     ;; CMR libs
@@ -11,6 +12,14 @@
     [cmr.common.api.context :as context]
     [cmr.common-app.api-docs :as api-docs]
     [cmr.search.site.pages :as pages]))
+
+(defn- redir-url
+  "A utility function that creates a redirect URL with the given URL parts so
+  that it works in dev and prod deployments."
+  [base-url url-path]
+  (if (empty? base-url)
+    (str "/" url-path)
+    (str base-url url-path)))
 
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
@@ -23,6 +32,17 @@
         ;; point.
         (GET "/" request
           (pages/home request))
+        (GET "/site/docs" request
+          (pages/search-docs request))
+        ;; XXX Eventually we will have better-organized docs resources; until
+        ;; then, let's redirect to where they are.
+        (GET "/site/docs/api" request
+          (redirect
+            (redir-url relative-root-url "site/search_api_docs.html")
+            307))
+        (GET "/site/docs/site" request
+          (redirect (redir-url relative-root-url "site/search_site_docs.html")
+            307))
         (GET "/site/collections/directory" request
           (pages/collections-directory request))
         (GET "/site/collections/directory/eosdis" request
