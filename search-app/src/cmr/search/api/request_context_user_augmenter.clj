@@ -9,8 +9,10 @@
   [cmr.common.log :refer (info)]
   [cmr.common.services.errors :as errors]
   [cmr.common.util :as util]
-  [cmr.search.data.sids-retriever :as sids-retriever]
+  [cmr.transmit.access-control :as access-control]
   [cmr.transmit.echo.tokens :as tokens]))
+
+
 
 (def CACHE_TIME
  "The number of milliseconds token information will be cached for."
@@ -38,12 +40,8 @@
   (let [{:keys [token]} context]
     (let [sids (cache/get-value (cache/context->cache context token-sid-cache-name)
                                 token
-                                #(or (sids-retriever/get-sids context token)
-                                     {:sids (acl/context->sids context)}))
-          token-guid (:guid sids)
-          sids (:sids sids)]
-      (when token-guid (info (format "Client token GUID: [%s]" token-guid)))
-      sids)))
+                                #(access-control/get-current-sids context token))]
+      (:sids sids))))
 
 (defn- context->user-id
  "Get the user id from the cache using the token. If there is a message for the token being required

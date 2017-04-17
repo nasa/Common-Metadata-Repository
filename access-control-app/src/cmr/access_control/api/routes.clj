@@ -166,6 +166,13 @@
     {:status 200
      :body (json/generate-string result)}))
 
+(defn- get-current-sids
+  "Returns a Ring response with the current user's sids"
+  [request-context params]
+  (let [result (acl-service/get-current-sids request-context params)]
+    {:status 200
+     :body (json/generate-string result)}))
+
 (defn- reindex-groups
   "Processes a request to reindex all groups"
   [context]
@@ -313,4 +320,11 @@
         (OPTIONS "/" [] common-routes/options-response)
 
         (GET "/" {:keys [request-context params]}
-          (get-permissions request-context params))))))
+          (get-permissions request-context params)))
+
+      (context "/current-sids" []
+        (OPTIONS "/" [] common-routes/options-response)
+
+        (GET "/" {:keys [request-context params]}
+          (pv/validate-current-sids-params params)
+          (get-current-sids request-context params))))))

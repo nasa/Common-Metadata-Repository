@@ -10,6 +10,7 @@
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as tc]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.acls :as echo-acls]
@@ -61,7 +62,7 @@
   (or (util/get-real-or-lazy context :sids)
       (let [{:keys [token]} context]
         (if token
-          (echo-tokens/get-current-sids context token)
+          (access-control/get-current-sids)
           [:guest]))))
 
 (defn echo-style-temporal-identifier
