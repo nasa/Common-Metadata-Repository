@@ -15,20 +15,20 @@
 
 (defn home
   "Prepare the home page template."
-  [request]
+  [context]
   (render-template-ok
     "templates/index.html"
-    (data/get-index request)))
+    (data/get-index context)))
 
 (defn search-docs
   "Prepare the top-level search docs page."
-  [request]
+  [context]
   (render-template-ok
     "templates/search-docs.html"))
 
 (defn search-site-docs
   "Prepare the site-specific (non-API) docs page."
-  [request]
+  [context]
   (render-template-ok
     "templates/search-site-docs.html"))
 
@@ -37,14 +37,14 @@
 
   For now, this is just a page with a single link (the EOSDIS collections
   directory)."
-  [request]
+  [context]
   (render-template-ok
     "templates/directory-links.html"
-    (data/get-directory-links request)))
+    (data/get-directory-links context)))
 
 (defn eosdis-collections-directory
   "Prepare the EOSDIS directory page that provides links to all the providers."
-  [request]
+  [context]
   (render-template-ok
     "templates/eosdis-directory-links.html"
-    (data/get-eosdis-directory-links request)))
+    (data/get-eosdis-directory-links context)))

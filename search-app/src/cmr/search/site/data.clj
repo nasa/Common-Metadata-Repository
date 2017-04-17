@@ -10,17 +10,9 @@
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs.")
 
-(defn get-index
-  "Return the data for the index page (none for now)."
-  [request]
-  {})
-
-(defn get-directory-links
-  "Provide the list of links that will be rendered on the general directory
-  page."
-  [request]
-  {:links [{:href "/site/collections/directory/eosdis"
-            :text "Directory for EOSDIS Collections"}]})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Data utility functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn doi-link
   "Given DOI umm data of the form `{:doi <STRING>}`, generate a landing page
@@ -34,7 +26,24 @@
   [cmr-host concept-id]
   (format "https://%s/concepts/%s.html" cmr-host concept-id))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Page data functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-index
+  "Return the data for the index page (none for now)."
+  [context]
+  {})
+
+(defn get-directory-links
+  "Provide the list of links that will be rendered on the general directory
+  page."
+  [context]
+  {:links [{:href "/site/collections/directory/eosdis"
+            :text "Directory for EOSDIS Collections"}]})
+
 (defn get-eosdis-directory-links
   "Generate the data necessary to render EOSDIS directory page links."
-  [request]
+  [context]
   {})
+
