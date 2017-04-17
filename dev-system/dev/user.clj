@@ -98,8 +98,12 @@
   ;; Uncomment this to force CMR to use Legacy Services
   ; (configure-for-legacy-services)
 
-  (let [s (system/create-system)
-        s (configure-systems-logging s @settings/logging-level)]
+  (let [s (-> (system/create-system)
+              (configure-systems-logging @settings/logging-level)
+              (assoc-in [:apps :search :public-conf] {:protocol "http"
+                                                      :host "localhost"
+                                                      :port 3003
+                                                      :relative-root-url ""}))]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))

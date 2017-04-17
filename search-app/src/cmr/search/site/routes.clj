@@ -6,17 +6,10 @@
    [cmr.common.api.context :as context]
    [cmr.common-app.api-docs :as api-docs]
    [cmr.search.site.pages :as pages]
+   [cmr.transmit.config :as config]
    [compojure.core :refer :all]
    [ring.swagger.ui :as ring-swagger-ui]
    [ring.util.response :refer [redirect]]))
-
-(defn- redir-url
-  "A utility function that creates a redirect URL with the given URL parts so
-  that it works in dev and prod deployments."
-  [base-url url-path]
-  (if (empty? base-url)
-    (str "/" url-path)
-    (str base-url url-path)))
 
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
@@ -38,11 +31,14 @@
         (GET "/site/docs/api"
           {context :request-context}
           (redirect
-            (redir-url relative-root-url "site/search_api_docs.html")
+            (str (config/application-public-root-url context)
+                 "site/search_api_docs.html")
             307))
         (GET "/site/docs/site"
           {context :request-context}
-          (redirect (redir-url relative-root-url "site/search_site_docs.html")
+          (redirect
+            (str (config/application-public-root-url context)
+                 "site/search_site_docs.html")
             307))
         (GET "/site/collections/directory"
           {context :request-context}

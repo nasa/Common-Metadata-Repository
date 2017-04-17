@@ -7,16 +7,17 @@
 
 (defn render-template-ok
   "A utility function for preparing template pages."
-  ([template]
-    (render-template-ok template {}))
-  ([template data]
+  ([context template]
+    (render-template-ok context template (data/base-page context)))
+  ([context template page-data]
     {:status 200
-     :body (selmer/render-file template data)}))
+     :body (selmer/render-file template page-data)}))
 
 (defn home
   "Prepare the home page template."
   [context]
   (render-template-ok
+    context
     "templates/index.html"
     (data/get-index context)))
 
@@ -24,12 +25,14 @@
   "Prepare the top-level search docs page."
   [context]
   (render-template-ok
+    context
     "templates/search-docs.html"))
 
 (defn search-site-docs
   "Prepare the site-specific (non-API) docs page."
   [context]
   (render-template-ok
+    context
     "templates/search-site-docs.html"))
 
 (defn collections-directory
@@ -39,6 +42,7 @@
   directory)."
   [context]
   (render-template-ok
+    context
     "templates/directory-links.html"
     (data/get-directory-links context)))
 
@@ -46,5 +50,6 @@
   "Prepare the EOSDIS directory page that provides links to all the providers."
   [context]
   (render-template-ok
+    context
     "templates/eosdis-directory-links.html"
     (data/get-eosdis-directory-links context)))
