@@ -115,7 +115,7 @@
   (base-page context))
 
 (defn get-directory-links
-  "Provide the list of links that will be rendered on the general directory
+  "Provide the list of links that will be rendered on the top-level directory
   page."
   [context]
   (merge
