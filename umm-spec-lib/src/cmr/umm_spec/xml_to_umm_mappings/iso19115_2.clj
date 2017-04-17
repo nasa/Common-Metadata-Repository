@@ -102,12 +102,26 @@
   [doc sanitize?]
   (for [proj (select doc projects-xpath)]
     (let [short-name (value-of proj iso-util/short-name-xpath)
-          description (char-string-value proj "gmi:description")
-          ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
-          long-name (when-not (= short-name description)
-                      (str/replace description (str short-name iso-util/keyword-separator-join) ""))]
-      {:ShortName short-name
-       :LongName (su/truncate long-name su/PROJECT_LONGNAME_MAX sanitize?)})))
+          long-name (value-of proj iso-util/long-name-xpath) 
+          start-end-date (when-let [date (value-of proj iso-util/start-end-date-xpath)]
+                           (str/split (str/trim date) #"\s+"))
+          ;; date is built as: StartDate: 2001:01:01T01:00:00Z EndDate: 2002:02:02T01:00:00Z
+          ;; One date can exist without the other.
+          start-date (when start-end-date 
+                       (if (= "StartDate:" (get start-end-date 0))
+                         (get start-end-date 1)
+                         (get start-end-date 3)))
+          end-date (when start-end-date
+                     (if (= "EndDate:" (get start-end-date 0))
+                       (get start-end-date 1)
+                       (get start-end-date 3)))
+          campaigns (seq (map #(value-of % iso-util/campaign-xpath) (select proj "gmi:childOperation")))]
+      (util/remove-nil-keys
+        {:ShortName short-name
+         :LongName (su/truncate long-name su/PROJECT_LONGNAME_MAX sanitize?)
+         :StartDate start-date
+         :EndDate end-date
+         :Campaigns campaigns}))))
 
 (defn- temporal-ends-at-present?
   [temporal-el]

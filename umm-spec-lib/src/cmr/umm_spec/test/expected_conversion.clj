@@ -402,7 +402,7 @@
                                           :LongName "Atmospheric Infrared Sounder"}
                                          {:ShortName "AERS"
                                           :LongName "Atmospheric/Emitted Radiation Sensor"}]}]
-              :Projects  [{ :ShortName "EOS"
+              :Projects  [{:ShortName "EOS"
                            :LongName "Earth Observing System"}
                           {:ShortName "EOSDIS"
                            :LongName "Earth Observing System Data Information System"}
