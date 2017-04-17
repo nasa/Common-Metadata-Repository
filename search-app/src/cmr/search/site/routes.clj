@@ -16,17 +16,17 @@
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
       (context relative-root-url []
-        ;; Landing pages - Note that the landing pages must come before the
+        ;; Directory pages - Note that the directory pages must come before the
         ;; api-docs, since api-docs/docs-routes also use a context of "site"
         ;; but have the last entry as a 404 renderer, and as such, would
         ;; prevent any pages in the "site" context from rendering after that
         ;; point.
         (GET "/" request
           (pages/home request))
-        (GET "/site/collections/landing-pages" request
-          (pages/landing-links request))
-        (GET "/site/collections/eosdis-landing-pages" request
-          (pages/eosdis-landing-links request))
+        (GET "/site/collections/directory" request
+          (pages/collections-directory request))
+        (GET "/site/collections/directory/eosdis" request
+          (pages/eosdis-collections-directory request))
         ;; Add routes for API documentation
         (api-docs/docs-routes
           (get-in system [:public-conf :protocol])

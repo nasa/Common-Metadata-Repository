@@ -12,25 +12,25 @@
    :body (selmer/render-file template data)})
 
 (defn home
-  "Prepar the home page template."
+  "Prepare the home page template."
   [request]
   (render-template-ok
     "templates/index.html"
     (data/get-index request)))
 
-(defn landing-links
-  "Prepare the page that links to all landing page links.
+(defn collections-directory
+  "Prepare the page that links to all sub-directory pages.
 
   For now, this is just a page with a single link (the EOSDIS collections
-  landing pages)."
+  directory)."
   [request]
   (render-template-ok
-    "templates/landing-links.html"
-    (data/get-landing-links request)))
+    "templates/directory-links.html"
+    (data/get-directory-links request)))
 
-(defn eosdis-landing-links
-  "Prepare the page that provides links to all the EOSDIS landing pages."
+(defn eosdis-collections-directory
+  "Prepare the EOSDIS directory page that provides links to all the providers."
   [request]
   (render-template-ok
-    "templates/eosdis-landing-links.html"
-    (data/get-eosdis-landing-links request)))
+    "templates/eosdis-directory-links.html"
+    (data/get-eosdis-directory-links request)))

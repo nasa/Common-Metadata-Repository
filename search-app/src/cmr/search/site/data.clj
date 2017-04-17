@@ -15,12 +15,12 @@
   [request]
   {})
 
-(defn get-landing-links
-  "Provide the list of links that will be rendered on the general landing
-  pages page."
+(defn get-directory-links
+  "Provide the list of links that will be rendered on the general directory
+  page."
   [request]
-  {:links [{:href "/site/collections/eosdis-landing-pages"
-            :text "Landing Pages for EOSDIS Collections"}]})
+  {:links [{:href "/site/collections/directory/eosdis"
+            :text "Directory for EOSDIS Collections"}]})
 
 (defn doi-link
   "Given DOI umm data of the form `{:doi <STRING>}`, generate a landing page
@@ -34,7 +34,7 @@
   [cmr-host concept-id]
   (format "https://%s/concepts/%s.html" cmr-host concept-id))
 
-(defn get-eosdis-landing-links
-  "Generate the data necessary to render EOSDIS landing page links."
+(defn get-eosdis-directory-links
+  "Generate the data necessary to render EOSDIS directory page links."
   [request]
   {})
