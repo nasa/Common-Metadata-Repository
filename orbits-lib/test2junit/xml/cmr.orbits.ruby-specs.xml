@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="cmr.orbits.ruby-specs" errors="0" failures="0" tests="1" time="1.7035" timestamp="2017-05-04_16:03:00-0400">
+    <testcase name="test-ruby-specs" classname="cmr.orbits.ruby-specs" time="1.7023">
+    </testcase>
+</testsuite>
