@@ -95,7 +95,7 @@
   [field concepts]
   (if (= :entry-id field)
     (format
-      "The Short Name [%s] and Version Id[%s] combined must be unique. The following concepts with the same Short Name and Version Id were found: [%s]."
+      "The Short Name [%s] and Version Id [%s] combined must be unique. The following concepts with the same Short Name and Version Id were found: [%s]."
       (-> concepts first :extra-fields :short-name)
       (-> concepts first :extra-fields :version-id)
       (str/join ", " (map :concept-id concepts))) 
