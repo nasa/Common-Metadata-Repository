@@ -132,18 +132,26 @@
                       ;; Tell SQS how long to wait before returning with no data (long polling).
                       (.setWaitTimeSeconds (Integer. (queue-polling-timeout))))]
     (a/thread
-      (try
-        (u/while-let [rec-result (.receiveMessage sqs-client rec-req)]
-          (when-let [msg (first (.getMessages rec-result))]
-            (let [msg-body (.getBody msg)
-                  msg-content (json/decode msg-body true)]
-              (try
-                (handler msg-content)
-                (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
-                (catch Throwable e
-                  (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
-        (catch Throwable e
-          (error  e "Async handler for queue" queue-name "completing."))))))
+      (loop []
+        (try
+          (let [rec-result (.receiveMessage sqs-client rec-req)]
+            (when-let [msg (first (.getMessages rec-result))]
+              (let [msg-body (.getBody msg)
+                    msg-content (json/decode msg-body true)]
+                (try
+                  (handler msg-content)
+                  (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
+                  (catch Throwable e
+                    (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
+          (catch Exception e
+            (error  e "Async handler for queue" queue-name "continuing after failed message receive."))
+          ;; Catching this just so we can log the thread exiting so it will show up in splunk.
+          (catch Throwable t
+            (error t "Aysnc handler for queue" queue-name "exiting.")
+            ;; Catching just to rethrow is generally not a good thing to do, but we want the thread to exit here.
+            (throw t)))
+        (recur)))))
+            
 
 (defn- create-queue
  "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
