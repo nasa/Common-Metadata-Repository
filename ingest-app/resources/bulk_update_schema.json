@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "definitions": {
+        "CollectionIdType": {
+          "type": "object",
+          "properties": {
+            "short-name": {"type": "string"},
+            "version": {"type": "string"}
+          },
+          "required": ["short-name", "version"]
+        },
+        "UpdateTypeEnum": {
+            "type": "string",
+            "enum": ["ADD_TO_EXISTING", "CLEAR_FIELD", "CLEAR_ALL_AND_REPLACE", "FIND_AND_REMOVE", "FIND_AND_REPLACE"]
+        }
+    },
+    "title": "Ingest Bulk Update",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "concept-ids": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "collection-ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CollectionIdType"
+          },
+          "minItems": 1
+        },
+        "update-type": {
+            "description": "The mime type of the service.",
+            "$ref": "#/definitions/UpdateTypeEnum"
+        },
+        "update-field": {
+          "type": "string"
+        },
+        "update-value": {
+          "type": "string"
+        },
+        "find-value": {
+          "type": "string"
+        }
+    },
+    "required": ["update-type", "update-field"],
+    "oneOf": [{"required": ["concept-ids"]},
+              {"required": ["collection-ids"]}]
+}

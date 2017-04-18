@@ -2,8 +2,11 @@
   "Defines the HTTP URL routes for validating and ingesting concepts."
   (:require
    [clojure.data.xml :as x]
+   [clojure.java.io :as io]
    [clojure.string :as str]
+   [cheshire.core :as json]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer (debug info warn error)]
@@ -12,7 +15,7 @@
    [cmr.common.services.errors :as srvc-errors]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
-   [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.ingest.services.bulk-update-service :as bulk-update]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
@@ -361,8 +364,10 @@
 (defn- bulk-update-collections
  "Bulk update collections - will update as more functionality is added"
  [provider-id request]
- (let [{:keys [body headers request-context]} request]
+ (let [{:keys [body headers request-context]} request
+       body (str/trim (slurp body))]
   (verify-provider-exists request-context provider-id)
+  (bulk-update/validate-bulk-update-post-params body)
   (generate-ingest-response
    headers
    {:status 200
