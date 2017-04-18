@@ -3,9 +3,12 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
+                                          {:grant-all-ingest? false}))
 
 (def test-body
   "Default request body to use for testing"
@@ -14,23 +17,57 @@
    :update-field "SCIENCE_KEYWORDS"
    :update-value "X"})
 
+(defn- grant-permissions-create-token
+  "Test setup to create read/update ingest permissions for bulk update and
+  return a token. Bulk update uses update permissions for the actual bulk update
+  and read permissions for checking status."
+  []
+  (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :read :update)
+  (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read :update)
+  ;; Create and return token
+  (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"]))
+
 (deftest bulk-update-collection-endpoint
-  (testing "Response in JSON"
-    (let [response (ingest/bulk-update-collections "PROV1" test-body {:accept-format :json :raw? true})]
-      (is (= "ABCDEF123"
-             (:task-id (ingest/parse-bulk-update-body :json response))))))
-  (testing "Response in XML"
-    (let [response (ingest/bulk-update-collections "PROV1" test-body {:accept-format :xml :raw? true})]
-      (is (= "ABCDEF123"
-             (:task-id (ingest/parse-bulk-update-body :xml response)))))))
+  (let [token (grant-permissions-create-token)]
+    (testing "Response in JSON"
+      (let [response (ingest/bulk-update-collections "PROV1" test-body
+                      {:accept-format :json :raw? true :token token})]
+        (is (= "ABCDEF123"
+               (:task-id (ingest/parse-bulk-update-body :json response))))))
+    (testing "Response in XML"
+      (let [response (ingest/bulk-update-collections "PROV1" test-body
+                      {:accept-format :xml :raw? true :token token})]
+        (is (= "ABCDEF123"
+               (:task-id (ingest/parse-bulk-update-body :xml response))))))))
 
 (deftest bulk-update-collection-endpoint-validation
   (testing "Invalid provider"
-    (let [response (ingest/bulk-update-collections "PROV-X" {})
+    (let [token (grant-permissions-create-token)
+          response (ingest/bulk-update-collections "PROV-X" {} {:token token})
           {:keys [status errors]} response]
       (is (= 422 status))
       (is (= ["Provider with provider-id [PROV-X] does not exist."]
-             errors)))))
+             errors))))
+  (testing "System ACL"
+    (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
+      (is (= 401 status))
+      (is (= ["You do not have permission to perform that action."]
+             errors))))
+  (testing "System permissions, but no provider permissions"
+    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read :update)
+    (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
+      (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
+        (is (= 401 status))
+        (is (= ["You do not have permission to perform that action."]
+               errors)))))
+  (testing "Read permissions only"
+    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read)
+    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read)
+    (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
+      (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
+        (is (= 401 status))
+        (is (= ["You do not have permission to perform that action."]
+               errors))))))
 
 (deftest bulk-update-collection-endpoint-body-validation
   (testing "Request body validation"

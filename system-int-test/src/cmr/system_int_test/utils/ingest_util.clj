@@ -445,12 +445,14 @@
   (bulk-update-collections provider-id request-body nil))
  ([provider-id request-body options]
   (let [accept-format (get options :accept-format :xml)
+        token (:token options)
         params {:method :post
                 :url (url/ingest-collection-bulk-update-url provider-id)
                 :body (json/generate-string request-body)
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
+        params (merge params (when token {:headers {transmit-config/token-header token}}))
         response (client/request params)]
    (parse-bulk-update-response response options))))
 

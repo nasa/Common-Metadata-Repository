@@ -362,16 +362,19 @@
     (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
 
 (defn- bulk-update-collections
- "Bulk update collections - will update as more functionality is added"
- [provider-id request]
- (let [{:keys [body headers request-context]} request
-       body (str/trim (slurp body))]
-  (verify-provider-exists request-context provider-id)
-  (bulk-update/validate-bulk-update-post-params body)
-  (generate-ingest-response
-   headers
-   {:status 200
-    :task-id "ABCDEF123"}))) ; hardcoded for now
+  "Bulk update collections. Validate provider exists, check ACLs, and validate
+  POST body.
+  Will update as more functionality is added"
+  [provider-id request]
+  (let [{:keys [body headers request-context]} request
+        body (str/trim (slurp body))]
+    (verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (bulk-update/validate-bulk-update-post-params body)
+    (generate-ingest-response
+      headers
+      {:status 200
+       :task-id "ABCDEF123"}))) ; hardcoded for now
 
 (defn- generate-xml-status-list
  "Generate XML for a status list with the format
@@ -486,11 +489,13 @@
           (delete-granule provider-id native-id request)))
 
       (context "/bulk-update" []
-       (context "/collections" []
-        (POST "/" request
-         (bulk-update-collections provider-id request))
-        (GET "/status" request ; Gets all tasks for provider
-         (get-provider-tasks provider-id request))
-        (context "/status/:task-id" [task-id]
-         (GET "/" request
-          (get-provider-task-status provider-id task-id request))))))))
+        (context "/collections" []
+          (POST "/" request
+           (let [request-context (:request-context request)]
+             (acl/verify-ingest-management-permission request-context :update)
+             (bulk-update-collections provider-id request)))
+          (GET "/status" request ; Gets all tasks for provider
+            (get-provider-tasks provider-id request))
+          (context "/status/:task-id" [task-id]
+            (GET "/" request
+              (get-provider-task-status provider-id task-id request))))))))
