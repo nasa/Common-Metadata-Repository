@@ -13,6 +13,10 @@
 (def short-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
 
+;; relative to gmi:childOperation
+(def campaign-xpath
+  "gmi:MI_Operation/gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString") 
+
 (defn char-string-value
   "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
   [element parent-xpath]

@@ -130,17 +130,44 @@
 (defn- generate-projects
   [projects]
   (for [proj projects]
-    (let [{short-name :ShortName} proj]
+    (let [{short-name :ShortName
+           long-name  :LongName 
+           start-date :StartDate
+           end-date   :EndDate
+           campaigns  :Campaigns} proj]
       [:gmi:operation
        [:gmi:MI_Operation
+     (let [start-date-str (when start-date 
+                            (str "StartDate: " start-date))
+           end-date-str (when end-date
+                          (str " EndDate: " end-date))
+           date-str (if start-date-str
+                      (str start-date-str " " end-date-str)
+                      end-date-str)]
+       (when date-str 
         [:gmi:description
-         (char-string (iso/generate-title proj))]
+         (char-string date-str)]))
         [:gmi:identifier
          [:gmd:MD_Identifier
           [:gmd:code
-           (char-string short-name)]]]
+           (char-string short-name)]
+          [:gmd:codeSpace
+           (char-string "gov.nasa.esdis.umm.projectshortname")]
+          [:gmd:description
+           (char-string long-name)]]]
         [:gmi:status ""]
-        [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
+        [:gmi:parentOperation {:gco:nilReason "inapplicable"}]
+       (for [campaign campaigns]
+         [:gmi:childOperation
+          [:gmi:MI_Operation
+           [:gmi:identifier
+            [:gmd:MD_Identifier
+             [:gmd:code
+              (char-string campaign)]
+             [:gmd:codeSpace
+              (char-string "gov.nasa.esdis.umm.campaignshortname")]]]
+           [:gmi:status ""]
+           [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])]])))
 
 (defn- generate-publication-references
   [pub-refs]

@@ -420,7 +420,6 @@
       (update :DataLanguage #(or % "eng"))
       (update :ProcessingLevel su/convert-empty-record-to-nil)
       (update :Distributions expected-iso-19115-2-distributions)
-      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update :PublicationReferences iso-19115-2-publication-reference)
       (update :RelatedUrls expected-collection-related-urls)
       (update :AdditionalAttributes expected-iso19115-additional-attributes)
