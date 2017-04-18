@@ -17,10 +17,6 @@
 (def campaign-xpath
   "gmi:MI_Operation/gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString") 
 
-(def start-end-date-xpath
-  "gmi:description/gco:CharacterString")
-
-
 (defn char-string-value
   "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
   [element parent-xpath]

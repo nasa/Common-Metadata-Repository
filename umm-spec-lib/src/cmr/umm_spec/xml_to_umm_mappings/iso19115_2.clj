@@ -103,7 +103,7 @@
   (for [proj (select doc projects-xpath)]
     (let [short-name (value-of proj iso-util/short-name-xpath)
           long-name (value-of proj iso-util/long-name-xpath) 
-          start-end-date (when-let [date (value-of proj iso-util/start-end-date-xpath)]
+          start-end-date (when-let [date (value-of proj "gmi:description/gco:CharacterString")]
                            (str/split (str/trim date) #"\s+"))
           ;; date is built as: StartDate: 2001:01:01T01:00:00Z EndDate: 2002:02:02T01:00:00Z
           ;; One date can exist without the other.
