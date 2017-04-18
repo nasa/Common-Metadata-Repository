@@ -7,7 +7,7 @@
    [cmr.common-app.api-docs :as api-docs]
    [cmr.search.site.pages :as pages]
    [cmr.transmit.config :as config]
-   [compojure.core :refer :all]
+   [compojure.core :as compojure :refer [GET context routes]]
    [ring.swagger.ui :as ring-swagger-ui]
    [ring.util.response :refer [redirect]]))
 
