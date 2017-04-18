@@ -274,7 +274,7 @@
                                                      :native-id "NID-2"
                                                      :EntryTitle "EID-2")
                                               {:format :dif :allow-failure? true})]
-        (is (= [409 ["The Entry Id [EID-2_V1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
+        (is (= [409 ["The Short Name [EID-2] and Version Id[V1] combined must be unique. The following concepts with the same Short Name and Version Id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection, but not the latest revision within the same provider is OK"
@@ -294,7 +294,7 @@
                                                      :native-id "NID-5")
                                               {:format :dif :allow-failure? true})]
         (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."
-                     "The Entry Id [EID-2_V1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
+                     "The Short Name [EID-2] and Version Id[V1] combined must be unique. The following concepts with the same Short Name and Version Id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
