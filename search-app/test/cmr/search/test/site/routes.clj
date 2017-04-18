@@ -1,13 +1,17 @@
 (ns cmr.search.test.site.routes
   (:require [clojure.test :refer :all]
-            [cmr.search.site.routes :as r])
-  (:use ring.mock.request))
+            [cmr.search.site.routes :as r]
+            [ring.mock.request :refer [request]]))
 
-(def ^:private site (#'cmr.search.site.routes/build-routes
-                     {:public-conf {:protocol "https"
-                                    :relative-root-url "/search"}}))
-
-(def base-url "https://cmr.example.com/search")
+(def ^:private scheme "https")
+(def ^:private host "cmr.example.com")
+(def ^:private base-path "/search")
+(def ^:private base-url (format "%s://%s%s" scheme host base-path))
+(def ^:private system {:public-conf
+                        {:protocol scheme
+                         :host host
+                         :relative-root-url base-path}})
+(def ^:private site (#'cmr.search.site.routes/build-routes system))
 
 (defn- substring?
   [test-value string]
@@ -38,14 +42,6 @@
       (testing "page has a link to EOSDIS collections directory"
         (is (substring? "Directory for EOSDIS Collections"
                         (:body response)))))))
-
-(deftest eosdis-collections-directory-page
-  (testing "eosdis collections collections directory page returns content"
-    (let [url-path "/site/collections/directory/eosdis"
-          response (site (request :get (str base-url url-path)))]
-      (is (= (:status response) 200))
-      (is (substring? "Directory of Landing Pages for EOSDIS Collections"
-                      (:body response))))))
 
 (deftest test-404
   (testing "a 404 is returned for a missing document"

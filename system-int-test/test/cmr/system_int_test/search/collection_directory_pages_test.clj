@@ -1,36 +1,56 @@
-(ns cmr.system-int-test.search.landing-pages-links-test
+(ns cmr.system-int-test.search.collection-directory-pages-test
   "This tests searching by tags to generate links for landing pages"
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [cmr.common.util :as util :refer [are2]]
             [cmr.search.site.routes :as r]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.tag-util :as tags]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.atom :as da]
+            [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.tag-util :as tags]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
+            [cmr.transmit.config :as transmit-config]
             [cmr.umm-spec.models.umm-common-models :as cm]
             [cmr.umm-spec.test.expected-conversion :as exp-conv]
-            [ring.mock.request :refer :all]))
+            [ring.mock.request :as request]))
 
-(def ^:private base-url "https://cmr.example.com/search")
-(def ^:private site (#'cmr.search.site.routes/build-routes
-                     {:public-conf {:protocol "https"
-                                    :relative-root-url "/search"}}))
+(def ^:private scheme "http")
+(def ^:private host "localhost")
+(def ^:private port 3003)
+(def ^:private base-path "/search")
+(def ^:private base-url (format "%s://%s:%s%s" scheme host port base-path))
+(def ^:private public-conf {:protocol scheme
+                            :host host
+                            :port port
+                            :relative-root-url base-path})
+(defonce system nil)
+(defonce site nil)
 
-(use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"
-                                              "provguid2" "PROV2"
-                                              "provguid3" "PROV3"})
-                       tags/grant-all-tag-fixture]))
+(defn- update-fixture-data
+  [system-data]
+  (alter-var-root
+    #'system
+    (constantly system-data))
+  (alter-var-root
+    #'site
+    (constantly (r/build-routes system-data)))
+  system-data)
 
 (defn- substring?
   [test-value string]
   (.contains string test-value))
+
+(defn- request
+  [method url]
+  (-> method
+      (request/request url)
+      (assoc :request-context {:system system})))
 
 (defn- make-link
   [{href :href text :text}]
@@ -43,11 +63,11 @@
     (map make-link data)))
 
 (def expected-header-link
-  (make-link {:href "/site/collections/directory"
-              :text "Landing Pages"}))
+  (make-link {:href (str base-url "/site/collections/directory")
+              :text "Directory"}))
 
 (def expected-top-level-links
-  (make-links [{:href "/site/collections/directory/eosdis"
+  (make-links [{:href (str base-url "/site/collections/directory/eosdis")
                 :text "Directory for EOSDIS Collections"}]))
 
 (def expected-eosdis-level-links
@@ -86,13 +106,25 @@
     (make-links [{:href (format "%s/%s" url-prefix "C1200000001-PROV1.html")
                   :text "coll1 (s1)"}])))
 
-(defn setup-providers
-  ""
+(defn- setup-system
   []
-  (let [p1 {:provider-id "PROV1" :short-name "S1" :cmr-only true :small true}
-        p2 {:provider-id "PROV2" :short-name "S2" :cmr-only true :small true}
-        p3 {:provider-id "PROV3" :short-name "S3" :cmr-only true :small true}]
-    (map ingest/create-provider [p1 p2 p3])))
+  (-> (bootstrap/system)
+      (transmit-config/system-with-connections [:metadata-db])
+      (assoc :public-conf public-conf)
+      (update-fixture-data)))
+
+(use-fixtures :once
+  (fn [f]
+    (dev-sys-util/reset)
+    (setup-system)
+    (ingest/setup-providers
+      [{:provider-guid "provguid1" :provider-id "PROV1"}
+       {:provider-guid "provguid2" :provider-id "PROV2"}
+       {:provider-guid "provguid3" :provider-id "PROV3"}]
+      {:grant-all-search? true
+       :grant-all-ingest? true})
+    (e/grant-all-tag (s/context))
+    (f)))
 
 (defn setup-collections
   "A utility function that generates testing collections data with the bits we
@@ -132,18 +164,11 @@
                 user-token
                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
                 tag-colls)]
-    ; (tags/associate-by-concept-ids
-    ;   user-token
-    ;   "gov.nasa.eosdis"
-    ;   [{:concept-id (:concept-id tag-colls)
-    ;     :revision-id (:revision-id tag-colls)
-    ;     :data "stuff"}])
     (index/wait-until-indexed)
     [notag-colls nodoi-colls doi-colls tag-colls all-colls])))
 
 (deftest check-testing-collections
   (testing "sanity check for test collection setup"
-    (setup-providers)
     (let [[notag-colls nodoi-colls doi-colls tag-colls all-colls] (setup-collections)]
       (is (= (count notag-colls) 3))
       (is (= (count nodoi-colls) 6))
@@ -180,3 +205,16 @@
 ;       (is (substring? expected-eosdis-level-links body))
 ;       ;; This page should also have a header link
 ;       (is (substring? expected-header-link body)))))
+
+(deftest eosdis-collections-directory-page
+  (testing "eosdis collections collections directory page returns content"
+    (let [url-path "/site/collections/directory/eosdis"
+          ring-request (-> :get
+                         (request (str base-url url-path))
+                         (assoc :request-context {:system system})
+                         (assoc :public-conf public-conf))
+          ring-request (request :get (str base-url url-path))
+          response (site ring-request)]
+      (is (= (:status response) 200))
+      (is (substring? "Directory of Landing Pages for EOSDIS Collections"
+                      (:body response ring-request))))))
