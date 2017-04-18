@@ -60,11 +60,11 @@
         (errors/throw-service-error :bad-request (str "Invalid JSON: " message))))))
 
 (defn json-string->json-schema
- "Convert a string to com.github.fge.jsonschema.main.JsonSchema object."
- [schema-string]
- (->> schema-string
-      JsonLoader/fromString
-      (.getJsonSchema (JsonSchemaFactory/byDefault))))
+  "Convert a string to com.github.fge.jsonschema.main.JsonSchema object."
+  [schema-string]
+  (->> schema-string
+       JsonLoader/fromString
+       (.getJsonSchema (JsonSchemaFactory/byDefault))))
 
 (defn parse-json-schema
   "Convert a Clojure object to a JSON string then parses into a
