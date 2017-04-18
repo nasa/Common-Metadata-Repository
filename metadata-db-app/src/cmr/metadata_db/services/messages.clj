@@ -93,12 +93,18 @@
   "Returns an error message to use for concepts which violate the given unique field constraint.
   Note that the field must be a key within :extra-fields for a concept."
   [field concepts]
-  (format
-    "The %s [%s] must be unique. The following concepts with the same %s were found: [%s]."
-    (str/replace (csk/->Camel_Snake_Case_String field) #"_" " ")
-    (-> concepts first :extra-fields field)
-    (str/replace (csk/->snake_case_string field) #"_" " ")
-    (str/join ", " (map :concept-id concepts))))
+  (if (= :entry-id field)
+    (format
+      "The Short Name [%s] and Version Id [%s] combined must be unique. The following concepts with the same Short Name and Version Id were found: [%s]."
+      (-> concepts first :extra-fields :short-name)
+      (-> concepts first :extra-fields :version-id)
+      (str/join ", " (map :concept-id concepts))) 
+    (format
+      "The %s [%s] must be unique. The following concepts with the same %s were found: [%s]."
+      (str/replace (csk/->Camel_Snake_Case_String field) #"_" " ")
+      (-> concepts first :extra-fields field)
+      (str/replace (csk/->snake_case_string field) #"_" " ")
+      (str/join ", " (map :concept-id concepts)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provider Messages
