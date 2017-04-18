@@ -496,11 +496,13 @@
   (bulk-update-provider-status provider-id nil))
  ([provider-id options]
   (let [accept-format (get options :accept-format :xml)
+        token (:token options)
         params {:method :get
                 :url (url/ingest-collection-bulk-update-status-url provider-id)
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
+        params (merge params (when token {:headers {transmit-config/token-header token}}))
         response (client/request params)]
    (parse-bulk-update-provider-status-response response options))))
 
@@ -547,11 +549,13 @@
   (bulk-update-task-status provider-id task-id nil))
  ([provider-id task-id options]
   (let [accept-format (get options :accept-format :xml)
+        token (:token options)
         params {:method :get
                 :url (url/ingest-collection-bulk-update-task-status-url provider-id task-id)
                 :connection-manager (s/conn-mgr)
                 :throw-exceptions false}
         params (merge params (when accept-format {:accept accept-format}))
+        params (merge params (when token {:headers {transmit-config/token-header token}}))
         response (client/request params)]
    (parse-bulk-update-task-status-response response options))))
 

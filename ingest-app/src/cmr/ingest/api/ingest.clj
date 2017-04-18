@@ -413,6 +413,7 @@
  [provider-id request]
  (let [{:keys [headers request-context]} request]
   (verify-provider-exists request-context provider-id)
+  (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
   (generate-provider-tasks-response
    headers
    {:status 200
@@ -451,6 +452,7 @@
  [provider-id task-id request]
  (let [{:keys [headers request-context]} request]
   (verify-provider-exists request-context provider-id)
+  (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
   (generate-provider-task-status-response
    headers
    {:status 200
@@ -495,7 +497,11 @@
              (acl/verify-ingest-management-permission request-context :update)
              (bulk-update-collections provider-id request)))
           (GET "/status" request ; Gets all tasks for provider
-            (get-provider-tasks provider-id request))
+            (let [request-context (:request-context request)]
+              (acl/verify-ingest-management-permission request-context :read)
+              (get-provider-tasks provider-id request)))
           (context "/status/:task-id" [task-id]
             (GET "/" request
-              (get-provider-task-status provider-id task-id request))))))))
+              (let [request-context (:request-context request)]
+                (acl/verify-ingest-management-permission request-context :read)
+                (get-provider-task-status provider-id task-id request)))))))))
