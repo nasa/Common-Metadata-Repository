@@ -45,22 +45,14 @@
             {:short-name "platform_SnA spoonA"
              :long-name "platform_LnA"
              :characteristics 
-               [(dc/characteristic {:name "char1" :description "char1desc" :value "v1"})
-                (dc/characteristic {:name "char2" :description "char2desc" :value "v2"})]
+               [(dc/characteristic {:name "char1" :description "char1desc"})
+                (dc/characteristic {:name "char2" :description "char2desc"})]
              :instruments
-             [(dc/instrument 
-                {:short-name "isnB" :long-name "ilnB" :technique "itechniqueB"
-                 :characteristics 
-                   [(dc/characteristic {:name "ichar1" :description "ichar1desc" :value "iv1"})
-                    (dc/characteristic {:name "ichar2" :description "ichar2desc" :value "iv2"})]
-                 :sensors [(dc/sensor 
-                             {:short-name "ssnB" :long-name "slnB"
-                              :characteristics
-                                [(dc/characteristic {:name "sc1" :description "sd1" :value "sv1"})
-                                 (dc/characteristic {:name "sc2" :description "sd2" :value "sv2"})]
-                              :technique "techniqueB"})
-                           (dc/sensor {:short-name "ssnC" :long-name "slnC"
-                                       :technique "techniqueC"})]})]})
+             [(dc/instrument {:short-name "isnB" :long-name "ilnB" :technique "itechniqueB"
+                              :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB"
+                                                    :technique "techniqueB"})
+                                        (dc/sensor {:short-name "ssnC" :long-name "slnC"
+                                                    :technique "techniqueC"})]})]}) 
         p3 (dc/platform {:short-name "spoonA"})
         p4 (dc/platform {:short-name "SMAP"
                          :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
@@ -245,72 +237,6 @@
         "Generated" [coll12]
         ;; description with no value - see CMR-1129
         "description" [coll11]
-
-        ;; Platforms
-        ;; - short name
-        "platform_SnA" [coll11]
-        ;; - long name (from metadata - not from KMS)
-        "platform_ln" [coll15]
-        ;; - long name (from KMS - not from the metadata)
-        "Soil Moisture Active and Passive Observatory" [coll24]
-        ;; - characteristic name
-        "char1" [coll11]
-        "char2" [coll11]
-        "char1 char2" [coll11]
-        ;; - chracteristic description
-        "char1desc" [coll11]
-        "char2desc" [coll11]
-        "char1desc char2desc" [coll11]
-        ;; - characteristic value
-        "v1" [coll11]
-        "v2" [coll11]
-        "v1 v2" [coll11] 
-         
-
-        ;; Instruments
-        ;; - short name
-        "isnA" [coll15]
-        ;; - long name (from metadata - not from KMS)
-        "ilnB" [coll11]
-        ;; - long name (from KMS - not from metadata)
-        "SMAP L-Band Radiometer" [coll24]
-        ;; - technique
-        "itechniqueB" [coll11]
-        "itechniqueA" [coll15]
-        ;; - characteristic name
-        "ichar1" [coll11]
-        "ichar2" [coll11]
-        "ichar1 ichar2" [coll11]
-        ;; - chracteristic description
-        "ichar1desc" [coll11]
-        "ichar2desc" [coll11]
-        "ichar1desc char2desc" [coll11]
-        ;; - characteristic value
-        "iv1" [coll11]
-        "iv2" [coll11]
-        "iv1 iv2" [coll11]     
-
-        ;; Sensors
-        ;; - short name
-        "ssnA" [coll15]
-        ;; - long name
-        "slnB" [coll11]
-        ;; - technique
-        "techniqueB" [coll11]
-        "techniqueD" [coll15]
-        "techniqueB techniqueC" [coll11]
-        ;; - characteristic name
-        "sc1" [coll11]
-        "sc2" [coll11]
-        "sc1 sc2" [coll11]
-        ;; - chracteristic description
-        "sd1" [coll11]
-        "sd2" [coll11]
-        "sd1 sd2" [coll11]
-        ;; - characteristic value
-        "sv1" [coll11]
-        "sv2" [coll11]
-        "sv1 sv2" [coll11] 
 
         ;; Science keywords
         ;; - category
