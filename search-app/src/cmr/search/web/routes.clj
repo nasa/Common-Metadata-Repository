@@ -4,23 +4,23 @@
   human, browser, or web crawler consumption (site routes). It also provides
   routes that apply to both (e.g., robots.txt)."
   (:require
-    [clojure.java.io :as io]
-    [clojure.string :as str]
-    [cmr.acl.core :as acl]
-    [cmr.common.api.errors :as errors]
-    [cmr.common.api.context :as context]
-    [cmr.common-app.api.routes :as common-routes]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.services.errors :as svc-errors]
-    [cmr.search.api.request-context-user-augmenter :as context-augmenter]
-    [cmr.search.api.routes :as api-routes]
-    [cmr.search.services.messages.common-messages :as msg]
-    [cmr.search.site.routes :as site-routes]
-    [compojure.core :refer :all]
-    [compojure.route :as route]
-    [ring.middleware.keyword-params :as keyword-params]
-    [ring.middleware.nested-params :as nested-params]
-    [ring.middleware.params :as params]))
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [cmr.acl.core :as acl]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.api.context :as context]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as svc-errors]
+   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
+   [cmr.search.api.routes :as api-routes]
+   [cmr.search.services.messages.common-messages :as msg]
+   [cmr.search.site.routes :as site-routes]
+   [compojure.core :refer :all]
+   [compojure.route :as route]
+   [ring.middleware.keyword-params :as keyword-params]
+   [ring.middleware.nested-params :as nested-params]
+   [ring.middleware.params :as params]))
 
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
@@ -46,8 +46,8 @@
   (fn [request]
     (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
       (svc-errors/throw-service-errors
-        :bad-request
-        [(msg/mixed-arity-parameter-msg mixed-param)]))
+       :bad-request
+       [(msg/mixed-arity-parameter-msg mixed-param)]))
     (f request)))
 
 (defn copy-of-body-handler
@@ -80,8 +80,9 @@
       ;; Return robots.txt from the root /robots.txt and at the context (e.g.
       ;; /search/robots.txt)
       (GET "/robots.txt" req robots-txt-response)
-      (context relative-root-url []
-        (GET "/robots.txt" req robots-txt-response))
+      (context
+       relative-root-url []
+       (GET "/robots.txt" req robots-txt-response))
       (api-routes/build-routes system)
       (site-routes/build-routes system)
       (route/not-found "Not Found"))))

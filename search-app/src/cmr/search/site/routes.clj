@@ -21,39 +21,39 @@
         ;; prevent any pages in the "site" context from rendering after that
         ;; point.
         (GET "/"
-          {context :request-context}
-          (pages/home context))
+             {context :request-context}
+             (pages/home context))
         (GET "/site/docs"
-          {context :request-context}
-          (pages/search-docs context))
+             {context :request-context}
+             (pages/search-docs context))
         ;; XXX Eventually we will have better-organized docs resources; until
         ;; then, let's redirect to where they are.
         (GET "/site/docs/api"
-          {context :request-context}
-          (redirect
-            (str (config/application-public-root-url context)
-                 "site/search_api_docs.html")
-            307))
+             {context :request-context}
+             (redirect
+               (str (config/application-public-root-url context)
+                    "site/search_api_docs.html")
+               307))
         (GET "/site/docs/site"
-          {context :request-context}
-          (redirect
-            (str (config/application-public-root-url context)
-                 "site/search_site_docs.html")
-            307))
+             {context :request-context}
+             (redirect
+               (str (config/application-public-root-url context)
+                    "site/search_site_docs.html")
+               307))
         (GET "/site/collections/directory"
-          {context :request-context}
-          (pages/collections-directory context))
+             {context :request-context}
+             (pages/collections-directory context))
         (GET "/site/collections/directory/eosdis"
-          {context :request-context}
-          (pages/eosdis-collections-directory context))
+             {context :request-context}
+             (pages/eosdis-collections-directory context))
         ;; Add routes for API documentation
         (api-docs/docs-routes
-          (get-in system [:public-conf :protocol])
-          relative-root-url
-          "public/index.html")
+         (get-in system [:public-conf :protocol])
+         relative-root-url
+         "public/index.html")
         (ring-swagger-ui/swagger-ui
-          "/swagger_ui"
-          :swagger-docs (str relative-root-url "/site/swagger.json")
-          :validator-url nil)
+         "/swagger_ui"
+         :swagger-docs (str relative-root-url "/site/swagger.json")
+         :validator-url nil)
         ;; Routes for collection html resources such as css, js, etc.
         (collection-renderer-routes/resource-routes system)))))

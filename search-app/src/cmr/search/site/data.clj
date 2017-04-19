@@ -9,7 +9,8 @@
   Under no circumstances should `cmr.search.site.data` be accessed from outside
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs."
-  (:require [cmr.transmit.config :as config]))
+  (:require
+   [cmr.transmit.config :as config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Data utility functions
@@ -46,9 +47,9 @@
   page."
   [context]
   (merge
-    (base-page context)
-    {:links [{:href "/site/collections/directory/eosdis"
-              :text "Directory for EOSDIS Collections"}]}))
+   (base-page context)
+   {:links [{:href "/site/collections/directory/eosdis"
+             :text "Directory for EOSDIS Collections"}]}))
 
 (defn get-eosdis-directory-links
   "Generate the data necessary to render EOSDIS directory page links."
