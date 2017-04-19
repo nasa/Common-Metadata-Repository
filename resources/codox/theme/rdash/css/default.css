@@ -588,9 +588,9 @@ blockquote {
     padding-left: 1em;
 }
 
-/* Responsivene Theme */
+/* Responsiveness Theme */
 
-@media (max-width: 860px) {
+@media (max-device-width: 480px) {
   .sidebar {
     display:none;
   }
@@ -598,25 +598,52 @@ blockquote {
   #content {
     position: relative;
     left: initial !important;
-    top: 66px;
-    padding: 0 3px;
+    top: 110px;
+    padding: 0 1em;
   }
 
   #header {
     display: flex;
     flex-direction: column-reverse;
-    height: 58px;
+    height: 100px;
   }
 
   #header > h1 {
-    font-size: 32px;
+    font-size: 52px;
+  }
+
+  #header h2 {
+    float: none;
+    font-size: 20px;
   }
 
   .namespace-index > h1 {
     display: none;
   }
 
-  #header h2 {
-    float: none;
+  .public, .doc, .namespace > .index, .namespace > .doc, .namespace > h3 {
+    max-width: initial;
+  }
+
+  .doc {
+    text-align: justify;
+  }
+
+  .public {
+    padding-top: 2em;
+    padding-bottom: 2em;
+  }
+
+  .public > h3 {
+    font-size: 300%;
+  }
+
+  .public > h4.type, .public > h4.added, .public > h4.deprecated {
+    font-size: 150%;
+    margin-top: 1em;
+  }
+
+  pre > code {
+    font-size: 200%;
   }
 }
