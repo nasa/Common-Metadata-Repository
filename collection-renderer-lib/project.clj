@@ -1,46 +1,15 @@
 (def jruby-version
   "The version of JRuby to use. This is the same as used in the echo orbits java package to prevent
    classpath issues"
-  "1.7.4")
+  "9.1.8.0")
 
-(def jruby-jar-path
-  "The path to the JRuby Jar to use when installing gems"
-  (format "%s/.m2/repository/org/jruby/jruby-complete/%s/jruby-complete-%s.jar"
-          (get (System/getProperties) "user.home")
-          jruby-version jruby-version))
+(def cmr-metadata-preview-repo
+  "Defines the repo url of cmr_metadata_preview project"
+  "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git")
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
   "gems")
-
-(defn install-gem-command
-  "Returns a shell command that will install the given version of the gem"
-  [gem-name version]
-  ["shell" "echo" "Installing" gem-name (str version ",")
-   "shell"
-   ;; Run JRuby
-   "java" "-cp" jruby-jar-path "org.jruby.Main" "-S"
-   ;; Install a specific version of the gem in a given location
-   "gem" "install" "-i" gem-install-path gem-name "-v"
-   ;; comma appended to last command so shell commands can be strung together with do
-   (str version ",")])
-
-(defn install-gems-command
-  "Takes a list of tuples of gem names and versions. Returns the set of shell commands to install
-   the given gems"
-  [gem-versions]
-  (reduce into ["do"] (for [[gem-name version] gem-versions]
-                        (install-gem-command gem-name version))))
-
-(def rails-version
-  "The version of Rails used in MMT. This is used when installing gems to get the same version."
-  "4.2.5.1")
-
-(def gem-versions
-  "The list of gems and their versions to install"
-  [["activesupport" rails-version]
-   ["actionview" rails-version]
-   ["actionpack" rails-version]])
 
 (defproject nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"
   :description "Renders collections as HTML"
@@ -75,7 +44,10 @@
                 [lein-kibit "0.1.2"]
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
-  :aliases {"install-gems" ~(install-gems-command gem-versions)
+  :aliases {"install-gems" ["shell"
+                            "support/install_gems.sh"
+                            ~jruby-version
+                            ~cmr-metadata-preview-repo]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
