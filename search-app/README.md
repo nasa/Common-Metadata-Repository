@@ -13,4 +13,4 @@ $ lein with-profile docs generate-docs
 
 ## License
 
-Copyright © 2014, 2017 NASA
+Copyright © 2014-2017 NASA

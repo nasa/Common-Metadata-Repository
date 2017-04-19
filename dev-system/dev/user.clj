@@ -18,7 +18,13 @@
    [cmr.transmit.config :as transmit-config]
    [debugger.core]
    [proto-repl.saved-values] ;; For Proto REPL lib capabilities
-   [refresh-persistent-settings :as settings]))
+   [refresh-persistent-settings :as settings]
+   [selmer.parser :as selmer]))
+
+;; In the development environment, we want to see changes made to templates;
+;; in order to test template page caching in the REPL, simply call
+;; `(selmer/cache-on!)`.
+(selmer/cache-off!)
 
 (defonce system nil)
 
@@ -94,8 +100,16 @@
   ;; Uncomment this to force CMR to use Legacy Services
   ; (configure-for-legacy-services)
 
-  (let [s (system/create-system)
-        s (configure-systems-logging s @settings/logging-level)]
+  (let [s (-> (system/create-system)
+              (configure-systems-logging @settings/logging-level)
+              ;; The following inclusion of public-conf data is done in order
+              ;; to support search directory pages and their use of templates
+              ;; which (indirectly) make use of/require this data.
+              (assoc-in [:apps :search :public-conf]
+                        {:protocol "http"
+                         :host "localhost"
+                         :port (transmit-config/search-port)
+                         :relative-root-url ""}))]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
