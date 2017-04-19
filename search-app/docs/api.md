@@ -1304,7 +1304,7 @@ The following fields are indexed for keyword search:
     * Platform short and long names
     * Instrument short names, long names, and techniques
     * Sensor short names, long names, and techniques
-    * Characteristic names, descriptions and value
+    * Characteristic names, descriptions and values
     * TwoD coordinate system names
 
 #### <a name="c-provider"></a> Find collections by provider
