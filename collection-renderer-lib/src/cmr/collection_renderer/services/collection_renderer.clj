@@ -4,7 +4,9 @@
   (:require
    [clojure.java.io :as io]
    [cmr.common.lifecycle :as l]
-   [cmr.umm-spec.umm-json :as umm-json])
+   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.versioning :as umm-version])
   (:import
    (java.io ByteArrayInputStream)
    (javax.script ScriptEngine ScriptEngineManager Invocable)))
@@ -21,6 +23,12 @@
 (def collection-preview-erb
   "The main ERB used to generate the Collection HTML."
   (io/resource "collection_preview/collection_preview.erb"))
+
+(def preview-gem-umm-schema-version
+  "Temporay def for the UMM schema version that is supported by the CMR preview gem.
+   This will be removed once CMR preview gem is fixed to include the UMM schema version
+   it supports in the gem. (MMT-921)"
+  "1.6")
 
 (defn- create-jruby-runtime
   "Creates and initializes a JRuby runtime."
@@ -79,8 +87,14 @@
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."
   [context collection]
-  (let [umm-json (umm-json/umm->json collection)]
-   (render-erb (context->jruby-runtime context) collection-preview-erb
-               ;; Arguments for collection preview. See the ERB file for documentation.
-               {"umm_json" umm-json
-                "relative_root_url" (context->relative-root-url context)})))
+  (let [umm-json (umm-json/umm->json
+                  (vm/migrate-umm context
+                                  :collection
+                                  umm-version/current-version
+                                  preview-gem-umm-schema-version
+                                  collection))]
+    (render-erb (context->jruby-runtime context)
+                collection-preview-erb
+                ;; Arguments for collection preview. See the ERB file for documentation.
+                {"umm_json" umm-json
+                 "relative_root_url" (context->relative-root-url context)})))
