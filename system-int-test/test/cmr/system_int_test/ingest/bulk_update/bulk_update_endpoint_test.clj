@@ -62,7 +62,7 @@
                errors)))))
   (testing "Read permissions only"
     (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read)
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read)
+    (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :read)
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {:token token})]
         (is (= 401 status))
@@ -195,7 +195,7 @@
                errors)))))
   (testing "Update permissions only"
     (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :update)
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :update)
+    (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :update)
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
@@ -253,7 +253,7 @@
                errors)))))
   (testing "Update permissions only"
     (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :update)
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :update)
+    (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :update)
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
