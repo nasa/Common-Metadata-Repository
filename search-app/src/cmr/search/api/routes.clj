@@ -28,16 +28,16 @@
 
    ;; Result handlers
    ;; required here to avoid circular dependency in query service
-   [cmr.search.results-handlers.csv-results-handler]
-   [cmr.search.results-handlers.atom-results-handler]
    [cmr.search.results-handlers.atom-json-results-handler]
-   [cmr.search.results-handlers.reference-results-handler]
+   [cmr.search.results-handlers.atom-results-handler]
+   [cmr.search.results-handlers.csv-results-handler]
    [cmr.search.results-handlers.kml-results-handler]
    [cmr.search.results-handlers.metadata-results-handler]
-   [cmr.search.results-handlers.timeline-results-handler]
    [cmr.search.results-handlers.opendata-results-handler]
-   [cmr.search.results-handlers.umm-json-results-handler]
+   [cmr.search.results-handlers.reference-results-handler]
    [cmr.search.results-handlers.tags-json-results-handler]
+   [cmr.search.results-handlers.timeline-results-handler]
+   [cmr.search.results-handlers.umm-json-results-handler]
 
    ;; ACL support. Required here to avoid circular dependencies
    [cmr.search.services.acls.collection-acls]
