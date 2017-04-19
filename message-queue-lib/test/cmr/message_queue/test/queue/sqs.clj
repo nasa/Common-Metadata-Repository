@@ -70,7 +70,7 @@
          (receiveMessage [_req] (let [index (swap! receive-fn-index inc) 
                                       rec-fn (if (< index (count receive-fns))
                                                  (nth receive-fns index)
-                                                 #(throw (Throwable. "Exiting thread")))]
+                                                 #(throw (ex-info "Exiting thread" {})))]
                                   (rec-fn)))))
   
 (defn- wait-for-reads
