@@ -607,7 +607,7 @@
    :grant-all-ingest? true})
 
 (defn setup-providers
-  "Creates the given providers in ECHO and the CMR. Providers can be passed in
+  "Creates the given providers in CMR. Providers can be passed in
   two ways:
   1) a map of provider-guids to provider-ids
      {'provider-guid1' 'PROV1' 'provider-guid2' 'PROV2'}, or

@@ -3,7 +3,7 @@
   eosdis, and provider."
   (:require [clj-http.client :as client]
             [clojure.test :refer :all]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [cmr.search.site.routes :as r]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.index-util :as index]
@@ -15,16 +15,17 @@
             [cmr.umm-spec.models.umm-common-models :as cm]
             [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
-(def ^:private base-url (format "%s://%s:%s"
-                                (transmit-config/search-protocol)
-                                (transmit-config/search-host)
-                                (transmit-config/search-port)))
+(def ^{:doc "We don't call to (transmit-config/application-public-root-url)
+             due to the fact that it requires a context and we're not creating
+             contexts for these integration tests, we're simply using an HTTP
+             client."
+       :private true}
+  base-url (format "%s://%s:%s/"
+                   (transmit-config/search-protocol)
+                   (transmit-config/search-host)
+                   (transmit-config/search-port)))
 
 ;;; General utility functions for the tests
-
-(defn- substring?
-  [test-value string]
-  (.contains string test-value))
 
 (defn- make-link
   [{href :href text :text}]
@@ -32,22 +33,22 @@
 
 (defn- make-links
   [data]
-  (str/join
+  (string/join
     "\n  \n    "
     (map make-link data)))
 
 ;;; Create expected data for the tests
 
 (def expected-header-link
-  (make-link {:href (str base-url "/site/collections/directory")
+  (make-link {:href (str base-url "site/collections/directory")
               :text "Directory"}))
 
 (def expected-top-level-links
-  (make-links [{:href (str base-url "/site/collections/directory/eosdis")
+  (make-links [{:href (str base-url "site/collections/directory/eosdis")
                 :text "Directory for EOSDIS Collections"}]))
 
 (def expected-eosdis-level-links
-  (let [url (str base-url "/site/collections/directory")
+  (let [url (str base-url "site/collections/directory")
         tag "gov.nasa.eosdis"]
     (make-links [{:href (format "%s/%s/%s" url "PROV1" tag)
                   :text "PROV1"}
@@ -57,14 +58,14 @@
                   :text "PROV3"}])))
 
 (def expected-provider1-level-links
-  (let [url (format "%s/concepts" base-url)]
+  (let [url (format "%sconcepts" base-url)]
     (make-links [{:href (format "%s/%s" url "C1200000002-PROV1.html")
                   :text "Collection Item 2 (s2)"}
                  {:href (format "%s/%s" url "C1200000003-PROV1.html")
                   :text "Collection Item 3 (s3)"}])))
 
 (def expected-provider2-level-links
-  (let [url (format "%s/concepts" base-url)]
+  (let [url (format "%sconcepts" base-url)]
     (make-links [{:href (format "%s/%s" url "C1200000005-PROV2.html")
                   :text "Collection Item 2 (s2)"}
                  {:href (format "%s/%s" url "C1200000006-PROV2.html")
@@ -78,7 +79,7 @@
                   :text "Collection Item 6 (s6)"}])))
 
 (def notexpected-provider-level-link
-  (let [url (format "%s/concepts" base-url)]
+  (let [url (format "%sconcepts" base-url)]
     (make-links [{:href (format "%s/%s" url "C1200000001-PROV1.html")
                   :text "Collection Item 1 (s1)"}])))
 
@@ -150,91 +151,92 @@
   (testing "check the link for landing pages in the header"
     (let [response (client/get base-url)]
       (is (= 200 (:status response)))
-      (is (substring? expected-header-link (:body response))))))
+      (is (string/includes? (:body response) expected-header-link)))))
 
 (deftest top-level-links
   (testing "check top level links"
-    (let [url (str base-url "/site/collections/directory")
+    (let [url (str base-url "site/collections/directory")
           response (client/get url)
           body (:body response)]
       (is (= 200 (:status response)))
-      ;; The collections not taged with eosdis shouldn't show up
-      (is (substring? expected-top-level-links body))
+      ;; The collections not tagged with eosdis shouldn't show up
+      (is (string/includes? body expected-top-level-links))
       ;; This page should also have a header link
-      (is (substring? expected-header-link body)))))
+      (is (string/includes? body expected-header-link)))))
 
 (deftest eosdis-level-links
   (testing "check eosdis level links"
-    (let [url (str base-url "/site/collections/directory/eosdis")
+    (let [url (str base-url "site/collections/directory/eosdis")
           response (client/get url)
           body (:body response)]
       (is (= 200 (:status response)))
-      ;; The collections not taged with eosdis shouldn't show up
-      (is (substring? expected-eosdis-level-links body))
+      ;; The collections not tagged with eosdis shouldn't show up
+      (is (string/includes? body expected-eosdis-level-links))
       ;; This page should also have a header link
-      (is (substring? expected-header-link body)))))
+      (is (string/includes? body expected-header-link)))))
 
 (deftest provider1-level-links
   (testing "check the links for PROV1"
     (let [provider "PROV1"
           tag "gov.nasa.eosdis"
           url (format
-               "%s/site/collections/directory/%s/%s"
+               "%ssite/collections/directory/%s/%s"
                base-url provider tag)
           response (client/get url)
           body (:body response)]
       (is (= 200 (:status response)))
-      (is (substring? expected-provider1-level-links body))
-      ;; The collections not taged with eosdis shouldn't show up
-      (is (not (substring? notexpected-provider-level-link body)))
+      (is (string/includes? body expected-provider1-level-links))
+      ;; The collections not tagged with eosdis shouldn't show up
+      (is (not (string/includes? body notexpected-provider-level-link)))
       ;; This page should also have a header link
-      (is (substring? expected-header-link body)))))
+      (is (string/includes? body expected-header-link)))))
 
 (deftest provider2-level-links
   (testing "check the links for PROV2"
     (let [provider "PROV2"
           tag "gov.nasa.eosdis"
           url (format
-               "%s/site/collections/directory/%s/%s"
+               "%ssite/collections/directory/%s/%s"
                base-url provider tag)
           response (client/get url)
           body (:body response)]
       (is (= 200 (:status response)))
-      (is (substring? expected-provider2-level-links body))
-      ;; The collections not taged with eosdis shouldn't show up
-      (is (not (substring? notexpected-provider-level-link body)))
+      (is (string/includes? body expected-provider2-level-links))
+      ;; The collections not tagged with eosdis shouldn't show up
+      (is (not (string/includes? body notexpected-provider-level-link)))
       ;; This page should also have a header link
-      (is (substring? expected-header-link body)))))
+      (is (string/includes? body expected-header-link)))))
 
 (deftest provider3-level-links
   (testing "check the links for PROV3"
     (let [provider "PROV3"
           tag "gov.nasa.eosdis"
           url (format
-               "%s/site/collections/directory/%s/%s"
+               "%ssite/collections/directory/%s/%s"
                base-url provider tag)
           response (client/get url)
           body (:body response)]
       (is (= 200 (:status response)))
-      (is (substring? expected-provider3-level-links body))
-      ;; The collections not taged with eosdis shouldn't show up
-      (is (not (substring? notexpected-provider-level-link body)))
+      (is (string/includes? body expected-provider3-level-links))
+      ;; The collections not tagged with eosdis shouldn't show up
+      (is (not (string/includes? body notexpected-provider-level-link)))
       ;; This page should also have a header link
-      (is (substring? expected-header-link body)))))
+      (is (string/includes? body expected-header-link)))))
 
 ;; Note that the following test was originally in the unit tests for this code
 ;; (thus the similarity of it to those tests) but had to be moved to an
 ;; integration test with the introduction of `base-url` support in the
 ;; templates (which the following text exercises). The base URL is obtained
-;; (ulimately) by calling c.t.config/application-public-root-url which needs
+;; (ultimately) by calling c.t.config/application-public-root-url which needs
 ;; `public-conf` data set in both the route-creation as well as the request. It
 ;; was thus just easier and more natural to perform the required test as part
-;; the integration tests, since the running system already has that data set
+;; of the integration tests, since the running system already has that data set
 ;; up.
 (deftest eosdis-collections-directory-page
   (testing "eosdis collections collections directory page returns content"
-    (let [url (str base-url "/site/collections/directory/eosdis")
+    (let [url (str base-url "site/collections/directory/eosdis")
           response (client/get url)]
       (is (= (:status response) 200))
-      (is (substring? "Directory of Landing Pages for EOSDIS Collections"
-                      (:body response))))))
+      (is (string/includes?
+           (:body response)
+           "Directory of Landing Pages for EOSDIS Collections")))))

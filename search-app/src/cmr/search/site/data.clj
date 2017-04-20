@@ -42,11 +42,9 @@
   (get-in item [:umm "DOI"]))
 
 (defn has-doi?
-  "Determine wheter a collection item has a DOI entry."
+  "Determine whether a collection item has a DOI entry."
   [item]
-  (if-not (nil? (get-doi item))
-    true
-    false))
+  (some? (get-doi item)))
 
 (defn doi-link
   "Given DOI umm data of the form `{:doi <STRING>}`, generate a landing page
@@ -67,23 +65,20 @@
     (doi-link (get-doi item))
     (cmr-link cmr-base-url (get-in item [:meta :concept-id]))))
 
-(defn get-long-name
+(defn get-entry-title
   "Get a collection item's long name."
   [item]
-  (or (get-in item [:umm "EntryTitle"])
-      (get-in item [:meta :concept-id])))
+  (get-in item [:umm "EntryTitle"]))
 
 (defn get-short-name
   "Get a collection item's short name, if it exists."
   [item]
-  (if-let [short-name (get-in item [:umm "ShortName"])]
-    (format " (%s)" short-name)
-    ""))
+  (get-in item [:umm "ShortName"]))
 
 (defn make-text
   "Create the `text` part of a landing page link."
   [item]
-  (format "%s%s" (get-long-name item) (get-short-name item)))
+  (format "%s (%s)" (get-entry-title item) (get-short-name item)))
 
 (defn make-link
   "Given a single item from a query's collections, generate an appropriate
@@ -137,7 +132,7 @@
   (let [query (query-svc/make-concepts-query
                context
                :collection
-               {:tag_key tag
+               {:tag-key tag
                 :provider provider-id
                 :result-format {:format :umm-json-results}})
         coll (:items (query-exec/execute-query context query))]
