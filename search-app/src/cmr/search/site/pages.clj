@@ -72,7 +72,7 @@
   (render-xml
    context
    "templates/sitemap-top-level.xml"
-   (data/get-sitemap-links context)))
+   (data/get-eosdis-directory-links context)))
 
 (defn sitemap-provider-tag
   "Prepare the XML page that provides the sitemap associated with the given

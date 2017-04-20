@@ -240,3 +240,20 @@
       (is (string/includes?
            (:body response)
            "Directory of Landing Pages for EOSDIS Collections")))))
+
+(deftest sitemap-top-level
+  (let [url (str base-url "/sitemap.xml")
+        response (client/get url)
+        body (:body response)]
+    (testing "presence and content of sitemap.xml file"
+      (is (= (:status response) 200))
+      (is (string/includes? body "<urlset"))
+      (is (string/includes? body "<url"))
+      (is (string/includes? body "<loc>"))
+      (is (string/includes? body "<lastmod>"))
+      (is (string/includes? body "/docs/api</loc>"))
+      (is (string/includes? body "/collections/directory</loc>"))
+      (is (string/includes? body "/collections/directory/eosdis</loc>"))
+      (is (string/includes? body "/collections/directory/PROV1/gov.nasa.eosdis</loc>"))
+      (is (string/includes? body "/collections/directory/PROV2/gov.nasa.eosdis</loc>"))
+      (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis</loc>")))))
