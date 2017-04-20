@@ -264,7 +264,7 @@
    (assert-invalid coll-attributes gran-attributes field-path errors :echo10))
   ([coll-attributes gran-attributes field-path errors metadata-format]
    (testing "through validation api"
-     (let [coll (data-umm-c/collection d/unique-num coll-attributes)
+     (let [coll (data-umm-c/collection (d/unique-num) coll-attributes)
            coll-concept (d/umm-c-collection->concept coll metadata-format)
            granule (dg/granule-with-umm-spec-collection coll (:concept-id coll) gran-attributes)
            gran-concept (d/item->concept granule)
@@ -286,7 +286,7 @@
 (defn assert-valid
   [coll-attributes gran-attributes]
   (testing "through validation api"
-    (let [coll (data-umm-c/collection d/unique-num coll-attributes)
+    (let [coll (data-umm-c/collection (d/unique-num) coll-attributes)
           coll-concept (d/umm-c-collection->concept coll)
           granule (dg/granule-with-umm-spec-collection coll (:concept-id coll) gran-attributes)
           gran-concept (d/item->concept granule)
