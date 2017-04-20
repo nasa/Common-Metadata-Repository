@@ -20,6 +20,7 @@
    [cmr.message-queue.config :as config]
    [cmr.message-queue.services.queue :as queue])
   (:import
+   (cmr.message_queue.test ExitException)
    (com.amazonaws ClientConfiguration)
    (com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
    (com.amazonaws.auth.policy.actions SQSActions)
@@ -121,7 +122,7 @@
 (defn- create-async-handler
   "Creates a thread that will asynchronously pull messages off the queue, pass them to the handler,
   and process the response. Throwables raised while reading the queue are caught to avoid exiting
-  the thread. If an ExceptionInfo object is caught it is rethrown to cause the thread to exit - this
+  the thread. If an ExitException object is caught it is rethrown to cause the thread to exit - this
   is used during testing to prevent threads from persisting after tests complete."
   [queue-broker queue-name handler]
   (info  "Starting listener for queue: " queue-name)
@@ -146,8 +147,8 @@
                   (catch Throwable e
                     (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
           ;; Catching this so the next catch block won't - this allows us to exit the thread after a test
-          ;; by throwing an ExcpetionInfo object.
-          (catch clojure.lang.ExceptionInfo e
+          ;; by throwing an ExitException object.
+          (catch ExitException e
             (error "Aysnc handler for queue" queue-name "exiting.")
             ;; Catching just to rethrow is generally not a good thing to do, but we want the thread to exit here.
             (throw e))

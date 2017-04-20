@@ -6,6 +6,7 @@
    [cmr.message-queue.queue.sqs :as sqs]
    [cmr.message-queue.test.queue-broker-wrapper :as broker-wrapper])
   (:import
+   (cmr.message_queue.test ExitException)
    (com.amazonaws.services.sqs AmazonSQSClient)
    (com.amazonaws.services.sqs.model GetQueueUrlResult)
    (com.amazonaws.services.sqs.model ReceiveMessageResult)))
@@ -60,7 +61,7 @@
   functions in receive-fns starting with the first function and then using 
   the next function in the list for each subsequent call until the list of
   receive functions is exhausted. At that point subsequent calls to 
-  receiveMessages will throw a Throwable to force the calling thread to
+  receiveMessages will throw an ExitException to force the calling thread to
   exit. This is done to prevent test worker threads from persisting after
   tests complete."
   [url-str receive-fn-index & receive-fns]
@@ -70,7 +71,7 @@
          (receiveMessage [_req] (let [index (swap! receive-fn-index inc) 
                                       rec-fn (if (< index (count receive-fns))
                                                  (nth receive-fns index)
-                                                 #(throw (ex-info "Exiting thread" {})))]
+                                                 #(throw (ExitException.)))]
                                   (rec-fn)))))
   
 (defn- wait-for-reads
