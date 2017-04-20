@@ -257,3 +257,57 @@
       (is (string/includes? body "/collections/directory/PROV1/gov.nasa.eosdis</loc>"))
       (is (string/includes? body "/collections/directory/PROV2/gov.nasa.eosdis</loc>"))
       (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis</loc>")))))
+
+(deftest sitemap-provider1
+  (testing "check the sitemap for PROV1"
+    (let [provider "PROV1"
+          tag "gov.nasa.eosdis"
+          url (format
+               "%s/site/collections/directory/%s/%s/sitemap.xml"
+               base-url provider tag)
+          response (client/get url)
+          body (:body response)]
+      (is (= 200 (:status response)))
+      (is (string/includes? body "<urlset"))
+      (is (string/includes? body "<url"))
+      (is (string/includes? body "<loc>"))
+      (is (string/includes? body "<lastmod>"))
+      (is (string/includes? body "concepts/C1200000002-PROV1.html</loc>"))
+      (is (string/includes? body "concepts/C1200000003-PROV1.html</loc>"))
+      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
+
+(deftest sitemap-provider2
+  (testing "check the sitemap for PROV2"
+    (let [provider "PROV2"
+          tag "gov.nasa.eosdis"
+          url (format
+               "%s/site/collections/directory/%s/%s/sitemap.xml"
+               base-url provider tag)
+          response (client/get url)
+          body (:body response)]
+      (is (= 200 (:status response)))
+      (is (string/includes? body "<urlset"))
+      (is (string/includes? body "<url"))
+      (is (string/includes? body "<loc>"))
+      (is (string/includes? body "<lastmod>"))
+      (is (string/includes? body "concepts/C1200000005-PROV2.html</loc>"))
+      (is (string/includes? body "concepts/C1200000006-PROV2.html</loc>"))
+      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
+
+(deftest sitemap-provider3
+  (testing "check the sitemap for PROV3"
+    (let [provider "PROV3"
+          tag "gov.nasa.eosdis"
+          url (format
+               "%s/site/collections/directory/%s/%s/sitemap.xml"
+               base-url provider tag)
+          response (client/get url)
+          body (:body response)]
+      (is (= 200 (:status response)))
+      (is (string/includes? body "<urlset"))
+      (is (string/includes? body "<url"))
+      (is (string/includes? body "<loc>"))
+      (is (string/includes? body "<lastmod>"))
+      (is (string/includes? body "http://dx.doi.org/doi5</loc>"))
+      (is (string/includes? body "http://dx.doi.org/doi5</loc>"))
+      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
