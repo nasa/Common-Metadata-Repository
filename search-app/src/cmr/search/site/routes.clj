@@ -23,6 +23,9 @@
         (GET "/"
              {context :request-context}
              (pages/home context))
+        (GET "/sitemap.xml"
+             {context :request-context}
+             (pages/sitemap-top-level context))
         (GET "/site/docs"
              {context :request-context}
              (pages/search-docs context))
@@ -49,6 +52,9 @@
         (GET "/site/collections/directory/:provider-id/:tag"
              [provider-id tag :as {context :request-context}]
              (pages/provider-tag-directory context provider-id tag))
+        (GET "/site/collections/directory/:provider-id/:tag/sitemap.xml"
+             [provider-id tag :as {context :request-context}]
+             (pages/sitemap-provider-tag context provider-id tag))
         ;; Add routes for API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])

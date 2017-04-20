@@ -143,3 +143,8 @@
             :links (make-links
                     (config/application-public-root-url context)
                     coll)})))
+
+(defn get-sitemap-links
+  "Generate the data necessary to render a top-level sitemap.xml file."
+  [context]
+  {})
