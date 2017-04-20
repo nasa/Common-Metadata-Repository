@@ -3,7 +3,9 @@
    MMT ERB code along with JRuby to generate it."
   (:require
    [clojure.java.io :as io]
+   [clojure.string :as str]
    [cmr.common.lifecycle :as l]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.umm-spec.migration.version-migration :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.versioning :as umm-version])
@@ -24,11 +26,13 @@
   "The main ERB used to generate the Collection HTML."
   (io/resource "collection_preview/collection_preview.erb"))
 
-(def preview-gem-umm-schema-version
-  "Temporay def for the UMM schema version that is supported by the CMR preview gem.
-   This will be removed once CMR preview gem is fixed to include the UMM schema version
-   it supports in the gem. (MMT-921)"
-  "1.6")
+(def preview-gem-umm-version-config-file
+  "Defines the path to the UMM schema version config file within the preview gem."
+  "gems/cmr_metadata_preview-0.0.1/.umm-version")
+
+(def default-preview-gem-umm-version
+  "Default preview gem UMM schema version in case preview gem is mis-configured."
+  "1.8")
 
 (defn- create-jruby-runtime
   "Creates and initializes a JRuby runtime."
@@ -37,6 +41,19 @@
                   (getEngineByName "jruby"))]
     (.eval jruby (io/reader bootstrap-rb))
     jruby))
+
+(defn- get-preview-gem-umm-version
+  "Get the UMM schema version that is defined in preview gem."
+  []
+  (try
+    (-> preview-gem-umm-version-config-file
+        io/resource
+        slurp
+        str/trim)
+    (catch Exception e
+      (error "Failed to parse preview gem UMM version, will use the default version:"
+             default-preview-gem-umm-version
+             (.printStackTrace e)))))
 
 ;; Allows easily evaluating Ruby code in the Clojure REPL.
 (comment
@@ -56,11 +73,14 @@
   l/Lifecycle
 
   (start
-    [this _system]
-    (assoc this :jruby-runtime (create-jruby-runtime)))
+   [this _system]
+   (-> this
+       (assoc :jruby-runtime (create-jruby-runtime))
+       (assoc :preview-gem-umm-version
+              (or (get-preview-gem-umm-version) default-preview-gem-umm-version))))
   (stop
-    [this _system]
-    (dissoc this :jruby-runtime)))
+   [this _system]
+   (dissoc this :jruby-runtime)))
 
 (defn create-collection-renderer
   "Returns an instance of the collection renderer component."
@@ -84,6 +104,10 @@
   [context]
   (get-in context [:system :public-conf :relative-root-url]))
 
+(defn- context->preview-gem-umm-version
+  [context]
+  (get-in context [:system system-key :preview-gem-umm-version]))
+
 (defn render-collection
   "Renders a UMM-C collection record and returns the HTML as a string."
   [context collection]
@@ -91,7 +115,7 @@
                   (vm/migrate-umm context
                                   :collection
                                   umm-version/current-version
-                                  preview-gem-umm-schema-version
+                                  (context->preview-gem-umm-version context)
                                   collection))]
     (render-erb (context->jruby-runtime context)
                 collection-preview-erb
