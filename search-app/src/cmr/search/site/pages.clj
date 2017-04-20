@@ -66,6 +66,15 @@
    "templates/provider-tag-landing-links.html"
    (data/get-provider-tag-landing-links context provider-id tag)))
 
+(defn sitemap-master
+  "Prepare the XML page that provides the master sitemap, which collects all
+  CMR sitemaps together."
+  [context]
+  (render-xml
+   context
+   "templates/sitemap-master.xml"
+   (data/get-eosdis-directory-links context)))
+
 (defn sitemap-top-level
   "Prepare the XML page that provides the top-most sitemap."
   [context]

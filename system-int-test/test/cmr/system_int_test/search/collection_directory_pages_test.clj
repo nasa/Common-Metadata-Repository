@@ -241,8 +241,23 @@
            (:body response)
            "Directory of Landing Pages for EOSDIS Collections")))))
 
-(deftest sitemap-top-level
+(deftest sitemap-master
   (let [url (str base-url "/sitemap.xml")
+        response (client/get url)
+        body (:body response)]
+    (testing "presence and content of master sitemap.xml index file"
+      (is (= (:status response) 200))
+      (is (substring? "<sitemapindex" body))
+      (is (substring? "<sitemap" body))
+      (is (substring? "<loc>" body))
+      (is (substring? "<lastmod>" body))
+      (is (substring? "/site/sitemap.xml</loc>" body))
+      (is (substring? "/collections/directory/PROV1/gov.nasa.eosdis/sitemap.xml</loc>" body))
+      (is (substring? "/collections/directory/PROV2/gov.nasa.eosdis/sitemap.xml</loc>" body))
+      (is (substring? "/collections/directory/PROV3/gov.nasa.eosdis/sitemap.xml</loc>" body)))))
+
+(deftest sitemap-top-level
+  (let [url (str base-url "/site/sitemap.xml")
         response (client/get url)
         body (:body response)]
     (testing "presence and content of sitemap.xml file"
