@@ -14,14 +14,15 @@ See also the [API Documentation](search_api_docs.html).
 
 The CMR Search Site defines the following application routes, relative to the base CMR Search URL. These resources at the URLs are generated dynamically using page templates (cached).
 
-| Path                                                      | Description                                               |
-| --------------------------------------------------------- | --------------------------------------------------------- |
-| /                                                         | The CMR Search "home" page                                |
-| /sitemap.xml                                              | The top-level CMR Search sitemap                          |
-| /site/collections/directory                               | A listing of supported collection directories             |
-| /site/collections/directory/eosdis                        | A listing of EOSDIS collection directories                |
-| /site/collections/directory/:provider-id/:tag             | A listing of collection landing pages by provider and tag |
-| /site/collections/directory/:provider-id/:tag/sitemap.xml | Sitemaps for collection landing pages by provider and tag |
+| Path                                                      | Description                                                         |
+| --------------------------------------------------------- | ------------------------------------------------------------------- |
+| /                                                         | The CMR Search "home" page                                          |
+| /sitemap.xml                                              | The master CMR Search sitemap index (submit this to search engines) |
+| /site/sitemap.xml                                         | The sitemap for the directory pages                                 |
+| /site/collections/directory                               | A listing of supported collection directories                       |
+| /site/collections/directory/eosdis                        | A listing of EOSDIS collection directories                          |
+| /site/collections/directory/:provider-id/:tag             | A listing of collection landing pages by provider and tag           |
+| /site/collections/directory/:provider-id/:tag/sitemap.xml | Sitemaps for collection landing pages by provider and tag           |
 
 Note that in production, the base CMR Search URL is `/search`, while in development it is `/`.
 

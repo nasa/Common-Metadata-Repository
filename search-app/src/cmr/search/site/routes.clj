@@ -25,6 +25,9 @@
              (pages/home context))
         (GET "/sitemap.xml"
              {context :request-context}
+             (pages/sitemap-master context))
+        (GET "/site/sitemap.xml"
+             {context :request-context}
              (pages/sitemap-top-level context))
         (GET "/site/docs"
              {context :request-context}
