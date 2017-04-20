@@ -48,7 +48,7 @@
              (pages/eosdis-collections-directory context))
         (GET "/site/collections/directory/:provider-id/:tag"
              [provider-id tag :as {context :request-context}]
-             (pages/proivider-tag-directory context provider-id tag))
+             (pages/provider-tag-directory context provider-id tag))
         ;; Add routes for API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])
