@@ -10,6 +10,7 @@
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs."
   (:require
+   [clj-time.core :as clj-time]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.search.services.query-service :as query-svc]
    [cmr.transmit.config :as config]
@@ -102,7 +103,8 @@
 (defn base-page
   "Data that all pages have in common."
   [context]
-  {:base-url (config/application-public-root-url context)})
+  {:base-url (config/application-public-root-url context)
+   :datestamp (str (clj-time/today))})
 
 (defn get-index
   "Return the data for the index page (none for now)."
@@ -143,8 +145,3 @@
             :links (make-links
                     (config/application-public-root-url context)
                     coll)})))
-
-(defn get-sitemap-links
-  "Generate the data necessary to render a top-level sitemap.xml file."
-  [context]
-  {})
