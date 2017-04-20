@@ -82,9 +82,14 @@
         instruments (concat platform-instruments (mapcat :composed-of platform-instruments))
         instrument-short-names (distinct (keep :short-name instruments))
         instrument-techiques (keep :technique instruments)
-        characteristics (mapcat :characteristics platforms)
-        char-names (keep :name characteristics)
-        char-descs (keep :description characteristics)
+        plat-characteristics (mapcat :characteristics platforms)
+        plat-char-names (keep :name plat-characteristics)
+        plat-char-descs (keep :description plat-characteristics)
+        plat-char-values (keep :value plat-characteristics)
+        instr-characteristics (mapcat :characteristics instruments)
+        instr-char-names (keep :name instr-characteristics)
+        instr-char-descs (keep :description instr-characteristics)
+        instr-char-values (keep :value instr-characteristics)  
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems collection))
         data-centers (map :ShortName (:DataCenters collection))
@@ -97,8 +102,12 @@
         all-fields (flatten (conj [concept-id]
                                   ancillary-keywords
                                   attrib-keywords
-                                  char-descs
-                                  char-names
+                                  plat-char-descs
+                                  plat-char-names
+                                  plat-char-values
+                                  instr-char-descs
+                                  instr-char-names
+                                  instr-char-values
                                   collection-data-type
                                   contact-personnel-first-names
                                   contact-personnel-last-names

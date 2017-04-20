@@ -181,14 +181,14 @@
   ([first-name last-name email]
    (contact-person first-name last-name email "dummy"))
   ([first-name last-name email role]
-   (let [contacts (when email
-                    [(umm-cmn/map->ContactInformationType
-                       {:ContactMechanisms [(umm-cmn/map->ContactMechanismType
-                                              {:Type :email
-                                               :Value email})]})])]
+   (let [contact-info (when email
+                        (umm-cmn/map->ContactInformationType
+                          {:ContactMechanisms [(umm-cmn/map->ContactMechanismType
+                                                 {:Type "Email" 
+                                                  :Value email})]}))]
      (umm-cmn/map->ContactPersonType {:FirstName first-name
                                       :LastName last-name
-                                      :ContactInformation contacts
+                                      :ContactInformation contact-info
                                       :Roles [role]}))))
 
 ;; Used for testing warnings when reqired properties are missing.
