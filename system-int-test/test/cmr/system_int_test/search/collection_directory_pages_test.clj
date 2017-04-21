@@ -224,105 +224,17 @@
       (is (string/includes? body expected-header-link)))))
 
 ;; Note that the following test was originally in the unit tests for this code
-;; (thus the similarity of it to those tests) but had to be moved to an
-;; integration test with the introduction of `base-url` support in the
-;; templates (which the following text exercises). The base URL is obtained
-;; (ultimately) by calling c.t.config/application-public-root-url which needs
-;; `public-conf` data set in both the route-creation as well as the request. It
-;; was thus just easier and more natural to perform the required test as part
-;; of the integration tests, since the running system already has that data set
-;; up.
+;; (thus its similarity to those tests) but had to be moved to integration
+;; tests with the introduction of `base-url` support in the templates (which
+;; the following text exercise). The base URL is obtained (ulimately) by
+;; calling c.t.config/application-public-root-url which needs `public-conf`
+;; data set in both the route-creation as well as the request. It was thus
+;; just easier and more natural to perform the required test as part the
+;; integration tests, since the running system already has that data set up.
 (deftest eosdis-collections-directory-page
   (testing "eosdis collections collections directory page returns content"
     (let [url (str base-url "site/collections/directory/eosdis")
           response (client/get url)]
       (is (= (:status response) 200))
-      (is (string/includes?
-           (:body response)
-           "Directory of Landing Pages for EOSDIS Collections")))))
-
-(deftest sitemap-master
-  (let [url (str base-url "/sitemap.xml")
-        response (client/get url)
-        body (:body response)]
-    (testing "presence and content of master sitemap.xml index file"
-      (is (= (:status response) 200))
-      (is (substring? "<sitemapindex" body))
-      (is (substring? "<sitemap" body))
-      (is (substring? "<loc>" body))
-      (is (substring? "<lastmod>" body))
-      (is (substring? "/site/sitemap.xml</loc>" body))
-      (is (substring? "/collections/directory/PROV1/gov.nasa.eosdis/sitemap.xml</loc>" body))
-      (is (substring? "/collections/directory/PROV2/gov.nasa.eosdis/sitemap.xml</loc>" body))
-      (is (substring? "/collections/directory/PROV3/gov.nasa.eosdis/sitemap.xml</loc>" body)))))
-
-(deftest sitemap-top-level
-  (let [url (str base-url "/site/sitemap.xml")
-        response (client/get url)
-        body (:body response)]
-    (testing "presence and content of sitemap.xml file"
-      (is (= (:status response) 200))
-      (is (string/includes? body "<urlset"))
-      (is (string/includes? body "<url"))
-      (is (string/includes? body "<loc>"))
-      (is (string/includes? body "<lastmod>"))
-      (is (string/includes? body "/docs/api</loc>"))
-      (is (string/includes? body "/collections/directory</loc>"))
-      (is (string/includes? body "/collections/directory/eosdis</loc>"))
-      (is (string/includes? body "/collections/directory/PROV1/gov.nasa.eosdis</loc>"))
-      (is (string/includes? body "/collections/directory/PROV2/gov.nasa.eosdis</loc>"))
-      (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis</loc>")))))
-
-(deftest sitemap-provider1
-  (testing "check the sitemap for PROV1"
-    (let [provider "PROV1"
-          tag "gov.nasa.eosdis"
-          url (format
-               "%s/site/collections/directory/%s/%s/sitemap.xml"
-               base-url provider tag)
-          response (client/get url)
-          body (:body response)]
-      (is (= 200 (:status response)))
-      (is (string/includes? body "<urlset"))
-      (is (string/includes? body "<url"))
-      (is (string/includes? body "<loc>"))
-      (is (string/includes? body "<lastmod>"))
-      (is (string/includes? body "concepts/C1200000002-PROV1.html</loc>"))
-      (is (string/includes? body "concepts/C1200000003-PROV1.html</loc>"))
-      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
-
-(deftest sitemap-provider2
-  (testing "check the sitemap for PROV2"
-    (let [provider "PROV2"
-          tag "gov.nasa.eosdis"
-          url (format
-               "%s/site/collections/directory/%s/%s/sitemap.xml"
-               base-url provider tag)
-          response (client/get url)
-          body (:body response)]
-      (is (= 200 (:status response)))
-      (is (string/includes? body "<urlset"))
-      (is (string/includes? body "<url"))
-      (is (string/includes? body "<loc>"))
-      (is (string/includes? body "<lastmod>"))
-      (is (string/includes? body "concepts/C1200000005-PROV2.html</loc>"))
-      (is (string/includes? body "concepts/C1200000006-PROV2.html</loc>"))
-      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
-
-(deftest sitemap-provider3
-  (testing "check the sitemap for PROV3"
-    (let [provider "PROV3"
-          tag "gov.nasa.eosdis"
-          url (format
-               "%s/site/collections/directory/%s/%s/sitemap.xml"
-               base-url provider tag)
-          response (client/get url)
-          body (:body response)]
-      (is (= 200 (:status response)))
-      (is (string/includes? body "<urlset"))
-      (is (string/includes? body "<url"))
-      (is (string/includes? body "<loc>"))
-      (is (string/includes? body "<lastmod>"))
-      (is (string/includes? body "http://dx.doi.org/doi5</loc>"))
-      (is (string/includes? body "http://dx.doi.org/doi5</loc>"))
-      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
+      (is (substring? "Directory of Landing Pages for EOSDIS Collections"
+                      (:body response))))))
