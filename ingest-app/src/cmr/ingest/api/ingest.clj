@@ -418,12 +418,11 @@
    headers
    {:status 200
     :tasks [{:task-id "ABCDEF123"
-             :status "In Progress"}
+             :status "IN_PROGRESS"}
             {:task-id "12345678"
-             :status "Partial Fail"
-             :status-message "The following collections had errors: C-1, C-2"}
+             :status "COMPLETE"}
             {:task-id "XYZ123456"
-             :status "Complete"}]})))
+             :status "COMPLETE"}]})))
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
@@ -456,13 +455,11 @@
   (generate-provider-task-status-response
    headers
    {:status 200
-    :task-status "Partial Fail"
-    :status-message "The following collections had errors: C-1, C-2"
+    :task-status "COMPLETE"
+    :status-message "The bulk update completed with 2 errors"
     :collection-statuses [{:concept-id "C1-PROV"
-                           :status "Failed"
                            :status-message "Missing required properties"}
                           {:concept-id "C2-PROV"
-                           :status "Failed"
                            :status-message "Invalid XML"}]})))
 
 (def ingest-routes
@@ -494,14 +491,11 @@
         (context "/collections" []
           (POST "/" request
            (let [request-context (:request-context request)]
-             (acl/verify-ingest-management-permission request-context :update)
              (bulk-update-collections provider-id request)))
           (GET "/status" request ; Gets all tasks for provider
             (let [request-context (:request-context request)]
-              (acl/verify-ingest-management-permission request-context :read)
               (get-provider-tasks provider-id request)))
           (context "/status/:task-id" [task-id]
             (GET "/" request
               (let [request-context (:request-context request)]
-                (acl/verify-ingest-management-permission request-context :read)
                 (get-provider-task-status provider-id task-id request)))))))))
