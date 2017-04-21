@@ -23,7 +23,6 @@
   and read permissions for checking status."
   []
   (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :read :update)
-  (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read :update)
   ;; Create and return token
   (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"]))
 
@@ -53,15 +52,13 @@
       (is (= 401 status))
       (is (= ["You do not have permission to perform that action."]
              errors))))
-  (testing "System permissions, but no provider permissions"
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read :update)
+  (testing "No provider permissions"
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {:token token})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]
                errors)))))
   (testing "Read permissions only"
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read)
     (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :read)
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {:token token})]
@@ -154,23 +151,21 @@
       (let [response (ingest/bulk-update-provider-status "PROV1"
                       {:accept-format :json :token token})]
         (is (= [{:task-id "ABCDEF123"
-                 :status "In Progress"}
+                 :status "IN_PROGRESS"}
                 {:task-id "12345678"
-                 :status "Partial Fail"
-                 :status-message "The following collections had errors: C-1, C-2"}
+                 :status "COMPLETE"}
                 {:task-id "XYZ123456"
-                 :status "Complete"}]
+                 :status "COMPLETE"}]
                (:tasks response)))))
     (testing "Response in XML"
       (let [response (ingest/bulk-update-provider-status "PROV1"
                       {:accept-format :xml :token token})]
         (is (= [{:task-id "ABCDEF123"
-                 :status "In Progress"}
+                 :status "IN_PROGRESS"}
                 {:task-id "12345678"
-                 :status "Partial Fail"
-                 :status-message "The following collections had errors: C-1, C-2"}
+                 :status "COMPLETE"}
                 {:task-id "XYZ123456"
-                 :status "Complete"}]
+                 :status "COMPLETE"}]
                (:tasks response)))))))
 
 (deftest bulk-update-status-endpoint-validation
@@ -186,15 +181,13 @@
       (is (= 401 status))
       (is (= ["You do not have permission to perform that action."]
              errors))))
-  (testing "System permissions, but no provider permissions"
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read :update)
+  (testing "No provider permissions"
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]
                errors)))))
   (testing "Update permissions only"
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :update)
     (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :update)
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
@@ -208,26 +201,22 @@
       (let [response (ingest/bulk-update-task-status "PROV1" "1"
                       {:accept-format :json :token token})]
         (is (= {:status 200
-                :task-status "Partial Fail"
-                :status-message "The following collections had errors: C-1, C-2"
+                :task-status "COMPLETE"
+                :status-message "The bulk update completed with 2 errors"
                 :collection-statuses [{:concept-id "C1-PROV"
-                                       :status "Failed"
                                        :status-message "Missing required properties"}
                                       {:concept-id "C2-PROV"
-                                       :status "Failed"
                                        :status-message "Invalid XML"}]}
                response))))
     (testing "Response in XML"
       (let [response (ingest/bulk-update-task-status "PROV1" "1"
                       {:accept-format :xml :token token})]
         (is (= {:status 200
-                :task-status "Partial Fail"
-                :status-message "The following collections had errors: C-1, C-2"
+                :task-status "COMPLETE"
+                :status-message "The bulk update completed with 2 errors"
                 :collection-statuses [{:concept-id "C1-PROV"
-                                       :status "Failed"
                                        :status-message "Missing required properties"}
                                       {:concept-id "C2-PROV"
-                                       :status "Failed"
                                        :status-message "Invalid XML"}]}
                response))))))
 
@@ -244,15 +233,13 @@
       (is (= 401 status))
       (is (= ["You do not have permission to perform that action."]
              errors))))
-  (testing "System permissions, but no provider permissions"
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :read :update)
+  (testing "No provider permissions"
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]
                errors)))))
   (testing "Update permissions only"
-    (e/grant-group-admin (s/context) "prov-admin-read-update-group-guid" :update)
     (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :update)
     (let [token (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
