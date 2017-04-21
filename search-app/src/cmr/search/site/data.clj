@@ -11,6 +11,7 @@
   in page templates, structured explicitly for their needs."
   (:require
    [clj-time.core :as clj-time]
+   [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.search.services.query-service :as query-svc]
    [cmr.transmit.config :as config]
@@ -130,18 +131,35 @@
 
 (defn get-provider-tag-landing-links
   "Generate the data necessary to render EOSDIS landing page links."
+  ([context provider-id tag]
+    (get-provider-tag-landing-links context provider-id tag (constantly true)))
+  ([context provider-id tag filter-fn]
+   (let [query (query-svc/make-concepts-query
+                context
+                :collection
+                {:tag-key tag
+                 :provider provider-id
+                 :result-format {:format :umm-json-results}})
+         coll (:items (query-exec/execute-query context query))]
+     (merge (base-page context)
+            {:provider-name provider-id
+             :provider-id provider-id
+             :tag-name (get-tag-short-name tag)
+             :links (filter filter-fn
+                            (make-links
+                             (config/application-public-root-url context)
+                             coll))}))))
+
+(defn get-provider-tag-sitemap-landing-links
+  "Generate the data necessary to render EOSDIS landing page links that will
+  be included in a sitemap.xml file.
+
+  Note that generally the sitemap spec does not support cross-site inclusions."
   [context provider-id tag]
-  (let [query (query-svc/make-concepts-query
-               context
-               :collection
-               {:tag-key tag
-                :provider provider-id
-                :result-format {:format :umm-json-results}})
-        coll (:items (query-exec/execute-query context query))]
-    (merge (base-page context)
-           {:provider-name provider-id
-            :provider-id provider-id
-            :tag-name (get-tag-short-name tag)
-            :links (make-links
-                    (config/application-public-root-url context)
-                    coll)})))
+  (get-provider-tag-landing-links
+   context
+   provider-id
+   tag
+   #(string/includes?
+     (str %)
+     (config/application-public-root-url context))))

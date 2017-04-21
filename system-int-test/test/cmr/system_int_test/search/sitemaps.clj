@@ -178,11 +178,9 @@
                   provider tag)
         response (get-response url-path)
         body (:body response)]
-    (testing "XML validation"
-      (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
-      (is (string/includes? body "http://dx.doi.org/doi5</loc>"))
-      (is (string/includes? body "http://dx.doi.org/doi5</loc>")))
+      (is (not (string/includes? body "http://dx.doi.org/doi5</loc>")))
+      (is (not (string/includes? body "http://dx.doi.org/doi5</loc>"))))
     (testing "the collections not taged with eosdis shouldn't show up"
       (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
