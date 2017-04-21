@@ -106,35 +106,51 @@
     (assoc params :tag-data tag-data)
     params))
 
+(defn- make-concepts-tag-data
+  "Utility function for extracting tag data from params.
+
+  Note that the tag-data param has tag-key as its key, which could be any
+  arbitrary string. sanitize-params function traded data integrity for easier
+  processing, e.g. it converts \"tag1\" into :tag-1 and it doesn't work for
+  tag-keys. To work around this problem, we extract the tag-data param out
+  first, then add it back in after the sanitize-params call."
+  [params]
+  (or (:tag-data params) (:tag_data params)))
+
+(defn make-concepts-query
+  "Utility function for generating an elastic-ready query."
+  ([context concept-type params]
+    (->> params
+         (make-concepts-tag-data)
+         (make-concepts-query
+           context concept-type params)))
+  ([context concept-type params tag-data]
+    (->> params
+         common-params/sanitize-params
+         (add-tag-data-to-params tag-data)
+         ;; CMR-2553 remove the following line
+         drop-ignored-params
+         ;; handle legacy parameters
+         lp/replace-parameter-aliases
+         (lp/process-legacy-multi-params-conditions concept-type)
+         (lp/replace-science-keywords-or-option concept-type)
+
+         (psn/replace-provider-short-names context)
+         (pv/validate-parameters concept-type)
+         (common-params/parse-parameter-query
+           context concept-type))))
+
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
-  (let [;; tag-data param has tag-key as its key, which could be any arbitrary string.
-        ;; sanitize-params function traded data integrity for easier processing, e.g.
-        ;; it converts "tag1" into :tag-1 and it doesn't work for tag-keys.
-        ;; To work around this problem, we extract the tag-data param out first,
-        ;; then add it back in after the sanitize-params call.
-        tag-data (or (:tag-data params) (:tag_data params))
+  (let [tag-data (make-concepts-tag-data params)
         [query-creation-time query] (u/time-execution
-                                      (->> params
-                                           common-params/sanitize-params
-                                           (add-tag-data-to-params tag-data)
-                                           ;; CMR-2553 remove the following line
-                                           drop-ignored-params
-                                           ;; handle legacy parameters
-                                           lp/replace-parameter-aliases
-                                           (lp/process-legacy-multi-params-conditions concept-type)
-                                           (lp/replace-science-keywords-or-option concept-type)
-
-                                           (psn/replace-provider-short-names context)
-                                           (pv/validate-parameters concept-type)
-                                           (common-params/parse-parameter-query
-                                             context concept-type)))
+                                      (make-concepts-query
+                                        context concept-type params tag-data))
         [find-concepts-time results] (u/time-execution
-                                       (common-search/find-concepts context
-                                                                    concept-type
-                                                                    query))
+                                       (common-search/find-concepts
+                                         context concept-type query))
         total-took (+ query-creation-time find-concepts-time)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) total-took

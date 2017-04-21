@@ -20,6 +20,7 @@
    [cmr.message-queue.config :as config]
    [cmr.message-queue.services.queue :as queue])
   (:import
+   (cmr.message_queue.test ExitException)
    (com.amazonaws ClientConfiguration)
    (com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
    (com.amazonaws.auth.policy.actions SQSActions)
@@ -120,7 +121,9 @@
 
 (defn- create-async-handler
   "Creates a thread that will asynchronously pull messages off the queue, pass them to the handler,
-  and process the response."
+  and process the response. Throwables raised while reading the queue are caught to avoid exiting
+  the thread. If an ExitException object is caught it is rethrown to cause the thread to exit - this
+  is used during testing to prevent threads from persisting after tests complete."
   [queue-broker queue-name handler]
   (info  "Starting listener for queue: " queue-name)
   (let [queue-name (normalize-queue-name queue-name)
@@ -132,18 +135,28 @@
                       ;; Tell SQS how long to wait before returning with no data (long polling).
                       (.setWaitTimeSeconds (Integer. (queue-polling-timeout))))]
     (a/thread
-      (try
-        (u/while-let [rec-result (.receiveMessage sqs-client rec-req)]
-          (when-let [msg (first (.getMessages rec-result))]
-            (let [msg-body (.getBody msg)
-                  msg-content (json/decode msg-body true)]
-              (try
-                (handler msg-content)
-                (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
-                (catch Throwable e
-                  (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
-        (catch Throwable e
-          (error  e "Async handler for queue" queue-name "completing."))))))
+      (loop []
+        (try
+          (let [rec-result (.receiveMessage sqs-client rec-req)]
+            (when-let [msg (first (.getMessages rec-result))]
+              (let [msg-body (.getBody msg)
+                    msg-content (json/decode msg-body true)]
+                (try
+                  (handler msg-content)
+                  (.deleteMessage sqs-client queue-url (.getReceiptHandle msg))
+                  (catch Throwable e
+                    (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
+          ;; Catching this so the next catch block won't - this allows us to exit the thread after a test
+          ;; by throwing an ExitException object.
+          (catch ExitException e
+            (error "Aysnc handler for queue" queue-name "exiting.")
+            ;; Catching just to rethrow is generally not a good thing to do, but we want the thread to exit here.
+            (throw e))
+          (catch Throwable t
+            (error t "Async handler for queue" queue-name "continuing after failed message receive.")
+            ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
+            (Thread/sleep 100)))
+        (recur)))))
 
 (defn- create-queue
  "Create a queue and its dead-letter-queue if they don't already exist and connect the two."

@@ -4,8 +4,8 @@
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
     [cmr.search.data.keywords-to-elastic :as k2e]
-    [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
@@ -28,122 +28,138 @@
         processing-level-boost (k2e/get-boost nil :processing-level-id)
         science-keywords-boost (k2e/get-boost nil :science-keywords)
         data-center-boost (k2e/get-boost nil :data-center)
-        psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
-        psa2 (dc/psa {:name "bravo" :data-type :string :value "bf"})
-        psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
-        psa4 (dc/psa {:name "case" :data-type :string :value "up"})
-        psa5 (dc/psa {:name "novalue" :data-type :string :description "description"})
-        p1 (dc/platform
-            {:short-name "platform_SnB"
-             :long-name "platform_Ln B"
-             :instruments
-             [(dc/instrument {:short-name "isnA" :long-name "ilnA" :technique "itechniqueA"
-                              :sensors [(dc/sensor {:short-name "ssnA" :long-name "slnA"})
-                                        (dc/sensor {:short-name "ssnD" :long-name "slnD"
-                                                    :technique "techniqueD"})]})]})
-        p2 (dc/platform
-            {:short-name "platform_SnA spoonA"
-             :long-name "platform_LnA"
-             :characteristics [(dc/characteristic {:name "char1" :description "char1desc"})
-                               (dc/characteristic {:name "char2" :description "char2desc"})]
-             :instruments
-             [(dc/instrument {:short-name "isnB" :long-name "ilnB" :technique "itechniqueB"
-                              :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB"
-                                                    :technique "techniqueB"})
-                                        (dc/sensor {:short-name "ssnC" :long-name "slnC"
-                                                    :technique "techniqueC"})]})]})
-        p3 (dc/platform {:short-name "spoonA"})
-        p4 (dc/platform {:short-name "SMAP"
-                         :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
-        p5 (dc/platform {:short-name "fo&nA"})
-        p6 (dc/platform {:short-name "spo~nA"})
-        p7 (dc/platform {:short-name "platform7"
-                         :instruments [(dc/instrument {:short-name "INST7"})]})
-        pboost (dc/platform {:short-name "boost"})
-        pr1 (dc/projects "project-short-name")
-        pr2 (dc/projects "Proj-2")
-        sk1 (dc/science-keyword {:category "Cat1"
-                                 :topic "Topic1"
-                                 :term "Term1"
-                                 :variable-level-1 "Level1-1"
-                                 :variable-level-2 "Level1-2"
-                                 :variable-level-3 "Level1-3"
-                                 :detailed-variable "SUPER DETAILED!"})
-        sk2 (dc/science-keyword {:category "Hurricane"
-                                 :topic "Laser spoonA"
-                                 :term "Extreme"
-                                 :variable-level-1 "Level2-1"
-                                 :variable-level-2 "Level2-2"
-                                 :variable-level-3 "Level2-3"})
-        sk3 (dc/science-keyword {:category "Cat2"
-                                 :topic "Topic1"
-                                 :term "Term1"
-                                 :variable-level-1 "Level3-1"
-                                 :variable-level-2 "Level3-2"
-                                 :variable-level-3 "Level3-3"
-                                 :detailed-variable "S@PER"})
-        skboost (dc/science-keyword {:category "boost"
-                                     :topic "boost"
-                                     :term "boost"
-                                     :variable-level-1 "boost"
-                                     :variable-level-2 "boost"
-                                     :variable-level-3 "boost"
-                                     :detailed-variable "boost"})
-        personnel1 (dc/personnel "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
-        personnel2 (dc/personnel "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
-        personnel3 (dc/personnel "Otto" "Octavious" "otto.octavious@noaa.gov")
-        tdcs1 (dc/two-d "XYZ")
-        tdcs2 (dc/two-d "twoduniq")
-        org (dc/org :archive-center "Some&Place")
-        url1 (dc/related-url {:url "http://cmr.earthdata.nasa.gov"
-                              :description "Earthdata"})
-        url2 (dc/related-url {:url "http://nsidc.org/"
-                              :description "Home page of National Snow and Ice Data Center"})
-        coll1 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll1" :version-description "VersionDescription"}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "OTHER"}))
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "OTHER"}))
-        coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :short-name "Space!Laser"}))
-        coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6"
-                                                :organizations [org]
-                                                :projects pr2
-                                                :platforms [p7]}))
-        coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
-        coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
+        psa1 (data-umm-c/additional-attribute {:Name "alpha" :DataType "STRING" :Value "ab"})
+        psa2 (data-umm-c/additional-attribute {:Name "bravo" :DataType "STRING" :Value "bf"})
+        psa3 (data-umm-c/additional-attribute {:Name "charlie" :DataType "STRING" :Value "foo"})
+        psa4 (data-umm-c/additional-attribute {:Name "case" :DataType "STRING" :Value "up"})
+        psa5 (data-umm-c/additional-attribute {:Name "novalue" :DataType "STRING" :Description "description"})
+        p1 (data-umm-c/platform
+            {:ShortName "platform_SnB"
+             :LongName "platform_Ln B"
+             :Instruments
+             [(data-umm-c/instrument {:ShortName "isnA" :LongName "ilnA" :Technique "itechniqueA"
+                                      :ComposedOf [(data-umm-c/instrument {:ShortName "ssnA" :LongName "slnA"})
+                                                   (data-umm-c/instrument {:ShortName "ssnD" :LongName "slnD"
+                                                                           :Technique "techniqueD"})]})]})
+        p2 (data-umm-c/platform
+            {:ShortName "platform_SnA spoonA"
+             :LongName "platform_LnA"
+             :Characteristics 
+               [(data-umm-c/characteristic {:Name "char1" :Description "char1desc" :Value "pv1"})
+                (data-umm-c/characteristic {:Name "char2" :Description "char2desc" :Value "pv2"})]
+             :Instruments
+               [(data-umm-c/instrument 
+                {:ShortName "isnB" :LongName "ilnB" :Technique "itechniqueB"
+                 :Characteristics 
+                   [(data-umm-c/characteristic {:Name "ichar1" :Description "ichar1desc" :Value "iv1"})
+                    (data-umm-c/characteristic {:Name "ichar2" :Description "ichar2desc" :Value "iv2"})]
+                 :ComposedOf [(data-umm-c/instrument 
+                                {:ShortName "ssnB" :LongName "slnB"
+                                 :Characteristics
+                                   [(data-umm-c/characteristic {:Name "sc1" :Description "sd1" :Value "sv1"})
+                                    (data-umm-c/characteristic {:Name "sc2" :Description "sd2" :Value "sv2"})]
+                                 :Technique "techniqueB"})
+                               (data-umm-c/instrument {:ShortName "ssnC" :LongName "slnC"
+                                                       :Technique "techniqueC"})]})]})
+        p3 (data-umm-c/platform {:ShortName "spoonA"})
+        p4 (data-umm-c/platform {:ShortName "SMAP"
+                                 :Instruments [(data-umm-c/instrument {:ShortName "SMAP L-BAND RADIOMETER"})]})
+        p5 (data-umm-c/platform {:ShortName "fo&nA"})
+        p6 (data-umm-c/platform {:ShortName "spo~nA"})
+        p7 (data-umm-c/platform {:ShortName "platform7"
+                                 :Instruments [(data-umm-c/instrument {:ShortName "INST7"})]})
+        pboost (data-umm-c/platform {:ShortName "boost"})
+        pr1 (data-umm-c/projects "project-short-name")
+        pr2 (data-umm-c/projects "Proj-2")
+        sk1 (data-umm-c/science-keyword {:Category "Cat1"
+                                 :Topic "Topic1"
+                                 :Term "Term1"
+                                 :VariableLevel1 "Level1-1"
+                                 :VariableLevel2 "Level1-2"
+                                 :VariableLevel3 "Level1-3"
+                                 :DetailedVariable "SUPER DETAILED!"})
+        sk2 (data-umm-c/science-keyword {:Category "Hurricane"
+                                 :Topic "Laser spoonA"
+                                 :Term "Extreme"
+                                 :VariableLevel1 "Level2-1"
+                                 :VariableLevel2 "Level2-2"
+                                 :VariableLevel3 "Level2-3"})
+        sk3 (data-umm-c/science-keyword {:Category "Cat2"
+                                 :Topic "Topic1"
+                                 :Term "Term1"
+                                 :VariableLevel1 "Level3-1"
+                                 :VariableLevel2 "Level3-2"
+                                 :VariableLevel3 "Level3-3"
+                                 :DetailedVariable "S@PER"})
+        skboost (data-umm-c/science-keyword {:Category "boost"
+                                     :Topic "boost"
+                                     :Term "boost"
+                                     :VariableLevel1 "boost"
+                                     :VariableLevel2 "boost"
+                                     :VariableLevel3 "boost"
+                                     :DetailedVariable "boost"})
+        personnel1 (data-umm-c/contact-person "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
+        personnel2 (data-umm-c/contact-person "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
+        personnel3 (data-umm-c/contact-person "Otto" "Octavious" "otto.octavious@noaa.gov")
+        tdcs1 (data-umm-c/tiling-identification-system "XYZ")
+        tdcs2 (data-umm-c/tiling-identification-system "twoduniq")
+        org (data-umm-c/data-center ["ARCHIVER"] "Some&Place")
+        url1 (data-umm-c/related-url {:URL "http://cmr.earthdata.nasa.gov"
+                                      :Description "Earthdata"})
+        url2 (data-umm-c/related-url {:URL "http://nsidc.org/"
+                                      :Description "Home page of National Snow and Ice Data Center"})
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1" :ShortName "S1" 
+                                                                            :VersionDescription "VersionDescription"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll2" :ShortName "ABC!XYZ" :Version "V001"}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll3" :ShortName "S3" :CollectionDataType "OTHER"}))
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll4" :ShortName "S4" :CollectionDataType "OTHER"}))
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll5" :ShortName "Space!Laser"}))
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll6"
+                                                                            :ShortName "S6"
+                                                                            :DataCenters [org]
+                                                                            :Projects pr2
+                                                                            :Platforms [p7]}))
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll7" :ShortName "S7" :Version "Laser"}))
+        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll8" :ShortName "S8" :ProcessingLevel {:Id "PDQ123"}}))
 
-        coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll09" :science-keywords [sk1 sk2]}))
+        coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll09" :ShortName "S9" :ScienceKeywords [sk1 sk2]}))
 
 
-        coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10"
-                                                 :spatial-keywords ["in out"]
-                                                 :science-keywords [sk3]}))
-        coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3 p5 p6]
-                                                 :product-specific-attributes [psa5]}))
-        coll12 (d/ingest "PROV2" (dc/collection {:entry-title "coll12" :product-specific-attributes [psa1 psa2 psa3 psa4]}))
-        coll13 (d/ingest "PROV2" (dc/collection {:entry-title "coll13" :two-d-coordinate-systems [tdcs1 tdcs2]}))
-        coll14 (d/ingest "PROV2" (dc/collection {:entry-title "coll14" :short-name "spoonA laser"}))
-        coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
-                                                 :collection-data-type "SCIENCE_QUALITY" :platforms [p1]
-                                                 :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
-        coll16 (d/ingest "PROV2" (dc/collection-dif {:short-name "entryid4"}) {:format :dif})
-        coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
-        coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
-        coll20 (d/ingest "PROV2" (dc/collection {:projects pr1 :entry-title "Mixed"}))
-        coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :short-name "Laser"}))
-        coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME" :short-name "Mixed"}))
-        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :short-name "\"Quoted\" collection"}))
-        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :short-name "coll24" :platforms [p4]}))
+        coll10 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll10"
+                                                                             :ShortName "S10"
+                                                                             :SpatialKeywords ["in out"]
+                                                                             :ScienceKeywords [sk3]}))
+        coll11 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll11" :ShortName "S11" :Platforms [p2 p3 p5 p6]
+                                                                             :AdditionalAttributes [psa5]}))
+        coll12 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll12" :ShortName "S12" 
+                                                                             :AdditionalAttributes [psa1 psa2 psa3 psa4]}))
+        coll13 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll13" :ShortName "S13" 
+                                                                             :TilingIdentificationSystems [tdcs1 tdcs2]}))
+        coll14 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll14" :ShortName "spoonA laser"}))
+        coll15 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll15" :ShortName "S15" :ProcessingLevel {:Id  "plid1"}
+                                                                             :CollectionDataType "SCIENCE_QUALITY" :Platforms [p1]
+                                                                             :Abstract "summary" :TemporalKeywords ["tk1" "tk2"]}))
+        coll16 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll16" :ShortName "entryid4"}) {:format :dif})
+        ;;coll17 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:associated-difs ["DIF-1" "DIF-2"]}))
+        coll18 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll18" :ShortName "SNFoobar"}))
+        coll20 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects pr1 :EntryTitle "Mixed" :ShortName "S20"}))
+        coll21 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll21" :ShortName "Laser"}))
+        coll22 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll22" :CollectionDataType "NEAR_REAL_TIME" 
+                                                                             :ShortName "Mixed"}))
+        coll23 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll23" :ShortName "\"Quoted\" collection"}))
+        coll24 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll24" :ShortName "coll24" :Platforms [p4]}))
         ;; Adding personnel here to test keyword search using DataCenter contacts
-        coll25 (d/ingest "PROV2" (dc/collection {:entry-title "coll25" :related-urls [url1 url2] :personnel [personnel3]}))
-        coll-boost (d/ingest "PROV2" (dc/collection {:entry-title "boost"
-                                                     :short-name "boost"
-                                                     :platforms [pboost]
-                                                     :science-keywords [skboost]}))
+        coll25 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll25" :ShortName "S25" 
+                                                                             :RelatedUrls [url1 url2] :ContactPersons [personnel3]}))
+        coll-boost (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "boost"
+                                                                                 :ShortName "boost"
+                                                                                 :Platforms [pboost]
+                                                                                 :ScienceKeywords [skboost]}))
 
-        coll26 (d/ingest "PROV4" (dc/collection-dif10 {:entry-title "coll26" :personnel [personnel1]}) {:format :dif10})
-        coll27 (d/ingest "PROV5" (dc/collection-dif10 {:entry-title "coll27" :personnel [personnel2]}) {:format :dif10})]
+        coll26 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26" :ShortName "S26" 
+                                                                             :ContactPersons [personnel1]}) {:format :dif10})
+        coll27 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection {:EntryTitle "coll27" :ShortName "S27" :ContactPersons [personnel2]}) {:format :dif10})]
+
 
     (index/wait-until-indexed)
 
@@ -155,11 +171,11 @@
               json-matches? (d/refs-match? items json-refs)]
           (when-not parameter-matches?
             (println "Parameter search failed")
-            (println "Expected:" (map :entry-title items))
+            (println "Expected:" (map :EntryTitle items))
             (println "Actual:" (map :name (:refs parameter-refs))))
           (when-not json-matches?
             (println "JSON Query search failed")
-            (println "Expected:" (map :entry-title items))
+            (println "Expected:" (map :EntryTitle items))
             (println "Actual:" (map :name (:refs json-refs))))
           (and parameter-matches? json-matches?))
 
@@ -220,8 +236,8 @@
         ;; temporal keywords
         "tk1" [coll15]
 
-        ;; spatial keywords
-        "in" [coll10]
+        ;; spatial keywords - no longer working. see comment in CMR-3895
+        ;;;; "in" [coll10]
 
         ;; two d coord
         "xyz" [coll2 coll13]
@@ -248,10 +264,16 @@
         "char1" [coll11]
         "char2" [coll11]
         "char1 char2" [coll11]
-        ;; - chracteristic description
+        ;; - characteristic description
         "char1desc" [coll11]
         "char2desc" [coll11]
         "char1desc char2desc" [coll11]
+        ;; - characteristic value 
+        "pv1" [coll11]
+        "pv2" [coll11]
+        "pv1 pv2" [coll11]
+
+
 
         ;; Instruments
         ;; - short name
@@ -263,6 +285,18 @@
         ;; - technique
         "itechniqueB" [coll11]
         "itechniqueA" [coll15]
+        ;; - characteristics name
+        "ichar1" [coll11]
+        "ichar2" [coll11]
+        "ichar1 ichar2" [coll11]
+        ;; - characteristics desc
+        "ichar1desc" [coll11]
+        "ichar2desc" [coll11]
+        "ichar1desc char2desc" [coll11]
+        ;; characteristics value
+        "iv1" [coll11]
+        "iv2" [coll11]
+        "iv1 iv2" [coll11]   
 
         ;; Sensors
         ;; - short name
@@ -273,6 +307,18 @@
         "techniqueB" [coll11]
         "techniqueD" [coll15]
         "techniqueB techniqueC" [coll11]
+        ;; - characteristics name
+        "sc1" [coll11]
+        "sc2" [coll11]
+        "sc1 sc2" [coll11]
+        ;; - characteristics desc
+        "sd1" [coll11]
+        "sd2" [coll11]
+        "sd1 sd2" [coll11]
+        ;; - characteristics value
+        "sv1" [coll11]
+        "sv2" [coll11]
+        "sv1 sv2" [coll11]
 
         ;; Science keywords
         ;; - category
@@ -315,7 +361,7 @@
         "NEAR?REAL?TIME" [coll22]
         "near?real?time" [coll22]))
 
-    (testing "Default boosts on fields"
+     (testing "Default boosts on fields"
       (are3 [params scores] (is (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection params)))))
 
@@ -326,29 +372,29 @@
         {:keyword "ABC!XYZ_V001"} [entry-id-boost]
 
         "project short-name as keyword"
-        {:keyword (:short-name (first pr1))} [project-boost]
+        {:keyword (:ShortName (first pr1))} [project-boost]
         "project short-name as parameter"
-        {:project (:short-name (first pr1))} [project-boost]
+        {:project (:ShortName (first pr1))} [project-boost]
         "project long-name"
-        {:keyword (:long-name (first pr1))} [project-boost]
+        {:keyword (:LongName (first pr1))} [project-boost]
 
         "platform short-name as keyword"
-        {:keyword (:short-name p1)} [platform-boost]
+        {:keyword (:ShortName p1)} [platform-boost]
         "platform short-name as parameter"
-        {:platform (:short-name p1)} [platform-boost]
+        {:platform (:ShortName p1)} [platform-boost]
         "platform short-name as parameter with pattern"
         {:platform "*spoonA" "options[platform][pattern]" true} [platform-boost]
         "platform long-name (from metadata)"
-        {:keyword (:long-name p1)} [platform-boost]
+        {:keyword (:LongName p1)} [platform-boost]
         "platform long-name (from KMS)"
         {:keyword "Soil Moisture Active and Passive Observatory"} [platform-boost]
 
         "instrument short-name as keyword"
-        {:keyword (:short-name (first (:instruments p1)))} [instrument-boost]
+        {:keyword (:ShortName (first (:Instruments p1)))} [instrument-boost]
         "instrument short-name as parameter"
-        {:instrument (:short-name (first (:instruments p1)))} [instrument-boost]
+        {:instrument (:ShortName (first (:Instruments p1)))} [instrument-boost]
         "instrument long-name (from metadata)"
-        {:keyword (:long-name (first (:instruments p1)))} [instrument-boost]
+        {:keyword (:LongName (first (:Instruments p1)))} [instrument-boost]
         "instrument long-name (from KMS)"
         {:keyword "L-Band Radiometer"} [instrument-boost]
 
@@ -357,40 +403,40 @@
         ;; away. Since they are instruments, there is no longer a sensor boost, but instrument
         ;; boost will be used.
         "sensor short-name as keyword"
-        {:keyword (:short-name (first (:sensors (first (:instruments p1)))))} [instrument-boost]
+        {:keyword (:ShortName (first (:ComposedOf (first (:Instruments p1)))))} [instrument-boost]
         "sensor short-name as parameter"
-        {:sensor (:short-name (first (:sensors (first (:instruments p1)))))} [instrument-boost]
+        {:sensor (:ShortName (first (:ComposedOf (first (:Instruments p1)))))} [instrument-boost]
         "sensor long-name"
-        {:keyword (:long-name (first (:sensors (first (:instruments p1)))))} [instrument-boost]
+        {:keyword (:LongName (first (:ComposedOf (first (:Instruments p1)))))} [instrument-boost]
 
         "temporal-keywords"
         {:keyword "tk1"} [(k2e/get-boost nil :temporal-keyword)]
 
-        "spatial-keyword"
-        {:keyword "in out"} [(k2e/get-boost nil :spatial-keyword)]
+        ;;"spatial-keyword" - no longer working. see comment in CMR-3895
+        ;;{:keyword "in out"} [(k2e/get-boost nil :spatial-keyword)]
 
-        "science-keywords as keyword"
-        {:keyword (:category sk1)} [science-keywords-boost]
+       "science-keywords as keyword"
+        {:keyword (:Category sk1)} [science-keywords-boost]
         "science-keywords category as parameter"
-        {:science-keywords {:0 {:category (:category sk1)}}} [science-keywords-boost]
+        {:science-keywords {:0 {:Category (:Category sk1)}}} [science-keywords-boost]
 
         "science-keywords topic as parameter"
-        {:science-keywords {:0 {:topic (:topic sk1)}}} [science-keywords-boost science-keywords-boost]
+        {:science-keywords {:0 {:Topic (:Topic sk1)}}} [science-keywords-boost science-keywords-boost]
         "science-keywords term as parameter"
-        {:science-keywords {:0 {:term (:term sk1)}}} [science-keywords-boost science-keywords-boost]
+        {:science-keywords {:0 {:Term (:Term sk1)}}} [science-keywords-boost science-keywords-boost]
         "science-keywords variable-level-1 as parameter"
-        {:science-keywords {:0 {:variable-level-1 (:variable-level-1 sk1)}}} [science-keywords-boost]
+        {:science-keywords {:0 {:VariableLevel1 (:VariableLevel1 sk1)}}} [science-keywords-boost]
         "science-keywords variable-level-2 as parameter"
-        {:science-keywords {:0 {:variable-level-2 (:variable-level-2 sk1)}}} [science-keywords-boost]
+        {:science-keywords {:0 {:VariableLevel2 (:VariableLevel2 sk1)}}} [science-keywords-boost]
         "science-keywords variable-level-3 as parameter"
-        {:science-keywords {:0 {:variable-level-3 (:variable-level-3 sk1)}}} [science-keywords-boost]
+        {:science-keywords {:0 {:VariableLevel3 (:VariableLevel3 sk1)}}} [science-keywords-boost]
         "science-keywords any as parameter"
-        {:science-keywords {:0 {:any (:category sk1)}}} [science-keywords-boost]
+        {:science-keywords {:0 {:any (:Category sk1)}}} [science-keywords-boost]
 
         "2d coordinate system as keyword"
-        {:keyword (:name tdcs2)} [two-d-boost]
+        {:keyword (:TilingIdentificationSystemName tdcs2)} [two-d-boost]
         "2d coordinate system as parameter"
-        {:two-d-coordinate-system-name (:name tdcs2)} [two-d-boost]
+        {:two-d-coordinate-system-name (:TilingIdentificationSystemName tdcs2)} [two-d-boost]
 
         "processing level id as keyword"
         {:keyword "PDQ123"} [processing-level-boost]
@@ -398,11 +444,11 @@
         {:processing-level-id "PDQ123"} [processing-level-boost]
 
         "data center as keyword"
-        {:keyword (:org-name org)} [data-center-boost]
+        {:keyword (:ShortName org)} [data-center-boost]
         "data center as parameter"
-        {:data-center (:org-name org)} [data-center-boost]
+        {:data-center (:ShortName org)} [data-center-boost]
         "archive center as parameter"
-        {:archive-center (:org-name org)} [data-center-boost]
+        {:archive-center (:ShortName org)} [data-center-boost]
 
         "version-id"
         {:keyword "V001"} [(k2e/get-boost nil :version-id)]
@@ -413,7 +459,7 @@
         "provider-id"
         {:keyword "PROV1"} [provider-boost provider-boost provider-boost provider-boost]))
 
-   (testing "Combine keyword and param boosts"
+    (testing "Combine keyword and param boosts"
      ;; Check that the scores are very close to account for slight difference in
      ;; number coming from elastic.
      (are3 [params score]
@@ -440,29 +486,29 @@
         {:keyword "ABC!XYZ_V001" :boosts {:entry-id 3.1}} [3.1]
 
         "project short-name"
-        {:keyword (:short-name (first pr1)) :boosts {:project 3.0}} [3.0]
+        {:keyword (:ShortName (first pr1)) :boosts {:project 3.0}} [3.0]
 
         "platform short-name"
-        {:keyword (:short-name p1) :boosts {:platform 4.0}} [4.0]
+        {:keyword (:ShortName p1) :boosts {:platform 4.0}} [4.0]
 
         "instrument short-name"
-        {:keyword (:short-name (first (:instruments p1))) :boosts {:instrument 5.0}} [5.0]
+        {:keyword (:ShortName (first (:Instruments p1))) :boosts {:instrument 5.0}} [5.0]
 
         ;; In UMM-C sensors are now instruments. All instruments (instruments + child instruments,
         ;; aka sensors) are indexed as both instruments and sensors until sensors search goes
         ;; away. Since they are instruments, there is no longer a sensor boost, but instrument
         ;; boost will be used.
         "sensor short-name"
-        {:keyword (:short-name (first (:sensors (first (:instruments p1))))) :boosts {:instrument 6.0}} [6.0]
+        {:keyword (:ShortName (first (:ComposedOf (first (:Instruments p1))))) :boosts {:instrument 6.0}} [6.0]
 
         "temporal-keywords"
         {:keyword "tk1" :boosts {:temporal-keyword 7.0}} [7.0]
 
-        "spatial-keyword"
-        {:keyword "in out" :boosts {:spatial-keyword 8.0}} [8.0]
+        ;;"spatial-keyword" - no longer working. see comment in CMR-3895
+        ;;{:keyword "in out" :boosts {:spatial-keyword 8.0}} [8.0]
 
         "science-keywords"
-        {:keyword (:category sk1) :boosts {:science-keywords 9.0}} [9.0]
+        {:keyword (:Category sk1) :boosts {:science-keywords 9.0}} [9.0]
 
         "version-id"
         {:keyword "V001" :boosts {:version-id 10.0}} [10.0]
@@ -477,7 +523,7 @@
         {:keyword "Mixed" :boosts {:short-name 10.0 :entry-title 11.0}} [11.0 10.0]
 
         "no defaults"
-        {:keyword (:category sk1) :boosts {:include-defaults false}} [1.0]
+        {:keyword (:Category sk1) :boosts {:include-defaults false}} [1.0]
 
         "matches all fields, do not include defaults"
         {:keyword "boost" :boosts {:short-name 5.0 :include-defaults false}}
@@ -537,7 +583,7 @@
         (let [refs (search/find-refs :collection params)
               matches? (d/refs-match-order? items refs)]
           (when-not matches?
-            (println "Expected:" (map :entry-title items))
+            (println "Expected:" (map :EntryTitle items))
             (println "Actual:" (map :name (:refs refs))))
           matches?)
         {:keyword "Laser spoonA"} [coll9 coll14]
@@ -550,23 +596,23 @@
         (let [refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
               matches? (d/refs-match-order? items refs)]
           (when-not matches?
-            (println "Expected:" (map :entry-title items))
+            (println "Expected:" (map :EntryTitle items))
             (println "Actual:" (map :name (:refs refs))))
           matches?)
         "Laser spoonA" [coll9 coll14]))
 
-    (testing "sorted search by keywords with sort keys."
+   (testing "sorted search by keywords with sort keys."
       (are [keyword-str sort-key items]
         (let [refs (search/find-refs :collection {:keyword keyword-str :sort-key sort-key})
               matches? (d/refs-match-order? items refs)]
           (when-not matches?
-            (println "Expected:" (map :entry-title items))
+            (println "Expected:" (map :EntryTitle items))
             (println "Actual:" (map :name (:refs refs))))
           matches?)
         "laser" "-entry-title" [coll7 coll5 coll21 coll14 coll9]
-        "laser" "score" [coll21 coll5 coll7 coll9 coll14]
-        "laser" "+score" [coll5 coll7 coll9 coll14 coll21]
-        "laser" "-score" [coll21 coll5 coll7 coll9 coll14]))
+        "laser" "score" [coll21 coll7 coll9 coll5 coll14]
+        "laser" "+score" [coll7 coll9 coll5 coll14 coll21]
+        "laser" "-score" [coll21 coll7 coll9 coll5 coll14]))
 
     (testing "parameter search by keywords returns score"
       (let [refs (search/find-refs :collection {:keyword "Laser"})]
@@ -719,44 +765,44 @@
 ;; This tests that when searching by relevancy that if the score is the same short name ascending is used for
 ;; sorting the results and then if short name is the same version is used for sorting the results
 (deftest search-by-keywords-relevancy-sorting-includes-short-name-and-version
-  (let [coll1 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Terra Aerosol 5-Min L2 Swath 10km V5.1",
-                                  :short-name "MOD04_L2",
-                                  :version-id "5.1"}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V5.1",
-                                  :short-name "MYD04_L2",
-                                  :version-id "5.1"}))
-        coll3 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V006",
-                                  :short-name "MYD04_L2",
-                                  :version-id "6"}))
-        coll4 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Terra Aerosol 5-Min L2 Swath 10km V006",
-                                  :short-name "MOD04_L2",
-                                  :version-id "6"}))
-        coll5 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
-                                  :short-name "MYD05_L2",
-                                  :version-id "5.1"}))
-        coll6 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
-                                  :short-name "MOD05_L2",
-                                  :version-id "5.1"}))
-        coll7 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
-                                  :short-name "MYD05_L2",
-                                  :version-id "6"}))
-        coll8 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
-                                  :short-name "MOD05_L2",
-                                  :version-id "6"}))
-        coll9 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "MODIS Aerosol Other",
-                                  :projects [(dc/project "MODIS" "ignored")]
-                                  :platforms [(dc/platform {:short-name "MODIS"})]
-                                  :short-name "Other",
-                                  :version-id "1"}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Terra Aerosol 5-Min L2 Swath 10km V5.1",
+                                  :ShortName "MOD04_L2",
+                                  :Version "5.1"}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V5.1",
+                                  :ShortName "MYD04_L2",
+                                  :Version "5.1"}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Aqua Aerosol 5-Min L2 Swath 10km V006",
+                                  :ShortName "MYD04_L2",
+                                  :Version "6"}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Terra Aerosol 5-Min L2 Swath 10km V006",
+                                  :ShortName "MOD04_L2",
+                                  :Version "6"}))
+        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
+                                  :ShortName "MYD05_L2",
+                                  :Version "5.1"}))
+        coll6 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V5.1",
+                                  :ShortName "MOD05_L2",
+                                  :Version "5.1"}))
+        coll7 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Aqua Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
+                                  :ShortName "MYD05_L2",
+                                  :Version "6"}))
+        coll8 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V006",
+                                  :ShortName "MOD05_L2",
+                                  :Version "6"}))
+        coll9 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                 {:EntryTitle "MODIS Aerosol Other",
+                                  :Projects [(data-umm-c/project "MODIS" "ignored")]
+                                  :Platforms [(data-umm-c/platform {:ShortName "MODIS"})]
+                                  :ShortName "Other",
+                                  :Version "1"}))]
     (index/wait-until-indexed)
     (let [refs (search/find-refs :collection {:keyword "modis aerosol"})
           expected-order [coll9 ;; higher score
@@ -827,18 +873,18 @@
                    ["coll45" "carbon*oxygen"]
                    ["coll46" "Dataset no withword"]
                    ["coll47" "begin&&end"]
-                   ["coll48" "choco and taco"]
+                   ["coll48" "choco 48and taco"]
                    ["coll49" "choco or taco"]
                    ["coll50" "begin*end"]]
         colls (doall (for [[coll summary] coll-data]
-                       (d/ingest "PROV3" (dc/collection {:entry-title coll :summary summary}))))]
+                       (d/ingest-umm-spec-collection "PROV3" (data-umm-c/collection (d/unique-num) {:EntryTitle coll :Abstract summary}))))]
     (index/wait-until-indexed)
     (are [keyword-str indexes]
          (let [refs (search/find-refs :collection {:keyword keyword-str :page_size 51})
                items (map (partial nth colls) indexes)
                matches? (d/refs-match? items refs)]
            (when-not matches?
-             (println "Expected:" (map :entry-title items))
+             (println "Expected:" (map :EntryTitle items))
              (println "Actual:" (map :name (:refs refs))))
            matches?)
          "begin!end" [1]
@@ -851,5 +897,5 @@
          "end" [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 47 50]
          "&&" [0]
          "||" [0]
-         "AND" [48]
+         "48AND" [48]
          "OR" [49])))

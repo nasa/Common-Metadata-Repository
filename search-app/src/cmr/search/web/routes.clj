@@ -33,8 +33,8 @@
                         (str/replace #"%5D" "]")
                         (str/replace #"\[\]" ""))]
       (last (some #(re-find % query-str)
-                  [#"(^|&)(.*?)=.*?\2\["
-                   #"(^|&)(.*?)\[.*?\2="])))))
+                  [#"(^|&)(.*?)=.*?&\2\["
+                   #"(^|&)(.*?)\[.*?&\2="])))))
 
 (defn mixed-arity-param-handler
   "Detect query string with mixed arity and throws a 400 error. Mixed arity param is when a single
