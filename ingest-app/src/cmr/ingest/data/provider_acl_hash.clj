@@ -12,34 +12,6 @@
   (save-acl-hash [store acl-hash])
   (get-acl-hash [store]))
 
-(defrecord InMemoryAclHashStore
-  [data-atom]
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  AclHashStore
-
-  (save-acl-hash
-    [this acl-hash]
-    (reset! (:data-atom this) acl-hash))
-
-  (get-acl-hash
-    [this]
-    (-> this :data-atom deref))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  lifecycle/Lifecycle
-
-  (start
-    [this system]
-    this)
-  (stop
-    [this system]
-    this))
-
-(defn create-in-memory-acl-hash-store
-  []
-  (->InMemoryAclHashStore (atom nil)))
-
 ;; Extends the AclHashStore to the oracle store so it will work with oracle.
 (extend-protocol AclHashStore
   cmr.oracle.connection.OracleStore
