@@ -14,12 +14,19 @@
             [cmr.umm-spec.models.umm-common-models :as cm]
             [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
-(def ^:private base-url (format "%s://%s:%s/"
-                                (transmit-config/search-protocol)
-                                (transmit-config/search-host)
-                                (transmit-config/search-port)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Constants and general utility functions for the tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Utility functions for the tests
+(def ^{:doc "We don't call to `(transmit-config/application-public-root-url)`
+             due to the fact that it requires a context and we're not creating
+             contexts for these integration tests, we're simply using an HTTP
+             client."
+       :private true}
+  base-url (format "%s://%s:%s/"
+                   (transmit-config/search-protocol)
+                   (transmit-config/search-host)
+                   (transmit-config/search-port)))
 
 (defn- get-response
   [url-path]
@@ -33,7 +40,9 @@
 (def ^:private validate-sitemap
   (xmlv/create-validation-fn (io/resource "sitemaps/sitemap.xsd")))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Functions for creating testing data
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- setup-collections
   "A utility function that generates testing collections data with the bits we
@@ -81,7 +90,9 @@
     (assert (= (count tag-colls) 6))
     (assert (= (count all-colls) 9)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def collections-fixture
   (fn [f]
@@ -95,7 +106,9 @@
                        tags/grant-all-tag-fixture
                        collections-fixture]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest sitemap-master
   (let [response (get-response "sitemap.xml")
