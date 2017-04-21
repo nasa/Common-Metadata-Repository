@@ -5,7 +5,6 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [cmr.common.lifecycle :as l]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.umm-spec.migration.version-migration :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.versioning :as umm-version])
@@ -30,10 +29,6 @@
   "Defines the path to the UMM schema version config file within the preview gem."
   "gems/cmr_metadata_preview-0.0.1/.umm-version")
 
-(def default-preview-gem-umm-version
-  "Default preview gem UMM schema version in case preview gem is mis-configured."
-  "1.8")
-
 (defn- create-jruby-runtime
   "Creates and initializes a JRuby runtime."
   []
@@ -45,15 +40,10 @@
 (defn- get-preview-gem-umm-version
   "Get the UMM schema version that is defined in preview gem."
   []
-  (try
-    (-> preview-gem-umm-version-config-file
-        io/resource
-        slurp
-        str/trim)
-    (catch Exception e
-      (error "Failed to parse preview gem UMM version, will use the default version:"
-             default-preview-gem-umm-version
-             (.printStackTrace e)))))
+  (-> preview-gem-umm-version-config-file
+      io/resource
+      slurp
+      str/trim))
 
 ;; Allows easily evaluating Ruby code in the Clojure REPL.
 (comment
@@ -76,8 +66,8 @@
    [this _system]
    (-> this
        (assoc :jruby-runtime (create-jruby-runtime))
-       (assoc :preview-gem-umm-version
-              (or (get-preview-gem-umm-version) default-preview-gem-umm-version))))
+       (assoc :preview-gem-umm-version (get-preview-gem-umm-version))))
+
   (stop
    [this _system]
    (dissoc this :jruby-runtime)))
