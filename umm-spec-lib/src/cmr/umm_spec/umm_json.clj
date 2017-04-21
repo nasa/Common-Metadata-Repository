@@ -100,17 +100,20 @@
 (defmethod parse-json "array"
   [schema type-name-path type-name schema-type js-data]
   (when (seq js-data)
-    (mapv #(parse-json schema type-name-path type-name (:items schema-type) %) js-data)))
+    (mapv
+     #(parse-json schema type-name-path type-name (:items schema-type) %)
+     js-data)))
 
 (defn json->umm
-  "Parses the JSON string and returns Clojure UMM records."
-  ([context concept-type json-str json-version]
-   (let [schema (js/concept-schema concept-type)
-         root-type-def (get-in schema [:definitions (:root schema)])
-         ;; migrate the decoded JSON object up to the latest UMM before running it through the schema
-         json-obj (json/decode json-str true)
-         migrated (vm/migrate-umm context concept-type json-version ver/current-version json-obj)]
-     (parse-json schema [(:root schema)] (:root schema) root-type-def migrated)))
+  "Parses the JSON string and returns Clojure UMM record in the current UMM version."
   ([context concept-type json-str]
-    ;; default to trying to parse the current UMM version
-   (json->umm context concept-type json-str ver/current-version)))
+   ;; default to trying to parse json string according to the current UMM version
+   (json->umm context concept-type json-str ver/current-version))
+
+  ([context concept-type json-str original-umm-version]
+   (let [schema (js/concept-schema ver/current-version concept-type)
+         root-type-def (get-in schema [:definitions (:root schema)])
+         json-obj (json/decode json-str true)
+         migrated (vm/migrate-umm
+                   context concept-type original-umm-version ver/current-version json-obj)]
+     (parse-json schema [(:root schema)] (:root schema) root-type-def migrated))))
