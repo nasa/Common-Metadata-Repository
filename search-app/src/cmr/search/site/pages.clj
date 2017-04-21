@@ -90,4 +90,4 @@
   (render-xml
    context
    "templates/sitemap-provider-tag.xml"
-   (data/get-provider-tag-landing-links context provider-id tag)))
+   (data/get-provider-tag-sitemap-landing-links context provider-id tag)))
