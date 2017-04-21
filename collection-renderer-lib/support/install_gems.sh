@@ -5,6 +5,7 @@
 
 jruby_version=$1
 cmr_metadata_preview_repo=$2
+commit=$3
 gemDir=cmr_metadata_preview-0.0.1
 gemName="${gemDir}.gem"
 tmpGemDir=tmp_gem_dir
@@ -27,6 +28,14 @@ unset GEM_PATH
 git clone $cmr_metadata_preview_repo $tmpGemDir
 currDir=$PWD
 cd $tmpGemDir
+if [ ! -z "$commit" ]
+  then
+    git co -b tmp $commit
+    echo "Building metadata preview gem off commit id: $commit"
+  else
+    echo "Building metadata preview gem off HEAD"
+fi
+
 # build cmr_metadata_preview gem
 java -cp $HOME/.m2/repository/org/jruby/jruby-complete/$jruby_version/jruby-complete-$jruby_version.jar org.jruby.Main -S gem build *.gemspec
 echo "Installing gems..."

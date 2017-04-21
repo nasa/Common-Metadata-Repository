@@ -7,6 +7,15 @@
   "Defines the repo url of cmr_metadata_preview project"
   "https://git.earthdata.nasa.gov/scm/cmr/cmr_metadata_preview.git")
 
+(def metadata-preview-commit
+  "Defines the commit id of cmr_metadata_preview project that we should build the gem off.
+   This is our contract with the MMT team in maintaining versioning of the gem without involving
+   RubyGems. The environment variable CMR_METADATA_PREVIEW_COMMIT can be used to override
+   the hardcoded commit id during dev integration with cmr_metadata_preview project.
+   The hardcoded commit id should be updated when MMT releases a new version of the gem."
+  (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
+      "68cc0a3bfec"))
+
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
   "gems")
@@ -47,7 +56,8 @@
   :aliases {"install-gems" ["shell"
                             "support/install_gems.sh"
                             ~jruby-version
-                            ~cmr-metadata-preview-repo]
+                            ~cmr-metadata-preview-repo
+                            ~metadata-preview-commit]
             "clean-gems" ["shell" "rm" "-rf" ~gem-install-path]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
