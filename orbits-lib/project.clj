@@ -3,38 +3,9 @@
    classpath issues"
   "9.1.8.0")
 
-(def jruby-jar-path
-  "The path to the JRuby Jar to use when installing gems"
-  (format "%s/.m2/repository/org/jruby/jruby-complete/%s/jruby-complete-%s.jar"
-          (get (System/getProperties) "user.home")
-          jruby-version jruby-version))
-
-(defn install-gem-command
-  "Returns a shell command that will install the given version of the gem"
-  [gem-dir gem-name version]
-  ["shell" "echo" "Installing" gem-name (str version ",")
-   "shell"
-   ;; Run JRuby
-   "java" "-cp" jruby-jar-path "org.jruby.Main" "-S"
-   ;; Install a specific version of the gem in a given location
-   "gem" "install" "-i" gem-dir gem-name "-v"
-   ;; comma appended to last command so shell commands can be strung together with do
-   (str version ",")])
-
-(defn install-gems-command
-  "Takes a list of tuples of gem names and versions. Returns the set of shell commands to install
-   the given gems"
-  [gem-dir gem-versions]
-  (reduce into ["do"] (for [[gem-name version] gem-versions]
-                        (install-gem-command gem-dir gem-name version))))
-
 (def dev-gem-install-path
   "The directory within this library where Ruby gems are installed for development time dependencies."
   "dev-gems")
-
-(def dev-gem-versions
-  "The list of development time dependency gems and their versions to install"
-  [["rspec" "2.12.0"]])
 
 (defproject nasa-cmr/cmr-orbits-lib "0.1.0-SNAPSHOT"
   :description "Contains Ruby code that allows performing orbit calculations for spatial search."
@@ -69,7 +40,10 @@
                 [lein-kibit "0.1.2"]
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
-  :aliases {"install-gems" ~(install-gems-command dev-gem-install-path dev-gem-versions)
+  :aliases {"install-gems" ["shell"
+                            "support/install_gems.sh"
+                            ~jruby-version
+                            ~dev-gem-install-path]
             "clean-gems" ["shell" "rm" "-rf" ~dev-gem-install-path]
             ;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]

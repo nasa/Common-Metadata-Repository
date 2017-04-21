@@ -1,7 +1,11 @@
 # encoding: utf-8
 # Bootstraps an empty JRuby environment in the CMR so that it will have the appropriate functions
-# available for rendering collections. Sets up enough functions so the the ERB partials from MMT
+# available for rendering collections. Sets up enough functions so that the ERB partials from MMT
 # will be renderable.
+
+# Unset gem related environment variables to prevent jruby from loading gems from client's GEM_PATH
+ENV.delete('GEM_HOME')
+ENV.delete('GEM_PATH')
 
 require 'erb'
 require 'ostruct'

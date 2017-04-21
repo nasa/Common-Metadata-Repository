@@ -1,3 +1,7 @@
+# Unset gem related environment variables to prevent jruby from loading gems from client's GEM_PATH
+ENV.delete('GEM_HOME')
+ENV.delete('GEM_PATH')
+
 require 'rubygems'
 require 'orbits/circular_range'
 require 'orbits'
