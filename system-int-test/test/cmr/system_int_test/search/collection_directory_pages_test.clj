@@ -223,14 +223,15 @@
       ;; This page should also have a header link
       (is (string/includes? body expected-header-link)))))
 
-;; Note that the following test was originally in the unit tests for this code
-;; (thus its similarity to those tests) but had to be moved to integration
-;; tests with the introduction of `base-url` support in the templates (which
-;; the following text exercise). The base URL is obtained (ulimately) by
-;; calling c.t.config/application-public-root-url which needs `public-conf`
-;; data set in both the route-creation as well as the request. It was thus
-;; just easier and more natural to perform the required test as part the
-;; integration tests, since the running system already has that data set up.
+;; Note that the following test was originally in the unit tests for cmr-
+;; search (thus its similarity to those tests) but had to be moved into the
+;; integration tests due to the introduction of `base-url` support in the
+;; templates (which the following text exercises). The base URL is obtained
+;; (ulimately) by calling c.t.config/application-public-root-url which needs
+;; `public-conf` data set in both the route-creation as well as the request.
+;; It was thus just easier and more natural to perform the required checks as
+;; part the integration tests, since the running system already has that data
+;; set up.
 (deftest eosdis-collections-directory-page
   (testing "eosdis collections collections directory page returns content"
     (let [url (str base-url "site/collections/directory/eosdis")
