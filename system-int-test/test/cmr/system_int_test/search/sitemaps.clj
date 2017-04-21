@@ -1,91 +1,175 @@
 (ns cmr.system-int-test.search.sitemaps
   (:require [clj-http.client :as client]
+            [clj-xml-validation.core :as xmlv]
+            [clojure.java.io :as io]
+            [clojure.string :as string]
             [clojure.test :refer :all]
-            [cmr.search.site.data :as data]
-            [cmr.transmit.config :as config]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.tag-util :as tags]
+            [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.system :as s]
+            [cmr.transmit.config :as transmit-config]
+            [cmr.umm-spec.models.umm-common-models :as cm]
+            [cmr.umm-spec.test.expected-conversion :as exp-conv]))
+
+(def ^:private base-url (format "%s://%s:%s/"
+                                (transmit-config/search-protocol)
+                                (transmit-config/search-host)
+                                (transmit-config/search-port)))
+
+;;; Utility functions for the tests
+
+(defn- get-response
+  [url-path]
+  (->> url-path
+       (str base-url)
+       (client/get)))
+
+(def ^:private validate-sitemap-index
+  (xmlv/create-validation-fn (io/resource "sitemaps/siteindex.xsd")))
+
+(def ^:private validate-sitemap
+  (xmlv/create-validation-fn (io/resource "sitemaps/sitemap.xsd")))
+
+;;; Functions for creating testing data
+
+(defn- setup-collections
+  "A utility function that generates testing collections data with the bits we
+  need to test."
+  []
+  (let [[c1-p1 c2-p1 c3-p1
+         c1-p2 c2-p2 c3-p2] (for [p ["PROV1" "PROV2"]
+                                  n (range 1 4)]
+                              (d/ingest-umm-spec-collection
+                                p
+                                (-> exp-conv/example-collection-record
+                                    (assoc :ShortName (str "s" n))
+                                    (assoc :EntryTitle (str "Collection Item " n)))
+                                {:format :umm-json
+                                 :accept-format :json}))
+         [c1-p3 c2-p3 c3-p3] (for [n (range 4 7)]
+                               (d/ingest-umm-spec-collection
+                                 "PROV3"
+                                 (-> exp-conv/example-collection-record
+                                     (assoc :ShortName (str "s" n))
+                                     (assoc :EntryTitle (str "Collection Item " n))
+                                     (assoc :DOI (cm/map->DoiType
+                                                   {:DOI (str "doi" n)
+                                                    :Authority (str "auth" n)})))
+                                 {:format :umm-json
+                                  :accept-format :json}))]
+    ;; Wait until collections are indexed so tags can be associated with them
+    (index/wait-until-indexed)
+    ;; Use the following to generate html links that will be matched in tests
+    (let [user-token (e/login (s/context) "user")
+          notag-colls [c1-p1 c1-p2 c1-p3]
+          nodoi-colls [c1-p1 c2-p1 c3-p1 c1-p2 c2-p2 c3-p2]
+          doi-colls [c1-p3 c2-p3 c3-p3]
+          all-colls (into nodoi-colls doi-colls)
+          tag-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3]
+          tag (tags/save-tag
+                user-token
+                (tags/make-tag {:tag-key "gov.nasa.eosdis"})
+                tag-colls)]
+    (index/wait-until-indexed)
+    ;; Sanity checks
+    (assert (= (count notag-colls) 3))
+    (assert (= (count nodoi-colls) 6))
+    (assert (= (count doi-colls) 3))
+    (assert (= (count tag-colls) 6))
+    (assert (= (count all-colls) 9)))))
+
+;;; Fixtures
+
+(def collections-fixture
+  (fn [f]
+    (setup-collections)
+    (f)))
+
+(use-fixtures :once (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"
+                                              "provguid2" "PROV2"
+                                              "provguid3" "PROV3"})
+                       tags/grant-all-tag-fixture
+                       collections-fixture]))
+
+;;; Tests
 
 (deftest sitemap-master
-  (let [url (str base-url "/sitemap.xml")
-        response (client/get url)
+  (let [response (get-response "sitemap.xml")
         body (:body response)]
+    (testing "XML validation"
+      (is (xmlv/valid? (validate-sitemap-index body))))
     (testing "presence and content of master sitemap.xml index file"
       (is (= (:status response) 200))
-      (is (substring? "<sitemapindex" body))
-      (is (substring? "<sitemap" body))
-      (is (substring? "<loc>" body))
-      (is (substring? "<lastmod>" body))
-      (is (substring? "/site/sitemap.xml</loc>" body))
-      (is (substring? "/collections/directory/PROV1/gov.nasa.eosdis/sitemap.xml</loc>" body))
-      (is (substring? "/collections/directory/PROV2/gov.nasa.eosdis/sitemap.xml</loc>" body))
-      (is (substring? "/collections/directory/PROV3/gov.nasa.eosdis/sitemap.xml</loc>" body)))))
+      (is (string/includes? body "/site/sitemap.xml</loc>"))
+      (is (string/includes? body "/collections/directory/PROV1/gov.nasa.eosdis/sitemap.xml</loc>"))
+      (is (string/includes? body "/collections/directory/PROV2/gov.nasa.eosdis/sitemap.xml</loc>"))
+      (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis/sitemap.xml</loc>")))))
 
 (deftest sitemap-top-level
-  (let [url (str base-url "/site/sitemap.xml")
-        response (client/get url)
+  (let [response (get-response "site/sitemap.xml")
         body (:body response)]
+    (testing "XML validation"
+      (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= (:status response) 200))
-      (is (substring? "<urlset" body))
-      (is (substring? "<url" body))
-      (is (substring? "<loc>" body))
-      (is (substring? "<lastmod>" body))
-      (is (substring? "/docs/api</loc>" body))
-      (is (substring? "/collections/directory</loc>" body))
-      (is (substring? "/collections/directory/eosdis</loc>" body))
-      (is (substring? "/collections/directory/PROV1/gov.nasa.eosdis</loc>" body))
-      (is (substring? "/collections/directory/PROV2/gov.nasa.eosdis</loc>" body))
-      (is (substring? "/collections/directory/PROV3/gov.nasa.eosdis</loc>" body)))))
+      (is (string/includes? body "/docs/api</loc>"))
+      (is (string/includes? body "/collections/directory</loc>"))
+      (is (string/includes? body "/collections/directory/eosdis</loc>"))
+      (is (string/includes? body "/collections/directory/PROV1/gov.nasa.eosdis</loc>"))
+      (is (string/includes? body "/collections/directory/PROV2/gov.nasa.eosdis</loc>"))
+      (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis</loc>")))))
 
 (deftest sitemap-provider1
-  (testing "check the sitemap for PROV1"
-    (let [provider "PROV1"
-          tag "gov.nasa.eosdis"
-          url (format
-               "%s/site/collections/directory/%s/%s/sitemap.xml"
-               base-url provider tag)
-          response (client/get url)
-          body (:body response)]
+  (let [provider "PROV1"
+        tag "gov.nasa.eosdis"
+        url-path (format
+                  "site/collections/directory/%s/%s/sitemap.xml"
+                  provider tag)
+        response (get-response url-path)
+        body (:body response)]
+    (testing "XML validation"
+      (is (xmlv/valid? (validate-sitemap body))))
+    (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
-      (is (substring? "<urlset" body))
-      (is (substring? "<url" body))
-      (is (substring? "<loc>" body))
-      (is (substring? "<lastmod>" body))
-      (is (substring? "concepts/C1200000002-PROV1.html</loc>" body))
-      (is (substring? "concepts/C1200000003-PROV1.html</loc>" body))
-      (is (not (substring? "C1200000001-PROV1.html</loc>" body))))))
+      (is (string/includes? body "concepts/C1200000002-PROV1.html</loc>"))
+      (is (string/includes? body "concepts/C1200000003-PROV1.html</loc>")))
+    (testing "the collections not taged with eosdis shouldn't show up"
+      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
 
 (deftest sitemap-provider2
-  (testing "check the sitemap for PROV2"
-    (let [provider "PROV2"
-          tag "gov.nasa.eosdis"
-          url (format
-               "%s/site/collections/directory/%s/%s/sitemap.xml"
-               base-url provider tag)
-          response (client/get url)
-          body (:body response)]
+  (let [provider "PROV2"
+        tag "gov.nasa.eosdis"
+        url-path (format
+                  "site/collections/directory/%s/%s/sitemap.xml"
+                  provider tag)
+        response (get-response url-path)
+        body (:body response)]
+    (testing "XML validation"
+      (is (xmlv/valid? (validate-sitemap body))))
+    (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
-      (is (substring? "<urlset" body))
-      (is (substring? "<url" body))
-      (is (substring? "<loc>" body))
-      (is (substring? "<lastmod>" body))
-      (is (substring? "concepts/C1200000005-PROV2.html</loc>" body))
-      (is (substring? "concepts/C1200000006-PROV2.html</loc>" body))
-      (is (not (substring? "C1200000001-PROV1.html</loc>" body))))))
+      (is (string/includes? body "concepts/C1200000005-PROV2.html</loc>"))
+      (is (string/includes? body "concepts/C1200000006-PROV2.html</loc>")))
+    (testing "the collections not taged with eosdis shouldn't show up"
+      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
 
 (deftest sitemap-provider3
-  (testing "check the sitemap for PROV3"
-    (let [provider "PROV3"
-          tag "gov.nasa.eosdis"
-          url (format
-               "%s/site/collections/directory/%s/%s/sitemap.xml"
-               base-url provider tag)
-          response (client/get url)
-          body (:body response)]
+  (let [provider "PROV3"
+        tag "gov.nasa.eosdis"
+        url-path (format
+                  "site/collections/directory/%s/%s/sitemap.xml"
+                  provider tag)
+        response (get-response url-path)
+        body (:body response)]
+    (testing "XML validation"
+      (is (xmlv/valid? (validate-sitemap body))))
+    (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
-      (is (substring? "<urlset" body))
-      (is (substring? "<url" body))
-      (is (substring? "<loc>" body))
-      (is (substring? "<lastmod>" body))
-      (is (substring? "http://dx.doi.org/doi5</loc>" body))
-      (is (substring? "http://dx.doi.org/doi5</loc>" body))
-      (is (not (substring? "C1200000001-PROV1.html</loc>" body))))))
+      (is (string/includes? body "http://dx.doi.org/doi5</loc>"))
+      (is (string/includes? body "http://dx.doi.org/doi5</loc>")))
+    (testing "the collections not taged with eosdis shouldn't show up"
+      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
