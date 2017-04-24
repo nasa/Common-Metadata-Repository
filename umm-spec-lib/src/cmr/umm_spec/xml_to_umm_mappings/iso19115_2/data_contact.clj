@@ -12,6 +12,10 @@
 (def point-of-contact-xpath
  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:pointOfContact/gmd:CI_ResponsibleParty")
 
+(def cited-responsible-party-xpath
+  (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/"
+       "gmd:CI_Citation/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty"))
+
 (def distributor-xpath
  (str "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/"
       "gmd:distributorContact/gmd:CI_ResponsibleParty"))
@@ -203,10 +207,13 @@
 
 (defn- get-collection-contact-persons-and-groups
  "Get contact persons and contact groups not associated with a data center."
- [contacts]
- (let [non-data-center-contacts (filter #(nil? (:DataCenter %)) contacts)
+ [contacts data-centers]
+ (let [data-centers (distinct (map #(select-keys % [:ShortName :LongName]) data-centers))
+       non-data-center-contacts (filter #(or (nil? (:DataCenter %))
+                                             (not (contains? (set data-centers) (:DataCenter %))))
+                                        contacts)
        groups (group-by :Type non-data-center-contacts)]
-   {:ContactPersons (map :Contact (get groups :contact-person))
+   {:ContactPersons (map #(assoc % :Roles ["Technical Contact"]) (map :Contact (get groups :contact-person)))
     :ContactGroups (map :Contact (get groups :contact-group))}))
 
 (defn parse-contacts
@@ -220,19 +227,21 @@
  [xml sanitize?]
  (let [{:keys [data-centers-xml contacts-xml]} (group-contacts (select xml point-of-contact-xpath))
        additional-contacts (group-contacts (select xml "/gmi:MI_Metadata/:gmd:contact/gmd:CI_ResponsibleParty"))
+       cited-resp-party-contacts (group-contacts (select xml cited-responsible-party-xpath))
        distributors (group-contacts (select xml distributor-xpath))
        processors (group-contacts (select xml processor-xpath))
        all-contacts-xml (concat contacts-xml (:contacts-xml additional-contacts) (:contacts-xml distributors)
-                               (:contacts-xml processors))
+                               (:contacts-xml processors) (:contacts-xml cited-resp-party-contacts))
        contacts (parse-all-contacts all-contacts-xml sanitize?)
        data-centers (map #(parse-data-center % contacts sanitize?) data-centers-xml)
        data-centers (concat data-centers
                             (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?)
                             (process-duplicate-data-centers data-centers (:data-centers-xml distributors) sanitize?)
-                            (process-duplicate-data-centers data-centers (:data-centers-xml processors) sanitize?))]
+                            (process-duplicate-data-centers data-centers (:data-centers-xml processors) sanitize?)
+                            (process-duplicate-data-centers data-centers (:data-centers-xml cited-resp-party-contacts) sanitize?))]
   (merge
    {:DataCenters (if (seq data-centers)
                   data-centers
                   (when sanitize?
                    [util/not-provided-data-center]))}
-   (get-collection-contact-persons-and-groups contacts))))
+   (get-collection-contact-persons-and-groups contacts data-centers))))
