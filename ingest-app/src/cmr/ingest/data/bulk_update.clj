@@ -56,7 +56,6 @@
 
   (create-and-save-bulk-update-status
     [db provider-id json-body concept-ids]
-    (proto-repl.saved-values/save 16)
     ;; In a transaction, add one row to the task status table and for each concept
     (try
      (j/with-db-transaction
@@ -109,7 +108,6 @@
       (j/db-do-prepared db statement []))
     (let [statement "DELETE FROM bulk_update_task_status"]
       (j/db-do-prepared db statement []))))
-
 
 (defn context->db
   [context]
