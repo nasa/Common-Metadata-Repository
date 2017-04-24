@@ -614,17 +614,22 @@
   2) a list of provider attributes maps:
      [{:provider-guid 'provider-guid1' :provider-id 'PROV1'
        :short-name 'provider short name'}...]"
-  [providers options]
-  (let [{:keys [grant-all-search? grant-all-ingest?]}
-         (merge reset-fixture-default-options options)
-       providers (if (sequential? providers)
-                     providers
-                     (for [[provider-guid provider-id] providers]
-                       {:provider-guid provider-guid
-                        :provider-id provider-id}))]
-     (doseq [provider-map providers]
-       (create-provider provider-map {:grant-all-search? grant-all-search?
-                                      :grant-all-ingest? grant-all-ingest?}))))
+  ([providers]
+    (setup-providers providers nil))
+  ([providers options]
+    (let [{:keys [grant-all-search? grant-all-ingest?]}
+           (merge reset-fixture-default-options options)
+         providers (if (sequential? providers)
+                       providers
+                       (for [[provider-guid provider-id] providers]
+                         {:provider-guid provider-guid
+                          :provider-id provider-id}))]
+       (doseq [provider-map providers]
+         (create-provider
+          provider-map
+          {:grant-all-search? grant-all-search?
+           :grant-all-ingest? grant-all-ingest?})))))
+
 (defn reset-fixture
   "Resets all the CMR systems then uses the `setup-providers` function to
   create a testing fixture.
