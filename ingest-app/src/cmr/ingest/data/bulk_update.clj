@@ -12,19 +12,19 @@
 (defprotocol BulkUpdateStore
   "Defines a protocol for getting and storing the bulk update status and task-id
   information."
-  (get-bulk-update-status [db provider-id])
-  (get-bulk-update-task-status [db provider-id task-id])
+  (get-provider-bulk-update-status [db provider-id])
+  (get-bulk-update-task-status [db task-id])
   (get-bulk-update-task-collection-status [db task-id])
   (get-bulk-update-collection-status [db task-id concept-id])
   (create-and-save-bulk-update-status [db provider-id json-body concept-ids])
-  (update-bulk-update-task-status [db provider-id task-id status status-message])
+  (update-bulk-update-task-status [db task-id status status-message])
   (update-bulk-update-collection-status [db task-id concept-id status status-message]))
 
 ;; Extends the BulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol BulkUpdateStore
   cmr.oracle.connection.OracleStore
 
-  (get-bulk-update-status
+  (get-provider-bulk-update-status
     [db provider-id]
     ;; Returns a list of bulk update statuses for the provider
     (su/query db (su/build (su/select [:task-id :status :status-message]
@@ -32,12 +32,11 @@
                             (su/where `(= :provider-id ~provider-id))))))
 
   (get-bulk-update-task-status
-    [db provider-id task-id]
+    [db task-id]
     ;; Returns a status for the particular task
     (su/find-one db (su/select [:status :status-message]
                      (su/from "bulk_update_task_status")
-                     (su/where `(and (= :task-id ~task-id)
-                                    (= :provider-id ~provider-id))))))
+                     (su/where `(= :task-id ~task-id)))))
 
   (get-bulk-update-task-collection-status
     [db task-id]
@@ -83,8 +82,8 @@
     (try
       (let [statement (str "UPDATE bulk_update_task_status "
                            "SET status = ?, status_message = ?"
-                           "WHERE provider_id = ? AND task_id = ?")]
-        (j/db-do-prepared db statement [status status-message provider-id task-id]))
+                           "WHERE task_id = ?")]
+        (j/db-do-prepared db statement [status status-message task-id]))
       (catch Exception e
         (errors/throw-service-error :invalid-data
          [(str "Error creating updating bulk update task status "
@@ -109,11 +108,11 @@
 (defn-timed get-bulk-update-statuses-for-provider
   "Returns bulk update statuses with task ids by provider"
   [context provider-id]
-  (get-bulk-update-status (context->db context) provider-id))
+  (get-provider-bulk-update-status (context->db context) provider-id))
 
 (defn-timed get-bulk-update-task-status-for-provider
-  [context provider-id task-id]
-  (get-bulk-update-task-status (context->db context) provider-id task-id))
+  [context task-id]
+  (get-bulk-update-task-status (context->db context) task-id))
 
 (defn-timed create-bulk-update-status
   "Saves the map of provider id acl hash values"
