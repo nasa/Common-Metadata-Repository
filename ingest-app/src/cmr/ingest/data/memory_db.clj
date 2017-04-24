@@ -91,6 +91,11 @@
                                                 (assoc-in [index :status] status)
                                                 (assoc-in [index :status-message] status-message)))))
 
+  (reset-bulk-update
+    [this]
+    (reset! task-status-atom [])
+    (reset! collection-status-atom []))
+
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 

@@ -18,7 +18,8 @@
   (get-bulk-update-collection-status [db task-id concept-id])
   (create-and-save-bulk-update-status [db provider-id json-body concept-ids])
   (update-bulk-update-task-status [db task-id status status-message])
-  (update-bulk-update-collection-status [db task-id concept-id status status-message]))
+  (update-bulk-update-collection-status [db task-id concept-id status status-message])
+  (reset-bulk-update [db]))
 
 ;; Extends the BulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol BulkUpdateStore
@@ -55,6 +56,7 @@
 
   (create-and-save-bulk-update-status
     [db provider-id json-body concept-ids]
+    (proto-repl.saved-values/save 16)
     ;; In a transaction, add one row to the task status table and for each concept
     (try
      (j/with-db-transaction
@@ -99,7 +101,15 @@
       (catch Exception e
         (errors/throw-service-error :invalid-data
          [(str "Error creating updating bulk update collection status "
-               (.getMessage e))])))))
+               (.getMessage e))]))))
+
+  (reset-bulk-update
+    [db]
+    (let [statement "DELETE FROM bulk_update_coll_status"]
+      (j/db-do-prepared db statement []))
+    (let [statement "DELETE FROM bulk_update_task_status"]
+      (j/db-do-prepared db statement []))))
+
 
 (defn context->db
   [context]
