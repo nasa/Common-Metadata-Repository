@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.sitemaps
+(ns cmr.system-int-test.search.sitemaps-test
   (:require [clj-http.client :as client]
             [clj-xml-validation.core :as xmlv]
             [clojure.java.io :as io]
@@ -18,15 +18,15 @@
 ;;; Constants and general utility functions for the tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^{:doc "We don't call to `(transmit-config/application-public-root-url)`
-             due to the fact that it requires a context and we're not creating
-             contexts for these integration tests, we're simply using an HTTP
-             client."
-       :private true}
-  base-url (format "%s://%s:%s/"
-                   (transmit-config/search-protocol)
-                   (transmit-config/search-host)
-                   (transmit-config/search-port)))
+(def ^:private base-url
+  "We don't call to `(transmit-config/application-public-root-url)`
+   due to the fact that it requires a context and we're not creating
+   contexts for these integration tests, we're simply using an HTTP
+   client."
+   (format "%s://%s:%s/"
+           (transmit-config/search-protocol)
+           (transmit-config/search-host)
+           (transmit-config/search-port)))
 
 (defn- get-response
   [url-path]
@@ -130,6 +130,7 @@
     (testing "presence and content of sitemap.xml file"
       (is (= (:status response) 200))
       (is (string/includes? body "/docs/api</loc>"))
+      (is (string/includes? body "<changefreq>daily</changefreq>"))
       (is (string/includes? body "/collections/directory</loc>"))
       (is (string/includes? body "/collections/directory/eosdis</loc>"))
       (is (string/includes? body "/collections/directory/PROV1/gov.nasa.eosdis</loc>"))
@@ -148,9 +149,10 @@
       (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
+      (is (string/includes? body "<changefreq>daily</changefreq>"))
       (is (string/includes? body "concepts/C1200000002-PROV1.html</loc>"))
       (is (string/includes? body "concepts/C1200000003-PROV1.html</loc>")))
-    (testing "the collections not taged with eosdis shouldn't show up"
+    (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
 
 (deftest sitemap-provider2
@@ -165,9 +167,10 @@
       (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
+      (is (string/includes? body "<changefreq>daily</changefreq>"))
       (is (string/includes? body "concepts/C1200000005-PROV2.html</loc>"))
       (is (string/includes? body "concepts/C1200000006-PROV2.html</loc>")))
-    (testing "the collections not taged with eosdis shouldn't show up"
+    (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
 
 (deftest sitemap-provider3
@@ -182,5 +185,5 @@
       (is (= 200 (:status response)))
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>")))
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>"))))
-    (testing "the collections not taged with eosdis shouldn't show up"
+    (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))

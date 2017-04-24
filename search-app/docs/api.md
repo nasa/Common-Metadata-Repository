@@ -278,7 +278,7 @@ The CMR Atom format provides search results in an XML file representing a feed o
 | id                          | the CMR identifier for the result                                                                          |
 | title                       | the UMM Entry Title                                                                                        |
 | summary  (collections only) | the summary of intentions with which this collection was developed. - corresponds to the UMM summary field |
-| updated                     | date/time of the last update to the assocated metadata                                                     |
+| updated                     | date/time of the last update to the associated metadata                                                     |
 
 The following fields are specific to the CMR output and most correspond to ECHO10 fields of the same name:
 
@@ -379,7 +379,7 @@ All of the XML Metadata formats (except the XML used in returning references onl
 | took                  | time in milliseconds it took to perform the search |
 | result (zero or more) | a single search result - documented below          |
 
-The results are returned as a seqeuence of `<result>` XML elements, the contents of which are documents in the specified format (DIF, ECHO 10 , etc.). If tags are included in the response a `<tags>` element will directly follow the metadata in the `<result>` element. Each `<result>` XML element contains the following attributes:
+The results are returned as a sequence of `<result>` XML elements, the contents of which are documents in the specified format (DIF, ECHO 10 , etc.). If tags are included in the response a `<tags>` element will directly follow the metadata in the `<result>` element. Each `<result>` XML element contains the following attributes:
 
 |  Attribute  |                  Description                  |
 | ----------- | --------------------------------------------- |
@@ -1469,7 +1469,7 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 #### <a name="retrieving-all-revisions-of-a-collection"></a> Retrieving All Revisions of a Collection
 
-In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisons, by passing in `all_revisions=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
     curl "%CMR-ENDPOINT%/collections?provider=PROV1&all_revisions=true&pretty=true"
 
@@ -2042,7 +2042,7 @@ The following example is a sample response for a query using the query parameter
   "facets": {
     "title": "Browse Collections",
     "type": "group",
-    "applied": true, // NOTE: true because the tree does have a descendent node that has been applied
+    "applied": true, // NOTE: true because the tree does have a descendant node that has been applied
     "has_children": true,
     "children": [
       {
@@ -2126,7 +2126,7 @@ The following example is a sample response for a query using the query parameter
 
 #### <a name="humanizers"></a> Humanizers
 
-Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of facetted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer api.
+Humanizers define the rules that are used by CMR to provide humanized values for various facet fields and also support other features like improved relevancy of faceted terms. The rules are defined in JSON. Operators with Admin privilege can update the humanizer instructions through the update humanizer API.
 
 ##### <a name="updating-humanizers"></a> Updating Humanizers
 
@@ -2389,7 +2389,7 @@ Find all the tiles which a line intersects.
 
     curl -i "%CMR-ENDPOINT%/tiles?line=1,1,10,5,15,9"
 
-The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south.
+The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the JSON format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south.
 
 ### <a name="retrieve-controlled-keywords"></a> Retrieve Controlled Keywords
 
@@ -2606,7 +2606,7 @@ Status code 422 is returned when:
 
 #### <a name="associating-collections-with-a-tag-by-query"></a> Associating Collections with a Tag by query
 
-Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and re-added it will maintain its tags.
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
@@ -2642,7 +2642,7 @@ Content-Length: 168
 
 #### <a name="associating-collections-with-a-tag-by-concept-ids"></a> Associating Collections with a Tag by collection concept ids and optional revision ids
 
-Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
+Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and re-added it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
@@ -2730,7 +2730,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when tag disassociation cannot be processed at all due to invalid input, tag disassociation request will return a failure status code. e.g.
+On occasions when tag disassociation cannot be processed at all due to invalid input, tag disassociation request will return a failure status code. e.g.
 
 Status code 400 is returned when:
 * content type is unsupported

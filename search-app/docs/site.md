@@ -47,4 +47,4 @@ The following temporary redirects are currently defined, to assist with the migr
 | site/docs/api   | site/search_api_docs.html  |
 | site/docs/site  | site/search_site_docs.html |
 
-Each of these return an HTTP response status code of `307`. Once the docs reorganization is complete, the redirection's will be reversed and the status code will be `301`.
+Each of these return an HTTP response status code of `307`. Once the docs reorganization is complete, the redirections will be reversed and the status code will be `301`.
