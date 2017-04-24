@@ -19,15 +19,15 @@
 ;;; Constants and general utility functions for the tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^{:doc "We don't call to `(transmit-config/application-public-root-url)`
-             due to the fact that it requires a context and we're not creating
-             contexts for these integration tests, we're simply using an HTTP
-             client."
-       :private true}
-  base-url (format "%s://%s:%s/"
-                   (transmit-config/search-protocol)
-                   (transmit-config/search-host)
-                   (transmit-config/search-port)))
+(def ^:private base-url
+  "We don't call to `(transmit-config/application-public-root-url)`
+   due to the fact that it requires a context and we're not creating
+   contexts for these integration tests, we're simply using an HTTP
+   client."
+   (format "%s://%s:%s/"
+           (transmit-config/search-protocol)
+           (transmit-config/search-host)
+           (transmit-config/search-port)))
 
 (defn- get-response
   [url-path]
@@ -198,7 +198,7 @@
     (testing "check the status and links for PROV3"
       (is (= 200 (:status response)))
       (is (string/includes? body expected-provider1-level-links)))
-    (testing "the collections not taged with eosdis shouldn't show up"
+    (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes? body notexpected-provider-level-link))))
     (testing "provider page should have header links"
       (is (string/includes? body expected-header-link)))))
@@ -214,7 +214,7 @@
     (testing "check the status and links for PROV3"
       (is (= 200 (:status response)))
       (is (string/includes? body expected-provider2-level-links)))
-    (testing "the collections not taged with eosdis shouldn't show up"
+    (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes? body notexpected-provider-level-link))))
     (testing "provider page should have header links"
       (is (string/includes? body expected-header-link)))))
@@ -230,7 +230,7 @@
     (testing "check the status and links for PROV3"
       (is (= 200 (:status response)))
       (is (string/includes? body expected-provider3-level-links)))
-    (testing "the collections not taged with eosdis shouldn't show up"
+    (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes? body notexpected-provider-level-link))))
     (testing "provider page should have header links"
       (is (string/includes? body expected-header-link)))))

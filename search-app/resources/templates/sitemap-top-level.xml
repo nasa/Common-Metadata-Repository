@@ -3,31 +3,38 @@
   <url>
     <loc>{{ base-url }}</loc>
     <lastmod>{{ datestamp }}</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>{{ base-url }}docs</loc>
     <lastmod>{{ datestamp }}</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>{{ base-url }}site/docs/api</loc>
     <lastmod>{{ datestamp }}</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>{{ base-url }}site/docs/site</loc>
     <lastmod>{{ datestamp }}</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>{{ base-url }}site/collections/directory</loc>
     <lastmod>{{ datestamp }}</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>{{ base-url }}site/collections/directory/eosdis</loc>
     <lastmod>{{ datestamp }}</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   {% for provider in providers %}
   <url>
     <loc>{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}</loc>
     <lastmod>{{ datestamp }}</lastmod>
+    <changefreq>daily</changefreq>
   </url>
   {% endfor %}
 </urlset>
