@@ -76,11 +76,8 @@
         (when (.contains k (str "-" id))
           v)))))  
 
-;;(defn- get-ops-modes
- ;; "Returns the operational modes"
-  ;;[])  
-
 (defn- xml-elem->instrument
+  "Returns instrument record from the instrument element."
   [doc instrument-elem]
   (let [child-instruments (get-child-instruments doc instrument-elem)]
     (util/remove-nil-keys
@@ -99,6 +96,8 @@
        :OperationalModes (char-and-opsmode/parse-operationalmodes instrument-elem)}))))
 
 (defn- xml-elem->instrument-mapping
+  "Returns the instrument id and the instrument mapping {id instrument} for the instrument element.
+   It excludes the child instruments"
   [doc instrument-elem]
   (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc instruments-xpath1))
         id (get-in instrument-elem [:attrs :id])

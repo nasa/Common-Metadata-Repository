@@ -14,6 +14,7 @@
        "/eos:EOS_Platform"))
 
 (defn xml-elem->platform
+  "Returns platform record using the platform element and instrument-id/instrument-record mapping"
   [instruments-mapping platform-elem]
   (let [instrument-ids (keep #(get-in % [:attrs :xlink/href]) (select platform-elem "gmi:instrument"))
         instruments (seq (map (partial get instruments-mapping) instrument-ids))]
