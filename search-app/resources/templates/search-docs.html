@@ -1,14 +1,12 @@
 {% extends "templates/base.html" %}
 
 {% block main-content %}
-<div class="inner cover">
-  <h1 class="cover-heading">CMR Search</h1>
-  <p class="lead">
-    Documentation for CMR Search is broken out into two different usage sections:
-  </p>
-  <ul>
-    <li><a href="{{ base-url }}site/docs/api">API Documentation</a> - How to access the search API via an HTTP client</li>
-    <li><a href="{{ base-url }}site/docs/site">Site Documentation</a> - View site routes and web resources</li>
-  </ul>
-</div>
+<h2>Documentation</h2>
+<p class="lead">
+  Documentation for CMR Search is split out into two different usage sections:
+</p>
+<ul>
+  <li><a href="{{ base-url }}site/docs/api">API Documentation</a> - How to access the search API via an HTTP client</li>
+  <li><a href="{{ base-url }}site/docs/site">Site Documentation</a> - View site routes and web resources</li>
+</ul>
 {% endblock %}

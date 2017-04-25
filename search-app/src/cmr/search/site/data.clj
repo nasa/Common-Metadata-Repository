@@ -119,7 +119,7 @@
   (merge
    (base-page context)
    {:links [{:href "site/collections/directory/eosdis"
-             :text "Directory for EOSDIS Collections"}]}))
+             :text "EOSDIS Collections"}]}))
 
 (defn get-eosdis-directory-links
   "Generate the data necessary to render EOSDIS directory page links."

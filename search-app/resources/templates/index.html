@@ -1,14 +1,17 @@
 {% extends "templates/base.html" %}
 
 {% block main-content %}
-<div class="inner cover">
-  <h1 class="cover-heading">CMR Search</h1>
-  <p class="lead">
-    The Common Metadata Repository (CMR) is an earth science metadata
-    repository for NASA EOSDIS data. The CMR Search API provides access
-    to this metadata.</p>
-  <p class="lead">
-    <a href="/site/docs/api" class="btn btn-lg btn-default">Learn more</a>
+<section class="eui-hero" style="background: url('https://cdn.earthdata.nasa.gov/conduit/upload/947/LANCE_header_MODISAqua2.jpg') no-repeat top center">
+  <h2 class="eui-hero__title">CMR Search</h2>
+  <p class="eui-hero__subtitle">
+  The Common Metadata Repository (CMR) is a high-performance, high-quality,
+  continuously evolving metadata system that catalogs Earth Science data and
+  service metadata records. These metadata records are registered, modified,
+  discovered, and accessed through programmatic interfaces leveraging standard
+  protocols and APIs.
   </p>
-</div>
+  <p>
+    <a href="/site/docs/api" class="eui-btn--blue">Learn more</a>
+  </p>
+</section>
 {% endblock %}
