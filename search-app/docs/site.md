@@ -1,6 +1,4 @@
-## Site Routes and Web Resources Documentation
-
-***
+## Site Routes &amp; Web Resources Documentation
 
 See also the [API Documentation](search_api_docs.html).
 
@@ -40,11 +38,13 @@ Additionally, static assets are made available at the site root, serving CSS and
 
 ### <a name="redirects"></a> Redirects
 
-The following temporary redirects are currently defined, to assist with the migration to a better organized documentation URL structure.
+The following redirects are defined in order to assist with a better organized documentation URL structure.
 
-| Path            | Destination                |
-| --------------- | -------------------------- |
-| site/docs/api   | site/search_api_docs.html  |
-| site/docs/site  | site/search_site_docs.html |
+| Path                       | Destination         |
+| -------------------------- | ------------------- |
+| site/search_api_docs.html  | site/docs/api.html  |
+| site/search_site_docs.html | site/docs/site.html |
+| site/docs/api              | site/docs/api.html  |
+| site/docs/site             | site/docs/site.html |
 
-Each of these return an HTTP response status code of `307`. Once the docs reorganization is complete, the redirections will be reversed and the status code will be `301`.
+Each of these are provided as means of providing backwards compatibility for users who have bookmarked the old URLs. They return an HTTP response status code of `301`.
