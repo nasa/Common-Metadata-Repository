@@ -72,32 +72,7 @@
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
 
-  :aliases {"generate-docs"
-            ["exec" "-ep"
-             (pr-str '(do
-                       (use 'cmr.common-app.api-docs)
-                       (use 'clojure.java.io)
-                       (let [json-target (file "resources/public/site/JSONQueryLanguage.json")
-                             aql-target (file "resources/public/site/IIMSAQLQueryLanguage.xsd")
-                             swagger-target (file "resources/public/site/swagger.json")]
-                         (println "Copying JSON Query Language Schema to" (str json-target))
-                         (make-parents json-target)
-                         (copy (file "resources/schema/JSONQueryLanguage.json")
-                               json-target)
-                         (println "Copying AQL Schema to" (str aql-target))
-                         (copy (file "resources/schema/IIMSAQLQueryLanguage.xsd")
-                               aql-target)
-                         (println "Copying swagger.json file to " (str swagger-target))
-                         (copy (file "resources/schema/swagger.json")
-                               swagger-target))
-                       (generate
-                         "CMR Search"
-                         "docs/api.md"
-                         "resources/public/site/search_api_docs.html")
-                       (generate
-                         "CMR Search"
-                         "docs/site.md"
-                         "resources/public/site/search_site_docs.html")))]
+  :aliases {"generate-docs" ["run" "-m" "cmr.search.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
             ;; Alias to test2junit for consistency with lein-test-out
