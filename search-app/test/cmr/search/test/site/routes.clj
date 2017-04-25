@@ -23,13 +23,15 @@
       (testing "produces a HTTP 200 success response"
         (is (= (:status response) 200)))
       (testing "returns the welcome page HTML"
-        (is (substring? "The CMR Search API" (:body response))))))
+        (is (substring? "The Common Metadata Repository"
+                        (:body response))))))
   (testing "visited on a path with a trailing slash"
     (let [response (site (request :get (str base-url "/")))]
       (testing "produces a HTTP 200 success response"
         (is (= (:status response) 200)))
       (testing "returns the welcome page HTML"
-        (is (substring? "The CMR Search API" (:body response)))))))
+        (is (substring? "The Common Metadata Repository"
+                        (:body response)))))))
 
 (deftest collections-directory-page
   (testing "collections directory page returns content"
@@ -40,7 +42,7 @@
         (is (substring? "Directory of Collections Landing Pages"
                         (:body response))))
       (testing "page has a link to EOSDIS collections directory"
-        (is (substring? "Directory for EOSDIS Collections"
+        (is (substring? "EOSDIS Collections"
                         (:body response)))))))
 
 (deftest test-404

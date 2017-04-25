@@ -42,7 +42,7 @@
 (defn- make-links
   [data]
   (string/join
-    "\n  \n    "
+    "\n  \n  "
     (map make-link data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,7 +55,7 @@
 
 (def expected-top-level-links
   (make-links [{:href (str base-url "site/collections/directory/eosdis")
-                :text "Directory for EOSDIS Collections"}]))
+                :text "EOSDIS Collections"}]))
 
 (def expected-eosdis-level-links
   (let [url (str base-url "site/collections/directory")
@@ -250,4 +250,7 @@
       (is (= (:status response) 200))
       (is (string/includes?
            (:body response)
-           "Directory of Landing Pages for EOSDIS Collections")))))
+           "Directory of Collections Landing Pages"))
+      (is (string/includes?
+           (:body response)
+           "EOSDIS")))))

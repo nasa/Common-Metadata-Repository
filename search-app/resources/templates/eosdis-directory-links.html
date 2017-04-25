@@ -3,12 +3,11 @@
 {% block title %}CMR Search - Directory of Landing Pages for EOSDIS Collections{% endblock %}
 
 {% block main-content %}
-<div class="inner cover">
-  <h1 class="cover-heading">Directory of Landing Pages for EOSDIS Collections</h1>
-  <ul>
+<h2 class="cover-heading">Directory of Collections Landing Pages</h2>
+<h3 class="cover-heading">EOSDIS</h3>
+<ul>
   {% for provider in providers %}
-    <li><a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a></li>
+  <li><a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a></li>
   {% endfor %}
-  </ul>
-</div>
+</ul>
 {% endblock %}

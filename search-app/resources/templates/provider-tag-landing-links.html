@@ -3,12 +3,12 @@
 {% block title %}CMR Search - Landing Pages for the {{ provider-name}} {{ tag-name }} Collections{% endblock %}
 
 {% block main-content %}
-<div class="inner cover">
-  <h1 class="cover-heading">Landing Pages for the {{ provider-name}} {{ tag-name }} Collections</h1>
-  <ul>
+<h2 class="cover-heading">Directory of Collections Landing Pages</h2>
+<h3 class="cover-heading">{{ tag-name }}</h3>
+<h4 class="cover-heading">Landing Pages for {{ provider-name}}</h4>
+<ul>
   {% for link in links %}
-    <li><a href="{{ link.href }}">{{ link.text }}</a></li>
+  <li><a href="{{ link.href }}">{{ link.text }}</a></li>
   {% endfor %}
-  </ul>
-</div>
+</ul>
 {% endblock %}
