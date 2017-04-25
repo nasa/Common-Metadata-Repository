@@ -19,7 +19,7 @@
    [cmr.index-set.system :as index-set-system]
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.system :as indexer-system]
-   [cmr.ingest.data.provider-acl-hash :as ingest-data]
+   [cmr.ingest.data.memory-db :as ingest-data]
    [cmr.ingest.system :as ingest-system]
    [cmr.message-queue.config :as rmq-conf]
    [cmr.message-queue.queue.memory-queue :as mem-queue]
@@ -220,7 +220,7 @@
 (defmethod create-ingest-app :in-memory
   [db-type queue-broker]
   (-> (ingest-system/create-system)
-      (assoc :db (ingest-data/create-in-memory-acl-hash-store)
+      (assoc :db (ingest-data/create-in-memory-db)
              :queue-broker queue-broker
              :scheduler (jobs/create-non-running-scheduler))))
 
