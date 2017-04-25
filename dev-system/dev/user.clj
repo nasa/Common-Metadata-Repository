@@ -36,8 +36,17 @@
             (u/map-values #(assoc-in % [:log :level] level) app-map))))
 
 (defn- maybe-set-all-modes
-  "A utility function for (conditionally) setting all the values of a map to
-  the same value."
+  "A utility function that will set all the keys of `settings/run-modes`
+  to the value associated with the passed parameter `all` only if `all` is not
+  `nil`. In the event that `all` is `nil`, the run modes passed in will be
+  returned as-is.
+
+  This behaviour makes the function conditionally side-effect generating.
+
+  Note that when a non-`nil` value for `all` is provided, a `deref`-ed copy of
+  `settings/run-modes` is used as the starting accumulator for usage in a
+  reduce. The old run modes values aren't used, however -- just their keys; the
+  values are overwritten with what is stored in the `all` variable."
   [all new-modes]
   (let [old-modes @settings/run-modes]
     (if (nil? all)
@@ -68,9 +77,9 @@
   => (set-modes! :elastic :in-memory :echo :external)
   ```"
   ;; Note that the keys are listed below as a means of self-documentation; they
-  ;; are not actually used individuall, but rather as a whole with the
+  ;; are not actually used individually, but rather as a whole with the
   ;; `new-modes` hash map.
-  [& {:keys [all elastic echo db messaging] :as new-modes}]
+  [& {:keys [all _elastic _echo _db _messaging] :as new-modes}]
   (->> new-modes
        (maybe-set-all-modes all)
        (remove #(nil? (val %)))
@@ -131,12 +140,12 @@
   Note that when one or more explicit modes are passed as arguments, the global
   `run-modes` data structure is updated.
 
-  If a run mode for a particular component is not passed, its value taken from
-  what is already in the `run-modes` global data structure. If no mode has been
-  set, the default from initialization will be used."
+  If a run mode for a particular component is not passed, its value is taken
+  from what is already in the `run-modes` global data structure. If no mode has
+  been set, the default from initialization will be used."
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
-  [& {:keys [elastic echo db messaging] :as new-modes}]
+  [& {:keys [_elastic _echo _db _messaging] :as new-modes}]
 
   (config/reset-config-values)
 
@@ -205,7 +214,7 @@
   set, the default from initialization will be used."
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
-  [& {:keys [elastic echo db messaging] :as new-modes}]
+  [& {:keys [_elastic _echo _db _messaging] :as new-modes}]
   (when-not (empty? new-modes)
     (apply set-modes! (mapcat seq new-modes)))
   ;; Stop the system integration test system
