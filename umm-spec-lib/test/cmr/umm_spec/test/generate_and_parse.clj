@@ -105,7 +105,15 @@
       (doseq [target-format tested-collection-formats
               :when (not @failed-atom)
               :let [expected (expected-conversion/convert umm target-format)
+                    expected (update-in-each expected [:Platforms] update-in-each [:Instruments] 
+                               #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
+                                                                (when (> ct 0) ct))))
                     actual (xml-round-trip :collection target-format umm)
+                    actual (if (= :iso-smap target-format)
+                             actual
+                             (update-in-each actual [:Platforms] update-in-each [:Instruments] 
+                               #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
+                                                                (when (> ct 0) ct))))) 
                     ;; The RelatedUrls field get reshuffled during the conversions,
                     ;; so we compare RelatedUrls as a set.
                     expected (update expected :RelatedUrls set)
@@ -148,6 +156,15 @@
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
+         
+          ;; changing everything to set comparison
+          expected (update-in-each expected [:Platforms] update-in-each [:Instruments] update :ComposedOf set)
+          actual (update-in-each actual [:Platforms] update-in-each [:Instruments] update :ComposedOf set)
+          expected (update-in-each expected [:Platforms] update :Instruments set)
+          actual (update-in-each actual [:Platforms] update :Instruments set)
+          expected (update expected :Platforms set)
+          actual (update actual :Platforms set)
+ 
           ;; The RelatedUrls field get reshuffled during the conversions,
           ;; so we compare RelatedUrls as a set.
           expected (update expected :RelatedUrls set)

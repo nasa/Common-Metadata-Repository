@@ -163,6 +163,14 @@
       (sanitize-umm-record-related-url :PublicationReferences)
       (update-in-each [:PublicationReferences] sanitize-online-resource)))
 
+(defn- sanitize-umm-number-of-instruments
+  "Sanitize all the instruments with the :NumberOfInstruments for its child instruments"
+  [record]
+  (-> record
+      (update-in-each [:Platforms] update-in-each [:Instruments]
+        #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
+                                         (when (> ct 0) ct))))))
+
 (defn sanitized-umm-record
   "Returns the sanitized version of the given umm record."
   [record]
@@ -174,4 +182,5 @@
 
       ;; Figure out if we can define this in the schema
       sanitize-science-keywords
-      sanitize-umm-record-urls))
+      sanitize-umm-record-urls
+      sanitize-umm-number-of-instruments))

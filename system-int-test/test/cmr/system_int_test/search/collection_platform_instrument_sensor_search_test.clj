@@ -56,7 +56,7 @@
                                                         :Version "V8"}))
         ;; Added to test SMAP ISO platform and instrument support - note that this collection is
         ;; found in KMS with a category of "Earth Observation Satellites"
-        coll9 (d/ingest-concept-with-metadata-file "data/iso_smap/sample_smap_iso_collection.xml"
+        coll9 (d/ingest-concept-with-metadata-file "example_data/iso-smap/SMAPExample.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :iso-smap
@@ -84,7 +84,7 @@
               [] "BLAH" {}
 
               "search with one smap platform"
-              [coll9] "SMAP" {}
+              [coll1 coll9] "DMSP 5B/F3" {}
 
               "search for collections with either platform1 or platform2"
               [coll1 coll2 coll4] ["platform_SnA" "platform_Sn A"] {}
@@ -122,37 +122,58 @@
            [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))
 
     (testing "Search collections by platform using JSON query"
-      (are [items search]
+      (are3 [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
+           "Search collections by platform using JSON query test1"
            [coll1 coll2] {:platform {:short_name "platform_Sn A"}}
+           "Search collections by platform using JSON query test2"
            [coll6 coll7] {:platform {:short_name "platform_x"}}
+           "Search collections by platform using JSON query test3"
            [] {:platform {:short_name "BLAH"}}
-           [coll9] {:platform {:short_name "SMAP"}}
+           "Search collections by platform using JSON query test4"
+           [coll1 coll9] {:platform {:short_name "DMSP 5B/F3"}}
+           "Search collections by platform using JSON query test5"
            [coll1 coll2 coll4] {:or [{:platform {:short_name "platform_SnA"}}
                                      {:platform {:short_name "platform_Sn A"}}]}
+           "Search collections by platform using JSON query test6"
            [coll2] {:and [{:platform {:short_name "platform_Sn B"}}
                           {:platform {:short_name "platform_Sn A"}}]}
+           "Search collections by platform using JSON query test7"
            [coll6 coll7] {:platform {:short_name "platform_x" :ignore_case true}}
+           "Search collections by platform using JSON query test8"
            [coll7] {:platform {:short_name "platform_x" :ignore_case false}}
+           "Search collections by platform using JSON query test9"
            [coll1 coll2 coll3] {:platform {:short_name "platform_Sn *" :pattern true}}
+           "Search collections by platform using JSON query test10"
            [coll4 coll5] {:platform {:short_name "platform_Sn?" :pattern true}}
 
            ;; Test searching on KMS subfields
+           "Search collections by platform using JSON query test11"
            [coll1 coll2 coll9] {:platform {:category "Earth Observation Satellites"
-                                           :ignore_case false}}
+                                     :ignore_case false}}
+           "Search collections by platform using JSON query test12"
            [] {:platform {:category "EARTH OBSERVATION SATELLITES" :ignore_case false}}
+           "Search collections by platform using JSON query test13"
            [coll1 coll2 coll9] {:platform {:category "EARTH OBSERVATION SATELLITES"
                                            :ignore_case true}}
-           [coll1] {:platform {:series_entity "DMSP (Defense Meteorological Satellite Program)"}}
+           "Search collections by platform using JSON query test14"
+           [coll1 coll9] {:platform {:series_entity "DMSP (Defense Meteorological Satellite Program)"}}
            ;; Short name uses KMS case rather than metadata case
+           "Search collections by platform using JSON query test15"
            [] {:platform {:short_name "diaDEM-1d" :ignore_case false}}
+           "Search collections by platform using JSON query test16"
            [coll2] {:platform {:short_name "diaDEM-1d" :ignore_case true}}
+           "Search collections by platform using JSON query test17"
            [coll2] {:platform {:short_name "DIADEM-1D" :ignore_case false}}
-           [coll1] {:platform {:long_name "defense METEOR*cal S?tellite *" :pattern true}}
+           "Search collections by platform using JSON query test18"
+           [coll1 coll9] {:platform {:long_name "defense METEOR*cal S?tellite *" :pattern true}}
+           "Search collections by platform using JSON query test19"
            [] {:platform {:long_name "defense METEOR*cal S?tellite *"}}
-           [coll1] {:platform {:uuid "7ed12e98-95b1-406c-a58a-f4bbfa405269"}}
-           [coll1] {:platform {:any "7ed12e98*" :pattern true}}))))
+           "Search collections by platform using JSON query test20"
+           [coll1 coll9] {:platform {:uuid "7ed12e98-95b1-406c-a58a-f4bbfa405269"}}
+           "Search collections by platform using JSON query test21"
+           [coll1 coll9] {:platform {:any "7ed12e98*" :pattern true}}))))
 
 (deftest search-by-instrument
   (let [i1 (data-umm-c/instrument {:ShortName "instrument_Sn A"})
@@ -209,14 +230,13 @@
                                                         :ShortName "S9"
                                                         :Version "V9"}))
         ;; Added to test SMAP ISO platform and instrument support
-        coll10 (d/ingest-concept-with-metadata-file "data/iso_smap/sample_smap_iso_collection.xml"
-                                                    {:provider-id "PROV1"
-                                                     :concept-type :collection
-                                                     :format-key :iso-smap
-                                                     :EntryTitle "E10"
-                                                     :ShortName "S10"
-                                                     :Version "V10"})]
-
+        coll10 (d/ingest-concept-with-metadata-file "example_data/iso-smap/SMAPExample.xml"
+                                                   {:provider-id "PROV1"
+                                                    :concept-type :collection
+                                                    :format-key :iso-smap
+                                                    :EntryTitle "E10"
+                                                    :ShortName "S10"
+                                                    :Version "V10"})]
     (index/wait-until-indexed)
 
     (doseq [field [:instrument :instrument-h]]
@@ -237,10 +257,10 @@
               [] "BLAH" {}
 
               "search with one instrument case3"
-              [coll10] "SMAP L-BAND RADAR" {}
+              [coll1 coll2 coll10] "ATM" {}
 
               "search for collections with either instrument1 or instrument2 case1"
-              [coll10] ["SMAP L-BAND RADAR" "SMAP L-BAND RADIOMETER"] {}
+              [coll1 coll2 coll3 coll10] ["ATM" "LVIS"] {}
 
               "search for collections with either instrument1 or instrument2 case2"
               [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
@@ -276,43 +296,66 @@
            [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true}))
 
     (testing "Search collections by instrument using JSON query"
-      (are [items search]
+      (are3 [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
+           "Search collections by instrument using JSON query test1"
            [coll1 coll2 coll6] {:instrument {:short_name "instrument_Sn A"}}
+           "Search collections by instrument using JSON query test2"
            [coll7 coll8] {:instrument {:short_name "instrument_x"}}
+           "Search collections by instrument using JSON query test3"
            [] {:instrument {:short_name "BLAH"}}
-           [coll10] {:instrument {:short_name "SMAP L-BAND RADAR"}}
-           [coll10] {:and [{:instrument {:short_name "SMAP L-BAND RADAR"}}
-                           {:instrument {:short_name "SMAP L-BAND RADIOMETER"}}]}
+           "Search collections by instrument using JSON query test4"
+           [coll1 coll2 coll10] {:instrument {:short_name "ATM"}}
+           "Search collections by instrument using JSON query test5"
+           [coll2 coll10] {:and [{:instrument {:short_name "ATM"}}
+                                 {:instrument {:short_name "LVIS"}}]}
+           "Search collections by instrument using JSON query test6"
            [coll1 coll2 coll4 coll6] {:or [{:instrument {:short_name "instrument_SnA"}}
                                            {:instrument {:short_name "instrument_Sn A"}}]}
+           "Search collections by instrument using JSON query test7"
            [coll2 coll6] {:and [{:instrument {:short_name "instrument_Sn B"}}
                                 {:instrument {:short_name "instrument_Sn A"}}]}
+           "Search collections by instrument using JSON query test8"
            [coll7 coll8] {:instrument {:short_name "instrument_x" :ignore_case true}}
+           "Search collections by instrument using JSON query test9"
            [coll8] {:instrument {:short_name "instrument_x" :ignore_case false}}
+           "Search collections by instrument using JSON query test10"
            [coll1 coll2 coll3 coll6] {:instrument {:short_name "instrument_Sn *" :pattern true}}
+           "Search collections by instrument using JSON query test11"
            [coll4 coll5] {:instrument {:short_name "instrument_Sn?" :pattern true}}
 
            ;; Test searching on KMS subfields
+           "Search collections by instrument using JSON query test12"
            [coll1 coll2 coll3 coll10] {:instrument {:category "Earth Remote Sensing Instruments"
                                                     :ignore_case false}}
+           "Search collections by instrument using JSON query test13"
            [] {:instrument {:category "EARTH REMOTE SENSING INSTRUMENTS" :ignore_case false}}
+           "Search collections by instrument using JSON query test14"
            [coll1 coll2 coll3 coll10] {:instrument {:category "EARTH REMOTE SENSING INSTRUMENTS"
                                                     :ignore_case true}}
-           [coll1 coll2 coll3] {:instrument {:class "Active Remote Sensing"}}
-           [coll1 coll2 coll3] {:instrument {:type "Altimeters"}}
-           [coll10] {:instrument {:subtype "Imaging Spectrometers/Radiometers"}}
+           "Search collections by instrument using JSON query test15"          
+           [coll1 coll2 coll3 coll10] {:instrument {:class "Active Remote Sensing"}}
+           "Search collections by instrument using JSON query test16"
+           [coll1 coll2 coll3 coll10] {:instrument {:type "Altimeters"}}
+           "Search collections by instrument using JSON query test17"
+           [coll1 coll2 coll3 coll10] {:instrument {:subtype "Lidar/Laser Altimeters"}}
 
            ;; Short name uses KMS case rather than metadata case
+           "Search collections by instrument using JSON query test18"
            [] {:instrument {:short_name "atm" :ignore_case false}}
-           [coll1 coll2] {:instrument {:short_name "atm" :ignore_case true}}
-           [coll1 coll2] {:instrument {:short_name "ATM" :ignore_case false}}
-
-           [coll2 coll3] {:instrument {:long_name "Land, V?getation*nd Ice Se?sor" :pattern true}}
+           "Search collections by instrument using JSON query test19"
+           [coll1 coll2 coll10] {:instrument {:short_name "atm" :ignore_case true}}
+           "Search collections by instrument using JSON query test20"
+           [coll1 coll2 coll10] {:instrument {:short_name "ATM" :ignore_case false}}
+           "Search collections by instrument using JSON query test21"
+           [coll2 coll3 coll10] {:instrument {:long_name "Land, V?getation*nd Ice Se?sor" :pattern true}}
+           "Search collections by instrument using JSON query test22"
            [] {:instrument {:long_name "Land, V?getation*nd Ice Se?sor"}}
-           [coll1 coll2] {:instrument {:uuid "c2428a35-a87c-4ec7-aefd-13ff410b3271"}}
-           [coll1 coll2] {:instrument {:any "c2428a35*" :pattern true}}))))
+           "Search collections by instrument using JSON query test23"
+           [coll1 coll2 coll10] {:instrument {:uuid "c2428a35-a87c-4ec7-aefd-13ff410b3271"}}
+           "Search collections by instrument using JSON query test24"
+           [coll1 coll2 coll10] {:instrument {:any "c2428a35*" :pattern true}}))))
 
 (deftest search-by-sensor-short-names
   (let [;; child instrument
