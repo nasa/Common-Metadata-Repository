@@ -309,7 +309,7 @@
            [coll1 coll2 coll10] {:instrument {:short_name "ATM"}}
            "Search collections by instrument using JSON query test5"
            [coll2 coll10] {:and [{:instrument {:short_name "ATM"}}
-                           {:instrument {:short_name "LVIS"}}]}
+                                 {:instrument {:short_name "LVIS"}}]}
            "Search collections by instrument using JSON query test6"
            [coll1 coll2 coll4 coll6] {:or [{:instrument {:short_name "instrument_SnA"}}
                                            {:instrument {:short_name "instrument_Sn A"}}]}
