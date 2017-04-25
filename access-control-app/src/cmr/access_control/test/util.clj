@@ -398,7 +398,7 @@
    (get-acl token concept-id nil)))
 
 (defn search-for-acls
-  "Searches for groups using the given parameters"
+  "Searches for acls using the given parameters"
   ([token params]
    (search-for-acls token params nil))
   ([token params options]

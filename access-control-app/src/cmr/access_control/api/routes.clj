@@ -169,6 +169,7 @@
 (defn- get-current-sids
   "Returns a Ring response with the current user's sids"
   [request-context params]
+  (pv/validate-current-sids-params params)
   (let [result (acl-service/get-current-sids request-context params)]
     {:status 200
      :body (json/generate-string result)}))
@@ -326,5 +327,4 @@
         (OPTIONS "/" [] common-routes/options-response)
 
         (GET "/" {:keys [request-context params]}
-          (pv/validate-current-sids-params params)
           (get-current-sids request-context params))))))

@@ -107,5 +107,4 @@
 (defn validate-current-sids-params
   "Throws service errors if any invalid params or values are found."
   [params]
-  (validate-params
-   params :user-token))
+  (validate-params params :user-token))

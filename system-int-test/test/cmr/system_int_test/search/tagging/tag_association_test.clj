@@ -22,8 +22,8 @@
 (deftest associate-tags-by-query-with-collections-test
 
   ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
 
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
@@ -47,13 +47,13 @@
     (testing "Successfully Associate tag with collections"
       (let [response (tags/associate-by-query token tag-key {:provider "PROV1"})]
         (tags/assert-tag-association-response-ok?
-          {["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
+          {["C1200000013-PROV1"] {:concept-id "TA1200000026-CMR"
                                   :revision-id 1}
-           ["C1200000002-PROV1"] {:concept-id "TA1200000015-CMR"
+           ["C1200000014-PROV1"] {:concept-id "TA1200000027-CMR"
                                   :revision-id 1}
-           ["C1200000003-PROV1"] {:concept-id "TA1200000016-CMR"
+           ["C1200000015-PROV1"] {:concept-id "TA1200000028-CMR"
                                   :revision-id 1}
-           ["C1200000004-PROV1"] {:concept-id "TA1200000017-CMR"
+           ["C1200000016-PROV1"] {:concept-id "TA1200000029-CMR"
                                   :revision-id 1}}
           response)))
 
@@ -70,17 +70,17 @@
       ;; Associates all the version 2 collections which is c2-p1 (already in) and c2-p2 (new)
       (let [response (tags/associate-by-query token tag-key {:version "v2"})]
         (tags/assert-tag-association-response-ok?
-          {["C1200000002-PROV1"] {:concept-id "TA1200000015-CMR"
+          {["C1200000014-PROV1"] {:concept-id "TA1200000027-CMR"
                                   :revision-id 2}
-           ["C1200000006-PROV2"] {:concept-id "TA1200000018-CMR"
+           ["C1200000018-PROV2"] {:concept-id "TA1200000030-CMR"
                                   :revision-id 1}}
           response)))))
 
 (deftest associate-tags-by-concept-ids-with-collections-test
 
   ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
 
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
@@ -106,9 +106,9 @@
                        token tag-key [{:concept-id c1-p1}
                                       {:concept-id c3-p2}])]
         (tags/assert-tag-association-response-ok?
-          {["C1200000001-PROV1"] {:concept-id "TA1200000014-CMR"
+          {["C1200000013-PROV1"] {:concept-id "TA1200000026-CMR"
                                   :revision-id 1}
-           ["C1200000007-PROV2"] {:concept-id "TA1200000015-CMR"
+           ["C1200000019-PROV2"] {:concept-id "TA1200000027-CMR"
                                   :revision-id 1}}
           response)))
 
@@ -156,13 +156,13 @@
                        token tag-key [{:concept-id c2-p1}
                                       {:concept-id "C100-P5"}])]
         (tags/assert-tag-association-response-ok?
-          {["C1200000002-PROV1"] {:concept-id "TA1200000016-CMR"
+          {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
                                   :revision-id 1}
            ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
           response)))))
 
 (deftest associate-tag-failure-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
@@ -209,15 +209,16 @@
            tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
 (deftest disassociate-tags-with-collections-by-query-test
-  ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
-  (e/grant-group (s/context) "groupguid1" (e/coll-catalog-item-id "provguid3"))
-
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
-  (let [[c1-p1 c2-p1 c3-p1 c4-p1
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        ;; Grant all collections in PROV1 and 2
+        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
+        _ (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV3"))
+
+        [c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
@@ -232,7 +233,7 @@
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
-        prov3-token (e/login (s/context) "prov3-user" ["groupguid1"])
+        prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
         {:keys [concept-id]} (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
@@ -264,15 +265,15 @@
         (assert-tag-associated (concat all-prov2-colls all-prov3-colls))))))
 
 (deftest disassociate-tags-with-collections-by-concept-ids-test
-  ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
-  (e/grant-group (s/context) "groupguid1" (e/coll-catalog-item-id "provguid3"))
-
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
-  (let [[c1-p1 c2-p1 c3-p1 c4-p1
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        ;; Grant all collections in PROV1 and 2
+        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+        _ (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
+        _ (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV3"))
+        [c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
@@ -287,7 +288,7 @@
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
-        prov3-token (e/login (s/context) "prov3-user" ["groupguid1"])
+        prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
         {:keys [concept-id]} (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
@@ -320,7 +321,7 @@
             response (tags/disassociate-by-concept-ids
                        token tag-key [{:concept-id c1-p2-concept-id}])]
         (tags/assert-tag-disassociation-response-ok?
-          {["C1200000005-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
+          {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    c1-p2-concept-id)]}}
           response)))
 
@@ -330,12 +331,12 @@
             response (tags/disassociate-by-concept-ids
                        token tag-key [{:concept-id coll-concept-id}])]
         (tags/assert-tag-disassociation-response-ok?
-          {["C1200000012-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
+          {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    coll-concept-id)]}}
           response)))))
 
 (deftest disassociate-tag-failure-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (e/login (s/context) "user1")
@@ -382,7 +383,7 @@
            tags/disassociate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
 (deftest disassociate-tags-with-partial-match-query-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (testing "disassociate tag with only some of the collections matching the query are associated with the tag is OK"
     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
@@ -396,7 +397,7 @@
         (assert-tag-associated [])))))
 
 (deftest disassociate-tags-with-mixed-response-test
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (testing "disassociate tag with mixed success and failure response"
     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
@@ -420,15 +421,15 @@
 
         (tags/assert-tag-disassociation-response-ok?
           {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
-           ["C1200000001-PROV1"] {:concept-id "TA1200000005-CMR" :revision-id 2}
-           ["C1200000002-PROV1" 1] {:concept-id "TA1200000006-CMR" :revision-id 2}
-           ["C1200000003-PROV1"] {:warnings ["Tag [tag1] is not associated with collection [C1200000003-PROV1]."]}}
+           ["C1200000012-PROV1"] {:concept-id "TA1200000016-CMR" :revision-id 2}
+           ["C1200000013-PROV1" 1] {:concept-id "TA1200000017-CMR" :revision-id 2}
+           ["C1200000014-PROV1"] {:warnings ["Tag [tag1] is not associated with collection [C1200000014-PROV1]."]}}
           response)
         (assert-tag-associated [])))))
 
 ;; This tests association retention when collections and tags are updated or deleted.
 (deftest association-retention-test
-  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [coll (d/ingest "PROV1" (dc/collection))
         token (e/login (s/context) "user1")
         _ (index/wait-until-indexed)
@@ -487,7 +488,7 @@
 
 (deftest associate-disassociate-tag-with-collections-test
   ;; Grant all collections in PROV1
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [[coll1 coll2 coll3] (for [n (range 1 4)]
                               (d/ingest "PROV1" (dc/collection)))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
@@ -544,7 +545,7 @@
     (assert-tag-association token [coll3] "tag2")))
 
 (deftest associate-tags-with-data-test
-  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [coll (d/ingest "PROV1" (dc/collection))
         coll-concept-id (:concept-id coll)
         token (e/login (s/context) "user1")

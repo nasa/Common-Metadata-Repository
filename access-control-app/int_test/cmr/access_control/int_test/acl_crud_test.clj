@@ -16,7 +16,7 @@
               (fixtures/int-test-fixtures)
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
                                       ["user1" "user2" "user3" "user4" "user5"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-group-fixture ["PROV1" "PROV2"])
               (fixtures/grant-all-acl-fixture))
 
 (def system-acl
@@ -948,7 +948,7 @@
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "404 is returned when trying to delete an ACL again"
       (is (= {:status 404
-              :body {:errors ["ACL with concept id [ACL1200000003-CMR] was deleted."]}
+              :body {:errors ["ACL with concept id [ACL1200000009-CMR] was deleted."]}
               :content-type :json}
              (ac/delete-acl (u/conn-context) acl-concept-id {:token token :raw? true}))))
     (testing "concept can no longer be retrieved through access control service"

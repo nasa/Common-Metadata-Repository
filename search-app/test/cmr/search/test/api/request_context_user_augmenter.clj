@@ -9,7 +9,7 @@
 (deftest token-and-user-id-context-cache
  (let [token-sid-cache (context-augmenter/create-token-sid-cache)
        user-id-cache (context-augmenter/create-token-user-id-cache)]
-   (cache/set-value token-sid-cache "ABC-1" {:sids ["sid-1" "sid-2"]})
+   (cache/set-value token-sid-cache "ABC-1" ["sid-1" "sid-2"])
    (cache/set-value user-id-cache "ABC-1" "user-id-1")
 
    (testing "Retrieve values from cache with token"

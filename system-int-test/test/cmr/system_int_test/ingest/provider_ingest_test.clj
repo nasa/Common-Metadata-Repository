@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.provider-ingest-test
   "CMR provider ingest integration test"
   (:require
+    [clojure.set :as set]
     [clj-http.client :as client]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as access-control]
@@ -109,17 +110,17 @@
   (testing "delete provider"
     (let [token (e/login-guest (cmr.system-int-test.system/context))
           coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
-                                                          :ShortName "S1"
-                                                          :Version "V1"}))
+                                                                              :ShortName "S1"
+                                                                              :Version "V1"}))
           gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1"))
           gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1"))
           coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
-                                                          :ShortName "S2"
-                                                          :Version "V2"}))
+                                                                              :ShortName "S2"
+                                                                              :Version "V2"}))
           gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1"))
           coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E3"
-                                                          :ShortName "S3"
-                                                          :Version "V3"}))
+                                                                              :ShortName "S3"
+                                                                              :Version "V3"}))
           gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1"))
           ;; create an access group to test cascading deletes
           access-group (u/map-keys->kebab-case
@@ -142,12 +143,16 @@
                                              :catalog_item_identity {:name "PROV1 read, order"
                                                                      :collection_applicable true
                                                                      :provider_id "PROV1"}}))
-          acl3 (u/map-keys->kebab-case
-                 (access-control/create-acl (transmit-config/echo-system-token)
-                                            {:group_permissions [{:permissions [:update]
-                                                                  :user_type "guest"}]
-                                             :provider_identity {:provider_id "PROV1"
-                                                                 :target "INGEST_MANAGEMENT_ACL"}}))]
+          acl3 {:concept-id
+                (e/grant (merge
+                          {:token (transmit-config/echo-system-token)}
+                          (cmr.system-int-test.system/context))
+                         [{:permissions [:update]
+                           :user_type "guest"}]
+                         :provider_identity
+                         {:provider_id "PROV1"
+                          :target "INGEST_MANAGEMENT_ACL"})
+                :revision-id 1}]
       (index/wait-until-indexed)
 
       (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
@@ -160,10 +165,10 @@
                    (access-control/search-for-groups (transmit-config/echo-system-token)
                                                      {:provider "PROV1"})))))
       ;; PROV1 ACLs are indexed
-      (is (= (set [(:concept-id acl1) (:concept-id acl2) (:concept-id acl3)])
-             (set (map :concept_id
-                       (:items
-                        (access-control/search-for-acls (transmit-config/echo-system-token) {:provider "PROV1"}))))))
+      (is (set/subset? (set [(:concept-id acl1) (:concept-id acl2) (:concept-id acl3)])
+                       (set (map :concept_id
+                                 (:items
+                                  (access-control/search-for-acls (transmit-config/echo-system-token) {:provider "PROV1"}))))))
 
       ;; delete provider PROV1
       (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]

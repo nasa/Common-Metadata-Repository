@@ -142,7 +142,7 @@
         (is (= [200 nil] [status errors]))))))
 
 (deftest collection-update-additional-attributes-int-range-test
-  (let [a1 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10}) 
+  (let [a1 (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :ParameterRangeBegin 1 :ParameterRangeEnd 10})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
@@ -163,7 +163,7 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "int"
-                                                                                             :DataType "INT" 
+                                                                                             :DataType "INT"
                                                                                              :ParameterRangeBegin (first range)
                                                                                              :ParameterRangeEnd (second range)})]}))
               {:keys [status errors]} response]
@@ -187,7 +187,7 @@
                                     :ShortName "S1"
                                     :Version "V1"
                                     :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "int"
-                                                                                             :DataType "INT" 
+                                                                                             :DataType "INT"
                                                                                              :ParameterRangeBegin (first range)
                                                                                              :ParameterRangeEnd (second range)})]})
                                  {:allow-failure? true})
@@ -262,8 +262,8 @@
 
 (deftest collection-update-additional-attributes-datetime-range-test
   (let [parse-fn (partial aa/parse-value "DATETIME")
-        a1 (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME" 
-                                             :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z") 
+        a1 (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME"
+                                             :ParameterRangeBegin (parse-fn "2012-02-01T01:02:03Z")
                                              :ParameterRangeEnd (parse-fn "2012-11-01T01:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
@@ -271,9 +271,9 @@
                                                      :Version "V1"
                                                      :AdditionalAttributes [a1]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
-                                                                                      [(dg/psa "datetime" ["2012-04-01T01:02:03Z"])]})) 
+                                                                                      [(dg/psa "datetime" ["2012-04-01T01:02:03Z"])]}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
-                                                                                      [(dg/psa "datetime" ["2012-08-01T01:02:03Z"])]}))] 
+                                                                                      [(dg/psa "datetime" ["2012-08-01T01:02:03Z"])]}))]
     (index/wait-until-indexed)
 
     (testing "successful cases"
@@ -310,7 +310,7 @@
                                     :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "datetime"
                                                                                              :DataType "DATETIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
-                                                                                             :ParameterRangeEnd (parse-fn (second range))})]}) 
+                                                                                             :ParameterRangeEnd (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
@@ -372,7 +372,7 @@
                                                                                              :DataType "DATE"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]})
-                                 {:allow-failure? true}) 
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
@@ -385,7 +385,7 @@
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial aa/parse-value "TIME")
         _ (println (str (dg/psa "time" ["04:02:03Z"])))
-        a1 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME" 
+        a1 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"
                                              :ParameterRangeBegin (parse-fn "01:02:03Z")
                                              :ParameterRangeEnd (parse-fn "11:02:03Z")})
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
@@ -435,7 +435,7 @@
                                                                                              :DataType "TIME"
                                                                                              :ParameterRangeBegin (parse-fn (first range))
                                                                                              :ParameterRangeEnd (parse-fn (second range))})]})
-                                 {:allow-failure? true}) 
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (is (= [422 [expected-error]] [status errors])))
 
@@ -603,7 +603,7 @@
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Entry-Title "Dataset1"
                                                                             :ShortName "S1"
-                                                                            :TemporalExtents [(data-umm-c/temporal-extent 
+                                                                            :TemporalExtents [(data-umm-c/temporal-extent
                                                                                                 {:beginning-date-time "2001-01-01T12:00:00Z"
                                                                                                  :ending-date-time "2010-05-11T12:00:00Z"})]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Dataset2"
@@ -647,7 +647,7 @@
                                                (assoc :revision-id nil)
                                                (assoc :TemporalExtents
                                                       (when (not= {:beginning-date-time nil :ending-date-time nil}
-                                                                  new-temporal-params) 
+                                                                  new-temporal-params)
                                                         [(data-umm-c/temporal-extent new-temporal-params)])))]
                               (d/ingest-umm-spec-collection "PROV1" new-coll {:allow-failure? true})))]
     (index/wait-until-indexed)
@@ -784,7 +784,7 @@
         ["Collection Platform [Terra] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-tile-test
-  (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE" 
+  (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE"
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
@@ -848,7 +848,7 @@
                                                       :Version "V2"
                                                       :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "p2" "i2" "s1" "GPS RECEIVERS")]}))]
     ;; CMR-3926 We need to make sure granules with no instrument ref or sensor ref do not inherit their parent collection's instrument or sensor
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))                                                        
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1"))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i1")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "i2" "GPS")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-refs "p1-1" "GPS")]}))
@@ -867,17 +867,17 @@
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
-        "Removing an instrument referenced by granules is invalid once hierarchical search is supported.  
+        "Removing an instrument referenced by granules is invalid once hierarchical search is supported.
          Currently it's okay if it exists under other platforms."
         ["p1-1" "i2" "GPS" "i4"]
         ["p1-2" "i1" "i2" "GPS" "i4"]
 
         "Adding an additional instrument is OK"
-        ["p1-1" "i1" "i2" "GPS" "i4" "i5"] 
+        ["p1-1" "i1" "i2" "GPS" "i4" "i5"]
         ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
 
         "Removing an instrument not referenced by any granule in the collection is OK"
-        ["p1-1" "i1" "i2" "GPS"] 
+        ["p1-1" "i1" "i2" "GPS"]
         ["p1-2" "i1" "i2" "GPS"]
 
         "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"

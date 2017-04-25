@@ -31,8 +31,8 @@
 
 (deftest tag-association-collection-revisions-test
   ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
 
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
         concept1 {:provider-id "PROV1"
@@ -162,8 +162,8 @@
 
 (deftest tag-disassociation-collection-revisions-test
   ;; Grant all collections in PROV1 and 2
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
 
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
         concept1 {:provider-id "PROV1"
@@ -299,7 +299,7 @@
 
 (deftest associate-disassociate-tag-with-collection-revisions-test
   ;; Grant all collections in PROV1
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
         coll1-2 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
@@ -358,5 +358,3 @@
     ;; verify association, all revisions
     (assert-tag-association token [coll1-1 coll1-3] "tag1" {:all-revisions true})
     (assert-tag-association token [coll2-1] "tag2" {:all-revisions true})))
-
-

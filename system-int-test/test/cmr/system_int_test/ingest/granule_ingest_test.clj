@@ -57,13 +57,13 @@
 (deftest granule-change-parent-collection-test
   (testing "Cannot change granule's parent collection"
     (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1"
-                                                  :ShortName "short1"
-                                                  :Version "V1"
-                                                  :native-id "native1"}))
+                                                                              :ShortName "short1"
+                                                                              :Version "V1"
+                                                                              :native-id "native1"}))
           coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll2"
-                                                  :ShortName "short2"
-                                                  :Version "V2"
-                                                  :native-id "native2"}))
+                                                                              :ShortName "short2"
+                                                                              :Version "V2"
+                                                                              :native-id "native2"}))
           _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "gran1"}))
           {:keys [status errors]} (d/ingest "PROV1"
                                             (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "gran1"})
@@ -132,13 +132,13 @@
       (let [granule (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection)))
             response (ingest/ingest-concept granule {:accept-format :json :raw? true})]
         (index/wait-until-indexed)
-        (is (= {:concept-id "G1200000002-PROV1" :revision-id 1}
+        (is (= {:concept-id "G1200000006-PROV1" :revision-id 1}
                (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection)))
             response (ingest/ingest-concept granule {:accept-format :xml :raw? true})]
         (index/wait-until-indexed)
-        (is (= {:concept-id "G1200000003-PROV1" :revision-id 1}
+        (is (= {:concept-id "G1200000007-PROV1" :revision-id 1}
                (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))))
 
 ;; Verify that the accept header works with returned errors
@@ -146,7 +146,7 @@
   (let [collection (data-umm-c/collection {:EntryTitle "Coll1"})]
     (testing "json response"
       (let [umm-granule (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"
-                                                :granule-ur "Gran1"})
+                                                                                                  :granule-ur "Gran1"})
             granule (d/item->concept umm-granule)
             response (ingest/ingest-concept granule {:accept-format :json :raw? true})
             status (:status response)
@@ -155,7 +155,7 @@
                [status errors]))))
     (testing "xml response"
       (let [umm-granule (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"
-                                                :granule-ur "Gran1"})
+                                                                                                  :granule-ur "Gran1"})
             granule (d/item->concept umm-granule)
             response (ingest/ingest-concept granule {:accept-format :xml :raw? true})
             status (:status response)
@@ -264,7 +264,7 @@
 (deftest ingest-orphan-granule-test
   (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Coll1"}))
         umm-granule (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"
-                                            :granule-ur "Gran1"})
+                                                                                              :granule-ur "Gran1"})
         granule (d/item->concept umm-granule)
         _ (ingest/delete-concept (d/item->concept collection :echo10))
         {:keys [status errors]} (ingest/ingest-concept granule)]

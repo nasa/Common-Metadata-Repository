@@ -69,16 +69,16 @@
 
 (def expected-provider1-level-links
   (let [url (format "%sconcepts" base-url)]
-    (make-links [{:href (format "%s/%s" url "C1200000002-PROV1.html")
+    (make-links [{:href (format "%s/%s" url "C1200000015-PROV1.html")
                   :text "Collection Item 2 (s2)"}
-                 {:href (format "%s/%s" url "C1200000003-PROV1.html")
+                 {:href (format "%s/%s" url "C1200000016-PROV1.html")
                   :text "Collection Item 3 (s3)"}])))
 
 (def expected-provider2-level-links
   (let [url (format "%sconcepts" base-url)]
-    (make-links [{:href (format "%s/%s" url "C1200000005-PROV2.html")
+    (make-links [{:href (format "%s/%s" url "C1200000018-PROV2.html")
                   :text "Collection Item 2 (s2)"}
-                 {:href (format "%s/%s" url "C1200000006-PROV2.html")
+                 {:href (format "%s/%s" url "C1200000019-PROV2.html")
                   :text "Collection Item 3 (s3)"}])))
 
 (def expected-provider3-level-links
@@ -90,7 +90,7 @@
 
 (def notexpected-provider-level-link
   (let [url (format "%sconcepts" base-url)]
-    (make-links [{:href (format "%s/%s" url "C1200000001-PROV1.html")
+    (make-links [{:href (format "%s/%s" url "C1200000014-PROV1.html")
                   :text "Collection Item 1 (s1)"}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

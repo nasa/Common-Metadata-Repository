@@ -70,61 +70,6 @@
                        (search/find-refs :granule {:token guest-token})))))
 
 (deftest granule-search-with-acls-test
-  ;; -- PROV1 --
-  ;; Guests have access to coll1
-  (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid1" (e/coll-id ["coll1" "collnonexist"])))
-  ;; coll 2 has no granule permissions
-  ;; Permits granules with access values.
-  (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid1" nil (e/gran-id {:min-value 10
-                                                                                 :max-value 20
-                                                                                 :include-undefined true})))
-
-  ;; -- PROV2 --
-  ;; Combined collection identifier and granule identifier
-  (e/grant-guest
-    (s/context)
-    (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll7"]) (e/gran-id {:min-value 30
-                                                                          :max-value 40})))
-  (e/grant-registered-users
-    (s/context)
-    (e/gran-catalog-item-id "provguid2" (e/coll-id ["coll3"] {:min-value 1 :max-value 3})))
-  (e/grant-registered-users
-    (s/context)
-    (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4 :max-value 6})))
-
-  ;; Acls that grant nothing
-  (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist1"])))
-  (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id [] {:min-value 4000 :max-value 4000})))
-  (e/grant-registered-users (s/context) (e/gran-catalog-item-id "provguid2" (e/coll-id ["nonexist2"])))
-  (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid2"
-                                                     (e/coll-id ["notexist3"]) (e/gran-id {:min-value 30
-                                                                                           :max-value 40})))
-  ;; -- PROV3 --
-  ;; Guests have full access to provider 3
-  (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid3"))
-
-  ;; Added for CMR-835: This should have no effect on other providers.
-  (e/grant-guest (s/context) (e/gran-catalog-item-id "provguid3" (e/coll-id [] {:include-undefined true})))
-
-
-  ;; -- PROV4 --
-  ;; no acls
-
-  ;; -- PROV5 --
-  ;; lots of access value filters
-  (e/grant-registered-users (s/context)
-                            (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll51"]) (e/gran-id {:include-undefined true})))
-  (e/grant-registered-users (s/context)
-                            (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll52"]) (e/gran-id {:min-value 10})))
-  (e/grant-registered-users (s/context)
-                            (e/gran-catalog-item-id "provguid5" (e/coll-id ["coll53"]) (e/gran-id {:max-value 10})))
-
-  ;; Grant all collections to guests so that granule counts query can be executed
-  (dotimes [n 5]
-    (e/grant-all (s/context) (e/coll-catalog-item-id (str "provguid" (inc n)))))
-
-  (dev-sys-util/clear-caches)
-
   (let [coll1 (make-coll 1 "PROV1")
         coll2 (make-coll 2 "PROV1")
         coll3 (make-coll 3 "PROV2" {:access-value 2.0})
@@ -203,6 +148,62 @@
         guest-permitted-granule-colls [coll1 coll1 coll2 coll2 coll7 coll5 coll5]
         user-permitted-granules [gran6 gran7 gran52 gran53 gran54 gran56 gran57]]
 
+    (index/wait-until-indexed)
+    ;; Guests have access to coll1
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV1" (e/coll-id ["collnonexist"])))
+    ;; coll 2 has no granule permissions
+    ;; Permits granules with access values.
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV1" nil (e/gran-id {:min-value 10
+                                                                                   :max-value 20
+                                                                                   :include_undefined_value true})))
+
+    ;; -- PROV2 --
+    ;; Combined collection identifier and granule identifier
+    (e/grant-guest
+      (s/context)
+      (e/gran-catalog-item-id "PROV2" (e/coll-id ["coll7"]) (e/gran-id {:min-value 30
+                                                                            :max-value 40})))
+    (e/grant-registered-users
+      (s/context)
+      (e/gran-catalog-item-id "PROV2" (e/coll-id ["coll3"] {:min-value 1 :max-value 3})))
+    (e/grant-registered-users
+      (s/context)
+      (e/gran-catalog-item-id "PROV2" (e/coll-id [] {:min-value 4 :max-value 6})))
+
+    ;; Acls that grant nothing
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV2" (e/coll-id ["nonexist1"])))
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV2" (e/coll-id [] {:min-value 4000 :max-value 4000})))
+    (e/grant-registered-users (s/context) (e/gran-catalog-item-id "PROV2" (e/coll-id ["nonexist2"])))
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV2"
+                                                       (e/coll-id ["notexist3"]) (e/gran-id {:min-value 30
+                                                                                             :max-value 40})))
+    ;; -- PROV3 --
+    ;; Guests have full access to provider 3
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV3"))
+
+    ;; Added for CMR-835: This should have no effect on other providers.
+    (e/grant-guest (s/context) (e/gran-catalog-item-id "PROV3" (e/coll-id [] {:include_undefined_value true})))
+
+
+    ;; -- PROV4 --
+    ;; no acls
+
+    ;; -- PROV5 --
+    ;; lots of access value filters
+    (e/grant-registered-users (s/context)
+                              (e/gran-catalog-item-id "PROV5" (e/coll-id ["coll51"]) (e/gran-id {:include_undefined_value true})))
+    (e/grant-registered-users (s/context)
+                              (e/gran-catalog-item-id "PROV5" (e/coll-id ["coll52"]) (e/gran-id {:min-value 10 :max-value 256})))
+    (e/grant-registered-users (s/context)
+                              (e/gran-catalog-item-id "PROV5" (e/coll-id ["coll53"]) (e/gran-id {:min-value -256 :max-value 10})))
+
+    ;; Grant all collections to guests so that granule counts query can be executed
+    (dotimes [n 5]
+      (e/grant-all (s/context) (e/coll-catalog-item-id (str "PROV" (inc n)))))
+
+    (dev-sys-util/clear-caches)
+    (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "Search for refs"

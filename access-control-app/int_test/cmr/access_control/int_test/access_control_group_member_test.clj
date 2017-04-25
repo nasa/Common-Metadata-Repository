@@ -7,7 +7,7 @@
 (use-fixtures :once (fixtures/int-test-fixtures))
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2" "user3" "user4" "user5"])
-              (fixtures/grant-all-group-fixture ["prov1guid"]))
+              (fixtures/grant-all-group-fixture ["PROV1"]))
 
 (defn- assert-group-member-count-correct
   "Asserts that when retrieving the group the correct number of members is returned."

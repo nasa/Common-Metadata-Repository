@@ -15,7 +15,7 @@
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-group-fixture ["PROV1" "PROV2"])
               (fixtures/grant-all-acl-fixture))
 (use-fixtures :once (fixtures/int-test-fixtures))
 

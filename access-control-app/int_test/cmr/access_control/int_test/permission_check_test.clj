@@ -7,16 +7,17 @@
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.transmit.access-control :as ac]))
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1"} ["user1" "user2"])
               (fn [f]
-                (e/grant-all-ingest (u/conn-context) "prov1guid")
+                (e/grant-registered-ingest (u/conn-context) "PROV1")
                 (f))
-              (fixtures/grant-all-group-fixture ["prov1guid"])
+              (fixtures/grant-all-group-fixture ["PROV1"])
               (fixtures/grant-all-acl-fixture))
 
 (deftest invalid-params-test
@@ -91,7 +92,11 @@
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-collection-permissions #(get-permissions %1 coll1)
-        get-granule-permissions #(get-permissions %1 gran1)]
+        get-granule-permissions #(get-permissions %1 gran1)
+        ;;remove some ACLs created in fixtures which we dont want polluting tests
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -189,7 +194,7 @@
     (testing "granule level permissions"
       (testing "no permissions granted"
         (is (= {gran1 []}
-               (get-granule-permissions "user1")))))))
+               (get-granule-permissions :guest)))))))
 
 (deftest collection-catalog-item-identifier-access-value-test
   ;; tests ACLs which grant access to collections based on their access value
@@ -366,7 +371,11 @@
         coll1 (save-prov1-collection "coll1")
         gran1 (u/save-granule coll1)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        ;;remove some ACLs created in fixtures which we dont want polluting tests
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -431,7 +440,11 @@
         gran1 (u/save-granule coll1)
         gran2 (u/save-granule coll2)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
-        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})]
+        update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
+        ;;remove some ACLs created in fixtures which we dont want polluting tests
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -450,14 +463,14 @@
                                            :collection_applicable true
                                            :collection_identifier {:entry_titles ["coll1 entry title"]}
                                            :provider_id "PROV1"}})]
-        (are [user permissions]
-          (= {gran1 permissions
+        (are [user permissions1 permissions2]
+          (= {gran1 permissions1
               ;; also ensure that the other granule under coll2 doesn't get any permissions from this ACL
-              gran2 []}
+              gran2 permissions2}
              (get-permissions user gran1 gran2))
-          :guest ["read"]
-          :registered []
-          "user1" [])
+          :guest ["read"] []
+          :registered [] []
+          "user1" [] [])
 
         (testing "permissions granted to registered users"
           (update-acl acl {:group_permissions [{:permissions [:read :order]
@@ -468,13 +481,13 @@
                                                    :collection_identifier {:entry_titles ["coll1 entry title"]}
                                                    :provider_id "PROV1"}})
 
-          (are [user permissions]
-            (= {gran1 permissions
-                gran2 []}
+          (are [user permissions1 permissions2]
+            (= {gran1 permissions1
+                gran2 permissions2}
                (get-permissions user gran1 gran2))
-            :guest []
-            :registered ["read" "order"]
-            "user1" ["read" "order"]))
+            :guest [] []
+            :registered ["read" "order"] []
+            "user1" ["read" "order"] []))
 
         (testing "no permissions are granted with granule_applicable = false"
           (update-acl acl {:group_permissions [{:permissions [:read :order]
@@ -485,13 +498,13 @@
                                                    :collection_identifier {:entry_titles ["coll1 entry title"]}
                                                    :provider_id "PROV1"}})
 
-          (are [user permissions]
-            (= {gran1 permissions
-                gran2 []}
+          (are [user permissions1 permissions2]
+            (= {gran1 permissions1
+                gran2 permissions2}
                (get-permissions user gran1 gran2))
-            :guest []
-            :registered []
-            "user1" []))
+            :guest [] []
+            :registered [] []
+            "user1" [] []))
 
         (testing "permissions granted to a specific group"
           (update-acl acl {:group_permissions [{:permissions [:read]
@@ -502,13 +515,13 @@
                                                    :collection_identifier {:entry_titles ["coll1 entry title"]}
                                                    :provider_id "PROV1"}})
 
-          (are [user permissions]
-            (= {gran1 permissions
-                gran2 []}
+          (are [user permissions1 permissions2]
+            (= {gran1 permissions1
+                gran2 permissions2}
                (get-permissions user gran1 gran2))
-            :guest []
-            :registered []
-            "user1" ["read"]))))))
+            :guest [] []
+            :registered [] []
+            "user1" ["read"] []))))))
 
 (deftest granule-permissions-with-access-value-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
@@ -546,7 +559,11 @@
                           :catalog_item_identity {:name "prov1 granules w/ min access value"
                                                   :granule_applicable true
                                                   :granule_identifier {:access_value {:min_value 7 :max_value 1000}}
-                                                  :provider_id "PROV1"}})]
+                                                  :provider_id "PROV1"}})
+        ;;remove some ACLs created in fixtures which we dont want polluting tests
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
     (are [user result]
       (= result (get-permissions user gran1 gran2 gran3))
       :guest {gran1 ["read"]
@@ -591,7 +608,11 @@
                                                   :granule_identifier {:temporal {:start_date "1900-01-01T00:00:00Z"
                                                                                   :stop_date "2000-01-01T00:00:00Z"
                                                                                   :mask "contains"}}
-                                                  :provider_id "PROV1"}})]
+                                                  :provider_id "PROV1"}})
+        ;;remove some ACLs created in fixtures which we dont want polluting tests
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
     (are [user result]
       (= result (get-permissions user gran1 gran2 gran3))
       :guest {gran1 []
@@ -613,9 +634,13 @@
                                   :native-id "coll1"
                                   :short-name "coll1"})
         ;; local helpers to make the body of the test cleaner
-        create-acl #(ac/create-acl (u/conn-context) % {:token token})
+        create-acl #(e/grant (u/conn-context) %1 %2 %3)
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
-        get-coll1-permissions #(get-permissions % coll1)]
+        get-coll1-permissions #(get-permissions % coll1)
+        ;;remove some ACLs created in fixtures which we dont want polluting tests
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
 
     (testing "no permissions granted"
       (are [user permissions]
@@ -627,12 +652,10 @@
 
     (testing "provider level permissions"
       ;; update in the IMA grants update AND delete
-      (let [acl {:group_permissions [{:permissions [:update]
-                                      :user_type :guest}]
-                 :provider_identity {:provider_id "PROV1"
-                                     :target "INGEST_MANAGEMENT_ACL"}}
-            acl-concept-id (:concept_id (create-acl acl))]
-
+      (let [acl-concept-id (create-acl  [{:permissions [:update]
+                                          :user_type :guest}]
+                            :provider_identity {:provider_id "PROV1"
+                                                :target "INGEST_MANAGEMENT_ACL"})]
         (are [user permissions]
           (= {coll1 permissions}
              (get-coll1-permissions user))
@@ -675,7 +698,7 @@
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
         created-group-concept-id (:concept_id (u/create-group token group))
         ;; local helpers to make the body of the test cleaner
-        create-acl #(ac/create-acl (u/conn-context) % {:token token})
+        create-acl #(e/grant (u/conn-context) %1 %2 %3)
         update-acl #(ac/update-acl (u/conn-context) %1 %2 {:token token})
         get-system-permissions (fn [user system-object]
                                  (json/parse-string
@@ -688,16 +711,15 @@
 
     (testing "no permissions granted"
       (are [user permissions]
-        (= {"GROUP" permissions}
-           (get-system-permissions user "GROUP"))
+        (= {"INGEST_MANAGEMENT_ACL" permissions}
+           (get-system-permissions user "INGEST_MANAGEMENT_ACL"))
         :guest []
         :registered []
         "user1" []))
 
-    (let [acl {:group_permissions [{:permissions [:read]
-                                    :user_type :guest}]
-               :system_identity {:target "GROUP"}}
-          acl-concept-id (:concept_id (create-acl acl))]
+    (let [acl-concept-id (create-acl [{:permissions [:read]
+                                       :user_type :guest}]
+                           :system_identity {:target "GROUP"})]
 
       (testing "granted to registered users"
         (update-acl acl-concept-id
@@ -713,9 +735,9 @@
           "user1" ["read"]))
 
       (testing "other ACLs are not matched when searching other targets"
-        (create-acl {:group_permissions [{:permissions [:create]
-                                          :user_type :registered}]
-                     :system_identity {:target "PROVIDER"}})
+        (create-acl [{:permissions [:create]
+                      :user_type :registered}]
+                    :system_identity {:target "PROVIDER"})
         (are [user permissions]
           (= {"PROVIDER" permissions}
              (get-system-permissions user "PROVIDER"))

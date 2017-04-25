@@ -318,7 +318,7 @@
   "Returns result of check for current user's group sids"
   [context params]
   (let [user-token (:user-token params)]
-    ;; If token is empty, treat as guest
-    (if (re-matches #"^[\s\t]*$" user-token)
-      (auth-util/get-sids context "guest")
+    ;; If token is nil or empty, treat as guest
+    (if (or (nil? user-token)(re-matches #"^[\s\t]*$" user-token))
+      (auth-util/get-sids context :guest)
       (auth-util/get-sids context (tokens/get-user-id context user-token)))))

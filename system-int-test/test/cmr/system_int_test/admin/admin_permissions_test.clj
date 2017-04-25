@@ -7,6 +7,8 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
+            [cmr.system-int-test.utils.index-util :as index-util]
+            [cmr.transmit.config :as transmit-config]
             [clj-http.client :as client]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-search? false
@@ -22,25 +24,31 @@
                                   :connection-manager (s/conn-mgr)
                                   :throw-exceptions false})
         status (:status response)]
-
      ;; Make sure the status returned is success or 401
     (is (some #{status} [200 201 204 401]))
     (not= status 401)))
 
 (deftest ingest-management-permission-test
-  ;; Grant admin-group-guid admin permission
-  (e/grant-group-admin (s/context) "admin-read-group-guid" :read)
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-  (e/grant-group-admin (s/context) "admin-read-update-group-guid" :read :update)
-  ;; Grant provider admin permission, but not system permission
-  (e/grant-group-provider-admin (s/context) "prov-admin-group-guid" "provguid1" :read :update :delete)
 
-  (let [guest-token (e/login-guest (s/context))
-        user-token (e/login (s/context) "user1" ["group-guid2" "group-guid3"])
-        admin-read-token (e/login (s/context) "admin" ["admin-read-group-guid" "group-guid3"])
-        admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid" "group-guid3"])
-        admin-read-update-token (e/login (s/context) "admin" ["admin-read-update-group-guid" "group-guid3"])
-        prov-admin-token (e/login (s/context) "prov-admin" ["prov-admin-group-guid" "group-guid3"])]
+  (let [admin-read-update-group-concept-id (e/get-or-create-group (s/context) "admin-read-update-group")
+        admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
+        admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        prov-admin-group-concept-id (e/get-or-create-group (s/context) "prov-admin-group")
+        group2-concept-id (e/get-or-create-group (s/context) "group2")
+        group3-concept-id (e/get-or-create-group (s/context) "group3")
+        guest-token (e/login-guest (s/context))
+        user-token (e/login (s/context) "user1" [group2-concept-id group3-concept-id])
+        admin-read-token (e/login (s/context) "admin1" [admin-read-group-concept-id group3-concept-id])
+        admin-update-token (e/login (s/context) "admin2" [admin-update-group-concept-id group3-concept-id])
+        admin-read-update-token (e/login (s/context) "admin3" [admin-read-update-group-concept-id group3-concept-id])
+        prov-admin-token (e/login (s/context) "prov-admin" [prov-admin-group-concept-id group3-concept-id])]
+
+    ;; Grant admin-group-guid admin permission
+    (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
+    (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+    (e/grant-group-admin (s/context) admin-read-update-group-concept-id :read :update)
+    ;; Grant provider admin permission, but not system permission
+    (e/grant-group-provider-admin (s/context) prov-admin-group-concept-id "PROV1" :read :update)
 
     (are [url]
       (and
