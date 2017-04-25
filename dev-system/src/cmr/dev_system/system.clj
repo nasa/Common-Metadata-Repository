@@ -359,7 +359,7 @@
                               (when %
                                 (start-fn %))
                               (catch Exception e
-                                (error e "Failure during startup")
+                                (error e (format "Failure of %s app during startup" app))
                                 (stop-components (stop-apps system) :pre-components)
                                 (stop-components (stop-apps system) :post-components)
                                 (throw e))))))
