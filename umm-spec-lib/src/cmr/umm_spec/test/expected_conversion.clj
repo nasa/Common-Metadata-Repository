@@ -445,7 +445,10 @@
 (defmethod umm->expected-convert :iso-smap
   [umm-coll _]
   (let [original-brs (get-in umm-coll conversion-util/bounding-rectangles-path)
+        original-platforms (:Platforms umm-coll)
         umm-coll (umm->expected-convert umm-coll :iso19115)
+        ;;add back the original platform info taken away from the iso19115 convert. 
+        umm-coll (assoc umm-coll :Platforms original-platforms)
         umm-coll (assoc-in umm-coll conversion-util/bounding-rectangles-path original-brs)]
    (iso-smap/umm-expected-conversion-iso-smap umm-coll original-brs)))
 

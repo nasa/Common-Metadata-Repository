@@ -105,7 +105,13 @@
       (doseq [target-format tested-collection-formats
               :when (not @failed-atom)
               :let [expected (expected-conversion/convert umm target-format)
+                    ;;Can't compare NumberOfInstruments because the original umm might not have it.
+                    ;;but after the round trip for iso-smap, it might be added.
+                    expected (update-in-each expected [:Platforms] update-in-each [:Instruments] assoc
+                                                       :NumberOfInstruments nil)
                     actual (xml-round-trip :collection target-format umm)
+                    actual (update-in-each actual [:Platforms] update-in-each [:Instruments] assoc
+                                                   :NumberOfInstruments nil)
                     ;; The RelatedUrls field get reshuffled during the conversions,
                     ;; so we compare RelatedUrls as a set.
                     expected (update expected :RelatedUrls set)
@@ -147,7 +153,13 @@
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
+          ;;Can't compare NumberOfInstruments because the original umm-record might not have it.
+          ;;but after the round trip for iso-smap, it might be added.
+          expected (update-in-each expected [:Platforms] update-in-each [:Instruments] assoc
+                                             :NumberOfInstruments nil)
           actual (xml-round-trip :collection metadata-format umm-record)
+          actual (update-in-each expected [:Platforms] update-in-each [:Instruments] assoc
+                                           :NumberOfInstruments nil)
           ;; The RelatedUrls field get reshuffled during the conversions,
           ;; so we compare RelatedUrls as a set.
           expected (update expected :RelatedUrls set)

@@ -1,13 +1,15 @@
 (ns cmr.system-int-test.ingest.translation-test
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-            [clj-time.core :as t]
-            [cmr.umm-spec.umm-spec-core :as umm-spec]
-            [cmr.common.mime-types :as mt]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.test.location-keywords-helper :as lkt]))
+  (:require 
+    [clj-time.core :as t]
+    [clojure.test :refer :all]
+    [cmr.common.mime-types :as mt]
+    [cmr.common.util :refer [update-in-each]]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]
+    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+    [cmr.umm-spec.test.location-keywords-helper :as lkt]
+    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def valid-formats
   [:umm-json
@@ -51,9 +53,13 @@
     (testing (format "Translating %s to %s" (name input-format) (name output-format))
       (let [input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
+            expected (update-in-each expected [:Platforms] update-in-each [:Instruments] assoc
+                                               :NumberOfInstruments nil) 
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (first (mt/extract-mime-types (:content-type headers)))
-            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)]
+            parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)
+            parsed-umm-json (update-in-each parsed-umm-json [:Platforms] update-in-each [:Instruments] assoc
+                                                             :NumberOfInstruments nil)]
         (is (= 200 status) body)
         (is (= (mt/format->mime-type output-format) content-type))
         ;; when translating from dif9 to echo10, 

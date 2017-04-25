@@ -7,6 +7,7 @@
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.platform :as platform]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
@@ -16,6 +17,7 @@
    :xmlns:gmi "http://www.isotc211.org/2005/gmi"
    :xmlns:gml "http://www.opengis.net/gml/3.2"
    :xmlns:gmx "http://www.isotc211.org/2005/gmx"
+   :xmlns:eos "http://earthdata.nasa.gov/schema/eos"
    :xmlns:gsr "http://www.isotc211.org/2005/gsr"
    :xmlns:gss "http://www.isotc211.org/2005/gss"
    :xmlns:gts "http://www.isotc211.org/2005/gts"
@@ -68,7 +70,8 @@
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
-  (xml
+  (let [platforms (platform/platforms-with-id (:Platforms c))]
+    (xml
     [:gmd:DS_Series
      iso-smap-xml-namespaces
      [:gmd:composedOf {:gco:nilReason "inapplicable"}]
@@ -187,4 +190,9 @@
            [:gmd:report
             [:gmd:DQ_QuantitativeAttributeAccuracy
              [:gmd:evaluationMethodDescription (char-string quality)]
-             [:gmd:result {:gco:nilReason "missing"}]]])]]]]]))
+             [:gmd:result {:gco:nilReason "missing"}]]])]]
+       [:gmi:acquisitionInformation
+        [:gmi:MI_AcquisitionInformation 
+         (platform/generate-instruments platforms) 
+         (platform/generate-child-instruments platforms) 
+         (platform/generate-platforms platforms)]]]]])))
