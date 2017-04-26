@@ -1,40 +1,40 @@
 (ns cmr.system-int-test.utils.search-util
   "provides search related utilities."
-  (:require 
-    [camel-snake-kebab.core :as csk]
-    [cheshire.core :as json]
-    [clj-http.client :as client]
-    [clj-time.coerce :as tc]
-    [clj-time.core :as t]
-    [clojure.data.xml :as x]
-    [clojure.set :as set]
-    [clojure.string :as str]
-    [clojure.test :refer :all]
-    [clojure.walk]
-    [cmr.common-app.test.side-api :as side]
-    [cmr.common.concepts :as cs]
-    [cmr.common.mime-types :as mime-types]
-    [cmr.common.test.time-util :as tu]
-    [cmr.common.time-keeper :as tk]
-    [cmr.common.util :as util]
-    [cmr.common.xml :as cx]
-    [cmr.system-int-test.data2.aql :as aql]
-    [cmr.system-int-test.data2.aql-additional-attribute]
-    [cmr.system-int-test.data2.atom :as da]
-    [cmr.system-int-test.data2.atom-json :as dj]
-    [cmr.system-int-test.data2.facets :as f]
-    [cmr.system-int-test.data2.kml :as dk]
-    [cmr.system-int-test.data2.opendata :as od]
-    [cmr.system-int-test.data2.provider-holdings :as ph]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.dev-system-util :as dev-util]
-    [cmr.system-int-test.utils.fast-xml :as fx]
-    [cmr.system-int-test.utils.url-helper :as url]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.umm.dif.dif-collection]
-    [cmr.umm.iso-mends.iso-mends-collection]
-    [cmr.umm.iso-smap.iso-smap-collection]
-    [ring.util.codec :as codec]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-time.coerce :as tc]
+   [clj-time.core :as t]
+   [clojure.data.xml :as x]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [clojure.walk]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.concepts :as cs]
+   [cmr.common.mime-types :as mime-types]
+   [cmr.common.test.time-util :as tu]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.system-int-test.data2.aql :as aql]
+   [cmr.system-int-test.data2.aql-additional-attribute]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.atom-json :as dj]
+   [cmr.system-int-test.data2.facets :as f]
+   [cmr.system-int-test.data2.kml :as dk]
+   [cmr.system-int-test.data2.opendata :as od]
+   [cmr.system-int-test.data2.provider-holdings :as ph]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-util]
+   [cmr.system-int-test.utils.fast-xml :as fx]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm.dif.dif-collection]
+   [cmr.umm.iso-mends.iso-mends-collection]
+   [cmr.umm.iso-smap.iso-smap-collection]
+   [ring.util.codec :as codec]))
 
 (defn enable-writes
   "Enables writes for tags / tag associations."
@@ -611,6 +611,16 @@
        :results (json/decode (:body response))}
       response)))
 
+(defn find-deleted-collections
+  "Returns the references that are found by searching deleted collections"
+  [params]
+  (get-search-failure-xml-data
+   (let [response (client/get (url/search-deleted-collections-url)
+                              {:query-params params
+                               :connection-manager (s/conn-mgr)
+                               :throw-exceptions false})]
+     (parse-reference-response false response))))
+
 (defn clear-caches
   "Clears caches in the search application"
   []
@@ -649,11 +659,11 @@
       ;; Freeze time in test
       (tk/set-time-override! (tu/n->date-time now-n))
       ;; Freeze time on CMR side
-      (side/eval-form 
+      (side/eval-form
         `(do (require 'cmr.common.test.time-util) (tk/set-time-override! (tu/n->date-time ~now-n))))
       (f)
       (finally
         ;; Resume time in test
         (tk/clear-current-time!)
         ;; Resume time on CMR side
-        (side/eval-form `(tk/clear-current-time!)))))) 
+        (side/eval-form `(tk/clear-current-time!))))))
