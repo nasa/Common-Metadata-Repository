@@ -151,23 +151,43 @@
   "Defines the footer of the generated documentation page."
   "</div></body></html>")
 
+(defn renderer
+  "Given a hash-map of HTML page data, renders a complete HTML page."
+  [data]
+  (str (header (:page-title data))
+       (:page-content data)
+       footer))
+
+(defn md->html
+  "Given markdown and an optional markdown processor, converts it to HTML.
+  If a processor is not provided, one will be created."
+  ([markdown]
+   (let [processor (PegDownProcessor.
+                     (int (bit-or Extensions/AUTOLINKS
+                                  Extensions/HARDWRAPS
+                                  Extensions/TABLES
+                                  Extensions/FENCED_CODE_BLOCKS)))]
+     (md->html processor markdown)))
+  ([processor markdown]
+   (.markdownToHtml processor markdown)))
+
 (defn generate
   "Generates the API documentation HTML page from the markdown source.
   Args
   * page-title - The title to use in the generated documentation page.
-  * docs-source - The file containing the markdown API documentation. Example: api_docs.md
+  * docs-source - The file containing the markdown API documentation.
+    Example: `api_docs.md`
   * docs-target - The file that will be generated with the API documentation.
-  Examplae resources/public/site/api_docs.html"
-  [page-title docs-source docs-target]
-  (println "Generating" docs-target "from" docs-source)
-  (io/make-parents docs-target)
-  (let [processor (PegDownProcessor.
-                    (int (bit-or Extensions/AUTOLINKS
-                                 Extensions/HARDWRAPS
-                                 Extensions/TABLES
-                                 Extensions/FENCED_CODE_BLOCKS)))]
-    (spit docs-target (str (header page-title)
-                           (.markdownToHtml processor (slurp docs-source))
-                           footer)))
-
-  (println "Done"))
+    Example: `resources/public/site/api_docs.html`
+  * render-fn - An optional 0-arity function that will replace the default
+     render function."
+  ([page-title docs-source docs-target]
+    (let [data {:page-title page-title
+                :page-content (md->html (slurp docs-source))}
+          render-fn (fn [] (renderer data))]
+      (generate page-title docs-source docs-target render-fn)))
+  ([page-title docs-source docs-target render-fn]
+   (println (format "Generating %s from %s ..." docs-target docs-source))
+   (io/make-parents docs-target)
+   (spit docs-target (render-fn))
+   (println "Done.")))

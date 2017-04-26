@@ -4,8 +4,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [clj-http "2.0.0"]
+  :dependencies [[clj-http "2.0.0"]
+                 [clj-xml-validation "1.0.2"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
@@ -25,12 +25,14 @@
                  ;; Needed for client libraries
                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
 
-                 ; include ring-core to support encoding of params
-                 [ring/ring-core "1.5.0"]
-
                  ;; Needed for ring-swagger dependency in search for as long as we provide the
                  ;; swagger-ui as part of search (until the developer portal is available)
-                 [prismatic/schema "1.1.3"]]
+                 [prismatic/schema "1.1.3"]
+
+                 [org.clojure/clojure "1.8.0"]
+
+                 ; include ring-core to support encoding of params
+                 [ring/ring-core "1.5.0"]]
 
   :plugins [[test2junit "1.2.1"]]
 

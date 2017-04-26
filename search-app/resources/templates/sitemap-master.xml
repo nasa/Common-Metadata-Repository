@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>{{ base-url }}site/sitemap.xml</loc>
+    <lastmod>{{ datestamp }}</lastmod>
+  </sitemap>
+  {% for provider in providers %}
+  <sitemap>
+    <loc>{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}/sitemap.xml</loc>
+    <lastmod>{{ datestamp }}</lastmod>
+  </sitemap>
+  {% endfor %}
+</sitemapindex>

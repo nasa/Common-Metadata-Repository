@@ -23,23 +23,41 @@
         (GET "/"
              {context :request-context}
              (pages/home context))
+        (GET "/sitemap.xml"
+             {context :request-context}
+             (pages/sitemap-master context))
+        (GET "/site/sitemap.xml"
+             {context :request-context}
+             (pages/sitemap-top-level context))
         (GET "/site/docs"
              {context :request-context}
              (pages/search-docs context))
-        ;; XXX Eventually we will have better-organized docs resources; until
-        ;; then, let's redirect to where they are.
+        ;; Support better organization of documentation URLs and support old
+        ;; URLs
         (GET "/site/docs/api"
              {context :request-context}
              (redirect
               (str (config/application-public-root-url context)
-                   "site/search_api_docs.html")
+                   "site/docs/api.html")
               307))
         (GET "/site/docs/site"
              {context :request-context}
              (redirect
               (str (config/application-public-root-url context)
-                   "site/search_site_docs.html")
+                   "site/docs/site.html")
               307))
+        (GET "/site/search_api_docs.html"
+             {context :request-context}
+             (redirect
+              (str (config/application-public-root-url context)
+                   "site/docs/api.html")
+              301))
+        (GET "/site/search_site_docs.html"
+             {context :request-context}
+             (redirect
+              (str (config/application-public-root-url context)
+                   "site/docs/site.html")
+              301))
         (GET "/site/collections/directory"
              {context :request-context}
              (pages/collections-directory context))
@@ -49,6 +67,9 @@
         (GET "/site/collections/directory/:provider-id/:tag"
              [provider-id tag :as {context :request-context}]
              (pages/provider-tag-directory context provider-id tag))
+        (GET "/site/collections/directory/:provider-id/:tag/sitemap.xml"
+             [provider-id tag :as {context :request-context}]
+             (pages/sitemap-provider-tag context provider-id tag))
         ;; Add routes for API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])

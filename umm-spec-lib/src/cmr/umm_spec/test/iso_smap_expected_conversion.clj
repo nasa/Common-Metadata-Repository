@@ -83,7 +83,6 @@
         (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
         ;; Implement this as part of CMR-2057
         (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
-        ;; Fields not supported by ISO-SMAP
         (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
         (assoc :DataCenters [su/not-provided-data-center])
         (assoc :VersionDescription nil)
@@ -102,18 +101,7 @@
         (assoc :AncillaryKeywords nil)
         (update :RelatedUrls expected-collection-related-urls)
         (assoc :ISOTopicCategories nil)
-        ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
-        ;; Platform Characteristics are also not supported.
-        (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
-        ;; The following instrument fields are not supported by SMAP.
-        (update-in-each [:Platforms] update-in-each [:Instruments] assoc
-                        :Characteristics nil
-                        :OperationalModes nil
-                        :NumberOfInstruments nil
-                        :ComposedOf nil
-                        :Technique nil)
         (update :ScienceKeywords expected-science-keywords)
-        (update-in [:Platforms] normalize-smap-instruments)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
         (update :CollectionProgress su/with-default)))

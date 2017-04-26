@@ -9,6 +9,7 @@
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
@@ -116,8 +117,7 @@
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
-       :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
-                    (kws/parse-platforms smap-keywords))
+       :Platforms (platform/parse-platforms doc sanitize?)
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
                             (when sanitize? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el sanitize?)

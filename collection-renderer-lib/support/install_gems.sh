@@ -30,7 +30,13 @@ currDir=$PWD
 cd $tmpGemDir
 if [ ! -z "$commit" ]
   then
-    git co -b tmp $commit
+    git checkout -b tmp $commit
+    rc=$?
+    if [[ $rc != 0 ]]
+      then
+        echo "Failed to checkout commit id: $commit"
+        exit $rc
+    fi
     echo "Building metadata preview gem off commit id: $commit"
   else
     echo "Building metadata preview gem off HEAD"

@@ -4,6 +4,8 @@ Disallow: /ingest/providers/
 Disallow: /ingest/translate/
 Disallow: /ingest/jobs/
 
+Sitemap: https://cmr.earthdata.nasa.gov/search/sitemap.xml
+
 Disallow: /search/health
 Disallow: /search/tiles/
 Disallow: /search/reset
