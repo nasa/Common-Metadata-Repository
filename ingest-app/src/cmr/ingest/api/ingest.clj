@@ -370,7 +370,7 @@
         body (str/trim (slurp body))]
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (bulk-update/validate-bulk-update-post-params body)
+    (bulk-update/validate-and-queue-bulk-update request-context provider-id body)
     (generate-ingest-response
       headers
       {:status 200

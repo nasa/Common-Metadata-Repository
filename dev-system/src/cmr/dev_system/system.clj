@@ -19,6 +19,7 @@
    [cmr.index-set.system :as index-set-system]
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.system :as indexer-system]
+   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.memory-db :as ingest-data]
    [cmr.ingest.system :as ingest-system]
    [cmr.message-queue.config :as rmq-conf]
@@ -160,6 +161,7 @@
   (-> (indexer-config/queue-config)
       (rmq-conf/merge-configs (vp-config/queue-config))
       (rmq-conf/merge-configs (access-control-config/queue-config))
+      (rmq-conf/merge-configs (ingest-config/queue-config))
       mem-queue/create-memory-queue-broker
       wrapper/create-queue-broker-wrapper))
 
@@ -169,6 +171,7 @@
   (-> (indexer-config/queue-config)
       (rmq-conf/merge-configs (vp-config/queue-config))
       (rmq-conf/merge-configs (access-control-config/queue-config))
+      (rmq-conf/merge-configs (ingest-config/queue-config))
       (assoc :ttls ttls)))
 
 ;; for legacy reasons :external refers to Rabbit MQ

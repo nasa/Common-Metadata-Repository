@@ -3,7 +3,8 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [cmr.common.services.errors :as errors]
-   [cmr.common.validations.json-schema :as js]))
+   [cmr.common.validations.json-schema :as js]
+   [cmr.ingest.data.ingest-events :as ingest-events]))
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
@@ -27,3 +28,10 @@
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"
                                             update-type)]))))
+
+(defn validate-and-queue-bulk-update
+  [context provider-id json]
+  (let [body (json/parse-string json true)]
+    (validate-bulk-update-post-params json)
+    ;(proto-repl.saved-values/save 26)
+    (ingest-events/publish-provider-event context (ingest-events/provider-bulk-update-event provider-id))))

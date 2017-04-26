@@ -47,3 +47,7 @@
   {:action :provider-delete
    :provider-id provider-id})
 
+(defn provider-bulk-update-event
+  [provider-id]
+  {:action :bulk-update
+   :provider-id provider-id})
