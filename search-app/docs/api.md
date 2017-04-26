@@ -122,6 +122,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Hierarchical JSON facets](#hierarchical-json-facets)
   * [Search for Tiles](#search-for-tiles)
   * [Retrieve Controlled Keywords](#retrieve-controlled-keywords)
+  * [Find collections that have been deleted](#deleted-collections)
   * [Tagging](#tagging)
     * [Tag Access Control](#tag-access-control)
     * [Creating a Tag](#creating-a-tag)
@@ -2469,6 +2470,48 @@ __Example Response__
     } ]
   } ]
 }
+```
+
+### <a name="deleted-collections"></a> Find collections that have been deleted
+
+To support metadata harvesting, a harvesting client can search CMR for collections that are deleted within a time period. The only search parameter supported is `revision_date` and its format is the same as the `revision_date` parameter in regular collection search. The only supported result format is xml references. The response is the references to the highest non-tombstone collection revisions of the collections that are deleted within the given revision date period. e.g.
+
+The following search will return the last revision of the collections that are deleted since 01/20/2017.
+
+    curl -i "%CMR-ENDPOINT%/deleted-collections?revision_date=2017-01-20T00:00:00Z&pretty=true"
+
+__Example Response__
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8
+CMR-Hits: 3
+
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <hits>3</hits>
+    <took>10</took>
+    <references>
+        <reference>
+            <name>Dataset1</name>
+            <id>C1200000001-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/C1200000001-PROV1/1</location>
+            <revision-id>4</revision-id>
+        </reference>
+        <reference>
+            <name>Dataset2</name>
+            <id>C1200000002-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/C1200000002-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+        <reference>
+            <name>Dataset3</name>
+            <id>C1200000003-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/C1200000003-PROV1/1</location>
+            <revision-id>8</revision-id>
+        </reference>
+    </references>
+</results>
 ```
 
 ### <a name="tagging"></a> Tagging

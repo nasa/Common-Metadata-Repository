@@ -3,6 +3,7 @@
    xml references to the highest collection revisions prior to the tombstones for collections that
    are deleted after a given revision date."
   (:require
+   [camel-snake-kebab.core :as csk]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are2] :as util]
@@ -144,3 +145,50 @@
 
          "revision date ending at 2017 - find coll1 and coll2"
          [coll1-1 coll2-1] ",2017-01-01T01:00:00Z")))))
+
+(deftest search-deleted-collections-error-cases
+  (testing "search deleted collections with unsupported params"
+    (are [params]
+      (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                     (search/find-deleted-collections params))
+            param-name (-> params
+                           keys
+                           first
+                           name
+                           csk/->snake_case_string)]
+        (= [400 [(format "Parameter [%s] was not recognized." param-name)]]
+           [status errors]))
+
+      {:concept-id "C1-PROV1"}
+      {:page_num 1}
+      {:page-size 20}))
+  
+  (testing "unsupported format for deleted collections search"
+    (testing "formats return common json response"
+      (are [search-format]
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/find-deleted-collections {} search-format))]
+          (= [400 [(format (str "Result format [%s] is not supported by deleted collections search. "
+                                "The only format that is supported is xml.")
+                           (name search-format))]]
+             [status errors]))
+
+        :json
+        :opendata))
+
+    (testing "formats return common xml response"
+      (are [search-format]
+        (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                       (search/find-deleted-collections {} search-format))]
+          (= [400 [(format (str "Result format [%s] is not supported by deleted collections search. "
+                                "The only format that is supported is xml.")
+                           (name search-format))]]
+             [status errors]))
+
+        :echo10
+        :iso19115
+        :dif
+        :dif10
+        :atom
+        :kml
+        :native))))

@@ -613,12 +613,15 @@
 
 (defn find-deleted-collections
   "Returns the references that are found by searching deleted collections"
-  [params]
-  (get-search-failure-xml-data
-   (let [response (client/get (url/search-deleted-collections-url)
+  ([params]
+   (find-deleted-collections params nil))
+  ([params format-key]
+   (let [accept (when format-key
+                  (mime-types/format->mime-type format-key))
+         response (client/get (url/search-deleted-collections-url)
                               {:query-params params
                                :connection-manager (s/conn-mgr)
-                               :throw-exceptions false})]
+                               :accept accept})]
      (parse-reference-response false response))))
 
 (defn clear-caches

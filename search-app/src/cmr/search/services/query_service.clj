@@ -304,7 +304,7 @@
      (ph/provider-holdings->string
        (:result-format params) provider-holdings {:echo-compatible? (= "true" echo-compatible)})]))
 
-(defn get-collections-with-deleted-revisions
+(defn- get-collections-with-deleted-revisions
   "Executes elasticsearch searches to find collections that have deleted revisions.
    Returns a list of concept-ids of the collections."
   [context params]
@@ -368,6 +368,7 @@
    Collections that are deleted, then later ingested again are not included in the result.
    Returns references to the highest collection revision prior to the collection tombstone."
   [context params]
+  (pv/validate-deleted-collections-params params)
   ;; 1/ Find all collection revisions that are deleted after satify the revision-date query -> c1
   ;; 2/ Filters out any collections c1 that still exists -> c2
   ;; 3/ Find all collection revisions for the c2, return the highest revisions that are visible

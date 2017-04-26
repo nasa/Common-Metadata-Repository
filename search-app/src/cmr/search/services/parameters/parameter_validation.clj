@@ -666,3 +666,33 @@
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors)))
   params)
+
+(def ^:private valid-deleted-collections-search-params
+  "Valid parameters for deleted collections search"
+  #{:revision-date
+    :revision_date
+    :result-format})
+
+(defn- unrecognized-deleted-colls-params-validation
+  "Validates that no invalid parameters were supplied to deleted collections search"
+  [params]
+  (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
+       (set/difference (set (keys params)) valid-deleted-collections-search-params)))
+
+(defn- deleted-colls-result-format-validation
+  "Validates that the only result format support by deleted collections search is :xml"
+  [params]
+  (when-not (= :xml (:result-format params))
+    [(format (str "Result format [%s] is not supported by deleted collections search. "
+                  "The only format that is supported is xml.")
+             (name (:result-format params)))]))
+
+(defn validate-deleted-collections-params
+  "Validates the query parameters passed in with deleted collections search.
+   Throws exceptions to send to the user if a validation fails."
+  [params]
+  (let [errors (mapcat #(% params)
+                       [unrecognized-deleted-colls-params-validation
+                        deleted-colls-result-format-validation])]
+    (when (seq errors)
+      (errors/throw-service-errors :bad-request errors))))
