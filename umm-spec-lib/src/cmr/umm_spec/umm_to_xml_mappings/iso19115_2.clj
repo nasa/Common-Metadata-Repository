@@ -131,20 +131,20 @@
   [projects]
   (for [proj projects]
     (let [{short-name :ShortName
-           long-name  :LongName 
+           long-name  :LongName
            start-date :StartDate
            end-date   :EndDate
            campaigns  :Campaigns} proj]
       [:gmi:operation
        [:gmi:MI_Operation
-     (let [start-date-str (when start-date 
+     (let [start-date-str (when start-date
                             (str "StartDate: " start-date))
            end-date-str (when end-date
                           (str " EndDate: " end-date))
            date-str (if start-date-str
                       (str start-date-str " " end-date-str)
                       end-date-str)]
-       (when date-str 
+       (when date-str
         [:gmi:description
          (char-string date-str)]))
         [:gmi:identifier
@@ -293,6 +293,7 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
+       (data-contact/generate-metadata-author-contact-persons (:ContactPersons c))
        (if-let [archive-centers (data-contact/generate-archive-centers (:DataCenters c))]
         archive-centers
         [:gmd:contact {:gco:nilReason "missing"}])

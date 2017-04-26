@@ -133,7 +133,7 @@
     :MiddleName (str/join " " (subvec names 1 (dec num-names)))
     :LastName (last names)})))
 
-(defn- parse-all-contacts
+(defn- parse-contacts-xml
  "All contacts are located in the same place as the data centers - regardless if they are a contact
  person or group, whether they are standalone or associated with a data center. In this function
  we will determine whether a contact is a person or group and whether or not it is associated to
@@ -141,32 +141,34 @@
  {:DataCenter - data center name if one exists
   :Type - :contact-person or :contact-group
   :Contact - ContactPerson or ContactGroup with no intermediate data}"
- [contacts sanitize?]
- (for [contact contacts
-       :let [organization-name (char-string-value contact "gmd:organisationName")
-             individual-name (char-string-value contact "gmd:individualName")
-             contact-info (parse-contact-information
-                           (first (select contact "gmd:contactInfo/gmd:CI_Contact"))
-                           "DataContactURL"
-                           sanitize?)
-             non-dc-affiliation (char-string-value contact "gmd:positionName")]]
-  (when (or individual-name organization-name)
-   (if individual-name
-     {:Contact (merge
-                 {:Roles (if organization-name
-                          ["Data Center Contact"]
-                          ["Technical Contact"])
-                  :ContactInformation contact-info
-                  :NonDataCenterAffiliation non-dc-affiliation}
-                (parse-individual-name individual-name sanitize?))
-      :DataCenter (get-short-name-long-name organization-name)
-      :Type :contact-person}
-    {:Contact {:Roles ["User Services"]
-               :GroupName organization-name
-               :ContactInformation contact-info
-               :NonDataCenterAffiliation non-dc-affiliation}
-     :DataCenter nil
-     :Type :contact-group}))))
+ ([contacts sanitize?]
+  (parse-contacts-xml contacts "Technical Contact" sanitize?))
+ ([contacts tech-contact-role sanitize?]
+  (for [contact contacts
+        :let [organization-name (char-string-value contact "gmd:organisationName")
+              individual-name (char-string-value contact "gmd:individualName")
+              contact-info (parse-contact-information
+                            (first (select contact "gmd:contactInfo/gmd:CI_Contact"))
+                            "DataContactURL"
+                            sanitize?)
+              non-dc-affiliation (char-string-value contact "gmd:positionName")]]
+   (when (or individual-name organization-name)
+    (if individual-name
+      {:Contact (merge
+                  {:Roles (if organization-name
+                           ["Data Center Contact"]
+                           [tech-contact-role])
+                   :ContactInformation contact-info
+                   :NonDataCenterAffiliation non-dc-affiliation}
+                 (parse-individual-name individual-name sanitize?))
+       :DataCenter (get-short-name-long-name organization-name)
+       :Type :contact-person}
+     {:Contact {:Roles ["User Services"]
+                :GroupName organization-name
+                :ContactInformation contact-info
+                :NonDataCenterAffiliation non-dc-affiliation}
+      :DataCenter nil
+      :Type :contact-group})))))
 
 (defn parse-data-center
  "Parse data center XML into data centers"
@@ -230,9 +232,12 @@
        cited-resp-party-contacts (group-contacts (select xml cited-responsible-party-xpath))
        distributors (group-contacts (select xml distributor-xpath))
        processors (group-contacts (select xml processor-xpath))
-       all-contacts-xml (concat contacts-xml (:contacts-xml additional-contacts) (:contacts-xml distributors)
-                               (:contacts-xml processors) (:contacts-xml cited-resp-party-contacts))
-       contacts (parse-all-contacts all-contacts-xml sanitize?)
+       contacts (concat (parse-contacts-xml contacts-xml sanitize?)
+                        (parse-contacts-xml (:contacts-xml additional-contacts) "Metadata Author" sanitize?)
+                        (parse-contacts-xml (:contacts-xml distributors) sanitize?)
+                        (parse-contacts-xml (:contacts-xml processors) sanitize?)
+                        (parse-contacts-xml (:contacts-xml cited-resp-party-contacts) sanitize?))
+       ;contacts (parse-contacts-xml all-contacts-xml sanitize?)
        data-centers (map #(parse-data-center % contacts sanitize?) data-centers-xml)
        data-centers (concat data-centers
                             (process-duplicate-data-centers data-centers (:data-centers-xml additional-contacts) sanitize?)
