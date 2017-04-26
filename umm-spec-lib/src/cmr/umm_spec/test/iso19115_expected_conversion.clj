@@ -111,7 +111,7 @@
            su/remove-empty-records
            vec))
 
-(defn- expected-iso-19115-2-related-urls
+(defn expected-iso-19115-2-related-urls
   [related-urls]
   (when (seq related-urls)
     (seq (for [related-url related-urls]
@@ -309,7 +309,6 @@
      (update-in-each [:RelatedUrls] #(dissoc % :Subtype :GetData :GetService))
      (update :ContactMechanisms expected-iso-contact-mechanisms)
      (update :Addresses #(take 1 %))))
-
 
 (defn- update-short-and-long-name
  "ISO only has 1 field for both short and long and they get combined with a delimeter. combined

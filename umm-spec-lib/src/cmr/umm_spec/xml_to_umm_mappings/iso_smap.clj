@@ -8,6 +8,7 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
@@ -107,6 +108,8 @@
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/parse-umm-c
+     (merge
+      (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
       {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
        :DOI (parse-doi doc)
@@ -126,6 +129,4 @@
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
        :ProcessingLevel (when sanitize? {:Id u/not-provided})
-       ;; DataCenters is not implemented but is required in UMM-C
-       :DataCenters (when sanitize? [u/not-provided-data-center])
-       :RelatedUrls (dru/parse-related-urls doc sanitize?)})))
+       :RelatedUrls (dru/parse-related-urls doc sanitize?)}))))
