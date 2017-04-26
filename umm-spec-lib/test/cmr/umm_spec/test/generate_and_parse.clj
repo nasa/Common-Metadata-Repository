@@ -85,6 +85,7 @@
                                        :Type "CREATE"}
                                       {:Date (t/date-time 2013)
                                        :Type "UPDATE"}]))]]
+
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
@@ -117,7 +118,9 @@
                     ;; The RelatedUrls field get reshuffled during the conversions,
                     ;; so we compare RelatedUrls as a set.
                     expected (update expected :RelatedUrls set)
-                    actual (update actual :RelatedUrls set)]]
+                    actual (update actual :RelatedUrls set)
+                    expected (update expected :ContactPersons set)
+                    actual (update actual :ContactPersons set)]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
@@ -168,7 +171,9 @@
           ;; The RelatedUrls field get reshuffled during the conversions,
           ;; so we compare RelatedUrls as a set.
           expected (update expected :RelatedUrls set)
-          actual (update actual :RelatedUrls set)]
+          actual (update actual :RelatedUrls set)
+          expected (update expected :ContactPersons set)
+          actual (update actual :ContactPersons set)]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 

@@ -130,11 +130,11 @@
 (defn- generate-contact-person
  "Generate a contact person. If the contact person is associated with a data center, the data center
  name will go under organisationName"
- ([person]
-  (generate-contact-person person nil))
- ([person data-center-name]
+ ([person open-key]
+  (generate-contact-person person open-key nil))
+ ([person open-key data-center-name]
   (let [{:keys [FirstName MiddleName LastName NonDataCenterAffiliation ContactInformation]} person]
-   [:gmd:pointOfContact
+   [open-key
     [:gmd:CI_ResponsibleParty
      [:gmd:individualName (char-string (str/trim (str/join " " [FirstName MiddleName LastName])))]
      (when data-center-name
@@ -160,7 +160,7 @@
  [data-centers]
  (for [data-center data-centers
        :let [data-center-name (generate-data-center-name data-center)]]
-  (map #(generate-contact-person % data-center-name)
+  (map #(generate-contact-person % :gmd:pointOfContact data-center-name)
        (:ContactPersons data-center))))
 
 (defn- generate-contact-group
@@ -183,9 +183,16 @@
  (map generate-contact-group (map :ContactGroups data-centers)))
 
 (defn generate-contact-persons
- "Generate contact persons in ISO."
- [contact-persons]
- (map generate-contact-person contact-persons))
+  "Generate technical contact persons in ISO. Metadata authors are written to
+  another section of the XML."
+  [contact-persons]
+  (seq (map #(generate-contact-person % :gmd:pointOfContact)
+            (filter #(not (contains? (set (:Roles %)) "Metadata Author")) contact-persons))))
+
+(defn generate-metadata-author-contact-persons
+  [contact-persons]
+  (seq (map #(generate-contact-person % :gmd:contact)
+            (filter #(contains? (set (:Roles %)) "Metadata Author") contact-persons))))
 
 (defn generate-contact-groups
  "Generate contact groups in ISO."
