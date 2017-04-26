@@ -21,6 +21,7 @@
    [cmr.ingest.api.ingest :as ingest-api]
    [cmr.ingest.api.routes :as routes]
    [cmr.ingest.config :as config]
+   [cmr.ingest.services.event-handler :as event-handler]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
@@ -79,10 +80,14 @@
      (transmit-config/system-with-connections
       sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
 
-(def start
+(defn start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  (common-sys/start-fn "ingest" component-order))
+  [system]
+  (let [started-system (common-sys/start system component-order)]
+    (when (:queue-broker system)
+      (event-handler/subscribe-to-events {:system started-system}))
+    started-system))
 
 (def stop
   "Performs side effects to shut down the system and release its

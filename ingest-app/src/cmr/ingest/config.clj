@@ -6,9 +6,9 @@
             [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig ingest-accept-umm-version
-  "Defines the latest umm version accepted by ingest - it's the latest official version.  
+  "Defines the latest umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.9"}) 
+  {:default "1.9"})
 
 (defconfig ingest-username
   "Ingest database username"
@@ -31,13 +31,25 @@
 
 (defconfig provider-exchange-name
   "The ingest exchange to which provider change messages are published."
-  {:default "cmr_ingest_provider.exchange"})
+  {:default "cmr_ingest.exchange"})
+
+(defconfig provider-queue-name
+  "The queue containing provider events like 'index provider collections'."
+  {:default "cmr_ingest.queue"})
+
+(defconfig provider-queue-listener-count
+  "Number of worker threads to use for the queue listener for the provider queue"
+  {:default 2
+   :type Long})
 
 (defn queue-config
   "Returns the rabbit mq configuration for the ingest application."
   []
   (assoc (rmq-conf/default-config)
-         :exchanges [(provider-exchange-name)]))
+         :queues [(provider-queue-name)]
+         :exchanges [(provider-exchange-name)]
+         :queues-to-exchanges
+         {(provider-queue-name) [(provider-exchange-name)]}))
 
 (defconfig ingest-nrepl-port
   "Port to listen for nREPL connections."
