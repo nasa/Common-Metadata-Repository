@@ -308,7 +308,7 @@
   "Executes elasticsearch searches to find collections that have deleted revisions.
    Returns a list of concept-ids of the collections."
   [context params]
-  ;;1/ Find all collection revisions that are deleted satisfy the original search params
+  ;; Find all collection revisions that are deleted satisfying the original search params
   (let [query (make-concepts-query context :collection params)
         condition (gc/and-conds
                    [(:condition query)
@@ -355,8 +355,9 @@
                                   #(apply max (map :revision-id %))
                                   (group-by :concept-id (:items results)))
           highest-revisions (filter
-                             #((set highest-coll-revisions)
-                               [(:concept-id %) (:revision-id %)])
+                             (fn [coll]
+                               ((set highest-coll-revisions)
+                                [(:concept-id coll) (:revision-id coll)]))
                              (:items results))]
       (-> results
           (assoc :items highest-revisions)
@@ -364,12 +365,12 @@
 
 (defn get-deleted-collections
   "Executes elasticsearch searches to find collections that are deleted.
-   This only finds collections that are truely deleted and not searchable.
+   This only finds collections that are truly deleted and not searchable.
    Collections that are deleted, then later ingested again are not included in the result.
    Returns references to the highest collection revision prior to the collection tombstone."
   [context params]
   (pv/validate-deleted-collections-params params)
-  ;; 1/ Find all collection revisions that are deleted after satify the revision-date query -> c1
+  ;; 1/ Find all collection revisions that are deleted satisfying the revision-date query -> c1
   ;; 2/ Filters out any collections c1 that still exists -> c2
   ;; 3/ Find all collection revisions for the c2, return the highest revisions that are visible
   (let [start-time (System/currentTimeMillis)
@@ -384,7 +385,7 @@
         ;; when results is nil, hits is 0
         results (or results {:hits 0 :items []})
         total-took (- (System/currentTimeMillis) start-time)
-        ;; construt the response results string
+        ;; construct the response results string
         results-str (common-search/search-results->response
                      context
                      ;; pass in a fake query to get the desired response format
