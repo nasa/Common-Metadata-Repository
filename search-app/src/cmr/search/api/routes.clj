@@ -278,6 +278,16 @@
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (search-response (query-svc/find-concept-by-id request-context result-format concept-id))))))
 
+(defn- get-deleted-collections
+  "Invokes query service to search for collections that are deleted and returns the response"
+  [context path-w-extension params headers]
+  (let [params (process-params params path-w-extension headers mt/xml)]
+    (info (format "Searching for deleted collections from client %s in format %s with params %s."
+                  (:client-id context) (rfh/printable-result-format (:result-format params))
+                  (pr-str params)))
+    (search-response
+     (query-svc/get-deleted-collections context params))))
+
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
@@ -346,6 +356,11 @@
           (POST "/" {params :params headers :headers context :request-context body :body-copy}
             (get-granules-timeline context path-w-extension params headers body)))
 
+        (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
+          (OPTIONS "/" req common-routes/options-response)
+          (GET "/" {params :params headers :headers context :request-context}
+            (get-deleted-collections context path-w-extension params headers)))
+
         ;; AQL search - xml
         (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
@@ -369,11 +384,11 @@
 
         ;; add routes for managing jobs
         (common-routes/job-api-routes
-          (routes
-            (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
-              (acl/verify-ingest-management-permission request-context :update)
-              (metadata-cache/refresh-cache request-context)
-              {:status 200})))
+         (routes
+           (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
+             (acl/verify-ingest-management-permission request-context :update)
+             (metadata-cache/refresh-cache request-context)
+             {:status 200})))
 
         ;; add routes for accessing caches
         common-routes/cache-api-routes

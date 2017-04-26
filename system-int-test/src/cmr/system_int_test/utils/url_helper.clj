@@ -293,6 +293,11 @@
   []
   (format "http://localhost:%s/tiles" (transmit-config/search-port)))
 
+(defn search-deleted-collections-url
+  "URL to search for deleted collections"
+  []
+  (format "http://localhost:%s/deleted-collections" (transmit-config/search-port)))
+
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
   []
