@@ -142,7 +142,7 @@
   :Type - :contact-person or :contact-group
   :Contact - ContactPerson or ContactGroup with no intermediate data}"
  ([contacts sanitize?]
-  (parse-contacts-xml contacts "Technical Contact" sanitize?))
+  (parse-contacts-xml contacts nil sanitize?))
  ([contacts tech-contact-role sanitize?]
   (for [contact contacts
         :let [organization-name (char-string-value contact "gmd:organisationName")
@@ -156,8 +156,8 @@
     (if individual-name
       {:Contact (merge
                   {:Roles (if organization-name
-                           ["Data Center Contact"]
-                           [tech-contact-role])
+                           [(or tech-contact-role "Data Center Contact")]
+                           [(or tech-contact-role "Technical Contact")])
                    :ContactInformation contact-info
                    :NonDataCenterAffiliation non-dc-affiliation}
                  (parse-individual-name individual-name sanitize?))
@@ -207,6 +207,14 @@
   {:data-centers-xml (get group-contacts true)
    :contacts-xml (get group-contacts false)}))
 
+(defn- fix-contact-role
+  "If the role is data center contact, but didn't match on a data center, set
+  the role to 'Technical Contact"
+  [contact-person]
+  (if (= ["Data Center Contact"] (:Roles contact-person))
+    (assoc contact-person :Roles ["Technical Contact"])
+    contact-person))
+
 (defn- get-collection-contact-persons-and-groups
  "Get contact persons and contact groups not associated with a data center."
  [contacts data-centers]
@@ -215,7 +223,7 @@
                                              (not (contains? (set data-centers) (:DataCenter %))))
                                         contacts)
        groups (group-by :Type non-data-center-contacts)]
-   {:ContactPersons (map #(assoc % :Roles ["Technical Contact"]) (map :Contact (get groups :contact-person)))
+   {:ContactPersons (map fix-contact-role (map :Contact (get groups :contact-person)))
     :ContactGroups (map :Contact (get groups :contact-group))}))
 
 (defn parse-contacts

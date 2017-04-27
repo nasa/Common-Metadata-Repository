@@ -349,13 +349,20 @@
         (update :MiddleName #(when (seq %) %)) ; nil if empty
         (assoc :LastName (last names))))))
 
+(defn- iso-contact-person-roles
+  "If not a metadata author, return default role"
+  [roles role-default]
+  (if (contains? (set roles) "Metadata Author")
+    ["Metadata Author"]
+    [role-default]))
+
 (defn- expected-contact-person
  "Return an expected ISO contact person. Role is based on whether it is a contact person associated
  with a data center or standalone contact person"
  [person role]
  (-> person
      (dissoc :Uuid)
-     (assoc :Roles [role])
+     (update :Roles iso-contact-person-roles role)
      update-person-names
      (update :ContactInformation #(expected-iso-contact-information % "DataContactURL"))))
 

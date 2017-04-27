@@ -293,6 +293,7 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
+       (data-contact/generate-data-center-metadata-author-contact-persons (:DataCenters c))
        (data-contact/generate-metadata-author-contact-persons (:ContactPersons c))
        (if-let [archive-centers (data-contact/generate-archive-centers (:DataCenters c))]
         archive-centers

@@ -46,6 +46,17 @@
    :iso19115 "iso19115.xml"
    :iso-smap "iso_smap.xml"})
 
+(defn- convert-to-sets
+  "Convert lists in the umm record to sets so order doesn't matter during comparison"
+  [record]
+  (-> record
+      (update-in-each [:Platforms] update-in-each [:Instruments] update :ComposedOf set)
+      (update-in-each [:Platforms] update :Instruments set)
+      (update :Platforms set)
+      (update :RelatedUrls set)
+      (update-in-each [:DataCenters] update :ContactPersons set)
+      (update :ContactPersons set)))
+
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
@@ -106,21 +117,18 @@
       (doseq [target-format tested-collection-formats
               :when (not @failed-atom)
               :let [expected (expected-conversion/convert umm target-format)
-                    expected (update-in-each expected [:Platforms] update-in-each [:Instruments] 
+                    expected (update-in-each expected [:Platforms] update-in-each [:Instruments]
                                #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                                                 (when (> ct 0) ct))))
                     actual (xml-round-trip :collection target-format umm)
                     actual (if (= :iso-smap target-format)
                              actual
-                             (update-in-each actual [:Platforms] update-in-each [:Instruments] 
+                             (update-in-each actual [:Platforms] update-in-each [:Instruments]
                                #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
-                                                                (when (> ct 0) ct))))) 
-                    ;; The RelatedUrls field get reshuffled during the conversions,
-                    ;; so we compare RelatedUrls as a set.
-                    expected (update expected :RelatedUrls set)
-                    actual (update actual :RelatedUrls set)
-                    expected (update expected :ContactPersons set)
-                    actual (update actual :ContactPersons set)]]
+                                                                (when (> ct 0) ct)))))
+                    ;; Change fields to sets for comparison
+                    expected (convert-to-sets expected)
+                    actual (convert-to-sets actual)]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
@@ -159,21 +167,10 @@
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
-         
-          ;; changing everything to set comparison
-          expected (update-in-each expected [:Platforms] update-in-each [:Instruments] update :ComposedOf set)
-          actual (update-in-each actual [:Platforms] update-in-each [:Instruments] update :ComposedOf set)
-          expected (update-in-each expected [:Platforms] update :Instruments set)
-          actual (update-in-each actual [:Platforms] update :Instruments set)
-          expected (update expected :Platforms set)
-          actual (update actual :Platforms set)
- 
-          ;; The RelatedUrls field get reshuffled during the conversions,
-          ;; so we compare RelatedUrls as a set.
-          expected (update expected :RelatedUrls set)
-          actual (update actual :RelatedUrls set)
-          expected (update expected :ContactPersons set)
-          actual (update actual :ContactPersons set)]
+
+          ;; Change fields to sets for comparison
+          expected (convert-to-sets expected)
+          actual (convert-to-sets actual)]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
