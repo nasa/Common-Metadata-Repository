@@ -155,14 +155,6 @@
    [:gmd:pointOfContact
      (generate-data-center data-center iso-role)]))
 
-(defn generate-data-center-contact-persons
- "Generate the contact persons for the data center. "
- [data-centers]
- (for [data-center data-centers
-       :let [data-center-name (generate-data-center-name data-center)]]
-  (map #(generate-contact-person % :gmd:pointOfContact data-center-name)
-       (:ContactPersons data-center))))
-
 (defn- generate-contact-group
  "Generate a contact group in ISO. A contact group is distinguished from a contact person by not
   having an individualName."
@@ -190,9 +182,28 @@
             (filter #(not (contains? (set (:Roles %)) "Metadata Author")) contact-persons))))
 
 (defn generate-metadata-author-contact-persons
+  "Generate contact person entries for metadata authors"
   [contact-persons]
   (seq (map #(generate-contact-person % :gmd:contact)
             (filter #(contains? (set (:Roles %)) "Metadata Author") contact-persons))))
+
+(defn generate-data-center-contact-persons
+ "Generate the non-metatata author contact persons for the data center. "
+ [data-centers]
+ (for [data-center data-centers
+       :let [data-center-name (generate-data-center-name data-center)
+             contact-persons (filter #(not (contains? (set (:Roles %)) "Metadata Author"))
+                                     (:ContactPersons data-center))]]
+  (map #(generate-contact-person % :gmd:pointOfContact data-center-name) contact-persons)))
+
+(defn generate-data-center-metadata-author-contact-persons
+ "Generate the metadata author contact persons for the data center. "
+ [data-centers]
+ (for [data-center data-centers
+       :let [data-center-name (generate-data-center-name data-center)
+             contact-persons (filter #(contains? (set (:Roles %)) "Metadata Author")
+                                     (:ContactPersons data-center))]]
+  (map #(generate-contact-person % :gmd:contact data-center-name) contact-persons)))
 
 (defn generate-contact-groups
  "Generate contact groups in ISO."
