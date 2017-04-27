@@ -2,28 +2,9 @@
   "The functions of this namespace are specifically responsible for returning
   ready-to-serve pages."
   (:require
-   [clojure.java.io :as io]
+   [cmr.common-app.api-docs :as api-docs]
    [cmr.search.site.util :as util])
   (:gen-class))
-
-(defn prepare-docs
-  "Copy the static docs support files to where they will be served as static
-  content."
-  []
-  (println "Preparing docs generator ...")
-  (let [json-target (io/file "resources/public/site/JSONQueryLanguage.json")
-        aql-target (io/file "resources/public/site/IIMSAQLQueryLanguage.xsd")
-        swagger-target (io/file "resources/public/site/swagger.json")]
-    (println " * Copying JSON Query Language Schema to" (str json-target))
-    (io/make-parents json-target)
-    (io/copy (io/file "resources/schema/JSONQueryLanguage.json")
-             json-target)
-    (println " * Copying AQL Schema to" (str aql-target))
-    (io/copy (io/file "resources/schema/IIMSAQLQueryLanguage.xsd")
-             aql-target)
-    (println " * Copying swagger.json file to " (str swagger-target))
-    (io/copy (io/file "resources/schema/swagger.json")
-             swagger-target)))
 
 (defn generate-api-docs
   "Generate CMR Search API docs."
@@ -53,7 +34,7 @@
   $ lein run -m cmr.search.site.static all"
   [doc-type]
   (case (keyword doc-type)
-    :prep (prepare-docs)
+    :prep (api-docs/prepare-docs)
     :api (generate-api-docs)
     :site (generate-site-docs)
     :all (do

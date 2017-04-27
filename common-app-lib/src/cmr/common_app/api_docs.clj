@@ -51,20 +51,24 @@
                                                       \"api_docs.md\"
                                                       \"resources/public/site/foo_api_docs.html\")))]
   ```"
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [ring.util.response :as r]
-            [ring.util.request :as request]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [cmr.common-app.api.routes :as cr])
-  (:import [org.pegdown
-            PegDownProcessor
-            Extensions]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [cmr.common-app.api.routes :as cr]
+   [cmr.common-app.site.pages :as pages]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [compojure.core :refer :all]
+   [ring.util.response :as response]
+   [ring.util.request :as request]
+   [selmer.parser :as selmer])
+  (:import
+   [org.pegdown PegDownProcessor
+                Extensions]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Routing Vars
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Routing Setup
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro force-trailing-slash
   "Given a ring request, if the request was made against a resource path with a trailing
@@ -74,7 +78,7 @@
   [req body]
   `(if (.endsWith (:uri ~req) "/")
      ~body
-     (assoc (r/redirect (str (request/request-url ~req) "/")) :status 301)))
+     (assoc (response/redirect (str (request/request-url ~req) "/")) :status 301)))
 
 (def ^:private resource-root "public/site/")
 
@@ -86,40 +90,46 @@
 (defn docs-routes
   "Defines routes for returning API documentation. Takes the public-protocol (http or https),
   relative-root-url of the application, and the location of the welcome page within the classpath."
-  [public-protocol relative-root-url welcome-page-location]
-  (routes
-    ;; CMR Application Welcome Page
-    (GET "/" req
-      (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
-                            {:status 200
-                             :body (slurp (io/resource welcome-page-location))}))
-
-    (context "/site" []
-      ;; Return swagger.json if the application provides one
-      (GET "/swagger.json" {:keys [headers]}
-        (if-let [resource (site-resource "swagger.json")]
-          {:status 200
-           :body (-> resource
-                     slurp
-                     (str/replace "%CMR-PROTOCOL%" public-protocol)
-                     (str/replace "%CMR-HOST%" (headers "host"))
-                     (str/replace "%CMR-BASE-PATH%" relative-root-url))
-           :headers (:headers cr/options-response)}
-          (route/not-found (site-resource "404.html"))))
-      ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-      (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
-        (when-let [resource (site-resource page)]
-          (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
+  ([public-protocol relative-root-url]
+    (routes
+      (context "/site" []
+        ;; Return swagger.json if the application provides one
+        (GET "/swagger.json" {:keys [headers]}
+          (if-let [resource (site-resource "swagger.json")]
             {:status 200
              :body (-> resource
                        slurp
-                       (str/replace "%CMR-ENDPOINT%" cmr-root))})))
-      ;; Other static resources (Javascript, CSS)
-      (route/resources "/" {:root resource-root})
-      (route/not-found (site-resource "404.html")))))
+                       (string/replace "%CMR-PROTOCOL%" public-protocol)
+                       (string/replace "%CMR-HOST%" (headers "host"))
+                       (string/replace "%CMR-BASE-PATH%" relative-root-url))
+             :headers (:headers cr/options-response)}
+            (route/not-found (site-resource "404.html"))))
+        ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
+        (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
+          (when-let [resource (site-resource page)]
+            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
+              {:status 200
+               :body (-> resource
+                         slurp
+                         (string/replace "%CMR-ENDPOINT%" cmr-root))})))
+        ;; Other static resources (Javascript, CSS)
+        (route/resources "/" {:root resource-root})
+        (pages/not-found))))
+  ([public-protocol relative-root-url welcome-page-location]
+    (routes
+      ;; CMR Application Welcome Page
+      (GET "/" req
+        (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
+                              {:status 200
+                               :body (slurp (io/resource welcome-page-location))}))
+      (docs-routes public-protocol relative-root-url))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Documentation Generation Vars
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Documentation Generation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; XXX Remove this section during work on CMR-4094, when it will no longer be
+;; used.
 
 (defn header
   "Defines the header of the generated documentation page."
@@ -158,6 +168,29 @@
        (:page-content data)
        footer))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Core API Documentation Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn prepare-docs
+  "Copy the static docs support files to where they will be served as static
+  content."
+  []
+  (println "Preparing docs generator ...")
+  (let [json-target (io/file "resources/public/site/JSONQueryLanguage.json")
+        aql-target (io/file "resources/public/site/IIMSAQLQueryLanguage.xsd")
+        swagger-target (io/file "resources/public/site/swagger.json")]
+    (println " * Copying JSON Query Language Schema to" (str json-target))
+    (io/make-parents json-target)
+    (io/copy (io/file "resources/schema/JSONQueryLanguage.json")
+             json-target)
+    (println " * Copying AQL Schema to" (str aql-target))
+    (io/copy (io/file "resources/schema/IIMSAQLQueryLanguage.xsd")
+             aql-target)
+    (println " * Copying swagger.json file to" (str swagger-target))
+    (io/copy (io/file "resources/schema/swagger.json")
+             swagger-target)))
+
 (defn md->html
   "Given markdown and an optional markdown processor, converts it to HTML.
   If a processor is not provided, one will be created."
@@ -190,4 +223,14 @@
    (println (format "Generating %s from %s ..." docs-target docs-source))
    (io/make-parents docs-target)
    (spit docs-target (render-fn))
-   (println "Done.")))
+   (println "Done."))
+  ;; XXX The following clause is temporary for CMR-4093; with CMR-4094, it will
+  ;; go away when the entire function is refactored to its final form.
+  ([page-title docs-source docs-target template-file data]
+    (generate page-title
+              docs-source
+              docs-target
+              (fn []
+                (selmer/render-file
+                 template-file
+                 data)))))

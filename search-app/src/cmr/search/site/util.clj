@@ -39,10 +39,8 @@
   (api-docs/generate page-title
                      md-source
                      out-file
-                     (fn []
-                      (selmer/render-file
-                        template-file
-                        {:base-url "../../"
-                         :site-title site-title
-                         :page-title page-title
-                         :page-content (api-docs/md->html (slurp md-source))}))))
+                     template-file
+                     {:base-url "../../"
+                      :site-title site-title
+                      :page-title page-title
+                      :page-content (api-docs/md->html (slurp md-source))}))
