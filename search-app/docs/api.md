@@ -2495,7 +2495,7 @@ CMR-Hits: 3
         <reference>
             <name>Dataset1</name>
             <id>C1200000001-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/C1200000001-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/C1200000001-PROV1/4</location>
             <revision-id>4</revision-id>
         </reference>
         <reference>
@@ -2507,7 +2507,7 @@ CMR-Hits: 3
         <reference>
             <name>Dataset3</name>
             <id>C1200000003-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/C1200000003-PROV1/1</location>
+            <location>%CMR-ENDPOINT%/concepts/C1200000003-PROV1/8</location>
             <revision-id>8</revision-id>
         </reference>
     </references>
