@@ -63,8 +63,8 @@
                                                      (use 'cmr.common-app.api-docs)
                                                      (generate
                                                        "CMR Access Control"
-                                                       "api_docs.md"
-                                                       "resources/public/site/access_control_api_docs.html")))]
+                                                       "docs/api.md"
+                                                       "resources/public/site/docs/api.html")))]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]
             ;; Creates the checkouts directory to the local projects

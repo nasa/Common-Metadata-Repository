@@ -24,7 +24,7 @@ The object specifies the resource on which access is being controlled by an ACL.
 - **Single Instance Identities**: A single discrete resource as opposed to a class of resources. Currently, this is used only for specifying a specific group, for instance to grant members of one group the ability to manage another group.  This 'Group Management' Single Instance ACL grants members of the managing group the ability to update (e.g. add/remove users) or delete the managed group.
 - **Catalog Item Identities**: Collection and granule resources. ACLs on these resources is used to determine what results a user sees in search results.
 
-System and provider resources are specified as a single target string (e.g. `INGEST_MANAGEMENT_ACL`), and in the case of provider resources, a provider ID. The list of available targets can be found at <https://cmr.sit.earthdata.nasa.gov/access-control/site/access_control_api_docs.html> under 'Grantable Permissions'. Single instance resources are specified by a target string (currently only `GROUP_MANAGEMENT` is supported) and a target ID (i.e. group concept-id). Catalog Item resources have a more complex specification which is described below.
+System and provider resources are specified as a single target string (e.g. `INGEST_MANAGEMENT_ACL`), and in the case of provider resources, a provider ID. The list of available targets can be found at <https://cmr.sit.earthdata.nasa.gov/access-control/site/docs/api.html> under 'Grantable Permissions'. Single instance resources are specified by a target string (currently only `GROUP_MANAGEMENT` is supported) and a target ID (i.e. group concept-id). Catalog Item resources have a more complex specification which is described below.
 
 #### Catalog Item Identities
 
@@ -41,7 +41,7 @@ It should be noted that while temporal Catalog item filters are supported by the
 
 ### Predicates
 
-The predicate specifies which operations are permitted on a resource. The available predicates are `create`, `read`, `update`, `delete`, and `order`. The first 4 operations correspond to the expected CRUD operations on an object while `order` is a predicate specific to catalog item resources which allows users to order the specified resources, rather than simply view the metadata. Each ACL resource has a subset of these predicates which are valid for that resource (see <https://cmr.sit.earthdata.nasa.gov/access-control/site/access_control_api_docs.html> under 'Grantable Permissions'). The meaning of each predicate in relation to a given resource can usually be deduced, but ultimately, the CMR and ECHO code which performs access verification on each operation implicitly defines the meaning of each.  An ACL's meaning ultimately depends only on the code which is performing checks against the ACL, so where there is any confusion about what an ACL does, ask CMR development.
+The predicate specifies which operations are permitted on a resource. The available predicates are `create`, `read`, `update`, `delete`, and `order`. The first 4 operations correspond to the expected CRUD operations on an object while `order` is a predicate specific to catalog item resources which allows users to order the specified resources, rather than simply view the metadata. Each ACL resource has a subset of these predicates which are valid for that resource (see <https://cmr.sit.earthdata.nasa.gov/access-control/site/docs/api.html> under 'Grantable Permissions'). The meaning of each predicate in relation to a given resource can usually be deduced, but ultimately, the CMR and ECHO code which performs access verification on each operation implicitly defines the meaning of each.  An ACL's meaning ultimately depends only on the code which is performing checks against the ACL, so where there is any confusion about what an ACL does, ask CMR development.
 
 ## Built in ACLs
 
@@ -732,7 +732,7 @@ https://cmr.sit.earthdata.nasa.gov/access-control/acls?include-full-acl=true&ide
 ```
 
 
-While operational environments generally provide separate 'All Collections' and 'All Granules' ACLs, these can be combined for convenience in dev and ci environments as shown below.  
+While operational environments generally provide separate 'All Collections' and 'All Granules' ACLs, these can be combined for convenience in dev and ci environments as shown below.
 
 ```
 {
