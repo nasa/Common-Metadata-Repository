@@ -25,9 +25,9 @@
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.models.query :as q]
+   [cmr.search.routes :as routes]
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
-   [cmr.search.web.routes :as routes]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts

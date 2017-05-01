@@ -6,7 +6,7 @@
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>{{ base-url }}docs</loc>
+    <loc>{{ base-url }}site/docs</loc>
     <lastmod>{{ datestamp }}</lastmod>
     <changefreq>daily</changefreq>
   </url>

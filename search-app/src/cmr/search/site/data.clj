@@ -13,6 +13,7 @@
    [clj-time.core :as clj-time]
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-exec]
+   [cmr.common-app.site.data :as common-data]
    [cmr.search.services.query-service :as query-svc]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]))
@@ -102,15 +103,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn base-page
-  "Data that all pages have in common."
+  "Data that all app pages have in common."
   [context]
-  {:base-url (config/application-public-root-url context)
-   :datestamp (str (clj-time/today))})
-
-(defn get-index
-  "Return the data for the index page (none for now)."
-  [context]
-  (base-page context))
+  (assoc (common-data/base-page context)
+         :app-title "CMR Search"))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory
