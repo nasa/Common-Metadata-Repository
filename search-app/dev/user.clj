@@ -1,18 +1,21 @@
 (ns user
-  (:require [clojure.pprint :refer (pprint pp)]
-            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [cmr.search.system :as system]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.web-server :as web]
-            [cmr.search.web.routes :as routes]
-            [cmr.common.dev.repeat-last-request :as repeat-last-request :refer (repeat-last-request)]
-            [cmr.common.dev.util :as d]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.jobs :as jobs])
-  (:use [clojure.test :only [run-all-tests]]
-        [clojure.repl]
-        [alex-and-georges.debug-repl]
-        [cmr.common.dev.capture-reveal]))
+  (:require
+   [clojure.pprint :refer (pprint pp)]
+   [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+   [cmr.common.api.web-server :as web]
+   [cmr.common.dev.repeat-last-request :as repeat-last-request
+                                       :refer (repeat-last-request)]
+   [cmr.common.dev.util :as d]
+   [cmr.common.jobs :as jobs]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.search.routes :as routes]
+   [cmr.search.system :as system]
+   [cmr.transmit.config :as transmit-config])
+  (:use
+    [alex-and-georges.debug-repl]
+    [clojure.test :only [run-all-tests]]
+    [clojure.repl]
+    [cmr.common.dev.capture-reveal]))
 
 (def system nil)
 

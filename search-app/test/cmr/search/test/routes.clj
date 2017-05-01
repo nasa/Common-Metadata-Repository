@@ -1,9 +1,9 @@
-(ns cmr.search.test.web.routes
+(ns cmr.search.test.routes
   (:require [clojure.test :refer :all]
-            [cmr.search.web.routes :as r])
+            [cmr.search.routes :as r])
   (:use ring.mock.request))
 
-(def ^:private web (#'cmr.search.web.routes/build-routes
+(def ^:private web (#'cmr.search.routes/build-routes
                      {:public-conf {:protocol "https"
                                     :relative-root-url "/search"}}))
 

@@ -73,8 +73,7 @@
         ;; Add routes for API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])
-         relative-root-url
-         "public/index.html")
+         relative-root-url)
         (ring-swagger-ui/swagger-ui
          "/swagger_ui"
          :swagger-docs (str relative-root-url "/site/swagger.json")

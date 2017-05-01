@@ -1,4 +1,4 @@
-(ns cmr.search.web.routes
+(ns cmr.search.routes
   "This namespace is the one responsible for combining the routes intended for
   use by libraries and applications (API routes) and the routes intended for
   human, browser, or web crawler consumption (site routes). It also provides
@@ -10,6 +10,7 @@
    [cmr.common.api.errors :as errors]
    [cmr.common.api.context :as context]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.site.pages :as common-pages]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.search.api.request-context-user-augmenter :as context-augmenter]
@@ -85,7 +86,7 @@
        (GET "/robots.txt" req robots-txt-response))
       (api-routes/build-routes system)
       (site-routes/build-routes system)
-      (route/not-found "Not Found"))))
+      (common-pages/not-found))))
 
 (defn handlers [system]
   (-> (build-routes system)

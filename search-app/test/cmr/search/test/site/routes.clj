@@ -60,9 +60,7 @@
                      :get (str base-url "/site/docs/api.html")))]
     (testing "uses the incoming host and scheme for the docs endpoint"
       (is (= (:status response) 200))
-      (is (substring? "API Documentation" (:body response)))
-      (is (substring?
-            "https://cmr.example.com/search/collections" (:body response))))))
+      (is (substring? "API Documentation" (:body response))))))
 
 (deftest cmr-site-documentation-page
   (let [response (site
