@@ -122,7 +122,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Hierarchical JSON facets](#hierarchical-json-facets)
   * [Search for Tiles](#search-for-tiles)
   * [Retrieve Controlled Keywords](#retrieve-controlled-keywords)
-  * [Find collections that have been deleted](#deleted-collections)
+  * [Find collections that have been deleted after a given date](#deleted-collections)
   * [Tagging](#tagging)
     * [Tag Access Control](#tag-access-control)
     * [Creating a Tag](#creating-a-tag)
@@ -2472,9 +2472,9 @@ __Example Response__
 }
 ```
 
-### <a name="deleted-collections"></a> Find collections that have been deleted
+### <a name="deleted-collections"></a> Find collections that have been deleted after a given date
 
-To support metadata harvesting, a harvesting client can search CMR for collections that are deleted within a time period. The only search parameter supported is `revision_date` and its format is the same as the `revision_date` parameter in regular collection search. The only supported result format is xml references. The response is the references to the highest non-tombstone collection revisions of the collections that are deleted within the given revision date period. e.g.
+To support metadata harvesting, a harvesting client can search CMR for collections that are deleted after a given date. The only search parameter supported is `revision_date` and its format is slightly different from the `revision_date` parameter in regular collection search in that only one revision date can be provided and it can only be a starting date, not a date range. The only supported result format is xml references. The response is the references to the highest non-tombstone collection revisions of the collections that are deleted. e.g.
 
 The following search will return the last revision of the collections that are deleted since 01/20/2017.
 
