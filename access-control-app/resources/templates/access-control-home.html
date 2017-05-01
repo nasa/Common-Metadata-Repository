@@ -1,0 +1,25 @@
+{% extends "templates/landing.html" %}
+
+{% block app-nav %}
+  <li><a href="{{ base-url }}site/docs">Documentation</a></li>
+{% endblock %}
+
+{% block hero-title %}CMR Access Control{% endblock %}
+{% block hero-subtitle %}
+  The Common Metadata Repository (CMR) is a high-performance, high-quality,
+  continuously evolving metadata system that catalogs Earth Science data and
+  associated service metadata records. These metadata records are registered,
+  modified, discovered, and accessed through programmatic interfaces leveraging
+  standard protocols and APIs.
+{% endblock %}
+
+{% block hero-content %}
+  <p>
+    The CMR Access Control API allows clients to login, create acess control
+    groups, and create access control rules that control permissions to access
+    CMR APIs.
+  </p>
+  <p>
+    <a href="site/docs/api" class="eui-btn--blue">Learn more</a>
+  </p>
+{% endblock %}

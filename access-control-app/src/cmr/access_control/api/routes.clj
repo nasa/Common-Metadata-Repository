@@ -204,15 +204,10 @@
 
 ;;; Handler
 
-(defn- build-routes [system]
+(defn build-routes [system]
   (routes
     (context (:relative-root-url system) []
       admin-api-routes
-
-      ;; Add routes for API documentation
-      (api-docs/docs-routes (get-in system [:public-conf :protocol])
-                            (get-in system [:public-conf :relative-root-url])
-                            "public/access_control_index.html")
 
       ;; add routes for checking health of the application
       (common-health/health-api-routes group-service/health)
@@ -318,18 +313,4 @@
         (OPTIONS "/" [] common-routes/options-response)
 
         (GET "/" {:keys [request-context params]}
-          (get-permissions request-context params))))
-
-    (route/not-found "Not Found")))
-
-(defn make-api [system]
-  (-> (build-routes system)
-      acl/add-authentication-handler
-      common-routes/add-request-id-response-handler
-      (context/build-request-context-handler system)
-      keyword-params/wrap-keyword-params
-      nested-params/wrap-nested-params
-      api-errors/invalid-url-encoding-handler
-      api-errors/exception-handler
-      common-routes/pretty-print-response-handler
-      params/wrap-params))
+          (get-permissions request-context params))))))
