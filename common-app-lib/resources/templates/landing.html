@@ -1,0 +1,12 @@
+{% extends "templates/base.html" %}
+
+{% block main-content %}
+<section class="eui-hero" style="background: url('https://cdn.earthdata.nasa.gov/conduit/upload/947/LANCE_header_MODISAqua2.jpg') no-repeat top center">
+  <h2 class="eui-hero__title">{% block hero-title %}Title{% endblock %}</h2>
+  <p class="eui-hero__subtitle">{% block hero-subtitle %}
+  Subtitle
+  {% endblock %}</p>
+  {% block hero-content %}
+    Content.
+  {% endblock %}
+{% endblock %}
