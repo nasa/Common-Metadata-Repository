@@ -123,28 +123,13 @@
            (d/refs-match? colls references))
 
          "revision date starting at 2015 - find all deleted collections"
-         [coll1-1 coll2-1 coll3-1] "2015-01-01T01:00:00Z,"
+         [coll1-1 coll2-1 coll3-1] "2015-01-01T01:00:00Z"
 
          "revision date starting at 2016 - find coll2 and coll3"
-         [coll2-1 coll3-1] "2016-01-01T01:00:00Z,"
+         [coll2-1 coll3-1] "2016-01-01T01:00:00Z"
 
          "revision date starting at 2017 - find coll3"
-         [coll3-1] "2017-01-01T01:00:00Z,"
-
-         "revision date starting at 2017, different search parameter format - find coll3"
-         [coll3-1] "2017-01-01T01:00:00Z"
-
-         "revision date between 2015 and 2016 - find coll1"
-         [coll1-1] "2015-01-01T01:00:00Z,2016-01-01T01:00:00Z"
-
-         "revision date between 2016 and 2017 - find coll2"
-         [coll2-1] "2016-01-01T01:00:00Z,2017-01-01T01:00:00Z"
-
-         "revision date ending at 2015 - find no deleted collections"
-         [] ",2015-01-01T01:00:00Z"
-
-         "revision date ending at 2017 - find coll1 and coll2"
-         [coll1-1 coll2-1] ",2017-01-01T01:00:00Z")))))
+         [coll3-1] "2017-01-01T01:00:00Z")))))
 
 (deftest search-deleted-collections-error-cases
   (testing "search deleted collections with unsupported params"
@@ -162,7 +147,28 @@
       {:concept-id "C1-PROV1"}
       {:page_num 1}
       {:page-size 20}))
-  
+
+  (testing "search deleted collections with invalid revision date"
+    (are [revision-date]
+      (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                     (search/find-deleted-collections
+                                      {:revision-date revision-date}))]
+        (= [400 [(format (str "Invalid format for revision date, only a starting date is allowed "
+                              "for deleted collections search, but was [%s]") revision-date)]]
+           [status errors]))
+
+      "2017-01-01T01:00:00Z,"
+      "2015-01-01T01:00:00Z,2016-01-01T01:00:00Z"
+      ",2017-01-01T01:00:00Z"))
+
+  (testing "search deleted collections with multiple revision date"
+    (let [{:keys [status errors]}
+          (search/get-search-failure-xml-data
+           (search/find-deleted-collections
+            {:revision-date ["2016-01-01T01:00:00Z" "2017-01-01T01:00:00Z"]}))]
+      (is (= [400 ["Only one revision date is allowed, but was 2"]]
+             [status errors]))))
+
   (testing "unsupported format for deleted collections search"
     (testing "formats return common json response"
       (are [search-format]

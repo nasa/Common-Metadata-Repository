@@ -687,12 +687,30 @@
                   "The only format that is supported is xml.")
              (name (:result-format params)))]))
 
+(defn- validate-deleted-colls-revision-date-str
+  [revision-date]
+  (when (.contains revision-date ",")
+    [(format (str "Invalid format for revision date, only a starting date is allowed "
+                  "for deleted collections search, but was [%s]") revision-date)]))
+
+(defn- deleted-colls-revision-date-validation
+  "Validates that revision date can only have a start date for deleted collections search"
+  [params]
+  (when-let [revision-date (or (:revision-date params)
+                               (:revision_date params))]
+    (if (sequential? revision-date)
+      (if (> (count revision-date) 1)
+        [(format "Only one revision date is allowed, but was %s" (count revision-date))]
+        (validate-deleted-colls-revision-date-str (first revision-date)))
+      (validate-deleted-colls-revision-date-str revision-date))))
+
 (defn validate-deleted-collections-params
   "Validates the query parameters passed in with deleted collections search.
    Throws exceptions to send to the user if a validation fails."
   [params]
   (let [errors (mapcat #(% params)
                        [unrecognized-deleted-colls-params-validation
-                        deleted-colls-result-format-validation])]
+                        deleted-colls-result-format-validation
+                        deleted-colls-revision-date-validation])]
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors))))
