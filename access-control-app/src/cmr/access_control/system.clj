@@ -3,18 +3,18 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [cmr.access-control.api.routes :as routes]
    [cmr.access-control.config :as config]
    [cmr.access-control.data.access-control-index :as access-control-index]
    [cmr.access-control.data.group-fetcher :as gf]
    [cmr.access-control.services.event-handler :as event-handler]
    [cmr.access-control.test.bootstrap :as bootstrap]
+   [cmr.access-control.routes :as routes]
    [cmr.acl.acl-fetcher :as af]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
-   [cmr.common.api.web-server :as web]
+   [cmr.common.api.web-server :as web-server]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
@@ -69,7 +69,7 @@
   []
   (let [sys {:log (log/create-logger-with-log-level (log-level))
              :search-index (search-index/create-elastic-search-index)
-             :web (web/create-web-server (transmit-config/access-control-port) routes/make-api)
+             :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {af/acl-cache-key (af/create-acl-cache
