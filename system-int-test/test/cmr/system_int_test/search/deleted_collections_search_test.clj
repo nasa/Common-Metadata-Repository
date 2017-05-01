@@ -166,7 +166,7 @@
           (search/get-search-failure-xml-data
            (search/find-deleted-collections
             {:revision-date ["2016-01-01T01:00:00Z" "2017-01-01T01:00:00Z"]}))]
-      (is (= [400 ["Only one revision date is allowed, but was 2"]]
+      (is (= [400 ["Only one revision date is allowed, but 2 were provided."]]
              [status errors]))))
 
   (testing "unsupported format for deleted collections search"

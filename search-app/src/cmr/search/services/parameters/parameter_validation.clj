@@ -700,7 +700,7 @@
                                (:revision_date params))]
     (if (sequential? revision-date)
       (if (> (count revision-date) 1)
-        [(format "Only one revision date is allowed, but was %s" (count revision-date))]
+        [(format "Only one revision date is allowed, but %s were provided." (count revision-date))]
         (validate-deleted-colls-revision-date-str (first revision-date)))
       (validate-deleted-colls-revision-date-str revision-date))))
 
