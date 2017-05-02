@@ -48,6 +48,14 @@
    :provider-id provider-id})
 
 (defn provider-bulk-update-event
-  [provider-id]
+  [provider-id bulk-update-params]
   {:action :bulk-update
-   :provider-id provider-id})
+   :provider-id provider-id
+   :bulk-update-params bulk-update-params})
+
+(defn provider-collection-bulk-update-event
+  [task-id concept-id bulk-update-params]
+  {:action :collection-bulk-update
+   :task-id task-id
+   :concept-id concept-id
+   :bulk-update-params bulk-update-params})

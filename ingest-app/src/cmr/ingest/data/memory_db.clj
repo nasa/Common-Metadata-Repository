@@ -30,7 +30,7 @@
     [this provider-id]
     (some->> @task-status-atom
              (filter #(= provider-id (:provider-id %)))
-             (map #(select-keys % [:task-id :status :status-message]))))
+             (map #(select-keys % [:task-id :status :status-message :request-json-body]))))
 
   (get-bulk-update-task-status
     [this task-id]
@@ -69,7 +69,9 @@
                                                   {:task-id task-id
                                                    :concept-id c
                                                    :status "PENDING"})
-                                                 concept-ids)))))
+                                                 concept-ids)))
+     task-id))
+
   (update-bulk-update-task-status
     [this task-id status status-message]
     (let [task-statuses @task-status-atom
@@ -89,7 +91,18 @@
                                      coll-statuses))]
       (reset! (:collection-status-atom this) (-> coll-statuses
                                                 (assoc-in [index :status] status)
-                                                (assoc-in [index :status-message] status-message)))))
+                                                (assoc-in [index :status-message] status-message)))
+      (let [pending-collections (filter #(and (= task-id (:task-id %))
+                                              (= "PENDING" (:status %)))
+                                        coll-statuses)]
+        (when-not (seq pending-collections)
+          (let [task-statuses @task-status-atom
+                index (first (keep-indexed #(when (= task-id (:task-id %2))
+                                               %1)
+                                           task-statuses))]
+            (reset! (:task-status-atom this) (-> task-statuses
+                                                 (assoc-in [index :status] status)
+                                                 (assoc-in [index :status-message] status-message))))))))
 
   (reset-bulk-update
     [this]
