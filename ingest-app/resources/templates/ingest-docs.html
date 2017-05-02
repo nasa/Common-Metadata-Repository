@@ -1,0 +1,12 @@
+{% extends "templates/ingest-base.html" %}
+
+{% block main-content %}
+<h2>Documentation</h2>
+<p class="lead">
+  Documentation for {{ app-title }} is split out into the following sections:
+</p>
+<ul>
+  <li><a href="{{ base-url }}site/docs/ingest/api">API Documentation</a> - How to access the ingest API via an HTTP client</li>
+  <li><a href="{{ base-url }}site/docs/ingest/site">Site Documentation</a> - View site routes and web resources</li>
+</ul>
+{% endblock %}
