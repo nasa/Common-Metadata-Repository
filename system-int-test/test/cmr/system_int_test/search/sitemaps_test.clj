@@ -129,7 +129,7 @@
       (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= (:status response) 200))
-      (is (string/includes? body "/docs/api</loc>"))
+      (is (string/includes? body "/docs/search/api</loc>"))
       (is (string/includes? body "<changefreq>daily</changefreq>"))
       (is (string/includes? body "/collections/directory</loc>"))
       (is (string/includes? body "/collections/directory/eosdis</loc>"))

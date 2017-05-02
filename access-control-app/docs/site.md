@@ -22,13 +22,13 @@ Note that in production, the base CMR Search URL is `/search`, while in developm
 
 The CMR Search Site defines the following static resources. As above, the URLs listed are relative to the base CMR Search URL.
 
-| Path                   | Description                                         |
-| ---------------------- | --------------------------------------------------- |
-| /site/docs             | Documentation links                                 |
-| /site/docs/api         | Access Control API documentation                    |
-| /site/docs/acl-usage   | Access control usage documentation                  |
-| /site/docs/acl-schema  | Access control schema documentation                 |
-| /site/docs/site        | The documentation for site routes and web resources |
+| Path                             | Description                                         |
+| -------------------------------- | --------------------------------------------------- |
+| /site/docs/access-control        | Documentation links                                 |
+| /site/docs/access-control/api    | Access Control API documentation                    |
+| /site/docs/access-control/usage  | Access control usage documentation                  |
+| /site/docs/access-control/schema | Access control schema documentation                 |
+| /site/docs/access-control/site   | The documentation for site routes and web resources |
 
 Additionally, static assets are made available at the site root, serving CSS and JavaScript files.
 
@@ -36,10 +36,10 @@ Additionally, static assets are made available at the site root, serving CSS and
 
 The following redirects are defined in order to assist with a better organized documentation URL structure.
 
-| Path                               | Destination         | HTTP Status Code |
-| ---------------------------------- | ------------------- | ---------------- |
-| site/access_control_api_docs.html  | site/docs/api.html  | `301`            |
-| site/docs/api                      | site/docs/api.html  | `307`            |
-| site/docs/site                     | site/docs/site.html | `307`            |
+| Path                               | Destination                         | HTTP Status Code |
+| ---------------------------------- | ----------------------------------- | ---------------- |
+| /site/access_control_api_docs.html | /site/docs/access-control/api.html  | `301`            |
+| /site/docs/access-control/api      | /site/docs/access-control/api.html  | `307`            |
+| /site/docs/access-control/site     | /site/docs/access-control/site.html | `307`            |
 
-Each of these are provided as means of providing backwards compatibility for users who have bookmarked the old URLs.
+The permanent redirect has been added as means of providing backwards compatibility for users who have bookmarked the old URL. The temporary redirects are provided in order to future-proof docs URL organization work. When that work is complete, the redirect locations will be updated status codes will be set to permanent.

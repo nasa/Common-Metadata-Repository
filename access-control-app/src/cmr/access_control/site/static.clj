@@ -6,6 +6,7 @@
    [cmr.common-app.api-docs :as api-docs])
   (:gen-class))
 
+;; XXX delete or refactor once ingest-app docs code is updated
 (defn generate-docs
   "A utility function for rendering CMR search docs using templates."
   [site-title page-title md-source template-file out-file]
@@ -26,7 +27,7 @@
                  "API Documentation"
                  "docs/api.md"
                  "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/api.html"))
+                 "resources/public/site/docs/access-control/api.html"))
 
 (defn generate-acl-schema-docs
   "Generate CMR Access Control API docs."
@@ -35,7 +36,7 @@
                  "ACL Schema"
                  "docs/acl-schema.md"
                  "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/acl-schema.html"))
+                 "resources/public/site/docs/access-control/schema.html"))
 
 (defn generate-acl-usage-docs
   "Generate CMR Access Control API docs."
@@ -44,7 +45,7 @@
                  "Using ACLS in the CMR"
                  "docs/acl-usage.md"
                  "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/acl-usage.html"))
+                 "resources/public/site/docs/access-control/usage.html"))
 
 (defn generate-site-docs
   "Generate CMR Search docs for routes and web resources."
@@ -53,7 +54,7 @@
                  "Site Routes & Web Resource Documentation"
                  "docs/site.md"
                  "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/site.html"))
+                 "resources/public/site/docs/access-control/site.html"))
 
 (defn -main
   "The entrypoint for command-line static docs generation. Example usage:

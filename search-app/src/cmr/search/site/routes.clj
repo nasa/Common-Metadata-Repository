@@ -29,35 +29,6 @@
         (GET "/site/sitemap.xml"
              {context :request-context}
              (pages/sitemap-top-level context))
-        (GET "/site/docs"
-             {context :request-context}
-             (pages/search-docs context))
-        ;; Support better organization of documentation URLs and support old
-        ;; URLs
-        (GET "/site/docs/api"
-             {context :request-context}
-             (redirect
-              (str (config/application-public-root-url context)
-                   "site/docs/api.html")
-              307))
-        (GET "/site/docs/site"
-             {context :request-context}
-             (redirect
-              (str (config/application-public-root-url context)
-                   "site/docs/site.html")
-              307))
-        (GET "/site/search_api_docs.html"
-             {context :request-context}
-             (redirect
-              (str (config/application-public-root-url context)
-                   "site/docs/api.html")
-              301))
-        (GET "/site/search_site_docs.html"
-             {context :request-context}
-             (redirect
-              (str (config/application-public-root-url context)
-                   "site/docs/site.html")
-              301))
         (GET "/site/collections/directory"
              {context :request-context}
              (pages/collections-directory context))
@@ -70,7 +41,37 @@
         (GET "/site/collections/directory/:provider-id/:tag/sitemap.xml"
              [provider-id tag :as {context :request-context}]
              (pages/sitemap-provider-tag context provider-id tag))
-        ;; Add routes for API documentation
+        ;; Backwards comapatibility for old docs URLs
+        (GET "/site/search_api_docs.html"
+             {context :request-context}
+             (redirect
+              (str (config/application-public-root-url context)
+                   "site/docs/search/api.html")
+              301))
+        (GET "/site/search_site_docs.html"
+             {context :request-context}
+             (redirect
+              (str (config/application-public-root-url context)
+                   "site/docs/search/site.html")
+              301))
+        ;; Search docs context
+        (context "/site/docs/search" []
+         (GET "/"
+              {context :request-context}
+              (pages/search-docs context))
+         (GET "/api"
+              {context :request-context}
+              (redirect
+               (str (config/application-public-root-url context)
+                    "site/docs/search/api.html")
+               307))
+         (GET "/site"
+              {context :request-context}
+              (redirect
+               (str (config/application-public-root-url context)
+                    "site/docs/search/site.html")
+               307)))
+        ;; Add routes for general API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])
          relative-root-url)

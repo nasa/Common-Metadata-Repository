@@ -1,6 +1,6 @@
 ## Site Routes &amp; Web Resources Documentation
 
-See also the [API Documentation](search_api_docs.html).
+See also the [API Documentation](api.html).
 
 ### Table of Contents
 
@@ -28,11 +28,11 @@ Note that in production, the base CMR Search URL is `/search`, while in developm
 
 The CMR Search Site defines the following static resources. As above, the URLs listed are relative to the base CMR Search URL.
 
-| Path            | Description                                         |
-| --------------- | --------------------------------------------------- |
-| /site/docs      | Documentation links                                 |
-| /site/docs/api  | The API documentation                               |
-| /site/docs/site | The documentation for site routes and web resources |
+| Path                   | Description                                         |
+| ---------------------- | --------------------------------------------------- |
+| /site/docs/search      | Documentation links                                 |
+| /site/docs/search/api  | The API documentation                               |
+| /site/docs/search/site | The documentation for site routes and web resources |
 
 Additionally, static assets are made available at the site root, serving CSS and JavaScript files.
 
@@ -40,11 +40,11 @@ Additionally, static assets are made available at the site root, serving CSS and
 
 The following redirects are defined in order to assist with a better organized documentation URL structure.
 
-| Path                       | Destination         |
-| -------------------------- | ------------------- |
-| site/search_api_docs.html  | site/docs/api.html  |
-| site/search_site_docs.html | site/docs/site.html |
-| site/docs/api              | site/docs/api.html  |
-| site/docs/site             | site/docs/site.html |
+| Path                        | Destination                 | HTTP Status Code |
+| --------------------------- | --------------------------- |------------------|
+| /site/search_api_docs.html  | /site/docs/search/api.html  | `301`            |
+| /site/search_site_docs.html | /site/docs/search/site.html | `301`            |
+| /site/docs/api              | /site/docs/search/api.html  | `307`            |
+| /site/docs/site             | /site/docs/search/site.html | `307`            |
 
-Each of these are provided as means of providing backwards compatibility for users who have bookmarked the old URLs. They return an HTTP response status code of `301`.
+The permanent redirects have been added as means of providing backwards compatibility for users who have bookmarked the old URLs. The temporary redirects are provided in order to future-proof docs URL organization work. When that work is complete, the redirect locations will be updated status codes will be set to permanent.
