@@ -3,9 +3,10 @@
   ready-to-serve pages."
   (:require
    [cmr.common-app.api-docs :as api-docs]
-   [cmr.common-app.site.data :as common-data])
+   [cmr.search.site.data :as data])
   (:gen-class))
 
+;; XXX delete or refactor once ingest-app docs code is updated
 (defn generate-docs
   "A utility function for rendering CMR search docs using templates."
   [site-title page-title md-source template-file out-file]
@@ -14,7 +15,7 @@
                      out-file
                      template-file
                      (merge
-                      (common-data/base-static)
+                      (data/base-static)
                       {:site-title site-title
                        :page-title page-title
                        :page-content (api-docs/md->html (slurp md-source))})))
@@ -26,7 +27,7 @@
                  "API Documentation"
                  "docs/api.md"
                  "templates/search-docs-static.html"
-                 "resources/public/site/docs/api.html"))
+                 "resources/public/site/docs/search/api.html"))
 
 (defn generate-site-docs
   "Generate CMR Search docs for routes and web resources."
@@ -35,7 +36,7 @@
                  "Site Routes & Web Resource Documentation"
                  "docs/site.md"
                  "templates/search-docs-static.html"
-                 "resources/public/site/docs/site.html"))
+                 "resources/public/site/docs/search/site.html"))
 
 (defn -main
   "The entrypoint for command-line static docs generation. Example usage:

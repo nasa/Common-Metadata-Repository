@@ -6,17 +6,17 @@
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>{{ base-url }}site/docs</loc>
+    <loc>{{ base-url }}site/docs/search</loc>
     <lastmod>{{ datestamp }}</lastmod>
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>{{ base-url }}site/docs/api</loc>
+    <loc>{{ base-url }}site/docs/search/api</loc>
     <lastmod>{{ datestamp }}</lastmod>
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>{{ base-url }}site/docs/site</loc>
+    <loc>{{ base-url }}site/docs/search/site</loc>
     <lastmod>{{ datestamp }}</lastmod>
     <changefreq>daily</changefreq>
   </url>

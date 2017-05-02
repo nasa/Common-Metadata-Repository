@@ -57,7 +57,7 @@
 (deftest cmr-api-documentation-page
   (let [response (site
                    (request
-                     :get (str base-url "/site/docs/api.html")))]
+                     :get (str base-url "/site/docs/search/api.html")))]
     (testing "uses the incoming host and scheme for the docs endpoint"
       (is (= (:status response) 200))
       (is (substring? "API Documentation" (:body response))))))
@@ -65,42 +65,42 @@
 (deftest cmr-site-documentation-page
   (let [response (site
                    (request
-                     :get (str base-url "/site/docs/site.html")))]
+                     :get (str base-url "/site/docs/search/site.html")))]
     (testing "uses the incoming host and scheme for the docs endpoint"
       (is (= (:status response) 200))
       (is (substring?
             "Site Routes &amp; Web Resources Documentation" (:body response))))))
 
 (deftest cmr-all-documentation-page
-  (let [response (site (request :get (str base-url "/site/docs")))]
+  (let [response (site (request :get (str base-url "/site/docs/search")))]
     (testing "all docs links appear here"
       (is (= (:status response) 200))
       (is (substring? "Documentation for CMR Search" (:body response)))
-      (is (substring? "site/docs/api" (:body response)))
-      (is (substring? "site/docs/site" (:body response))))))
+      (is (substring? "site/docs/search/api" (:body response)))
+      (is (substring? "site/docs/search/site" (:body response))))))
 
 (deftest cmr-url-reorg-redirects
-  (let [response (site (request :get (str base-url "/site/docs/api")))]
+  (let [response (site (request :get (str base-url "/site/docs/search/api")))]
     (testing "clean docs URL for api docs performs redirect"
       (is (= (:status response) 307))
       (is (substring?
-            "site/docs/api.html"
+            "site/docs/search/api.html"
             (get-in response [:headers "Location"])))))
-  (let [response (site (request :get (str base-url "/site/docs/site")))]
+  (let [response (site (request :get (str base-url "/site/docs/search/site")))]
     (testing "clean docs URL for site docs performs redirect"
       (is (= (:status response) 307))
       (is (substring?
-            "site/docs/site.html"
+            "site/docs/search/site.html"
             (get-in response [:headers "Location"])))))
   (let [response (site (request :get (str base-url "/site/search_api_docs.html")))]
     (testing "clean docs URL for api docs performs redirect"
       (is (= (:status response) 301))
       (is (substring?
-            "site/docs/api.html"
+            "site/docs/search/api.html"
             (get-in response [:headers "Location"])))))
   (let [response (site (request :get (str base-url "/site/search_site_docs.html")))]
     (testing "clean docs URL for site docs performs redirect"
       (is (= (:status response) 301))
       (is (substring?
-            "site/docs/site.html"
+            "site/docs/search/site.html"
             (get-in response [:headers "Location"]))))))
