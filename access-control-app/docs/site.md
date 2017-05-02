@@ -20,7 +20,7 @@ Note that in production, the base CMR Access Control URL is `/access-control`, w
 
 ### <a name="static-assets-and-content"></a> Static Assets and Content
 
-The CMR Search Site defines the following static resources. As above, the URLs listed are relative to the base CMR Search URL.
+The CMR Access Control site defines the following static resources. As above, the URLs listed are relative to the base CMR Access Control URL.
 
 | Path                             | Description                                         |
 | -------------------------------- | --------------------------------------------------- |
