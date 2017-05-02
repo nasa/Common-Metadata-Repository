@@ -1,0 +1,23 @@
+{% extends "templates/landing.html" %}
+
+{% block app-nav %}
+  <li><a href="{{ base-url }}site/docs/ingest">Documentation</a></li>
+{% endblock %}
+
+{% block hero-title %}{{ app-title }}{% endblock %}
+{% block hero-subtitle %}
+  The Common Metadata Repository (CMR) is a high-performance, high-quality,
+  continuously evolving metadata system that catalogs Earth Science data and
+  associated service metadata records. These metadata records are registered,
+  modified, discovered, and accessed through programmatic interfaces leveraging
+  standard protocols and APIs.
+{% endblock %}
+
+{% block hero-content %}
+  <p>
+    The CMR Ingest API allows data providers to submit metadata to the CMR.
+  </p>
+  <p>
+    <a href="site/docs/ingest/api" class="eui-btn--blue">Learn more</a>
+  </p>
+{% endblock %}
