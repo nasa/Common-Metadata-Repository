@@ -28,6 +28,11 @@
 
 (defonce system nil)
 
+(defonce base-public-conf
+  {:protocol "http"
+   :host "localhost"
+   :relative-root-url ""})
+
 (defn configure-systems-logging
   "Configures the systems in the system map to the indicated level"
   [system level]
@@ -180,13 +185,15 @@
   (let [s (-> (system/create-system)
               (configure-systems-logging @settings/logging-level)
               ;; The following inclusion of public-conf data is done in order
-              ;; to support search directory pages and their use of templates
-              ;; which (indirectly) make use of/require app public-conf data.
+              ;; to support search and access-control web pages and their use
+              ;; of templates which (indirectly) make use of/require app
+              ;; public-conf data.
               (assoc-in [:apps :search :public-conf]
-                        {:protocol "http"
-                         :host "localhost"
-                         :port (transmit-config/search-port)
-                         :relative-root-url ""}))]
+                        (assoc base-public-conf
+                               :port (transmit-config/search-port)))
+              (assoc-in [:apps :access-control :public-conf]
+                        (assoc base-public-conf
+                               :port (transmit-config/access-control-port))))]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
