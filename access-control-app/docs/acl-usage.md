@@ -1,12 +1,12 @@
-# Using ACLS in the CMR
+## Using ACLS in the CMR
 
-## Background
+### Background
 
 Access Control Lists (ACLs) are the mechanism by which users are granted access to perform different operations in the CMR. CMR ACLs follow the same design as ECHO ACLs which in turn are derived from the generic ACL design pattern used in many other systems. At a high level, an ACL is a mapping of actors (subjects) to resources (object) to operations (predicate). For instance, a CMR ACL might specify that all Registered users have READ access to ASTER data or all users in a provider operations group have permissions to ingest data for a particular provider.
 
 The full ACL JSON schema is documented [here](acl-schema.html).  Below is an overview of the concepts which make up an ACL.
 
-### Subjects
+#### Subjects
 
 The subject specifies the **who** of an ACL, or what actors are being granted access by the ACL. CMR provides two mechanisms to define the subject:
 
@@ -15,7 +15,7 @@ The subject specifies the **who** of an ACL, or what actors are being granted ac
   - **guest**: matches all users who have not authenticated with the system
   - **registered**: matches all users who have authenticated with the system
 
-### Objects
+#### Objects
 
 The object specifies the resource on which access is being controlled by an ACL. There are 4 classes of objects:
 
@@ -39,15 +39,15 @@ Unlike the other types of resource identities, catalog item identities contain a
 
 It should be noted that while temporal Catalog item filters are supported by the API, they are not currently used operationally.  In addition, a restriction flag (or Access Value) filter  may specify a include_undefined_value flag.  If set to false, only items which have an access value within the specified range will be matched.  If set to true, item with no value set, as well as those with a value in the specified range will be matched. include_undefined_value defaults to 'false'
 
-### Predicates
+#### Predicates
 
 The predicate specifies which operations are permitted on a resource. The available predicates are `create`, `read`, `update`, `delete`, and `order`. The first 4 operations correspond to the expected CRUD operations on an object while `order` is a predicate specific to catalog item resources which allows users to order the specified resources, rather than simply view the metadata. Each ACL resource has a subset of these predicates which are valid for that resource (see the [access control API docs](api.html) under 'Grantable Permissions'). The meaning of each predicate in relation to a given resource can usually be deduced, but ultimately, the CMR and ECHO code which performs access verification on each operation implicitly defines the meaning of each.  An ACL's meaning ultimately depends only on the code which is performing checks against the ACL, so where there is any confusion about what an ACL does, ask CMR development.
 
-## Built in ACLs
+### Built in ACLs
 
 There are a set of ACLs which are expected to exist in any CMR environment and which are set up as part of the initialization of a clean system in dev or ci environments. A client can expect these ACLs to exist in any environment and should not have to create them.
 
-### Minimal ACLS for an empty system
+#### Minimal ACLS for an empty system
 
 The ACLS below are preloaded before the CMR can start up. The JSON representation below comes from the CMR access-control endpoint with ACL summaries requested ( `http://localhost:3011/acls?include-full-acl=false`).  These ACLs can be populated in a fresh environment using `java -cp cmr-legacy-services-0.1.0-SNAPSHOT-standalone.jar cmr.db bootstrap-db-and-migrate`
 
@@ -81,7 +81,7 @@ The ACLS below are preloaded before the CMR can start up. The JSON representatio
 }
 ```
 
-### ACLS bootstrapped in the system to allow normal legacy-services/CMR operation
+#### ACLS bootstrapped in the system to allow normal legacy-services/CMR operation
 
 The ACLs below are loaded into a clean CMR system once it is started. These ACLs are required for normal CMR operations. The JSON representation below comes from the CMR access control endpoint with full ACL records requested (http://localhost:3011/acls?include-full-acl=true) (note that the full records for the summaries above are listed as the first three ACLs here.)  These ACLs can be populated using `java -cp cmr-legacy-services-0.1.0-SNAPSHOT-standalone.jar cmr.db bootstrap-running-kernel`
 
@@ -311,11 +311,11 @@ The ACLs below are loaded into a clean CMR system once it is started. These ACLs
 }
 ```
 
-## Additional Common ACLs
+### Additional Common ACLs
 
 These ACLs are commonly added for normal operations, and may need to be added by a client such as MMT.
 
-### Provider ACLs
+#### Provider ACLs
 
 When a provider is created by a client, it is expected that certain provider object ACLs will also be created. Most of this is currently manual via PUMP or a script, but could be automated by MMT. Note that the ACLs below grant permissions to the System Administrator group. In general, these should also be granted to the Provider Administrator group. These ACLs can be retrieved using e.g. http://localhost:3011/acls?include-full-acl=true&identity_type=catalog_item&provider=CUKE_PROV1.
 
@@ -560,7 +560,9 @@ When a provider is created by a client, it is expected that certain provider obj
   ]
 }
 ```
-### Single Instance ACLs
+
+#### Single Instance ACLs
+
 When a group is created, it will generally be assigned one or more 'management groups' which have the ability to update or delete the group.  Management access is managed via Single Instance ACLs as shown below.
 
 ```
@@ -627,7 +629,7 @@ When a group is created, it will generally be assigned one or more 'management g
     }
 ```
 
-### Catalog Item ACLs
+#### Catalog Item ACLs
 
 Every provider needs to have Catalog Item ACLs to manage access to its holdings. The ACLs below grant view/order access to all collections and granules.  These ACLS must not be removed and must always be granted to the System Administrator group. The Catalog item identity portion of the ACL must also not be modified. Changes to these ACLs (other than to the group_permissions) may cause the CMR/legacy-services applications to no longer have access to all holdings which will result in unexpected behavior.
 
@@ -731,7 +733,6 @@ https://cmr.sit.earthdata.nasa.gov/access-control/acls?include-full-acl=true&ide
 ...
 ```
 
-
 While operational environments generally provide separate 'All Collections' and 'All Granules' ACLs, these can be combined for convenience in dev and ci environments as shown below.
 
 ```
@@ -783,7 +784,8 @@ While operational environments generally provide separate 'All Collections' and 
 }
 ```
 
-#### Restriction Flag and Entry Title Filtering
+##### Restriction Flag and Entry Title Filtering
+
 Below is a sample ACL which permits guest access to granules within a specific collection which have a specified Restriction flag.
 
 ```

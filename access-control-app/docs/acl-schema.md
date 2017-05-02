@@ -1,69 +1,69 @@
-# ACL Schema Definitions
+## ACL Schema Definitions
 
 The schema defines the following properties:
 
-# `legacy_guid` (IdentifierType)
+## `legacy_guid` (IdentifierType)
 
-# `group_permissions` (array)
+## `group_permissions` (array)
 
 The object is an array with all elements of the type `GroupPermissionsType`.
 
-# `system_identity` (SystemIdentityType)
+## `system_identity` (SystemIdentityType)
 
-# `provider_identity` (ProviderIdentityType)
+## `provider_identity` (ProviderIdentityType)
 
-# `single_instance_identity` (SingleInstanceIdentityType)
+## `single_instance_identity` (SingleInstanceIdentityType)
 
-# `catalog_item_identity` (CatalogItemIdentityType)
+## `catalog_item_identity` (CatalogItemIdentityType)
 
 ---
 
-# Sub Schemas
+## Sub Schemas
 
 The schema defines the following additional types:
 
-## `SingleInstanceIdentityType` (object)
+### `SingleInstanceIdentityType` (object)
 
 Properties of the `SingleInstanceIdentityType` object:
 
-### `target_id` (IdentifierType, required)
+#### `target_id` (IdentifierType, required)
 
-### `target` (, enum, required)
+#### `target` (, enum, required)
 
 This element must be one of the following enum values:
 
 * `GROUP_MANAGEMENT`
 
-## `GroupPermissionsType` (object)
+### `GroupPermissionsType` (object)
 
 Properties of the `GroupPermissionsType` object:
 
-### `permissions` (array)
+#### `permissions` (array)
 
-### `group_id` (string)
+#### `group_id` (string)
 
-### `user_type`
+#### `user_type`
 
 This element must be one of the following enum values:
 
 * `registered`
 * `guest`
 
-## `IdentifierType` (string)
+### `IdentifierType` (string)
 
-## `GranuleIdentifierType` (object)
+### `GranuleIdentifierType` (object)
 
 Properties of the `GranuleIdentifierType` object:
 
-### `access_value` (AccessValueType)
+#### `access_value` (AccessValueType)
 
-### `temporal` (TemporalIdentifierType)
+#### `temporal` (TemporalIdentifierType)
 
-## `SystemIdentityType` (object)
+### `SystemIdentityType` (object)
 
 Properties of the `SystemIdentityType` object:
 
-### `target` (, enum, required)
+#### `target` (, enum, required)
 
 This element must be one of the following enum values:
 
@@ -91,15 +91,15 @@ This element must be one of the following enum values:
 * `INGEST_MANAGEMENT_ACL`
 * `SYSTEM_CALENDAR_EVENT`
 
-## `TemporalIdentifierType` (object)
+### `TemporalIdentifierType` (object)
 
 Properties of the `TemporalIdentifierType` object:
 
-### `start_date` (string, required)
+#### `start_date` (string, required)
 
-### `stop_date` (string, required)
+#### `stop_date` (string, required)
 
-### `mask` (, enum, required)
+#### `mask` (, enum, required)
 
 This element must be one of the following enum values:
 
@@ -107,51 +107,51 @@ This element must be one of the following enum values:
 * `contains`
 * `disjoint`
 
-## `CatalogItemIdentityType` (object)
+### `CatalogItemIdentityType` (object)
 
 Properties of the `CatalogItemIdentityType` object:
 
-### `name` (IdentifierType, required)
+#### `name` (IdentifierType, required)
 
-### `provider_id` (IdentifierType, required)
+#### `provider_id` (IdentifierType, required)
 
-### `collection_applicable` (boolean)
+#### `collection_applicable` (boolean)
 
-### `granule_applicable` (boolean)
+#### `granule_applicable` (boolean)
 
-### `collection_identifier` (CollectionIdentifierType)
+#### `collection_identifier` (CollectionIdentifierType)
 
-### `granule_identifier` (GranuleIdentifierType)
+#### `granule_identifier` (GranuleIdentifierType)
 
-## `CollectionIdentifierType` (object)
+### `CollectionIdentifierType` (object)
 
 Properties of the `CollectionIdentifierType` object:
 
-### `entry_titles` (array)
+#### `entry_titles` (array)
 
 The object is an array with all elements of the type `string`.
 
-### `access_value` (AccessValueType)
+#### `access_value` (AccessValueType)
 
-### `temporal` (TemporalIdentifierType)
+#### `temporal` (TemporalIdentifierType)
 
-## `AccessValueType` (object)
+### `AccessValueType` (object)
 
 Properties of the `AccessValueType` object:
 
-### `min_value` (number)
+#### `min_value` (number)
 
-### `max_value` (number)
+#### `max_value` (number)
 
-### `include_undefined_value` (boolean)
+#### `include_undefined_value` (boolean)
 
-## `ProviderIdentityType` (object)
+### `ProviderIdentityType` (object)
 
 Properties of the `ProviderIdentityType` object:
 
-### `provider_id` (IdentifierType, required)
+#### `provider_id` (IdentifierType, required)
 
-### `target` (, enum, required)
+#### `target` (, enum, required)
 
 This element must be one of the following enum values:
 
