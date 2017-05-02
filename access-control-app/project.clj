@@ -28,7 +28,8 @@
   :profiles {
     :dev {:dependencies ~(into '[[org.clojure/tools.namespace "0.2.11"]
                                  [pjstadig/humane-test-output "0.8.1"]
-                                 [proto-repl "0.3.1"]]
+                                 [proto-repl "0.3.1"]
+                                 [ring-mock "0.1.5"]]
                            dev-cmr-deps)
           :jvm-opts ^:replace ["-server"]
           :source-paths ["src" "dev" "test" "int_test"]

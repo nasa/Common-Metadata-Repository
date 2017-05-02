@@ -5,11 +5,9 @@
   a place for adding routes that apply to both (e.g., robots.txt, should we
   ever need that for access-control)."
   (:require
-   [cheshire.core :as json]
    [cmr.access-control.api.routes :as api-routes]
    [cmr.access-control.site.routes :as site-routes]
    [cmr.acl.core :as acl]
-   [cmr.common-app.api-docs :as api-docs]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as context]
