@@ -16,6 +16,9 @@
       (GET "/"
            {context :request-context}
            (pages/home context))
+      (GET "/site/docs"
+           {context :request-context}
+           (pages/access-control-docs context))
       ;; Support better organization of documentation URLs and support old
       ;; URLs
       (GET "/site/docs/api"
@@ -23,6 +26,24 @@
            (redirect
             (str (config/application-public-root-url context)
                  "site/docs/api.html")
+            307))
+      (GET "/site/docs/acl-usage"
+           {context :request-context}
+           (redirect
+            (str (config/application-public-root-url context)
+                 "site/docs/acl-usage.html")
+            307))
+      (GET "/site/docs/acl-schema"
+           {context :request-context}
+           (redirect
+            (str (config/application-public-root-url context)
+                 "site/docs/acl-schema.html")
+            307))
+      (GET "/site/docs/site"
+           {context :request-context}
+           (redirect
+            (str (config/application-public-root-url context)
+                "site/docs/site.html")
             307))
       (GET "/site/access_control_api_docs.html"
            {context :request-context}

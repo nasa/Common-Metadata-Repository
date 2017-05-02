@@ -1,3 +1,5 @@
+# ACL Schema Definitions
+
 The schema defines the following properties:
 
 # `legacy_guid` (IdentifierType)

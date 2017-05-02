@@ -4,7 +4,7 @@
 
 Access Control Lists (ACLs) are the mechanism by which users are granted access to perform different operations in the CMR. CMR ACLs follow the same design as ECHO ACLs which in turn are derived from the generic ACL design pattern used in many other systems. At a high level, an ACL is a mapping of actors (subjects) to resources (object) to operations (predicate). For instance, a CMR ACL might specify that all Registered users have READ access to ASTER data or all users in a provider operations group have permissions to ingest data for a particular provider.
 
-The full ACL JSON schema is documented [here](acl_schema.md).  Below is an overview of the concepts which make up an ACL.
+The full ACL JSON schema is documented [here](acl-schema.html).  Below is an overview of the concepts which make up an ACL.
 
 ### Subjects
 
@@ -24,7 +24,7 @@ The object specifies the resource on which access is being controlled by an ACL.
 - **Single Instance Identities**: A single discrete resource as opposed to a class of resources. Currently, this is used only for specifying a specific group, for instance to grant members of one group the ability to manage another group.  This 'Group Management' Single Instance ACL grants members of the managing group the ability to update (e.g. add/remove users) or delete the managed group.
 - **Catalog Item Identities**: Collection and granule resources. ACLs on these resources is used to determine what results a user sees in search results.
 
-System and provider resources are specified as a single target string (e.g. `INGEST_MANAGEMENT_ACL`), and in the case of provider resources, a provider ID. The list of available targets can be found at <https://cmr.sit.earthdata.nasa.gov/access-control/site/docs/api.html> under 'Grantable Permissions'. Single instance resources are specified by a target string (currently only `GROUP_MANAGEMENT` is supported) and a target ID (i.e. group concept-id). Catalog Item resources have a more complex specification which is described below.
+System and provider resources are specified as a single target string (e.g. `INGEST_MANAGEMENT_ACL`), and in the case of provider resources, a provider ID. The list of available targets can be found in the [access control API docs](api.html) under 'Grantable Permissions'. Single instance resources are specified by a target string (currently only `GROUP_MANAGEMENT` is supported) and a target ID (i.e. group concept-id). Catalog Item resources have a more complex specification which is described below.
 
 #### Catalog Item Identities
 
@@ -34,14 +34,14 @@ Unlike the other types of resource identities, catalog item identities contain a
 - **provider_id**: The provider with which the identity is associated
 - **collection_applicable**: Flag indicating whether the filter matches collections
 - **granule_applicable**: Flag indicating whether the filter matches granules
-- **collection_identifier**: A filter defining the collections matched by this ACL.  This filter consists of a combination of Collection Entry Titles, a restriction flag(AKA Access Value) range, and a temporal range (see the [schema](acl_schema.md#-collectionidentifiertype-object-))
-- **granule_identifier**: A filter defining the granules matched by this ACL.  This filter consists of a combination of restriction flag (AKA Access Value) range, and a temporal range and can be combined with a collection_identifier (see the [schema](acl_schema.md#-granuleidentifiertype-object-))
+- **collection_identifier**: A filter defining the collections matched by this ACL.  This filter consists of a combination of Collection Entry Titles, a restriction flag(AKA Access Value) range, and a temporal range (see the [schema](acl-schema.html#-collectionidentifiertype-object-))
+- **granule_identifier**: A filter defining the granules matched by this ACL.  This filter consists of a combination of restriction flag (AKA Access Value) range, and a temporal range and can be combined with a collection_identifier (see the [schema](acl-schema.html#-granuleidentifiertype-object-))
 
 It should be noted that while temporal Catalog item filters are supported by the API, they are not currently used operationally.  In addition, a restriction flag (or Access Value) filter  may specify a include_undefined_value flag.  If set to false, only items which have an access value within the specified range will be matched.  If set to true, item with no value set, as well as those with a value in the specified range will be matched. include_undefined_value defaults to 'false'
 
 ### Predicates
 
-The predicate specifies which operations are permitted on a resource. The available predicates are `create`, `read`, `update`, `delete`, and `order`. The first 4 operations correspond to the expected CRUD operations on an object while `order` is a predicate specific to catalog item resources which allows users to order the specified resources, rather than simply view the metadata. Each ACL resource has a subset of these predicates which are valid for that resource (see <https://cmr.sit.earthdata.nasa.gov/access-control/site/docs/api.html> under 'Grantable Permissions'). The meaning of each predicate in relation to a given resource can usually be deduced, but ultimately, the CMR and ECHO code which performs access verification on each operation implicitly defines the meaning of each.  An ACL's meaning ultimately depends only on the code which is performing checks against the ACL, so where there is any confusion about what an ACL does, ask CMR development.
+The predicate specifies which operations are permitted on a resource. The available predicates are `create`, `read`, `update`, `delete`, and `order`. The first 4 operations correspond to the expected CRUD operations on an object while `order` is a predicate specific to catalog item resources which allows users to order the specified resources, rather than simply view the metadata. Each ACL resource has a subset of these predicates which are valid for that resource (see the [access control API docs](api.html) under 'Grantable Permissions'). The meaning of each predicate in relation to a given resource can usually be deduced, but ultimately, the CMR and ECHO code which performs access verification on each operation implicitly defines the meaning of each.  An ACL's meaning ultimately depends only on the code which is performing checks against the ACL, so where there is any confusion about what an ACL does, ask CMR development.
 
 ## Built in ACLs
 
