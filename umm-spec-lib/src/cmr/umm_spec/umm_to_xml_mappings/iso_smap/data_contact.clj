@@ -6,6 +6,7 @@
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.util :refer [char-string]]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as related-url]))
 
 (defn- generate-data-center-name
@@ -38,24 +39,12 @@
   "Telephone" "Telephone"
   "U.S. toll free" "Telephone"})
 
-(defn- get-phone-contact-mechanisms
-  "Get phone/fax contact mechanisms from contact info. ISO only supports phone, fax, and email
- so first translate the UMM types to those 3 and filter by phone and fax."
-  [contact-info]
-  (when-let [contact-mechanisms (:ContactMechanisms contact-info)]
-    (let [contact-mechanisms
-          (map #(assoc % :Type (get translated-contact-mechanism-types (:Type %)))
-               (:ContactMechanisms contact-info))]
-      (filter #(or (= "Telephone" (:Type %))
-                   (= "Fax" (:Type %)))
-              contact-mechanisms))))
-
 (defn generate-contact-info
   "Generate contact info xml from ContactInformation"
   [contact-info]
   [:gmd:contactInfo
    [:gmd:CI_Contact
-    (when-let [phone-contacts (seq (get-phone-contact-mechanisms contact-info))]
+    (when-let [phone-contacts (seq (data-contact/get-phone-contact-mechanisms contact-info))]
       [:gmd:phone
        [:gmd:CI_Telephone
         (for [phone (filter #(= "Telephone" (:Type %)) phone-contacts)]
@@ -116,7 +105,7 @@
      (generate-contact-person person))))
 
 (defn generate-data-centers-contact-persons
-  ""
+  "Generates all data center contact person entries for roles other than Metadata Author"
   [c & umm-roles]
   (for [data-center (:DataCenters c)
           :let [umm-roles (set umm-roles)
@@ -150,7 +139,8 @@
                                  :codeListValue "pointOfContact"} "pointOfContact"]]]]))))))
 
 (defn generate-data-centers
-  ""
+  "Generates DataCenter entries for given Roles, because PROESSOR is mapped to a seperate location then the
+   other data center roles"
   [c & umm-roles]
   (for [data-center (:DataCenters c)
          :let [umm-roles (set umm-roles)
@@ -174,7 +164,7 @@
                              :codeListValue smap-role} smap-role]]]]))))
 
 (defn- data-center-metadata-author
-  ""
+  "Returns all contacts with Metadata Author role."
   [data-center]
   (let [{:keys [ShortName LongName]} data-center
         contact-persons (:ContactPersons data-center)]
@@ -183,7 +173,7 @@
                      :LongName LongName}))))
 
 (defn generate-metadata-authors
-  ""
+  "Generates Metadata Author contact entries for DataCenter ContactPersons and root level ContactPersons."
   [c]
   (for [contact-person (apply concat (:ContactPersons c)
                               (map data-center-metadata-author
@@ -204,23 +194,3 @@
       [:gmd:role
        [:gmd:CI_RoleCode {:codeList (:iso iso/code-lists)
                           :codeListValue "author"} "author"]]]]))
-
-(comment
- ; (def xml-path "example_data/iso-smap/C1000001801-NSIDC_ECS.xml")
-
- ;; round tripping
- (do
-  (def xml-path "example_data/iso-smap/SMAPExample-3.html")
-  (def sample-xml (slurp (clojure.java.io/resource xml-path)))
-  (def xml-to-umm-result (cmr.umm-spec.xml-to-umm-mappings.iso-smap/iso-smap-xml-to-umm-c sample-xml false))
-  ; (def umm-to-xml-result (umm-c-to-iso-smap-xml xml-to-umm-result))
-  (def umm-to-xml-result (cmr.umm-spec.umm-to-xml-mappings.iso-smap/umm-c-to-iso-smap-xml cmr.umm-spec.test.expected-conversion/example-collection-record))
-  (spit "/Users/dpzamora/tmp/tmp.xml" umm-to-xml-result)
-  ;; metadata-authors
-  (cmr.common.xml.simple-xpath/select umm-to-xml-result cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact/metadata-authors-xpath)
-  ;; contact persons for distributor/archivers/originators
-  (cmr.common.xml.simple-xpath/select umm-to-xml-result cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact/point-of-contact-xpath)
-  ;; contact persons for processors
-  (cmr.common.xml.simple-xpath/select umm-to-xml-result cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact/processors-xpath)
-
-  (:DataCenters (cmr.umm-spec.xml-to-umm-mappings.iso-smap/iso-smap-xml-to-umm-c umm-to-xml-result false))))

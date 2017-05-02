@@ -279,7 +279,7 @@
     science-keywords
     su/not-provided-science-keywords))
 
-(defn- expected-iso-contact-mechanisms
+(defn expected-iso-contact-mechanisms
  "Returns expected contact mechanisms with not translated types removed and ordered by phone,
  fax, email"
  [contact-mechanisms]
@@ -293,7 +293,7 @@
      (get groups "Fax")
      (get groups "Email")))))
 
-(defn- expected-contact-info-related-urls
+(defn expected-contact-info-related-urls
   "Returns expected related url - take the first related url and the first url in related urls"
   [related-urls]
   (when related-urls
@@ -310,7 +310,7 @@
      (update :ContactMechanisms expected-iso-contact-mechanisms)
      (update :Addresses #(take 1 %))))
 
-(defn- update-short-and-long-name
+(defn update-short-and-long-name
  "ISO only has 1 field for both short and long and they get combined with a delimeter. combined
  and then parse the short and long name here to mimic what UMM -> ISO -> UMM will do."
  [data-center]
@@ -328,7 +328,7 @@
         (assoc :ShortName su/not-provided)
         (assoc :LongName nil)))))
 
-(defn- update-person-names
+(defn update-person-names
  "ISO only has one field for the whole name. When we go from UMM -> ISO, we combine the names into
  one field then on ISO -> UMM we split them up. Need to do this processing to handle spaces in names
  as well as leading/trailing spaces."
