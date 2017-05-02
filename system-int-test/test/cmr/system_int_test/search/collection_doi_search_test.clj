@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.collection-doi-search-test
   "Integration test for CMR collection search by doi"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
@@ -28,7 +28,7 @@
                             (assoc :DOI (cm/map->DoiType
                                          {:DOI "doi2" :Authority "auth2"})))
                         {:format :umm-json
-                         :accept-format :json})] 
+                         :accept-format :json})]
     (index/wait-until-indexed)
 
     (testing "search collections by doi"
@@ -43,11 +43,11 @@
        "search collections with auth1 returns nothing"
        [] "auth1" {}
 
-       "search for collections with either doi1 or doi2" 
+       "search for collections with either doi1 or doi2"
        [coll1 coll2] ["Doi1" "doI2"] {}
 
        "search for collections with either doi1 or doi2"
        [coll1 coll2] ["Doi*"] {:pattern true}
 
-       "search for collections with both doi1 and doi2 returns nothing" 
+       "search for collections with both doi1 and doi2 returns nothing"
        [] ["Doi1" "doI2"] {:and true}))))
