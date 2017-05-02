@@ -6,3 +6,4 @@
 .DS_Store
 .vscode
 profiles.clj
+/ingest-app/resources/public/

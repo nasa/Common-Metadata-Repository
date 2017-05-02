@@ -193,7 +193,10 @@
                                :port (transmit-config/search-port)))
               (assoc-in [:apps :access-control :public-conf]
                         (assoc base-public-conf
-                               :port (transmit-config/access-control-port))))]
+                               :port (transmit-config/access-control-port)))
+              (assoc-in [:apps :ingest :public-conf]
+                        (assoc base-public-conf
+                               :port (transmit-config/ingest-port))))]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
