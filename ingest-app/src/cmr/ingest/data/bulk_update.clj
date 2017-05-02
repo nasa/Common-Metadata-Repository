@@ -28,9 +28,12 @@
   (get-provider-bulk-update-status
     [db provider-id]
     ;; Returns a list of bulk update statuses for the provider
-    (su/query db (su/build (su/select [:task-id :status :status-message]
-                            (su/from "bulk_update_task_status")
-                            (su/where `(= :provider-id ~provider-id))))))
+    (let [statuses (su/query db (su/build (su/select [:task-id :status :status-message :request_json_body]
+                                            (su/from "bulk_update_task_status")
+                                            (su/where `(= :provider-id ~provider-id)))))
+          statuses (map util/map-keys->kebab-case statuses)]
+     (map #(update % :request-json-body util/gzip-blob->string)
+          statuses)))
 
   (get-bulk-update-task-status
     [db task-id]
@@ -72,14 +75,14 @@
               ["task_id" "concept_id" "status"]
               ;; set :transaction? false since we are already inside a transaction
               (concat (map #(vector task-id % "PENDING") concept-ids) [:transaction? false]))
-       nil))
+       task-id))
      (catch Exception e
       (errors/throw-service-error :invalid-data
        [(str "Error creating creating bulk update status "
              (.getMessage e))]))))
 
   (update-bulk-update-task-status
-    [db provider-id task-id status status-message]
+    [db task-id status status-message]
     (try
       (let [statement (str "UPDATE bulk_update_task_status "
                            "SET status = ?, status_message = ?"
@@ -93,10 +96,19 @@
   (update-bulk-update-collection-status
     [db task-id concept-id status status-message]
     (try
-      (let [statement (str "UPDATE bulk_update_coll_status "
-                           "SET status = ?, status_message = ?"
-                           "WHERE task_id = ? AND concept_id = ?")]
-        (j/db-do-prepared db statement [status status-message task-id concept-id]))
+      (j/with-db-transaction
+       [conn db]
+       (let [statement (str "UPDATE bulk_update_coll_status "
+                            "SET status = ?, status_message = ?"
+                            "WHERE task_id = ? AND concept_id = ?")]
+         (j/db-do-prepared db statement [status status-message task-id concept-id])
+         (let [pending-collections (su/query db
+                                     (su/build (su/select [:concept-id]
+                                                (su/from "bulk_update_coll_status")
+                                                (su/where `(and (= :task-id ~task-id)
+                                                                (= :status "PENDING"))))))]
+           (when-not (seq pending-collections)
+             (update-bulk-update-task-status db task-id "COMPLETE" nil)))))
       (catch Exception e
         (errors/throw-service-error :invalid-data
          [(str "Error creating updating bulk update collection status "
@@ -123,6 +135,19 @@
   (get-bulk-update-task-status (context->db context) task-id))
 
 (defn-timed create-bulk-update-status
-  "Saves the map of provider id acl hash values"
+  "Creates all the rows for bulk update status tables - task status and collection
+  status. Returns task id"
   [context provider-id json-body concept-ids]
   (create-and-save-bulk-update-status (context->db context) provider-id json-body concept-ids))
+
+(defn-timed update-bulk-update-task-collection-status
+  "For the task and concept id, update the collection to the given status with the
+  given status message"
+  [context task-id concept-id status status-message]
+  (def context context)
+  (update-bulk-update-collection-status (context->db context) task-id concept-id
+    status status-message))
+
+(comment
+  (reset-bulk-update (context->db context))
+  (def db (context->db context)))

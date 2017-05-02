@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.event-handler
  (:require
   [cmr.ingest.config :as config]
+  [cmr.ingest.services.bulk-update-service :as bulk-update]
   [cmr.message-queue.services.queue :as queue]))
 
 (defmulti handle-provider-event
@@ -10,7 +11,12 @@
 
 (defmethod handle-provider-event :bulk-update
   [context msg]
-  (proto-repl.saved-values/save 25))
+  (bulk-update/handle-bulk-update-event context (:provider-id msg) (:bulk-update-params msg)))
+
+(defmethod handle-provider-event :collection-bulk-update
+  [context msg]
+  (bulk-update/handle-collection-bulk-update-event context (:task-id msg)
+    (:concept-id msg) (:bulk-update-params msg)))
 
 ;; Default ignores the provider event. There may be provider events we don't care about.
 (defmethod handle-provider-event :default
