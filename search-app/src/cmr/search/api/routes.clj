@@ -287,6 +287,17 @@
     (search-response
      (query-svc/get-deleted-collections ctx params))))
 
+(defn- get-collections-created-after-date
+  "Invokes query service to search for collections created after a given date"
+  [context path-w-extension params headers]
+  (let [params (process-params params path-w-extension headers mt/xml)]
+    (info (format "Searching for collections created after %s in format %s with params %s."
+                  (:create-date params)
+                  (rfh/printable-result-format (:result-format params))
+                  (pr-str params)))
+    (search-response
+     (query-svc/get-collections-by-date-created context params))))
+
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [ctx path-w-extension params headers]
@@ -364,6 +375,11 @@
           (GET "/"
                {params :params headers :headers ctx :request-context}
                (get-deleted-collections ctx path-w-extension params headers)))
+
+        (context ["/:path-w-extension" :path-w-extension #"(?:collections-created-after)(?:\..+)?"] [path-w-extension]
+          (OPTIONS "/" req common-routes/options-response)
+          (GET "/" {params :params headers :headers context :request-context}
+            (get-collections-created-after-date context path-w-extension params headers)))
 
         ;; AQL search - xml
         (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]

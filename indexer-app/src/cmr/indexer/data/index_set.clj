@@ -243,8 +243,8 @@
           :concept-seq-id m/int-field-mapping
           :entry-id           (m/stored m/string-field-mapping)
           :entry-id.lowercase m/string-field-mapping
-          :doi           m/string-field-mapping 
-          :doi.lowercase m/string-field-mapping 
+          :doi           m/string-field-mapping
+          :doi.lowercase m/string-field-mapping
           :entry-title           (m/stored m/string-field-mapping)
           :entry-title.lowercase m/string-field-mapping
           :provider-id           (m/stored m/string-field-mapping)
@@ -341,7 +341,7 @@
           :coordinate-system (m/not-indexed (m/stored m/string-field-mapping))
 
           ;; mappings added for opendata
-          :insert-time (m/not-indexed (m/stored m/string-field-mapping))
+          :insert-time (m/stored m/string-field-mapping)
           ;; This field contains multiple values obtained by
           ;; concatenating the category, topic, and term from
           ;; each science keyword. It represents the 'keywords'

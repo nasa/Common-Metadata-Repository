@@ -401,6 +401,15 @@
      :hits (:hits results)
      :result-format result-format}))
 
+(defn get-collections-by-date-created
+  "Executes an Elasticsearch query to find all collections that have been added
+   after a given date. This will *only* return collections that still exist."
+  [context params]
+  (pv/temporal-format-validation :collection params)
+  {:results "results-str"
+   :hits "hits"
+   :result-format "result-format"})
+
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"
   [spatial-type shape]
