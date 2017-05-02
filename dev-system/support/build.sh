@@ -35,7 +35,7 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 date && echo "Generating Ingest API documentation" &&
-(cd ../ingest-app && lein with-profile docs generate-docs)
+(cd ../ingest-app && lein generate-docs)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate ingest docs" >&2
   exit 1

@@ -55,12 +55,8 @@
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
 
-  :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
-                                                    (use 'cmr.common-app.api-docs)
-                                                    (generate
-                                                      "CMR Ingest"
-                                                      "api_docs.md"
-                                                      "resources/public/site/ingest_api_docs.html")))]
+  :aliases {"generate-docs" ["with-profile" "docs"
+                             "run" "-m" "cmr.ingest.site.static" "all"]
             ;; Database migrations run by executing "lein migrate"
             "create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
