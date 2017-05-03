@@ -19,9 +19,9 @@
                            [ring/ring-core "1.5.0"]
                            [ring/ring-json "0.4.0"]]
                    cmr-deps)
-  :plugins [[test2junit "1.2.1"]
+  :plugins [[lein-exec "0.3.4"]
             [lein-shell "0.4.0"]
-            [lein-exec "0.3.4"]]
+            [test2junit "1.2.1"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]

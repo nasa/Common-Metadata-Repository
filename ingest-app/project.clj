@@ -22,9 +22,9 @@
                  [org.quartz-scheduler/quartz "2.2.2"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]]
 
-  :plugins [[test2junit "1.2.1"]
-            [drift "1.5.3"]
-            [lein-exec "0.3.4"]]
+  :plugins [[drift "1.5.3"]
+            [lein-exec "0.3.4"]
+            [test2junit "1.2.1"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
