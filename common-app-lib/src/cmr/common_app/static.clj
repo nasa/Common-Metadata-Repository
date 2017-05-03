@@ -1,4 +1,4 @@
-(ns cmr.common-app.api-docs
+(ns cmr.common-app.static
   "This namespace contains helpers for generating and returning static
   documentation pages for an application. This usually includes API
   Documentation, Site Routes & Web ResourcesDocumentation, and potentially
@@ -33,14 +33,14 @@
   (defn generate-api-docs
     \"Generate CMR Ingest API docs.\"
     []
-    (api-docs/generate
+    (static/generate
      \"resources/public/site/docs/ingest/api.html\"
      \"templates/ingest-docs-static.html\"
      (merge
       (data/base-static)
       {:site-title \"CMR Ingest\"
        :page-title \"API Documentation\"
-       :page-content (api-docs/md-file->html \"docs/api.md\")})))
+       :page-content (static/md-file->html \"docs/api.md\")})))
   ```
 
   Next, you'll want to define a `-main` function that will be used to generate
@@ -121,10 +121,10 @@
 
   ```
   ;; In namespace definition
-  (:require [cmr.common-app.api-docs :as api-docs])
+  (:require [cmr.common-app.static :as static])
 
   ;; In your routes
-  (api-docs/docs-routes (:relative-root-url system))
+  (static/docs-routes (:relative-root-url system))
   ```
 
   ## Generating Documentation

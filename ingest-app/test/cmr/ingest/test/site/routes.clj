@@ -1,7 +1,7 @@
 (ns cmr.ingest.test.site.routes
   (:require [clojure.string :as string]
             [clojure.test :refer :all]
-            [cmr.access-control.site.routes :as r]
+            [cmr.ingest.site.routes :as r]
             [ring.mock.request :refer [request]]))
 
 (def ^:private scheme "https")

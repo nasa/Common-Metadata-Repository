@@ -3,56 +3,56 @@
   ready-to-serve pages."
   (:require
    [cmr.access-control.site.data :as data]
-   [cmr.common-app.api-docs :as api-docs])
+   [cmr.common-app.static :as static])
   (:gen-class))
 
 (defn generate-api-docs
   "Generate CMR Access Control API docs."
   []
-  (api-docs/generate
+  (static/generate
    "resources/public/site/docs/access-control/api.html"
    "templates/access-control-docs-static.html"
    (merge
     (data/base-static)
     {:site-title "CMR Access Control"
      :page-title "API Documentation"
-     :page-content (api-docs/md-file->html "docs/api.md")})))
+     :page-content (static/md-file->html "docs/api.md")})))
 
 (defn generate-acl-schema-docs
   "Generate CMR Access Control API docs."
   []
-  (api-docs/generate
+  (static/generate
    "resources/public/site/docs/access-control/schema.html"
    "templates/access-control-docs-static.html"
    (merge
     (data/base-static)
     {:site-title "CMR Access Control"
      :page-title "ACL Schema Definitions"
-     :page-content (api-docs/md-file->html "docs/acl-schema.md")})))
+     :page-content (static/md-file->html "docs/acl-schema.md")})))
 
 (defn generate-acl-usage-docs
   "Generate CMR Access Control API docs."
   []
-  (api-docs/generate
+  (static/generate
    "resources/public/site/docs/access-control/usage.html"
    "templates/access-control-docs-static.html"
    (merge
     (data/base-static)
     {:site-title "CMR Access Control"
      :page-title "Using ACLS in the CMR"
-     :page-content (api-docs/md-file->html "docs/acl-usage.md")})))
+     :page-content (static/md-file->html "docs/acl-usage.md")})))
 
 (defn generate-site-docs
   "Generate CMR Access Control docs for routes and web resources."
   []
-  (api-docs/generate
+  (static/generate
    "resources/public/site/docs/access-control/site.html"
    "templates/access-control-docs-static.html"
    (merge
     (data/base-static)
     {:site-title "CMR Access Control"
      :page-title "Site Routes & Web Resource Documentation"
-     :page-content (api-docs/md-file->html "docs/site.md")})))
+     :page-content (static/md-file->html "docs/site.md")})))
 
 (defn -main
   "The entrypoint for command-line static docs generation. Example usage:
