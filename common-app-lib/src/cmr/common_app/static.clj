@@ -87,7 +87,7 @@
   ```clj
   :aliases {
     ...
-    \"generate-docs\" [\"with-profile\" \"docs\"
+    \"generate-static\" [\"with-profile\" \"docs\"
                        \"run\" \"-m\" \"cmr.<PROJ>.site.static\" \"all\"]
     ...}
   ```
@@ -103,7 +103,7 @@
   ```clj
   :aliases {
     ...
-    \"generate-docs\" [\"modules\" \"generate-docs\"]
+    \"generate-static\" [\"modules\" \"generate-static\"]
     ...}
   ```
 
@@ -136,7 +136,7 @@
   the following at the command line:
 
   ```
-  $ lein generate-docs
+  $ lein generate-static
   ```"
   (:require
    [clojure.java.io :as io]

@@ -29,19 +29,19 @@ if [ $? -ne 0 ] ; then
   echo "Failed to install gems" >&2
   exit 1
 fi
-(cd ../search-app && lein generate-docs)
+(cd ../search-app && lein generate-static)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate search docs" >&2
   exit 1
 fi
 date && echo "Generating Ingest API documentation" &&
-(cd ../ingest-app && lein generate-docs)
+(cd ../ingest-app && lein generate-static)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate ingest docs" >&2
   exit 1
 fi
 date && echo "Generating Access Control API documentation" &&
-(cd ../access-control-app && lein generate-docs)
+(cd ../access-control-app && lein generate-static)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate access control docs" >&2
   exit 1

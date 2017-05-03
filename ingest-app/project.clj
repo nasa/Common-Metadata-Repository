@@ -37,8 +37,8 @@
     ;; This profile specifically here for generating documentation. It's faster than using the regular
     ;; profile. An agent pool is being started when using the default profile which causes the wait of
     ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
-    ;; Generate docs with: lein with-profile docs generate-docs
-    :docs {}
+    ;; Generate docs with: lein with-profile docs generate-static
+    :static {}
     :uberjar {:main cmr.ingest.runner
               :aot :all}
     ;; This profile is used for linting and static analysis. To run for this
@@ -55,7 +55,7 @@
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
 
-  :aliases {"generate-docs" ["with-profile" "docs"
+  :aliases {"generate-static" ["with-profile" "static"
                              "run" "-m" "cmr.ingest.site.static" "all"]
             ;; Database migrations run by executing "lein migrate"
             "create-user" ["exec" "-p" "./support/create_user.clj"]

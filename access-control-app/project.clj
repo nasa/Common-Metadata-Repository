@@ -41,9 +41,9 @@
     ;; than using the regular profile. An agent pool is being started when
     ;; using the default profile which causes the wait of 60 seconds before
     ;; allowing the JVM to shutdown since no call to shutdown-agents is made.
-    ;; Generate docs with: lein generate-docs (the alias makes use of the
+    ;; Generate docs with: lein generate-static (the alias makes use of the
     ;; docs profile).
-    :docs {}
+    :static {}
 
     :uberjar {:main cmr.access-control.runner
               :aot :all}
@@ -61,7 +61,7 @@
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
   :test-paths ["test" "int_test"]
-  :aliases {"generate-docs" ["with-profile" "docs"
+  :aliases {"generate-static" ["with-profile" "static"
                              "run" "-m" "cmr.access-control.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]

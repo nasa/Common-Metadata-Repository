@@ -26,7 +26,7 @@
     :uberjar {
       :main cmr.indexer.runner
       :aot :all}
-    :docs {}
+    :static {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
     ;; all projects at the same time, use the same command but from the top-
@@ -52,4 +52,4 @@
             "check-deps" ["with-profile" "lint" "ancient"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
-            "generate-docs" ["with-profile" "docs" "shell" "echo"]})
+            "generate-static" ["with-profile" "static" "shell" "echo"]})

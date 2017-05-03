@@ -31,5 +31,5 @@
     "eastwood" ["modules" "eastwood"]
     "lint" ["modules" "lint"]
     "check-deps" ["modules" "check-deps"]
-    "generate-docs" ["modules" "generate-docs"]})
+    "generate-static" ["modules" "generate-static"]})
 

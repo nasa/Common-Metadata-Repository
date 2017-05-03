@@ -31,19 +31,19 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 date && echo "Generating Search API documentation" &&
-(cd search-app && lein with-profile docs generate-docs)
+(cd search-app && lein generate-static)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate search docs" >&2
   exit 1
 fi
 date && echo "Generating Ingest API documentation" &&
-(cd ingest-app && lein with-profile docs generate-docs)
+(cd ingest-app && lein generate-static)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate ingest docs" >&2
   exit 1
 fi
 date && echo "Generating Access Control API documentation" &&
-(cd access-control-app && lein with-profile docs generate-docs)
+(cd access-control-app && lein generate-static)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate access control docs" >&2
   exit 1
