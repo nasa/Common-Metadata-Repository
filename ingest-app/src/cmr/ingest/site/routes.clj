@@ -1,7 +1,7 @@
 (ns cmr.ingest.site.routes
   "Defines the HTTP URL routes for the ingest web site."
   (:require
-   [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.static :as static]
    [cmr.common-app.site.data :as common-data]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.ingest.site.pages :as pages]
@@ -42,6 +42,6 @@
                   "site/docs/ingest/site.html")
               307)))
       ;; Add routes for general API documentation
-      (api-docs/docs-routes
+      (static/docs-routes
        (get-in system [:ingest-public-conf :protocol])
        (get-in system [:ingest-public-conf :relative-root-url])))))

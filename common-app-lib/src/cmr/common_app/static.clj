@@ -11,7 +11,7 @@
   This namespace provides a few untility functions for converting Markdown
   (and Markdown files) to HTML. The converted string data may then be used in
   templates. Note that if you are using Selmer templates, you will need to
-  'pipe' the converted HTML string data to the `safe` Selmer fileter so that
+  'pipe' the converted HTML string data to the `safe` Selmer filter so that
   the HTML isn't escaped:
 
   ```html
@@ -23,9 +23,9 @@
 
   ## Application-specific Static Namespace
 
-  While tihs namespace provides generally useful functions for static content,
+  While this namespace provides generally useful functions for static content,
   and in particular its generation, you will still need to create functions in
-  applications that take advantage of these. In otder to do this, as mentioned
+  applications that take advantage of these. In order to do this, as mentioned
   above, create a `cmr.<YOUR-APP>.site.static` namespace in the appropriate
   file and define the necessary functions, e.g.:
 
@@ -48,7 +48,7 @@
 
   ```clj
   (defn -main
-    \"The entrypoint for command-line static docs generation. Example usage:
+    \"The entrypoint for command-line static file generation. Example usage:
     ```
     $ lein run -m cmr.ingest.site.static api
     $ lein run -m cmr.ingest.site.static site
@@ -82,23 +82,23 @@
   ## Profiles and `lein` Aliases
 
   `lein` aliases should be created in all the static-content-
-  generating projects to make it easier to generate the docs:
+  generating projects to make it easier to generate static files:
 
   ```clj
   :aliases {
     ...
-    \"generate-static\" [\"with-profile\" \"docs\"
+    \"generate-static\" [\"with-profile\" \"static\"
                        \"run\" \"-m\" \"cmr.<PROJ>.site.static\" \"all\"]
     ...}
   ```
 
   Notes:
 
-  * CMR projects that generate docs use an empty `docs` profile in
-    their `project.clj` to be used when generating docs so as not to load all
-    of CMR (the entire CMR in a JVM isn't needed to generate static files).
+  * CMR projects that generate static files use an empty `static` profile in
+    their `project.clj` to be used so as not to load all of CMR (the entire
+    CMR in a JVM isn't needed to generate static files).
   * There is a top-level alias for generating all static files in all
-  subprojects:
+    subprojects:
 
   ```clj
   :aliases {
@@ -132,8 +132,8 @@
   At the lowest level, static files can be generated with the `generate`
   function in this namespace. As noted above, you should also add an alias in
   the `project.clj` for generating the documentation in the `project.clj`. At
-  that point, documentation may be generated for a project by simply executing
-  the following at the command line:
+  that point, static content files may be generated for a project by simply
+  executing the following at the command line:
 
   ```
   $ lein generate-static
@@ -265,8 +265,6 @@
 (defn generate
   "Generates the API documentation HTML page from the markdown source.
   Args
-  * docs-source - The file containing the markdown API documentation.
-    Example: `api_docs.md`
   * docs-target - The file that will be generated with the API documentation.
     Example: `resources/public/site/api_docs.html`
   * template-file - The Selmer template file to use for generation.

@@ -1,4 +1,6 @@
 (ns cmr.ingest.site.pages
+  "The functions of this namespace are specifically responsible for returning
+  ready-to-serve pages."
   (:require
    [cmr.ingest.site.data :as data]
    [cmr.common-app.site.pages :as common-pages]))

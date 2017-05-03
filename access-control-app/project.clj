@@ -42,7 +42,7 @@
     ;; using the default profile which causes the wait of 60 seconds before
     ;; allowing the JVM to shutdown since no call to shutdown-agents is made.
     ;; Generate docs with: lein generate-static (the alias makes use of the
-    ;; docs profile).
+    ;; static profile).
     :static {}
 
     :uberjar {:main cmr.access-control.runner
@@ -62,7 +62,7 @@
                 [venantius/yagni "0.1.4"]]}}
   :test-paths ["test" "int_test"]
   :aliases {"generate-static" ["with-profile" "static"
-                             "run" "-m" "cmr.access-control.site.static" "all"]
+                               "run" "-m" "cmr.access-control.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]
             ;; Creates the checkouts directory to the local projects
