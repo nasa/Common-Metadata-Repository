@@ -3,11 +3,10 @@
   consumption (via a web browser)."
   (:require
    [cmr.collection-renderer.api.routes :as collection-renderer-routes]
-   [cmr.common.api.context :as context]
    [cmr.common-app.api-docs :as api-docs]
    [cmr.search.site.pages :as pages]
    [cmr.transmit.config :as config]
-   [compojure.core :as compojure :refer [GET context routes]]
+   [compojure.core :refer [GET context routes]]
    [ring.swagger.ui :as ring-swagger-ui]
    [ring.util.response :refer [redirect]]))
 
@@ -21,56 +20,56 @@
         ;; prevent any pages in the "site" context from rendering after that
         ;; point.
         (GET "/"
-             {context :request-context}
-             (pages/home context))
+             {ctx :request-context}
+             (pages/home ctx))
         (GET "/sitemap.xml"
-             {context :request-context}
-             (pages/sitemap-master context))
+             {ctx :request-context}
+             (pages/sitemap-master ctx))
         (GET "/site/sitemap.xml"
-             {context :request-context}
-             (pages/sitemap-top-level context))
+             {ctx :request-context}
+             (pages/sitemap-top-level ctx))
         (GET "/site/collections/directory"
-             {context :request-context}
-             (pages/collections-directory context))
+             {ctx :request-context}
+             (pages/collections-directory ctx))
         (GET "/site/collections/directory/eosdis"
-             {context :request-context}
-             (pages/eosdis-collections-directory context))
+             {ctx :request-context}
+             (pages/eosdis-collections-directory ctx))
         (GET "/site/collections/directory/:provider-id/:tag"
-             [provider-id tag :as {context :request-context}]
-             (pages/provider-tag-directory context provider-id tag))
+             [provider-id tag :as {ctx :request-context}]
+             (pages/provider-tag-directory ctx provider-id tag))
         (GET "/site/collections/directory/:provider-id/:tag/sitemap.xml"
-             [provider-id tag :as {context :request-context}]
-             (pages/sitemap-provider-tag context provider-id tag))
+             [provider-id tag :as {ctx :request-context}]
+             (pages/sitemap-provider-tag ctx provider-id tag))
         ;; Backwards comapatibility for old docs URLs
         (GET "/site/search_api_docs.html"
-             {context :request-context}
+             {ctx :request-context}
              (redirect
-              (str (config/application-public-root-url context)
+              (str (config/application-public-root-url ctx)
                    "site/docs/search/api.html")
               301))
         (GET "/site/search_site_docs.html"
-             {context :request-context}
+             {ctx :request-context}
              (redirect
-              (str (config/application-public-root-url context)
+              (str (config/application-public-root-url ctx)
                    "site/docs/search/site.html")
               301))
         ;; Search docs context
         (context "/site/docs/search" []
-         (GET "/"
-              {context :request-context}
-              (pages/search-docs context))
-         (GET "/api"
-              {context :request-context}
-              (redirect
-               (str (config/application-public-root-url context)
-                    "site/docs/search/api.html")
-               307))
-         (GET "/site"
-              {context :request-context}
-              (redirect
-               (str (config/application-public-root-url context)
-                    "site/docs/search/site.html")
-               307)))
+          (GET "/"
+               {ctx :request-context}
+               (pages/search-docs ctx))
+          (GET "/api"
+               {ctx :request-context}
+               (redirect
+                (str (config/application-public-root-url ctx)
+                     "site/docs/search/api.html")
+                307))
+          (GET "/site"
+               {ctx :request-context}
+               (redirect
+                (str (config/application-public-root-url ctx)
+                     "site/docs/search/site.html")
+                307)))
         ;; Add routes for general API documentation
         (api-docs/docs-routes
          (get-in system [:public-conf :protocol])

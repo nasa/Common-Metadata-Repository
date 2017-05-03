@@ -8,7 +8,6 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.query-model :as common-qm]
-   [cmr.common.api.context :as context]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
@@ -180,39 +179,39 @@
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
-  [context path-w-extension params headers json-query]
+  [ctx path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         params (process-params params path-w-extension headers mt/xml)
         _ (info (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
-                        (name concept-type) (:client-id context)
+                        (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format (:result-format params)) json-query params))
-        results (query-svc/find-concepts-by-json-query context concept-type params json-query)]
+        results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
     (search-response results)))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and return the response"
-  [context path-w-extension params headers body]
+  [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        context (assoc context :query-string body)
+        ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
-                        (name concept-type) (:client-id context)
+                        (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format result-format) (pr-str params)))
         search-params (lp/process-legacy-psa params)
-        results (query-svc/find-concepts-by-parameters context concept-type search-params)]
+        results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (search-response results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
-  [context path-w-extension params headers body]
+  [ctx path-w-extension params headers body]
   (let [content-type-header (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
-      (find-concepts-by-json-query context path-w-extension params headers body)
+      (find-concepts-by-json-query ctx path-w-extension params headers body)
 
       (or (nil? content-type-header) (= mt/form-url-encoded content-type-header))
-      (find-concepts-by-parameters context path-w-extension params headers body)
+      (find-concepts-by-parameters ctx path-w-extension params headers body)
 
       :else
       {:status 415
@@ -222,29 +221,29 @@
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
-  [context path-w-extension params headers query-string]
+  [ctx path-w-extension params headers query-string]
   (let [params (process-params params path-w-extension headers mt/json)
         _ (info (format "Getting granule timeline from client %s with params %s."
-                        (:client-id context) (pr-str params)))
+                        (:client-id ctx) (pr-str params)))
         search-params (lp/process-legacy-psa params)
-        results (query-svc/get-granule-timeline context search-params)]
+        results (query-svc/get-granule-timeline ctx search-params)]
     {:status 200
      :headers {common-routes/CORS_ORIGIN_HEADER "*"}
      :body results}))
 
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
-  [context path-w-extension params headers aql]
+  [ctx path-w-extension params headers aql]
   (let [params (process-params params path-w-extension headers mt/xml)
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
-                        (:client-id context) (rfh/printable-result-format (:result-format params)) aql params))
-        results (query-svc/find-concepts-by-aql context params aql)]
+                        (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
+        results (query-svc/find-concepts-by-aql ctx params aql)]
     (search-response results)))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
   and returns the response"
-  [request-context path-w-extension params headers]
+  [ctx path-w-extension params headers]
   (let [concept-id (path-w-extension->concept-id path-w-extension)
         revision-id (path-w-extension->revision-id path-w-extension)
         concept-type (concepts/concept-id->type concept-id)
@@ -269,34 +268,34 @@
                       revision-id))
         ;; else, revision-id is nil
         (search-response (query-svc/find-concept-by-id-and-revision
-                           request-context result-format concept-id revision-id)))
+                           ctx result-format concept-id revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      concept-type-supported-mime-types
                                                      mt/native)
             ;; XML means native in this case
             result-format (if (= result-format :xml) :native result-format)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        (search-response (query-svc/find-concept-by-id request-context result-format concept-id))))))
+        (search-response (query-svc/find-concept-by-id ctx result-format concept-id))))))
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
-  [context path-w-extension params headers]
+  [ctx path-w-extension params headers]
   (let [params (process-params params path-w-extension headers mt/xml)]
     (info (format "Searching for deleted collections from client %s in format %s with params %s."
-                  (:client-id context) (rfh/printable-result-format (:result-format params))
+                  (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
     (search-response
-     (query-svc/get-deleted-collections context params))))
+     (query-svc/get-deleted-collections ctx params))))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
-  [context path-w-extension params headers]
+  [ctx path-w-extension params headers]
   (let [params (process-params params path-w-extension headers mt/json)
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
-                        (:client-id context) (rfh/printable-result-format (:result-format params))
+                        (:client-id ctx) (rfh/printable-result-format (:result-format params))
                         (pr-str params)))
         [provider-holdings provider-holdings-formatted]
-        (query-svc/get-provider-holdings context params)
+        (query-svc/get-provider-holdings ctx params)
         collection-count (count provider-holdings)
         granule-count (reduce + (map :granule-count provider-holdings))]
     {:status 200
@@ -308,8 +307,8 @@
 
 (defn- find-tiles
   "Retrieves all the tiles which intersect the input geometry"
-  [context params]
-  (let [results (query-svc/find-tiles-by-geometry context params)]
+  [ctx params]
+  (let [results (query-svc/find-tiles-by-geometry ctx params)]
     {:status 200
      :headers {common-routes/CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
@@ -336,48 +335,56 @@
           ;; OPTIONS method is needed to support CORS when custom headers are used in requests to
           ;; the endpoint. In this case, the Echo-Token header is used in the GET request.
           (OPTIONS "/" req common-routes/options-response)
-          (GET "/" {params :params headers :headers context :request-context}
-            (find-concept-by-cmr-concept-id context path-w-extension params headers)))
+          (GET "/"
+              {params :params headers :headers ctx :request-context}
+              (find-concept-by-cmr-concept-id ctx path-w-extension params headers)))
 
         ;; Find concepts
         (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
-          (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-            (find-concepts context path-w-extension params headers query-string))
+          (GET "/"
+               {params :params headers :headers ctx :request-context query-string :query-string}
+               (find-concepts ctx path-w-extension params headers query-string))
           ;; Find concepts - form encoded or JSON
-          (POST "/" {params :params headers :headers context :request-context body :body-copy}
-            (find-concepts context path-w-extension params headers body)))
+          (POST "/"
+                {params :params headers :headers ctx :request-context body :body-copy}
+                (find-concepts ctx path-w-extension params headers body)))
 
         ;; Granule timeline
         (context ["/granules/:path-w-extension" :path-w-extension #"(?:timeline)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
-          (GET "/" {params :params headers :headers context :request-context query-string :query-string}
-            (get-granules-timeline context path-w-extension params headers query-string))
-          (POST "/" {params :params headers :headers context :request-context body :body-copy}
-            (get-granules-timeline context path-w-extension params headers body)))
+          (GET "/"
+               {params :params headers :headers ctx :request-context query-string :query-string}
+               (get-granules-timeline ctx path-w-extension params headers query-string))
+          (POST "/" {params :params headers :headers ctx :request-context body :body-copy}
+            (get-granules-timeline ctx path-w-extension params headers body)))
 
         (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
-          (GET "/" {params :params headers :headers context :request-context}
-            (get-deleted-collections context path-w-extension params headers)))
+          (GET "/"
+               {params :params headers :headers ctx :request-context}
+               (get-deleted-collections ctx path-w-extension params headers)))
 
         ;; AQL search - xml
         (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
-          (POST "/" {params :params headers :headers context :request-context body :body-copy}
-            (find-concepts-by-aql context path-w-extension params headers body)))
+          (POST "/"
+                {params :params headers :headers ctx :request-context body :body-copy}
+                (find-concepts-by-aql ctx path-w-extension params headers body)))
 
         ;; Provider holdings
         (context ["/:path-w-extension" :path-w-extension #"(?:provider_holdings)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
-          (GET "/" {params :params headers :headers context :request-context}
-            (get-provider-holdings context path-w-extension params headers)))
+          (GET "/"
+               {params :params headers :headers ctx :request-context}
+               (get-provider-holdings ctx path-w-extension params headers)))
 
         ;; Resets the application back to it's initial state.
-        (POST "/reset" {:keys [request-context params headers]}
-          (acl/verify-ingest-management-permission request-context)
-          (cache/reset-caches request-context)
-          {:status 204})
+        (POST "/reset"
+              {ctx :request-context}
+              (acl/verify-ingest-management-permission ctx)
+              (cache/reset-caches ctx)
+              {:status 204})
 
         ;; Add routes for retrieving GCMD keywords
         keyword-api/keyword-api-routes
@@ -385,10 +392,11 @@
         ;; add routes for managing jobs
         (common-routes/job-api-routes
          (routes
-           (POST "/refresh-collection-metadata-cache" {:keys [headers params request-context]}
-             (acl/verify-ingest-management-permission request-context :update)
-             (metadata-cache/refresh-cache request-context)
-             {:status 200})))
+           (POST "/refresh-collection-metadata-cache"
+                 {ctx :request-context}
+                 (acl/verify-ingest-management-permission ctx :update)
+                 (metadata-cache/refresh-cache ctx)
+                 {:status 200})))
 
         ;; add routes for accessing caches
         common-routes/cache-api-routes
@@ -400,5 +408,6 @@
         (common-enabled/write-enabled-api-routes
          #(acl/verify-ingest-management-permission % :update))
 
-        (GET "/tiles" {params :params context :request-context}
-          (find-tiles context params))))))
+        (GET "/tiles"
+             {params :params ctx :request-context}
+             (find-tiles ctx params))))))

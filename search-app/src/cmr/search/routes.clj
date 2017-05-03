@@ -8,7 +8,7 @@
    [clojure.string :as str]
    [cmr.acl.core :as acl]
    [cmr.common.api.errors :as errors]
-   [cmr.common.api.context :as context]
+   [cmr.common.api.context :as cmr-context]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.mime-types :as mt]
@@ -17,8 +17,7 @@
    [cmr.search.api.routes :as api-routes]
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
-   [compojure.core :refer :all]
-   [compojure.route :as route]
+   [compojure.core :refer [GET context routes]]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]))
@@ -43,22 +42,23 @@
   in the query string, e.g., granule_ur=*&granule_ur[pattern]=true. Ring parameter handling throws
   500 error when it happens. This middleware handler returns a 400 error early to avoid the 500 error
   from Ring."
-  [f]
+  [handler]
   (fn [request]
     (when-let [mixed-param (find-query-str-mixed-arity-param (:query-string request))]
       (svc-errors/throw-service-errors
        :bad-request
        [(msg/mixed-arity-parameter-msg mixed-param)]))
-    (f request)))
+    (handler request)))
 
 (defn copy-of-body-handler
   "Copies the body into a new attribute called :body-copy so that after a post
   of form content type the original body can still be read. The default ring
   params reads the body and parses it and we don't have access to it."
-  [f]
+  [handler]
   (fn [request]
     (let [^String body (slurp (:body request))]
-      (f (assoc request
+      (handler (assoc
+                request
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
@@ -82,8 +82,8 @@
       ;; /search/robots.txt)
       (GET "/robots.txt" req robots-txt-response)
       (context
-       relative-root-url []
-       (GET "/robots.txt" req robots-txt-response))
+        relative-root-url []
+        (GET "/robots.txt" req robots-txt-response))
       (api-routes/build-routes system)
       (site-routes/build-routes system)
       (common-pages/not-found))))
@@ -101,7 +101,7 @@
       mixed-arity-param-handler
       (errors/exception-handler default-error-format)
       common-routes/add-request-id-response-handler
-      (context/build-request-context-handler system)
+      (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       params/wrap-params
       copy-of-body-handler))

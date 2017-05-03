@@ -24,23 +24,23 @@
             301))
       ;; Access control docs context
       (context "/site/docs/ingest" []
-       (GET "/"
-            {ctx :request-context}
-            (pages/ingest-docs ctx))
-       ;; Support better organization of documentation URLs and support old
-       ;; URLs
-       (GET "/api"
-            {ctx :request-context}
-            (redirect
-             (str (config/application-public-root-url ctx)
-                  "site/docs/ingest/api.html")
-             307))
-       (GET "/site"
-            {ctx :request-context}
-            (redirect
-             (str (config/application-public-root-url ctx)
-                 "site/docs/ingest/site.html")
-             307)))
+        (GET "/"
+             {ctx :request-context}
+             (pages/ingest-docs ctx))
+        ;; Support better organization of documentation URLs and support old
+        ;; URLs
+        (GET "/api"
+             {ctx :request-context}
+             (redirect
+              (str (config/application-public-root-url ctx)
+                   "site/docs/ingest/api.html")
+              307))
+        (GET "/site"
+             {ctx :request-context}
+             (redirect
+              (str (config/application-public-root-url ctx)
+                  "site/docs/ingest/site.html")
+              307)))
       ;; Add routes for general API documentation
       (api-docs/docs-routes
        (get-in system [:ingest-public-conf :protocol])
