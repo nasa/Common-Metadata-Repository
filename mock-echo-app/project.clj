@@ -8,7 +8,8 @@
                  [org.clojure/tools.nrepl "0.2.12"]
                  [ring/ring-core "1.5.0"]
                  [ring/ring-json "0.4.0"]]
-  :plugins [[test2junit "1.2.1"]]
+  :plugins [[lein-shell "0.4.0"]
+            [test2junit "1.2.1"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -18,8 +19,10 @@
                          [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
           :jvm-opts ^:replace ["-server"]
           :source-paths ["src" "dev" "test"]}
-    :uberjar {:main cmr.mock-echo.runner
-              :aot :all}
+    :uberjar {
+      :main cmr.mock-echo.runner
+      :aot :all}
+    :docs {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
     ;; all projects at the same time, use the same command but from the top-
@@ -31,7 +34,6 @@
                 [lein-ancient "0.6.10"]
                 [lein-bikeshed "0.4.1"]
                 [lein-kibit "0.1.2"]
-                [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
   :aliases {;; Alias to test2junit for consistency with lein-test-out
             "test-out" ["test2junit"]
@@ -42,4 +44,6 @@
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient"]
-            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
+            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
+            ;; Placeholder for future docs and enabler of top-level alias
+            "generate-docs" ["with-profile" "docs" "shell" "echo"]})

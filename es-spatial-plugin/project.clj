@@ -57,6 +57,7 @@
           ;                      "-Dcom.sun.management.jmxremote.port=1098"]
           :source-paths ["src" "dev"]}
     :uberjar {:aot :all}
+    :docs {}
     ;; This profile is used for linting and static analysis. To run for this
     ;; project, use `lein lint` from inside the project directory. To run for
     ;; all projects at the same time, use the same command but from the top-
@@ -68,7 +69,6 @@
                 [lein-ancient "0.6.10"]
                 [lein-bikeshed "0.4.1"]
                 [lein-kibit "0.1.2"]
-                [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
 
   :aliases {;; Packages the spatial search plugin
@@ -99,4 +99,6 @@
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
             "check-deps" ["with-profile" "lint" "ancient"]
-            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
+            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
+            ;; Placeholder for future docs and enabler of top-level alias
+            "generate-docs" ["with-profile" "docs" "shell" "echo"]})
