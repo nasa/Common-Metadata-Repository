@@ -12,8 +12,7 @@
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as api-errors]
-   [compojure.core :refer :all]
-   [compojure.route :as route]
+   [compojure.core :refer [routes]]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]))

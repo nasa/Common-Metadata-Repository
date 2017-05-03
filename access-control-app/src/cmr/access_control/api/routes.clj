@@ -1,5 +1,5 @@
 (ns cmr.access-control.api.routes
-  "Defines the HTTP URL routes for the application."
+  "Defines the HTTP URL routes for the access-control API."
   (:require
    [cheshire.core :as json]
    [cmr.access-control.data.access-control-index :as index]
@@ -15,7 +15,6 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
-   [cmr.common.api.context :as context]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
    [cmr.common.log :refer (debug info warn error)]
@@ -47,159 +46,159 @@
 
 (defn- create-group-with-managing-group
   "Helper function to invoke group service create-group function to pass in a managing group id."
-  [context managing-group-id group]
-  (group-service/create-group context group {:managing-group-id managing-group-id}))
+  [ctx managing-group-id group]
+  (group-service/create-group ctx group {:managing-group-id managing-group-id}))
 
 (defn- create-group
   "Processes a create group request."
-  [context headers body managing-group-id]
+  [ctx headers body managing-group-id]
   (validate-content-type headers)
   (group-schema/validate-group-json body)
   (->> (json/parse-string body true)
        (util/map-keys->kebab-case)
-       (create-group-with-managing-group context managing-group-id)
+       (create-group-with-managing-group ctx managing-group-id)
        (util/map-keys->snake_case)
        api-response))
 
 (defn- get-group
   "Retrieves the group with the given concept-id."
-  [context concept-id]
-  (-> (group-service/get-group context concept-id)
+  [ctx concept-id]
+  (-> (group-service/get-group ctx concept-id)
       (util/map-keys->snake_case)
       api-response))
 
 (defn- update-group
   "Processes a request to update a group."
-  [context headers body concept-id]
+  [ctx headers body concept-id]
   (validate-content-type headers)
   (group-schema/validate-group-json body)
   (->> (json/parse-string body true)
        (util/map-keys->kebab-case)
-       (group-service/update-group context concept-id)
+       (group-service/update-group ctx concept-id)
        (util/map-keys->snake_case)
        api-response))
 
 (defn- delete-group
   "Deletes the group with the given concept-id."
-  [context concept-id]
-  (api-response (util/map-keys->snake_case (group-service/delete-group context concept-id))))
+  [ctx concept-id]
+  (api-response (util/map-keys->snake_case (group-service/delete-group ctx concept-id))))
 
 (defn- get-members
   "Handles a request to fetch group members"
-  [context concept-id]
-  (api-response (group-service/get-members context concept-id)))
+  [ctx concept-id]
+  (api-response (group-service/get-members ctx concept-id)))
 
 (defn- add-members
   "Handles a request to add group members"
-  [context headers body concept-id]
+  [ctx headers body concept-id]
   (validate-content-type headers)
   (group-schema/validate-group-members-json body)
   (->> (json/parse-string body true)
-       (group-service/add-members context concept-id)
+       (group-service/add-members ctx concept-id)
        (util/map-keys->snake_case)
        api-response))
 
 (defn- remove-members
   "Handles a request to remove group members"
-  [context headers body concept-id]
+  [ctx headers body concept-id]
   (validate-content-type headers)
   (group-schema/validate-group-members-json body)
   (->> (json/parse-string body true)
-       (group-service/remove-members context concept-id)
+       (group-service/remove-members ctx concept-id)
        (util/map-keys->snake_case)
        api-response))
 
 (defn- search-for-groups
-  [context headers params]
+  [ctx headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (group-service/search-for-groups context (dissoc params :token))
+  (-> (group-service/search-for-groups ctx (dissoc params :token))
       common-routes/search-response))
 
 ;;; ACL Route Functions
 
 (defn- create-acl
   "Returns a Ring response with the result of trying to create the ACL with the given request body."
-  [request-context headers body]
+  [request-ctx headers body]
   (validate-content-type headers)
   (acl-schema/validate-acl-json body)
   (->> (json/parse-string body)
        util/map-keys->kebab-case
-       (acl-service/create-acl request-context)
+       (acl-service/create-acl request-ctx)
        util/map-keys->snake_case
        api-response))
 
 (defn- update-acl
   "Returns a Ring response with the result of trying to update the ACL with the given concept id
   and request body."
-  [request-context concept-id headers body]
+  [ctx concept-id headers body]
   (validate-content-type headers)
   (acl-schema/validate-acl-json body)
   (->> (json/parse-string body)
        util/map-keys->kebab-case
-       (acl-service/update-acl request-context concept-id)
+       (acl-service/update-acl ctx concept-id)
        util/map-keys->snake_case
        api-response))
 
 (defn- delete-acl
   "Returns a Ring response with the result of trying to delete the ACL with the given concept id."
-  [request-context concept-id]
-  (api-response (acl-service/delete-acl request-context concept-id)))
+  [ctx concept-id]
+  (api-response (acl-service/delete-acl ctx concept-id)))
 
 (defn- get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
-  [request-context headers concept-id params]
-  (-> (acl-service/get-acl request-context concept-id params)
+  [ctx headers concept-id params]
+  (-> (acl-service/get-acl ctx concept-id params)
       (util/map-keys->snake_case)
       api-response))
 
 (defn- search-for-acls
   "Returns a Ring response with ACL search results for the given params."
-  [context headers params]
+  [ctx headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (acl-search/search-for-acls context params)
+  (-> (acl-search/search-for-acls ctx params)
       common-routes/search-response))
 
 (defn- get-permissions
   "Returns a Ring response with the requested permission check results."
-  [request-context params]
-  (let [result (acl-service/get-permissions request-context params)]
+  [ctx params]
+  (let [result (acl-service/get-permissions ctx params)]
     {:status 200
      :body (json/generate-string result)}))
 
 (defn- reindex-groups
   "Processes a request to reindex all groups"
-  [context]
-  (index/reindex-groups context)
+  [ctx]
+  (index/reindex-groups ctx)
   {:status 200})
 
 (defn- reindex-acls
   "Processes a request to reindex all acls"
-  [context]
-  (index/reindex-acls context)
+  [ctx]
+  (index/reindex-acls ctx)
   {:status 200})
 
 ;;; Various Admin Route Functions
 
 (defn reset
   "Resets the app state. Compatible with cmr.dev-system.control."
-  ([context]
-   (reset context true))
-  ([context bootstrap-data]
-   (cache/reset-caches context)
-   (index/reset (-> context :system :search-index))
+  ([ctx]
+   (reset ctx true))
+  ([ctx bootstrap-data]
+   (cache/reset-caches ctx)
+   (index/reset (-> ctx :system :search-index))
    (when bootstrap-data
-     (bootstrap/bootstrap (:system context)))))
+     (bootstrap/bootstrap (:system ctx)))))
 
 (def admin-api-routes
   "The administrative control routes."
   (routes
-    (POST "/reset" {:keys [request-context params headers]}
-      (acl/verify-ingest-management-permission request-context :update)
-      (reset request-context (= (:bootstrap_data params) "true"))
+    (POST "/reset" {ctx :request-context params :params}
+      (acl/verify-ingest-management-permission ctx :update)
+      (reset ctx (= (:bootstrap_data params) "true"))
       {:status 204})
-    (POST "/db-migrate" {context :request-context}
-      (acl/verify-ingest-management-permission context :update)
-      (index/create-index-or-update-mappings (-> context :system :search-index))
+    (POST "/db-migrate" {ctx :request-context}
+      (acl/verify-ingest-management-permission ctx :update)
+      (index/create-index-or-update-mappings (-> ctx :system :search-index))
       {:status 204})))
 
 ;;; Handler
@@ -220,97 +219,119 @@
       common-routes/cache-api-routes
 
       ;; Reindex all groups
-      (POST "/reindex-groups" {:keys [request-context headers params]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (pv/validate-standard-params params)
-        (reindex-groups request-context))
+      (POST "/reindex-groups"
+            {ctx :request-context params :params}
+            (acl/verify-ingest-management-permission ctx :update)
+            (pv/validate-standard-params params)
+            (reindex-groups ctx))
 
       ;; Reindex all acls
-      (POST "/reindex-acls" {:keys [request-context headers params]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (pv/validate-standard-params params)
-        (reindex-acls request-context))
+      (POST "/reindex-acls"
+            {ctx :request-context params :params}
+            (acl/verify-ingest-management-permission ctx :update)
+            (pv/validate-standard-params params)
+            (reindex-acls ctx))
 
       (context "/groups" []
-        (OPTIONS "/" req
-                 (pv/validate-standard-params (:params req))
+        (OPTIONS "/"
+                 {params :params}
+                 (pv/validate-standard-params params)
                  common-routes/options-response)
 
         ;; Search for groups
-        (GET "/" {:keys [request-context headers params]}
-          (search-for-groups request-context headers params))
+        (GET "/"
+             {ctx :request-context params :params headers :headers}
+             (search-for-groups ctx headers params))
 
         ;; Create a group
-        (POST "/" {:keys [request-context headers body params]}
-          (pv/validate-create-group-route-params params)
-          (create-group request-context headers (slurp body)
-                        (or (:managing-group-id params) (:managing_group_id params))))
+        (POST "/"
+              {ctx :request-context params :params headers :headers body :body}
+              (pv/validate-create-group-route-params params)
+              (create-group ctx
+                            headers
+                            (slurp body)
+                            (or (:managing-group-id params)
+                                (:managing_group_id params))))
 
         (context "/:group-id" [group-id]
           (OPTIONS "/" req common-routes/options-response)
           ;; Get a group
-          (GET "/" {:keys [request-context params]}
-            (pv/validate-group-route-params params)
-            (get-group request-context group-id))
+          (GET "/"
+               {ctx :request-context params :params}
+               (pv/validate-group-route-params params)
+               (get-group ctx group-id))
 
           ;; Delete a group
-          (DELETE "/" {:keys [request-context params]}
-            (pv/validate-group-route-params params)
-            (delete-group request-context group-id))
+          (DELETE "/"
+                  {ctx :request-context params :params}
+                  (pv/validate-group-route-params params)
+                  (delete-group ctx group-id))
 
           ;; Update a group
-          (PUT "/" {:keys [request-context headers body params]}
-            (pv/validate-group-route-params params)
-            (update-group request-context headers (slurp body) group-id))
+          (PUT "/"
+               {ctx :request-context params :params headers :headers body :body}
+               (pv/validate-group-route-params params)
+               (update-group ctx headers (slurp body) group-id))
 
           (context "/members" []
             (OPTIONS "/" req common-routes/options-response)
-            (GET "/" {:keys [request-context params]}
-              (pv/validate-group-route-params params)
-              (get-members request-context group-id))
+            (GET "/"
+                 {ctx :request-context params :params}
+                 (pv/validate-group-route-params params)
+                 (get-members ctx group-id))
 
-            (POST "/" {:keys [request-context headers body params]}
-              (pv/validate-group-route-params params)
-              (add-members request-context headers (slurp body) group-id))
+            (POST "/"
+                  {ctx :request-context params :params headers :headers body :body}
+                  (pv/validate-group-route-params params)
+                  (add-members ctx headers (slurp body) group-id))
 
-            (DELETE "/" {:keys [request-context headers body params]}
-              (pv/validate-group-route-params params)
-              (remove-members request-context headers (slurp body) group-id)))))
+            (DELETE "/"
+                    {ctx :request-context params :params headers :headers body :body}
+                    (pv/validate-group-route-params params)
+                    (remove-members ctx headers (slurp body) group-id)))))
 
       (context "/acls" []
-        (OPTIONS "/" req
-                 (pv/validate-standard-params (:params req))
+        (OPTIONS "/"
+                 {params :params}
+                 (pv/validate-standard-params params)
                  common-routes/options-response)
 
         ;; Search for ACLs with either GET or POST
-        (GET "/" {:keys [request-context headers params]}
-          (search-for-acls request-context headers params))
+        (GET "/"
+             {ctx :request-context params :params headers :headers}
+             (search-for-acls ctx headers params))
         ;; POST search is at a different route to avoid a collision with the ACL creation route
-        (POST "/search" {:keys [request-context headers params]}
-          (search-for-acls request-context headers params))
+        (POST "/search"
+              {ctx :request-context params :params headers :headers}
+              (search-for-acls ctx headers params))
 
         ;; Create an ACL
-        (POST "/" {:keys [request-context headers body params]}
-          (pv/validate-standard-params params)
-          (create-acl request-context headers (slurp body)))
+        (POST "/"
+              {ctx :request-context params :params headers :headers body :body}
+              (pv/validate-standard-params params)
+              (create-acl ctx headers (slurp body)))
 
         (context "/:concept-id" [concept-id]
           (OPTIONS "/" req common-routes/options-response)
 
           ;; Update an ACL
-          (PUT "/" {:keys [request-context headers body]}
-            (update-acl request-context concept-id headers (slurp body)))
+          (PUT "/"
+               {ctx :request-context headers :headers body :body}
+            (update-acl ctx concept-id headers (slurp body)))
 
           ;; Delete an ACL
-          (DELETE "/" {:keys [request-context]}
-            (delete-acl request-context concept-id))
+          (DELETE "/"
+                  {ctx :request-context}
+                  (delete-acl ctx concept-id))
 
           ;; Retrieve an ACL
-          (GET "/" {:keys [request-context headers params]}
-            (get-acl request-context headers concept-id params))))
+          (GET "/"
+               {ctx :request-context params :params headers :headers}
+               (get-acl ctx headers concept-id params))))
 
       (context "/permissions" []
         (OPTIONS "/" [] common-routes/options-response)
 
-        (GET "/" {:keys [request-context params]}
-          (get-permissions request-context params))))))
+        (GET "/"
+             {ctx :request-context params :params}
+             (get-permissions ctx params))))))

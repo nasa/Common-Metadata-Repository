@@ -48,7 +48,7 @@
                  "resources/public/site/docs/access-control/usage.html"))
 
 (defn generate-site-docs
-  "Generate CMR Search docs for routes and web resources."
+  "Generate CMR Access Control docs for routes and web resources."
   []
   (generate-docs "CMR Access Control"
                  "Site Routes & Web Resource Documentation"
