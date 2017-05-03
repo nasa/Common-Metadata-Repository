@@ -1,24 +1,123 @@
 (ns cmr.common-app.api-docs
-  "This namespace contains helpers for generating and returning a page documenting an application's
-  APIs. API Documentation for an application consists of two parts, a welcome page and a single page with
-  all of the api documentation.
+  "This namespace contains helpers for generating and returning static
+  documentation pages for an application. This usually includes API
+  Documentation, Site Routes & Web ResourcesDocumentation, and potentially
+  others. It is intended that applications use this in a `cmr.*.site.static`
+  namespace.
 
-  ## Welcome Page
 
-  The welcome page is served if you hit the root URL of the application. It usually has the name of
-  the application, a short description, and then a link to the documentation. Each application
-  should define welcome page as <app-folder>/resources/public/index.html. See search app for an
-  example.
+  ## Markdown Support
 
-  ## API Documentation Markdown
+  This namespace provides a few untility functions for converting Markdown
+  (and Markdown files) to HTML. The converted string data may then be used in
+  templates. Note that if you are using Selmer templates, you will need to
+  'pipe' the converted HTML string data to the `safe` Selmer fileter so that
+  the HTML isn't escaped:
 
-  API documentation is written in markdown in a single file located in <app-folder>/api_docs.md.
-  You can refer to %CMR-ENDPOINT% in the documentation. It will be replaced with the public URL of
-  the application when the page is served.
+  ```html
+  <div class='content'>
+    {{ page-content|safe }}
+  </div>
+  ```
+
+
+  ## Application-specific Static Namespace
+
+  While tihs namespace provides generally useful functions for static content,
+  and in particular its generation, you will still need to create functions in
+  applications that take advantage of these. In otder to do this, as mentioned
+  above, create a `cmr.<YOUR-APP>.site.static` namespace in the appropriate
+  file and define the necessary functions, e.g.:
+
+  ```clj
+  (defn generate-api-docs
+    \"Generate CMR Ingest API docs.\"
+    []
+    (api-docs/generate
+     \"resources/public/site/docs/ingest/api.html\"
+     \"templates/ingest-docs-static.html\"
+     (merge
+      (data/base-static)
+      {:site-title \"CMR Ingest\"
+       :page-title \"API Documentation\"
+       :page-content (api-docs/md-file->html \"docs/api.md\")})))
+  ```
+
+  Next, you'll want to define a `-main` function that will be used to generate
+  the content from the command line, e.g.:
+
+  ```clj
+  (defn -main
+    \"The entrypoint for command-line static docs generation. Example usage:
+    ```
+    $ lein run -m cmr.ingest.site.static api
+    $ lein run -m cmr.ingest.site.static site
+    $ lein run -m cmr.ingest.site.static all
+    ```\"
+    [doc-type]
+    (case (keyword doc-type)
+      :api (generate-api-docs)
+      :site (generate-site-docs)
+      :all (do
+            (-main :api)
+            (-main :site))))
+  ```
+
+  With static-content-generating and `-main` functions defined, you'll want to
+  update the  `ns` declaration with `(:gen-class)` so that you can call the
+  namespace from the command line or lein alias.
+
+  Complete examples are viewable here:
+
+  * `cmr.access-control.site.static`
+  * `cmr.ingest.site.static`
+  * `cmr.search.site.static`
+
+  Note that these static-content-generating namespaces should be very
+  lightweight, not pulling any heavy namespaces in the `require`s. This will
+  allow static content to be generated in mere seconds (usually 15-30s) as
+  opposed to severl minutes.
+
+
+  ## Profiles and `lein` Aliases
+
+  `lein` aliases should be created in all the static-content-
+  generating projects to make it easier to generate the docs:
+
+  ```clj
+  :aliases {
+    ...
+    \"generate-docs\" [\"with-profile\" \"docs\"
+                       \"run\" \"-m\" \"cmr.<PROJ>.site.static\" \"all\"]
+    ...}
+  ```
+
+  Notes:
+
+  * CMR projects that generate docs use an empty `docs` profile in
+    their `project.clj` to be used when generating docs so as not to load all
+    of CMR (the entire CMR in a JVM isn't needed to generate static files).
+  * There is a top-level alias for generating all static files in all
+  subprojects:
+
+  ```clj
+  :aliases {
+    ...
+    \"generate-docs\" [\"modules\" \"generate-docs\"]
+    ...}
+  ```
 
   ## Routing
 
-  An application using this namespace for documentation must define routes to load the HTML pages.
+  An application using this namespace for documentation must define routes to
+  load the HTML pages. You can see examples of this in the following:
+
+  * `cmr.access-control.site.routes`
+  * `cmr.ingest.site.routes`
+  * `cmr.search.site.routes`
+
+  Additionally, some resources are made pre-available (should an app need
+  them) by the `docs-routes` utility function in this namespace:
 
   ```
   ;; In namespace definition
@@ -30,26 +129,14 @@
 
   ## Generating Documentation
 
-  API documentation can be generated with the generate function in this namespace. You should add
-  an alias to generate the documentation in the project.clj. Performance of running tasks in
-  project.clj has been a problem. If you define an empty docs profile it will run much faster than
-  in th default profile.
-
-  Replace 'App Name' with the name of the application.
+  At the lowest level, static files can be generated with the `generate`
+  function in this namespace. As noted above, you should also add an alias in
+  the `project.clj` for generating the documentation in the `project.clj`. At
+  that point, documentation may be generated for a project by simply executing
+  the following at the command line:
 
   ```
-  :profiles {
-    ;; This profile specifically here for generating documentation. It's faster than using the regular
-    ;; profile. We're not sure why though. There must be something hooking into the regular profile
-    ;; that's running at the end.
-    ;; Generate docs with: lein with-profile docs generate-docs
-    :docs {}}
-  :aliases {\"generate-docs\" [\"exec\" \"-ep\" (pr-str '(do
-                                                    (use 'cmr.common-app.api-docs)
-                                                    (generate
-                                                      \"CMR Foo\"
-                                                      \"api_docs.md\"
-                                                      \"resources/public/site/foo_api_docs.html\")))]
+  $ lein generate-docs
   ```"
   (:require
    [clojure.java.io :as io]
@@ -65,6 +152,16 @@
   (:import
    [org.pegdown PegDownProcessor
                 Extensions]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Utility Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn default-renderer
+  "This is the function used by default to render templates, given data that
+  the template needs to render."
+  [template-file data]
+  (selmer/render-file template-file data))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Routing Setup
@@ -125,50 +222,6 @@
       (docs-routes public-protocol relative-root-url))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Documentation Generation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; XXX Remove this section during work on CMR-4094, when it will no longer be
-;; used.
-
-(defn header
-  "Defines the header of the generated documentation page."
-  [title]
-  (format
-    "<!DOCTYPE html>
-     <html>
-     <head>
-       <meta charset=\"UTF-8\" />
-       <title>%s</title>
-         <!--[if lt IE 9 ]>
-           <script src=\"http://html5shiv.googlecode.com/svn/trunk/html5.js\"></script>
-           <![endif]-->
-           <link rel=\"stylesheet\" href=\"bootstrap.min.css\">
-           <script src=\"jquery.min.js\"></script>
-           <script src=\"bootstrap.min.js\"></script>
-           <script>
-            // Display markdown generated tables with bootstrap styling.
-            // see http://getbootstrap.com/css/#tables
-            $(function(){ $(\"table\").addClass(\"table table-bordered table-striped table-hover table-condensed table-responsive\"); });
-           </script>
-       </head>
-       <body lang=\"en-US\">
-         <div class=\"container\">
-         <h1>%s</h1>"
-         title title))
-
-(def footer
-  "Defines the footer of the generated documentation page."
-  "</div></body></html>")
-
-(defn renderer
-  "Given a hash-map of HTML page data, renders a complete HTML page."
-  [data]
-  (str (header (:page-title data))
-       (:page-content data)
-       footer))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Core API Documentation Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -204,33 +257,32 @@
   ([processor markdown]
    (.markdownToHtml processor markdown)))
 
+(defn md-file->html
+  "Given a markdown filename, slurp it and convert to HTML."
+  [md-file]
+  (md->html (slurp md-file)))
+
 (defn generate
   "Generates the API documentation HTML page from the markdown source.
   Args
-  * page-title - The title to use in the generated documentation page.
   * docs-source - The file containing the markdown API documentation.
     Example: `api_docs.md`
   * docs-target - The file that will be generated with the API documentation.
     Example: `resources/public/site/api_docs.html`
-  * render-fn - An optional 0-arity function that will replace the default
-     render function."
-  ([page-title docs-source docs-target]
-    (let [data {:page-title page-title
-                :page-content (md->html (slurp docs-source))}
-          render-fn (fn [] (renderer data))]
-      (generate page-title docs-source docs-target render-fn)))
-  ([page-title docs-source docs-target render-fn]
-   (println (format "Generating %s from %s ..." docs-target docs-source))
+  * template-file - The Selmer template file to use for generation.
+    Example: `templates/search-docs-static.html`
+  * data - The page data that your template expects to have access to;
+    usually a hash map containing such things as page title, lists of links,
+    HTML converted from Markdown, etc.
+  * render-fn - An optional 2-arity function that will replace the default
+    render function, expecting a template filename and template data as
+    arguments."
+  ([docs-target template-file data]
+   (generate docs-target template-file data default-renderer))
+  ([docs-target template-file data render-fn]
+   (println (format "Generating %s ..." docs-target))
    (io/make-parents docs-target)
-   (spit docs-target (render-fn))
-   (println "Done."))
-  ;; XXX The following clause is temporary for CMR-4093; with CMR-4094, it will
-  ;; go away when the entire function is refactored to its final form.
-  ([page-title docs-source docs-target template-file data]
-    (generate page-title
-              docs-source
-              docs-target
-              (fn []
-                (selmer/render-file
-                 template-file
-                 data)))))
+   (->> data
+        (render-fn template-file)
+        (spit docs-target))
+   (println "Done.")))
