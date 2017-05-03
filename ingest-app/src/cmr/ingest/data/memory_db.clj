@@ -35,14 +35,15 @@
   (get-bulk-update-task-status
     [this task-id]
     (let [task-status (some->> @task-status-atom
-                               (some #(when (= task-id (:task-id %))
+                               (some #(when (= task-id (str (:task-id %)))
                                             %)))]
       (select-keys task-status [:task-id :status :status-message])))
 
   (get-bulk-update-task-collection-status
     [this task-id]
     (some->> @collection-status-atom
-             (filter #(= task-id (:task-id %)))
+             (into [])
+             (filter #(= task-id (str (:task-id %))))
              (map #(select-keys % [:concept-id :status :status-message]))))
 
   (get-bulk-update-collection-status
@@ -56,20 +57,16 @@
   (create-and-save-bulk-update-status
     [this provider-id json-body concept-ids]
     (swap! task-id-atom inc)
-    (let [task-id @task-id-atom
-          task-statuses @task-status-atom
-          collection-statuses @collection-status-atom]
-     (reset! task-status-atom (conj task-statuses
-                                    {:task-id task-id
-                                     :provider-id provider-id
-                                     :request-json-body json-body
-                                     :status "IN_PROGRESS"}))
-     (reset! collection-status-atom (concat collection-statuses
-                                            (map (fn [c]
-                                                  {:task-id task-id
-                                                   :concept-id c
-                                                   :status "PENDING"})
-                                                 concept-ids)))
+    (let [task-id @task-id-atom]
+     (swap! task-status-atom conj {:task-id task-id
+                                   :provider-id provider-id
+                                   :request-json-body json-body
+                                   :status "IN_PROGRESS"})
+     (swap! collection-status-atom concat (map (fn [c]
+                                                {:task-id task-id
+                                                 :concept-id c
+                                                 :status "PENDING"})
+                                               concept-ids))
      task-id))
 
   (update-bulk-update-task-status
@@ -78,21 +75,26 @@
           index (first (keep-indexed #(when (= task-id (:task-id %2))
                                          %1)
                                      task-statuses))]
-      (reset! (:task-status-atom this) (-> task-statuses
+      (swap! (:task-status-atom this) (fn [task-statuses]
+                                       (-> task-statuses
                                            (assoc-in [index :status] status)
-                                           (assoc-in [index :status-message] status-message)))))
+                                           (assoc-in [index :status-message] status-message))))))
+
 
   (update-bulk-update-collection-status
     [this task-id concept-id status status-message]
+    ;; @collection-status-atom is a lazy seq so force into []
     (let [coll-statuses (into [] @collection-status-atom)
           index (first (keep-indexed #(when (and (= concept-id (:concept-id %2))
                                                  (= task-id (:task-id %2)))
                                          %1)
                                      coll-statuses))]
-      (reset! (:collection-status-atom this) (-> coll-statuses
-                                                (assoc-in [index :status] status)
-                                                (assoc-in [index :status-message] status-message)))
-      (let [pending-collections (filter #(and (= task-id (:task-id %))
+      (swap! (:collection-status-atom this) (fn [coll-statuses]
+                                              (-> (into [] coll-statuses)
+                                                  (assoc-in [index :status] status)
+                                                  (assoc-in [index :status-message] status-message))))
+      (let [coll-statuses (into [] @collection-status-atom) ; Need to refresh after change
+            pending-collections (filter #(and (= task-id (:task-id %))
                                               (= "PENDING" (:status %)))
                                         coll-statuses)]
         (when-not (seq pending-collections)
@@ -100,9 +102,10 @@
                 index (first (keep-indexed #(when (= task-id (:task-id %2))
                                                %1)
                                            task-statuses))]
-            (reset! (:task-status-atom this) (-> task-statuses
+            (swap! (:task-status-atom this) (fn [task-statuses]
+                                             (-> task-statuses
                                                  (assoc-in [index :status] status)
-                                                 (assoc-in [index :status-message] status-message))))))))
+                                                 (assoc-in [index :status-message] status-message)))))))))
 
   (reset-bulk-update
     [this]

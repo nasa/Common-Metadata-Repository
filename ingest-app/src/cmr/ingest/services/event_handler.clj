@@ -11,7 +11,8 @@
 
 (defmethod handle-provider-event :bulk-update
   [context msg]
-  (bulk-update/handle-bulk-update-event context (:provider-id msg) (:bulk-update-params msg)))
+  (bulk-update/handle-bulk-update-event context (:task-id msg)
+    (:bulk-update-params msg)))
 
 (defmethod handle-provider-event :collection-bulk-update
   [context msg]
@@ -26,7 +27,7 @@
   "Subscribe to event messages on various queues"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/provider-queue-listener-count)]
+    (dotimes [n (config/ingest-queue-listener-count)]
       (queue/subscribe queue-broker
-                       (config/provider-queue-name)
+                       (config/ingest-queue-name)
                        #(handle-provider-event context %)))))

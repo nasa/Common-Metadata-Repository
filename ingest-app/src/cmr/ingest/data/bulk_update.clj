@@ -28,7 +28,7 @@
   (get-provider-bulk-update-status
     [db provider-id]
     ;; Returns a list of bulk update statuses for the provider
-    (let [statuses (su/query db (su/build (su/select [:task-id :status :status-message :request_json_body]
+    (let [statuses (su/query db (su/build (su/select [:task-id :status :status-message :request-json-body]
                                             (su/from "bulk_update_task_status")
                                             (su/where `(= :provider-id ~provider-id)))))
           statuses (map util/map-keys->kebab-case statuses)]
@@ -45,9 +45,10 @@
   (get-bulk-update-task-collection-status
     [db task-id]
     ;; Get statuses for all collections by task id
-    (su/query db (su/build (su/select [:concept-id :status :status-message]
-                            (su/from "bulk_update_coll_status")
-                            (su/where `(= :task-id ~task-id))))))
+    (map util/map-keys->kebab-case
+      (su/query db (su/build (su/select [:concept-id :status :status-message]
+                              (su/from "bulk_update_coll_status")
+                              (su/where `(= :task-id ~task-id)))))))
 
   (get-bulk-update-collection-status
     [db task-id concept-id]
@@ -134,7 +135,11 @@
   [context task-id]
   (get-bulk-update-task-status (context->db context) task-id))
 
-(defn-timed create-bulk-update-status
+(defn-timed get-bulk-update-collection-statuses-for-task
+  [context task-id]
+  (get-bulk-update-task-collection-status (context->db context) task-id))
+
+(defn-timed create-bulk-update-task
   "Creates all the rows for bulk update status tables - task status and collection
   status. Returns task id"
   [context provider-id json-body concept-ids]
@@ -144,7 +149,6 @@
   "For the task and concept id, update the collection to the given status with the
   given status message"
   [context task-id concept-id status status-message]
-  (def context context)
   (update-bulk-update-collection-status (context->db context) task-id concept-id
     status status-message))
 

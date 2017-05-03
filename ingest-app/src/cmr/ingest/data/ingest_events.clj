@@ -12,6 +12,13 @@
         exchange-name (config/provider-exchange-name)]
     (queue/publish-message queue-broker exchange-name msg)))
 
+(defn publish-ingest-event
+  "Put an ingest event on the message queue"
+  [context msg]
+  (let [queue-broker (get-in context [:system :queue-broker])
+        exchange-name (config/ingest-exchange-name)]
+    (queue/publish-message queue-broker exchange-name msg)))
+
 (defn trigger-collection-granule-aggregation-cache-refresh
   "Sends a message to trigger a refresh of the collection granule aggregation cache.
    granules-updated-in-last-n indicates a number of seconds back to find granules that were updated.
@@ -47,13 +54,13 @@
   {:action :provider-delete
    :provider-id provider-id})
 
-(defn provider-bulk-update-event
-  [provider-id bulk-update-params]
+(defn ingest-bulk-update-event
+  [task-id bulk-update-params]
   {:action :bulk-update
-   :provider-id provider-id
+   :task-id task-id
    :bulk-update-params bulk-update-params})
 
-(defn provider-collection-bulk-update-event
+(defn ingest-collection-bulk-update-event
   [task-id concept-id bulk-update-params]
   {:action :collection-bulk-update
    :task-id task-id

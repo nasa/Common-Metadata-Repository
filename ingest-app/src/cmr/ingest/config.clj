@@ -30,14 +30,18 @@
     (ingest-password)))
 
 (defconfig provider-exchange-name
+   "The ingest exchange to which provider change messages are published."
+   {:default "cmr_ingest_provider.exchange"})
+
+(defconfig ingest-exchange-name
   "The ingest exchange to which provider change messages are published."
   {:default "cmr_ingest.exchange"})
 
-(defconfig provider-queue-name
+(defconfig ingest-queue-name
   "The queue containing provider events like 'index provider collections'."
   {:default "cmr_ingest.queue"})
 
-(defconfig provider-queue-listener-count
+(defconfig ingest-queue-listener-count
   "Number of worker threads to use for the queue listener for the provider queue"
   {:default 2
    :type Long})
@@ -46,10 +50,10 @@
   "Returns the rabbit mq configuration for the ingest application."
   []
   (assoc (rmq-conf/default-config)
-         :queues [(provider-queue-name)]
-         :exchanges [(provider-exchange-name)]
+         :queues [(ingest-queue-name)]
+         :exchanges [(ingest-exchange-name) (provider-exchange-name)]
          :queues-to-exchanges
-         {(provider-queue-name) [(provider-exchange-name)]}))
+         {(ingest-queue-name) [(ingest-exchange-name)]}))
 
 (defconfig ingest-nrepl-port
   "Port to listen for nREPL connections."

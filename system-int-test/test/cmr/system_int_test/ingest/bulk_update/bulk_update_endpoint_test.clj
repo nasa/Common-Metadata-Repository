@@ -26,19 +26,6 @@
   ;; Create and return token
   (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"]))
 
-(deftest bulk-update-collection-endpoint
-  (let [token (grant-permissions-create-token)]
-    (testing "Response in JSON"
-      (let [response (ingest/bulk-update-collections "PROV1" test-body
-                      {:accept-format :json :raw? true :token token})]
-        (is (= "ABCDEF123"
-               (:task-id (ingest/parse-bulk-update-body :json response))))))
-    (testing "Response in XML"
-      (let [response (ingest/bulk-update-collections "PROV1" test-body
-                      {:accept-format :xml :raw? true :token token})]
-        (is (= "ABCDEF123"
-               (:task-id (ingest/parse-bulk-update-body :xml response))))))))
-
 (deftest bulk-update-collection-endpoint-validation
   (testing "Invalid provider"
     (let [token (grant-permissions-create-token)
@@ -145,29 +132,6 @@
             400
             ["A find value must be supplied when the update is of type FIND_AND_REPLACE"]))))
 
-(deftest bulk-update-status-endpoint
-  (let [token (grant-permissions-create-token)]
-    (testing "Response in JSON"
-      (let [response (ingest/bulk-update-provider-status "PROV1"
-                      {:accept-format :json :token token})]
-        (is (= [{:task-id "ABCDEF123"
-                 :status "IN_PROGRESS"}
-                {:task-id "12345678"
-                 :status "COMPLETE"}
-                {:task-id "XYZ123456"
-                 :status "COMPLETE"}]
-               (:tasks response)))))
-    (testing "Response in XML"
-      (let [response (ingest/bulk-update-provider-status "PROV1"
-                      {:accept-format :xml :token token})]
-        (is (= [{:task-id "ABCDEF123"
-                 :status "IN_PROGRESS"}
-                {:task-id "12345678"
-                 :status "COMPLETE"}
-                {:task-id "XYZ123456"
-                 :status "COMPLETE"}]
-               (:tasks response)))))))
-
 (deftest bulk-update-status-endpoint-validation
   (testing "Invalid provider"
     (let [token (grant-permissions-create-token)
@@ -195,31 +159,6 @@
         (is (= ["You do not have permission to perform that action."]
                errors))))))
 
-(deftest bulk-update-task-status-endpoint
-  (let [token (grant-permissions-create-token)]
-    (testing "Response in JSON"
-      (let [response (ingest/bulk-update-task-status "PROV1" "1"
-                      {:accept-format :json :token token})]
-        (is (= {:status 200
-                :task-status "COMPLETE"
-                :status-message "The bulk update completed with 2 errors"
-                :collection-statuses [{:concept-id "C1-PROV"
-                                       :status-message "Missing required properties"}
-                                      {:concept-id "C2-PROV"
-                                       :status-message "Invalid XML"}]}
-               response))))
-    (testing "Response in XML"
-      (let [response (ingest/bulk-update-task-status "PROV1" "1"
-                      {:accept-format :xml :token token})]
-        (is (= {:status 200
-                :task-status "COMPLETE"
-                :status-message "The bulk update completed with 2 errors"
-                :collection-statuses [{:concept-id "C1-PROV"
-                                       :status-message "Missing required properties"}
-                                      {:concept-id "C2-PROV"
-                                       :status-message "Invalid XML"}]}
-               response))))))
-
 (deftest bulk-update-task-status-endpoint-validation
   (testing "Invalid provider"
     (let [token (grant-permissions-create-token)
@@ -245,4 +184,11 @@
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]
-               errors))))))
+               errors)))))
+  (testing "Invalid task id"
+    (let [token (grant-permissions-create-token)
+          response (ingest/bulk-update-task-status "PROV1" 12 {:token token})
+          {:keys [status errors]} response]
+      (is (= 404 status))
+      (is (= ["Bulk update task with task id [12] could not be found."]
+             errors)))))

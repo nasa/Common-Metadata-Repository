@@ -1,10 +1,10 @@
 (ns cmr.ingest.api.ingest
   "Defines the HTTP URL routes for validating and ingesting concepts."
   (:require
+   [cheshire.core :as json]
    [clojure.data.xml :as x]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.cache :as cache]
@@ -15,6 +15,7 @@
    [cmr.common.services.errors :as srvc-errors]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
+   [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]
@@ -363,31 +364,34 @@
 
 (defn- bulk-update-collections
   "Bulk update collections. Validate provider exists, check ACLs, and validate
-  POST body.
-  Will update as more functionality is added"
+  POST body. Writes rows to tables and returns task id"
   [provider-id request]
   (let [{:keys [body headers request-context]} request
         body (str/trim (slurp body))]
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (bulk-update/validate-and-queue-bulk-update request-context provider-id body)
-    (generate-ingest-response
-      headers
-      {:status 200
-       :task-id "ABCDEF123"}))) ; hardcoded for now
+    (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id body)]
+      (generate-ingest-response
+        headers
+        {:status 200
+         :task-id task-id}))))
 
 (defn- generate-xml-status-list
  "Generate XML for a status list with the format
  {:id :status :status-message}"
- [result status-list-key status-key id-key]
- (x/element status-list-key {}
-   (for [status (get result status-list-key)
-         :let [message (:status-message status)]]
-    (x/element status-key {}
-     (x/element id-key {} (get status id-key))
-     (x/element :status {} (:status status))
-     (when message
-      (x/element :status-message {} message))))))
+ ([result status-list-key status-key id-key]
+  (generate-xml-status-list result status-list-key status-key id-key nil))
+ ([result status-list-key status-key id-key additional-keys]
+  (x/element status-list-key {}
+    (for [status (get result status-list-key)
+          :let [message (:status-message status)]]
+     (x/element status-key {}
+      (x/element id-key {} (get status id-key))
+      (x/element :status {} (:status status))
+      (when message
+       (x/element :status-message {} message))
+      (for [k additional-keys]
+       (x/element k {} (get status k))))))))
 
 (defmulti generate-provider-tasks-response
   "Convert a result to a proper response format"
@@ -406,10 +410,11 @@
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (x/emit-str
           (x/element :result {}
-           (generate-xml-status-list result :tasks :task :task-id)))})
+           (generate-xml-status-list result :tasks :task :task-id
+             [:request-json-body])))})
 
 (defn- get-provider-tasks
- "Get all tasks and statuses for provider - hardcoded for now"
+ "Get all tasks and task statuses for provider."
  [provider-id request]
  (let [{:keys [headers request-context]} request]
   (verify-provider-exists request-context provider-id)
@@ -417,12 +422,7 @@
   (generate-provider-tasks-response
    headers
    {:status 200
-    :tasks [{:task-id "ABCDEF123"
-             :status "IN_PROGRESS"}
-            {:task-id "12345678"
-             :status "COMPLETE"}
-            {:task-id "XYZ123456"
-             :status "COMPLETE"}]})))
+    :tasks (data-bulk-update/get-bulk-update-statuses-for-provider request-context provider-id)})))
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
@@ -447,20 +447,22 @@
             :collection-statuses :collection-status :concept-id)))})
 
 (defn- get-provider-task-status
- "Get the status for the given task for the provider - hardcoded for now"
+ "Get the status for the given task for the provider including collection statuses"
  [provider-id task-id request]
  (let [{:keys [headers request-context]} request]
   (verify-provider-exists request-context provider-id)
   (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
-  (generate-provider-task-status-response
-   headers
-   {:status 200
-    :task-status "COMPLETE"
-    :status-message "The bulk update completed with 2 errors"
-    :collection-statuses [{:concept-id "C1-PROV"
-                           :status-message "Missing required properties"}
-                          {:concept-id "C2-PROV"
-                           :status-message "Invalid XML"}]})))
+  (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id)
+        collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
+    (when (or (nil? task-status) (nil? (:status task-status)))
+      (srvc-errors/throw-service-error
+        :not-found (format "Bulk update task with task id [%s] could not be found." task-id)))
+    (generate-provider-task-status-response
+     headers
+     {:status 200
+      :task-status (:status task-status)
+      :status-message (:status-message task-status)
+      :collection-statuses collection-statuses}))))
 
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"

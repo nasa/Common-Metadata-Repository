@@ -145,9 +145,9 @@
   provider."
   [context provider-guid]
   (grant context
-         [{:permissions [:update :delete]
+         [{:permissions [:read :update :delete]
            :user-type :guest}
-          {:permissions [:update :delete]
+          {:permissions [:read :update :delete]
            :user-type :registered}]
          :provider-object-identity
          {:target ingest-management-acl
