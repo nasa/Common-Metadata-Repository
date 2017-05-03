@@ -420,7 +420,7 @@
     (let [xml-elem (x/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
-        {:task-id (cx/string-at-path xml-elem [:task-id])}))
+        {:task-id (cx/long-at-path xml-elem [:task-id])}))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
@@ -468,10 +468,10 @@
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
-                      (util/remove-nil-keys
-                       {:task-id (cx/string-at-path task [:task-id])
-                        :status (cx/string-at-path task [:status])
-                        :status-message (cx/string-at-path task [:status-message])})))}))
+                      {:task-id (cx/long-at-path task [:task-id])
+                       :status (cx/string-at-path task [:status])
+                       :status-message (cx/string-at-path task [:status-message])
+                       :request-json-body (cx/string-at-path task [:request-json-body])}))}))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
@@ -521,10 +521,9 @@
          :status-message (cx/string-at-path xml-elem [:status-message])
          :collection-statuses
           (seq (for [status (cx/elements-at-path xml-elem [:collection-statuses :collection-status])]
-                (util/remove-nil-keys
-                 {:concept-id (cx/string-at-path status [:concept-id])
-                  :status (cx/string-at-path status [:status])
-                  :status-message (cx/string-at-path status [:status-message])})))}))
+                {:concept-id (cx/string-at-path status [:concept-id])
+                 :status (cx/string-at-path status [:status])
+                 :status-message (cx/string-at-path status [:status-message])}))}))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
@@ -615,20 +614,20 @@
      [{:provider-guid 'provider-guid1' :provider-id 'PROV1'
        :short-name 'provider short name'}...]"
   ([providers]
-    (setup-providers providers nil))
+   (setup-providers providers nil))
   ([providers options]
-    (let [{:keys [grant-all-search? grant-all-ingest?]}
-           (merge reset-fixture-default-options options)
+   (let [{:keys [grant-all-search? grant-all-ingest?]}
+         (merge reset-fixture-default-options options)
          providers (if (sequential? providers)
                        providers
                        (for [[provider-guid provider-id] providers]
                          {:provider-guid provider-guid
                           :provider-id provider-id}))]
-       (doseq [provider-map providers]
-         (create-provider
-          provider-map
-          {:grant-all-search? grant-all-search?
-           :grant-all-ingest? grant-all-ingest?})))))
+      (doseq [provider-map providers]
+        (create-provider
+         provider-map
+         {:grant-all-search? grant-all-search?
+          :grant-all-ingest? grant-all-ingest?})))))
 
 (defn reset-fixture
   "Resets all the CMR systems then uses the `setup-providers` function to
