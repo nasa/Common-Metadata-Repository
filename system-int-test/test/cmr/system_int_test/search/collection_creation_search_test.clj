@@ -19,13 +19,6 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (dev-sys-util/freeze-resume-time-fixture)]))
 
-(comment
- (d/ingest-umm-spec-collection "PROV1"
-  (data-umm-c/collection {:EntryTitle "Dataset1"
-                          :Version "v1"
-                          :ShortName "s1"
-                          :DataDates [{:Type "CREATE" :Date "2010-11-17T00:00:00Z"}]})))
-
 (deftest search-for-new-collections
   (let [old-collection (d/ingest-umm-spec-collection
                         "PROV1"
@@ -40,8 +33,13 @@
                                                       :Version "v1"
                                                       :ShortName "New"
                                                       :DataDates [{:Type "CREATE"
-                                                                   :Date "2017-01-01T00:00:00Z"}]}))]
+                                                                   :Date "2017-01-01T00:00:00Z"}]}))
+        regular-collection (d/ingest-umm-spec-collection
+                              "PROV1"
+                              (data-umm-c/collection {:EntryTitle "Dataset1"
+                                                      :Version "v1"
+                                                      :ShortName "Regular"}))]
     (testing "Old collection should not be found."
       (let [search-results (search/find-collections-created-after-date
-                            {:create-date "2016-01-01T00:00:00Z"})]
-        (d/refs-match? [new-collection] search-results)))))
+                            {:created-date "2016-01-01T00:00:00Z"})]
+        (d/refs-match? [new-collection regular-collection] search-results)))))

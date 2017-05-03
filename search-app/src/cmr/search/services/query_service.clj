@@ -13,6 +13,7 @@
   - Convert query results into requested format"
   (:require
    [cheshire.core :as json]
+   [clj-time.format :as time-format]
    [clojure.set :as set]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
@@ -336,32 +337,28 @@
       (map :concept-id (:items results)))))
 
 (defn- get-highest-visible-revisions
-  "Returns the query and the highest visible collection revisions search result of the given
-   collection concept ids in the given result format."
-  [context coll-concept-ids result-format]
-  (when (seq coll-concept-ids)
-    ;; find all collection revisions, then filter out the highest revisions
-    ;; and replace the hits and items in results with those of the highest revisions.
-    (let [condition (gc/and-conds
-                     [(qm/string-conditions :concept-id coll-concept-ids true)
-                      (qm/boolean-condition :deleted false)])
-          query (qm/query {:concept-type :collection
-                           :condition condition
-                           :all-revisions? true
-                           :page-size :unlimited
-                           :result-format result-format})
-          results (qe/execute-query context query)
-          highest-coll-revisions (u/map-values
-                                  #(apply max (map :revision-id %))
-                                  (group-by :concept-id (:items results)))
-          highest-revisions (filter
-                             (fn [coll]
-                               ((set highest-coll-revisions)
-                                [(:concept-id coll) (:revision-id coll)]))
-                             (:items results))]
-      (-> results
-          (assoc :items highest-revisions)
-          (assoc :hits (count highest-revisions))))))
+  "Returns the query and the highest visible collection revisions search result
+   from a given query in the desired result format."
+  [context query-condition result-format]
+  ;; find all collection revisions, then filter out the highest revisions
+  ;; and replace the hits and items in results with those of the highest revisions.
+  (let [query (qm/query {:concept-type :collection
+                         :condition query-condition
+                         :all-revisions? true
+                         :page-size :unlimited
+                         :result-format result-format})
+        results (qe/execute-query context query)
+        highest-coll-revisions (u/map-values
+                                #(apply max (map :revision-id %))
+                                (group-by :concept-id (:items results)))
+        highest-revisions (filter
+                           (fn [coll]
+                             ((set highest-coll-revisions)
+                              [(:concept-id coll) (:revision-id coll)]))
+                           (:items results))]
+    (-> results
+        (assoc :items highest-revisions)
+        (assoc :hits (count highest-revisions)))))
 
 (defn get-deleted-collections
   "Executes elasticsearch searches to find collections that are deleted.
@@ -381,7 +378,11 @@
         deleted-concept-ids (seq (set/difference
                                    (set coll-concept-ids)
                                    (set visible-concept-ids)))
-        results (get-highest-visible-revisions context deleted-concept-ids result-format)
+        query-condition (gc/and-conds
+                         [(qm/string-conditions :concept-id deleted-concept-ids true)
+                          (qm/boolean-condition :deleted false)])
+        results (when (seq coll-concept-ids)
+                  (get-highest-visible-revisions context query-condition result-format))
         ;; when results is nil, hits is 0
         results (or results {:hits 0 :items []})
         total-took (- (System/currentTimeMillis) start-time)
@@ -406,9 +407,31 @@
    after a given date. This will *only* return collections that still exist."
   [context params]
   (pv/temporal-format-validation :collection params)
-  {:results "results-str"
-   :hits "hits"
-   :result-format "result-format"})
+  (let [start-time (System/currentTimeMillis)
+        created-date (time-format/parse
+                      (time-format/formatters :date-time-no-ms)
+                      (:created-date params))
+        result-format (:result-format params)
+        query-condition (qm/date-range-condition :insert-time created-date nil true)
+        results (or
+                 (get-highest-visible-revisions context query-condition result-format)
+                 {:hits 0 :items []})
+        elapsed-time (- (System/currentTimeMillis) start-time)
+        formatted-results (common-search/search-results->response
+                           context
+                           (qm/query {:concept-type :collection
+                                      :result-format result-format})
+                           (assoc results :took elapsed-time))]
+    (info (format "Found %d collections created after %s in %d ms in format %s with params %s."
+                  (:hits results)
+                  created-date
+                  elapsed-time
+                  (rfh/printable-result-format result-format)
+                  (pr-str params)))
+
+    {:results formatted-results
+     :hits (:hits results)
+     :result-format result-format}))
 
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"
