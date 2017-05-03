@@ -2,7 +2,7 @@
   "Defines the HTTP URL routes for the access-control web site."
   (:require
    [cmr.access-control.site.pages :as pages]
-   [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.static :as static]
    [cmr.common-app.site.data :as common-data]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.transmit.config :as config]
@@ -54,6 +54,6 @@
                   "site/docs/access-control/site.html")
               307)))
       ;; Add routes for general API documentation
-      (api-docs/docs-routes
+      (static/docs-routes
        (get-in system [:public-conf :protocol])
        (get-in system [:public-conf :relative-root-url])))))

@@ -11,7 +11,6 @@
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.acl.core :as acl]
-   [cmr.common-app.api-docs :as api-docs]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
@@ -24,8 +23,6 @@
    [cmr.common.validations.core :as validation]
    [compojure.core :refer :all]
    [compojure.handler :as handler]
-   [compojure.route :as route]
-   [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]))

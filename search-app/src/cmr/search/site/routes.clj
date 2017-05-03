@@ -3,7 +3,7 @@
   consumption (via a web browser)."
   (:require
    [cmr.collection-renderer.api.routes :as collection-renderer-routes]
-   [cmr.common-app.api-docs :as api-docs]
+   [cmr.common-app.static :as static]
    [cmr.search.site.pages :as pages]
    [cmr.transmit.config :as config]
    [compojure.core :refer [GET context routes]]
@@ -15,7 +15,7 @@
     (routes
       (context relative-root-url []
         ;; Directory pages - Note that the directory pages must come before the
-        ;; api-docs, since api-docs/docs-routes also use a context of "site"
+        ;; api-docs, since static/docs-routes also use a context of "site"
         ;; but have the last entry as a 404 renderer, and as such, would
         ;; prevent any pages in the "site" context from rendering after that
         ;; point.
@@ -71,7 +71,7 @@
                      "site/docs/search/site.html")
                 307)))
         ;; Add routes for general API documentation
-        (api-docs/docs-routes
+        (static/docs-routes
          (get-in system [:public-conf :protocol])
          relative-root-url)
         (ring-swagger-ui/swagger-ui
