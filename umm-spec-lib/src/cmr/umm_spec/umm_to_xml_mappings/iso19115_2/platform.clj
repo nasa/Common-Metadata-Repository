@@ -44,6 +44,8 @@
        [:gmd:MD_Identifier
         [:gmd:code
          (char-string (:ShortName platform))]
+        [:gmd:codeSpace
+         (char-string (str "gov.nasa.esdis.umm." (:ShortName platform)))]
         [:gmd:description
          (char-string (:LongName platform))]]]
       [:gmi:description
