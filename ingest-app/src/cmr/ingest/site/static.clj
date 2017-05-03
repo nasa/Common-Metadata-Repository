@@ -6,44 +6,34 @@
    [cmr.ingest.site.data :as data])
   (:gen-class))
 
-;; XXX delete or refactor once ingest-app docs code is updated
-(defn generate-docs
-  "A utility function for rendering CMR search docs using templates."
-  [site-title page-title md-source template-file out-file]
-  (api-docs/generate page-title
-                     md-source
-                     out-file
-                     template-file
-                     (merge
-                      (data/base-static)
-                      {:site-title site-title
-                       :page-title page-title
-                       :page-content (api-docs/md->html (slurp md-source))})))
-
 (defn generate-api-docs
-  "Generate CMR ingest API docs."
+  "Generate CMR Ingest API docs."
   []
-  (generate-docs "CMR Ingest"
-                 "API Documentation"
-                 "docs/api.md"
-                 "templates/ingest-docs-static.html"
-                 "resources/public/site/docs/ingest/api.html"))
+  (api-docs/generate
+   "resources/public/site/docs/ingest/api.html"
+   "templates/ingest-docs-static.html"
+   (merge
+    (data/base-static)
+    {:site-title "CMR Ingest"
+     :page-title "API Documentation"
+     :page-content (api-docs/md-file->html "docs/api.md")})))
 
 (defn generate-site-docs
   "Generate CMR Ingest docs for routes and web resources."
   []
-  (generate-docs "CMR Access Control"
-                 "Site Routes & Web Resource Documentation"
-                 "docs/site.md"
-                 "templates/ingest-docs-static.html"
-                 "resources/public/site/docs/ingest/site.html"))
+  (api-docs/generate
+   "resources/public/site/docs/ingest/site.html"
+   "templates/ingest-docs-static.html"
+   (merge
+    (data/base-static)
+    {:site-title "CMR Ingest"
+     :page-title "Site Routes & Web Resource Documentation"
+     :page-content (api-docs/md-file->html "docs/site.md")})))
 
 (defn -main
   "The entrypoint for command-line static docs generation. Example usage:
   ```
   $ lein run -m cmr.ingest.site.static api
-  $ lein run -m cmr.ingest.site.static acl-schema
-  $ lein run -m cmr.ingest.site.static acl-usage
   $ lein run -m cmr.ingest.site.static site
   $ lein run -m cmr.ingest.site.static all
   ```"

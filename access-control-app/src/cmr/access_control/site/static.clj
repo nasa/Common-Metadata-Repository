@@ -6,55 +6,53 @@
    [cmr.common-app.api-docs :as api-docs])
   (:gen-class))
 
-;; XXX delete or refactor once ingest-app docs code is updated
-(defn generate-docs
-  "A utility function for rendering CMR search docs using templates."
-  [site-title page-title md-source template-file out-file]
-  (api-docs/generate page-title
-                     md-source
-                     out-file
-                     template-file
-                     (merge
-                      (data/base-static)
-                      {:site-title site-title
-                       :page-title page-title
-                       :page-content (api-docs/md->html (slurp md-source))})))
-
 (defn generate-api-docs
   "Generate CMR Access Control API docs."
   []
-  (generate-docs "CMR Access Control"
-                 "API Documentation"
-                 "docs/api.md"
-                 "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/access-control/api.html"))
+  (api-docs/generate
+   "resources/public/site/docs/access-control/api.html"
+   "templates/access-control-docs-static.html"
+   (merge
+    (data/base-static)
+    {:site-title "CMR Access Control"
+     :page-title "API Documentation"
+     :page-content (api-docs/md-file->html "docs/api.md")})))
 
 (defn generate-acl-schema-docs
   "Generate CMR Access Control API docs."
   []
-  (generate-docs "CMR Access Control"
-                 "ACL Schema"
-                 "docs/acl-schema.md"
-                 "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/access-control/schema.html"))
+  (api-docs/generate
+   "resources/public/site/docs/access-control/schema.html"
+   "templates/access-control-docs-static.html"
+   (merge
+    (data/base-static)
+    {:site-title "CMR Access Control"
+     :page-title "ACL Schema Definitions"
+     :page-content (api-docs/md-file->html "docs/acl-schema.md")})))
 
 (defn generate-acl-usage-docs
   "Generate CMR Access Control API docs."
   []
-  (generate-docs "CMR Access Control"
-                 "Using ACLS in the CMR"
-                 "docs/acl-usage.md"
-                 "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/access-control/usage.html"))
+  (api-docs/generate
+   "resources/public/site/docs/access-control/usage.html"
+   "templates/access-control-docs-static.html"
+   (merge
+    (data/base-static)
+    {:site-title "CMR Access Control"
+     :page-title "Using ACLS in the CMR"
+     :page-content (api-docs/md-file->html "docs/acl-usage.md")})))
 
 (defn generate-site-docs
   "Generate CMR Access Control docs for routes and web resources."
   []
-  (generate-docs "CMR Access Control"
-                 "Site Routes & Web Resource Documentation"
-                 "docs/site.md"
-                 "templates/access-control-docs-static.html"
-                 "resources/public/site/docs/access-control/site.html"))
+  (api-docs/generate
+   "resources/public/site/docs/access-control/site.html"
+   "templates/access-control-docs-static.html"
+   (merge
+    (data/base-static)
+    {:site-title "CMR Access Control"
+     :page-title "Site Routes & Web Resource Documentation"
+     :page-content (api-docs/md-file->html "docs/site.md")})))
 
 (defn -main
   "The entrypoint for command-line static docs generation. Example usage:
