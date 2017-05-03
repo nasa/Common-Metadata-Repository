@@ -1,5 +1,5 @@
 ;; Use the docs profile when generating the HTML documentation for the search application:
-;; lein with-profile docs generate-docs
+;; lein with-profile docs generate-static
 ;;
 ;; All other lein tasks can use the default profile.
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
@@ -52,9 +52,9 @@
     ;; faster than using the regular profile. An agent pool is being started
     ;; when using the default profile which causes the wait of 60 seconds
     ;; before allowing the JVM to shutdown since no call to shutdown-agents is
-    ;; made. Generate docs with: lein generate-docs (the alias makes use of the
+    ;; made. Generate docs with: lein generate-static (the alias makes use of the
     ;; docs profile).
-    :docs {}
+    :static {}
 
     :uberjar {:main cmr.search.runner
               :aot :all}
@@ -73,7 +73,7 @@
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
 
-  :aliases {"generate-docs" ["with-profile" "docs"
+  :aliases {"generate-static" ["with-profile" "static"
                              "run" "-m" "cmr.search.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
