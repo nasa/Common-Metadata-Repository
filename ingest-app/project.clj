@@ -30,14 +30,15 @@
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {
     :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+                         [org.clojars.gjahad/debug-repl "0.3.3"]
+                         [ring-mock "0.1.5"]]
           :jvm-opts ^:replace ["-server"]
           :source-paths ["src" "dev" "test"]}
 
     ;; This profile specifically here for generating documentation. It's faster than using the regular
     ;; profile. An agent pool is being started when using the default profile which causes the wait of
     ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
-    ;; Generate docs with: lein with-profile docs generate-static
+    ;; Generate docs with: lein generate-static
     :static {}
     :uberjar {:main cmr.ingest.runner
               :aot :all}
@@ -56,7 +57,7 @@
                 [venantius/yagni "0.1.4"]]}}
 
   :aliases {"generate-static" ["with-profile" "static"
-                             "run" "-m" "cmr.ingest.site.static" "all"]
+                               "run" "-m" "cmr.ingest.site.static" "all"]
             ;; Database migrations run by executing "lein migrate"
             "create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
