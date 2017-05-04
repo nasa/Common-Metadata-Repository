@@ -5,9 +5,16 @@
 {% block main-content %}
 <h2 class="cover-heading">Directory of Collections Landing Pages</h2>
 <h3 class="cover-heading">EOSDIS</h3>
+
+<p>
+  Listed here are all the EOSDIS providers linked to pages that list the
+  collection landing pages. Note that the number of collections for each
+  provider is given in parentheses after the provider name.
+</p>
+
 <ul>
   {% for provider in providers %}
-  <li><a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a></li>
+  <li><a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a> ({{ provider.collections-count }})</li>
   {% endfor %}
 </ul>
 {% endblock %}

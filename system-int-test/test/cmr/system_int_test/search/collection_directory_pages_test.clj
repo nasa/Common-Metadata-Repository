@@ -35,63 +35,60 @@
        (str base-url)
        (client/get)))
 
-(defn- make-link
-  [{href :href text :text}]
-  (format "<li><a href=\"%s\">%s</a></li>" href text))
-
-(defn- make-links
-  [data]
-  (string/join
-    "\n  \n  "
-    (map make-link data)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Create expected data for the tests
+;;; Exepcted results check functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def expected-header-link
-  (make-link {:href (str base-url "site/collections/directory")
-              :text "Directory"}))
+(defn expected-header-link?
+  [body]
+  (string/includes? body (str base-url "site/collections/directory")))
 
-(def expected-top-level-links
-  (make-links [{:href (str base-url "site/collections/directory/eosdis")
-                :text "EOSDIS Collections"}]))
+(defn expected-top-level-links?
+  [body]
+  (string/includes? body (str base-url "site/collections/directory/eosdis")))
 
-(def expected-eosdis-level-links
+(defn expected-eosdis-level-links?
+  [body]
   (let [url (str base-url "site/collections/directory")
         tag "gov.nasa.eosdis"]
-    (make-links [{:href (format "%s/%s/%s" url "PROV1" tag)
-                  :text "PROV1"}
-                 {:href (format "%s/%s/%s" url "PROV2" tag)
-                  :text "PROV2"}
-                 {:href (format "%s/%s/%s" url "PROV3" tag)
-                  :text "PROV3"}])))
+    (and
+      (string/includes? body (format "%s/%s/%s" url "PROV1" tag))
+      (string/includes? body (format "%s/%s/%s" url "PROV2" tag))
+      (string/includes? body (format "%s/%s/%s" url "PROV3" tag)))))
 
-(def expected-provider1-level-links
+(defn expected-provider1-level-links?
+  [body]
   (let [url (format "%sconcepts" base-url)]
-    (make-links [{:href (format "%s/%s" url "C1200000015-PROV1.html")
-                  :text "Collection Item 2 (s2)"}
-                 {:href (format "%s/%s" url "C1200000016-PROV1.html")
-                  :text "Collection Item 3 (s3)"}])))
+    (and
+      (string/includes? body (format "%s/%s" url "C1200000015-PROV1.html"))
+      (string/includes? body "Collection Item 2 (s2)")
+      (string/includes? body (format "%s/%s" url "C1200000016-PROV1.html"))
+      (string/includes? body "Collection Item 3 (s3)"))))
 
-(def expected-provider2-level-links
+(defn expected-provider2-level-links?
+  [body]
   (let [url (format "%sconcepts" base-url)]
-    (make-links [{:href (format "%s/%s" url "C1200000018-PROV2.html")
-                  :text "Collection Item 2 (s2)"}
-                 {:href (format "%s/%s" url "C1200000019-PROV2.html")
-                  :text "Collection Item 3 (s3)"}])))
+    (and
+      (string/includes? body (format "%s/%s" url "C1200000018-PROV2.html"))
+      (string/includes? body "Collection Item 2 (s2)")
+      (string/includes? body (format "%s/%s" url "C1200000019-PROV2.html"))
+      (string/includes? body "Collection Item 3 (s3)"))))
 
-(def expected-provider3-level-links
+(defn expected-provider3-level-links?
+  [body]
   (let [url "http://dx.doi.org"]
-    (make-links [{:href (format "%s/%s" url "doi5")
-                  :text "Collection Item 5 (s5)"}
-                 {:href (format "%s/%s" url "doi6")
-                  :text "Collection Item 6 (s6)"}])))
+    (and
+      (string/includes? body (format "%s/%s" url "doi5"))
+      (string/includes? body "Collection Item 5 (s5)")
+      (string/includes? body (format "%s/%s" url "doi6"))
+      (string/includes? body "Collection Item 6 (s6)"))))
 
-(def notexpected-provider-level-link
+(defn expected-provider1-col1-link?
+  [body]
   (let [url (format "%sconcepts" base-url)]
-    (make-links [{:href (format "%s/%s" url "C1200000014-PROV1.html")
-                  :text "Collection Item 1 (s1)"}])))
+    (and
+      (string/includes? body (format "%s/%s" url "C1200000014-PROV1.html"))
+      (string/includes? body "Collection Item 1 (s1)"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Functions for creating testing data
@@ -169,25 +166,31 @@
   (testing "check the link for landing pages in the header"
     (let [response (get-response "")]
       (is (= 200 (:status response)))
-      (is (string/includes? (:body response) expected-header-link)))))
+      (is (expected-header-link? (:body response))))))
 
 (deftest top-level-links
   (let [response (get-response "site/collections/directory")
         body (:body response)]
     (testing "check top level status and links"
       (is (= 200 (:status response)))
-      (is (string/includes? body expected-top-level-links)))
+      (is (expected-top-level-links? body)))
     (testing "top level directory page should have header links"
-      (is (string/includes? body expected-header-link)))))
+      (is (expected-header-link? body)))))
 
 (deftest eosdis-level-links
   (let [response (get-response "site/collections/directory/eosdis")
         body (:body response)]
     (testing "check eosdis level status and links"
       (is (= 200 (:status response)))
-      (is (string/includes? body expected-eosdis-level-links)))
+      (is (expected-eosdis-level-links? body)))
+    (testing "providers should be sorted by name"
+      (is (and
+           (< (string/index-of body "PROV1")
+              (string/index-of body "PROV2"))
+           (< (string/index-of body "PROV2")
+              (string/index-of body "PROV3")))))
     (testing "eosdis-level directory page should have header links"
-      (is (string/includes? body expected-header-link)))))
+      (is (expected-header-link? body)))))
 
 (deftest provider1-level-links
   (let [provider "PROV1"
@@ -199,11 +202,11 @@
         body (:body response)]
     (testing "check the status and links for PROV3"
       (is (= 200 (:status response)))
-      (is (string/includes? body expected-provider1-level-links)))
+      (is (expected-provider1-level-links? body)))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body notexpected-provider-level-link))))
+      (is (not (expected-provider1-col1-link? body))))
     (testing "provider page should have header links"
-      (is (string/includes? body expected-header-link)))))
+      (is (expected-header-link? body)))))
 
 (deftest provider2-level-links
   (let [provider "PROV2"
@@ -215,11 +218,11 @@
         body (:body response)]
     (testing "check the status and links for PROV3"
       (is (= 200 (:status response)))
-      (is (string/includes? body expected-provider2-level-links)))
+      (is (expected-provider2-level-links? body)))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body notexpected-provider-level-link))))
+      (is (not (expected-provider1-col1-link? body))))
     (testing "provider page should have header links"
-      (is (string/includes? body expected-header-link)))))
+      (is (expected-header-link? body)))))
 
 (deftest provider3-level-links
   (let [provider "PROV3"
@@ -231,11 +234,11 @@
         body (:body response)]
     (testing "check the status and links for PROV3"
       (is (= 200 (:status response)))
-      (is (string/includes? body expected-provider3-level-links)))
+      (is (expected-provider3-level-links? body)))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body notexpected-provider-level-link))))
+      (is (not (expected-provider1-col1-link? body))))
     (testing "provider page should have header links"
-      (is (string/includes? body expected-header-link)))))
+      (is (expected-header-link? body)))))
 
 ;; Note that the following test was originally in the unit tests for
 ;; cmr-search (thus its similarity to those tests) but had to be moved into
