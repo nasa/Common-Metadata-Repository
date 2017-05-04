@@ -152,10 +152,12 @@
     (setup-collections)
     (f)))
 
+;; Note tha the fixtures are created out of order such that sorting can be
+;; checked.
 (use-fixtures :once (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"
-                                              "provguid2" "PROV2"
-                                              "provguid3" "PROV3"})
+                      [(ingest/reset-fixture {"provguid3" "PROV3"
+                                              "provguid1" "PROV1"
+                                              "provguid2" "PROV2"})
                        tags/grant-all-tag-fixture
                        collections-fixture]))
 

@@ -34,10 +34,17 @@
 
   Note that the given tag will be used to filter provider collections data
   that is used on the destination page."
-  [tag provider-data]
-  {:id (:provider-id provider-data)
-   :name (:provider-id provider-data)
+  [tag data]
+  {:id (:provider-id data)
+   :name (:provider-id data)
    :tag tag})
+
+(defn providers-data
+  "Given a list of provider maps"
+  [tag providers]
+  (->> providers
+       (map (partial provider-data tag))
+       (sort-by :name)))
 
 (defn get-doi
   "Extract the DOI information from a collection item."
@@ -129,7 +136,7 @@
   (let [providers (mdb/get-providers context)]
     (merge
       (base-page context)
-      {:providers (map (partial provider-data "gov.nasa.eosdis") providers)})))
+      {:providers (providers-data "gov.nasa.eosdis" providers)})))
 
 (defn get-provider-tag-landing-links
   "Generate the data necessary to render EOSDIS landing page links."
