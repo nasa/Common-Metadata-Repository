@@ -54,7 +54,9 @@
     (and
       (string/includes? body (format "%s/%s/%s" url "PROV1" tag))
       (string/includes? body (format "%s/%s/%s" url "PROV2" tag))
-      (string/includes? body (format "%s/%s/%s" url "PROV3" tag)))))
+      (string/includes? body (format "%s/%s/%s" url "PROV3" tag))
+      (not (string/includes? body (format "%s/%s/%s" url "PROV4" tag)))
+      (string/includes? body "PROV4"))))
 
 (defn expected-provider1-level-links?
   [body]
@@ -152,7 +154,8 @@
 ;; Note tha the fixtures are created out of order such that sorting can be
 ;; checked.
 (use-fixtures :once (join-fixtures
-                      [(ingest/reset-fixture {"provguid3" "PROV3"
+                      [(ingest/reset-fixture {"provguid4" "PROV4"
+                                              "provguid3" "PROV3"
                                               "provguid1" "PROV1"
                                               "provguid2" "PROV2"})
                        tags/grant-all-tag-fixture

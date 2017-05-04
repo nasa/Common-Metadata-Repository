@@ -14,7 +14,12 @@
 
 <ul>
   {% for provider in providers %}
-  <li><a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a> ({{ provider.collections-count }})</li>
+  <li>
+    {% if provider.collections-count = 0 %}
+      {{ provider.name }}
+    {% else %}
+      <a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a>
+    {% endif %} ({{ provider.collections-count }})</li>
   {% endfor %}
 </ul>
 {% endblock %}
