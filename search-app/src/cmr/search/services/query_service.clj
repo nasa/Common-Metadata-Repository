@@ -408,11 +408,9 @@
   [context params]
   (pv/temporal-format-validation :collection params)
   (let [start-time (System/currentTimeMillis)
-        created-date (time-format/parse
-                      (time-format/formatters :date-time-no-ms)
-                      (:created-date params))
+        created-date (:created-date params)
         result-format (:result-format params)
-        query-condition (qm/date-range-condition :insert-time created-date nil true)
+        query-condition (qm/string-range-condition :insert-time created-date nil true)
         results (or
                  (get-highest-visible-revisions context query-condition result-format)
                  {:hits 0 :items []})

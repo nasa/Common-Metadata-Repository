@@ -22,24 +22,25 @@
 (deftest search-for-new-collections
   (let [old-collection (d/ingest-umm-spec-collection
                         "PROV1"
-                        (data-umm-c/collection {:EntryTitle "Dataset1"
+                        (data-umm-c/collection {:EntryTitle "oldie"
                                                 :Version "v1"
                                                 :ShortName "Oldie"
                                                 :DataDates [{:Type "CREATE"
                                                              :Date "2010-11-17T00:00:00Z"}]}))
         new-collection (d/ingest-umm-spec-collection
                               "PROV1"
-                              (data-umm-c/collection {:EntryTitle "Dataset1"
+                              (data-umm-c/collection {:EntryTitle "new"
                                                       :Version "v1"
                                                       :ShortName "New"
                                                       :DataDates [{:Type "CREATE"
                                                                    :Date "2017-01-01T00:00:00Z"}]}))
         regular-collection (d/ingest-umm-spec-collection
                               "PROV1"
-                              (data-umm-c/collection {:EntryTitle "Dataset1"
+                              (data-umm-c/collection {:EntryTitle "regular"
                                                       :Version "v1"
                                                       :ShortName "Regular"}))]
+    (index/wait-until-indexed)
     (testing "Old collection should not be found."
       (let [search-results (search/find-collections-created-after-date
                             {:created-date "2016-01-01T00:00:00Z"})]
-        (d/refs-match? [new-collection regular-collection] search-results)))))
+        (d/refs-match? [new-collection] search-results)))))
