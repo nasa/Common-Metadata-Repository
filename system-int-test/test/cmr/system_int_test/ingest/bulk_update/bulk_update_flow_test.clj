@@ -66,13 +66,13 @@
                    ;; TO DO: Remove hardcoded concept ids
                    :collection-statuses [{:status-message nil,
                                           :status "COMPLETE",
-                                          :concept-id "C1200000001-PROV1"}
+                                          :concept-id "C1200000009-PROV1"}
                                          {:status-message nil,
                                           :status "COMPLETE",
-                                          :concept-id "C1200000002-PROV1"}
+                                          :concept-id "C1200000010-PROV1"}
                                          {:status-message nil,
                                           :status "COMPLETE",
-                                          :concept-id "C1200000003-PROV1"}]}
+                                          :concept-id "C1200000011-PROV1"}]}
                   response)))
          "JSON" :json
          "XML" :xml)))))
