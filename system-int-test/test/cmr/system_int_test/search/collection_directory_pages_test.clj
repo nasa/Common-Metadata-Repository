@@ -63,34 +63,34 @@
   (let [url (format "%sconcepts" base-url)]
     (and
       (string/includes? body (format "%s/%s" url "C1200000015-PROV1.html"))
-      (string/includes? body "Collection Item 2 (s2)")
+      (string/includes? body "Collection Item 2")
       (string/includes? body (format "%s/%s" url "C1200000016-PROV1.html"))
-      (string/includes? body "Collection Item 3 (s3)"))))
+      (string/includes? body "Collection Item 3"))))
 
 (defn expected-provider2-level-links?
   [body]
   (let [url (format "%sconcepts" base-url)]
     (and
       (string/includes? body (format "%s/%s" url "C1200000018-PROV2.html"))
-      (string/includes? body "Collection Item 2 (s2)")
+      (string/includes? body "Collection Item 2")
       (string/includes? body (format "%s/%s" url "C1200000019-PROV2.html"))
-      (string/includes? body "Collection Item 3 (s3)"))))
+      (string/includes? body "Collection Item 3"))))
 
 (defn expected-provider3-level-links?
   [body]
   (let [url "http://dx.doi.org"]
     (and
       (string/includes? body (format "%s/%s" url "doi5"))
-      (string/includes? body "Collection Item 5 (s5)")
+      (string/includes? body "Collection Item 5")
       (string/includes? body (format "%s/%s" url "doi6"))
-      (string/includes? body "Collection Item 6 (s6)"))))
+      (string/includes? body "Collection Item 6"))))
 
 (defn expected-provider1-col1-link?
   [body]
   (let [url (format "%sconcepts" base-url)]
     (and
       (string/includes? body (format "%s/%s" url "C1200000014-PROV1.html"))
-      (string/includes? body "Collection Item 1 (s1)"))))
+      (string/includes? body "Collection Item 1"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Functions for creating testing data

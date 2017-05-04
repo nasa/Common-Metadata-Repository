@@ -100,11 +100,6 @@
   [item]
   (get-in item [:umm "ShortName"]))
 
-(defn make-text
-  "Create the `text` part of a landing page link."
-  [item]
-  (format "%s (%s)" (get-entry-title item) (get-short-name item)))
-
 (defn make-link
   "Given a single item from a query's collections, generate an appropriate
   landing page link.
@@ -112,7 +107,7 @@
   A generated link has the form `{:href ... :text ...}`."
   [cmr-base-url item]
   {:href (make-href cmr-base-url item)
-   :text (make-text item)})
+   :text (get-entry-title item)})
 
 (defn make-links
   "Given a collection from an elastic search query, generate landing page

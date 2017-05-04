@@ -76,24 +76,19 @@
     (is (= "s3"
            (data/get-short-name coll-data-1)))))
 
-(deftest make-text
-  (testing "with an entry title and short name"
-    (is (= "coll3 (s3)"
-           (data/make-text coll-data-1)))))
-
 (deftest make-link
   (testing "with an entry title and short name"
     (is (= {:href "http://cmr.test.host/concepts/C1200000003-PROV1.html"
-            :text "coll3 (s3)"}
+            :text "coll3"}
            (data/make-link cmr-base-url coll-data-1))))
   (testing "with an entry title, short name, and doi"
     (is (= {:href "http://dx.doi.org/doi6"
-            :text "coll3 (s3)"}
+            :text "coll3"}
            (data/make-link cmr-base-url coll-data-2)))))
 
 (deftest make-links
   (let [coll [coll-data-1 coll-data-2]]
     (is (= [{:href "http://cmr.test.host/concepts/C1200000003-PROV1.html"
-             :text "coll3 (s3)"}
-            {:href "http://dx.doi.org/doi6", :text "coll3 (s3)"}]
+             :text "coll3"}
+            {:href "http://dx.doi.org/doi6", :text "coll3"}]
            (data/make-links cmr-base-url coll)))))
