@@ -339,7 +339,7 @@
 
         (GET "/"
              {ctx :request-context params :params}
-             (get-permissions ctx params))))))               
+             (get-permissions ctx params)))
 
       (context "/current-sids" []
         (OPTIONS "/" [] common-routes/options-response)
