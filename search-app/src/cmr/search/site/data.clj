@@ -28,22 +28,37 @@
   (case tag
     "gov.nasa.eosdis" "EOSDIS"))
 
+(defn collection-data
+  "Get the collection data associated with a provider and tag."
+  [context tag provider-id]
+  (->> {:tag-key tag
+                 :provider provider-id
+                 :result-format {:format :umm-json-results}}
+        (query-svc/make-concepts-query context :collection)
+        (query-exec/execute-query context)
+        :items))
+
 (defn provider-data
   "Create a provider data structure suitable for template iteration to
   generate links.
 
   Note that the given tag will be used to filter provider collections data
   that is used on the destination page."
-  [tag data]
-  {:id (:provider-id data)
-   :name (:provider-id data)
-   :tag tag})
+  [context tag data]
+  (let [provider-id (:provider-id data)
+        provider-name provider-id
+        collections (collection-data context tag provider-id)]
+    {:id provider-id
+     :name provider-name
+     :tag tag
+     :collections collections
+     :collections-count (count collections)}))
 
 (defn providers-data
   "Given a list of provider maps"
-  [tag providers]
+  [context tag providers]
   (->> providers
-       (map (partial provider-data tag))
+       (map (partial provider-data context tag))
        (sort-by :name)))
 
 (defn get-doi
@@ -133,37 +148,33 @@
 (defn get-eosdis-directory-links
   "Generate the data necessary to render EOSDIS directory page links."
   [context]
-  (let [providers (mdb/get-providers context)]
-    (merge
-      (base-page context)
-      {:providers (providers-data "gov.nasa.eosdis" providers)})))
+  (->> context
+       (mdb/get-providers)
+       (providers-data context "gov.nasa.eosdis")
+       (hash-map :providers)
+       (merge (base-page context))))
 
 (defn get-provider-tag-landing-links
   "Generate the data necessary to render EOSDIS landing page links."
   ([context provider-id tag]
-    (get-provider-tag-landing-links context provider-id tag (constantly true)))
+   (get-provider-tag-landing-links context provider-id tag (constantly true)))
   ([context provider-id tag filter-fn]
-   (let [query (query-svc/make-concepts-query
-                context
-                :collection
-                {:tag-key tag
-                 :provider provider-id
-                 :result-format {:format :umm-json-results}})
-         coll (:items (query-exec/execute-query context query))]
-     (merge (base-page context)
-            {:provider-name provider-id
-             :provider-id provider-id
-             :tag-name (get-tag-short-name tag)
-             :links (filter filter-fn
-                            (make-links
-                             (config/application-public-root-url context)
-                             coll))}))))
+   (merge
+    (base-page context)
+    {:provider-name provider-id
+     :provider-id provider-id
+     :tag-name (get-tag-short-name tag)
+     :links (filter filter-fn
+                    (make-links
+                     (config/application-public-root-url context)
+                     (collection-data context tag provider-id)))})))
 
 (defn get-provider-tag-sitemap-landing-links
   "Generate the data necessary to render EOSDIS landing page links that will
   be included in a sitemap.xml file.
 
-  Note that generally the sitemap spec does not support cross-site inclusions."
+  Note that generally the sitemap spec does not support cross-site inclusions,
+  thus the filtering-out of non-CMR links."
   [context provider-id tag]
   (get-provider-tag-landing-links
    context
@@ -171,4 +182,6 @@
    tag
    #(string/includes?
      (str %)
+     ;; XXX is this the right URL to check? this might only include links that
+     ;; are part of the current app ...?
      (config/application-public-root-url context))))
