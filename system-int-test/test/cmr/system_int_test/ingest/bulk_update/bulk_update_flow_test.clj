@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
@@ -37,6 +38,7 @@
       ;; Create another bulk update event with PROV2 to make sure we're just
       ;; getting PROV1 statuses
       (ingest/bulk-update-collections "PROV2" bulk-update-body)
+      (qb-side-api/wait-for-terminal-states)
 
       (are3 [accept-format]
         (let [response (ingest/bulk-update-provider-status "PROV1"
