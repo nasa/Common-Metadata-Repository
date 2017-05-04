@@ -1,11 +1,12 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform
   "Functions for generating ISO19115-2 XML elements from UMM platform records."
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.util :as su :refer [with-default char-string]]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.instrument :as inst]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]))
+  (:require
+    [cmr.common.xml.gen :refer :all]
+    [cmr.umm-spec.iso-keywords :as kws]
+    [cmr.umm-spec.iso19115-2-util :as iso]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.instrument :as inst]
+    [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
 (defn- platform-with-id
   "Returns the platform with generated ids for ISO xml generation"
@@ -44,6 +45,8 @@
        [:gmd:MD_Identifier
         [:gmd:code
          (char-string (:ShortName platform))]
+        [:gmd:codeSpace
+         (char-string "gov.nasa.esdis.umm.platformshortname")]
         [:gmd:description
          (char-string (:LongName platform))]]]
       [:gmi:description
