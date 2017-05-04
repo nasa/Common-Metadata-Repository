@@ -22,23 +22,24 @@
                  [org.quartz-scheduler/quartz "2.2.2"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]]
 
-  :plugins [[test2junit "1.2.1"]
-            [drift "1.5.3"]
-            [lein-exec "0.3.4"]]
+  :plugins [[drift "1.5.3"]
+            [lein-exec "0.3.4"]
+            [test2junit "1.2.1"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :profiles {
     :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                         [org.clojars.gjahad/debug-repl "0.3.3"]]
+                         [org.clojars.gjahad/debug-repl "0.3.3"]
+                         [ring-mock "0.1.5"]]
           :jvm-opts ^:replace ["-server"]
           :source-paths ["src" "dev" "test"]}
 
     ;; This profile specifically here for generating documentation. It's faster than using the regular
     ;; profile. An agent pool is being started when using the default profile which causes the wait of
     ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
-    ;; Generate docs with: lein with-profile docs generate-docs
-    :docs {}
+    ;; Generate docs with: lein generate-static
+    :static {}
     :uberjar {:main cmr.ingest.runner
               :aot :all}
     ;; This profile is used for linting and static analysis. To run for this
@@ -55,12 +56,8 @@
                 [lein-shell "0.4.0"]
                 [venantius/yagni "0.1.4"]]}}
 
-  :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
-                                                    (use 'cmr.common-app.api-docs)
-                                                    (generate
-                                                      "CMR Ingest"
-                                                      "api_docs.md"
-                                                      "resources/public/site/ingest_api_docs.html")))]
+  :aliases {"generate-static" ["with-profile" "static"
+                               "run" "-m" "cmr.ingest.site.static" "all"]
             ;; Database migrations run by executing "lein migrate"
             "create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]

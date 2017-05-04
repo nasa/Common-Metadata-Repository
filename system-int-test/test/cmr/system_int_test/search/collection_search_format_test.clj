@@ -220,7 +220,7 @@
       (assert-cache-state {}))
 
     (testing "Fetching older UMM json will not cache it"
-      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] "1.2")     
+      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] "1.2")
       (assert-cache-state {}))
 
     (testing "Fetching newest UMM json not in cache will cache it"
@@ -791,7 +791,7 @@
         "S-DIF10" ["archive-org" "distribution-org" "processing-org" "originating-org"]
 
         "ISO-SMAP does not support data centers"
-        "S-ISO-SMAP" nil
+        "S-ISO-SMAP" ["archive-org" "processing-org"]
 
         "ISO19115 with archive center"
         "S-ISO19115" ["archive-org"]

@@ -22,7 +22,7 @@
 (def data-center-role->iso-role
  (set/map-invert data-contact/iso-data-center-role->umm-role))
 
-(defn- get-phone-contact-mechanisms
+(defn get-phone-contact-mechanisms
  "Get phone/fax contact mechanisms from contact info. ISO only supports phone, fax, and email
  so first translate the UMM types to those 3 and filter by phone and fax."
  [contact-info]
