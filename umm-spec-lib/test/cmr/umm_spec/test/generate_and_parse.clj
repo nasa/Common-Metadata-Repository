@@ -7,7 +7,7 @@
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking]]
-   [cmr.common.util :refer [update-in-each are2]]
+   [cmr.common.util :refer [update-in-each update-in-all are2]]
    [cmr.common.xml.simple-xpath :refer [select context]]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iu]
@@ -55,6 +55,7 @@
       (update :Platforms set)
       (update :RelatedUrls set)
       (update-in-each [:DataCenters] update :ContactPersons set)
+      (update :DataCenters set)
       (update :ContactPersons set)))
 
 (defn xml-round-trip
@@ -167,7 +168,6 @@
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
-
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]

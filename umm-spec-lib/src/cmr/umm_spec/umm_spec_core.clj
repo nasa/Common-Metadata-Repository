@@ -101,7 +101,7 @@
    (generate-metadata context umm fmt nil))
   ([context umm fmt source-version]
    (let [concept-type (concept-type umm)
-         source-version (or source-version ver/current-version)]     
+         source-version (or source-version ver/current-version)]
      (condp = [concept-type (mt/format-key fmt)]
        [:collection :umm-json] (umm-json/umm->json (vm/migrate-umm context
                                                                    concept-type

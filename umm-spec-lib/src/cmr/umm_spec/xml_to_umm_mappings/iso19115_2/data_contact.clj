@@ -73,7 +73,7 @@
     :URLContentType url-content-type
     :Type "HOME PAGE"}))
 
-(defn- parse-contact-information
+(defn parse-contact-information
  "Parse contact information from XML"
  [contact-info-xml url-content-type sanitize?]
  {:ContactMechanisms (remove nil? (concat
@@ -108,7 +108,7 @@
                              contacts)]
    {:ContactPersons (seq (map :Contact contacts))}))
 
-(defn- get-short-name-long-name
+(defn get-short-name-long-name
  "Split the name into short name and long name. ISO has one name field so use delimeter."
  [name]
  (when name
@@ -117,7 +117,7 @@
     :LongName (when (> (count names) 1)
                (str/join " " (map str/trim (rest names))))})))
 
-(defn- parse-individual-name
+(defn parse-individual-name
  "Parse an individial name into first, middle, last. ISO has one name field so use one or
  more spaces as delimeter."
  [name sanitize?]
