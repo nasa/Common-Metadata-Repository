@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.granule-retrieval-test
   "Integration test for granule retrieval with cmr-concept-id"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.common.mime-types :as mt]
     [cmr.system-int-test.data2.core :as d]
@@ -41,7 +41,7 @@
                                       (search/retrieve-concept
                                         (:concept-id del-gran) nil {:throw-exceptions true}))]
         (is (= 404 status))
-        (is (= ["Concept with concept-id [G1200000003-PROV1] could not be found."] errors))))
+        (is (= ["Concept with concept-id [G1200000007-PROV1] could not be found."] errors))))
     (testing "retrieval by granule cmr-concept-id, not found."
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                       (search/retrieve-concept

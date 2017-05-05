@@ -111,7 +111,7 @@
                           jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections
       sys
-      [:index-set :echo-rest :metadata-db :kms :cubby])))
+      [:index-set :echo-rest :metadata-db :kms :cubby :access-control])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

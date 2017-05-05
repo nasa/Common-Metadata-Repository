@@ -103,3 +103,8 @@
    params :system_object :concept_id :user_id :user_type :provider :target :target_group_id)
   (when-let [errors (seq (mapcat #(% params) get-permissions-validations))]
     (errors/throw-service-errors :bad-request errors)))
+
+(defn validate-current-sids-params
+  "Throws service errors if any invalid params or values are found."
+  [params]
+  (validate-params params :user-token))

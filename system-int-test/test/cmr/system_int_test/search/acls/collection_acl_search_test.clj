@@ -4,6 +4,7 @@
     [cmr.common-app.test.side-api :as side]
     [clojure.test :refer :all]
     [clojure.string :as str]
+    [cmr.acl.acl-fetcher :as acl-fetcher]
     [cmr.common.services.messages :as msg]
     [cmr.common.util :refer [are2] :as util]
     [cmr.mock-echo.client.echo-util :as e]
@@ -17,6 +18,7 @@
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.search-util :as search]
+    [cmr.transmit.access-control :as ac]
     [cmr.transmit.config :as tc]))
 
 
@@ -28,9 +30,9 @@
 
 (comment
   (dev-sys-util/reset)
-  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
-  (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
-  (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"}))
+  (ingest/create-provider {:provider-guid "PROV1" :provider-id "PROV1"})
+  (ingest/create-provider {:provider-guid "PROV2" :provider-id "PROV2"})
+  (ingest/create-provider {:provider-guid "PROV3" :provider-id "PROV3"}))
 
 (deftest invalid-security-token-test
   (is (= {:errors ["Token ABC123 does not exist"], :status 401}
@@ -68,13 +70,6 @@
                        (search/find-refs :collection {:token guest-token})))))
 
 (deftest collection-search-with-restriction-flag-acls-test
-  ;; grant restriction flag acl
-  (e/grant-guest (s/context)
-                 (e/coll-catalog-item-id
-                   "provguid1"
-                   (e/coll-id ["c1-echo" "c2-echo" "c1-dif" "c2-dif" "c1-dif10" "c2-dif10"
-                               "c1-iso" "c2-iso" "c1-smap" "coll3"]
-                              {:min-value 0.5 :max-value 1.5})))
   (let [guest-token (e/login-guest (s/context))
         c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
                                                   :access-value 1})
@@ -107,31 +102,25 @@
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))]
     (index/wait-until-indexed)
 
+    ;; grant restriction flag acl
+    (e/grant-guest (s/context)
+                   (e/coll-catalog-item-id
+                     "PROV1"
+                     (e/coll-id ["c1-echo" "c2-echo" "c1-dif" "c2-dif" "c1-dif10"
+                                 "c1-iso" "c2-iso" "c1-smap" "coll3"]
+                                {:min-value 0.5 :max-value 1.5})))
+    (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+    (index/wait-until-indexed)
+
     (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso]
                        (search/find-refs :collection {:token guest-token})))))
 
 (deftest collection-search-with-acls-test
-  ;; Grant permissions before creating data
-  ;; Grant guests permission to coll1
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
-  ;; restriction flag acl grants matches coll4
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        group2-concept-id (e/get-or-create-group (s/context) "group2")
+        group3-concept-id (e/get-or-create-group (s/context) "group3")
 
-  ;; Grant undefined access values in prov3
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid3" (e/coll-id nil {:include-undefined true})))
-
-  ;; all collections in prov2 granted to guests
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2"))
-  ;; grant registered users permission to coll2 and coll4
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2" "coll4"])))
-  ;; grant specific group permission to coll3, coll6, and coll8
-  (e/grant-group (s/context) "group-guid1" (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll3"])))
-  (e/grant-group (s/context) "group-guid2" (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll6" "coll8"])))
-  (e/grant-group (s/context) "group-guid3"
-                 (e/coll-catalog-item-id "provguid4"
-                                         (e/coll-id ["coll11-entry-title" "coll12-entry-title"])))
-
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))
         coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll4"
@@ -183,10 +172,31 @@
         guest-permitted-collections [coll1 coll4 coll6 coll7 coll8 coll9]
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")
-        user2-token (e/login (s/context) "user2" ["group-guid1"])
-        user3-token (e/login (s/context) "user3" ["group-guid1" "group-guid2"])
-        user4-token (e/login (s/context) "user4" ["group-guid3"])]
+        user2-token (e/login (s/context) "user2" [group1-concept-id])
+        user3-token (e/login (s/context) "user3" [group1-concept-id group2-concept-id])
+        user4-token (e/login (s/context) "user4" [group3-concept-id])]
 
+    (index/wait-until-indexed)
+    ;; Grant guests permission to coll1
+    (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
+    (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["notexist"])))
+    ;; restriction flag acl grants matches coll4
+    (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
+
+    ;; Grant undefined access values in prov3
+    (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV3" (e/coll-id nil {:include_undefined_value true})))
+
+    ;; all collections in prov2 granted to guests
+    (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2"))
+    ;; grant registered users permission to coll2 and coll4
+    (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2" "coll4"])))
+    ;; grant specific group permission to coll3, coll6, and coll8
+    (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll3"])))
+    (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll6" "coll8"])))
+    (e/grant-group (s/context) group3-concept-id (e/coll-catalog-item-id "PROV4"
+                                                         (e/coll-id ["coll11-entry-title" "coll12-entry-title"])))
+
+    (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "parameter search acl enforcement"
@@ -205,6 +215,7 @@
         ;; Test searching with users in groups
         user2-token [coll2 coll4 coll3]
         user3-token [coll2 coll4 coll3 coll6 coll8]))
+
     (testing "token can be sent through a header"
       (is (d/refs-match? [coll2 coll4]
                          (search/find-refs :collection {} {:headers {"Echo-Token" user1-token}}))))
@@ -306,27 +317,28 @@
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
-  (let [acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
-        acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll3"])))
-        coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
+  (let [coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
         coll2-umm (dc/collection {:entry-title "coll2" :short-name "short1"})
         coll2-1 (d/ingest "PROV1" coll2-umm)
         ;; 2 versions of collection 2 will allow us to test the force reindex option after we
         ;; force delete the latest version of coll2-2
         coll2-2 (d/ingest "PROV1" (assoc-in coll2-umm [:product :short-name] "short2"))
         coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10})
-        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
+        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))
+
+        _ (index/wait-until-indexed)
+        acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
+        acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll3"])))]
 
     (testing "normal reindex collection permitted groups"
-      (index/wait-until-indexed)
-      (ingest/reindex-collection-permitted-groups)
+      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
       (index/wait-until-indexed)
 
       ;; before acls change
       (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
 
       ;; Grant collection 2
-      (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2"])))
+      (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll2"])))
       ;; Ungrant collection 3
       (e/ungrant (s/context) acl2)
 
@@ -334,7 +346,7 @@
       (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
 
       ;; Reindex collection permitted groups
-      (ingest/reindex-collection-permitted-groups)
+      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
       (index/wait-until-indexed)
 
       ;; Search after reindexing
@@ -343,7 +355,7 @@
     (testing "reindex all collections"
 
       ;; Grant collection 4
-      (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
+      (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll4"])))
 
       ;; Try before reindexing
       (is (d/refs-match? [coll1 coll2-2] (search/find-refs :collection {})))
@@ -385,8 +397,8 @@
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was used.
 ;; This isn't the desired behavior. It's just a side effect that shows it's working.
 (deftest cache-token-test
-  (let [acl1 (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        acl1 (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1" (e/coll-id ["coll1"])))
         user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2")]
 

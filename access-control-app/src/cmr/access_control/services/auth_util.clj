@@ -5,6 +5,7 @@
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.tokens :as echo-tokens]))
 
@@ -13,7 +14,9 @@
    for use in checking permissions against acls."
   ([context]
    (let [token (:token context)
-         user (if token (echo-tokens/get-user-id context token) "guest")]
+         user (if token (or (util/get-real-or-lazy context :user-id)
+                            (echo-tokens/get-user-id context token))
+                        "guest")]
      (get-sids context user)))
   ([context username-or-type]
    (if (contains? #{"guest" "registered"} (name username-or-type))

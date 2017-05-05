@@ -37,7 +37,9 @@
 
 (defn create-acl
   [context acl]
-  (let [guid (next-guid context)
+  ;;Allow passing in a guid or auto generating
+  (let [guid (or (get-in acl [:acl :id])
+                 (next-guid context))
         acl (assoc acl :id guid)]
     (-> context
         context->acl-db

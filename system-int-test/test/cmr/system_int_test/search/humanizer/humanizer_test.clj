@@ -38,9 +38,9 @@
              (hu/update-humanizers token (hu/make-humanizers)))))))
 
 (deftest update-humanizers-validation-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-
-  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])
+  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        _ (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])
         valid-humanizers (hu/make-humanizers)
         valid-humanizer-rule (first valid-humanizers)]
     (testing "Create humanizer with invalid content type"
@@ -90,9 +90,10 @@
                   admin-update-token [(assoc valid-humanizer-rule field long-value)]))))))))
 
 (deftest update-humanizers-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
   (testing "Successful creation"
-    (let [token (e/login (s/context) "admin" ["admin-update-group-guid"])
+    (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+          _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+          token (e/login (s/context) "admin" [admin-update-group-concept-id])
           humanizers (hu/make-humanizers)
           {:keys [status concept-id revision-id]} (hu/update-humanizers token humanizers)]
       (is (= 201 status))
@@ -117,10 +118,11 @@
 
 
 (deftest get-humanizers-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
   (testing "Get humanizer"
-    (let [humanizers (hu/make-humanizers)
-          token (e/login (s/context) "admin" ["admin-update-group-guid"])
+    (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+          _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+          humanizers (hu/make-humanizers)
+          token (e/login (s/context) "admin" [admin-update-group-concept-id])
           _ (hu/update-humanizers token humanizers)
           expected-humanizers {:status 200
                                :body humanizers}]

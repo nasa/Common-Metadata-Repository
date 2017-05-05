@@ -29,7 +29,7 @@
 
   (testing "Create with unknown token"
     (is (= {:status 401
-            :errors ["Token ABC in request header does not exist"]}
+            :errors ["Token ABC does not exist"]}
            (tags/create-tag "ABC" (tags/make-tag)))))
 
   (let [valid-user-token (e/login (s/context) "user1")

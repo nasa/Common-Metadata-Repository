@@ -12,7 +12,7 @@
               (fixtures/int-test-fixtures)
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"}
                                       ["user1" "user2" "user3" "user4" "user5"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-group-fixture ["PROV1" "PROV2"])
               (fixtures/grant-all-acl-fixture))
 
 (def system-acl
@@ -128,6 +128,3 @@
         (is (= 200 (:status (u/update-group token concept-id2 {:name "Updated3" :description "Updated3"}))))
         ;; test delete
         (is (= 200 (:status (u/delete-group token concept-id2 {:allow-failure? true}))))))))
-
-
-

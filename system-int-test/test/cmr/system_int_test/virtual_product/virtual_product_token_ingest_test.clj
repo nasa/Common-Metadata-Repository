@@ -13,12 +13,13 @@
 (use-fixtures :each (ingest/reset-fixture {"LPDAAC_ECS_guid" "LPDAAC_ECS"} {:grant-all-ingest? false}))
 
 (deftest ingest-with-system-token-test
-  (e/grant-group-provider-admin (s/context) "prov-admin-update-group-guid" "LPDAAC_ECS_guid" :update)
-  ;; Grant ingest permission on LPDAAC_ECS to the group to which mock echo system token belongs
-  (e/grant-group-provider-admin (s/context) "mock-admin-group-guid" "LPDAAC_ECS_guid" :update)
-
-  (let [provider-admin-update-token (e/login (s/context) "prov-admin-update"
-                                             ["prov-admin-update-group-guid"])
+  (let [prov-admin-update-group-concept-id (e/get-or-create-group (s/context) "prov-admin-update-group")
+        mock-admin-group-concept-id (e/get-or-create-group (s/context) "prov-admin-update-group")
+        _ (e/grant-group-provider-admin (s/context) prov-admin-update-group-concept-id "LPDAAC_ECS" :update)
+        ;; Grant ingest permission on LPDAAC_ECS to the group to which mock echo system token belongs
+        _ (e/grant-group-provider-admin (s/context) mock-admin-group-concept-id "LPDAAC_ECS" :update)
+        provider-admin-update-token (e/login (s/context) "prov-admin-update"
+                                             [prov-admin-update-group-concept-id])
 
         [ast-coll] (vp/ingest-source-collections
                      [(assoc
@@ -38,4 +39,3 @@
     (vp/assert-matching-granule-urs
       all-expected-granule-urs
       (search/find-refs :granule {:page-size 50}))))
-

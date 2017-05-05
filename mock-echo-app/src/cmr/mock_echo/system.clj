@@ -21,12 +21,13 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:log (log/create-logger)
-   :token-db (token-db/create-db)
-   :provider-db (provider-db/create-db)
-   :acl-db (acl-db/create-db)
-   :urs-db (urs-db/create-db)
-   :web (web/create-web-server (transmit-config/mock-echo-port) routes/make-api)})
+  (let [system {:log (log/create-logger)
+                :token-db (token-db/create-db)
+                :provider-db (provider-db/create-db)
+                :acl-db (acl-db/create-db)
+                :urs-db (urs-db/create-db)
+                :web (web/create-web-server (transmit-config/mock-echo-port) routes/make-api)}]
+    (transmit-config/system-with-connections system [:access-control])))
 
 (def start
   "Performs side effects to initialize the system, acquire resources,

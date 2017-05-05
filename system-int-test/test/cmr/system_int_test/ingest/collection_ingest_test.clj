@@ -119,7 +119,7 @@
 (deftest collection-w-concept-id-ingest-test
   (let [supplied-concept-id "C1000-PROV1"
         concept (data-umm-c/collection-concept {:concept-id supplied-concept-id
-                                        :native-id "Atlantic-1"})]
+                                                :native-id "Atlantic-1"})]
     (testing "ingest of a new concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (index/wait-until-indexed)
@@ -153,7 +153,7 @@
              (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
   (testing "xml response"
     (let [concept (data-umm-c/collection-concept {:EntryTitle "E2"
-                                                  :ShortName "S2" 
+                                                  :ShortName "S2"
                                                   :concept-id "C1200000001-PROV1"})
           response (ingest/ingest-concept concept {:accept-format :xml :raw? true})]
       (is (= {:concept-id (:concept-id concept) :revision-id 1}
@@ -189,7 +189,7 @@
     (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                               :ShortName "S1"}))
           response (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :json
-                                                                           :raw? true})]
+                                                                                       :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (select-keys (ingest/parse-ingest-body :json response) [:concept-id :revision-id])))))
   (testing "xml response"
@@ -197,7 +197,7 @@
                                                                               :ShortName "S2"}))
           _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10) {:accept-format :xml
-                                                                           :raw? true})]
+                                                                                       :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
 
@@ -221,9 +221,9 @@
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
   (testing "dif"
     (let [concept (d/umm-c-collection->concept (assoc (data-umm-c/collection {:EntryTitle "E2"
-                                                                  :ShortName "S2"
-                                                                  :concept-id "C2-PROV1"})
-                                          :provider-id "PROV1") :dif)
+                                                                              :ShortName "S2"
+                                                                              :concept-id "C2-PROV1"})
+                                                :provider-id "PROV1") :dif)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C2-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id])))))
@@ -319,19 +319,19 @@
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
       (let [coll (d/ingest-umm-spec-collection "PROV1"
                            (data-umm-c/collection {:ShortName "S1"
-                                           :Version "V1"
-                                           :EntryTitle "ET1"
-                                           :LongName "L4"
-                                           :Abstract (name coll-format)
+                                                   :Version "V1"
+                                                   :EntryTitle "ET1"
+                                                   :LongName "L4"
+                                                   :Abstract (name coll-format)
                                            ;; The following fields are needed for DIF to pass xml validation
-                                           :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
-                                                                                   :Topic "Cool"
-                                                                                   :Term "Mild"})]
-                                           :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                                                   :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                                                                                                  :Topic "Cool"
+                                                                                                  :Term "Mild"})]
+                                                   :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
                                            ;; The following fields are needed for DIF10 to pass xml validation
-                                           :TemporalExtents [(data-umm-c/temporal-extent 
-                                                               {:beginning-date-time "1965-12-12T12:00:00Z"
-                                                                :ending-date-time "1967-12-12T12:00:00Z"})]})
+                                                   :TemporalExtents [(data-umm-c/temporal-extent
+                                                                       {:beginning-date-time "1965-12-12T12:00:00Z"
+                                                                        :ending-date-time "1967-12-12T12:00:00Z"})]})
                            {:format coll-format})]
         (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
@@ -348,7 +348,7 @@
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test
   (let [coll (data-umm-c/collection {:DataDates [(umm-cmn/map->DateType {:Date (p/parse-datetime "2000-01-01T12:00:00Z")
-                                                                        :Type "DELETE"})]})
+                                                                         :Type "DELETE"})]})
         {:keys [status errors]} (ingest/ingest-concept
                                   (d/umm-c-collection->concept (assoc coll :provider-id "PROV1") :echo10))]
     (index/wait-until-indexed)
@@ -410,8 +410,13 @@
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
 
 (deftest delete-collection-acls-test
-  ;; Ingest a collection under PROV1.
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+  ;; Remove search fixture acls
+  (let [fixture-acls (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (ac/conn-context) (:concept_id fixture-acl)))
+
+        ;; Ingest a collection under PROV1.
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                             :ShortName "S1"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                             :ShortName "S2"}))
@@ -520,9 +525,9 @@
 (deftest schema-validation-test
   (are [concept-format validation-errors]
        (let [concept (data-umm-c/collection-concept
-                       {:TemporalExtents [(data-umm-c/temporal-extent 
-                                            {:beginning-date-time "2010-12-12T12:00:00Z"})]} 
-                       concept-format) 
+                       {:TemporalExtents [(data-umm-c/temporal-extent
+                                            {:beginning-date-time "2010-12-12T12:00:00Z"})]}
+                       concept-format)
              {:keys [status errors]}
              (ingest/ingest-concept
                (assoc concept
@@ -634,7 +639,7 @@
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters
   (let [project (data-umm-c/project "p1" (str "A long name longer than eighty characters should not result"
-                                      " in a schema validation error"))
+                                          " in a schema validation error"))
         concept (assoc (data-umm-c/collection-concept {:projects [project]})
                        :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]

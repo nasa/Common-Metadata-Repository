@@ -512,3 +512,8 @@
   "URL to reindex acls."
   []
   (format "http://localhost:%s/reindex-acls" (transmit-config/access-control-port)))
+
+(defn access-control-acls-url
+  "URL to search or update acls"
+  []
+  (format "http://localhost:%s/acls" (transmit-config/access-control-port)))

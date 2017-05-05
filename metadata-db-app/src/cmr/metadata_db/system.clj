@@ -55,7 +55,7 @@
                                       `system-holder [jvm-info/log-jvm-statistics-job])
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
-     (transmit-config/system-with-connections sys [:echo-rest]))))
+     (transmit-config/system-with-connections sys [:access-control :echo-rest]))))
 
 (def start
   "Performs side effects to initialize the system, acquire resources,

@@ -90,7 +90,8 @@
 (defn ingest-community-usage-metrics
   "Ingest sample metrics to use in tests"
   [csv-data]
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])]
+  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])]
+    (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
     (update-community-usage-metrics admin-update-token csv-data)
     (index/wait-until-indexed)))
