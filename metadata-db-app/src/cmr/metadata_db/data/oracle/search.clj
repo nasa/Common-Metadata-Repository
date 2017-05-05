@@ -151,7 +151,7 @@
                    [conn db]
                    (let [conditions [`(>= :id ~start-index)
                                      `(< :id ~(+ start-index batch-size))]
-                         _ (debug "Finding batch for provider" provider-id "from id >=" start-index " and id <" (+ start-index batch-size))
+                         _ (info "Finding batch for provider" provider-id "from id >=" start-index " and id <" (+ start-index batch-size))
                          conditions (if (empty? params)
                                       conditions
                                       (cons (sh/find-params->sql-clause params) conditions))
@@ -168,9 +168,9 @@
                      ;; We couldn't find any items  between start-index and start-index + batch-size
                      ;; Look for the next greatest id and to see if there's a gap that we can restart from.
                      (do
-                       (debug "Couldn't find batch so searching for more from" start-index)
+                       (info "Couldn't find batch so searching for more from" start-index)
                        (when-let [next-id (find-batch-starting-id db table params start-index)]
-                         (debug "Found next-id of" next-id)
+                         (info "Found next-id of" next-id)
                          (lazy-find next-id)))
                      ;; We found a batch. Return it and the next batch lazily
                      (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
