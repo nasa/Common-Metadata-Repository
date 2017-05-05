@@ -28,10 +28,10 @@
     :access-count 87}])
 
 (deftest update-community-metrics-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-
   (testing "Successful community usage creation")
-  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])
+  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])
         {:keys [status concept-id revision-id]} (hu/update-community-usage-metrics admin-update-token sample-usage-csv)]
     (is (= 201 status))
     (is concept-id)
@@ -71,9 +71,9 @@
              (hu/update-community-usage-metrics token sample-usage-csv))))))
 
 (deftest update-community-usage-metrics-validation-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-
-  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])]
+  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])]
     (testing "Create community usage with invalid content type"
       (is (= {:status 400,
               :errors
@@ -160,10 +160,11 @@
 ;; Test that metrics are combined appropriately when short-name and version match for different
 ;; CSV entries.
 (deftest aggregate-community-metrics-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
 
   (testing "Successful community usage aggregation")
-  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])
+  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])
         {:keys [status concept-id revision-id]} (hu/update-community-usage-metrics admin-update-token sample-aggregation-csv)]
     (is (= 201 status))
     (is concept-id)
@@ -171,10 +172,10 @@
     (hu/assert-humanizers-saved {:community-usage-metrics sample-aggregation-data} "admin" concept-id revision-id)))
 
 (deftest commas-in-access-count-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-
   (testing "Successful community usage aggregation")
-  (let [admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid"])
+  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+        admin-update-token (e/login (s/context) "admin" [admin-update-group-concept-id])
         {:keys [status concept-id revision-id]}
         (hu/update-community-usage-metrics admin-update-token
                                            "\"Product\",\"Version\",\"Hosts\"\n\"AMSR-L1A\",\"3\",\"4,186\"")]

@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.ingest.granule-validation-test
   "CMR Ingest granule validation integration tests"
-  (:require 
+  (:require
     [clj-time.core :as t]
     [clj-time.format :as tf ]
     [clojure.test :refer :all]
@@ -27,7 +27,7 @@
     (dev-sys-util/reset)
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"}))
 
-  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 
+  (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                       {:AdditionalAttributes
                        [(data-umm-c/additional-attribute {:Name "bool" :DataType :boolean :value true})
                         (data-umm-c/additional-attribute {:Name "bool" :DataType :boolean :Value true})]})))
@@ -99,7 +99,7 @@
           (assert-validation-errors
             400
             expected-errors
-            (-> (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+            (-> (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                 d/item->concept
                 (assoc :metadata invalid-granule-xml))
             coll-concept))
@@ -135,7 +135,7 @@
           (testing "entry-title"
             (let [collection (data-umm-c/collection {:EntryTitle "correct"})
                   coll-concept (d/umm-c-collection->concept collection :echo10)
-                  granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+                  granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                                  :collection-ref
                                  (umm-g/map->CollectionRef {:entry-title "wrong"}))]
               (assert-validation-errors
@@ -148,7 +148,7 @@
           (testing "entry-id"
             (let [collection (data-umm-c/collection {:ShortName "correct"})
                   coll-concept (d/umm-c-collection->concept collection :dif)
-                  granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+                  granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                                  :collection-ref
                                  (umm-g/map->CollectionRef {:entry-id "wrong"}))]
               (assert-validation-errors
@@ -165,7 +165,7 @@
                 422
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference Short Name [S2] does not match the Short Name of the parent collection [S1]"]}]
-                (d/item->concept (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+                (d/item->concept (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                                         :collection-ref
                                         (umm-g/map->CollectionRef {:short-name "S2"
                                                                    :version-id "V1"})))
@@ -175,7 +175,7 @@
                 422
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]}]
-                (d/item->concept (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+                (d/item->concept (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                                         :collection-ref
                                         (umm-g/map->CollectionRef {:short-name "S1"
                                                                    :version-id "V2"})))
@@ -191,14 +191,14 @@
                   collection (data-umm-c/collection collection-attrs)
                   coll-concept (d/umm-c-collection->concept collection :iso-smap)]
               (testing "valid SMAP ISO granule"
-                (let [granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+                (let [granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                                      :collection-ref
                                      (umm-g/map->CollectionRef collection-ref-attrs))]
                   (assert-validation-success (d/item->concept granule :iso-smap)
                                              coll-concept)))
               (testing "invalid SMAP ISO granule"
                 (are [attrs errors]
-                     (let [granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+                     (let [granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                                           :collection-ref
                                           (umm-g/map->CollectionRef (merge collection-ref-attrs attrs)))]
                        (assert-validation-errors
@@ -226,7 +226,7 @@
                                              :ShortName "S1"
                                              :Version "V1"})
                   coll-concept (d/umm-c-collection->concept collection)
-                  granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+                  granule (assoc (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                                  :collection-ref
                                  (umm-g/map->CollectionRef {:entry-title nil
                                                             :short-name nil
@@ -250,7 +250,7 @@
           (assert-validation-errors
             400
             expected-errors
-            (-> (dg/granule-with-umm-spec-collection collection (:concept-id collection)) 
+            (-> (dg/granule-with-umm-spec-collection collection (:concept-id collection))
                 d/item->concept
                 (assoc :metadata invalid-granule-xml))))))))
 
@@ -275,8 +275,8 @@
               (select-keys response [:status :errors])))))
 
    (testing "through ingest API"
-     (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-attributes) {:format metadata-format})
-           response (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) gran-attributes) 
+     (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection (d/unique-num) coll-attributes) {:format metadata-format})
+           response (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) gran-attributes)
                                       {:format metadata-format :allow-failure? true})]
        (is (= {:status 422
                :errors [{:path field-path
@@ -333,7 +333,7 @@
     (testing "geodetic polygon"
       ;; Invalid points are caught in the schema validation
       (assert-invalid-spatial
-        :geodetic 
+        :geodetic
         "GEODETIC"
         [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]
         ["Spatial validation error: The shape contained duplicate points. Points 1 [lon=180 lat=90] and 2 [lon=-180 lat=90] were considered equivalent or very close."
@@ -345,19 +345,19 @@
       ;; Holes are ignored during validation for now.
       (assert-valid-spatial
         :geodetic
-        "GEODETIC" 
+        "GEODETIC"
         [(poly/polygon [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
                         (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])]))
     (testing "cartesian polygon"
       ;; The same shape from geodetic is valid as a cartesian.
       ;; Cartesian validation is not supported yet. See CMR-1172
-      (assert-valid-spatial :cartesian "CARTESIAN" 
+      (assert-valid-spatial :cartesian "CARTESIAN"
                             [(polygon 180 90, -180 90, -180 -90, 180 -90, 180 90)]))
 
     (testing "geodetic line"
       (assert-invalid-spatial
         :geodetic
-        "GEODETIC" 
+        "GEODETIC"
         [(l/ords->line-string :geodetic [0,0,1,1,2,2,1,1])]
         ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
 
@@ -365,13 +365,13 @@
       ;; Cartesian line validation isn't supported yet. See CMR-1172
       (assert-valid-spatial
         :cartesian
-        "CARTESIAN" 
+        "CARTESIAN"
         [(l/ords->line-string :cartesian [180 0, -180 0])]))
 
     (testing "bounding box"
       (assert-invalid-spatial
         :geodetic
-        "GEODETIC" 
+        "GEODETIC"
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 

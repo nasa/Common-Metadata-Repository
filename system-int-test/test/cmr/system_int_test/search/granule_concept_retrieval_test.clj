@@ -59,8 +59,8 @@
 (deftest retrieve-metadata-from-search-by-concept-id-concept-revision
   ;; Grant permissions before creating data.
   ;; All collections in PROV1 granted to registered users.
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/gran-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (e/grant-registered-users (s/context) (e/gran-catalog-item-id "PROV1"))
 
   (let [umm-coll1-1 (data-umm-c/collection {:EntryTitle "et1"
                                     :Version "v1"

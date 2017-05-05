@@ -25,6 +25,7 @@
     [cmr.transmit.metadata-db2 :as mdb]
     [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
+
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
@@ -312,3 +313,12 @@
         target (get-provider-permissions context username-or-type provider target)
         target_group_id (get-group-permissions context username-or-type target_group_id)
         :else (get-catalog-item-permissions context username-or-type concept_id)))))
+
+(defn get-current-sids
+  "Returns result of check for current user's group sids"
+  [context params]
+  (let [user-token (:user-token params)]
+    ;; If token is nil or empty, treat as guest
+    (if (or (nil? user-token)(re-matches #"^[\s\t]*$" user-token))
+      (auth-util/get-sids context :guest)
+      (auth-util/get-sids context (tokens/get-user-id context user-token)))))

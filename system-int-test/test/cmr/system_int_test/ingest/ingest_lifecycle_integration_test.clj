@@ -208,7 +208,7 @@
               [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
               "concept-id matches"
-              [result] {:concept_id "C1200000001-PROV1"}
+              [result] {:concept_id "C1200000005-PROV1"}
               "concept-id not matches"
               [] {:concept-id "C1200000002-PROV1"}
 

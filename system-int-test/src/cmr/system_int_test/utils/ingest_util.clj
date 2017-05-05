@@ -110,10 +110,13 @@
 
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
-  []
-  (let [response (client/post (url/reindex-collection-permitted-groups-url)
-                              {:connection-manager (s/conn-mgr)})]
-    (is (= 200 (:status response)))))
+  ([]
+   reindex-collection-permitted-groups nil)
+  ([token]
+   (let [response (client/post (url/reindex-collection-permitted-groups-url)
+                               {:connection-manager (s/conn-mgr)
+                                :query-params {:token token}})]
+    (is (= 200 (:status response))))))
 
 (defn reindex-all-collections
   "Tells ingest to run the reindex all collections job"
@@ -584,22 +587,23 @@
                            :short-name short-name
                            :cmr-only cmr-only
                            :small small})
-     (echo-util/create-providers (s/context) {provider-guid provider-id})
+     ;; Create provider in mock echo with the guid set to the ID to make things easier to sync up
+     (echo-util/create-providers (s/context) {provider-id provider-id})
 
      (when grant-all-search?
        (echo-util/grant (s/context)
                         [echo-util/guest-read-ace
                          echo-util/registered-user-read-ace]
-                        :catalog-item-identity
-                        (assoc (echo-util/catalog-item-id provider-guid)
-                               :collection-applicable true
-                               :granule-applicable true)))
+                        :catalog_item_identity
+                        (assoc (echo-util/catalog-item-id provider-id)
+                               :collection_applicable true
+                               :granule_applicable true)))
      (when grant-all-ingest?
-       (echo-util/grant-all-ingest (s/context) provider-guid))
+       (echo-util/grant-all-ingest (s/context) provider-id))
 
      (when grant-all-access-control
        (echo-util/grant-system-group-permissions-to-all (s/context))
-       (echo-util/grant-provider-group-permissions-to-all (s/context) provider-guid)))))
+       (echo-util/grant-provider-group-permissions-to-all (s/context) provider-id)))))
 
 (def reset-fixture-default-options
   {:grant-all-search? true

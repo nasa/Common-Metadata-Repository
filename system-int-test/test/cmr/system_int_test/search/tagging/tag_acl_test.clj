@@ -1,34 +1,40 @@
 (ns cmr.system-int-test.search.tagging.tag-acl-test
   "This tests the CMR Search API's tagging capabilities"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.util :refer [are2]]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+    [clojure.string :as str]
+    [clojure.test :refer :all]
+    [cmr.common.util :refer [are2]]
+    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.data2.collection :as dc]
+    [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.system :as s]
+    [cmr.system-int-test.utils.index-util :as index]
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest tag-acl-test
-  (e/grant-group-tag (s/context) "create-group" :create)
-  (e/grant-group-tag (s/context) "update-group" :update)
-  (e/grant-group-tag (s/context) "delete-group" :delete)
-  (e/grant-group-tag (s/context) "all-group")
-
   (let [guest-token (e/login-guest (s/context))
-        reg-user-token (e/login (s/context) "user1" ["some-group-guid"])
-        create-user (e/login (s/context) "create-user" ["create-group"])
-        update-user (e/login (s/context) "update-user" ["update-group"])
-        delete-user (e/login (s/context) "delete-user" ["delete-group"])
-        all-user (e/login (s/context) "all-user" ["all-group"])
+        reg-user-group (e/get-or-create-group (s/context) "some-group-guid")
+        create-group (e/get-or-create-group (s/context) "create-group")
+        update-group (e/get-or-create-group (s/context) "update-group")
+        delete-group (e/get-or-create-group (s/context) "delete-group")
+        all-group (e/get-or-create-group (s/context) "all-group")
+        reg-user-token (e/login (s/context) "user1" [reg-user-group])
+        create-user (e/login (s/context) "create-user" [create-group])
+        update-user (e/login (s/context) "update-user" [update-group])
+        delete-user (e/login (s/context) "delete-user" [delete-group])
+        all-user (e/login (s/context) "all-user" [all-group])
         tag-key (atom 0)
         uniq-tag #(tags/make-tag {:tag-key (str (swap! tag-key inc))})]
 
+    (e/grant-group-tag (s/context) create-group :create)
+    (e/grant-group-tag (s/context) update-group :update)
+    (e/grant-group-tag (s/context) delete-group :delete)
+    (e/grant-group-tag (s/context) all-group)
+    
     (testing "Create permissions"
       (testing "Success"
         (is (= 201 (:status (tags/create-tag create-user (uniq-tag)))))

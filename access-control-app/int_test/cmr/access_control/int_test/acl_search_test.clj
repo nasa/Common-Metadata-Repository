@@ -16,7 +16,7 @@
   (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2", "prov3guid" "PROV3",
                            "prov4guid" "PROV4"}
                           ["user1" "user2" "user3" "user4" "user5"])
-  (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+  (fixtures/grant-admin-group-fixture ["PROV1" "PROV2"])
   (fixtures/grant-all-acl-fixture))
 (use-fixtures :once (fixtures/int-test-fixtures))
 
@@ -69,23 +69,36 @@
         get-name #(get-in % [:catalog_item_identity :name])]
     (is (= [(get-name acl3) (get-name acl2) (get-name acl1)
             "Provider - PROV1 - CATALOG_ITEM_ACL"
-            "System - ANY_ACL"]
+            "Provider - PROV1 - GROUP"
+            "Provider - PROV2 - GROUP"
+            "Provider - PROV3 - GROUP"
+            "Provider - PROV4 - GROUP"
+            "System - ANY_ACL"
+            "System - GROUP"]
            (map :name (:items (ac/search-for-acls (merge {:token token} (u/conn-context)) {})))))))
 
 (deftest acl-search-permission-test
   (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token
-                               {:name "any acl read"}
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
+        group1 (u/ingest-group admin-token
+                               {:name "any acl read/write"}
                                ["user1"])
-        group2 (u/ingest-group token
+        group2 (u/ingest-group admin-token
                                {:name "without any acl read"}
                                ["user2"])
-        group3 (u/ingest-group token
+        group3 (u/ingest-group admin-token
                                {:name "provider object prov1 read"}
                                ["user3"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
         group3-concept-id (:concept_id group3)
+        ;;re-login with group which will have ACL read/write access
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR" group1-concept-id])
+
+        ;;Stock ACLs
+        system-group-acls (e/get-system-group-acls (u/conn-context))
+        provider-group-acls (e/get-provider-group-acls (u/conn-context))
+        prov1-group-acls (filter #(= "PROV1" (get-in % [:provider_identity :provider_id])) provider-group-acls)
 
         ;; remove ANY_ACL read to all users
         _ (ac/update-acl (u/conn-context) (:concept-id fixtures/*fixture-system-acl*)
@@ -93,32 +106,33 @@
                                    [:group_permissions 0]
                                    {:permissions ["read" "create"] :group_id group1-concept-id}))
 
-        acl1 (u/ingest-acl token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
-                                           [:group_permissions 0]
-                                           {:permissions ["read"] :group_id group1-concept-id}))
-        acl2 (u/ingest-acl token (assoc-in (u/system-acl "ARCHIVE_RECORD")
-                                           [:group_permissions 0]
-                                           {:permissions ["delete"] :group_id group2-concept-id}))
-        acl3 (u/ingest-acl token (u/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
-        acl4 (u/ingest-acl token (assoc (u/provider-acl "PROVIDER_OBJECT_ACL")
-                                        :group_permissions
-                                        [{:group_id group3-concept-id :permissions ["read"]}]))
-        acl5 (u/ingest-acl token (u/provider-acl "OPTION_DEFINITION"))
-        acl6 (u/ingest-acl token (assoc-in (u/provider-acl "OPTION_DEFINITION")
-                                           [:provider_identity :provider_id] "PROV2"))
+        acl1 (u/ingest-acl admin-token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
+                                                 [:group_permissions 0]
+                                                 {:permissions ["read"] :group_id group1-concept-id}))
+        acl2 (u/ingest-acl admin-token (assoc-in (u/system-acl "ARCHIVE_RECORD")
+                                                 [:group_permissions 0]
+                                                 {:permissions ["delete"] :group_id group2-concept-id}))
+        acl3 (u/ingest-acl admin-token (u/system-acl "SYSTEM_OPTION_DEFINITION_DEPRECATION"))
+        acl4 (u/ingest-acl admin-token (assoc (u/provider-acl "PROVIDER_OBJECT_ACL")
+                                              :group_permissions
+                                              [{:group_id group3-concept-id :permissions ["read"]}]))
+        acl5 (u/ingest-acl admin-token (u/provider-acl "OPTION_DEFINITION"))
+        acl6 (u/ingest-acl admin-token (assoc-in (u/provider-acl "OPTION_DEFINITION")
+                                                 [:provider_identity :provider_id] "PROV2"))
         ;; Create an ACL with a catalog item identity for PROV1
-        acl7 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
-                                  :catalog_item_identity {:provider_id "PROV1"
-                                                          :name "PROV1 All Collections ACL"
-                                                          :collection_applicable true}})
-        acl8 (u/ingest-acl token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
-                                  :catalog_item_identity {:provider_id "PROV2"
-                                                          :name "PROV2 All Collections ACL"
-                                                          :collection_applicable true}})]
+        acl7 (u/ingest-acl admin-token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                        :catalog_item_identity {:provider_id "PROV1"
+                                                                :name "PROV1 All Collections ACL"
+                                                                :collection_applicable true}})
+        acl8 (u/ingest-acl admin-token {:group_permissions [{:user_type "registered" :permissions ["read"]}]
+                                        :catalog_item_identity {:provider_id "PROV2"
+                                                                :name "PROV2 All Collections ACL"
+                                                                :collection_applicable true}})]
+
     (testing "Provider Object ACL permissions"
       (let [token (e/login (u/conn-context) "user3")
             response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:provider "PROV1"})]
-        (is (= (u/acls->search-response 4 [fixtures/*fixture-provider-acl* acl4 acl5 acl7])
+        (is (= (u/acls->search-response 5 (concat prov1-group-acls [fixtures/*fixture-provider-acl* acl4 acl5 acl7]))
                (dissoc response :took)))))
     (testing "Guest search permission"
       (let [token (e/login-guest (u/conn-context))
@@ -128,10 +142,12 @@
                (dissoc response :took)))))
     (testing "User search permission"
       (let [token (e/login (u/conn-context) "user1")
-            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {})]
-        (is (= (u/acls->search-response 10 [fixtures/*fixture-provider-acl*
-                                            (assoc fixtures/*fixture-system-acl* :revision_id 2)
-                                            acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8])
+            response (ac/search-for-acls (merge {:token token} (u/conn-context)) {:page_size 20})
+            expected (concat [fixtures/*fixture-provider-acl*
+                              (assoc fixtures/*fixture-system-acl* :revision_id 2)
+                              acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]
+                             provider-group-acls system-group-acls)]
+        (is (= (u/acls->search-response 15 expected)
                (dissoc response :took)))))
     (testing "Search permission without ANY_ACL read"
       (let [token (e/login (u/conn-context) "user2")
@@ -142,40 +158,43 @@
 
 (deftest acl-search-test
   (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
+        group1 (u/ingest-group admin-token
                                {:name "group1"}
                                ["user1"])
-        group2 (u/ingest-group token
+        group2 (u/ingest-group admin-token
                                {:name "group2"}
                                ["user1"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
-        acl1 (u/ingest-acl token (assoc (u/system-acl "SYSTEM_AUDIT_REPORT")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
-        acl2 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
-        acl3 (u/ingest-acl token (u/system-acl "SYSTEM_INITIALIZER"))
-        acl4 (u/ingest-acl token (assoc (u/system-acl "ARCHIVE_RECORD")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["delete"]}]))
+        acl1 (u/ingest-acl admin-token (assoc (u/system-acl "SYSTEM_AUDIT_REPORT")
+                                        :group_permissions
+                                        [{:user_type "guest" :permissions ["read"]}]))
+        acl2 (u/ingest-acl admin-token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
+                                        :group_permissions
+                                        [{:user_type "guest" :permissions ["read"]}]))
+        acl3 (u/ingest-acl admin-token (u/system-acl "SYSTEM_INITIALIZER"))
+        acl4 (u/ingest-acl admin-token (assoc (u/system-acl "ARCHIVE_RECORD")
+                                        :group_permissions
+                                        [{:user_type "guest" :permissions ["delete"]}]))
 
-        acl5 (u/ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
+        acl5 (u/ingest-acl admin-token (assoc (u/provider-acl "AUDIT_REPORT")
+                                        :group_permissions
+                                        [{:user_type "guest" :permissions ["read"]}]))
 
-        acl6 (u/ingest-acl token (u/single-instance-acl group1-concept-id))
-        acl7 (u/ingest-acl token (u/single-instance-acl group2-concept-id))
+        acl6 (u/ingest-acl admin-token (u/single-instance-acl group1-concept-id))
+        acl7 (u/ingest-acl admin-token (u/single-instance-acl group2-concept-id))
 
-        acl8 (u/ingest-acl token (u/catalog-item-acl "All Collections"))
-        acl9 (u/ingest-acl token (u/catalog-item-acl "All Granules"))
+        acl8 (u/ingest-acl admin-token (u/catalog-item-acl "All Collections"))
+        acl9 (u/ingest-acl admin-token (u/catalog-item-acl "All Granules"))
 
         system-acls [fixtures/*fixture-system-acl* acl1 acl2 acl3 acl4]
         provider-acls [fixtures/*fixture-provider-acl* acl5]
         single-instance-acls [acl6 acl7]
         catalog-item-acls [acl8 acl9]
-        all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls)]
+        system-group-acl (e/get-provider-group-acls (u/conn-context))
+        provider-group-acls (e/get-system-group-acls (u/conn-context))
+        all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls provider-group-acls system-group-acl)]
 
     (testing "Find all ACLs"
       (let [response (ac/search-for-acls (u/conn-context) {:page_size 20})]
@@ -189,8 +208,13 @@
                   (str "Group - " group2-concept-id)
                   "Provider - PROV1 - AUDIT_REPORT"
                   "Provider - PROV1 - CATALOG_ITEM_ACL"
+                  "Provider - PROV1 - GROUP"
+                  "Provider - PROV2 - GROUP"
+                  "Provider - PROV3 - GROUP"
+                  "Provider - PROV4 - GROUP"
                   "System - ANY_ACL"
                   "System - ARCHIVE_RECORD"
+                  "System - GROUP"
                   "System - METRIC_DATA_POINT_SAMPLE"
                   "System - SYSTEM_AUDIT_REPORT"
                   "System - SYSTEM_INITIALIZER"]
@@ -245,10 +269,14 @@
         acl2 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["read"]}]))
-        acl3 (u/ingest-acl token (assoc (u/system-acl "GROUP")
-                                      :group_permissions
-                                      [{:group_id "AG12345-PROV" :permissions ["create" "read"]}
-                                       {:user_type "guest" :permissions ["read"]}]))
+        ;; SYSTEM GROUP ACL is already created in the fixture loading, so need to update, not create.
+        acl3-id (e/grant (u/conn-context)
+                  [{:group_id "AG12345-PROV" :permissions ["create" "read"]}
+                   {:user_type "guest" :permissions ["read"]}]
+                  :system_identity
+                  {:target "GROUP"})
+        acl3 (first (e/get-system-group-acls (u/conn-context)))
+
         acl4 (u/ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
                                       :group_permissions
                                       [{:user_type "guest" :permissions ["read"]}]))
@@ -264,14 +292,16 @@
                                       :group_permissions
                                       [{:user_type "registered" :permissions ["read" "order"]}
                                        {:group_id "AG10000-PROV" :permissions ["create"]}]))
+        provider-group-acls (e/get-provider-group-acls (u/conn-context))
 
         guest-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl3 acl4 acl7]
         registered-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl2 acl5 acl8]
         AG12345-acls [acl3 acl6]
         AG10000-acls [acl8]
-        read-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl8]
-        create-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl3 acl5 acl7 acl8]
-        all-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]]
+        read-acls (into [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl8] provider-group-acls)
+        create-acls (into [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl3 acl5 acl7 acl8] provider-group-acls)
+        all-acls-no-admin [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl1 acl2 acl3 acl4 acl5 acl6 acl7 acl8]
+        all-acls (into all-acls-no-admin provider-group-acls)]
 
     (testing "Search ACLs by permitted group"
       (are [permitted-groups acls]
@@ -287,7 +317,7 @@
            ["REGISTERED" "AG10000-PROV"] registered-acls
            ["GUEST" "AG10000-PROV"] (concat guest-acls AG10000-acls)
            ["AG12345-PROV" "AG10000-PROV"] (concat AG12345-acls AG10000-acls)
-           ["guest" "registered" "AG12345-PROV" "AG10000-PROV"] all-acls))
+           ["guest" "registered" "AG12345-PROV" "AG10000-PROV"] all-acls-no-admin))
 
     (testing "Search ACLs by permitted group with options"
       (are [permitted-groups options acls]
@@ -357,7 +387,7 @@
     ;; CMR-3154 acceptance criterium 3
     (testing "Search ACLs by group permission just group or permission"
       (are3 [query-map acls]
-        (let [response (ac/search-for-acls (u/conn-context) {:group-permission {:0 query-map}})]
+        (let [response (ac/search-for-acls (u/conn-context) {:group-permission {:0 query-map} :page_size 20})]
           (is (= (u/acls->search-response (count acls) acls)
                  (dissoc response :took))))
         "Just user type"
@@ -404,13 +434,18 @@
 
 (deftest acl-search-by-identity-type-test
   (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
+        group1 (u/ingest-group admin-token
                                {:name "group1"}
                                ["user1"])
         group1-concept-id (:concept_id group1)
-        acl-single-instance (u/ingest-acl token (u/single-instance-acl group1-concept-id))
-        acl-catalog-item (u/ingest-acl token (u/catalog-item-acl "All Collections"))
-        all-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-single-instance acl-catalog-item]]
+        acl-single-instance (u/ingest-acl admin-token (u/single-instance-acl group1-concept-id))
+        acl-catalog-item (u/ingest-acl admin-token (u/catalog-item-acl "All Collections"))
+        ;;Stock ACLs
+        system-group-acls (e/get-system-group-acls (u/conn-context))
+        provider-group-acls (e/get-provider-group-acls (u/conn-context))
+        all-acls (concat [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl* acl-single-instance acl-catalog-item] provider-group-acls system-group-acls)]
+
 
     (testing "Search with invalid identity type returns error"
       (is (= {:status 400
@@ -426,10 +461,10 @@
                  (dissoc response :took))))
 
         "Identity type 'provider'"
-        ["provider"] [fixtures/*fixture-provider-acl*]
+        ["provider"] (concat [fixtures/*fixture-provider-acl*] provider-group-acls)
 
         "Identity type 'system'"
-        ["system"] [fixtures/*fixture-system-acl*]
+        ["system"] (concat [fixtures/*fixture-system-acl*] system-group-acls)
 
         "Identity type 'single_instance'"
         ["single_instance"] [acl-single-instance]
@@ -438,13 +473,13 @@
         ["catalog_item"] [acl-catalog-item]
 
         "Multiple identity types"
-        ["provider" "single_instance"] [fixtures/*fixture-provider-acl* acl-single-instance]
+        ["provider" "single_instance"] (concat [fixtures/*fixture-provider-acl* acl-single-instance] provider-group-acls)
 
         "All identity types"
         ["provider" "system" "single_instance" "catalog_item"] all-acls
 
         "Identity type searches are always case-insensitive"
-        ["PrOvIdEr"] [fixtures/*fixture-provider-acl*]))))
+        ["PrOvIdEr"] (concat [fixtures/*fixture-provider-acl*] provider-group-acls)))))
 
 (deftest acl-search-by-target-test
   (let [token (e/login (u/conn-context) "user1")
@@ -471,26 +506,27 @@
 
 (deftest acl-search-by-permitted-user-test
   (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token {:name "group1"} ["user1"])
-        group2 (u/ingest-group token {:name "group2"} ["USER1" "user2"])
-        group3 (u/ingest-group token {:name "group3"} nil)
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
+        group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
+        group2 (u/ingest-group admin-token {:name "group2"} ["USER1" "user2"])
+        group3 (u/ingest-group admin-token {:name "group3"} nil)
         ;; No user should match this since all users are registered
-        acl-registered-1 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
-                                                  :group_permissions
-                                                  [{:user_type "registered" :permissions ["read"]}]))
-        acl-group1 (u/ingest-acl token (assoc (u/system-acl "ARCHIVE_RECORD")
-                                            :group_permissions
-                                            [{:group_id (:concept_id group1) :permissions ["delete"]}]))
-        acl-registered-2 (u/ingest-acl token (assoc (u/provider-acl "OPTION_DEFINITION")
-                                                  :group_permissions
-                                                  [{:user_type "registered" :permissions ["create"]}]))
-        acl-group2 (u/ingest-acl token (assoc (u/provider-acl "OPTION_ASSIGNMENT")
-                                            :group_permissions
-                                            [{:group_id (:concept_id group2) :permissions ["create"]}]))
+        acl-registered-1 (u/ingest-acl admin-token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
+                                                    :group_permissions
+                                                    [{:user_type "registered" :permissions ["read"]}]))
+        acl-group1 (u/ingest-acl admin-token (assoc (u/system-acl "ARCHIVE_RECORD")
+                                              :group_permissions
+                                              [{:group_id (:concept_id group1) :permissions ["delete"]}]))
+        acl-registered-2 (u/ingest-acl admin-token (assoc (u/provider-acl "OPTION_DEFINITION")
+                                                    :group_permissions
+                                                    [{:user_type "registered" :permissions ["create"]}]))
+        acl-group2 (u/ingest-acl admin-token (assoc (u/provider-acl "OPTION_ASSIGNMENT")
+                                              :group_permissions
+                                              [{:group_id (:concept_id group2) :permissions ["create"]}]))
         ;; No user should match this acl since group3 has no members
-        acl-group3 (u/ingest-acl token (assoc (u/catalog-item-acl "All Granules")
-                                            :group_permissions
-                                            [{:group_id (:concept_id group3) :permissions ["create"]}]))
+        acl-group3 (u/ingest-acl admin-token (assoc (u/catalog-item-acl "All Granules")
+                                              :group_permissions
+                                              [{:group_id (:concept_id group3) :permissions ["create"]}]))
 
         registered-acls [acl-registered-1 acl-registered-2 fixtures/*fixture-provider-acl* fixtures/*fixture-system-acl*]]
 
@@ -530,31 +566,37 @@
 
 (deftest acl-search-provider-test
   (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token {:name "group1"} ["user1"])
-        acl1 (u/ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
+        group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
+        acl1 (u/ingest-acl admin-token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 0] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV2"))
-        acl2 (u/ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
+        acl2 (u/ingest-acl admin-token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 0] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV3"))
-        acl3 (u/ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
+        acl3 (u/ingest-acl admin-token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 0] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV4"))
-        acl4 (u/ingest-acl token (u/catalog-item-acl "Catalog_Item1_PROV1"))
-        acl5 (u/ingest-acl token (u/catalog-item-acl "Catalog_Item2_PROV1"))
-        acl6 (u/ingest-acl token (assoc-in (u/catalog-item-acl "Catalog_Item3_PROV2")
+        acl4 (u/ingest-acl admin-token (u/catalog-item-acl "Catalog_Item1_PROV1"))
+        acl5 (u/ingest-acl admin-token (u/catalog-item-acl "Catalog_Item2_PROV1"))
+        acl6 (u/ingest-acl admin-token (assoc-in (u/catalog-item-acl "Catalog_Item3_PROV2")
                                          [:catalog_item_identity :provider_id] "PROV2"))
-        acl7 (u/ingest-acl token (assoc-in (u/catalog-item-acl "Catalog_Item5_PROV2")
+        acl7 (u/ingest-acl admin-token (assoc-in (u/catalog-item-acl "Catalog_Item5_PROV2")
                                          [:catalog_item_identity :provider_id] "PROV2"))
 
-        acl8 (u/ingest-acl token (assoc-in (u/catalog-item-acl "Catalog_Item6_PROV4")
+        acl8 (u/ingest-acl admin-token (assoc-in (u/catalog-item-acl "Catalog_Item6_PROV4")
                                          [:catalog_item_identity :provider_id] "PROV4"))
         prov1-acls [fixtures/*fixture-provider-acl* acl4 acl5]
         prov1-and-2-acls [fixtures/*fixture-provider-acl* acl1 acl4 acl5 acl6 acl7]
         prov3-acls [acl2]]
+
+    ;;Remove fixture acls set up for each provider.  We only care about the ones created in this test.
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV3" :target "GROUP"})))))
 
     (testing "Search ACLs that grant permissions to objects owned by a single provider
               or by any provider where multiple are specified"
@@ -605,32 +647,38 @@
 
 (deftest acl-search-multiple-criteria
   (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token {:name "group1"} ["user1"])
-        group2 (u/ingest-group token {:name "group2"} ["user2"])
-        acl1 (u/ingest-acl token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
-                                      :group_permissions
-                                      [{:user_type "registered" :permissions ["read"]}]))
-        acl2 (u/ingest-acl token (assoc (u/system-acl "ARCHIVE_RECORD")
-                                      :group_permissions
-                                      [{:group_id (:concept_id group1) :permissions ["delete"]}]))
-        acl3 (u/ingest-acl token (assoc (u/provider-acl "OPTION_DEFINITION")
-                                      :group_permissions
-                                      [{:user_type "registered" :permissions ["create"]}]))
-        acl4 (u/ingest-acl token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
+        group1 (u/ingest-group admin-token {:name "group1"} ["user1"])
+        group2 (u/ingest-group admin-token {:name "group2"} ["user2"])
+        acl1 (u/ingest-acl admin-token (assoc (u/system-acl "METRIC_DATA_POINT_SAMPLE")
+                                        :group_permissions
+                                        [{:user_type "registered" :permissions ["read"]}]))
+        acl2 (u/ingest-acl admin-token (assoc (u/system-acl "ARCHIVE_RECORD")
+                                        :group_permissions
+                                        [{:group_id (:concept_id group1) :permissions ["delete"]}]))
+        acl3 (u/ingest-acl admin-token (assoc (u/provider-acl "OPTION_DEFINITION")
+                                        :group_permissions
+                                        [{:user_type "registered" :permissions ["create"]}]))
+        acl4 (u/ingest-acl admin-token (assoc-in (assoc-in (u/provider-acl "CATALOG_ITEM_ACL")
                                                    [:group_permissions 1] {:group_id (:concept_id group1)
                                                                            :permissions ["create"]})
                                          [:provider_identity :provider_id] "PROV2"))
-        acl5 (u/ingest-acl token (assoc (u/catalog-item-acl "All Collection")
-                                      :group_permissions
-                                      [{:group_id (:concept_id group1) :permissions ["create"]}
-                                       {:user_type "registered" :permissions ["create"]}]))
-        acl6 (u/ingest-acl token (assoc (u/catalog-item-acl "All Granules")
-                                      :group_permissions
-                                      [{:group_id (:concept_id group1) :permissions ["create"]}]))
-        acl7 (u/ingest-acl token (assoc-in (assoc (u/catalog-item-acl "All Granules PROV2")
-                                                :group_permissions
-                                                [{:group_id (:concept_id group2) :permissions ["create"]}])
-                                         [:catalog_item_identity :provider_id] "PROV2"))]
+        acl5 (u/ingest-acl admin-token (assoc (u/catalog-item-acl "All Collection")
+                                        :group_permissions
+                                        [{:group_id (:concept_id group1) :permissions ["create"]}
+                                         {:user_type "registered" :permissions ["create"]}]))
+        acl6 (u/ingest-acl admin-token (assoc (u/catalog-item-acl "All Granules")
+                                        :group_permissions
+                                        [{:group_id (:concept_id group1) :permissions ["create"]}]))
+        acl7 (u/ingest-acl admin-token (assoc-in (assoc (u/catalog-item-acl "All Granules PROV2")
+                                                  :group_permissions
+                                                  [{:group_id (:concept_id group2) :permissions ["create"]}])
+                                           [:catalog_item_identity :provider_id] "PROV2"))]
+
+    ;;Remove stock acls set up for each provider.  We only care about the ones created in this test.
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"})))))
+    (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"})))))
+
     (testing "Search with every criteria"
       (are3 [params acls]
         (let [response (ac/search-for-acls (u/conn-context) params)]
@@ -668,37 +716,45 @@
 
 (deftest acl-search-with-legacy-group-guid-test
   (let [token (e/login (u/conn-context) "user1")
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
         group1-legacy-guid "group1-legacy-guid"
-        group1 (u/ingest-group token
+        group1 (u/ingest-group admin-token
                                {:name "group1"
                                 :legacy_guid group1-legacy-guid}
                                ["user1"])
-        group2 (u/ingest-group token
+        group2 (u/ingest-group admin-token
                                {:name "group2"}
                                ["user1"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
 
         ;; ACL associated with a group that has legacy guid
-        acl1 (u/ingest-acl token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
+        acl1 (u/ingest-acl admin-token (assoc-in (u/system-acl "INGEST_MANAGEMENT_ACL")
                                          [:group_permissions 0]
                                          {:permissions ["read"] :group_id group1-concept-id}))
         ;; ACL associated with a group that does not have legacy guid
-        acl2 (u/ingest-acl token (assoc-in (u/system-acl "ARCHIVE_RECORD")
+        acl2 (u/ingest-acl admin-token (assoc-in (u/system-acl "ARCHIVE_RECORD")
                                          [:group_permissions 0]
                                          {:permissions ["delete"] :group_id group2-concept-id}))
         ;; SingleInstanceIdentity ACL with a group that has legacy guid
-        acl3 (u/ingest-acl token (u/single-instance-acl group1-concept-id))
+        acl3 (u/ingest-acl admin-token (u/single-instance-acl group1-concept-id))
         ;; SingleInstanceIdentity ACL with a group that does not have legacy guid
-        acl4 (u/ingest-acl token (u/single-instance-acl group2-concept-id))
+        acl4 (u/ingest-acl admin-token (u/single-instance-acl group2-concept-id))
         ;; ACL without group_id
-        acl5 (u/ingest-acl token (assoc (u/provider-acl "AUDIT_REPORT")
-                                      :group_permissions
-                                      [{:user_type "guest" :permissions ["read"]}]))
+        acl5 (u/ingest-acl admin-token (assoc (u/provider-acl "AUDIT_REPORT")
+                                        :group_permissions
+                                        [{:user_type "guest" :permissions ["read"]}]))
+        ;;Stock ACLs
+        system-group-acl (e/get-system-group-acls (u/conn-context))
+        provider-group-acls (e/get-provider-group-acls (u/conn-context))
+        system-group-acl-legacy (e/get-system-group-acls (u/conn-context) {:include_legacy_group_guid true})
+        provider-group-acls-legacy (e/get-provider-group-acls (u/conn-context) {:include_legacy_group_guid true})
 
         expected-acls (concat [fixtures/*fixture-system-acl*]
                               [fixtures/*fixture-provider-acl*]
-                              [acl1 acl2 acl3 acl4 acl5])
+                              [acl1 acl2 acl3 acl4 acl5]
+                              system-group-acl
+                              provider-group-acls)
 
         expected-acl1-with-legacy-guid (assoc-in
                                         acl1 [:group_permissions 0 :group_id] group1-legacy-guid)
@@ -711,7 +767,9 @@
         expected-acls-with-legacy-guids (concat [fixtures/*fixture-system-acl*]
                                                 [fixtures/*fixture-provider-acl*]
                                                 [expected-acl1-with-legacy-guid acl2
-                                                 expected-acl3-with-legacy-guid acl4 acl5])]
+                                                 expected-acl3-with-legacy-guid acl4 acl5]
+                                                system-group-acl-legacy
+                                                provider-group-acls-legacy)]
 
     (testing "Find acls without legacy group guid"
       (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20})]
@@ -723,7 +781,7 @@
                                                            :include-legacy-group-guid true
                                                            :page_size 20})]
         (is (= (u/acls->search-response
-                (count expected-acls)
+                (count expected-acls-with-legacy-guids)
                 expected-acls-with-legacy-guids {:include-full-acl true
                                                  :include-legacy-group-guid true})
                (dissoc response :took)))))
@@ -753,6 +811,12 @@
                                (dissoc (ac/search-for-acls (u/conn-context) {}) :took))
          fixture-acls [fixtures/*fixture-system-acl* fixtures/*fixture-provider-acl*]
          expected-acls-after-reindexing (concat fixture-acls [acl2 acl3])]
+     ;;Remove stock acls set up for each provider.  We only care about the ones created in this test.
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV1" :target "GROUP"})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV2" :target "GROUP"})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV3" :target "GROUP"})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:provider "PROV4" :target "GROUP"})))))
+     (e/ungrant (u/conn-context) (:concept_id (first (:items (ac/search-for-acls (u/conn-context) {:identity_type "SYSTEM" :target "GROUP"})))))
 
      ;; Unindex acl1 directly through elastic to simulate an inconsistent state
      (client/delete (format "http://%s:%s/acls/acl/%s"
@@ -779,16 +843,17 @@
 
 (deftest acl-search-by-target-group-id-test
   (let [token (e/login (u/conn-context) "user1")
-        group1 (u/ingest-group token
+        admin-token (e/login (u/conn-context) "admin" ["AG1200000000-CMR"])
+        group1 (u/ingest-group admin-token
                                {:name "group1"}
                                ["user1"])
-        group2 (u/ingest-group token
+        group2 (u/ingest-group admin-token
                                {:name "group2"}
                                ["user1"])
         group1-concept-id (:concept_id group1)
         group2-concept-id (:concept_id group2)
-        acl1 (u/ingest-acl token (u/single-instance-acl group1-concept-id))
-        acl2 (u/ingest-acl token (u/single-instance-acl group2-concept-id))]
+        acl1 (u/ingest-acl admin-token (u/single-instance-acl group1-concept-id))
+        acl2 (u/ingest-acl admin-token (u/single-instance-acl group2-concept-id))]
 
     (testing "Invalid target-id search"
       (testing "No identity-type specified"

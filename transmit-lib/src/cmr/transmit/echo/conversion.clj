@@ -246,5 +246,3 @@
    (s/optional-key :system-object-identity) system-object-identity-schema
    (s/optional-key :provider-object-identity) provider-object-identity-schema
    (s/optional-key :single-instance-object-identity) single-instance-object-identity-schema})
-
-

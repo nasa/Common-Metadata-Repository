@@ -1,6 +1,7 @@
 (ns cmr.acl.core
   "Contains code for retrieving and manipulating ACLs."
   (:require
+   [cheshire.core :as json]
    [clojure.core.cache :as clj-cache]
    [clojure.set :as set]
    [clojure.string :as str]
@@ -8,8 +9,10 @@
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.date-time-parser :as dtp]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as tc]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.acls :as echo-acls]
@@ -53,16 +56,23 @@
     (let [{:keys [request-context params headers]} request]
       (f (update-in request [:request-context] add-authentication-to-context params headers)))))
 
+(defn- request-sids
+  "Gets the current sids from access control and parses the returned json into a seq."
+  [context]
+  (let [{:keys [token]} context]
+    (if token
+      (->
+        (access-control/get-current-sids context (:token context))
+        json/parse-string)
+      [:guest])))
+
 (defn context->sids
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified
   by the token in the context. Search app adds the sids to the context so before making the call
   to get sids, check if they are stored on the context."
   [context]
   (or (util/get-real-or-lazy context :sids)
-      (let [{:keys [token]} context]
-        (if token
-          (echo-tokens/get-current-sids context token)
-          [:guest]))))
+      (request-sids context)))
 
 (defn echo-style-temporal-identifier
   "Returns an ECHO-style ACL temporal identifier from a CMR-style ACL temporal identifier"
@@ -96,7 +106,7 @@
   "Returns true if the ACE is applicable to the SID."
   [sid ace]
   (or
-    (= sid (:user-type ace))
+    (= (keyword sid) (keyword (:user-type ace)))
     (= sid (:group-guid ace))))
 
 (defn acl-matches-sids-and-permission?
@@ -130,15 +140,24 @@
   * target = \"INGEST_MANAGEMENT_ACL\"
   * permission-type = :read"
   [context object-identity-type target permission-type]
-  (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
-    (->> (acl-fetcher/get-acls context [object-identity-type])
-         ;; Find acls on INGEST_MANAGEMENT
-         (filter #(= target (get-in % [acl-oit-key :target])))
-         ;; Find acls for this user and permission type
-         (filter (partial acl-matches-sids-and-permission?
-                          (context->sids context)
-                          permission-type))
-         seq)))
+  (try
+    (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
+      (->> (acl-fetcher/get-acls context [object-identity-type])
+           ;; Find acls on INGEST_MANAGEMENT
+           (filter #(= target (get-in % [acl-oit-key :target])))
+           ;; Find acls for this user and permission type
+           (filter (partial acl-matches-sids-and-permission?
+                            (context->sids context)
+                            permission-type))
+           seq))
+    (catch Exception e
+      (info "Caught exception getting permitting ACLs: " (.getMessage e))
+      (if (re-matches #".*status 401.*" (.getMessage e))
+        (let [error-message (peek (re-find #"\[\"(.+?)\"" (.getMessage e)))]
+          (errors/throw-service-error
+           :unauthorized
+           error-message))
+        nil))))
 
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted

@@ -116,12 +116,12 @@
 
 
   ;; Grant all holdings to registered users
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid3"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV3"))
 
   ;; Grant provider 1 holdings to guests
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1"))
 
   (let [all-holdings (create-holdings)
         expected-all-holdings (set (flatten (vals all-holdings)))

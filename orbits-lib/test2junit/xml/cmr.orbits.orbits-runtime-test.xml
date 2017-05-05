@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="cmr.orbits.orbits-runtime-test" errors="0" failures="0" tests="2" time="2.6176" timestamp="2017-05-04_16:02:58-0400">
+    <testcase name="test-denormalize-latitude-range" classname="cmr.orbits.orbits-runtime-test" time="2.4902">
+    </testcase>
+    <testcase name="test-area-crossing-range" classname="cmr.orbits.orbits-runtime-test" time="0.1203">
+    </testcase>
+</testsuite>

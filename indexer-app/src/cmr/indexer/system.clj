@@ -75,7 +75,7 @@
                           jvm-info/log-jvm-statistics-job])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
-    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms :search])))
+    (transmit-config/system-with-connections sys [:metadata-db :index-set :access-control :echo-rest :cubby :kms :search])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

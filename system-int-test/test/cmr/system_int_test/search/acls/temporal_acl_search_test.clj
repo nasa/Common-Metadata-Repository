@@ -19,6 +19,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.config :as tc]
    [cmr.transmit.echo.conversion :as echo-conversion]))
 
 
@@ -38,18 +39,17 @@
   var."
   [concept-type group-id mask start-n end-n]
   (let [temporal-filter {:start-date (tu/n->date-time start-n)
-                         :end-date (tu/n->date-time end-n)
-                         :mask mask
-                         :temporal-field :acquisition}
+                         :stop-date (tu/n->date-time end-n)
+                         :mask mask}
         catalog-item-identifier (if (= concept-type :collection)
-                                  (assoc (e/coll-catalog-item-id "provguid1" (e/coll-id nil nil temporal-filter))
+                                  (assoc (e/coll-catalog-item-id "PROV1" (e/coll-id nil nil temporal-filter))
                                          ;; Setting granule applicable to true so we can test
                                          ;; application of collection temporal filters to granules
                                          ;; within that collection.
-                                         :granule-applicable true)
+                                         :granule_applicable true)
 
                                   (e/gran-catalog-item-id
-                                    "provguid1" nil (e/gran-id nil temporal-filter)))]
+                                    "PROV1" nil (e/gran-id nil temporal-filter)))]
     (e/grant-group (s/context) group-id catalog-item-identifier)))
 
 (defn atom-results->title-set
@@ -58,7 +58,11 @@
   (->> results :results :entries (map :title) set))
 
 (deftest collection-search-with-temporal-acls-test
-  (let [coll-num (atom 0)
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        group2-concept-id (e/get-or-create-group (s/context) "group2")
+        group3-concept-id (e/get-or-create-group (s/context) "group3")
+        group4-concept-id (e/get-or-create-group (s/context) "group4")
+        coll-num (atom 0)
         single-date-coll (fn [n metadata-format]
                            (d/ingest
                             "PROV1"
@@ -76,10 +80,10 @@
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
-    (grant-temporal :collection "group-guid1" :intersect 0 5)
-    (grant-temporal :collection "group-guid2" :intersect 5 9)
-    (grant-temporal :collection "group-guid3" :disjoint 3 5)
-    (grant-temporal :collection "group-guid4" :contains 3 7)
+    (grant-temporal :collection group1-concept-id :intersect 0 5)
+    (grant-temporal :collection group2-concept-id :intersect 5 9)
+    (grant-temporal :collection group3-concept-id :disjoint 3 5)
+    (grant-temporal :collection group4-concept-id :contains 3 7)
 
     ;; Create collections
     (let [coll1 (single-date-coll 1 :echo10)
@@ -101,10 +105,10 @@
 
           ;; User tokens
           ;; Each user is associated with one of the groups above.
-          user1 (e/login (s/context) "user1" ["group-guid1"])
-          user2 (e/login (s/context) "user2" ["group-guid2"])
-          user3 (e/login (s/context) "user3" ["group-guid3"])
-          user4 (e/login (s/context) "user4" ["group-guid4"])
+          user1 (e/login (s/context) "user1" [group1-concept-id])
+          user2 (e/login (s/context) "user2" [group2-concept-id])
+          user3 (e/login (s/context) "user3" [group3-concept-id])
+          user4 (e/login (s/context) "user4" [group4-concept-id])
 
           ;; Create sets of collections visible for each group
           group1-colls [coll1 coll2 coll3 coll4 coll5]
@@ -116,6 +120,7 @@
           group2-granules [gran4 gran5 gran6 gran7]
           group3-granules [gran1 gran6 gran7]
           group4-granules [gran3 gran4]]
+      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
       (index/wait-until-indexed)
 
       (testing "Collection temporal as applied to granule searches"
@@ -204,14 +209,11 @@
                                                :concept-id all-coll-concept-ids}))))))))))
 
 (deftest granule-search-with-temporal-acls-test
-  ;; Users have access to the collection
-  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-  (grant-temporal :granule "group-guid1" :intersect 0 5)
-  (grant-temporal :granule "group-guid2" :intersect 5 9)
-  (grant-temporal :granule "group-guid3" :disjoint 3 5)
-  (grant-temporal :granule "group-guid4" :contains 3 7)
-
-  (let [collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}))
+  (let [group1-concept-id (e/get-or-create-group (s/context) "group1")
+        group2-concept-id (e/get-or-create-group (s/context) "group2")
+        group3-concept-id (e/get-or-create-group (s/context) "group3")
+        group4-concept-id (e/get-or-create-group (s/context) "group4")
+        collection (d/ingest "PROV1" (dc/collection {:beginning-date-time (tu/n->date-time-string 0)}))
         gran-num (atom 0)
         single-date-gran (fn [n metadata-format]
                            (d/ingest
@@ -231,6 +233,13 @@
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
+    ;; Users have access to the collection
+    (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
+    (grant-temporal :granule group1-concept-id :intersect 0 5)
+    (grant-temporal :granule group2-concept-id :intersect 5 9)
+    (grant-temporal :granule group3-concept-id :disjoint 3 5)
+    (grant-temporal :granule group4-concept-id :contains 3 7)
+
     ;; Create granules
     (let [gran1 (single-date-gran 1 :echo10)
           gran2 (range-date-gran 2 3 :iso-smap)
@@ -243,16 +252,17 @@
 
           ;; User tokens
           ;; Each user is associated with one of the groups above.
-          user1 (e/login (s/context) "user1" ["group-guid1"])
-          user2 (e/login (s/context) "user2" ["group-guid2"])
-          user3 (e/login (s/context) "user3" ["group-guid3"])
-          user4 (e/login (s/context) "user4" ["group-guid4"])
+          user1 (e/login (s/context) "user1" [group1-concept-id])
+          user2 (e/login (s/context) "user2" [group2-concept-id])
+          user3 (e/login (s/context) "user3" [group3-concept-id])
+          user4 (e/login (s/context) "user4" [group4-concept-id])
 
           ;; Create sets of granules visible for each group
           group1-granules [gran1 gran2 gran3 gran4 gran5]
           group2-granules [gran4 gran5 gran6 gran7]
           group3-granules [gran1 gran6 gran7]
           group4-granules [gran3 gran4]]
+      (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
       (index/wait-until-indexed)
 
       (testing "Parameter searching ACL enforcement"
