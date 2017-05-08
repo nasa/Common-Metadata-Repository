@@ -1,21 +1,21 @@
 {% extends "templates/base.html" %}
 
 {% block main-content %}
-<div class="eui-hero"
-         style="background-size: cover;
-                background-color: #0d1f2b;
-                background-image: url('https://cdn.earthdata.nasa.gov/conduit/upload/947/LANCE_header_MODISAqua2.jpg');
-                background-repeat: no-repeat;">
-  <h2 class="eui-hero__title">{% block hero-title %}Title{% endblock %}</h2>
+<div class="home eui-hero">
+  <h2 class="eui-hero__title">{% block hero-title %}{{ app-title }}{% endblock %}</h2>
   <p class="eui-hero__subtitle"
      style="padding-left: 2em;
             padding-right: 2em;
             font-size: 120%;">
   {% block hero-subtitle %}
-    Subtitle
-  {% endblock %}</p>
+  {% endblock %}
+  </p>
   {% block hero-content %}
-    Content.
+  {% endblock %}
+</div>
+<div class="home description">
+  {% block home-description %}
+    Content
   {% endblock %}
 </div>
 {% endblock %}

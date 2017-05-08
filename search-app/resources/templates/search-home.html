@@ -5,17 +5,15 @@
   <li><a href="{{ base-url }}site/collections/directory">Directory</a></li>
 {% endblock %}
 
-{% block hero-title %}{{ app-title }}{% endblock %}
-{% block hero-subtitle %}
-  The Common Metadata Repository (CMR) is a high-performance, high-quality,
-  continuously evolving metadata system that catalogs Earth Science data and
-  associated service metadata records. These metadata records are registered,
-  modified, discovered, and accessed through programmatic interfaces leveraging
-  standard protocols and APIs.
-{% endblock %}
-
-{% block hero-content %}
+{% block home-description %}
   <p>
+    The Common Metadata Repository (CMR) is a high-performance, high-quality,
+    continuously evolving metadata system that catalogs Earth Science data and
+    associated service metadata records. These metadata records are
+    registered, modified, discovered, and accessed through programmatic
+    interfaces leveraging standard protocols and APIs.
+  </p>
+  <p class="align-c">
     <a href="site/docs/search/api" class="eui-btn--blue">Learn more</a>
   </p>
 {% endblock %}
