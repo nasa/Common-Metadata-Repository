@@ -150,10 +150,10 @@
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
       (is (string/includes? body "<changefreq>daily</changefreq>"))
-      (is (string/includes? body "concepts/C1200000002-PROV1.html</loc>"))
-      (is (string/includes? body "concepts/C1200000003-PROV1.html</loc>")))
+      (is (string/includes? body "concepts/C1200000015-PROV1.html</loc>"))
+      (is (string/includes? body "concepts/C1200000016-PROV1.html</loc>")))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
+      (is (not (string/includes? body "C1200000014-PROV1.html</loc>"))))))
 
 (deftest sitemap-provider2
   (let [provider "PROV2"
@@ -168,8 +168,8 @@
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
       (is (string/includes? body "<changefreq>daily</changefreq>"))
-      (is (string/includes? body "concepts/C1200000005-PROV2.html</loc>"))
-      (is (string/includes? body "concepts/C1200000006-PROV2.html</loc>")))
+      (is (string/includes? body "concepts/C1200000018-PROV2.html</loc>"))
+      (is (string/includes? body "concepts/C1200000019-PROV2.html</loc>")))
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
 
@@ -186,4 +186,4 @@
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>")))
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>"))))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
+      (is (not (string/includes? body "C1200000014-PROV1.html</loc>"))))))

@@ -48,7 +48,7 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [jvm-info/log-jvm-statistics-job])}]
-    (transmit-config/system-with-connections sys [:echo-rest])))
+    (transmit-config/system-with-connections sys [:access-control :echo-rest])))
 
 (def start
   "Performs side effects to initialize the system, acquire resources,

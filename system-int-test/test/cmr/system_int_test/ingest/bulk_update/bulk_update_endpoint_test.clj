@@ -22,9 +22,10 @@
   return a token. Bulk update uses update permissions for the actual bulk update
   and read permissions for checking status."
   []
-  (e/grant-group-provider-admin (s/context) "prov-admin-read-update-group-guid" "provguid1" :read :update)
-  ;; Create and return token
-  (e/login (s/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"]))
+  (let [prov-admin-read-update-group-concept-id (e/get-or-create-group (s/context) "prov-admin-read-update-group")]
+    (e/grant-group-provider-admin (s/context) prov-admin-read-update-group-concept-id "PROV1" :read :update)
+    ;; Create and return token
+    (e/login (s/context) "prov-admin-read-update" [prov-admin-read-update-group-concept-id])))
 
 (deftest bulk-update-collection-endpoint-validation
   (testing "Invalid provider"

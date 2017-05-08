@@ -11,7 +11,7 @@
 (use-fixtures :each
               (fixtures/int-test-fixtures)
               (fixtures/reset-fixture {"prov1guid" "PROV1" "prov2guid" "PROV2"} ["user1" "user2" "user3"])
-              (fixtures/grant-all-group-fixture ["prov1guid" "prov2guid"])
+              (fixtures/grant-all-group-fixture ["PROV1" "PROV2"])
               (fixtures/grant-all-acl-fixture))
 
 ;; CMR-2134, CMR-2133 test creating groups without various permissions
@@ -205,7 +205,7 @@
 
         ;; Verify that user not in managing group does not have permission to add member to the group.
         ;; Remove grant-all ECHO acl from fixture
-        (e/ungrant (u/conn-context) {:id "guid4"})
+        (e/ungrant (u/conn-context) "ACL1200000001-CMR")
         ;; Clear it from cmr ACL cache
         (ac/clear-cache (u/conn-context))
         (is (= 401 (:status (u/add-members token-user3 concept_id ["user3"]))))))
@@ -322,8 +322,14 @@
         acl2 {:group_permissions [{:group_id group-1-concept-id :permissions ["delete"]}]
               :system_identity {:target "ARCHIVE_RECORD"}}
         resp1 (u/create-acl token acl1)
-        resp2 (u/create-acl token acl2)]
+        resp2 (u/create-acl token acl2)
+        ;;remove some ACLs created in fixtures which we dont want polluting tests
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "GROUP"}))
+        _ (doseq [fixture-acl fixture-acls]
+            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
 
+    ; (e/ungrant (u/conn-context) (:concept_id fixtures/*fixture-system-acl*))
+    ; (e/ungrant (u/conn-context) (:concept_id fixtures/*fixture-provider-acl*))
     (u/wait-until-indexed)
     (is (= [acl-1-concept-id acl-2-concept-id]
            (sort

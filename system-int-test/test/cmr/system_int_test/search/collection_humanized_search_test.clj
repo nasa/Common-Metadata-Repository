@@ -56,10 +56,10 @@
   (testing "Humanizer report csv"
     (let [report (search/get-humanizers-report)]
       (is (= ["provider,concept_id,short_name,version,original_value,humanized_value"
-              "PROV1,C1200000002-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
-              "PROV1,C1200000003-PROV1,B,V2,AM-1,Terra"
-              "PROV1,C1200000004-PROV1,C,V3,Bioosphere,Biosphere"
-              "PROV1,C1200000004-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"]
+              "PROV1,C1200000007-PROV1,A,V1,GPS RECEIVERS,GPS Receivers"
+              "PROV1,C1200000008-PROV1,B,V2,AM-1,Terra"
+              "PROV1,C1200000009-PROV1,C,V3,Bioosphere,Biosphere"
+              "PROV1,C1200000009-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"]
              (str/split report #"\n"))))))
 
 (deftest humanizer-report-batch

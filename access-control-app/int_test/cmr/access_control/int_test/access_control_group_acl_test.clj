@@ -68,7 +68,7 @@
 
   ;; Put user1 in new group prov1-group-create-group and give permission to create prov1 groups
   (let [group-id (create-group-with-members "prov1-group-create-group" "PROV1" ["user1"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV1" :create))
 
   ;; Wait until groups are indexed.
   (u/wait-until-indexed)
@@ -93,10 +93,10 @@
 
 (deftest get-group-acl-test
   (let [group-id (create-group-with-members "prov1-group-readers" "PROV1" ["user1" "user3"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :read :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV1" :read :create))
 
   (let [group-id (create-group-with-members "prov2-group-creator" "PROV2" ["user3"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov2guid" :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV2" :create))
 
   (let [group-id (create-group-with-members "sys-group-readers" ["user1"])]
     (e/grant-system-group-permissions-to-group (u/conn-context) group-id :read :create))
@@ -143,7 +143,7 @@
 
 (deftest group-search-acl-test
   (let [group-id (create-group-with-members "prov1-group" "PROV1" ["prov1-user"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :read :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV1" :read :create))
 
   (let [group-id (create-group-with-members "sys-group" ["sys-user"])]
     (e/grant-system-group-permissions-to-group (u/conn-context) group-id :read :create))
@@ -169,10 +169,10 @@
 
 (deftest delete-group-acl-test
   (let [group-id (create-group-with-members "prov1-group-delete" "PROV1" ["user2"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV1" :create))
 
   (let [group-id (create-group-with-members "prov2-group-creator" "PROV2" ["user3"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov2guid" :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV2" :create))
 
   (let [group-id (create-group-with-members "sys-group-delete" ["user1"])]
     (e/grant-system-group-permissions-to-group (u/conn-context) group-id :create))
@@ -230,10 +230,10 @@
   ;; members of "prov1-group" can create (and temporarily update for CMR-2585) groups for PROV1
   ;; but can only update the group with guid "prov1-group-guid"
   (let [group-id (create-group-with-members "prov1-group" "PROV1" ["user2"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV1" :create))
 
   (let [group-id (create-group-with-members "prov2-group" "PROV2" ["user3"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov2guid" :create))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV2" :create))
 
   ;; members of "sys-group" can create system-level groups and delete the group with the guid "sys-group-guid"
   ;; Note: :update permission is here temporarily as part of CMR-2585
@@ -286,7 +286,7 @@
 (deftest group-members-acl-test
   ;; members of "prov1-group" can create and update groups for PROV1
   (let [group-id (create-group-with-members "prov1-group" "PROV1" ["prov1-user"])]
-    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "prov1guid" :create :read))
+    (e/grant-provider-group-permissions-to-group (u/conn-context) group-id "PROV1" :create :read))
 
   ;; members of "sys-group" can create and update system-level groups
   (let [group-id (create-group-with-members "sys-group" ["sys-user"])]

@@ -12,7 +12,9 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.transmit.config :as tc]))
+
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false}))
@@ -26,9 +28,9 @@
 (defn- grant-permissions
   "Grant permissions to all collections in PROV1 and a subset of collections in PROV2"
   []
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "PROV1"))
   (e/grant-guest (s/context)
-                 (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"]))))
+                 (e/coll-catalog-item-id "PROV2" (e/coll-id ["coll2" "coll3" "coll5"]))))
 
 (defn- get-facet-results
   "Returns the facets returned by a search in both JSON and XML reference formats. Takes the type
@@ -238,7 +240,6 @@
     (is (= expected-flat-facets (:json-facets actual-flat-facets)))))
 
 (deftest flat-facets-test
-  (grant-permissions)
   (let [coll1 (fu/make-coll 1 "PROV1"
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms "A" 2 2 1)
@@ -284,243 +285,246 @@
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7]]
 
     (index/wait-until-indexed)
+    (grant-permissions)
+    (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
+    (index/wait-until-indexed)
 
-    (testing "invalid include-facets"
-      (is (= {:errors ["Parameter include_facets must take value of true, false, or v2, but was [foo]"] :status 400}
-             (search/find-refs :collection {:include-facets "foo"})))
-      (is (= {:errors ["Parameter [include_facets] was not recognized."] :status 400}
-             (search/find-refs :granule {:include-facets true}))))
+   (testing "invalid include-facets"
+     (is (= {:errors ["Parameter include_facets must take value of true, false, or v2, but was [foo]"] :status 400}
+            (search/find-refs :collection {:include-facets "foo"})))
+     (is (= {:errors ["Parameter [include_facets] was not recognized."] :status 400}
+            (search/find-refs :granule {:include-facets true}))))
 
-    (testing "retreving all facets in different formats"
-      (let [expected-facets [{:field "data_center"
-                              :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1] ["Proc" 1]]}
-                             {:field "archive_center"
-                              :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1]]}
-                             {:field "project"
-                              :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
-                             {:field "platform"
-                              :value-counts [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
-                             {:field "instrument" ; Instruments now include sensors as child instruments
-                              :value-counts [["A-p0-i0" 2]
-                                             ["A-p0-i0-s0" 2]
-                                             ["A-p0-i1" 1]
-                                             ["A-p0-i1-s0" 1]
-                                             ["A-p1-i0" 1]
-                                             ["A-p1-i0-s0" 1]
-                                             ["A-p1-i1" 1]
-                                             ["A-p1-i1-s0" 1]
-                                             ["B-p0-i0" 1]
-                                             ["B-p0-i0-s0" 1]
-                                             ["B-p0-i1" 1]
-                                             ["B-p0-i1-s0" 1]
-                                             ["B-p1-i0" 1]
-                                             ["B-p1-i0-s0" 1]
-                                             ["B-p1-i1" 1]
-                                             ["B-p1-i1-s0" 1]]}
-                             {:field "sensor"
-                              :value-counts [["A-p0-i0-s0" 2]
-                                             ["A-p0-i1-s0" 1]
-                                             ["A-p1-i0-s0" 1]
-                                             ["A-p1-i1-s0" 1]
-                                             ["B-p0-i0-s0" 1]
-                                             ["B-p0-i1-s0" 1]
-                                             ["B-p1-i0-s0" 1]
-                                             ["B-p1-i1-s0" 1]]}
-                             {:field "two_d_coordinate_system_name"
-                              :value-counts [["Alpha" 2] ["Bravo" 1] ["alpha" 1]]}
-                             {:field "processing_level_id"
-                              :value-counts [["PL1" 2] ["PL2" 1] ["pl1" 1]]}
-                             {:field "category"
-                              :value-counts [["CAT1" 3]
-                                             ["HURRICANE" 3]
-                                             ["TORNADO" 2]
-                                             ["UPCASE" 1]]}
-                             {:field "topic"
-                              :value-counts [["POPULAR" 4] ["TOPIC1" 3] ["COOL" 2]]}
-                             {:field "term"
-                              :value-counts [["EXTREME" 3]
-                                             ["TERM1" 3]
-                                             ["UNIVERSAL" 2]
-                                             ["MILD" 1]
-                                             ["TERM4" 1]]}
-                             {:field "variable_level_1"
-                              :value-counts [["LEVEL1-1" 3] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
-                             {:field "variable_level_2"
-                              :value-counts [["LEVEL1-2" 3] ["LEVEL2-2" 1]]}
-                             {:field "variable_level_3"
-                              :value-counts [["LEVEL1-3" 3] ["LEVEL2-3" 1]]}
-                             {:field "detailed_variable"
-                              :value-counts [["DETAIL1" 3] ["UNIVERSAL" 1]]}]]
-        (testing "refs"
-          (is (= expected-facets
-                 (:facets (search/find-refs :collection {:include-facets true})))))
+   (testing "retreving all facets in different formats"
+     (let [expected-facets [{:field "data_center"
+                             :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1] ["Proc" 1]]}
+                            {:field "archive_center"
+                             :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1]]}
+                            {:field "project"
+                             :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
+                            {:field "platform"
+                             :value-counts [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
+                            {:field "instrument" ; Instruments now include sensors as child instruments
+                             :value-counts [["A-p0-i0" 2]
+                                            ["A-p0-i0-s0" 2]
+                                            ["A-p0-i1" 1]
+                                            ["A-p0-i1-s0" 1]
+                                            ["A-p1-i0" 1]
+                                            ["A-p1-i0-s0" 1]
+                                            ["A-p1-i1" 1]
+                                            ["A-p1-i1-s0" 1]
+                                            ["B-p0-i0" 1]
+                                            ["B-p0-i0-s0" 1]
+                                            ["B-p0-i1" 1]
+                                            ["B-p0-i1-s0" 1]
+                                            ["B-p1-i0" 1]
+                                            ["B-p1-i0-s0" 1]
+                                            ["B-p1-i1" 1]
+                                            ["B-p1-i1-s0" 1]]}
+                            {:field "sensor"
+                             :value-counts [["A-p0-i0-s0" 2]
+                                            ["A-p0-i1-s0" 1]
+                                            ["A-p1-i0-s0" 1]
+                                            ["A-p1-i1-s0" 1]
+                                            ["B-p0-i0-s0" 1]
+                                            ["B-p0-i1-s0" 1]
+                                            ["B-p1-i0-s0" 1]
+                                            ["B-p1-i1-s0" 1]]}
+                            {:field "two_d_coordinate_system_name"
+                             :value-counts [["Alpha" 2] ["Bravo" 1] ["alpha" 1]]}
+                            {:field "processing_level_id"
+                             :value-counts [["PL1" 2] ["PL2" 1] ["pl1" 1]]}
+                            {:field "category"
+                             :value-counts [["CAT1" 3]
+                                            ["HURRICANE" 3]
+                                            ["TORNADO" 2]
+                                            ["UPCASE" 1]]}
+                            {:field "topic"
+                             :value-counts [["POPULAR" 4] ["TOPIC1" 3] ["COOL" 2]]}
+                            {:field "term"
+                             :value-counts [["EXTREME" 3]
+                                            ["TERM1" 3]
+                                            ["UNIVERSAL" 2]
+                                            ["MILD" 1]
+                                            ["TERM4" 1]]}
+                            {:field "variable_level_1"
+                             :value-counts [["LEVEL1-1" 3] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
+                            {:field "variable_level_2"
+                             :value-counts [["LEVEL1-2" 3] ["LEVEL2-2" 1]]}
+                            {:field "variable_level_3"
+                             :value-counts [["LEVEL1-3" 3] ["LEVEL2-3" 1]]}
+                            {:field "detailed_variable"
+                             :value-counts [["DETAIL1" 3] ["UNIVERSAL" 1]]}]]
+       (testing "refs"
+         (is (= expected-facets
+                (:facets (search/find-refs :collection {:include-facets true})))))
 
-        (testing "refs echo-compatible true"
-          (is (= (remove #(= "data_center" (:field %)) expected-facets)
-                 (search/find-refs :collection {:include-facets true
-                                                :echo-compatible true}))))
+       (testing "refs echo-compatible true"
+         (is (= (remove #(= "data_center" (:field %)) expected-facets)
+                (search/find-refs :collection {:include-facets true
+                                               :echo-compatible true}))))
 
-        (testing "metadata items and direct transformer"
-          (is (= expected-facets
-                 (:facets (search/find-metadata :collection
-                                                :echo10
-                                                {:include-facets true
-                                                 :concept-id (map :concept-id all-colls)})))))
-        (testing "atom"
-          (is (= expected-facets
-                 (:facets (:results (search/find-concepts-atom :collection {:include-facets true}))))))
-        (testing "json"
-          (is (= expected-facets
-                 (:facets (:results (search/find-concepts-json :collection {:include-facets true}))))))
-
-
-        (testing "json echo-compatible true"
-          (is (= (sort-by :field (remove #(= "data_center" (:field %)) expected-facets))
-                 (sort-by :field (search/find-concepts-json :collection {:include-facets true
-                                                                         :echo-compatible true})))))))
-
-    (testing "Search conditions narrow reduce facet values found"
-      (testing "search finding two documents"
-        (let [expected-facets [{:field "data_center"
-                                :value-counts [["GSFC" 1] ["Larc" 1] ["Proc" 1]]}
-                               {:field "archive_center"
-                                :value-counts [["GSFC" 1] ["Larc" 1]]}
-                               {:field "project"
-                                :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
-                               {:field "platform"
-                                :value-counts [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
-                               {:field "instrument" ; Instruments now include sensors as child instruments
-                                :value-counts [["A-p0-i0" 1]
-                                               ["A-p0-i0-s0" 1]
-                                               ["A-p0-i1" 1]
-                                               ["A-p0-i1-s0" 1]
-                                               ["A-p1-i0" 1]
-                                               ["A-p1-i0-s0" 1]
-                                               ["A-p1-i1" 1]
-                                               ["A-p1-i1-s0" 1]
-                                               ["B-p0-i0" 1]
-                                               ["B-p0-i0-s0" 1]
-                                               ["B-p0-i1" 1]
-                                               ["B-p0-i1-s0" 1]
-                                               ["B-p1-i0" 1]
-                                               ["B-p1-i0-s0" 1]
-                                               ["B-p1-i1" 1]
-                                               ["B-p1-i1-s0" 1]]}
-                               {:field "sensor"
-                                :value-counts [["A-p0-i0-s0" 1]
-                                               ["A-p0-i1-s0" 1]
-                                               ["A-p1-i0-s0" 1]
-                                               ["A-p1-i1-s0" 1]
-                                               ["B-p0-i0-s0" 1]
-                                               ["B-p0-i1-s0" 1]
-                                               ["B-p1-i0-s0" 1]
-                                               ["B-p1-i1-s0" 1]]}
-                               {:field "two_d_coordinate_system_name" :value-counts [["Alpha" 1]]}
-                               {:field "processing_level_id"
-                                :value-counts [["PL1" 1] ["pl1" 1]]}
-                               {:field "category"
-                                :value-counts [["CAT1" 2] ["HURRICANE" 2] ["TORNADO" 1]]}
-                               {:field "topic"
-                                :value-counts [["POPULAR" 2] ["TOPIC1" 2] ["COOL" 1]]}
-                               {:field "term"
-                                :value-counts [["EXTREME" 2] ["TERM1" 2] ["TERM4" 1] ["UNIVERSAL" 1]]}
-                               {:field "variable_level_1"
-                                :value-counts [["LEVEL1-1" 2] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
-                               {:field "variable_level_2"
-                                :value-counts [["LEVEL1-2" 2] ["LEVEL2-2" 1]]}
-                               {:field "variable_level_3"
-                                :value-counts [["LEVEL1-3" 2] ["LEVEL2-3" 1]]}
-                               {:field "detailed_variable"
-                                :value-counts [["DETAIL1" 2] ["UNIVERSAL" 1]]}]]
-          (is (= expected-facets
-                 (:facets (search/find-refs :collection {:include-facets true
-                                                         :project "PROJ2"}))))))
-
-      (testing "AND conditions narrow facets via AND not OR"
-        (let [expected-facets [{:field "data_center"
-                                :value-counts [["GSFC" 1] ["Proc" 1]]}
-                               {:field "archive_center"
-                                :value-counts [["GSFC" 1]]}
-                               {:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
-                               {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
-                               {:field "instrument" ; Instruments now include sensors as child instruments
-                                :value-counts [["B-p0-i0" 1]
-                                               ["B-p0-i0-s0" 1]
-                                               ["B-p0-i1" 1]
-                                               ["B-p0-i1-s0" 1]
-                                               ["B-p1-i0" 1]
-                                               ["B-p1-i0-s0" 1]
-                                               ["B-p1-i1" 1]
-                                               ["B-p1-i1-s0" 1]]}
-                               {:field "sensor"
-                                :value-counts [["B-p0-i0-s0" 1]
-                                               ["B-p0-i1-s0" 1]
-                                               ["B-p1-i0-s0" 1]
-                                               ["B-p1-i1-s0" 1]]}
-                               {:field "two_d_coordinate_system_name" :value-counts []}
-                               {:field "processing_level_id" :value-counts [["pl1" 1]]}
-                               {:field "category" :value-counts [["CAT1" 1] ["HURRICANE" 1]]}
-                               {:field "topic" :value-counts [["POPULAR" 1] ["TOPIC1" 1]]}
-                               {:field "term" :value-counts [["EXTREME" 1]
-                                                             ["TERM1" 1]
-                                                             ["UNIVERSAL" 1]]}
-                               {:field "variable_level_1":value-counts [["LEVEL1-1" 1]
-                                                                        ["LEVEL2-1" 1]]}
-                               {:field "variable_level_2" :value-counts [["LEVEL1-2" 1]
-                                                                         ["LEVEL2-2" 1]]}
-                               {:field "variable_level_3" :value-counts [["LEVEL1-3" 1]
-                                                                         ["LEVEL2-3" 1]]}
-                               {:field "detailed_variable" :value-counts [["DETAIL1" 1]
-                                                                          ["UNIVERSAL" 1]]}]]
+       (testing "metadata items and direct transformer"
+         (is (= expected-facets
+                (:facets (search/find-metadata :collection
+                                               :echo10
+                                               {:include-facets true
+                                                :concept-id (map :concept-id all-colls)})))))
+       (testing "atom"
+         (is (= expected-facets
+                (:facets (:results (search/find-concepts-atom :collection {:include-facets true}))))))
+       (testing "json"
+         (is (= expected-facets
+                (:facets (:results (search/find-concepts-json :collection {:include-facets true}))))))
 
 
-          (is (= expected-facets
-                 (:facets (search/find-refs :collection {:include-facets true
-                                                         :project ["PROJ2" "proj3"]
-                                                         "options[project][and]" true}))))))
+       (testing "json echo-compatible true"
+         (is (= (sort-by :field (remove #(= "data_center" (:field %)) expected-facets))
+                (sort-by :field (search/find-concepts-json :collection {:include-facets true
+                                                                        :echo-compatible true})))))))
 
-      (testing "search finding one document"
-        (let [expected-facets [{:field "data_center" :value-counts [["Larc" 1]]}
-                               {:field "archive_center" :value-counts [["Larc" 1]]}
-                               {:field "project" :value-counts []}
-                               {:field "platform" :value-counts []}
-                               {:field "instrument" :value-counts []}
-                               {:field "sensor" :value-counts []}
-                               {:field "two_d_coordinate_system_name" :value-counts [["alpha" 1]]}
-                               {:field "processing_level_id" :value-counts [["PL2" 1]]}
-                               {:field "category" :value-counts [["HURRICANE" 1]]}
-                               {:field "topic" :value-counts [["POPULAR" 1]]}
-                               {:field "term" :value-counts [["UNIVERSAL" 1]]}
-                               {:field "variable_level_1" :value-counts []}
-                               {:field "variable_level_2" :value-counts []}
-                               {:field "variable_level_3" :value-counts []}
-                               {:field "detailed_variable" :value-counts []}]]
-          (is (= expected-facets
-                 (:facets (search/find-refs :collection {:include-facets true
-                                                         :processing-level-id "PL2"}))))))
+   (testing "Search conditions narrow reduce facet values found"
+     (testing "search finding two documents"
+       (let [expected-facets [{:field "data_center"
+                               :value-counts [["GSFC" 1] ["Larc" 1] ["Proc" 1]]}
+                              {:field "archive_center"
+                               :value-counts [["GSFC" 1] ["Larc" 1]]}
+                              {:field "project"
+                               :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
+                              {:field "platform"
+                               :value-counts [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
+                              {:field "instrument" ; Instruments now include sensors as child instruments
+                               :value-counts [["A-p0-i0" 1]
+                                              ["A-p0-i0-s0" 1]
+                                              ["A-p0-i1" 1]
+                                              ["A-p0-i1-s0" 1]
+                                              ["A-p1-i0" 1]
+                                              ["A-p1-i0-s0" 1]
+                                              ["A-p1-i1" 1]
+                                              ["A-p1-i1-s0" 1]
+                                              ["B-p0-i0" 1]
+                                              ["B-p0-i0-s0" 1]
+                                              ["B-p0-i1" 1]
+                                              ["B-p0-i1-s0" 1]
+                                              ["B-p1-i0" 1]
+                                              ["B-p1-i0-s0" 1]
+                                              ["B-p1-i1" 1]
+                                              ["B-p1-i1-s0" 1]]}
+                              {:field "sensor"
+                               :value-counts [["A-p0-i0-s0" 1]
+                                              ["A-p0-i1-s0" 1]
+                                              ["A-p1-i0-s0" 1]
+                                              ["A-p1-i1-s0" 1]
+                                              ["B-p0-i0-s0" 1]
+                                              ["B-p0-i1-s0" 1]
+                                              ["B-p1-i0-s0" 1]
+                                              ["B-p1-i1-s0" 1]]}
+                              {:field "two_d_coordinate_system_name" :value-counts [["Alpha" 1]]}
+                              {:field "processing_level_id"
+                               :value-counts [["PL1" 1] ["pl1" 1]]}
+                              {:field "category"
+                               :value-counts [["CAT1" 2] ["HURRICANE" 2] ["TORNADO" 1]]}
+                              {:field "topic"
+                               :value-counts [["POPULAR" 2] ["TOPIC1" 2] ["COOL" 1]]}
+                              {:field "term"
+                               :value-counts [["EXTREME" 2] ["TERM1" 2] ["TERM4" 1] ["UNIVERSAL" 1]]}
+                              {:field "variable_level_1"
+                               :value-counts [["LEVEL1-1" 2] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
+                              {:field "variable_level_2"
+                               :value-counts [["LEVEL1-2" 2] ["LEVEL2-2" 1]]}
+                              {:field "variable_level_3"
+                               :value-counts [["LEVEL1-3" 2] ["LEVEL2-3" 1]]}
+                              {:field "detailed_variable"
+                               :value-counts [["DETAIL1" 2] ["UNIVERSAL" 1]]}]]
+         (is (= expected-facets
+                (:facets (search/find-refs :collection {:include-facets true
+                                                        :project "PROJ2"}))))))
 
-      (let [empty-facets [{:field "data_center" :value-counts []}
-                          {:field "archive_center" :value-counts []}
-                          {:field "project" :value-counts []}
-                          {:field "platform" :value-counts []}
-                          {:field "instrument" :value-counts []}
-                          {:field "sensor" :value-counts []}
-                          {:field "two_d_coordinate_system_name" :value-counts []}
-                          {:field "processing_level_id" :value-counts []}
-                          {:field "category" :value-counts []}
-                          {:field "topic" :value-counts []}
-                          {:field "term" :value-counts []}
-                          {:field "variable_level_1" :value-counts []}
-                          {:field "variable_level_2" :value-counts []}
-                          {:field "variable_level_3" :value-counts []}
-                          {:field "detailed_variable" :value-counts []}]]
-        (testing "search finding one document with no faceted fields"
-          (is (= empty-facets
-                 (:facets (search/find-refs :collection {:include-facets true :entry-title "coll5"})))))
+     (testing "AND conditions narrow facets via AND not OR"
+       (let [expected-facets [{:field "data_center"
+                               :value-counts [["GSFC" 1] ["Proc" 1]]}
+                              {:field "archive_center"
+                               :value-counts [["GSFC" 1]]}
+                              {:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
+                              {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
+                              {:field "instrument" ; Instruments now include sensors as child instruments
+                               :value-counts [["B-p0-i0" 1]
+                                              ["B-p0-i0-s0" 1]
+                                              ["B-p0-i1" 1]
+                                              ["B-p0-i1-s0" 1]
+                                              ["B-p1-i0" 1]
+                                              ["B-p1-i0-s0" 1]
+                                              ["B-p1-i1" 1]
+                                              ["B-p1-i1-s0" 1]]}
+                              {:field "sensor"
+                               :value-counts [["B-p0-i0-s0" 1]
+                                              ["B-p0-i1-s0" 1]
+                                              ["B-p1-i0-s0" 1]
+                                              ["B-p1-i1-s0" 1]]}
+                              {:field "two_d_coordinate_system_name" :value-counts []}
+                              {:field "processing_level_id" :value-counts [["pl1" 1]]}
+                              {:field "category" :value-counts [["CAT1" 1] ["HURRICANE" 1]]}
+                              {:field "topic" :value-counts [["POPULAR" 1] ["TOPIC1" 1]]}
+                              {:field "term" :value-counts [["EXTREME" 1]
+                                                            ["TERM1" 1]
+                                                            ["UNIVERSAL" 1]]}
+                              {:field "variable_level_1":value-counts [["LEVEL1-1" 1]
+                                                                       ["LEVEL2-1" 1]]}
+                              {:field "variable_level_2" :value-counts [["LEVEL1-2" 1]
+                                                                        ["LEVEL2-2" 1]]}
+                              {:field "variable_level_3" :value-counts [["LEVEL1-3" 1]
+                                                                        ["LEVEL2-3" 1]]}
+                              {:field "detailed_variable" :value-counts [["DETAIL1" 1]
+                                                                         ["UNIVERSAL" 1]]}]]
 
-        (testing "search finding no documents"
-          (is (= empty-facets
-                 (:facets (search/find-refs :collection {:include-facets true :entry-title "foo"})))))))))
+
+         (is (= expected-facets
+                (:facets (search/find-refs :collection {:include-facets true
+                                                        :project ["PROJ2" "proj3"]
+                                                        "options[project][and]" true}))))))
+
+     (testing "search finding one document"
+       (let [expected-facets [{:field "data_center" :value-counts [["Larc" 1]]}
+                              {:field "archive_center" :value-counts [["Larc" 1]]}
+                              {:field "project" :value-counts []}
+                              {:field "platform" :value-counts []}
+                              {:field "instrument" :value-counts []}
+                              {:field "sensor" :value-counts []}
+                              {:field "two_d_coordinate_system_name" :value-counts [["alpha" 1]]}
+                              {:field "processing_level_id" :value-counts [["PL2" 1]]}
+                              {:field "category" :value-counts [["HURRICANE" 1]]}
+                              {:field "topic" :value-counts [["POPULAR" 1]]}
+                              {:field "term" :value-counts [["UNIVERSAL" 1]]}
+                              {:field "variable_level_1" :value-counts []}
+                              {:field "variable_level_2" :value-counts []}
+                              {:field "variable_level_3" :value-counts []}
+                              {:field "detailed_variable" :value-counts []}]]
+         (is (= expected-facets
+                (:facets (search/find-refs :collection {:include-facets true
+                                                        :processing-level-id "PL2"}))))))
+
+     (let [empty-facets [{:field "data_center" :value-counts []}
+                         {:field "archive_center" :value-counts []}
+                         {:field "project" :value-counts []}
+                         {:field "platform" :value-counts []}
+                         {:field "instrument" :value-counts []}
+                         {:field "sensor" :value-counts []}
+                         {:field "two_d_coordinate_system_name" :value-counts []}
+                         {:field "processing_level_id" :value-counts []}
+                         {:field "category" :value-counts []}
+                         {:field "topic" :value-counts []}
+                         {:field "term" :value-counts []}
+                         {:field "variable_level_1" :value-counts []}
+                         {:field "variable_level_2" :value-counts []}
+                         {:field "variable_level_3" :value-counts []}
+                         {:field "detailed_variable" :value-counts []}]]
+       (testing "search finding one document with no faceted fields"
+         (is (= empty-facets
+                (:facets (search/find-refs :collection {:include-facets true :entry-title "coll5"})))))
+
+       (testing "search finding no documents"
+         (is (= empty-facets
+                (:facets (search/find-refs :collection {:include-facets true :entry-title "foo"})))))))))
 
 (deftest large-hierarchy-science-keyword-test
   (grant-permissions)
@@ -731,7 +735,6 @@
     (is (= expected-archive-centers actual-archive-centers))))
 
 (deftest leading-and-trailing-whitespace-facets-test
-  (grant-permissions)
   (let [sk1-leading-ws (dc/science-keyword {:category "  Cat1"
                                             :topic " Topic1"
                                             :term " Term1"
@@ -782,6 +785,9 @@
                             (fu/projects "proj3 " " PROJ2")
                             (fu/science-keywords sk1-leading-and-trailing-ws))]
 
+    (index/wait-until-indexed)
+    (grant-permissions)
+    (ingest/reindex-collection-permitted-groups (tc/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "retreving all facets in refs formats"

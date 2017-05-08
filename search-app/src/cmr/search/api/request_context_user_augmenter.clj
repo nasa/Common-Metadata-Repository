@@ -3,14 +3,17 @@
  as well as caches for those. Data on the context is lazy assoc'd to delay expensive work since
  this is done for every call that hits the search API."
  (:require
+  [cheshire.core :as json]
   [cmr.acl.core :as acl]
   [cmr.common.cache :as cache]
   [cmr.common.cache.in-memory-cache :as mem-cache]
   [cmr.common.log :refer (info)]
   [cmr.common.services.errors :as errors]
   [cmr.common.util :as util]
-  [cmr.search.data.sids-retriever :as sids-retriever]
+  [cmr.transmit.access-control :as access-control]
   [cmr.transmit.echo.tokens :as tokens]))
+
+
 
 (def CACHE_TIME
  "The number of milliseconds token information will be cached for."
@@ -32,18 +35,23 @@
  []
  (mem-cache/create-in-memory-cache :ttl {} {:ttl CACHE_TIME}))
 
+(defn request-sids
+  "Gets the current sids from access control and parses the returned json into a seq."
+  [context]
+  (let [{:keys [token]} context]
+    (if token
+      (->
+        (access-control/get-current-sids context (:token context))
+        json/parse-string)
+      [:guest])))
+
 (defn- context->sids
   "Wraps the existing context->sids but with caching"
   [context]
   (let [{:keys [token]} context]
-    (let [sids (cache/get-value (cache/context->cache context token-sid-cache-name)
-                                token
-                                #(or (sids-retriever/get-sids context token)
-                                     {:sids (acl/context->sids context)}))
-          token-guid (:guid sids)
-          sids (:sids sids)]
-      (when token-guid (info (format "Client token GUID: [%s]" token-guid)))
-      sids)))
+    (cache/get-value (cache/context->cache context token-sid-cache-name)
+                     token
+                     #(request-sids context))))
 
 (defn- context->user-id
  "Get the user id from the cache using the token. If there is a message for the token being required

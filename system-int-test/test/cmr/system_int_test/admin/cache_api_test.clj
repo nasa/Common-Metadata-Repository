@@ -13,7 +13,7 @@
             [cheshire.core :as json]))
 
 (use-fixtures :each (ingest/reset-fixture
-                      {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
+                      {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
 
 (defn- list-caches-for-app
   "Gets a list of the caches for the given url."
@@ -61,11 +61,13 @@
     (json/decode (:body response) true)))
 
 (deftest cache-apis
-  (e/grant-group-admin (s/context) "admin-read-group-guid" :read)
   ;; login as a member of group 1
-  (let [admin-read-token (e/login (s/context) "admin" ["admin-read-group-guid"])
+  (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
+        admin-read-token (e/login (s/context) "admin" [admin-read-group-concept-id])
         normal-user-token (e/login (s/context) "user")
+        _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))]
+
     (testing "list caches"
       (are [url caches]
         (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
@@ -85,7 +87,6 @@
        (testing "list caches for bootstrap"
          (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
            (is (= ["token-imp" "kms" "health"] response))))))
-
 
     (testing "normal user cannot access cache list API"
       (are [url]

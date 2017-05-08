@@ -29,8 +29,9 @@
     :access-count 87}])
 
 (deftest update-humanizers-test
-  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
-  (let [token (e/login (s/context) "admin" ["admin-update-group-guid"])
+  (let [admin-update-group-concept-id (e/get-or-create-group (s/context) "admin-update-group")
+        _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
+        token (e/login (s/context) "admin" [admin-update-group-concept-id])
         humanizers (hu/make-humanizers)
         {:keys [status concept-id revision-id]} (hu/update-humanizers token humanizers)]
 
