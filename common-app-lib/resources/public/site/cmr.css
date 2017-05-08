@@ -1,3 +1,18 @@
+/* Home Pages
+ *
+ */
+
+.home.eui-hero {
+    background-size: cover;
+    background-color: #0d1f2b;
+    background-image: url('https://cdn.earthdata.nasa.gov/conduit/upload/947/LANCE_header_MODISAqua2.jpg');
+    background-repeat: no-repeat;
+}
+
+.home.description {
+  font-size: 150%;
+}
+
 /* Footer
  *
  * This section includes updates to other elements in order to give us a
