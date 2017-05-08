@@ -9,6 +9,14 @@
    [cmr.oracle.connection]
    [cmr.oracle.sql-utils :as su]))
 
+(defn generate-task-status-message
+  "Generate overall status message based on number of collection failures."
+  [num-failed-collections num-total-collections]
+  (if (= 0 num-failed-collections)
+    "All collection updates completed successfully."
+    (format "Task completed with %d collection update failures out of %d"
+      num-failed-collections num-total-collections)))
+
 (defprotocol BulkUpdateStore
   "Defines a protocol for getting and storing the bulk update status and task-id
   information."
@@ -103,13 +111,16 @@
                             "SET status = ?, status_message = ?"
                             "WHERE task_id = ? AND concept_id = ?")]
          (j/db-do-prepared db statement [status status-message task-id concept-id])
-         (let [pending-collections (su/query db
-                                     (su/build (su/select [:concept-id]
+         (let [task-collections (su/query db
+                                     (su/build (su/select [:concept-id :status]
                                                 (su/from "bulk_update_coll_status")
-                                                (su/where `(and (= :task-id ~task-id)
-                                                                (= :status "PENDING"))))))]
+                                                (su/where `(= :task-id ~task-id)))))
+               pending-collections (filter #(= "PENDING" (:status %)) task-collections)
+               failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
            (when-not (seq pending-collections)
-             (update-bulk-update-task-status db task-id "COMPLETE" nil)))))
+             (update-bulk-update-task-status db task-id "COMPLETE"
+               (generate-task-status-message
+                 (count failed-collections) (count task-collections)))))))
       (catch Exception e
         (errors/throw-service-error :invalid-data
          [(str "Error creating updating bulk update collection status "
