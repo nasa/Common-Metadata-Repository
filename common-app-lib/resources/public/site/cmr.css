@@ -1,0 +1,54 @@
+footer {
+    background: #2276ac;
+    color: white;
+    padding: 1em 2em;
+    font-size: 0.8em;
+}
+
+footer a:link, footer a:visited {
+    color: white;
+}
+
+footer ul {
+    margin: 0.25em 0;
+    padding: 0;
+}
+
+footer ul li {
+    display: inline;
+}
+
+footer ul li:not(:first-child):before {
+    content: "\b7";
+    margin: 0 0.5em;
+}
+
+footer .badge {
+    background-color: #2c3e50;
+    position: relative;
+    top: -2px;
+}
+
+.eui-badge, .eui-badge--sm, .eui-badge--md, .eui-badge--lg {
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 4px;
+    padding: 0.6em;
+    background: #2276ac;
+    color: white;
+    line-height: 0.8;
+    text-transform: uppercase;
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+    -webkit-transition: background 0.2s linear;
+    transition: background 0.2s linear;
+}
+
+.eui-badge:hover {
+    color: white;
+    background: #1a5981;
+}
+.eui-badge--md {
+    font-size: 0.8em;
+    font-weight: bold;
+}
