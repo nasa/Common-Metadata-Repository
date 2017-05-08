@@ -32,11 +32,11 @@
   "Get the collection data associated with a provider and tag."
   [context tag provider-id]
   (->> {:tag-key tag
-                 :provider provider-id
-                 :result-format {:format :umm-json-results}}
-        (query-svc/make-concepts-query context :collection)
-        (query-exec/execute-query context)
-        :items))
+        :provider provider-id
+        :result-format {:format :umm-json-results}}
+       (query-svc/make-concepts-query context :collection)
+       (query-exec/execute-query context)
+       :items))
 
 (defn provider-data
   "Create a provider data structure suitable for template iteration to
@@ -46,20 +46,19 @@
   that is used on the destination page."
   [context tag data]
   (let [provider-id (:provider-id data)
-        provider-name provider-id
         collections (collection-data context tag provider-id)]
     {:id provider-id
-     :name provider-name
      :tag tag
      :collections collections
      :collections-count (count collections)}))
 
 (defn providers-data
-  "Given a list of provider maps"
+  "Given a list of provider maps, create the nested data structure needed
+  for rendering providers in a template."
   [context tag providers]
   (->> providers
        (map (partial provider-data context tag))
-       (sort-by :name)))
+       (sort-by :id)))
 
 (defn get-doi
   "Extract the DOI information from a collection item."
@@ -156,8 +155,7 @@
   ([context provider-id tag filter-fn]
    (merge
     (base-page context)
-    {:provider-name provider-id
-     :provider-id provider-id
+    {:provider-id provider-id
      :tag-name (get-tag-short-name tag)
      :links (filter filter-fn
                     (make-links
@@ -177,6 +175,4 @@
    tag
    #(string/includes?
      (str %)
-     ;; XXX is this the right URL to check? this might only include links that
-     ;; are part of the current app ...?
      (config/application-public-root-url context))))
