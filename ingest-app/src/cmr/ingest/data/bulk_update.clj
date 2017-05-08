@@ -113,9 +113,10 @@
                             "WHERE task_id = ? AND concept_id = ?")]
          (j/db-do-prepared db statement [status status-message task-id concept-id])
          (let [task-collections (su/query db
-                                     (su/build (su/select [:concept-id :status]
-                                                (su/from "bulk_update_coll_status")
-                                                (su/where `(= :task-id ~task-id)))))
+                                 (su/build (su/select
+                                            [:concept-id :status]
+                                            (su/from "bulk_update_coll_status")
+                                            (su/where `(= :task-id ~task-id)))))
                pending-collections (filter #(= "PENDING" (:status %)) task-collections)
                failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
            (when-not (seq pending-collections)
