@@ -40,7 +40,7 @@
       (testing "page title is correct"
         (is (string/includes?
              (:body response)
-              "Directory of Collections Landing Pages")))
+              "Provider Holdings Directory")))
       (testing "page has a link to EOSDIS collections directory"
         (is (string/includes?
              (:body response)
