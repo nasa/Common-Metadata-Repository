@@ -64,7 +64,7 @@
              "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
              "-Dorg.eclipse.jetty.LEVEL=INFO"
              "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
-  :profiles {}
+  :profiles {
     :dev-dependencies {:dependencies [[ring-mock "0.1.5"]
                                       [org.clojure/tools.namespace "0.2.11"]
                                       [org.clojars.gjahad/debug-repl "0.3.3"]
@@ -98,14 +98,14 @@
     ;; project, use `lein lint` from inside the project directory. To run for
     ;; all projects at the same time, use the same command but from the top-
     ;; level directory.
-    :lint {}
+    :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
       :plugins [[jonase/eastwood "0.2.3"]
                 [lein-ancient "0.6.10"]
                 [lein-bikeshed "0.4.1"]
                 [lein-kibit "0.1.2"]
-                [venantius/yagni "0.1.4"]]
+                [venantius/yagni "0.1.4"]]}
     ;; The following run-* profiles are used in conjunction with other lein
     ;; profiles to set the default CMR run mode and may be used in the
     ;; following manner:
@@ -114,10 +114,10 @@
     ;;
     ;; which will use dev and the other default profiles in addition to
     ;; run-external (or whichever run mode profile is given).
-    :run-in-memory {}
-      :jvm-opts ["-Dcmr.runmode=in-memory"]
-    :run-external {}
-      :jvm-opts ["-Dcmr.runmode=external"]
+    :run-in-memory {
+      :jvm-opts ["-Dcmr.runmode=in-memory"]}
+    :run-external {
+      :jvm-opts ["-Dcmr.runmode=external"]}}
   :aliases {;; Creates the checkouts directory to the local projects
             "create-checkouts" ~create-checkouts-commands
             ;; Alias to test2junit for consistency with lein-test-out
