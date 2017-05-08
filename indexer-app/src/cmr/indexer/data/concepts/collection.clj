@@ -190,6 +190,8 @@
         update-time (index-util/date->elastic update-time)
         insert-time (date-util/data-create-date collection)
         insert-time (index-util/date->elastic insert-time)
+        date-created (index-util/date->elastic
+                                  (date-util/metadata-create-date collection))
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                                        :Geometry :CoordinateSystem])
         permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
@@ -262,6 +264,7 @@
             :related-urls (map json/generate-string opendata-related-urls)
             :update-time update-time
             :insert-time insert-time
+            :date-created date-created
             :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches

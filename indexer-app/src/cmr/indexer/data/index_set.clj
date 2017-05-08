@@ -234,6 +234,7 @@
           ;; later.
           :revision-date m/date-field-mapping
           :revision-date2 (m/stored m/date-field-mapping)
+          :date-created (m/stored m/date-field-mapping)
 
           :permitted-group-ids (m/stored m/string-field-mapping)
           :concept-id   (m/stored m/string-field-mapping)

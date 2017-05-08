@@ -407,10 +407,10 @@
    after a given date. This will *only* return collections that still exist."
   [context params]
   (pv/temporal-format-validation :collection params)
-  (let [start-time (System/currentTimeMillis)
-        created-date (:created-date params)
+  (if-let [created-date (:created-date params)]
+   (let [start-time (System/currentTimeMillis)
         result-format (:result-format params)
-        query-condition (qm/string-range-condition :insert-time created-date nil true)
+        query-condition (qm/date-range-condition :date-collection-created created-date nil true)
         results (or
                  (get-highest-visible-revisions context query-condition result-format)
                  {:hits 0 :items []})
@@ -429,7 +429,11 @@
 
     {:results formatted-results
      :hits (:hits results)
-     :result-format result-format}))
+     :result-format result-format})
+
+    (errors/throw-service-error
+     :bad-request
+     (format "Parameters not supported! %s" params))))
 
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"
