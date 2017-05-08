@@ -1,9 +1,9 @@
 {% extends "templates/search-base.html" %}
 
-{% block title %}{{ app-title }} - Directory of Collections Landing Pages{% endblock %}
+{% block title %}{{ app-title }} - Provider Holdings Directory{% endblock %}
 
 {% block main-content %}
-<h2>Directory of Collections Landing Pages</h2>
+<h2>Provider Holdings Directory</h2>
 <ul>
   {% for link in links %}
   <li><a href="{{ base-url }}{{ link.href }}">{{ link.text }}</a></li>

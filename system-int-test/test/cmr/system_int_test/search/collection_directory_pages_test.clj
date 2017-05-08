@@ -258,7 +258,7 @@
       (is (= (:status response) 200))
       (is (string/includes?
            (:body response)
-           "Directory of Collections Landing Pages"))
+           "Provider Holdings Directory"))
       (is (string/includes?
            (:body response)
            "EOSDIS")))))
