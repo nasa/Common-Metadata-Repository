@@ -8,7 +8,7 @@
     [cmr.umm-spec.iso19115-2-util :as iso]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
     [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.platform :as platform]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 

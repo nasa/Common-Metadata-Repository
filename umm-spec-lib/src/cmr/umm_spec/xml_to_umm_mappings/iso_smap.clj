@@ -10,7 +10,7 @@
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.platform :as platform]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
@@ -57,6 +57,9 @@
 
 (def data-dates-xpath
   (str md-identification-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
+
+(def base-xpath
+  "/gmd:DS_Series/gmd:seriesMetadata")
 
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
@@ -120,7 +123,7 @@
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
-       :Platforms (platform/parse-platforms doc sanitize?)
+       :Platforms (platform/parse-platforms doc base-xpath sanitize?)
        :TemporalExtents (or (seq (parse-temporal-extents data-id-el))
                             (when sanitize? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el sanitize?)

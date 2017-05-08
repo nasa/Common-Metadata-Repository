@@ -13,7 +13,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
-   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
    [cmr.umm-spec.util :as su :refer [char-string]]))
@@ -447,5 +447,6 @@
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation
          (platform/generate-instruments platforms)
+         (platform/generate-child-instruments platforms)
          (generate-projects (:Projects c))
          (platform/generate-platforms platforms)]]])))

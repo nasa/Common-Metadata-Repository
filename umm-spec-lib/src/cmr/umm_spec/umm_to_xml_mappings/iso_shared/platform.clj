@@ -1,11 +1,11 @@
-(ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform
-  "Functions for generating ISO19115-2 XML elements from UMM platform records."
+(ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform
+  "Functions for generating ISOSMAP XML elements from UMM platform records."
   (:require
     [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.instrument :as inst]
+    [cmr.umm-spec.iso-keywords :as kws]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.instrument :as inst]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.characteristics-and-operationalmodes :as ch]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
 (defn- platform-with-id
@@ -25,7 +25,7 @@
 (defn generate-platform-keywords
   [platforms]
   (let [keywords (map iso/generate-title platforms)]
-    (kws/generate-iso19115-descriptive-keywords "platform" keywords)))
+    (kws/generate-iso-smap-descriptive-keywords "platform" keywords)))
 
 (defn generate-instrument-keywords
   [platforms]

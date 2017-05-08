@@ -19,7 +19,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
-   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
@@ -102,12 +102,12 @@
   [doc sanitize?]
   (for [proj (select doc projects-xpath)]
     (let [short-name (value-of proj iso-util/short-name-xpath)
-          long-name (value-of proj iso-util/long-name-xpath) 
+          long-name (value-of proj iso-util/long-name-xpath)
           start-end-date (when-let [date (value-of proj "gmi:description/gco:CharacterString")]
                            (str/split (str/trim date) #"\s+"))
           ;; date is built as: StartDate: 2001:01:01T01:00:00Z EndDate: 2002:02:02T01:00:00Z
           ;; One date can exist without the other.
-          start-date (when start-end-date 
+          start-date (when start-end-date
                        (if (= "StartDate:" (get start-end-date 0))
                          (get start-end-date 1)
                          (get start-end-date 3)))
@@ -267,7 +267,7 @@
                         (char-string-value
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
       :Distributions (dru/parse-distributions doc sanitize?)
-      :Platforms (platform/parse-platforms doc sanitize?)
+      :Platforms (platform/parse-platforms doc "" sanitize?)
       :Projects (parse-projects doc sanitize?)
 
       :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
