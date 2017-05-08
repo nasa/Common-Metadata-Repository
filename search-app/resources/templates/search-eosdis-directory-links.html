@@ -9,16 +9,16 @@
 <p>
   Listed here are all the EOSDIS providers linked to pages that list the
   collection landing pages. Note that the number of collections for each
-  provider is given in parentheses after the provider name.
+  provider is given in parentheses after the provider ID.
 </p>
 
 <ul>
   {% for provider in providers %}
   <li>
     {% if provider.collections-count = 0 %}
-      {{ provider.name }}
+      {{ provider.id }}
     {% else %}
-      <a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.name }}</a>
+      <a href="{{ base-url }}site/collections/directory/{{ provider.id }}/{{ provider.tag }}">{{ provider.id }}</a>
     {% endif %} ({{ provider.collections-count }})</li>
   {% endfor %}
 </ul>

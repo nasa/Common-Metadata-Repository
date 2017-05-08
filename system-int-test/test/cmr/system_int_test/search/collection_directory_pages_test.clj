@@ -62,18 +62,18 @@
   [body]
   (let [url (format "%sconcepts" base-url)]
     (and
-      (string/includes? body (format "%s/%s" url "C1200000015-PROV1.html"))
+      (string/includes? body (format "%s/%s" url "C1200000019-PROV1.html"))
       (string/includes? body "Collection Item 2")
-      (string/includes? body (format "%s/%s" url "C1200000016-PROV1.html"))
+      (string/includes? body (format "%s/%s" url "C1200000020-PROV1.html"))
       (string/includes? body "Collection Item 3"))))
 
 (defn expected-provider2-level-links?
   [body]
   (let [url (format "%sconcepts" base-url)]
     (and
-      (string/includes? body (format "%s/%s" url "C1200000018-PROV2.html"))
+      (string/includes? body (format "%s/%s" url "C1200000022-PROV2.html"))
       (string/includes? body "Collection Item 2")
-      (string/includes? body (format "%s/%s" url "C1200000019-PROV2.html"))
+      (string/includes? body (format "%s/%s" url "C1200000023-PROV2.html"))
       (string/includes? body "Collection Item 3"))))
 
 (defn expected-provider3-level-links?
