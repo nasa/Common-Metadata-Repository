@@ -1,331 +1,2419 @@
-[ {
-  "type" : "trim_whitespace",
-  "field" : "platform",
-  "order" : -100
-}, {
-  "type" : "trim_whitespace",
-  "field" : "instrument",
-  "order" : -100
-}, {
-  "type" : "trim_whitespace",
-  "field" : "science_keyword",
-  "order" : -100
-}, {
-  "type" : "trim_whitespace",
-  "field" : "project",
-  "order" : -100
-}, {
-  "type" : "trim_whitespace",
-  "field" : "processing_level",
-  "order" : -100
-}, {
-  "type" : "trim_whitespace",
-  "field" : "organization",
-  "order" : -100
-}, {
-  "type" : "capitalize",
-  "field" : "science_keyword",
-  "order" : -10
-}, {
-  "type" : "ignore",
-  "field" : "instrument",
-  "source_value" : "NOT APPLICABLE",
-  "order" : 0
-}, {
-  "type" : "ignore",
-  "field" : "instrument",
-  "source_value" : "Not provided",
-  "order" : 0
-}, {
-  "type" : "ignore",
-  "field" : "processing_level",
-  "source_value" : "NA",
-  "order" : 0
-}, {
-  "type" : "ignore",
-  "field" : "platform",
-  "source_value" : "Aircraft",
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "science_keyword",
-  "source_value" : "Bioosphere",
-  "replacement_value" : "Biosphere",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "platform",
-  "source_value" : "AM-1",
-  "replacement_value" : "Terra",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "instrument",
-  "source_value" : "GPS",
-  "replacement_value" : "GPS Receivers",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "instrument",
-  "source_value" : "GPS RECEIVERS",
-  "replacement_value" : "GPS Receivers",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "project",
-  "source_value" : "USGS_SOFIA",
-  "replacement_value" : "USGS SOFIA",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "processing_level",
-  "source_value" : "L1T",
-  "replacement_value" : "1T",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "processing_level",
-  "source_value" : "Level 1",
-  "replacement_value" : "1",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "processing_level",
-  "source_value" : "Level 2",
-  "replacement_value" : "2",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "processing_level",
-  "source_value" : "Level 3",
-  "replacement_value" : "3",
-  "reportable" : true,
-  "order" : 0
-}, {
-  "type" : "alias",
-  "field" : "organization",
-  "source_value" : "NASA/NSIDC_DAAC",
-  "replacement_value" : "NSIDC",
-  "order" : 0
-}, {
-  "type" : "priority",
-  "field" : "instrument",
-  "source_value" : "MODIS",
-  "order" : 10,
-  "priority" : 10
-}, {
-  "type" : "priority",
-  "field" : "instrument",
-  "source_value" : "ASTER",
-  "order" : 10,
-  "priority" : 10
-}, {
-  "type" : "priority",
-  "field" : "platform",
-  "source_value" : "Terra",
-  "order" : 10,
-  "priority" : 10
-}, {
-  "type" : "priority",
-  "field" : "platform",
-  "source_value" : "Aqua",
-  "order" : 10,
-  "priority" : 10
-},
-{"type": "alias", "field": "science_keyword", "source_value": "Spectral Engineering", "replacement_value": "Spectral/Engineering", "order": 0, "reportable": true},
-{"type": "alias", "field": "platform", "source_value": "GROUND STATION", "replacement_value": "Ground Station", "order": 0, "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "GROUND STATIONS", "replacement_value": "Ground Station", "order": 0, "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "METEOROLOGICAL STATION", "replacement_value": "Meteorological Station", "order": 0, "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "METEOROLOGICAL STATIONS", "replacement_value": "Meteorological Station", "order": 0, "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "RAIN GAUGE", "replacement_value": "Rain Gauge", "order": 0, "reportable": true},
-{"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true },
-{"type": "capitalize", "field": "platform", "source_value": "TERRA", "replacement_value": "Terra", "reportable": true },
-{"type": "ignore", "field": "project", "source_value": "DODS", "replacement_value": "NA", "reportable": true },
-{"type": "ignore", "field": "project", "source_value": "EOSDIS", "replacement_value": "NA", "reportable": true },
-{"type": "ignore", "field": "project", "source_value": "ESIP", "replacement_value": "NA", "reportable": true },
-{"type": "capitalize", "field": "platform", "source_value": "AURA", "replacement_value": "Aura", "reportable": true },
-{"type": "capitalize", "field": "project", "source_value": "AQUA", "replacement_value": "Aqua", "reportable": true },
-{"type": "capitalize", "field": "project", "source_value": "AURA", "replacement_value": "Aura", "reportable": true },
-{"type": "capitalize", "field": "project", "source_value": "TERRA", "replacement_value": "Terra", "reportable": true },
-{"type": "ignore", "field": "project", "source_value": "OPENDAP", "replacement_value": "NA", "reportable": true },
-{"type": "alias", "field": "project", "source_value": "MEASURES", "replacement_value": "MEaSUREs", "order": 0, "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "AERIAL PHOTOGRAPH", "replacement_value": "Other Aircraft", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "ALOS (Advanced Land Observing Satellite)", "replacement_value": "ALOS", "reportable": true },
-{"type": "capitalize", "field": "platform", "source_value": "AQUA", "replacement_value": "Aqua", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "AQUA (AFTERNOON EQUATORIAL CROSSING TIME SATELLITE)", "replacement_value": "Aqua", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "AQUARIUS_SAC-D", "replacement_value": "SAC-D", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "BALLOON-BORNE INSTRUMENT", "replacement_value": "Balloon", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "BUOY", "replacement_value": "Buoys", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "Computer", "replacement_value": "Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "Computer Model", "replacement_value": "Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "COMPUTER MODEL", "replacement_value": "Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "COMPUTER MODELS", "replacement_value": "Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "CON. DENSITY BALLOON", "replacement_value": "Balloon", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "CORIOLIS", "replacement_value": "Coriolis", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "CV580", "replacement_value": "Convair CV-580", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "CV-580", "replacement_value": "Convair CV-580", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "DEM (DIGITAL ELEVATION MODEL)", "replacement_value": "Digital Elevation Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "DIGITAL ELEVATION MODEL", "replacement_value": "Digital Elevation Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "DRIFTING BUOY", "replacement_value": "Buoy", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "EO-1 (EARTH OBSERVING 1)", "replacement_value": "Earth Observing-1", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "FIELD INVESTIGATION", "replacement_value": "Field Investigation", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "FIELD SURVEY", "replacement_value": "Field Survey", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "GOES (NOAA GEOSTATIONARY OPERATIONAL ENVIRONMENTAL SATELLITES)", "replacement_value": "GOES", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "GOES-12 (AQUA/TERRA)", "replacement_value": "GOES-12", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "GOES-12 (GEOSTATIONARY OPERATIONAL ENVIRONMENTAL SATELLITE-12)", "replacement_value": "GOES-12", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "GOES-8 (GEOSTATIONARY OPERATIONAL ENVIRONMENTAL SATELLITE-8)", "replacement_value": "GOES-8", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "GROUND-BASED OBSERVATION", "replacement_value": "Ground-based Observation", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "GROUND-BASED PAN NETWORK CALIFORNIA", "replacement_value": "Ground-based Observation", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "ICESAT-II", "replacement_value": "ICESat-2", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "INTERNATIONAL SPACE STATION (ISS)", "replacement_value": "International Space Station", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "Jason-1 Geodetic", "replacement_value": "JASON-1", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "JERS-1 (JAPANESE EARTH RESOURCES SATELLITE-1)", "replacement_value": "JERS-1", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "L7", "replacement_value": "Landsat-7", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "LABORATORY", "replacement_value": "Laboratory", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "LANDSAT (LAND REMOTE-SENSING SATELLITE)", "replacement_value": "Landsat", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "LANDSAT-2 (LAND REMOTE-SENSING SATELLITE-2)", "replacement_value": "Landsat-2", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "LANDSAT-5 (LAND REMOTE-SENSING SATELLITE-5)", "replacement_value": "Landsat-5", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "LANDSAT-7 (LAND REMOTE-SENSING SATELLITE-7)", "replacement_value": "Landsat-7", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "METEOROLOGICAL STATION", "replacement_value": "Meteorological Station", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "MISSION REPORT", "replacement_value": "Mission Report", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "MODEL", "replacement_value": "Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "MTSAT1R", "replacement_value": "MTSAT-1R", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "MTSAT2", "replacement_value": "MTSAT-2", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "NASA DC-8", "replacement_value": "NASA Douglas DC-8", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "NATIONAL LIGHTNING DETECTION NETWORK", "replacement_value": "National Lightning Detection Net.", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "NCEP-ETA", "replacement_value": "NCEP ETA Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "NIMBUS-7", "replacement_value": "Nimbus-7", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "NOAA-14 (NATIONAL OCEANIC &amp; ATMOSPHERIC ADMINISTRATION-14)", "replacement_value": "NOAA-14", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "NPP", "replacement_value": "Suomi NPP", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "OSTM/Jason-2", "replacement_value": "OSTM/JASON-2", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "P-3A", "replacement_value": "P-3A ORION", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "RAPIDEYE", "replacement_value": "RapidEye", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "SHIP", "replacement_value": "Ship", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "SOIL TEXTURE", "replacement_value": "Model", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "SPOT-4 (SYSTEME PROBATOIRE POUR L'OBSERVATION DE LA TERRE-4)", "replacement_value": "SPOT-4", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "STS 41G", "replacement_value": "STS-41G", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "Suomi NPP", "replacement_value": "Suomi-NPP", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "TERRA (MORNING EQUATORIAL CROSSING TIME SATELLITE)", "replacement_value": "Terra", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "TETHERED BALLOON", "replacement_value": "Balloon", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "WEATHER  BALLOON", "replacement_value": "Balloon", "reportable": true },
-{"type": "alias", "field": "platform", "source_value": "WEATHER BALLOON", "replacement_value": "Balloon", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "AA (ATOMIC ABSORPTION SPECTROMETER)", "replacement_value": "Atomic Absorption Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "ACCELEROMETER", "replacement_value": "Accelerometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "AEROSOL COLLECTOR", "replacement_value": "Aerosol Collector", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "AETHAELOMETER", "replacement_value": "Aethaelometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "AIRBORNE SUN PHOTOMETER", "replacement_value": "Airborne Tracking Sunphotometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "AltiKa", "replacement_value": "AltiKa Altimeter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "AMS (ACCELERATOR MASS SPECTROMETER)", "replacement_value": "Accelerator Mass Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "AMS (ACCELERATOR MASS SPECTROMETERS)", "replacement_value": "Accelerator Mass Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "ANEMOMETER", "replacement_value": "Anemometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "ANEROID BAROMETER", "replacement_value": "Aneroid Pressure Sensor", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "BAROMETER", "replacement_value": "Barometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "CARBON ANALYZER", "replacement_value": "Carbon Analyzer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "cavity ringdown spectrometer", "replacement_value": "Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "CEILOMETER", "replacement_value": "Ceilometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "CHN ANALYZER", "replacement_value": "CHN Analyzer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "CLINOMETER", "replacement_value": "Clinometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "CLOCK", "replacement_value": "Clock", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "COMPUTER", "replacement_value": "Model", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "DENSIOMETER", "replacement_value": "Densiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "DEWPOINT HYDROMETER", "replacement_value": "Dewpoint Hydrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "DIODE LASER HYGROMETER", "replacement_value": "Diode Laser Hygrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "DORIS RECEIVER", "replacement_value": "DORIS Receiver", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "DROPSONDE", "replacement_value": "Dropsonde", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "DROPWINDSONDE", "replacement_value": "Dropwindsonde", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "EDDY CORRELATION APPARATUS", "replacement_value": "Eddy Correlation Device", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "ETM+ (ENHANCED THEMATIC MAPPER PLUS)", "replacement_value": "Enhanced Thematic Mapper +", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "GLOBAL HAWK IN-FLIGHT TURBULENCE SENSOR (GHIS)", "replacement_value": "GHIS", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "GOES-12 IMAGER", "replacement_value": "GOES-12 Imager", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "GPS (GLOBAL POSITIONING SYSTEM)", "replacement_value": "GPS Receivers", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "GPS CLOCK", "replacement_value": "GPS Clock", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "GUST PROBE", "replacement_value": "Gust Probe", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "HIGH RESOLUTION CAMERA", "replacement_value": "High-resolution Camera", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "HIGH SPECTRAL RESOLUTION LIDAR", "replacement_value": "High Spectral Resolution Lidar", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "HUMIDITY PROBE", "replacement_value": "Humidity Sensor", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "HUMIDITY SENSOR", "replacement_value": "Humidity Sensor", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "HYDROPHONE", "replacement_value": "Hydrophone", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "HYGROMETER", "replacement_value": "Hygrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "HYPERION (HYPERSPECTRAL IMAGER)", "replacement_value": "HYPERION", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "ICP-AES (INDUCTIVELY COUPLED PLASMA ATOMIC EMISSION SPECTROMETER)", "replacement_value": "ICP-Atomic Emission Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "IMAGING INFRARED RADIOMETER", "replacement_value": "Imaging Infrared Radiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "INCLINOMETER", "replacement_value": "Inclinometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "INFRARED THERMOMETER", "replacement_value": "Infrared Thermometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "ION CHROMATOGRAPH", "replacement_value": "Ion Chromatograph", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "IR CO2 ANALYZER", "replacement_value": "Infrared CO2 Analyzer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "IRGA (INFRARED GAS ANALYZER)", "replacement_value": "Infrared Gas Analyzer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "LANDSAT ETM+", "replacement_value": "Enhanced Thematic Mapper +", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "LANDSAT MSS", "replacement_value": "MSS", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "LANDSAT TM", "replacement_value": "Thematic Mapper", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "LANDSAT TM  (LANDSAT THEMATIC   MAPPER)", "replacement_value": "Thematic Mapper", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "LANDSAT TM (LANDSAT THEMATIC MAPPER)", "replacement_value": "Thematic Mapper", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MASS SPECTROMETER", "replacement_value": "Mass Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MICROSCOPE", "replacement_value": "Microscope", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "Moderate-Resolution Imaging Spectroradiometer", "replacement_value": "MODIS", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MODIS (MODERATE-RESOLUTION IMAGING SPECTRORADIOMETER", "replacement_value": "MODIS", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MODIS (MODERATE-RESOLUTION IMAGING SPECTRORADIOMETER)", "replacement_value": "MODIS", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MODIS AIRBORNE SIMULATOR (MAS)", "replacement_value": "MODIS Airborne Simulator", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MODULAR MULTIBAND RADIOMETER", "replacement_value": "Modular Multiband Radiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MSS (MULTISPECTRAL SCANNER)", "replacement_value": "Multispectral Scanner", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "MULTIBAND VEGETATION IMAGER", "replacement_value": "Multiband Vegetation Imager", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "NEPHELOMETER", "replacement_value": "Nephelometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "NET RADIOMETER", "replacement_value": "Net Radiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "NPOL RADAR", "replacement_value": "NPOL Radar", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "OZONESONDE", "replacement_value": "Ozonesonde", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PALSAR (Phased Array type L-band Synthetic Aperture Radar)", "replacement_value": "PALSAR", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PAR SENSOR", "replacement_value": "PAR Sensor", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PARABOLA RADIOMETER", "replacement_value": "PARABOLA Radiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PAS - PHOTOELECTRIC AEROSOL SENSOR", "replacement_value": "Photoelectric Aerosol Sensor", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PERMEAMETER", "replacement_value": "Permeameter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PH METER", "replacement_value": "PH Meter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PHOTOMETER", "replacement_value": "Photometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "POLDER", "replacement_value": "POLDER-1", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "POSEIDON ALTIMETER", "replacement_value": "Poseidon Altimeter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PRESSURE CHAMBER", "replacement_value": "Pressure Chamber", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PTR-MS (PROTON TRANSFER MASS SPECTROMETER)", "replacement_value": "Proton Transfer Mass Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PYRANOMETER", "replacement_value": "Pyranometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "PYRGEOMETER", "replacement_value": "Pyrgeometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "RADAR ALTIMETER", "replacement_value": "Radar Altimeter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "Radar Altimeters", "replacement_value": "Radar Altimeter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "RADIOMETER", "replacement_value": "Radiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "RADIOSONDE", "replacement_value": "Radiosonde", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "RAWINSONDE", "replacement_value": "Rawindsonde", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "ROTATING DIPOLE ELECTRIC FIELD MILL", "replacement_value": "Rotating Dipole Electric Field Mill", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SAR (SYNTHETIC APERTURE RADAR)", "replacement_value": "Synthetic Aperture Radar", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SCINTILLATION COUNTER", "replacement_value": "Scintillation Counter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SMMR (SCANNING MULTICHANNEL MICROWAVE RADIOMETER)", "replacement_value": "SM Microwave Radiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SPECTROMETER", "replacement_value": "Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SPECTROPHOTOMETER", "replacement_value": "Spectrophotometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SPECTRORADIOMETER", "replacement_value": "Spectroradiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SRTM (SHUTTLE RADAR TOPOGRAPHY MISSION)", "replacement_value": "Shuttle Radar Topography Mission", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "STEEL MEASURING TAPE", "replacement_value": "Steel Measuring Tape", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "STREAM GAUGE", "replacement_value": "Stream Gauge", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SUN PHOTOMETER", "replacement_value": "Sun Photometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "SURFACE ACOUSTIC WAVE HYGROMETER", "replacement_value": "Surface Acoustic Wave Hygrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TDR (TIME DOMAIN REFLECTOMETRY PROBE)", "replacement_value": "Time Domain Reflectometry Probe", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TEMPERATURE PROBE", "replacement_value": "Temperature Probe", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TEMPERATURE SENSOR", "replacement_value": "Temperature Sensor", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TERRA (MORNING EQUATORIAL CROSSING TIME SATELLITE)", "replacement_value": "Terra", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "THEMATIC MAPPER SIMULATOR", "replacement_value": "Thematic Mapper Simulator", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "THERMISTOR", "replacement_value": "Thermistor", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "THERMOCOUPLE", "replacement_value": "Thermocouple", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "THERMOMETER", "replacement_value": "Thermometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TM (THEMATIC MAPPER)", "replacement_value": "Thematic Mapper", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TOMS (TOTAL OZONE MAPPING SPECTROMETER)", "replacement_value": "Total Ozone Mapping Spectrometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TOPEX ALTIMETER", "replacement_value": "Altimeter", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TOPEX MICROWAVE RADIOMETER", "replacement_value": "Topex Microwave Radiometer", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TOTAL PRECIPITATION SENSOR (HOTPLATE)", "replacement_value": "TPS (Hotplate)", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "TOTAL SKY IMAGER", "replacement_value": "Total Sky Imager", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "UV OZONE DETECTOR", "replacement_value": "UV Ozone Detector", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "WATER LEVEL GAUGE", "replacement_value": "Water Level Gauge", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "WIDE FIELD CAMERA", "replacement_value": "Wide Field Camera", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "WIND PROFILER", "replacement_value": "Wind Profiler", "reportable": true },
-{"type": "alias", "field": "instrument", "source_value": "WIND SCATTEROMETER", "replacement_value": "Wind Scatterometer", "reportable": true }]
+[
+    {
+        "field": "platform",
+        "order": -100,
+        "type": "trim_whitespace"
+    },
+    {
+        "field": "instrument",
+        "order": -100,
+        "type": "trim_whitespace"
+    },
+    {
+        "field": "science_keyword",
+        "order": -100,
+        "type": "trim_whitespace"
+    },
+    {
+        "field": "project",
+        "order": -100,
+        "type": "trim_whitespace"
+    },
+    {
+        "field": "processing_level",
+        "order": -100,
+        "type": "trim_whitespace"
+    },
+    {
+        "field": "organization",
+        "order": -100,
+        "type": "trim_whitespace"
+    },
+    {
+        "field": "science_keyword",
+        "order": -10,
+        "type": "capitalize"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "source_value": "NOT APPLICABLE",
+        "type": "ignore"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "source_value": "Not provided",
+        "type": "ignore"
+    },
+    {
+        "field": "processing_level",
+        "order": 0,
+        "source_value": "NA",
+        "type": "ignore"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "source_value": "Aircraft",
+        "type": "ignore"
+    },
+    {
+        "field": "science_keyword",
+        "order": 0,
+        "replacement_value": "Biosphere",
+        "reportable": true,
+        "source_value": "Bioosphere",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "replacement_value": "Terra",
+        "reportable": true,
+        "source_value": "AM-1",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "replacement_value": "GPS Receivers",
+        "reportable": true,
+        "source_value": "GPS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "replacement_value": "GPS Receivers",
+        "reportable": true,
+        "source_value": "GPS RECEIVERS",
+        "type": "alias"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "replacement_value": "USGS SOFIA",
+        "reportable": true,
+        "source_value": "USGS_SOFIA",
+        "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1 - Radiance",
+       "source_value": "1",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1A - Radiance",
+       "source_value": "1A",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1B - Radiance, Sensor Coordinates",
+       "source_value": "1B",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1A - Radiance",
+       "source_value": "1C",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1B - Radiance, Sensor Coordinates",
+       "source_value": "1T",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "2 - Geophys. Variables, Sensor Coordinates",
+       "source_value": "2",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1B - Radiance, Sensor Coordinates",
+       "source_value": "2A",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "2 - Geophys. Variables, Sensor Coordinates",
+       "source_value": "2B",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "3 - Gridded Geophysical Variables",
+       "source_value": "2G",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "2 - Geophys. Variables, Sensor Coordinates",
+       "source_value": "2P",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "3 - Gridded Geophysical Variables",
+       "source_value": "3",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "3 - Gridded Geophysical Variables",
+       "source_value": "3U",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "4 - Gridded Model Output",
+       "source_value": "4",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1B - Radiance, Sensor Coordinates",
+       "source_value": "L1T",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "1 - Radiance",
+       "source_value": "Level 1",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "2 - Geophys. Variables, Sensor Coordinates",
+       "source_value": "Level 2",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "processing_level",
+       "order": 0,
+       "replacement_value": "3 - Gridded Geophysical Variables",
+       "source_value": "Level 3",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Agriculture and Agri-Food Canada (AAFC)",
+       "source_value": "AAFC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Alaska Satellite Facility (ASF)",
+       "source_value": "Alaska Satellite Facility",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Global Hydrology Resource Center AMSR-E SIPS (AMSR-E SIPS GHCC)",
+       "source_value": "AMSR-E SIPS-GHCC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Global Hydrology Climate Center AMSR-E SIPS (AMSR-E SIPS GHRC)",
+       "source_value": "AMSR-E SIPS-GHRC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Remote Sensing Systems AMSR-E SIPS (AMSR-E SIPS GHRC)",
+       "source_value": "AMSR-E SIPS-RSS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Comision Nacional de Actividades Espaciales (CONAE)",
+       "source_value": "Aquarius Project NASA/CONAE, JPL",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Comision Nacional de Actividades Espaciales (CONAE)",
+       "source_value": "Aquarius Project NASA/CONAE",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Ocean Biology Processing Group (OBPG)",
+       "source_value": "Aquarius Project NASA/OBPG, Reynolds &amp; Smith NOAA/NCDC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Atmospheric Science Data Center (ASDC)",
+       "source_value": "ASDC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Atmospheric Science Data Center (ASDC)",
+       "source_value": "Atmospheric Science Data Center",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Australian Bureau of Meteorology (BOM)",
+       "source_value": "Australian Bureau of Meteorolog",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Scatterometer Climate Record Pathfinder (SCP)",
+       "source_value": "BYU/SCP",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Crustal Dynamics Data Information System (CDDIS)",
+       "source_value": "CDDIS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Crustal Dynamics Data Information System (CDDIS)",
+       "source_value": "CDDIS-GSFC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Colorado State University (CSU)",
+       "source_value": "Colorado State University",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Center for Remote Sensing of Ice Sheets (CReSIS)",
+       "source_value": "CReSIS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Danish Meteorological Institute (DMI)",
+       "source_value": "Danish Meteorological Institut",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Danish Meteorological Institute (DMI)",
+       "source_value": "Danish Meteorological Institute",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Oceanographic Data Center (NODC)",
+       "source_value": "DOC/NOAA/NESDIS/NODC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Earth Space Research (ESR)",
+       "source_value": "Earth Space Research",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Earth Resources Observation and Science Data Center (EDC)",
+       "source_value": "EDC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "European Organisation for the Exploitation of Meteorological Satellites (EUMETSAT)",
+       "source_value": "EUMETSAT",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Koninklijk Nederlands Meterologisch Instituut (KNMI)",
+       "source_value": "EUMETSAT/OSI SAF/KNMI",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "European Space Agency (ESA)",
+       "source_value": "European Space Agency (ESA). ESRIN, Frascati Italy see http://www.esa.in",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "European Space Agency (ESA)",
+       "source_value": "European Space Agency",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Finnish Meteorological Institute (FMI)",
+       "source_value": "FMI",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "ASTER Ground Data System (GDS)",
+       "source_value": "GDS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "GES DAAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "GES DISC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "GESDISC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Global Hydrology Resource Center (GHRC)",
+       "source_value": "GHRC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Global Modeling and Assimilation Office (GMAO)",
+       "source_value": "Global Modeling and Assimilation Office",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC) and JPL",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "GRACE/CSR",
+       "source_value": "GRACE Center for Space Research at University of Texas, Austin",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "GRACE/GFZ",
+       "source_value": "GRACE GeoforschungsZentrum Potsdam",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "GRACE/JPL",
+       "source_value": "GRACE Jet Propulsion Laboratory",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "GSFC_DAAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "GSFC_GES_DISC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "GSFC-GES-DISC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Space Flight Center (GSFC)",
+       "source_value": "GSFC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "ICESat Science Investigator-led Processing System (I-SIPS)",
+       "source_value": "GSFC I-SIPS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "French Research Institute for Exploitation of the Sea (IFREMER)",
+       "source_value": "IFREME",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "French Research Institute for Exploitation of the Sea (IFREMER)",
+       "source_value": "IFREMER/CERSA",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "University of Texas Institute for Geophysics (UTIG)",
+       "source_value": "Institute for Geophysics, University of Texas at Austin",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "School of Ocean and Earth Science and Technology at the University of Hawaii at Manoa (SOEST)",
+       "source_value": "IPRC/SOEST University of Hawaii, Manoa",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Japan Aerospace Exploration Agency (JAXA)",
+       "source_value": "JAXA",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Jet Propulsion Laboratory (JPL)",
+       "source_value": "Jet Propulsion Laborator",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Jet Propulsion Laboratory (JPL)",
+       "source_value": "Jet Propulsion Laboratory",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Physical Oceanography Distributed Active Archive Center (PO.DAAC)",
+       "source_value": "Jet Propulsion Laboratory Physical Oceanography Data Active Archive Centre (PO.",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Jet Propulsion Laboratory (JPL)",
+       "source_value": "JPL",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Physical Oceanography Distributed Active Archive Center (PO.DAAC)",
+       "source_value": "JPL PODAAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Level-1 and Atmosphere Archive & Distribution System (LAADS)",
+       "source_value": "LAADS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Laboratory for Atmospheric and Space Physics (LASP)",
+       "source_value": "LASP",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Lamont Doherty Earth Observatory (LDEO)",
+       "source_value": "LDEO",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Land Process Distributed Active Archive Center (LPDAAC)",
+       "source_value": "LPDAAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "USGS Long Term Archive (LTA)",
+       "source_value": "LTA",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "MODIS Adaptive Processing System (MODAPS)",
+       "source_value": "MODAPS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "NASA GSFC GES DISC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Hydrological Science Laboratory (HSL)",
+       "source_value": "NASA/GSFC/HSL",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Oceanic and Atmospheric Administration (NOAA)",
+       "source_value": "NASA/GSFC/NOAA",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+       "source_value": "NASA/GSFC/SED/ESD/GCDC/GESDISC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "MODIS Adaptive Processing System (MODAPS)",
+       "source_value": "NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Jet Propulsion Laboratory (JPL)",
+       "source_value": "NASA/JPL",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Physical Oceanography Distributed Active Archive Center (PO.DAAC)",
+       "source_value": "NASA/JPL/PODAAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Snow and Ice Data Center Distributed Active Archive Center (NSIDC DAAC)",
+       "source_value": "NASA National Snow and Ice Data Center Distributed Active Archive Center",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Naval Oceanographic Office (NAVO)",
+       "source_value": "Naval Oceanographic Office",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Naval Oceanographic Office (NAVO)",
+       "source_value": "Naval Oceanographic Offic",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Naval Oceanographic Office (NAVO)",
+       "source_value": "NAVO",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Climatic Data Center (NCDC)",
+       "source_value": "NOAA National Climatic Data Cente",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Climatic Data Center (NCDC)",
+       "source_value": "NOAA National Climatic Data Center",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Oceanic and Atmospheric Administration (NOAA)",
+       "source_value": "NOAA",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Climatic Data Center (NCDC)",
+       "source_value": "NOAA/NCDC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Centers for Environmental Prediction (NCEP)",
+       "source_value": "NOAA/NCEP",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Environmental Satellite, Data, and Information Service (NESDIS)",
+       "source_value": "NOAA/NESDI",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Environmental Satellite, Data, and Information Service (NESDIS)",
+       "source_value": "NOAA/NESDIS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Snow and Ice Data Center Distributed Active Archive Center (NSIDC DAAC)",
+       "source_value": "NSIDC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "National Space Science Data Center (NSSDC)",
+       "source_value": "NSSDC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Ocean Biology Distributed Active Archive Center (OB.DAAC)",
+       "source_value": "OB.DAAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Ocean Biology Processing Group (OBPG)",
+       "source_value": "OBPG",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Ozone Monitoring Instrument SIPS (OMI-SIPS)",
+       "source_value": "OSIPS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSI SAF)",
+       "source_value": "OSISAF",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Office of Satellite and Product Operations (OSPO)",
+       "source_value": "OSPO",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Oregon State University College of Earth, Ocean, and Atmospheric Sciences (COAS)",
+       "source_value": "OSU/COAS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Physical Oceanography Distributed Active Archive Center (PO.DAAC)",
+       "source_value": "PO.DAAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Precipitation Processing System (PPS)",
+       "source_value": "Precipitation Processing System (PPS)",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Princeton University (PU)",
+       "source_value": "Princeton University",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Remote Sensing Systems (RSS)",
+       "source_value": "Remote Sensing System",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Remote Sensing Systems (RSS)",
+       "source_value": "Remote Sensing Systems (REMSS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Remote Sensing Systems (RSS)",
+       "source_value": "REMSS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Rutgers University (RU)",
+       "source_value": "Rutgers University",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "San Diego State University (SDSU)",
+       "source_value": "SDSU",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Socioeconomic Data and Applications Center (SEDAC)",
+       "source_value": "SEDAC",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Salinity Processes in the Upper Ocean Regional Study (SPURS)",
+       "source_value": "SPURS Project",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Gravity Recovery & Climate Experiment Tellus (GRACE TELLUS)",
+       "source_value": "TELLUS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Tropospheric Emission Spectrometer SIPS (TES SIPS)",
+       "source_value": "TES SIPS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "University of Alaska-Fairbanks (UAF)",
+       "source_value": "UAF",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "UARS Central Data Handling Facility (CDHF)",
+       "source_value": "UARS CDHF",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "UARS Central Data Handling Facility (CDHF)",
+       "source_value": "UARS_CDHF",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "UC Irvine Earth System Science (ESS)",
+       "source_value": "UC-IRVINE/PHYSSCI/ESS",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "UK Met Office (Met Office)",
+       "source_value": "UK Met Offic",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Institute for Geophysics (UTIG)",
+       "source_value": "UTIG",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "Wallops Flight Facility (WFF)",
+       "source_value": "WFF",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+       "field": "organization",
+       "order": 0,
+       "replacement_value": "World Ocean Circulation Experiment (WOCE)",
+       "source_value": "WOCE",
+       "reportable": true,
+       "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "order": 10,
+        "priority": 10,
+        "source_value": "MODIS",
+        "type": "priority"
+    },
+    {
+        "field": "instrument",
+        "order": 10,
+        "priority": 10,
+        "source_value": "ASTER",
+        "type": "priority"
+    },
+    {
+        "field": "platform",
+        "order": 10,
+        "priority": 10,
+        "source_value": "Terra",
+        "type": "priority"
+    },
+    {
+        "field": "platform",
+        "order": 10,
+        "priority": 10,
+        "source_value": "Aqua",
+        "type": "priority"
+    },
+    {
+        "field": "science_keyword",
+        "order": 0,
+        "replacement_value": "Spectral/Engineering",
+        "reportable": true,
+        "source_value": "Spectral Engineering",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "replacement_value": "Ground Station",
+        "reportable": true,
+        "source_value": "GROUND STATION",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "replacement_value": "Ground Station",
+        "reportable": true,
+        "source_value": "GROUND STATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "replacement_value": "Meteorological Station",
+        "reportable": true,
+        "source_value": "METEOROLOGICAL STATION",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "order": 0,
+        "replacement_value": "Meteorological Station",
+        "reportable": true,
+        "source_value": "METEOROLOGICAL STATIONS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "order": 0,
+        "replacement_value": "Rain Gauge",
+        "reportable": true,
+        "source_value": "RAIN GAUGE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Terra",
+        "reportable": true,
+        "source_value": "AM-1",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Terra",
+        "reportable": true,
+        "source_value": "TERRA",
+        "type": "capitalize"
+    },
+    {
+        "field": "project",
+        "replacement_value": "NA",
+        "reportable": true,
+        "source_value": "DODS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "replacement_value": "NA",
+        "reportable": true,
+        "source_value": "EOSDIS",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "replacement_value": "NA",
+        "reportable": true,
+        "source_value": "ESIP",
+        "type": "ignore"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Aura",
+        "reportable": true,
+        "source_value": "AURA",
+        "type": "capitalize"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Aqua",
+        "reportable": true,
+        "source_value": "AQUA",
+        "type": "capitalize"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Aura",
+        "reportable": true,
+        "source_value": "AURA",
+        "type": "capitalize"
+    },
+    {
+        "field": "project",
+        "replacement_value": "Terra",
+        "reportable": true,
+        "source_value": "TERRA",
+        "type": "capitalize"
+    },
+    {
+        "field": "project",
+        "replacement_value": "NA",
+        "reportable": true,
+        "source_value": "OPENDAP",
+        "type": "ignore"
+    },
+    {
+        "field": "project",
+        "order": 0,
+        "replacement_value": "MEaSUREs",
+        "reportable": true,
+        "source_value": "MEASURES",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Other Aircraft",
+        "reportable": true,
+        "source_value": "AERIAL PHOTOGRAPH",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "ALOS",
+        "reportable": true,
+        "source_value": "ALOS (Advanced Land Observing Satellite)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Aqua",
+        "reportable": true,
+        "source_value": "AQUA",
+        "type": "capitalize"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Aqua",
+        "reportable": true,
+        "source_value": "AQUA (AFTERNOON EQUATORIAL CROSSING TIME SATELLITE)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "SAC-D",
+        "reportable": true,
+        "source_value": "AQUARIUS_SAC-D",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
+        "source_value": "BALLOON-BORNE INSTRUMENT",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Buoys",
+        "reportable": true,
+        "source_value": "BUOY",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "Computer",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "Computer Model",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "COMPUTER MODEL",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "COMPUTER MODELS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
+        "source_value": "CON. DENSITY BALLOON",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Coriolis",
+        "reportable": true,
+        "source_value": "CORIOLIS",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Convair CV-580",
+        "reportable": true,
+        "source_value": "CV580",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Convair CV-580",
+        "reportable": true,
+        "source_value": "CV-580",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Digital Elevation Model",
+        "reportable": true,
+        "source_value": "DEM (DIGITAL ELEVATION MODEL)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Digital Elevation Model",
+        "reportable": true,
+        "source_value": "DIGITAL ELEVATION MODEL",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Buoy",
+        "reportable": true,
+        "source_value": "DRIFTING BUOY",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Earth Observing-1",
+        "reportable": true,
+        "source_value": "EO-1 (EARTH OBSERVING 1)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Field Investigation",
+        "reportable": true,
+        "source_value": "FIELD INVESTIGATION",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Field Survey",
+        "reportable": true,
+        "source_value": "FIELD SURVEY",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "GOES",
+        "reportable": true,
+        "source_value": "GOES (NOAA GEOSTATIONARY OPERATIONAL ENVIRONMENTAL SATELLITES)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "GOES-12",
+        "reportable": true,
+        "source_value": "GOES-12 (AQUA/TERRA)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "GOES-12",
+        "reportable": true,
+        "source_value": "GOES-12 (GEOSTATIONARY OPERATIONAL ENVIRONMENTAL SATELLITE-12)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "GOES-8",
+        "reportable": true,
+        "source_value": "GOES-8 (GEOSTATIONARY OPERATIONAL ENVIRONMENTAL SATELLITE-8)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ground-based Observation",
+        "reportable": true,
+        "source_value": "GROUND-BASED OBSERVATION",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ground-based Observation",
+        "reportable": true,
+        "source_value": "GROUND-BASED PAN NETWORK CALIFORNIA",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "ICESat-2",
+        "reportable": true,
+        "source_value": "ICESAT-II",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "International Space Station",
+        "reportable": true,
+        "source_value": "INTERNATIONAL SPACE STATION (ISS)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "JASON-1",
+        "reportable": true,
+        "source_value": "Jason-1 Geodetic",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "JERS-1",
+        "reportable": true,
+        "source_value": "JERS-1 (JAPANESE EARTH RESOURCES SATELLITE-1)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Landsat-7",
+        "reportable": true,
+        "source_value": "L7",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Laboratory",
+        "reportable": true,
+        "source_value": "LABORATORY",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Landsat",
+        "reportable": true,
+        "source_value": "LANDSAT (LAND REMOTE-SENSING SATELLITE)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Landsat-2",
+        "reportable": true,
+        "source_value": "LANDSAT-2 (LAND REMOTE-SENSING SATELLITE-2)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Landsat-5",
+        "reportable": true,
+        "source_value": "LANDSAT-5 (LAND REMOTE-SENSING SATELLITE-5)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Landsat-7",
+        "reportable": true,
+        "source_value": "LANDSAT-7 (LAND REMOTE-SENSING SATELLITE-7)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Meteorological Station",
+        "reportable": true,
+        "source_value": "METEOROLOGICAL STATION",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Mission Report",
+        "reportable": true,
+        "source_value": "MISSION REPORT",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "MODEL",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "MTSAT-1R",
+        "reportable": true,
+        "source_value": "MTSAT1R",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "MTSAT-2",
+        "reportable": true,
+        "source_value": "MTSAT2",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "NASA Douglas DC-8",
+        "reportable": true,
+        "source_value": "NASA DC-8",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "National Lightning Detection Net.",
+        "reportable": true,
+        "source_value": "NATIONAL LIGHTNING DETECTION NETWORK",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "NCEP ETA Model",
+        "reportable": true,
+        "source_value": "NCEP-ETA",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Nimbus-7",
+        "reportable": true,
+        "source_value": "NIMBUS-7",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "NOAA-14",
+        "reportable": true,
+        "source_value": "NOAA-14 (NATIONAL OCEANIC &amp; ATMOSPHERIC ADMINISTRATION-14)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Suomi NPP",
+        "reportable": true,
+        "source_value": "NPP",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "OSTM/JASON-2",
+        "reportable": true,
+        "source_value": "OSTM/Jason-2",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "P-3A ORION",
+        "reportable": true,
+        "source_value": "P-3A",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "RapidEye",
+        "reportable": true,
+        "source_value": "RAPIDEYE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Ship",
+        "reportable": true,
+        "source_value": "SHIP",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "SOIL TEXTURE",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "SPOT-4",
+        "reportable": true,
+        "source_value": "SPOT-4 (SYSTEME PROBATOIRE POUR L'OBSERVATION DE LA TERRE-4)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "STS-41G",
+        "reportable": true,
+        "source_value": "STS 41G",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Suomi-NPP",
+        "reportable": true,
+        "source_value": "Suomi NPP",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Terra",
+        "reportable": true,
+        "source_value": "TERRA (MORNING EQUATORIAL CROSSING TIME SATELLITE)",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
+        "source_value": "TETHERED BALLOON",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
+        "source_value": "WEATHER  BALLOON",
+        "type": "alias"
+    },
+    {
+        "field": "platform",
+        "replacement_value": "Balloon",
+        "reportable": true,
+        "source_value": "WEATHER BALLOON",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Atomic Absorption Spectrometer",
+        "reportable": true,
+        "source_value": "AA (ATOMIC ABSORPTION SPECTROMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Accelerometer",
+        "reportable": true,
+        "source_value": "ACCELEROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Aerosol Collector",
+        "reportable": true,
+        "source_value": "AEROSOL COLLECTOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Aethaelometer",
+        "reportable": true,
+        "source_value": "AETHAELOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Airborne Tracking Sunphotometer",
+        "reportable": true,
+        "source_value": "AIRBORNE SUN PHOTOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "AltiKa Altimeter",
+        "reportable": true,
+        "source_value": "AltiKa",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Accelerator Mass Spectrometer",
+        "reportable": true,
+        "source_value": "AMS (ACCELERATOR MASS SPECTROMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Accelerator Mass Spectrometer",
+        "reportable": true,
+        "source_value": "AMS (ACCELERATOR MASS SPECTROMETERS)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Anemometer",
+        "reportable": true,
+        "source_value": "ANEMOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Aneroid Pressure Sensor",
+        "reportable": true,
+        "source_value": "ANEROID BAROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Barometer",
+        "reportable": true,
+        "source_value": "BAROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Carbon Analyzer",
+        "reportable": true,
+        "source_value": "CARBON ANALYZER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Spectrometer",
+        "reportable": true,
+        "source_value": "cavity ringdown spectrometer",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Ceilometer",
+        "reportable": true,
+        "source_value": "CEILOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "CHN Analyzer",
+        "reportable": true,
+        "source_value": "CHN ANALYZER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Clinometer",
+        "reportable": true,
+        "source_value": "CLINOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Clock",
+        "reportable": true,
+        "source_value": "CLOCK",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Model",
+        "reportable": true,
+        "source_value": "COMPUTER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Densiometer",
+        "reportable": true,
+        "source_value": "DENSIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Dewpoint Hydrometer",
+        "reportable": true,
+        "source_value": "DEWPOINT HYDROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Diode Laser Hygrometer",
+        "reportable": true,
+        "source_value": "DIODE LASER HYGROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "DORIS Receiver",
+        "reportable": true,
+        "source_value": "DORIS RECEIVER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Dropsonde",
+        "reportable": true,
+        "source_value": "DROPSONDE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Dropwindsonde",
+        "reportable": true,
+        "source_value": "DROPWINDSONDE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Eddy Correlation Device",
+        "reportable": true,
+        "source_value": "EDDY CORRELATION APPARATUS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Enhanced Thematic Mapper +",
+        "reportable": true,
+        "source_value": "ETM+ (ENHANCED THEMATIC MAPPER PLUS)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "GHIS",
+        "reportable": true,
+        "source_value": "GLOBAL HAWK IN-FLIGHT TURBULENCE SENSOR (GHIS)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "GOES-12 Imager",
+        "reportable": true,
+        "source_value": "GOES-12 IMAGER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "GPS Receivers",
+        "reportable": true,
+        "source_value": "GPS (GLOBAL POSITIONING SYSTEM)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "GPS Clock",
+        "reportable": true,
+        "source_value": "GPS CLOCK",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Gust Probe",
+        "reportable": true,
+        "source_value": "GUST PROBE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "High-resolution Camera",
+        "reportable": true,
+        "source_value": "HIGH RESOLUTION CAMERA",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "High Spectral Resolution Lidar",
+        "reportable": true,
+        "source_value": "HIGH SPECTRAL RESOLUTION LIDAR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Humidity Sensor",
+        "reportable": true,
+        "source_value": "HUMIDITY PROBE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Humidity Sensor",
+        "reportable": true,
+        "source_value": "HUMIDITY SENSOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Hydrophone",
+        "reportable": true,
+        "source_value": "HYDROPHONE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Hygrometer",
+        "reportable": true,
+        "source_value": "HYGROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "HYPERION",
+        "reportable": true,
+        "source_value": "HYPERION (HYPERSPECTRAL IMAGER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "ICP-Atomic Emission Spectrometer",
+        "reportable": true,
+        "source_value": "ICP-AES (INDUCTIVELY COUPLED PLASMA ATOMIC EMISSION SPECTROMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Imaging Infrared Radiometer",
+        "reportable": true,
+        "source_value": "IMAGING INFRARED RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Inclinometer",
+        "reportable": true,
+        "source_value": "INCLINOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Infrared Thermometer",
+        "reportable": true,
+        "source_value": "INFRARED THERMOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Ion Chromatograph",
+        "reportable": true,
+        "source_value": "ION CHROMATOGRAPH",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Infrared CO2 Analyzer",
+        "reportable": true,
+        "source_value": "IR CO2 ANALYZER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Infrared Gas Analyzer",
+        "reportable": true,
+        "source_value": "IRGA (INFRARED GAS ANALYZER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Enhanced Thematic Mapper +",
+        "reportable": true,
+        "source_value": "LANDSAT ETM+",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "MSS",
+        "reportable": true,
+        "source_value": "LANDSAT MSS",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thematic Mapper",
+        "reportable": true,
+        "source_value": "LANDSAT TM",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thematic Mapper",
+        "reportable": true,
+        "source_value": "LANDSAT TM  (LANDSAT THEMATIC   MAPPER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thematic Mapper",
+        "reportable": true,
+        "source_value": "LANDSAT TM (LANDSAT THEMATIC MAPPER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Mass Spectrometer",
+        "reportable": true,
+        "source_value": "MASS SPECTROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Microscope",
+        "reportable": true,
+        "source_value": "MICROSCOPE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "MODIS",
+        "reportable": true,
+        "source_value": "Moderate-Resolution Imaging Spectroradiometer",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "MODIS",
+        "reportable": true,
+        "source_value": "MODIS (MODERATE-RESOLUTION IMAGING SPECTRORADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "MODIS",
+        "reportable": true,
+        "source_value": "MODIS (MODERATE-RESOLUTION IMAGING SPECTRORADIOMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "MODIS Airborne Simulator",
+        "reportable": true,
+        "source_value": "MODIS AIRBORNE SIMULATOR (MAS)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Modular Multiband Radiometer",
+        "reportable": true,
+        "source_value": "MODULAR MULTIBAND RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Multispectral Scanner",
+        "reportable": true,
+        "source_value": "MSS (MULTISPECTRAL SCANNER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Multiband Vegetation Imager",
+        "reportable": true,
+        "source_value": "MULTIBAND VEGETATION IMAGER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Nephelometer",
+        "reportable": true,
+        "source_value": "NEPHELOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Net Radiometer",
+        "reportable": true,
+        "source_value": "NET RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "NPOL Radar",
+        "reportable": true,
+        "source_value": "NPOL RADAR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Ozonesonde",
+        "reportable": true,
+        "source_value": "OZONESONDE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "PALSAR",
+        "reportable": true,
+        "source_value": "PALSAR (Phased Array type L-band Synthetic Aperture Radar)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "PAR Sensor",
+        "reportable": true,
+        "source_value": "PAR SENSOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "PARABOLA Radiometer",
+        "reportable": true,
+        "source_value": "PARABOLA RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Photoelectric Aerosol Sensor",
+        "reportable": true,
+        "source_value": "PAS - PHOTOELECTRIC AEROSOL SENSOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Permeameter",
+        "reportable": true,
+        "source_value": "PERMEAMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "PH Meter",
+        "reportable": true,
+        "source_value": "PH METER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Photometer",
+        "reportable": true,
+        "source_value": "PHOTOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "POLDER-1",
+        "reportable": true,
+        "source_value": "POLDER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Poseidon Altimeter",
+        "reportable": true,
+        "source_value": "POSEIDON ALTIMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pressure Chamber",
+        "reportable": true,
+        "source_value": "PRESSURE CHAMBER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Proton Transfer Mass Spectrometer",
+        "reportable": true,
+        "source_value": "PTR-MS (PROTON TRANSFER MASS SPECTROMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pyranometer",
+        "reportable": true,
+        "source_value": "PYRANOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Pyrgeometer",
+        "reportable": true,
+        "source_value": "PYRGEOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radar Altimeter",
+        "reportable": true,
+        "source_value": "RADAR ALTIMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radar Altimeter",
+        "reportable": true,
+        "source_value": "Radar Altimeters",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radiometer",
+        "reportable": true,
+        "source_value": "RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Radiosonde",
+        "reportable": true,
+        "source_value": "RADIOSONDE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Rawindsonde",
+        "reportable": true,
+        "source_value": "RAWINSONDE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Rotating Dipole Electric Field Mill",
+        "reportable": true,
+        "source_value": "ROTATING DIPOLE ELECTRIC FIELD MILL",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Synthetic Aperture Radar",
+        "reportable": true,
+        "source_value": "SAR (SYNTHETIC APERTURE RADAR)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Scintillation Counter",
+        "reportable": true,
+        "source_value": "SCINTILLATION COUNTER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "SM Microwave Radiometer",
+        "reportable": true,
+        "source_value": "SMMR (SCANNING MULTICHANNEL MICROWAVE RADIOMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Spectrometer",
+        "reportable": true,
+        "source_value": "SPECTROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Spectrophotometer",
+        "reportable": true,
+        "source_value": "SPECTROPHOTOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Spectroradiometer",
+        "reportable": true,
+        "source_value": "SPECTRORADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Shuttle Radar Topography Mission",
+        "reportable": true,
+        "source_value": "SRTM (SHUTTLE RADAR TOPOGRAPHY MISSION)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Steel Measuring Tape",
+        "reportable": true,
+        "source_value": "STEEL MEASURING TAPE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Stream Gauge",
+        "reportable": true,
+        "source_value": "STREAM GAUGE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Sun Photometer",
+        "reportable": true,
+        "source_value": "SUN PHOTOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Surface Acoustic Wave Hygrometer",
+        "reportable": true,
+        "source_value": "SURFACE ACOUSTIC WAVE HYGROMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Time Domain Reflectometry Probe",
+        "reportable": true,
+        "source_value": "TDR (TIME DOMAIN REFLECTOMETRY PROBE)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Temperature Probe",
+        "reportable": true,
+        "source_value": "TEMPERATURE PROBE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Temperature Sensor",
+        "reportable": true,
+        "source_value": "TEMPERATURE SENSOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Terra",
+        "reportable": true,
+        "source_value": "TERRA (MORNING EQUATORIAL CROSSING TIME SATELLITE)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thematic Mapper Simulator",
+        "reportable": true,
+        "source_value": "THEMATIC MAPPER SIMULATOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thermistor",
+        "reportable": true,
+        "source_value": "THERMISTOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thermocouple",
+        "reportable": true,
+        "source_value": "THERMOCOUPLE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thermometer",
+        "reportable": true,
+        "source_value": "THERMOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Thematic Mapper",
+        "reportable": true,
+        "source_value": "TM (THEMATIC MAPPER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Total Ozone Mapping Spectrometer",
+        "reportable": true,
+        "source_value": "TOMS (TOTAL OZONE MAPPING SPECTROMETER)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Altimeter",
+        "reportable": true,
+        "source_value": "TOPEX ALTIMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Topex Microwave Radiometer",
+        "reportable": true,
+        "source_value": "TOPEX MICROWAVE RADIOMETER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "TPS (Hotplate)",
+        "reportable": true,
+        "source_value": "TOTAL PRECIPITATION SENSOR (HOTPLATE)",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Total Sky Imager",
+        "reportable": true,
+        "source_value": "TOTAL SKY IMAGER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "UV Ozone Detector",
+        "reportable": true,
+        "source_value": "UV OZONE DETECTOR",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Water Level Gauge",
+        "reportable": true,
+        "source_value": "WATER LEVEL GAUGE",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Wide Field Camera",
+        "reportable": true,
+        "source_value": "WIDE FIELD CAMERA",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Wind Profiler",
+        "reportable": true,
+        "source_value": "WIND PROFILER",
+        "type": "alias"
+    },
+    {
+        "field": "instrument",
+        "replacement_value": "Wind Scatterometer",
+        "reportable": true,
+        "source_value": "WIND SCATTEROMETER",
+        "type": "alias"
+    }
+]
