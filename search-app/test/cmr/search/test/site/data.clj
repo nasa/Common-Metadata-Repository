@@ -11,7 +11,8 @@
      :concept-id "C1200000003-PROV1"}
    :umm
     {"ShortName" "s3"
-     "EntryTitle" "coll3"}})
+     "EntryTitle" "coll3"
+     "Version" "6"}})
 
 (def coll-data-2
   {:meta
@@ -20,6 +21,7 @@
    :umm
     {"ShortName" "s3"
      "EntryTitle" "coll3"
+     "Version" "7"
      "DOI"
      {"Authority" "auth6"
       "DOI" "doi6"}}})
@@ -76,19 +78,30 @@
     (is (= "s3"
            (data/get-short-name coll-data-1)))))
 
-(deftest make-link
+(deftest make-holding-data
   (testing "with an entry title and short name"
-    (is (= {:href "http://cmr.test.host/concepts/C1200000003-PROV1.html"
-            :text "coll3"}
-           (data/make-link cmr-base-url coll-data-1))))
+    (let [data (data/make-holding-data cmr-base-url coll-data-1)]
+      (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
+             (:link-href data)))
+      (is (= "coll3" (:link-text data)))
+      (is (= "s3" (get-in data [:umm "ShortName"])))
+      (is (= "6" (get-in data [:umm "Version"])))))
   (testing "with an entry title, short name, and doi"
-    (is (= {:href "http://dx.doi.org/doi6"
-            :text "coll3"}
-           (data/make-link cmr-base-url coll-data-2)))))
+    (let [data (data/make-holding-data cmr-base-url coll-data-2)]
+      (is (= "http://dx.doi.org/doi6" (:link-href data)))
+      (is (= "coll3" (:link-text data)))
+      (is (= "s3" (get-in data [:umm "ShortName"])))
+      (is (= "7" (get-in data [:umm "Version"]))))))
 
-(deftest make-links
-  (let [coll [coll-data-1 coll-data-2]]
-    (is (= [{:href "http://cmr.test.host/concepts/C1200000003-PROV1.html"
-             :text "coll3"}
-            {:href "http://dx.doi.org/doi6", :text "coll3"}]
-           (data/make-links cmr-base-url coll)))))
+(deftest make-holdings-data
+  (let [coll [coll-data-1 coll-data-2]
+        data (vec (data/make-holdings-data cmr-base-url coll))]
+    (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
+           (get-in data [0 :link-href])))
+    (is (= "coll3" (get-in data [0 :link-text])))
+    (is (= "s3" (get-in data [0 :umm "ShortName"])))
+    (is (= "6" (get-in data [0 :umm "Version"])))
+    (is (= "http://dx.doi.org/doi6" (get-in data [1 :link-href])))
+    (is (= "coll3" (get-in data [1 :link-text])))
+    (is (= "s3" (get-in data [1 :umm "ShortName"])))
+    (is (= "7" (get-in data [1 :umm "Version"])))))
