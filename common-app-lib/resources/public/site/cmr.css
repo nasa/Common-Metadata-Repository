@@ -1,3 +1,23 @@
+/* Footer
+ *
+ * This section includes updates to other elements in order to give us a
+ * sticky footer.
+ */
+
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+main.content-section {
+    flex: 1;
+}
+
 footer {
     background: #2276ac;
     color: white;
