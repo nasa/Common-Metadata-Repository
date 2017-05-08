@@ -46,9 +46,10 @@
   (get-bulk-update-task-status
     [db task-id]
     ;; Returns a status for the particular task
-    (su/find-one db (su/select [:status :status-message]
-                     (su/from "bulk_update_task_status")
-                     (su/where `(= :task-id ~task-id)))))
+    (let [status (su/find-one db (su/select [:status :status-message]
+                                   (su/from "bulk_update_task_status")
+                                   (su/where `(= :task-id ~task-id))))]
+      (util/map-keys->kebab-case status)))
 
   (get-bulk-update-task-collection-status
     [db task-id]
