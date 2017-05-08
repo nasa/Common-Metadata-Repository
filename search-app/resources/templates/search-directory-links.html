@@ -4,6 +4,9 @@
 
 {% block main-content %}
 <h2>Provider Holdings Directory</h2>
+
+Listed below are the top-level members of the CMR Search holdings directory.
+
 <ul>
   {% for link in links %}
   <li><a href="{{ base-url }}{{ link.href }}">{{ link.text }}</a></li>

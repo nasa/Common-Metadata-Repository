@@ -1,14 +1,39 @@
 {% extends "templates/search-base.html" %}
 
-{% block title %}{{ app-title }} - Landing Pages for the {{ provider-name}} {{ tag-name }} Collections{% endblock %}
+{% block title %}{{ app-title }} - Landing Pages for the {{ provider-id}} {{ tag-name }} Collections{% endblock %}
 
 {% block main-content %}
 <h2 class="cover-heading">Provider Holdings Directory</h2>
 <h3 class="cover-heading">{{ tag-name }}</h3>
-<h4 class="cover-heading">Landing Pages for {{ provider-name}}</h4>
-<ul>
-  {% for link in links %}
-  <li><a href="{{ link.href }}">{{ link.text }}</a></li>
-  {% endfor %}
-</ul>
+<h4 class="cover-heading">Landing Pages for {{ provider-id}}</h4>
+
+<p>
+  Listed below are all the EOSDIS holdings for the {{ provider-id }} provider.
+  Each is linked to the collection's landing page.
+</p>
+
+<table id="data-providers">
+  <thead>
+    <tr>
+      <th>Collection</th>
+      <th>Short Name</th>
+      <th>Version</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for holding in holdings %}
+    <tr>
+      <td>
+        <a href="{{ holding.link-href }}">{{ holding.link-text }}</a>
+      </td>
+      <td>
+        {{ holding.umm.ShortName }}
+      </td>
+      <td>
+        {{ holding.umm.Version }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

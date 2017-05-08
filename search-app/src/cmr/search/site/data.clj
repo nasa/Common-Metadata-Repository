@@ -99,20 +99,19 @@
   [item]
   (get-in item [:umm "ShortName"]))
 
-(defn make-link
-  "Given a single item from a query's collections, generate an appropriate
-  landing page link.
-
-  A generated link has the form `{:href ... :text ...}`."
+(defn make-holding-data
+  "Given a single item from a query's collections, update the item with data
+  for linking to its landing page."
   [cmr-base-url item]
-  {:href (make-href cmr-base-url item)
-   :text (get-entry-title item)})
+  (merge item
+         {:link-href (make-href cmr-base-url item)
+          :link-text (get-entry-title item)}))
 
-(defn make-links
+(defn make-holdings-data
   "Given a collection from an elastic search query, generate landing page
   links appropriate for the collection."
   [cmr-base-url coll]
-  (map (partial make-link cmr-base-url) coll))
+  (map (partial make-holding-data cmr-base-url) coll))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Page data functions
@@ -157,10 +156,10 @@
     (base-page context)
     {:provider-id provider-id
      :tag-name (get-tag-short-name tag)
-     :links (filter filter-fn
-                    (make-links
-                     (config/application-public-root-url context)
-                     (collection-data context tag provider-id)))})))
+     :holdings (filter filter-fn
+                       (make-holdings-data
+                        (config/application-public-root-url context)
+                        (collection-data context tag provider-id)))})))
 
 (defn get-provider-tag-sitemap-landing-links
   "Generate the data necessary to render EOSDIS landing page links that will
