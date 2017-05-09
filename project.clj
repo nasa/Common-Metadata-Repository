@@ -31,5 +31,8 @@
     "eastwood" ["modules" "eastwood"]
     "lint" ["modules" "lint"]
     "check-deps" ["modules" "check-deps"]
-    "generate-static" ["modules" "generate-static"]})
+    "generate-static" ["modules" "generate-static"]
+    "install!" ["modules" "do" "clean," "install," "clean"]
+    "install-with-content!" ["modules" "do"
+                             "clean," "install," "generate-static," "clean"]})
 
