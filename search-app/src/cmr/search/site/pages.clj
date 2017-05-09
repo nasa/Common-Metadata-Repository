@@ -9,6 +9,7 @@
 ;;; HTML page-genereating functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 (defn home
   "Prepare the home page template."
   [context]

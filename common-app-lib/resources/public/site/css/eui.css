@@ -1,0 +1,516 @@
+body {
+  /* background: #ecf0f1 url('starfield.jpg') repeat-x 0 50px; */
+  background: #fff;
+  font-family: 'Open Sans', sans-serif;
+  color: #323232;
+}
+
+.container {
+  margin: 0 auto;
+  width: 95%;
+}
+
+.container-fixed {
+  margin: 0 auto;
+  max-width: 1300px;
+  margin-bottom: 40px;
+}
+
+img.screenshot {
+  border: none;
+  padding: 0;
+  width: 100%;
+}
+
+.best-practice-example {
+  text-align: center;
+  background: rgba(235, 235, 235, 0.4);
+  padding: 1em;
+}
+
+.docs-link {
+  font-style: italic;
+  font-size: 0.8em;
+  margin: 0.5em 0 0 0;
+}
+
+.micro-examples {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+}
+
+.micro-example {
+  padding: 0 0.5em;
+}
+
+.example-title {
+  display: block;
+  font-size: 2em;
+}
+
+.example-title.example-good {
+  color: #189c54 /* EUI Dark Green */
+}
+
+.example-title.example-bad {
+  color: #e74c3c /* EUI Bright Red */
+}
+
+.micro-examples img{
+  border: none;
+  padding: 0;
+}
+
+figure {
+  margin-bottom: 2em;
+}
+
+table.image-grid {
+  margin-bottom: 2em;
+  border: none;
+}
+
+table.image-grid td {
+  padding: 0.5em;
+  border: none;
+}
+
+table.image-grid p {
+  margin: 0;
+  padding: 0.5em 1em;
+  background: rgb(236,240,241);
+  color: rgb(236,240,241);
+  font-size: 0.8em;
+}
+
+.background-demo {
+  height: 200px;
+  background: url(../assets/ed-images/indian-flood.jpg);
+}
+
+.background-demo p {
+  padding: 1em;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+}
+
+.component {
+  clear: both;
+  padding-bottom: 20px;
+}
+
+.microframe-highlight .microframes-container {
+  display: table-cell;
+  vertical-align: top;
+}
+
+.microframe-highlight .highlight {
+  display: table-cell;
+  width: 100%;
+}
+
+.doc-mast {
+  background: #2276ac;
+  box-shadow: 0 5px 5px rgba(189, 195, 199,0.15);
+  display: flex;
+}
+
+.main-nav {
+  font-size: 0.9em;
+  text-transform: uppercase;
+  float: right;
+  margin-top: 14px;
+}
+
+.main-nav-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.main-nav-list li {
+  display: inline-block;
+  padding: 15px;
+}
+
+.main-nav-list a {
+  color: #fff;
+}
+
+.main-nav-list a.active {
+  font-weight: bold;
+}
+
+#nav-content header {
+  min-height: 55px;
+  background: #000;
+}
+
+.eui-masthead-logo {
+  width: 350px;
+  padding: 15px 0;
+}
+
+.eui-masthead-logo h1 {
+  font-family: "Helvetica Neue", "Helvetica", sans-serif;
+  font-weight: 100;
+  font-size: 2em;
+  line-height: 0.8em;
+}
+
+.eui-masthead-logo.eui-application-logo a:link {
+  background-image: url(https://cdn.earthdata.nasa.gov/eui/latest/docs/assets/ed-logos/app-logo.png);
+  width: inherit;
+}
+
+.eui-masthead-logo.eui-application-logo a:hover {
+  background-image: url(https://cdn.earthdata.nasa.gov/eui/latest/docs/assets/ed-logos/app-logo_hover.png);
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 1.3 / 1), only screen and (min-resolution: 125dpi), only screen and (min-resolution: 1.3dppx) {
+  .eui-masthead-logo.eui-application-logo a:link {
+    background-image: url(https://cdn.earthdata.nasa.gov/eui/latest/docs/assets/ed-logos/app-logo_2x.png);
+  }
+
+  .eui-masthead-logo.eui-application-logo a:hover {
+    background-image: url(https://cdn.earthdata.nasa.gov/eui/latest/docs/assets/ed-logos/app-logo_hover_2x.png);
+  }
+}
+
+.content {
+  padding: 3em 8em;
+}
+
+.content .note {
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.internal .content {
+  border: none;
+}
+
+.masthead {
+  background: url('https://cdn.earthdata.nasa.gov/eui/1.1.0/docs/assets/ed-images/yellow-sea-swirls.jpg') no-repeat;
+  background-size: cover;
+  margin-bottom: 40px;
+}
+
+.masthead h2 {
+  padding: 160px 0;
+  text-align: center;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+  font-weight: bold;
+  font-size: 3em;
+  margin: 0;
+  color: #fff;
+}
+
+.masthead-internal {
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+  padding: 100px 0 60px 0;
+}
+
+.masthead-internal.design {
+  background: url('color.png') no-repeat center 40px;
+}
+
+.masthead-internal.developer {
+  background: url('notes.png') no-repeat center 40px;
+}
+
+.masthead-internal h2 {
+  border-bottom: none;
+  font-weight: bold;
+  font-size: 3em;
+  margin: 2em 0 .8em 0;
+}
+
+.masthead-internal h3 {
+  font-weight: 100;
+  font-size: 2em;
+}
+
+.content .section-title {
+  font-weight: normal;
+  font-size: 2em;
+  color: #95a5a6;
+}
+
+.content .docs-title {
+  font-weight: normal;
+  font-size: 2em;
+  color: #95a5a6;
+}
+
+.doc-link {
+  display: block;
+  margin: .5em 0;
+}
+
+.demo-mast {
+  padding: 1em;
+  margin-top: 0.5em;
+}
+
+.demo-mast img {
+  border: none;
+}
+
+.edg-info {
+  background: url('color.png') no-repeat left 50%;
+}
+
+.eui-info {
+  background: url('code.png') no-repeat left 50%;
+}
+
+.dev-notes-info {
+  background: url('notes.png') no-repeat left 50%;
+}
+
+.color-table th {
+  text-align: center;
+}
+
+.color-table--copy {
+  font-size: 0.7em;
+  background-color: #95a5a6;
+  color: #fff;
+  padding: 0.25em;
+  border-bottom-left-radius: 5px;
+  float: right;
+  position: relative;
+  top: -8px;
+  right: -8px;
+  cursor: pointer;
+}
+
+.color-table--copy:hover {
+  background-color: #819293;
+}
+
+.color-table--col-1,
+.color-table--col-4 {
+  width: 190px;
+}
+
+.color-table--col-3 {
+  width: 290px;
+}
+
+.docs .content {position: relative; margin: 0 40px 40px 290px; padding: 0;}
+
+.highlight {
+  clear: both;
+}
+
+.eui-info-box {
+  max-width: 1300px;
+}
+
+/* Jargon Watch
+------------------------------------------*/
+.jargon-watch {
+  background: #fff;
+  border: 1px solid #bdc3c7;
+  border-right: none;
+  box-shadow: -8px 0 15px rgba(0,0,0,0.1);
+  float: right;
+  padding: 15px;
+  width: 275px;
+}
+
+.jargon-watch ol {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.jargon-watch h5 {
+  margin: 0 0 5px 0;
+}
+
+.jargon {
+  font-family: "Georgia", serif;
+  font-style: italic;
+}
+
+.dev-note {
+  font-size: .6em;
+  text-transform: uppercase;
+  background: #d35400;
+  color: #fff;
+  text-shadow: 1px 1px 1px rgba(0,0,0,.2);
+  border-radius: 20px;
+  padding: 0 1em;
+}
+
+.eui-icons {
+  border-collapse: collapse;
+}
+
+.eui-icons td {
+  text-align: center;
+  padding: 10px 0 0 0;
+  margin: 0;
+  width: 15%;
+}
+
+.eui-icons p {
+  margin: 0;
+}
+
+.eui-icons p.class-name {
+  font-size: .8em;
+  line-height: 1em;
+  padding: .5em;
+  margin-top: 10px;
+  background: #f3f3f3;
+}
+
+.banner {
+  margin: .5em 0;
+}
+
+.align-c {
+  text-align: center;
+}
+
+.align-l {
+  text-align: left;
+}
+
+.align-r {
+  text-align: right;
+}
+
+xmp {
+  margin: 0;
+}
+
+/* Retina Displays */
+@media
+(-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+    /* Retina-specific stuff here */
+}
+
+/*==========================================
+   EUI Left Navigation / Sidebar
+==========================================*/
+
+/* General Layout Styles
+------------------------------------------*/
+
+.eui-docs-sidebar {
+  /* EUI sidebar container */
+  position: fixed;
+  padding-left: 0px;
+  margin-top: 15px;
+}
+
+.eui-docs-sidebar ul {
+  /* List style and position reset */
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.eui-docs-sidebar .affix {
+  /* Affix sidebar to the top */
+  position: fixed;
+  top: 10px;
+  width: 250px;
+  -webkit-transform: translate3d(0,0,0);
+  -o-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+}
+
+/* Basic Link Styles
+------------------------------------------*/
+
+.eui-docs-sidebar .nav > li > a,
+.eui-docs-sidebar .nav .nav > li > a {
+  /* Shared Styles */
+  color: rgb(149, 165, 166);
+  padding: 4px 20px;
+  display: block;
+  border-left: 5px solid rgb(149, 165, 166);
+}
+
+.eui-docs-sidebar .nav > li > a {
+  /* Top Level Links */
+  font-size: 1.1em;
+  font-weight: 400;
+}
+
+.eui-docs-sidebar .nav .nav > li > a {
+  /* Second Level Links */
+  font-size: 1em;
+  padding-left: 30px;
+  border-left: 5px solid transparent;
+}
+
+/* Current, Hover, and Focus Link Styles
+------------------------------------------*/
+
+.eui-docs-sidebar .nav > .active > a,
+.eui-docs-sidebar .nav .nav > .active a,
+.eui-docs-sidebar .nav > li > a:hover,
+.eui-docs-sidebar .nav > li > a:focus,
+.eui-docs-sidebar .nav .nav > li > a:hover,
+.eui-docs-sidebar .nav .nav > li > a:focus {
+  /* Shared Styles */
+  color: rgb(52, 152, 219);
+  border-left: 5px solid rgb(52, 152, 219);
+  background-color: transparent;
+}
+
+.eui-docs-sidebar .nav > .active > a,
+.eui-docs-sidebar .nav > li > a:hover,
+.eui-docs-sidebar .nav > li > a:focus {
+  /* Top Level */
+  font-weight: 700;
+}
+
+.eui-docs-sidebar .nav .nav > .active a,
+.eui-docs-sidebar .nav .nav > li > a:hover,
+.eui-docs-sidebar .nav .nav > li > a:focus {
+  /* Second Level */
+  font-weight: 500;
+}
+
+/* Display States
+------------------------------------------*/
+
+.eui-docs-sidebar .nav .nav {
+  /* Hide all sub-navigation by default */
+  display: none;
+}
+
+.eui-docs-sidebar .nav > .active > .nav {
+  /* Display sub-navigation if on current navigation */
+  display: block;
+}
+
+/* Media queries for smaller desktop browser windows */
+@media screen and (max-width: 1330px) {
+  .eui-masthead-logo {
+    width: 300px
+  }
+
+  .container-fixed{
+    max-width: 900px;
+  }
+
+  .main-nav {
+    font-size: 0.8em;
+    margin-top: 18px;
+  }
+
+  .main-nav-list li {
+    padding: 15px 5px
+  }
+}

@@ -5,7 +5,7 @@
 .home.eui-hero {
     background-size: cover;
     background-color: #0d1f2b;
-    background-image: url('https://cdn.earthdata.nasa.gov/conduit/upload/947/LANCE_header_MODISAqua2.jpg');
+    background-image: url('../images/LANCE_header_MODISAqua2.jpg');
     background-repeat: no-repeat;
 }
 
@@ -62,28 +62,4 @@ footer .badge {
     background-color: #2c3e50;
     position: relative;
     top: -2px;
-}
-
-.eui-badge, .eui-badge--sm, .eui-badge--md, .eui-badge--lg {
-    display: inline-block;
-    vertical-align: middle;
-    border-radius: 4px;
-    padding: 0.6em;
-    background: #2276ac;
-    color: white;
-    line-height: 0.8;
-    text-transform: uppercase;
-    font-weight: normal;
-    -webkit-font-smoothing: antialiased;
-    -webkit-transition: background 0.2s linear;
-    transition: background 0.2s linear;
-}
-
-.eui-badge:hover {
-    color: white;
-    background: #1a5981;
-}
-.eui-badge--md {
-    font-size: 0.8em;
-    font-weight: bold;
 }
