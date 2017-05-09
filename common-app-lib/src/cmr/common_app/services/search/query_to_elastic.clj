@@ -1,13 +1,14 @@
 (ns cmr.common-app.services.search.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
-  (:require [clojurewerkz.elastisch.query :as q]
-            [clojure.string :as str]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.datetime-helper :as h]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common-app.services.search.query-order-by-expense :as query-expense]
-            [cmr.common-app.services.search.messages :as m]))
+  (:require
+   [clojure.string :as str]
+   [clojurewerkz.elastisch.query :as q]
+   [cmr.common-app.services.search.datetime-helper :as h]
+   [cmr.common-app.services.search.messages :as m]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common-app.services.search.query-order-by-expense :as query-expense]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.services.errors :as errors]))
 
 (defconfig numeric-range-execution-mode
   "Defines the execution mode to use for numeric ranges in an elasticsearch search"
@@ -80,8 +81,7 @@
 
 (defmulti query->elastic
   "Converts a query model into an elastic search query"
-  (fn [query]
-    (:concept-type query)))
+  :concept-type)
 
 (defmethod query->elastic :default
   [query]
@@ -121,8 +121,7 @@
 
 (defmulti query->sort-params
   "Converts a query into the elastic parameters for sorting results"
-  (fn [query]
-    (:concept-type query)))
+  :concept-type)
 
 (defmethod query->sort-params :default
   [query]

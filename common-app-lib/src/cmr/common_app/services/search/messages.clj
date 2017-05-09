@@ -28,13 +28,13 @@
 (defn invalid-pattern-opt-setting-msg
   "Creates a message saying which parameters would not allow pattern option setting."
   [params-set]
-  (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
+  (let [params (reduce conj '() (seq params-set))]
     (format "Pattern option setting disallowed on these parameters: %s" params)))
 
 (defn invalid-ignore-case-opt-setting-msg
   "Creates a message saying which parameters would not allow ignore case option setting."
   [params-set]
-  (let [params (reduce (fn [params param] (conj params param)) '() (seq params-set))]
+  (let [params (reduce conj '() (seq params-set))]
     (format "Ignore case option setting disallowed on these parameters: %s" params)))
 
 (defn invalid-settings-for-param
