@@ -1,22 +1,23 @@
 (ns cmr.spatial.ring-relations
   "Contains functions on rings that are common to cartesian and geodetic rings."
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [cmr.common.util :as util]
-            [primitive-math]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.line-segment :as s]
-            [cmr.spatial.arc-line-segment-intersections :as asi]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.line-string :as ls]
-            [clojure.math.combinatorics :as combo])
-  (:import cmr.spatial.cartesian_ring.CartesianRing
-           cmr.spatial.geodetic_ring.GeodeticRing
-           cmr.spatial.point.Point
-           cmr.spatial.mbr.Mbr))
+  (:require
+   [clojure.math.combinatorics :as combo]
+   [cmr.common.util :as util]
+   [cmr.spatial.arc-line-segment-intersections :as asi]
+   [cmr.spatial.cartesian-ring :as cr]
+   [cmr.spatial.conversion :as c]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.line-segment :as s]
+   [cmr.spatial.line-string :as ls]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [primitive-math])
+  (:import
+   cmr.spatial.cartesian_ring.CartesianRing
+   cmr.spatial.geodetic_ring.GeodeticRing
+   cmr.spatial.point.Point
+   cmr.spatial.mbr.Mbr))
 (primitive-math/use-primitive-operators)
 
 (defn ring
@@ -215,7 +216,7 @@
                                              (= n1 (dec n2))
                                              ;; Reject the last line combined with first line.
                                              (and
-                                               (= n1 0)
+                                               (zero? n1)
                                                (= n2 (dec (count lines)))))))
                                   (combo/combinations (range (count lines)) 2))]
     (mapcat (fn [[n1 n2]]

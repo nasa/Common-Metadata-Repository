@@ -1,27 +1,27 @@
 (ns cmr.spatial.test.generators
-  (:require [clojure.test.check.generators :as gen]
-            [clojure.string :as str]
-            [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
-            [pjstadig.assertions :as pj]
-            [primitive-math]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.vector :as v]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.line-segment :as s]
-            [cmr.spatial.arc-line-segment-intersections :as asi]
-            [clojure.math.combinatorics :as combo]))
+  (:require
+   [clojure.math.combinatorics :as combo]
+   [clojure.string :as str]
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
+   [cmr.spatial.arc :as a]
+   [cmr.spatial.arc-line-segment-intersections :as asi]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.line-segment :as s]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.vector :as v]
+   [pjstadig.assertions :as pj]
+   [primitive-math]))
 
 (comment
   ;; If you have trouble reloading this namespace, evaluate the
   ;; following expression:
   (primitive-math/unuse-primitive-operators))
-
 
 (primitive-math/use-primitive-operators)
 
@@ -193,9 +193,8 @@
     ;; Only use this point if it's not already in the ring
     (when-not (some (partial = point) points)
       (loop [pos 1]
-        (if (= pos (count points))
-          ;; We couldn't find a spot to add the point. Return nil
-          nil
+        ;; If we can't find a spot to add the point, return nil
+        (when-not (= pos (count points))
           (if-let [new-ring (insert-point-at ring point pos)]
             (let [new-ring (d/calculate-derived new-ring)
                   self-intersections (rr/self-intersections new-ring)]
@@ -280,7 +279,7 @@
                            diff (- ui li)
                            [li ui] (cond
                                      (> diff 2) [li ui]
-                                     (> ui 0) [(- li (- 3 diff)) ui]
+                                     (pos? ui) [(- li (- 3 diff)) ui]
                                      :else [li (+ ui (- 3 diff))])]
                        (ext-gen/choose-double li ui)))
         lon-gen (if (m/crosses-antimeridian? mbr)
