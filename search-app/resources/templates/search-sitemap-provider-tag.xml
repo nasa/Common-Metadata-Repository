@@ -4,7 +4,7 @@
   <url>
     <loc>{{ holding.link-href }}</loc>
     <lastmod>{{ datestamp }}</lastmod>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
   </url>
   {% endfor %}
 </urlset>

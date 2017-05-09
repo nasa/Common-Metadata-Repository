@@ -130,7 +130,7 @@
     (testing "presence and content of sitemap.xml file"
       (is (= (:status response) 200))
       (is (string/includes? body "/docs/search/api</loc>"))
-      (is (string/includes? body "<changefreq>daily</changefreq>"))
+      (is (string/includes? body "</changefreq>"))
       (is (string/includes? body "/collections/directory</loc>"))
       (is (string/includes? body "/collections/directory/eosdis</loc>"))
       (is (string/includes? body "/collections/directory/PROV1/gov.nasa.eosdis</loc>"))
@@ -149,7 +149,7 @@
       (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
-      (is (string/includes? body "<changefreq>daily</changefreq>"))
+      (is (string/includes? body "</changefreq>"))
       (is (string/includes? body "concepts/C1200000015-PROV1.html</loc>"))
       (is (string/includes? body "concepts/C1200000016-PROV1.html</loc>")))
     (testing "the collections not tagged with eosdis shouldn't show up"
@@ -167,7 +167,7 @@
       (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
-      (is (string/includes? body "<changefreq>daily</changefreq>"))
+      (is (string/includes? body "</changefreq>"))
       (is (string/includes? body "concepts/C1200000018-PROV2.html</loc>"))
       (is (string/includes? body "concepts/C1200000019-PROV2.html</loc>")))
     (testing "the collections not tagged with eosdis shouldn't show up"
