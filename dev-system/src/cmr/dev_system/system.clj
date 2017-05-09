@@ -194,9 +194,9 @@
   "Create an instance of the metadata-db application."
   [db-component queue-broker]
   (let [sys-with-db (if db-component
-                      (-> (mdb-system/create-system)
-                          (assoc :db db-component
-                                 :scheduler (jobs/create-non-running-scheduler)))
+                      (assoc (mdb-system/create-system)
+                             :db db-component
+                             :scheduler (jobs/create-non-running-scheduler))
                       (mdb-system/create-system))]
     (assoc sys-with-db :queue-broker queue-broker)))
 
@@ -222,15 +222,15 @@
 
 (defmethod create-ingest-app :in-memory
   [db-type queue-broker]
-  (-> (ingest-system/create-system)
-      (assoc :db (ingest-data/create-in-memory-db)
-             :queue-broker queue-broker
-             :scheduler (jobs/create-non-running-scheduler))))
+  (assoc (ingest-system/create-system)
+         :db (ingest-data/create-in-memory-db)
+         :queue-broker queue-broker
+         :scheduler (jobs/create-non-running-scheduler)))
 
 (defmethod create-ingest-app :external
   [db-type queue-broker]
-  (-> (ingest-system/create-system)
-      (assoc :queue-broker queue-broker)))
+  (assoc (ingest-system/create-system)
+         :queue-broker queue-broker))
 
 (defn create-search-app
   "Create an instance of the search application."
