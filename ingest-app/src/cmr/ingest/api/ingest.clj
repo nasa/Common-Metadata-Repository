@@ -443,6 +443,7 @@
           (x/element :result {}
            (x/element :task-status {} (:task-status result))
            (x/element :status-message {} (:status-message result))
+           (x/element :request-json-body {} (:request-json-body result))
            (generate-xml-status-list result
             :collection-statuses :collection-status :concept-id)))})
 
@@ -462,6 +463,7 @@
      {:status 200
       :task-status (:status task-status)
       :status-message (:status-message task-status)
+      :request-json-body (:request-json-body task-status)
       :collection-statuses collection-statuses}))))
 
 (def ingest-routes

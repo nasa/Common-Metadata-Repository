@@ -38,7 +38,7 @@
     (let [task-status (some->> @task-status-atom
                                (some #(when (= task-id (str (:task-id %)))
                                             %)))]
-      (select-keys task-status [:task-id :status :status-message])))
+      (select-keys task-status [:task-id :status :status-message :request-json-body])))
 
   (get-bulk-update-task-collection-status
     [this task-id]
