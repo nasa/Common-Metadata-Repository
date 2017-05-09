@@ -11,18 +11,18 @@
     represents one shape in the ords list.
     * type - an integer representing the spatial type (polygon, mbr, etc)
     * size - the number of ordinates in the ords list this shape uses."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cmr.common.util :as u]
-            [cmr.spatial.lr-binary-search :as lr]
-            [clojure.set :as set]))
-
+  (:require
+   [clojure.set :as set]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.lr-binary-search :as lr]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]))
 
 ;; Some thoughts about how to store the elasticsearch data in a way that preserves space and accuracy.
 (comment
@@ -49,11 +49,11 @@
   (> (ordinate->stored -180) Integer/MIN_VALUE)
 
   ;; The maximum accuracy we could maintain is 7 digits
-  (= true (maintains-precision? 179.1234567))
-  (= true (maintains-precision? -179.1234567))
+  (true? (maintains-precision? 179.1234567))
+  (true? (maintains-precision? -179.1234567))
 
   ;; Any thing after that loses precision
-  (= false (maintains-precision? 179.12345678)))
+  (false? (maintains-precision? 179.12345678)))
 
 (def ^:const ^double multiplication-factor
   "Ordinates are stored as integers in elasticsearch to maintain space. This is the number used

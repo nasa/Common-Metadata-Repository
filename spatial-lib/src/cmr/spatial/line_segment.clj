@@ -1,17 +1,18 @@
 (ns cmr.spatial.line-segment
   "This contains functions for operating on cartesian line segments. These are defined as lines
   that exist in a two dimensional plane."
-  (:require [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [pjstadig.assertions :as pj]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.messages :as msg]
-            [cmr.common.services.errors :as errors]
-            [cmr.spatial.derived :as d]
-            [cmr.common.util :as util]
-            [clojure.math.combinatorics :as combo]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  (:require
+   [clojure.math.combinatorics :as combo]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [pjstadig.assertions :as pj]
+   [primitive-math])
   (:import cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr))
 
@@ -22,26 +23,20 @@
 (primitive-math/use-primitive-operators)
 
 (defrecord LineSegment
-  [
-   ^Point point1
+  [^Point point1
    ^Point point2
-
    ;; Derived Fields
-
    ;; true if the line is vertical
    vertical
-
    ;; true if the line is horizontal
    horizontal
-
+   ;;
    ;; Fields from the formula for a line: y = m*x + b
-
+   ;;
    ;; The slope of a line. A vertical line will not have meaningful slope or slope-intercept
    ^Double m
-
    ;; The slope intercept
    ^Double b
-
    ;; The minimum bounding rectangle of the segment
    ^Mbr mbr])
 
@@ -451,7 +446,7 @@
           (> (count intersection-points) 2)
           (errors/internal-error! (str "Found too many intersection points " (pr-str intersection-points)))
 
-          (= (count intersection-points) 0)
+          (zero? (count intersection-points))
           nil ; no intersection at all
 
           (= (count intersection-points) 2)

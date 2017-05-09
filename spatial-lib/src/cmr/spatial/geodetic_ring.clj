@@ -1,14 +1,16 @@
 (ns cmr.spatial.geodetic-ring
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [cmr.common.util :as util]
-            [primitive-math]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  (:require
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.util :as util]
+   [cmr.spatial.arc :as a]
+   [cmr.spatial.conversion :as c]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [primitive-math])
   (:import cmr.spatial.arc.Arc))
+
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^:private EXTERNAL_POINT_PRECISION
@@ -17,20 +19,17 @@
   4)
 
 (defrecord GeodeticRing
-  [
-   ;; The points that make up the ring. Points must be in counterclockwise order. The last point
+  [;; The points that make up the ring. Points must be in counterclockwise order. The last point
    ;; must match the first point.
    points
-
+   ;;
    ;; Derived fields
-
+   ;;
    ;; A set of the unique points in the ring.
    ;; This should be used as opposed to creating a set from the points many times over which is expensive.
    point-set
-
    ;; The arcs of the ring
    arcs
-
    ;; This attribute contains the rotation direction for the ring. Rotation direction will be one of
    ;; :clockwise, :counter-clockwise, or :none to indicate the point order direction.
    ;; * :clockwise indicates the points are listed in a clockwise order around a center point.
@@ -38,16 +37,12 @@
    ;; * :none indicates the point order is around the earth like a belt.
    ;; Depending on the order it could contain the south or north pole.
    course-rotation-direction
-
    ;; true if ring contains north pole
    contains-north-pole
-
    ;; true if ring contains south pole
    contains-south-pole
-
    ;; the minimum bounding rectangle
    mbr
-
    ;; Three points that are not within the ring. These are used to test if a point is inside or
    ;; outside a ring. We generate multiple external points so that we have a backup if one external
    ;; point is antipodal to a point we're checking is inside a ring.
@@ -201,13 +196,13 @@
                        nil
                        arcs)
             br (if (and contains-north-pole
-                        (not (some p/is-north-pole? (:points ring)))
-                        (not (some a/crosses-north-pole? arcs)))
+                        (not-any? p/is-north-pole? (:points ring))
+                        (not-any? a/crosses-north-pole? arcs))
                  (mbr/mbr -180.0 90.0 180.0 (:south br))
                  br)]
         (if (and contains-south-pole
-                 (not (some p/is-south-pole? (:points ring)))
-                 (not (some a/crosses-south-pole? arcs)))
+                 (not-any? p/is-south-pole? (:points ring))
+                 (not-any? a/crosses-south-pole? arcs))
           (mbr/mbr -180.0 (:north br) 180.0 -90.0)
           br))))
 

@@ -16,15 +16,16 @@
   7) Map the densified points back to its original quadrant.
   8) Convert the points from planar coordinates to geodetic coordinates. Convert from radians to
      degrees."
-  (:require [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [clojure.java.io :as io]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.relations :as rel]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-segment :as s]))
+  (:require
+   [clojure.java.io :as io]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.line-segment :as s]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.relations :as rel]
+   [cmr.spatial.ring-relations :as rr]
+   [primitive-math]))
 
 (primitive-math/use-primitive-operators)
 
@@ -100,7 +101,7 @@
   lower-right vertex of the tile as the first vertex."
   [^long h ^long v]
   (let [x-min (* (double (- h (/ NUM_HORIZONTAL_TILES 2))) TILE_SIZE)
-        y-min (* (double (- (/ NUM_VERTICAL_TILES 2) (+ v 1))) TILE_SIZE)
+        y-min (* (double (- (/ NUM_VERTICAL_TILES 2) (inc v))) TILE_SIZE)
         x-max (+ x-min TILE_SIZE)
         y-max (+ y-min TILE_SIZE)]
     [[x-max y-min] [x-max y-max] [x-min y-max] [x-min y-min]]))

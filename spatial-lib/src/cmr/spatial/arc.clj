@@ -1,15 +1,17 @@
 (ns cmr.spatial.arc
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [pjstadig.assertions :as pj]
-            [cmr.spatial.vector :as v]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.derived :as d]
-            [cmr.common.util :as util]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  (:require
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.util :as util]
+   [cmr.spatial.conversion :as c]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.math :refer :all]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.vector :as v]
+   [pjstadig.assertions :as pj]
+   [primitive-math])
   (:import cmr.spatial.point.Point))
+
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^double APPROXIMATION_DELTA
@@ -17,39 +19,28 @@
   0.0000001)
 
 (defrecord GreatCircle
-  [
-    plane-vector
-
-    northernmost-point
-
-    southernmost-point])
-
-
+  [plane-vector
+   northernmost-point
+   southernmost-point])
 
 ;; The arc contains derived information that is cached to prevent recalculating the same
 ;; information over and over again for the same arc. If desired this extra info could be put
 ;; in another record like ArcInfo
 (defrecord Arc
-  [
-   ;; The western most point of the arc
+  [;; The western most point of the arc
    ^Point west-point
    ;; The eastern most point of the arc.
    ^Point east-point
-
    ;; A representation of the great circle the arc lies on.
    ^GreatCircle great-circle
-
    ;; The initial course when following the arc. This is derived from the order of the points passed
    ;; into the arc constructor. It won't necessarily be from west to east or east to west.
    ^double initial-course
-
    ;; The ending course when following the arc.
    ^double ending-course
-
    ;; 1 or 2 bounding rectangles defining the MBR of the arc.
    mbr1
    mbr2])
-
 
 (record-pretty-printer/enable-record-pretty-printing
   GreatCircle
@@ -181,7 +172,7 @@
   (pj/assert (not= point1 point2))
   (pj/assert (not (p/antipodal? point1 point2)))
 
-  (if (< (p/compare-points point1 point2) 0)
+  (if (neg? (p/compare-points point1 point2))
     (arc-from-ordered-points point1 point2 point1 point2)
     (arc-from-ordered-points point1 point2 point2 point1)))
 

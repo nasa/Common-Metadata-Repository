@@ -1,6 +1,7 @@
 (ns cmr.spatial.math
-  (:require [primitive-math]
-            [cmr.common.util :as util])
+  (:require
+   [cmr.common.util :as util]
+   [primitive-math])
   (:import net.jafama.StrictFastMath))
 
 (primitive-math/use-primitive-operators)
@@ -59,7 +60,7 @@
 (defn even-long?
   "A copy of the clojure even? function but with long type annotations for primitive math performance."
   [^long l]
-  (= (rem l 2) 0))
+  (zero? (rem l 2)))
 
 (defn odd-long?
   "A copy of the clojure odd? function but with long type annotations for primitive math performance."
@@ -283,9 +284,9 @@
                            m 0.0]
                       (if (or (>= index num-angles) (> (+ index 2) num-angles))
                         m
-                        (recur (+ index 1)
+                        (recur (inc index)
                                (+ m (angle-delta (nth angles index)
-                                                 (nth angles (+ index 1)))))))]
+                                                 (nth angles (inc index)))))))]
     (cond
       (< (abs net) 0.01) :none
       (> net 0.0) :counter-clockwise

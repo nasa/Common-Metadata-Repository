@@ -1,6 +1,6 @@
 (ns cmr.spatial.lr-binary-search
   "Prototype code that finds the largest interior rectangle of a ring."
-  (:require 
+  (:require
     [clojure.math.combinatorics :as combo]
     [cmr.common.log :refer (warn)]
     [cmr.common.services.errors :as errors]
@@ -21,7 +21,7 @@
     [primitive-math])
   (:import
     cmr.spatial.cartesian_ring.CartesianRing
-    cmr.spatial.geodetic_ring.GeodeticRing 
+    cmr.spatial.geodetic_ring.GeodeticRing
     cmr.spatial.mbr.Mbr
     cmr.spatial.polygon.Polygon))
 (primitive-math/use-primitive-operators)
@@ -174,8 +174,7 @@
 
 (defmulti shape->lr-search-points
   "Returns points that may potentially be in the shape to use to search for a LR."
-  (fn [shape]
-    (type shape)))
+  type)
 
 (defmulti polygon->lr-search-points
   (fn [polygon]
@@ -243,7 +242,7 @@
    (let [polygon (d/calculate-derived polygon)
          mbr (relations/mbr polygon)
          initial-lr (or
-                      ;; Find an LR from the center point of the polygon 
+                      ;; Find an LR from the center point of the polygon
                       (even-lr-search polygon (m/center-point mbr))
                       ;; Return the first LR that we can find using a test point
                       (first (filter identity
@@ -265,7 +264,7 @@
         (if not-found-is-error?
           (errors/internal-error! (str "Could not find lr from polygon " (pr-str polygon)))
           (do
-            (warn "Use mbr from one of the points in the polygon because lr is not found " 
+            (warn "Use mbr from one of the points in the polygon because lr is not found "
                   (pr-str polygon))
             (m/point->mbr (-> polygon :rings first :points first))))))))
 
