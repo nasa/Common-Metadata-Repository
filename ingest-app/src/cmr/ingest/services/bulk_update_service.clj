@@ -62,7 +62,8 @@
   [context task-id concept-id bulk-update-params]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "COMPLETE" nil)
+      (data-bulk-update/update-bulk-update-task-collection-status context task-id
+        concept-id "COMPLETE" nil)
       (data-bulk-update/update-bulk-update-task-collection-status context task-id
         concept-id "FAILED" (format "Concept-id [%s] is not valid." concept-id)))
     (catch Exception e
