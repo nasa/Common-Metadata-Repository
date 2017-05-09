@@ -2,10 +2,11 @@
   "An implementation of the CMR cache protocol on top of the cubby application. Cubby only supports
   persistence and returning strings so this automatically serializes and deserializes the keys and
   values with EDN. Any key or value serializable to EDN is supported."
-  (:require [cmr.common.cache :as c]
-            [cmr.transmit.cubby :as cubby]
-            [cmr.transmit.config :as config]
-            [clojure.edn :as edn]))
+  (:require
+   [clojure.edn :as edn]
+   [cmr.common.cache :as c]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.cubby :as cubby]))
 
 (defn- serialize
   "Serializes a value for storage in cubby."
@@ -34,11 +35,11 @@
   (get-value
     [this key lookup-fn]
     (let [c-value (c/get-value this key)]
-      (if (not (nil? c-value))
-          c-value
-          (let [value (lookup-fn)]
-            (c/set-value this key value)
-            value))))
+      (if-not (nil? c-value)
+        c-value
+        (let [value (lookup-fn)]
+          (c/set-value this key value)
+          value))))
 
   (reset
     [this]

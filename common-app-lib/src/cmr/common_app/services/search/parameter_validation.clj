@@ -106,7 +106,7 @@
   (let [page-size-errors [(str "page_size must be a number between 0 and " max-page-size)]]
     (try
       (when-let [page-size-i (get-ivalue-from-params params :page-size)]
-        (when (or (< page-size-i 0) (> page-size-i max-page-size))
+        (when (or (neg? page-size-i) (> page-size-i max-page-size))
           page-size-errors))
       (catch NumberFormatException e
         page-size-errors))))
@@ -171,23 +171,25 @@
   "Validates that no invalid parameter names in the options were supplied"
   [concept-type params]
   (if-let [options (:options params)]
-    (let [always-case-sensitive-fields (specific-params-config concept-type :always-case-sensitive)
+    (let [always-case-sensitive-fields (specific-params-config
+                                        concept-type :always-case-sensitive)
           valid-options (valid-parameter-options concept-type)]
-      (apply concat
-             (map
-              (fn [[param settings]]
-                (if-not (map? settings)
-                  [(msg/invalid-settings-for-param param settings)]
-                  ;; handle these parameters separately since they don't allow any options
-                  (if (always-case-sensitive-fields param)
-                    (map #(msg/invalid-opt-for-param param %) (keys settings))
-                    (let [valid-options (valid-options param)]
-                      ;; Only check params we recognize - other validations will handle the rest
-                      (when valid-options
-                        (map #(msg/invalid-opt-for-param param %)
-                             (set/difference (set (keys settings))
-                               valid-options)))))))
-              options)))))
+      (mapcat
+       (fn [[param settings]]
+         (if-not (map? settings)
+           [(msg/invalid-settings-for-param param settings)]
+           ;; handle these parameters separately since they don't allow any
+           ;; options
+           (if (always-case-sensitive-fields param)
+             (map #(msg/invalid-opt-for-param param %) (keys settings))
+             (let [valid-options (valid-options param)]
+               ;; Only check params we recognize - other validations will
+               ;; handle the rest
+               (when valid-options
+                 (map #(msg/invalid-opt-for-param param %)
+                      (set/difference (set (keys settings))
+                        valid-options)))))))
+       options))))
 
 (defmulti valid-sort-keys
   "Returns the sort keys that are valid with the given concept type"

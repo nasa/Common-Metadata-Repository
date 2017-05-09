@@ -1,8 +1,9 @@
 (ns cmr.common-app.services.search.datetime-helper
   "Contains helper functions for converting date time string to elastic date time string"
-  (:require [clojure.string :as s]
-            [clj-time.format :as f]
-            [cmr.common.date-time-parser :as p]))
+  (:require
+   [clj-time.format :as f]
+   [clojure.string :as s]
+   [cmr.common.date-time-parser :as p]))
 
 (def earliest-start-date
   "Earliest start date"
@@ -19,7 +20,8 @@
 (defn utc-time->elastic-time
   "Convert utc clj time to elasticsearch time string."
   [tm]
-  (-> (f/unparse (f/formatters :date-time) tm)
+  (-> (f/formatters :date-time)
+      (f/unparse tm)
       (s/replace #"Z" "-0000")))
 
 (defn datetime->string

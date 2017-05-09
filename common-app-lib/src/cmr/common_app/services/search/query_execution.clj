@@ -1,12 +1,13 @@
 (ns cmr.common-app.services.search.query-execution
-  (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.common-app.services.search.results-model :as results]
-            [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
-            [cmr.transmit.config :as tc]))
+  (:require
+   [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
+   [cmr.common-app.services.search.elastic-search-index :as idx]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
+   [cmr.common-app.services.search.results-model :as results]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.transmit.config :as tc]))
 
 (defmulti add-acl-conditions-to-query
   "Adds conditions to the query to enforce ACLs."
@@ -19,8 +20,7 @@
 
 (defmulti query->execution-strategy
   "Returns the execution strategy to use for query execution"
-  (fn [query]
-    (:concept-type query)))
+  :concept-type)
 
 ;; The default query execution strategy is to use elasticsearch
 (defmethod query->execution-strategy :default

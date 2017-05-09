@@ -148,11 +148,10 @@
   "Returns true if the request indicates the response should be returned in a human readable
   fashion. This can be specified either through a pretty=true in the URL query parameters or
   through a Cmr-Pretty HTTP header."
-  ([request]
-   (let [{:keys [headers params]} request]
-     (or
-       (= "true" (get params "pretty"))
-       (= "true" (get headers "cmr-pretty"))))))
+  [request]
+  (let [{:keys [headers params]} request]
+    (or (= "true" (get params "pretty"))
+        (= "true" (get headers "cmr-pretty")))))
 
 (defn pretty-print-json
   [json-str]
@@ -188,21 +187,22 @@
 (defn pretty-print-response-handler
   "Middleware which pretty prints the response if the parameter pretty in the
   URL query is set to true of if the header Cmr-Pretty is set to true."
-  [f]
+  [handler]
   (fn [request]
     (let [pretty? (pretty-request? request)
           request (-> request
                       (update-in [:params] dissoc "pretty")
                       (update-in [:query-params] dissoc "pretty"))]
       (if pretty?
-        (pretty-print-body (f request))
-        ((ring-json/wrap-json-response f) request)))))
+        (pretty-print-body (handler request))
+        ((ring-json/wrap-json-response handler) request)))))
 
 (defn add-request-id-response-handler
   "Adds a request id header to every response to facilitate clientside debugging."
-  [f]
+  [handler]
   (fn [{context :request-context :as request}]
     (if-let [request-id (cxt/context->request-id context)]
-      (-> (f request)
+      (-> request
+          (handler)
           (assoc-in [:headers RESPONSE_REQUEST_ID_HEADER] request-id))
-      ((ring-json/wrap-json-response f) request))))
+      ((ring-json/wrap-json-response handler) request))))
