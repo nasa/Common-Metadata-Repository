@@ -47,7 +47,7 @@
     [db task-id]
     ;; Returns a status for the particular task
     (util/map-keys->kebab-case
-      (su/find-one db (su/select [:status :status-message]
+      (su/find-one db (su/select [:status :status-message :request-json-body]
                                  (su/from "bulk_update_task_status")
                                  (su/where `(= :task-id ~task-id))))))
 

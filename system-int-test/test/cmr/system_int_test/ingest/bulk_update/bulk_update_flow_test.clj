@@ -30,7 +30,8 @@
         bulk-update-body {:concept-ids concept-ids
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
-                          :update-value "X"}]
+                          :update-value "X"}
+        json-body (json/generate-string bulk-update-body)]
 
     (testing "Bulk update response"
       (are3 [accept-format task-id]
@@ -49,8 +50,7 @@
 
       (are3 [accept-format]
         (let [response (ingest/bulk-update-provider-status "PROV1"
-                        {:accept-format accept-format})
-              json-body (json/generate-string bulk-update-body)]
+                        {:accept-format accept-format})]
           (is (= [{:task-id 1,
                    :status-message "All collection updates completed successfully.",
                    :status "COMPLETE",
@@ -70,6 +70,7 @@
            (is (= {:status-message "All collection updates completed successfully.",
                    :status 200,
                    :task-status "COMPLETE",
+                   :request-json-body json-body
                    :collection-statuses [{:status-message nil,
                                           :status "COMPLETE",
                                           :concept-id "C1200000000-PROV1"}
@@ -88,16 +89,18 @@
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
                           :update-value "X"}
+        json-body (json/generate-string bulk-update-body)
         {:keys [task-id]} (ingest/bulk-update-collections "PROV1" bulk-update-body)
         _ (qb-side-api/wait-for-terminal-states)
         status-response (ingest/bulk-update-task-status "PROV1" task-id)]
-    (is (= status-response
-           {:status-message "Task completed with 2 collection update failures out of 2",
+    (is (= {:status-message "Task completed with 2 collection update failures out of 2",
             :status 200,
+            :request-json-body json-body
             :task-status "COMPLETE",
             :collection-statuses [{:status-message "Concept-id [C1200000100-PROV1] is not valid.",
                                    :status "FAILED",
                                    :concept-id "C1200000100-PROV1"}
                                   {:status-message "Concept-id [C111] is not valid.",
                                    :status "FAILED",
-                                   :concept-id "C111"}]}))))
+                                   :concept-id "C111"}]}
+           status-response))))

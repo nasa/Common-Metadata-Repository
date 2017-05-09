@@ -522,6 +522,7 @@
         (parse-xml-error-response-elem xml-elem)
         {:task-status (cx/string-at-path xml-elem [:task-status])
          :status-message (cx/string-at-path xml-elem [:status-message])
+         :request-json-body (cx/string-at-path xml-elem [:request-json-body])
          :collection-statuses
           (seq (for [status (cx/elements-at-path xml-elem [:collection-statuses :collection-status])]
                 {:concept-id (cx/string-at-path status [:concept-id])
