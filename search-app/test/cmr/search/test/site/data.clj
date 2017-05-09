@@ -94,8 +94,9 @@
       (is (= "7" (get-in data [:umm "Version"]))))))
 
 (deftest make-holdings-data
-  (let [coll [coll-data-1 coll-data-2]
-        data (vec (data/make-holdings-data cmr-base-url coll))]
+  (let [data (->> [coll-data-1 coll-data-2]
+                  (data/make-holdings-data cmr-base-url)
+                  (vec))]
     (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
            (get-in data [0 :link-href])))
     (is (= "coll3" (get-in data [0 :link-text])))
