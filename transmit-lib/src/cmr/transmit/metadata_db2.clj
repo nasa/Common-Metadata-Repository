@@ -1,10 +1,11 @@
 (ns cmr.transmit.metadata-db2
   "This contains functions for interacting with the metadata db API. It uses the newer transmit namespace
   style that cubby, concepts, and access control use"
-  (:require [cmr.transmit.connection :as conn]
-            [cmr.transmit.config :as config]
-            [ring.util.codec :as codec]
-            [cmr.transmit.http-helper :as h]))
+  (:require
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.http-helper :as h]
+   [ring.util.codec :as codec]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -103,7 +104,8 @@
   ([context concept-id revision-id]
    (get-concept context concept-id revision-id nil))
   ([context concept-id revision-id {:keys [raw? http-options]}]
-   (-> (h/request context :metadata-db
+   (-> context
+       (h/request :metadata-db
                   {:url-fn #(concept-revision-url % concept-id revision-id)
                    :method :get
                    :raw? raw?
@@ -119,7 +121,8 @@
   ([context concept-id]
    (get-latest-concept context concept-id nil))
   ([context concept-id {:keys [raw? http-options]}]
-   (-> (h/request context :metadata-db
+   (-> context
+       (h/request :metadata-db
                   {:url-fn #(latest-concept-url % concept-id)
                    :method :get
                    :raw? raw?

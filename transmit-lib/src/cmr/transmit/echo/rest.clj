@@ -1,12 +1,13 @@
 (ns cmr.transmit.echo.rest
   "A helper for making echo-rest requests"
-  (:require [clj-http.client :as client]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]
-            [cheshire.core :as json]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.common.log :as log :refer (debug info warn error)]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.health-helper :as hh]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
 
 (defn request-options
   [conn]
@@ -37,9 +38,8 @@
          _ (debug (format "Completed ECHO GET Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
 
          {:keys [status body headers]} response
-         parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")
-                  (json/decode body true)
-                  nil)]
+         parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
+                  (json/decode body true))]
      [status parsed body])))
 
 (defn rest-delete
@@ -64,9 +64,8 @@
          params (merge (post-options conn body-obj) options)
          response (client/post url params)
          {:keys [status body headers]} response
-         parsed (if (.startsWith ^String (get headers "Content-Type" "") "application/json")
-                  (json/decode body true)
-                  nil)]
+         parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
+                  (json/decode body true))]
      [status parsed body])))
 
 
