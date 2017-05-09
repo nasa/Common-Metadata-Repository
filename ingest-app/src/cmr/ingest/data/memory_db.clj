@@ -6,6 +6,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :refer [defn-timed] :as util]
    [cmr.ingest.data.bulk-update :as bulk-update]
+   [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.provider-acl-hash :as acl-hash]))
 
 (defrecord MemoryDB
@@ -94,9 +95,9 @@
                                                   (assoc-in [index :status] status)
                                                   (assoc-in [index :status-message] status-message))))
       (let [coll-statuses (into [] @collection-status-atom) ; Need to refresh after change
-            pending-collections (filter #(and (= task-id (:task-id %))
-                                              (= "PENDING" (:status %)))
-                                        coll-statuses)]
+            task-collections (filter #(= task-id (:task-id %)) coll-statuses)
+            pending-collections (filter #(= "PENDING" (:status %)) task-collections)
+            failed-collections (filter #(= "FAILED" (:status %)) task-collections)]
         (when-not (seq pending-collections)
           (let [task-statuses @task-status-atom
                 index (first (keep-indexed #(when (= task-id (:task-id %2))
@@ -104,8 +105,11 @@
                                            task-statuses))]
             (swap! (:task-status-atom this) (fn [task-statuses]
                                              (-> task-statuses
-                                                 (assoc-in [index :status] status)
-                                                 (assoc-in [index :status-message] status-message)))))))))
+                                                 (assoc-in [index :status] "COMPLETE")
+                                                 (assoc-in [index :status-message]
+                                                   (data-bulk-update/generate-task-status-message
+                                                     (count failed-collections)
+                                                     (count task-collections)))))))))))
 
   (reset-bulk-update
     [this]

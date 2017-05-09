@@ -5,7 +5,8 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.json-schema :as js]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
-   [cmr.ingest.data.ingest-events :as ingest-events]))
+   [cmr.ingest.data.ingest-events :as ingest-events]
+   [cmr.transmit.metadata-db2 :as mdb2]))
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
@@ -56,6 +57,18 @@
          task-id concept-id bulk-update-params)))))
 
 (defn handle-collection-bulk-update-event
-  "Perform update for the given concept id"
+  "Perform update for the given concept id. Log an error status of the concept
+  cannot be found."
   [context task-id concept-id bulk-update-params]
-  (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "COMPLETE" nil))
+  (try
+    (if-let [concept (mdb2/get-latest-concept context concept-id)]
+      (data-bulk-update/update-bulk-update-task-collection-status context task-id
+        concept-id "COMPLETE" nil)
+      (data-bulk-update/update-bulk-update-task-collection-status context task-id
+        concept-id "FAILED" (format "Concept-id [%s] is not valid." concept-id)))
+    (catch Exception e
+      (let [message (.getMessage e)
+            concept-id-message (re-find #"Concept-id.*is not valid." message)]
+        (if concept-id-message
+          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" concept-id-message)
+          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" message))))))

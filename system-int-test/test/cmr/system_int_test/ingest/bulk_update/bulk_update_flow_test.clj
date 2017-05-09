@@ -14,11 +14,18 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
 
-(deftest bulk-update
+(defn- generate-concept-id
+  [index provider]
+  (format "C120000000%s-%s" index provider))
+
+(deftest bulk-update-success
   (let [concept-ids (for [x (range 3)]
                       (:concept-id (ingest/ingest-concept
-                                     (data-umm-c/collection-concept
-                                       (data-umm-c/collection x {})))))
+                                     (assoc
+                                       (data-umm-c/collection-concept
+                                         (data-umm-c/collection x {}))
+                                       :concept-id
+                                       (generate-concept-id x "PROV1")))))
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :update-type "ADD_TO_EXISTING"
@@ -45,11 +52,11 @@
                         {:accept-format accept-format})
               json-body (json/generate-string bulk-update-body)]
           (is (= [{:task-id 1,
-                   :status-message nil,
+                   :status-message "All collection updates completed successfully.",
                    :status "COMPLETE",
                    :request-json-body json-body}
                   {:task-id 2,
-                   :status-message nil,
+                   :status-message "All collection updates completed successfully.",
                    :status "COMPLETE",
                    :request-json-body json-body}]
                  (:tasks response))))
@@ -60,19 +67,37 @@
        (are3 [accept-format]
          (let [response (ingest/bulk-update-task-status "PROV1" 1
                          {:accept-format accept-format})]
-           (is (= {:status-message nil,
+           (is (= {:status-message "All collection updates completed successfully.",
                    :status 200,
                    :task-status "COMPLETE",
-                   ;; TO DO: Remove hardcoded concept ids
                    :collection-statuses [{:status-message nil,
                                           :status "COMPLETE",
-                                          :concept-id "C1200000009-PROV1"}
+                                          :concept-id "C1200000000-PROV1"}
                                          {:status-message nil,
                                           :status "COMPLETE",
-                                          :concept-id "C1200000010-PROV1"}
+                                          :concept-id "C1200000001-PROV1"}
                                          {:status-message nil,
                                           :status "COMPLETE",
-                                          :concept-id "C1200000011-PROV1"}]}
+                                          :concept-id "C1200000002-PROV1"}]}
                   response)))
          "JSON" :json
          "XML" :xml)))))
+
+(deftest bulk-update-invalid-concept-id
+  (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111"]
+                          :update-type "ADD_TO_EXISTING"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value "X"}
+        {:keys [task-id]} (ingest/bulk-update-collections "PROV1" bulk-update-body)
+        _ (qb-side-api/wait-for-terminal-states)
+        status-response (ingest/bulk-update-task-status "PROV1" task-id)]
+    (is (= status-response
+           {:status-message "Task completed with 2 collection update failures out of 2",
+            :status 200,
+            :task-status "COMPLETE",
+            :collection-statuses [{:status-message "Concept-id [C1200000100-PROV1] is not valid.",
+                                   :status "FAILED",
+                                   :concept-id "C1200000100-PROV1"}
+                                  {:status-message "Concept-id [C111] is not valid.",
+                                   :status "FAILED",
+                                   :concept-id "C111"}]}))))
