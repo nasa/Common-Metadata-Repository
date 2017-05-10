@@ -175,6 +175,20 @@ are in place, you will be able to run the following:
 
 `./dev-system/support/build-and-test-ci.sh`
 
+Additionally, if you have an Oracle VM up and running, you can change how
+the tests are run in the REPL by running the following:
+
+```clj
+user=> (reset :db :external)
+...
+user=> (run-all-tests)
+...
+```
+
+Those tests will take much longer to run than when done with the in-memory
+database (~25m vs. ~6m). To switch back to using the in-memory database,
+simply call `(reset :db :in-memory)`.
+
 ## Code structure
 
 The CMR is made up of several small services called microservices. These are
