@@ -5,10 +5,10 @@
 # Additionally, this script assumes it is being executed in the parent
 # directory of the the dev-system project.
 
-date && echo "Installing all apps" &&
-lein modules do clean, install, clean
+date && echo "Installing all apps and generating API documentation" &&
+lein install-with-content!
 if [ $? -ne 0 ] ; then
-  echo "Failed to install apps" >&2
+  echo "Failed to install apps and generate docs" >&2
   exit 1
 fi
 rm -r dev-system/checkouts
@@ -30,23 +30,4 @@ if [ $? -ne 0 ] ; then
   echo "Failed to install gems" >&2
   exit 1
 fi
-date && echo "Generating Search API documentation" &&
-(cd search-app && lein generate-static)
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate search docs" >&2
-  exit 1
-fi
-date && echo "Generating Ingest API documentation" &&
-(cd ingest-app && lein generate-static)
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate ingest docs" >&2
-  exit 1
-fi
-date && echo "Generating Access Control API documentation" &&
-(cd access-control-app && lein generate-static)
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate access control docs" >&2
-  exit 1
-fi
-
 

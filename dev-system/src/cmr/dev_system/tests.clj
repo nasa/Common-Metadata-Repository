@@ -31,8 +31,3 @@
                                          integration-test-ns->compare-value
                                          (t/integration-test-namespaces))
            :reset-fn dev-sys-util/reset)))
-
-
-
-
-

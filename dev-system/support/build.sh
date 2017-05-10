@@ -9,10 +9,10 @@
 # CMR_ORACLE_JAR_REPO: Oracle libraries are not available in public maven repositories. We can host
 # them in internal ones for building. If this is set then the maven repo will be updated to use this.
 
-date && echo "Installing all apps" &&
-(cd .. && lein modules do clean, install)
+date && echo "Installing all apps and generating API documentation" &&
+(cd .. && lein modules do clean, install, generate-static)
 if [ $? -ne 0 ] ; then
-  echo "Failed to install apps" >&2
+  echo "Failed to install apps and generate docs" >&2
   exit 1
 fi
 # The library is reinstalled after installing gems so that it will contain the gem code.
@@ -27,23 +27,6 @@ date && echo "Installing orbits gems" &&
 (cd ../orbits-lib && lein install-gems)
 if [ $? -ne 0 ] ; then
   echo "Failed to install gems" >&2
-  exit 1
-fi
-(cd ../search-app && lein generate-static)
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate search docs" >&2
-  exit 1
-fi
-date && echo "Generating Ingest API documentation" &&
-(cd ../ingest-app && lein generate-static)
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate ingest docs" >&2
-  exit 1
-fi
-date && echo "Generating Access Control API documentation" &&
-(cd ../access-control-app && lein generate-static)
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate access control docs" >&2
   exit 1
 fi
 if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
