@@ -1,7 +1,8 @@
-# codox-theme-rdash
+# Clojang Codox Theme
 
-This is a modern and responsive [codox][codox] theme, partially inspired by the
-styling of [RDash UI][rdash].
+This is a modern and responsive [codox][codox] theme development for
+Clojang project, based on the
+[codox-theme-rdash project](https://github.com/xsc/codox-theme-rdash).
 
 <img src='screenshots/rdash.jpg' alt='Codox + RDash' />
 
@@ -19,7 +20,7 @@ Add the following dependency to your `project.clj`:
 Then set the following:
 
 ```clojure
-:codox {:themes [:rdash]}
+:codox {:themes [:clojang]}
 ```
 
 For syntax highlighting capabilities, you'll need to activate Markdown rendering
@@ -39,6 +40,7 @@ via:
 
 ## License
 
+Copyright &copy; 2017 Duncan McGreggor
 Copyright &copy; 2016 Yannick Scherer
 
 This project is licensed under the [Eclipse Public License 1.0][license].
