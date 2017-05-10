@@ -103,7 +103,7 @@
           table
           table
           (source-database-link)
-          (.toString (cr/to-sql-time revision-datetime))))
+          (str (cr/to-sql-time revision-datetime))))
 
 (defn- fix-null-replicated-blobs
   "AWS DMS is replicating BLOBs that are over 4K in size as NULL. We need to identify all of them
