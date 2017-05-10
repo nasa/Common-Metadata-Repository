@@ -1,15 +1,14 @@
 (ns cmr.metadata-db.int-test.concepts.collection-save-test
   "Contains integration tests for saving collections. Tests saves with various configurations including
   checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.local :as l]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
+  (:require 
+   [clj-time.format :as time-format]
+   [clojure.test :refer :all]
+   [cmr.common.time-keeper :as time-keeper]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.concept-constraints :as cc]
+   [cmr.metadata-db.services.messages :as msg]))
 
 
 ;;; fixtures
@@ -40,6 +39,51 @@
           coll2 (util/collection-concept "SMAL_PROV2" 2 {:native-id "foo"})]
       (c-spec/save-distinct-concepts-test coll1 coll2))))
 
+(defn- created-at-same?
+  "Returns true if the `created-at` for the given concept revisions are the same"
+  [& concepts]
+  (let [created-ats (map :created-at concepts)]
+    (apply = created-ats)))
+
+(deftest save-collection-created-at-test
+  (testing "Saved collection gets current time for created-at"
+    (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+      ;; Freeze time so we know what `created-at` time to expect.
+      (time-keeper/freeze-time!)
+      (let [collection (util/collection-concept provider-id 1)
+            {:keys [concept-id revision-id]} (util/save-concept collection)
+            collection-revision (:concept (util/get-concept-by-id-and-revision concept-id revision-id))]
+        (is (= (time-keeper/now) 
+               (time-format/parse (time-format/formatters :date-time) (:created-at collection-revision)))))
+      (time-keeper/clear-current-time!)))
+  (testing "Save collection multiple times gets same created-at" 
+    (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+      (let [initial-collection (util/collection-concept provider-id 2)
+            ;; Use time-keeper to freeze the clock, then save the collection.
+            ;; Then use time-keeper to force the clock to advance by 1 hour
+            ;; before saving it a second time. Then advance the clock 1/2 hour and save a tombstone.
+            ;; Finally, advance the clock 1/2 hour and save a new (non-tombstone) revision.
+            ;; All should have the same `created-at` value.
+            _ (time-keeper/freeze-time!)
+            {concept-id :concept-id initial-revision-id :revision-id} (util/save-concept initial-collection)
+            _ (time-keeper/advance-time! 3600)
+            {second-revision-id :revision-id} (util/save-concept initial-collection)
+            _ (time-keeper/advance-time! 1800)
+            {tombstone-revision-id :revision-id} (util/save-concept {:deleted true :concept-id concept-id})
+            _ (time-keeper/advance-time! 1800)
+            {final-revision-id :revision-id} (util/save-concept initial-collection)
+            ;; Set the time back to normal
+            _ (time-keeper/clear-current-time!)
+            [initial-revision 
+             second-revision 
+             tombstone 
+             final-revision] (mapv #(:concept (util/get-concept-by-id-and-revision concept-id %))
+                                   [initial-revision-id 
+                                    second-revision-id 
+                                    tombstone-revision-id 
+                                    final-revision-id])]
+        (is (created-at-same? initial-revision second-revision tombstone final-revision))))))
+               
 (deftest save-collection-post-commit-constraint-violations
   (testing "duplicate entry titles"
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -67,7 +111,7 @@
         (let [found-concepts (util/find-concepts :collection
                                                  {:entry-title "ET-1" :provider-id provider-id})]
           (is (= [existing-collection]
-                 (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts))))))))
+                 (map #(dissoc % :revision-date :transaction-id :created-at) (:concepts found-concepts))))))))
   (testing "duplicate entry titles within multiple small providers is OK"
     (let [coll1 (util/collection-concept "SMAL_PROV1" 1
                                          {:concept-id "C1-SMAL_PROV1"
