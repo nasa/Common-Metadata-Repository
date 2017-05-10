@@ -2,8 +2,8 @@
  [[:head]
   [:append
    [:link {:rel "stylesheet", :type "text/css" :href "css/default.css"}]
-   [:link {:rel "stylesheet", :type "text/css" :href "highlight/solarized-light.css"}]
-   [:script {:type "text/javascript", :src "highlight/highlight.min.js"}]
+   [:link {:rel "stylesheet", :type "text/css" :href "highlight/atom-one-dark.css"}]
+   [:script {:type "text/javascript", :src "highlight/highlight.pack.js"}]
    [:script {:type "text/javascript", :src "js/jquery.min.js"}]
    [:script {:type "text/javascript", :src "js/page_effects.js"}]
    [:script "hljs.initHighlightingOnLoad();"]]
@@ -16,7 +16,7 @@
 
  :resources
  ["css/default.css"
-  "highlight/solarized-light.css"
-  "highlight/highlight.min.js"
+  "highlight/atom-one-dark.css"
+  "highlight/highlight.pack.js"
   "js/jquery.min.js"
   "js/page_effects.js"]}

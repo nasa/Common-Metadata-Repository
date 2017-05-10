@@ -6,6 +6,10 @@ use by Clojang projects and based based on
 
 <img src='screenshots/rdash.jpg' alt='Codox + Clojang' />
 
+[![Clojars Theme](screenshots/screen-thumb-1.png)](screenshots/screen-1.png)
+
+[![Clojars Theme](screenshots/screen-thumb-2.png)](screenshots/screen-2.png)
+
 Note that this needs codox ≥ 0.10.0.
 
 [codox]: https://github.com/weavejester/codox
@@ -43,6 +47,7 @@ via:
 ## License
 
 Copyright &copy; 2017 Duncan McGreggor
+
 Copyright &copy; 2016 Yannick Scherer
 
 This project is licensed under the [Eclipse Public License 1.0][license].
