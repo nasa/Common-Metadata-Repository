@@ -1,20 +1,21 @@
 (ns cmr.bootstrap.data.virtual-products
   "Contains functions for bootstrapping virtual products."
-  (:require [clojure.core.async :as async :refer [go >! go-loop <! <!!]]
-            [clojure.string :as str]
-            [cmr.bootstrap.embedded-system-helper :as helper]
-            [cmr.bootstrap.data.util :as data]
-            [cmr.common.log :refer :all]
-            [cmr.common.util :as util]
-            [cmr.common.mime-types :as mime-types]
-            [cmr.common.config :as config :refer [defconfig]]
-            [cmr.metadata-db.data.concepts :as mdb-c]
-            [cmr.metadata-db.data.providers :as mdb-p]
-            [cmr.metadata-db.services.search-service :as search]
-            [cmr.transmit.metadata-db :as mdb]
-            [cmr.umm.umm-core :as umm]
-            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
-            [cmr.virtual-product.services.virtual-product-service :as vps]))
+  (:require
+   [clojure.core.async :as async :refer [go >! go-loop <! <!!]]
+   [clojure.string :as str]
+   [cmr.bootstrap.data.util :as data]
+   [cmr.bootstrap.embedded-system-helper :as helper]
+   [cmr.common.config :as config :refer [defconfig]]
+   [cmr.common.log :refer :all]
+   [cmr.common.mime-types :as mime-types]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.data.concepts :as mdb-c]
+   [cmr.metadata-db.data.providers :as mdb-p]
+   [cmr.metadata-db.services.search-service :as search]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.umm.umm-core :as umm]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]
+   [cmr.virtual-product.services.virtual-product-service :as vps]))
 
 (def channel-name
   "The name (key in system map) for the channel used to coordinate requests."
@@ -52,7 +53,8 @@
   "Returns nil or exactly one concept excluding tombstones by searching metadata-db with the params.
   Throws exception if more than one non-tombstoned concept matches the given params."
   [system params]
-  (let [concepts (->> (search/find-concepts {:system (helper/get-metadata-db system)} params)
+  (let [concepts (->> params
+                      (search/find-concepts {:system (helper/get-metadata-db system)})
                       (filter #(not (:deleted %))))]
     (condp = (count concepts)
       0 nil
@@ -203,7 +205,8 @@
   internals."
   [system provider-id entry-title]
   (info "Bootstrapping virtual products.")
-  (->> (get-source-granule-batch-channel system provider-id entry-title)
+  (->> entry-title
+       (get-source-granule-batch-channel system provider-id)
        (process-source-granule-batches system)))
 
 (defn handle-virtual-product-requests

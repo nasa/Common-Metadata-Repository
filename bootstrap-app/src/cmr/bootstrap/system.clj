@@ -50,7 +50,8 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-bootstrap-pool")
+  (let [metadata-db (-> "metadata-db-in-bootstrap-pool"
+                        (mdb-system/create-system)
                         (dissoc :log :web :scheduler :unclustered-scheduler :queue-broker))
         indexer (-> (idx-system/create-system)
                     (dissoc :log :web :queue-broker)
