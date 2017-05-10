@@ -44,7 +44,9 @@
    :service {true #{}
              false #{:entry-id :entry-title}}
    :tag-association {true #{}
-                     false #{:associated-concept-id :associated-revision-id}}})
+                     false #{:associated-concept-id :associated-revision-id}}
+   :variable {true #{}
+             false #{:variable-name :measurement}}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present and not nil."
@@ -172,6 +174,11 @@
                                   concept-id-matches-concept-fields-validation-no-provider
                                   humanizer-native-id-validation)))
 
+(def variable-concept-validation
+  "Builds a function that validates a concept map that has no provider and returns a list of errors"
+  (util/compose-validations (conj base-concept-validations
+                                  concept-id-matches-concept-fields-validation-no-provider
+                                  extra-fields-missing-validation)))
 
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
@@ -193,6 +200,10 @@
   "validates a humanizer concept. Throws an error if invalid."
   (util/build-validator :invalid-data humanizer-concept-validation))
 
+(def validate-variable-concept
+  "validates a variable concept. Throws an error if invalid."
+  (util/build-validator :invalid-data variable-concept-validation))
+
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
   (fn [concept]
@@ -213,6 +224,10 @@
 (defmethod validate-concept :humanizer
   [concept]
   (validate-humanizer-concept concept))
+
+(defmethod validate-concept :variable
+  [concept]
+  (validate-variable-concept concept))
 
 (defmethod validate-concept :default
   [concept]

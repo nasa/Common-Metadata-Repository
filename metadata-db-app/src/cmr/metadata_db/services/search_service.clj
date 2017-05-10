@@ -23,7 +23,8 @@
    :service default-supported-find-parameters
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
-   :humanizer #{:concept-id :native-id}})
+   :humanizer #{:concept-id :native-id}
+   :variable #{:concept-id :native-id}})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
