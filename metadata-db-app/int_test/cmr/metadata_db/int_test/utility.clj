@@ -147,6 +147,35 @@
     [{"type" "trim_whitespace", "field" "platform", "order" -100},
      {"type" "priority", "field" "platform", "source_value" "Aqua", "order" 10, "priority" 10}]))
 
+(def variable-json
+  (json/generate-string
+    { "Name" "totCldH2OStdErr",
+      "LongName" "totCldH2OStdErr",
+      "Units" "",
+      "DataType" "float",
+      "DimensionsName" [
+        "H2OFunc",
+        "H2OPressureLay",
+        "MWHingeSurf",
+        "Cloud",
+        "HingeSurf",
+        "H2OPressureLev",
+        "AIRSXTrack",
+        "StdPressureLay",
+        "CH4Func",
+        "StdPressureLev",
+        "COFunc",
+        "O3Func",
+        "AIRSTrack"
+      ],
+      "Dimensions" [ "11", "14", "7", "2", "100", "15", "3", "28", "10", "9" ],
+      "ValidRange" nil,
+      "Scale" "1.0",
+      "Offset" "0.0",
+      "FillValue" "-9999.0 ",
+      "VariableType" "",
+      "ScienceKeywords" []}))
+
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
   to look up the metadata for the concepts and parse it. So we need to provide valid
@@ -159,7 +188,8 @@
    :tag-association tag-association-edn
    :access-group group-edn
    :acl acl-edn
-   :humanizer humanizer-json})
+   :humanizer humanizer-json
+   :variable variable-json})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -292,6 +322,23 @@
                           attributes)]
     ;; no provider-id should be specified for humanizers
     (dissoc (concept nil :humanizer uniq-num attributes) :provider-id))))
+
+(defn variable-concept
+  "Creates a variabe concept"
+  ([uniq-num]
+   (variable-concept uniq-num {}))
+  ([uniq-num attributes]
+   (let [native-id (str "var-native" uniq-num)
+         extra-fields (merge {:variable-name (str "var" uniq-num)
+                              :measurement (str "measurement" uniq-num)}
+                             (:extra-fields attributes))
+         attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/json"
+                            :native-id native-id
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     ;; no provider-id should be specified for tags
+     (dissoc (concept nil :variable uniq-num attributes) :provider-id))))
 
 (defn assert-no-errors
   [save-result]
@@ -524,6 +571,10 @@
   (assoc concept :provider-id "CMR"))
 
 (defmethod expected-concept :humanizer
+  [concept]
+  (assoc concept :provider-id "CMR"))
+
+(defmethod expected-concept :variable
   [concept]
   (assoc concept :provider-id "CMR"))
 
