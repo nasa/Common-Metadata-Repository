@@ -97,13 +97,13 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "native-id": "org.nasa.something.quality/C12-PROV_A42",
     "user-id": "jnorton",
     "format": "applcation/edn",
-    "metadata: {
+    "metadata": {
       "tag-key": "org.nasa.something.quality",
       "originator-id": "jdoe",
       "associated-concept-id": "C12-PROV_A42",
       "revision-id": 1, (optional field),
       "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
-    }
+    },
     "extra-fields": {
       "tag-key": "org.nasa.something.quality",
       "associated-concept-id": "C12-PROV_A42",
@@ -116,14 +116,28 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
   {
     "concept-type": "humanizer",
     "native-id" : "humanizer",
-    "concept-type" : "humanizer",
     "metadata" : "[{\"type\":\"trim_whitespace\",\"field\":\"platform\",\"order\":-100},{\"type\":\"priority\",\"field\":\"platform\",\"source_value\":\"Aqua\",\"order\":10,\"priority\":10}]",
     "user-id" : "user1",
     "deleted" : false,
     "format" : "application/json"
   }
 
-_Note the absence of provider-id for tags, tag associations and humanizer. These are system level entities and are always assigned the system level provider, CMR._
+#### Variable
+
+  {
+    "concept-type": "variable",
+    "native-id" : "var123",
+    "metadata" : "{ \"Name\": \"totCldH2OStdErr\", \"LongName\": \"totCldH2OStdErrMeasurement\", \"Units\": \"\", \"DataType\": \"float\", \"DimensionsName\": [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], \"Dimensions\": [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], \"ValidRange\": null, \"Scale\": \"1.0\", \"Offset\": \"0.0\", \"FillValue\": \"-9999.0 \", \"VariableType\": \"\", \"ScienceKeywords\": []}",
+    "user-id" : "user1",
+    "deleted" : false,
+    "format" : "application/json",
+    "extra-fields": {
+      "variable-name": "totCldH2OStdErr",
+      "measurement": "totCldH2OStdErrMeasurement"
+    }
+  }
+
+_Note the absence of provider-id for tag, tag association, humanizer and variable. These are system level entities and are always assigned the system level provider, CMR._
 
 ### Sample Tombstone (deleted concept) JSON
 
