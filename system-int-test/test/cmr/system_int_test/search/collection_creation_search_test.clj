@@ -57,19 +57,23 @@
     (index/wait-until-indexed)
     (testing "Old collections should not be found."
       (let [search-results (search/find-collections-created-after-date
-                            {:created-date "2011-01-01T00:00:00Z"})]
+                            {:created-at "2011-01-01T00:00:00Z"})]
         (d/refs-match? [new-collection regular-collection] search-results)))
     (testing "Using unsupported parameters"
       (are [params]
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                        (search/find-collections-created-after-date params))]
-          (= [400 [(format "Parameters not supported! %s" params)]]
+          (= [400 [(format "Incorrect parameters or date-time given: %s" params)]]
              [status errors]))
         {:insert-time "2011-01-01T00:00:00Z" :result-format :xml}
         {:birthday "2012-01-01T00:00:00Z" :result-format :xml}))
     (testing "Using invalid parameters"
-      (let [search-results (search/find-collections-created-after-date
-                            {:created-date "JUNE"})]))))
+      (are [params]
+        (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                       (search/find-collections-created-after-date params))]
+          (= [400 [(format "Incorrect parameters or date-time given: %s" params)]]
+             [status errors]))
+        {:created-at "JUNE" :result-format :xml}))))
 
 (deftest default-insert-time-test
   ;; This is to test whether collections have an insert-time by default

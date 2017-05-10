@@ -234,7 +234,7 @@
           ;; later.
           :revision-date m/date-field-mapping
           :revision-date2 (m/stored m/date-field-mapping)
-          :date-created (m/stored m/date-field-mapping)
+          :created-at (m/stored m/date-field-mapping)
 
           :permitted-group-ids (m/stored m/string-field-mapping)
           :concept-id   (m/stored m/string-field-mapping)
@@ -342,7 +342,7 @@
           :coordinate-system (m/not-indexed (m/stored m/string-field-mapping))
 
           ;; mappings added for opendata
-          :insert-time (m/stored m/string-field-mapping)
+          :insert-time (m/not-indexed (m/stored m/string-field-mapping))
           ;; This field contains multiple values obtained by
           ;; concatenating the category, topic, and term from
           ;; each science keyword. It represents the 'keywords'

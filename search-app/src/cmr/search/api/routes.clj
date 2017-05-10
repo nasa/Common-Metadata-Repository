@@ -292,7 +292,7 @@
   [context path-w-extension params headers]
   (let [params (process-params params path-w-extension headers mt/xml)]
     (info (format "Searching for collections created after %s in format %s with params %s."
-                  (:create-date params)
+                  (:created-at params)
                   (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
     (search-response
