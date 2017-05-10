@@ -1,17 +1,11 @@
 (ns cmr.metadata-db.int-test.concepts.variable-save-test
   "Contains integration tests for saving variables. Tests saves with various configurations including
   checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.local :as l]
-            [cmr.common.util :refer (are2)]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
-
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer (are2)]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.utility :as util]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
