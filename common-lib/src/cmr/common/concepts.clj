@@ -7,7 +7,7 @@
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:collection :granule :tag :tag-association :service :access-group :acl :humanizer})
+  #{:collection :granule :tag :tag-association :variable :service :access-group :acl :humanizer})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
@@ -15,6 +15,7 @@
    "G" :granule
    "T" :tag
    "TA" :tag-association
+   "V" :variable
    "S" :service
    "AG" :access-group
    "ACL" :acl
@@ -30,10 +31,10 @@
   "humanizer")
 
 (defn concept-id-validation
-  "Validates both concept-id and collection-concept-id 
+  "Validates both concept-id and collection-concept-id
    and returns errors if it's invalid. Returns nil if valid."
   ([concept-id]
-   ;;validates concept-id  
+   ;;validates concept-id
    ;;use :collection-concept-id in place of param when validating collection-concept-id
    (concept-id-validation :concept-id concept-id))
   ([param concept-id]
