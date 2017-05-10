@@ -10,8 +10,8 @@
 
   [:#header :h2]
   [:append
-   " with "
-   [:a {:href "https://github.com/xsc/codox-theme-rdash"} "RDash UI"]
+   " with the "
+   [:a {:href "https://github.com/clojang/codox-theme"} "Clojang UI"]
    " theme"]]
 
  :resources

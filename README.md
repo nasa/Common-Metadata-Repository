@@ -1,21 +1,21 @@
 # Clojang Codox Theme
 
-This is a modern and responsive [codox][codox] theme development for
-Clojang project, based on the
-[codox-theme-rdash project](https://github.com/xsc/codox-theme-rdash).
+This is a modern and responsive [codox][codox] theme developed for
+use by Clojang projects and based based on
+[codox-theme-rdash](https://github.com/xsc/codox-theme-rdash).
 
-<img src='screenshots/rdash.jpg' alt='Codox + RDash' />
+<img src='screenshots/rdash.jpg' alt='Codox + Clojang' />
 
 Note that this needs codox ≥ 0.10.0.
 
 [codox]: https://github.com/weavejester/codox
-[rdash]: http://rdash.github.io/
+
 
 ## Usage
 
 Add the following dependency to your `project.clj`:
 
-[![Clojars Project](https://img.shields.io/clojars/v/codox-theme-rdash.svg)](https://clojars.org/codox-theme-rdash)
+[![Clojars Project](https://img.shields.io/clojars/v/clojang/codox-theme.svg)](https://clojars.org/clojang/codox-theme)
 
 Then set the following:
 
@@ -31,12 +31,14 @@ via:
         :themes [:rdash]}
 ```
 
+
 ## Examples
 
-- [xsc/claro](https://xsc.github.io/claro/)
-- [xsc/iapetos](https://xsc.github.io/iapetos/index.html)
-- [xsc/invariant](https://xsc.github.io/invariant/index.html)
-- [xsc/kithara](https://xsc.github.io/kithara/index.html)
+- [clojang/jiface](https://clojang.github.io/jiface/)
+- [clojang/clojang](https://clojang.github.io/clojang)
+- [clojang/zhang](https://clojang.github.io/zhang)
+- [clojang/zhang-agent](https://clojang.github.io/zhang-agenthtml)
+
 
 ## License
 
