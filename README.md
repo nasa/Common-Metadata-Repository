@@ -4,11 +4,9 @@ This is a modern and responsive [codox][codox] theme developed for
 use by Clojang projects and based based on
 [codox-theme-rdash](https://github.com/xsc/codox-theme-rdash).
 
-<img src='screenshots/rdash.jpg' alt='Codox + Clojang' />
+[![Clojars Theme](https://raw.githubusercontent.com/clojang/codox-theme/master/screenshots/screen-1-thumb.png)](https://raw.githubusercontent.com/clojang/codox-theme/master/screenshots/screen-1.png)
 
-[![Clojars Theme](screenshots/screen-thumb-1.png)](screenshots/screen-1.png)
-
-[![Clojars Theme](screenshots/screen-thumb-2.png)](screenshots/screen-2.png)
+[![Clojars Theme with Code](https://raw.githubusercontent.com/clojang/codox-theme/master/screenshots/screen-2-thumb.png)](https://raw.githubusercontent.com/clojang/codox-theme/master/screenshots/screen-2.png)
 
 Note that this needs codox ≥ 0.10.0.
 
@@ -32,7 +30,7 @@ via:
 
 ```clojure
 :codox {:metadata {:doc/format :markdown}
-        :themes [:rdash]}
+        :themes [:clojang]}
 ```
 
 
