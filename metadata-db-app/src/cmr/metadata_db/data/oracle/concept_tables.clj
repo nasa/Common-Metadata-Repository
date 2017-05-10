@@ -40,6 +40,10 @@
   [_ _]
   "cmr_humanizers")
 
+(defmethod get-table-name :variable
+  [_ _]
+  "cmr_variables")
+
 (defmethod get-table-name :default
   [provider concept-type]
   ;; Dont' remove the next line - needed to prevent SQL injection
