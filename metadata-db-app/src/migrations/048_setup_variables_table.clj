@@ -1,7 +1,6 @@
 (ns migrations.048-setup-variables-table
-  (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]))
+  (:require
+   [config.mdb-migrate-helper :as h]))
 
 (def ^:private variables-column-sql
   "id NUMBER,

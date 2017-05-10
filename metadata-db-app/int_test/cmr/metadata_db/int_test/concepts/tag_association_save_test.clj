@@ -1,10 +1,11 @@
 (ns cmr.metadata-db.int-test.concepts.tag-association-save-test
   "Contains integration tests for saving tag associations. Tests saves with various configurations
    including checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer (are2)]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer (are2)]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
+   [cmr.metadata-db.int-test.utility :as util]))
 
 
 ;;; fixtures
