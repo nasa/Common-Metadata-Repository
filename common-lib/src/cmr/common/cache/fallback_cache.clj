@@ -22,7 +22,6 @@
 
   ## Downsides and Caveats:
 
-
   For most use cases only a single store is required with the fallback being a lookup function
   provided to obtain the value. This cache should only be used when a secondary store is
   needed rather than just a lookup function."
@@ -32,14 +31,11 @@
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord FallbackCache
-  [
-   ;; The primary cache used first when looking for values. Must implement CmrCache protocol.
+  [;; The primary cache used first when looking for values. Must implement CmrCache protocol.
    primary-cache
-
    ;; The backup cache which is used when values are not found in the primary cache. Must implement
    ;; CmrCache protocol.
    backup-cache]
-
 
   c/CmrCache
   (get-keys
