@@ -160,7 +160,7 @@
                              :format (db-format->mime-type format)
                              :revision-id (int revision_id)
                              :revision-date (oracle/oracle-timestamp->str-time db revision_date)
-                             :created-at created_at
+                             :created-at (when created_at (oracle/oracle-timestamp->str-time db created_at))
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
 
@@ -175,6 +175,7 @@
                 format
                 revision-id
                 revision-date
+                created-at
                 deleted]} concept
         fields ["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
         values [native-id
@@ -182,11 +183,14 @@
                 (util/string->gzip-bytes metadata)
                 (mime-type->db-format format)
                 revision-id
-                deleted]]
-    (if revision-date
-      [(cons "revision_date" fields)
-       (cons (cr/to-sql-time (p/parse-datetime revision-date)) values)]
-      [fields values])))
+                deleted]
+        fields (cond->> fields
+                        revision-date (cons "revision_date")
+                        created-at (cons "created_at"))
+        values (cond->> values
+                        revision-date (cons (cr/to-sql-time (p/parse-datetime revision-date)))
+                        created-at (cons (cr/to-sql-time created-at)))]
+    [fields values]))
 
 (defmethod after-save :default
   [db provider concept]

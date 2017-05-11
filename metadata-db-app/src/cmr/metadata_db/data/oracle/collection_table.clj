@@ -107,6 +107,7 @@
                                table-name
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_c_i ON %s (created_at)"
+                               table-name
                                table-name)))
 
 (defmethod create-collection-indexes true

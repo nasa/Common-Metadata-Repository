@@ -4,6 +4,7 @@
   (:require 
    [clj-time.format :as time-format]
    [clojure.test :refer :all]
+   [cmr.common.date-time-parser :as common-parser]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]
@@ -46,34 +47,24 @@
     (apply = created-ats)))
 
 (deftest save-collection-created-at-test
-  (testing "Saved collection gets current time for created-at"
-    (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-      ;; Freeze time so we know what `created-at` time to expect.
-      (time-keeper/freeze-time!)
-      (let [collection (util/collection-concept provider-id 1)
-            {:keys [concept-id revision-id]} (util/save-concept collection)
-            collection-revision (:concept (util/get-concept-by-id-and-revision concept-id revision-id))]
-        (is (= (time-keeper/now) 
-               (time-format/parse (time-format/formatters :date-time) (:created-at collection-revision)))))
-      (time-keeper/clear-current-time!)))
   (testing "Save collection multiple times gets same created-at" 
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
       (let [initial-collection (util/collection-concept provider-id 2)
-            ;; Use time-keeper to freeze the clock, then save the collection.
+            ;; Save a collection, then wait for a small period of time before saving it
             ;; Then use time-keeper to force the clock to advance by 1 hour
-            ;; before saving it a second time. Then advance the clock 1/2 hour and save a tombstone.
-            ;; Finally, advance the clock 1/2 hour and save a new (non-tombstone) revision.
+            ;; a second time. Then wait again and save a tombstone.
+            ;; Finally, wait a bit and save a new (non-tombstone) revision.
             ;; All should have the same `created-at` value.
-            _ (time-keeper/freeze-time!)
+            ;; Note - Originally planned to use the time-keeper functionality for this, but
+            ;; metdata-db tests don't have access to the control api that would allow
+            ;; this to work in CI.
             {concept-id :concept-id initial-revision-id :revision-id} (util/save-concept initial-collection)
-            _ (time-keeper/advance-time! 3600)
+            _ (Thread/sleep 10)
             {second-revision-id :revision-id} (util/save-concept initial-collection)
-            _ (time-keeper/advance-time! 1800)
+            _ (Thread/sleep 10)
             {tombstone-revision-id :revision-id} (util/save-concept {:deleted true :concept-id concept-id})
-            _ (time-keeper/advance-time! 1800)
+            _ (Thread/sleep 10)
             {final-revision-id :revision-id} (util/save-concept initial-collection)
-            ;; Set the time back to normal
-            _ (time-keeper/clear-current-time!)
             [initial-revision 
              second-revision 
              tombstone 
