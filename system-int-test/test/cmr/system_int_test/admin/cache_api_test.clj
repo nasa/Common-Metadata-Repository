@@ -71,18 +71,49 @@
     (testing "list caches"
       (are [url caches]
         (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
-
-        (url/indexer-read-caches-url) ["acls" "indexer-index-set-cache" "token-imp" "kms" "health"
-                                       "collection-granule-aggregation-cache" "humanizer-cache"
-                                       "usage-metrics-cache"]
-        (url/index-set-read-caches-url) ["token-imp" "health"]
-        (url/mdb-read-caches-url) ["token-imp" "health"]
-        (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids" "kms"
-                                      "health" "humanizer-alias-cache" "write-enabled"]
-        (url/access-control-read-caches-url) ["acls" "health" "group-ids-guids" "write-enabled"]
-        (url/search-read-caches-url) ["acls" "collections-for-gran-acls" "has-granules-map"
-                                      "index-names" "token-imp" "token-sid" "token-user-id" "health"
-                                      "xsl-transformer-templates" "metadata-cache" "kms" "write-enabled"])
+        (url/indexer-read-caches-url) [
+         "acls"
+         "collection-granule-aggregation-cache"
+         "health"
+         "humanizer-cache"
+         "indexer-index-set-cache"
+         "kms"
+         "token-imp"
+         "usage-metrics-cache"]
+        (url/index-set-read-caches-url) [
+         "health"
+         "token-imp"]
+        (url/mdb-read-caches-url) [
+         "health"
+         "token-imp"]
+        (url/ingest-read-caches-url) [
+         "acls"
+         "health"
+         "humanizer-alias-cache"
+         "kms"
+         "providers"
+         "token-imp"
+         "token-user-ids"
+         "write-enabled"]
+        (url/access-control-read-caches-url) [
+         "acls"
+         "group-ids-guids"
+         "health"
+         "write-enabled"]
+        (url/search-read-caches-url) [
+         "acls"
+         "collections-for-gran-acls"
+         "has-granules-map"
+         "health"
+         "index-names"
+         "kms"
+         "metadata-cache"
+         "report-cache"
+         "token-imp"
+         "token-sid"
+         "token-user-id"
+         "write-enabled"
+         "xsl-transformer-templates"])
       (s/only-with-real-database
        (testing "list caches for bootstrap"
          (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
