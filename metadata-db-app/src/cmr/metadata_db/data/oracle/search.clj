@@ -1,16 +1,17 @@
 (ns cmr.metadata-db.data.oracle.search
   "Provides implementations of the cmr.metadata-db.data.concepts/ConceptStore protocol methods
   for retrieving concepts using parameters"
-  (:require [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.data.oracle.concepts :as oc]
-            [cmr.metadata-db.data.oracle.concept-tables :as tables]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util]
-            [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.oracle.sql-helper :as sh]
-            [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
-  (:import cmr.oracle.connection.OracleStore))
+  (:require
+   [clojure.java.jdbc :as j]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.data.oracle.concept-tables :as tables]
+   [cmr.metadata-db.data.oracle.concepts :as oc]
+   [cmr.metadata-db.data.oracle.sql-helper :as sh]
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+  (:import
+   (cmr.oracle.connection OracleStore)))
 
 (def common-columns
   "A set of common columns for all concept types."
@@ -152,7 +153,11 @@
                    [conn db]
                    (let [conditions [`(>= :id ~start-index)
                                      `(< :id ~(+ start-index batch-size))]
-                         _ (info "Finding batch for provider" provider-id "from id >=" start-index " and id <" (+ start-index batch-size))
+                         _ (info (format "Finding batch for provider [%s] concept type [%s] from id >= %s and id < %s"
+                                         provider-id
+                                         (name concept-type)
+                                         start-index
+                                         (+ start-index batch-size)))
                          conditions (if (empty? params)
                                       conditions
                                       (cons (sh/find-params->sql-clause params) conditions))
