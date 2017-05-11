@@ -2730,7 +2730,7 @@ Content-Length: 168
 
 #### <a name="tag-disassociation"></a> Tag Disassociation
 
-A tag can be disassociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag disassociation by query only supports tag disassociation of the latest revision of collections. Tag disassociation by collections supports tag disassociation from any specified collection revisions. The tag disassociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag disassociation responses, one for each tag association attempted to delete. Each tag disassociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag disassociation succeeded or an `errors` or `warnings` field with detailed message when the tag disassociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag disassociation. Here is a sample tag disassociation request and its response:
+A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag disassociation by query only supports tag disassociation of the latest revision of collections. Tag disassociation by collections supports tag disassociation from any specified collection revisions. The tag disassociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag disassociation responses, one for each tag association attempted to delete. Each tag disassociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag disassociation succeeded or an `errors` or `warnings` field with detailed message when the tag disassociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag disassociation. Here is a sample tag disassociation request and its response:
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
@@ -2787,7 +2787,7 @@ Status code 422 is returned when:
 
 #### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating a Tag from Collections by query
 
-Tags can be disassociated from collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be dissociated from collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
@@ -2824,7 +2824,7 @@ Content-Length: 168
 
 #### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating a Tag from Collections by collection concept ids
 
-Tags can be disassociated from collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```

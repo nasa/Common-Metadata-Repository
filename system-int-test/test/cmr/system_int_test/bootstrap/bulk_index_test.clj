@@ -771,10 +771,10 @@
                  tag1-colls)]
 
       (index/wait-until-indexed)
-      ;; disassociate tag1 from coll2 and not send indexing events
+      ;; dissociate tag1 from coll2 and not send indexing events
       (dev-sys-util/eval-in-dev-sys
         `(cmr.metadata-db.config/set-publish-messages! false))
-      (tags/disassociate-by-query user1-token tag-key {:concept_id (:concept-id coll2)})
+      (tags/dissociate-by-query user1-token tag-key {:concept_id (:concept-id coll2)})
       (dev-sys-util/eval-in-dev-sys
         `(cmr.metadata-db.config/set-publish-messages! true))
 

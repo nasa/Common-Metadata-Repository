@@ -119,15 +119,15 @@
       (let [tag (uniq-tag)
             {:keys [concept-id revision-id]} (tags/create-tag all-user tag)]
         (testing "Success"
-          (is (= 200 (:status (tags/disassociate-by-query update-user (:tag-key tag) {:provider "foo"}))))
-          (is (= 200 (:status (tags/disassociate-by-query all-user (:tag-key tag) {:provider "foo"})))))
+          (is (= 200 (:status (tags/dissociate-by-query update-user (:tag-key tag) {:provider "foo"}))))
+          (is (= 200 (:status (tags/dissociate-by-query all-user (:tag-key tag) {:provider "foo"})))))
 
         (testing "Failure Cases"
           (are
             [token]
             (= {:status 401
                 :errors ["You do not have permission to update a tag."]}
-               (tags/disassociate-by-query token (:tag-key tag) {:provider "foo"}))
+               (tags/dissociate-by-query token (:tag-key tag) {:provider "foo"}))
 
             nil
             guest-token

@@ -113,27 +113,27 @@
   ([token tag-key coll-concept-ids options]
    (associate-tag :concept-ids token tag-key coll-concept-ids options)))
 
-(defn- disassociate-tag
-  "Disassociates a tag with collections found with a JSON query"
+(defn- dissociate-tag
+  "Dissociates a tag with collections found with a JSON query"
   [association-type token tag-key condition options]
   (let [options (merge {:raw? true :token token} options)
-        response (tt/disassociate-tag association-type (s/context) tag-key condition options)]
+        response (tt/dissociate-tag association-type (s/context) tag-key condition options)]
     (index/wait-until-indexed)
     (process-response response)))
 
-(defn disassociate-by-query
-  "Disassociates a tag with collections found with a JSON query"
+(defn dissociate-by-query
+  "Dissociates a tag with collections found with a JSON query"
   ([token tag-key condition]
-   (disassociate-by-query token tag-key condition nil))
+   (dissociate-by-query token tag-key condition nil))
   ([token tag-key condition options]
-   (disassociate-tag :query token tag-key {:condition condition} options)))
+   (dissociate-tag :query token tag-key {:condition condition} options)))
 
-(defn disassociate-by-concept-ids
-  "Disassociates a tag with collections by collection concept ids"
+(defn dissociate-by-concept-ids
+  "Dissociates a tag with collections by collection concept ids"
   ([token tag-key coll-concept-ids]
-   (disassociate-by-concept-ids token tag-key coll-concept-ids nil))
+   (dissociate-by-concept-ids token tag-key coll-concept-ids nil))
   ([token tag-key coll-concept-ids options]
-   (disassociate-tag :concept-ids token tag-key coll-concept-ids options)))
+   (dissociate-tag :concept-ids token tag-key coll-concept-ids options)))
 
 (defn save-tag
   "A helper function for creating or updating tags for search tests. If the tag does not have a

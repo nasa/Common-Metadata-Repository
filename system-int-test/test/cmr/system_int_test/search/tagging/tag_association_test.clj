@@ -1,18 +1,18 @@
 (ns cmr.system-int-test.search.tagging.tag-association-test
   "This tests associating tags with collections."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.util :refer [are2] :as util]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.transmit.tag :as tt]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are2] :as util]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.transmit.tag :as tt]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
@@ -208,7 +208,7 @@
            tags/associate-by-query {:provider "foo"}
            tags/associate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
-(deftest disassociate-tags-with-collections-by-query-test
+(deftest dissociate-tags-with-collections-by-query-test
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
@@ -243,28 +243,28 @@
                                                        {:provider "PROV2"}
                                                        {:provider "PROV3"}]})
 
-    (testing "Disassociate using query that finds nothing"
-      (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "foo"})]
+    (testing "Dissociate using query that finds nothing"
+      (let [{:keys [status]} (tags/dissociate-by-query token tag-key {:provider "foo"})]
         (is (= 200 status))
         (assert-tag-associated all-colls)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible to normal users
-      (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV3"})]
+      (let [{:keys [status]} (tags/dissociate-by-query token tag-key {:provider "PROV3"})]
         (is (= 200 status))
         (assert-tag-associated all-colls)))
 
-    (testing "Successfully disassociate tag with collections"
-      (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV1"})]
+    (testing "Successfully dissociate tag with collections"
+      (let [{:keys [status]} (tags/dissociate-by-query token tag-key {:provider "PROV1"})]
         (is (= 200 status))
         (assert-tag-associated (concat all-prov2-colls all-prov3-colls)))
 
-      ;; disassociate tag again is OK. Since there is no existing tag association, it does nothing.
-      (let [{:keys [status]} (tags/disassociate-by-query token tag-key {:provider "PROV1"})]
+      ;; dissociate tag again is OK. Since there is no existing tag association, it does nothing.
+      (let [{:keys [status]} (tags/dissociate-by-query token tag-key {:provider "PROV1"})]
         (is (= 200 status))
         (assert-tag-associated (concat all-prov2-colls all-prov3-colls))))))
 
-(deftest disassociate-tags-with-collections-by-concept-ids-test
+(deftest dissociate-tags-with-collections-by-concept-ids-test
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
@@ -298,27 +298,27 @@
                                                        {:provider "PROV2"}
                                                        {:provider "PROV3"}]})
 
-    (testing "Successfully disassociate tag with collections"
-      (let [{:keys [status]} (tags/disassociate-by-concept-ids
+    (testing "Successfully dissociate tag with collections"
+      (let [{:keys [status]} (tags/dissociate-by-concept-ids
                                token
                                tag-key
                                (map #(hash-map :concept-id (:concept-id %)) all-prov1-colls))]
         (is (= 200 status))
         (assert-tag-associated (concat all-prov2-colls all-prov3-colls))))
 
-    (testing "Disassociate non-existent collections"
-      (let [response (tags/disassociate-by-concept-ids
+    (testing "Dissociate non-existent collections"
+      (let [response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id "C100-P5"}])]
         (tags/assert-tag-disassociation-response-ok?
           {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
           response)))
 
-    (testing "Disassociate to deleted collections"
+    (testing "Dissociate to deleted collections"
       (let [c1-p2-concept-id (:concept-id c1-p2)
             c1-p2-concept (mdb/get-concept c1-p2-concept-id)
             _ (ingest/delete-concept c1-p2-concept)
             _ (index/wait-until-indexed)
-            response (tags/disassociate-by-concept-ids
+            response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id c1-p2-concept-id}])]
         (tags/assert-tag-disassociation-response-ok?
           {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
@@ -328,14 +328,14 @@
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [coll-concept-id (:concept-id c4-p3)
-            response (tags/disassociate-by-concept-ids
+            response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id coll-concept-id}])]
         (tags/assert-tag-disassociation-response-ok?
           {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    coll-concept-id)]}}
           response)))))
 
-(deftest disassociate-tag-failure-test
+(deftest dissociate-tag-failure-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
@@ -345,46 +345,46 @@
         tag (assoc tag :originator-id "user1")
         coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
 
-    (testing "Disassociate tag using query sent with invalid content type"
-      (are [disassociate-tag-fn request-json]
+    (testing "Dissociate tag using query sent with invalid content type"
+      (are [dissociate-tag-fn request-json]
            (= {:status 400,
                :errors
                ["The mime types specified in the content-type header [application/xml] are not supported."]}
-              (disassociate-tag-fn token tag-key request-json {:http-options {:content-type :xml}}))
-           tags/disassociate-by-query {:provider "foo"}
-           tags/disassociate-by-concept-ids [{:concept-id coll-concept-id}]))
+              (dissociate-tag-fn token tag-key request-json {:http-options {:content-type :xml}}))
+           tags/dissociate-by-query {:provider "foo"}
+           tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
 
-    (testing "Disassociate applies JSON Query validations"
-      (are [disassociate-tag-fn request-json message]
+    (testing "Dissociate applies JSON Query validations"
+      (are [dissociate-tag-fn request-json message]
            (= {:status 400
                :errors [message]}
-              (disassociate-tag-fn token tag-key request-json))
-           tags/disassociate-by-query {:foo "bar"}
+              (dissociate-tag-fn token tag-key request-json))
+           tags/dissociate-by-query {:foo "bar"}
            "/condition object instance has properties which are not allowed by the schema: [\"foo\"]"
 
-           tags/disassociate-by-concept-ids {:concept-id coll-concept-id}
+           tags/dissociate-by-concept-ids {:concept-id coll-concept-id}
            "instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"))
 
-    (testing "Disassociate tag that doesn't exist"
-      (are [disassociate-tag-fn request-json]
+    (testing "Dissociate tag that doesn't exist"
+      (are [dissociate-tag-fn request-json]
            (= {:status 404
                :errors ["Tag could not be found with tag-key [tag100]"]}
-              (disassociate-tag-fn token "tag100" request-json))
-           tags/disassociate-by-query {:provider "foo"}
-           tags/disassociate-by-concept-ids [{:concept-id coll-concept-id}]))
+              (dissociate-tag-fn token "tag100" request-json))
+           tags/dissociate-by-query {:provider "foo"}
+           tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))
 
-    (testing "Disassociate deleted tag"
+    (testing "Dissociate deleted tag"
       (tags/delete-tag token tag-key)
-      (are [disassociate-tag-fn request-json]
+      (are [dissociate-tag-fn request-json]
            (= {:status 404
                :errors [(format "Tag with tag-key [%s] was deleted." tag-key)]}
-              (disassociate-tag-fn token tag-key request-json))
-           tags/disassociate-by-query {:provider "foo"}
-           tags/disassociate-by-concept-ids [{:concept-id coll-concept-id}]))))
+              (dissociate-tag-fn token tag-key request-json))
+           tags/dissociate-by-query {:provider "foo"}
+           tags/dissociate-by-concept-ids [{:concept-id coll-concept-id}]))))
 
-(deftest disassociate-tags-with-partial-match-query-test
+(deftest dissociate-tags-with-partial-match-query-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-  (testing "disassociate tag with only some of the collections matching the query are associated with the tag is OK"
+  (testing "dissociate tag with only some of the collections matching the query are associated with the tag is OK"
     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
           token (e/login (s/context) "user1")
@@ -392,13 +392,13 @@
           tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
           assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
       (assert-tag-associated [coll1])
-      (let [{:keys [status errors]} (tags/disassociate-by-query token "tag1" {:provider "PROV1"})]
+      (let [{:keys [status errors]} (tags/dissociate-by-query token "tag1" {:provider "PROV1"})]
         (is (= 200 status))
         (assert-tag-associated [])))))
 
-(deftest disassociate-tags-with-mixed-response-test
+(deftest dissociate-tags-with-mixed-response-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-  (testing "disassociate tag with mixed success and failure response"
+  (testing "dissociate tag with mixed success and failure response"
     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
           coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"}))
@@ -412,7 +412,7 @@
                                                      :revision-id (:revision-id coll2)}])
       (assert-tag-associated [coll1 coll2])
 
-      (let [response (tags/disassociate-by-concept-ids
+      (let [response (tags/dissociate-by-concept-ids
                        token tag-key
                        [{:concept-id "C100-P5"} ;; non-existent collection
                         {:concept-id (:concept-id coll1)} ;; success
@@ -486,7 +486,7 @@
                      (search/find-refs :collection {:token token
                                                     :tag-key tag-key}))))
 
-(deftest associate-disassociate-tag-with-collections-test
+(deftest associate-dissociate-tag-with-collections-test
   ;; Grant all collections in PROV1
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [[coll1 coll2 coll3] (for [n (range 1 4)]
@@ -529,15 +529,15 @@
     (assert-tag-association token [coll1 coll2] "tag1")
     (assert-tag-association token [coll1 coll2 coll3] "tag2")
 
-    ;; disassociate tag1 from coll1
-    (tags/disassociate-by-concept-ids token "tag1" [{:concept-id coll1-id}])
+    ;; dissociate tag1 from coll1
+    (tags/dissociate-by-concept-ids token "tag1" [{:concept-id coll1-id}])
     (index/wait-until-indexed)
     ;; verify association
     (assert-tag-association token [coll2] "tag1")
     (assert-tag-association token [coll1 coll2 coll3] "tag2")
 
-    ;; disassociate tag2 from coll1 and coll2
-    (tags/disassociate-by-concept-ids token "tag2" [{:concept-id coll1-id}
+    ;; dissociate tag2 from coll1 and coll2
+    (tags/dissociate-by-concept-ids token "tag2" [{:concept-id coll1-id}
                                                     {:concept-id coll2-id}])
     (index/wait-until-indexed)
     ;; verify association

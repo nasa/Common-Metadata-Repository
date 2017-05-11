@@ -1,14 +1,15 @@
 (ns cmr.system-int-test.search.tagging.collection-revisions-tag-search-test
   "This tests searching for collection revisions by tag parameters"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
@@ -141,8 +142,8 @@
       (assert-collection-refs-found [coll1-1 coll2-1 coll2-2]
                                     {:tag-data {"tag1" "ice"} :all-revisions true})
 
-      ;; disassociate tag
-      (tags/disassociate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll2-1)
+      ;; dissociate tag
+      (tags/dissociate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll2-1)
                                                        :revision-id (:revision-id coll2-1)}
                                                       {:concept-id (:concept-id coll1-3)
                                                        :revision-id (:revision-id coll1-3)}])
@@ -150,4 +151,3 @@
       (assert-collection-refs-found [] {:tag-data {"tag1" "snow"}})
       (assert-collection-refs-found [coll1-1 coll2-2]
                                     {:tag-data {"tag1" "ice"} :all-revisions true}))))
-

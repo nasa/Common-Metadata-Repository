@@ -1,10 +1,11 @@
 (ns cmr.transmit.tag
   "This contains functions for interacting with the tagging API."
-  (:require [cmr.transmit.connection :as conn]
-            [cmr.transmit.config :as config]
-            [ring.util.codec :as codec]
-            [cmr.transmit.http-helper :as h]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.http-helper :as h]
+   [ring.util.codec :as codec]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -72,8 +73,8 @@
                                        :accept :json}
                                       http-options)}))))
 
-(defn disassociate-tag
-  "Sends a request to disassociate the tag with collections based on the given association type.
+(defn dissociate-tag
+  "Sends a request to dissociate the tag with collections based on the given association type.
   Valid association type are :query and :concept-ids.
   Valid options are
   * :raw? - set to true to indicate the raw response should be returned. See
@@ -82,7 +83,7 @@
   be used.
   * http-options - Other http-options to be sent to clj-http."
   ([association-type context concept-id content]
-   (disassociate-tag context concept-id content nil))
+   (dissociate-tag context concept-id content nil))
   ([association-type context concept-id content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
