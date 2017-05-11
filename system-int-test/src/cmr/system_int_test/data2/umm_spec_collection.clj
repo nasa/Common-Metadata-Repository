@@ -248,8 +248,8 @@
    :Version "V1"
    :EntryTitle "The entry title V5"
    :CollectionProgress "COMPLETE"
-   ; :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
-   ;                                     :Type "CREATE"})]
+   :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                       :Type "CREATE"})]
    :Abstract "A very abstract collection"
    :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
 

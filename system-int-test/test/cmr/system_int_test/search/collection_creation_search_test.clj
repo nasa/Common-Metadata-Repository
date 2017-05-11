@@ -10,6 +10,7 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -19,46 +20,56 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (dev-sys-util/freeze-resume-time-fixture)]))
 
-(deftest search-for-new-collections
-  (let [old-collection (d/ingest-umm-spec-collection
-                         "PROV1"
-                         (data-umm-c/collection
-                           {:EntryTitle "oldie"
-                            :Version "v1"
-                            :ShortName "Oldie"
-                            :DataDates [{:Type "CREATE"
-                                         :Date "2010-11-17T00:00:00Z"}]}))
-        new-collection (d/ingest-umm-spec-collection
-                         "PROV1"
-                         (data-umm-c/collection
-                           {:EntryTitle "new"
-                            :Version "v1"
-                            :ShortName "New"
-                            :DataDates [{:Type "CREATE"}]
-                            :Date "2017-01-01T00:00:00Z"}))
+(defn- current-time
+  []
+  (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
 
-        ;; Default insert-time in d/ingest-umm-spec-collection is Jan 1st, 2012
+(deftest search-for-new-collections
+  (let [_ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
+        oldest-collection (d/ingest-umm-spec-collection
+                            "PROV1"
+                            (data-umm-c/collection
+                              {:EntryTitle "oldie"
+                               :Version "v1"
+                               :ShortName "Oldie"}))
+
+        _ (dev-system-util/freeze-time! "2012-01-01T10:00:00Z")
+        elder-collection (d/ingest-umm-spec-collection
+                           "PROV1"
+                           (data-umm-c/collection
+                             {:EntryTitle "new"
+                              :Version "v1"
+                              :ShortName "New"}))
+
+        _ (dev-system-util/freeze-time! "2016-01-01T10:00:00Z")
         regular-collection (d/ingest-umm-spec-collection
                              "PROV1"
                              (data-umm-c/collection
                                {:EntryTitle "regular"
                                 :Version "v1"
                                 :ShortName "Regular"}))
-        old-collection-with-updates (d/ingest-umm-spec-collection
-                                      "PROV1"
-                                      (data-umm-c/collection
-                                        {:EntryTitle "oldie"
-                                         :Version "v1"
-                                         :ShortName "Oldie"
-                                         :DataDates [{:Type "CREATE"
-                                                      :Date "2010-11-17T00:00:00Z"}
-                                                     {:Type "UPDATE"
-                                                      :Date "2016-11-17T00:00:00Z"}]}))]
+
+        _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
+        youngling-collection (d/ingest-umm-spec-collection
+                               "PROV1"
+                               (data-umm-c/collection
+                                 {:EntryTitle "oldie-with-updates"
+                                  :Version "v1"
+                                  :ShortName "Oldie 2"}))
+
+        oldest-collection-revision (d/ingest-umm-spec-collection
+                                     "PROV1"
+                                     (data-umm-c/collection
+                                       {:EntryTitle "oldie"
+                                        :Version "v1"
+                                        :ShortName "Oldie"
+                                        :Abstract "On second thought, this collection isn't so abstract after all"}))]
+
     (index/wait-until-indexed)
     (testing "Old collections should not be found."
       (let [search-results (search/find-collections-created-after-date
-                            {:created-at "2011-01-01T00:00:00Z"})]
-        (d/refs-match? [new-collection regular-collection] search-results)))
+                            {:created-at "2014-01-01T10:00:00Z"})]
+        (d/refs-match? [youngling-collection regular-collection] search-results)))
     (testing "Using unsupported parameters"
       (are [params]
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
@@ -74,20 +85,3 @@
           (= [400 [(format "Incorrect parameters or date-time given: %s" params)]]
              [status errors]))
         {:created-at "JUNE" :result-format :xml}))))
-
-(deftest default-insert-time-test
-  ;; This is to test whether collections have an insert-time by default
-  (testing "Collections have default insert-time"
-    (let [umm-collection (data-umm-c/collection
-                           {:EntryTitle "regular"
-                            :Version "v1"
-                            :ShortName "Regular"})
-        ; collection (dissoc collection :DataDates)
-        ; collection (assoc collection :DataDates [])
-          collection (d/ingest-umm-spec-collection
-                      "PROV1" umm-collection)]
-                      ; (-> umm-collection
-                      ;     (dissoc :DataDates)))]
-                          ; (assoc :DataDates [])))]
-      (index/wait-until-indexed)
-      (not= nil (println (:DataDates collection))))))
