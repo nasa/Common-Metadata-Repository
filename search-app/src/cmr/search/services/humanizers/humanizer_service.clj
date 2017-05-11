@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.common.concepts :as cc]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]

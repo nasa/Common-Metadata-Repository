@@ -5,7 +5,8 @@
    [cmr.common-app.humanizer :as h]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as u]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
@@ -64,9 +65,11 @@
                 original-value (get parent field)]]
       [provider-id concept-id ShortName Version original-value humanized-string-value])))
 
-(defn humanizers-report-csv
+(defn generate-humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
+  ;;; XXX DEBUG
+  (println "*** GENERATING HUMANIZERS REPORT ***")
   (let [[t1 collection-batches] (u/time-execution
                                   (get-all-collections context))
          string-writer (StringWriter.)
@@ -95,3 +98,28 @@
                        "concat humanized rows:" t3))))]
       (info "Create report " t4)
       (str string-writer))))
+
+(defn humanizers-report-csv
+  "Returns a report on humanizers in use in collections as a CSV.
+
+  This is the function that is called by the web service."
+  [context]
+  ;(generate-humanizers-report-csv context))
+  (slurp "report.csv"))
+
+;; A job for generating the humanizers report
+(defjob HumanizerReportGeneratorJob
+  [ctx system]
+  (dorun
+   (->> system
+        ((fn [x] (info "*** GENERATING HUMANIZERS REPORT ***") x))
+        (hash-map :system)
+        (generate-humanizers-report-csv)
+        (spit "report.csv"))))
+
+(def humanizer-report-generator-job
+  {:job-type HumanizerReportGeneratorJob
+   ;; 24 hours in seconds
+   ;:interval (* 60 60 24)
+   :interval 10
+   })

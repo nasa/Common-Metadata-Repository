@@ -205,23 +205,19 @@
     "Returns true if the jobs are paused and false otherwise."))
 
 (defrecord JobScheduler
-  [
-   ;; A var that will point to an atom to use to contain the system. Jobs need
+  [;; A var that will point to an atom to use to contain the system. Jobs need
    ;; access to the system. There can be multiple systems running at once so
    ;; there needs to be a separate var per system as a way for jobs to access
    ;; it at run time.
    system-holder-var
-
    ;; The key used to store the jobs db in the system
    db-system-key
-
    ;; A list of maps containing job-type, interval, and optionally start-delay
    jobs
    ;; True or false to indicate it should run in clustered mode.
    clustered?
    ;; true or false to indicate it's running
    running?
-
    ;; Instance of a quartzite scheduler
    ^StdScheduler qz-scheduler]
 

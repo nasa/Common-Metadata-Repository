@@ -46,13 +46,18 @@
   (context "/humanizers" []
 
     ;; create/update humanizers
-    (PUT "/" {:keys [request-context headers body]}
-      (update-humanizers request-context headers (slurp body)))
+    (PUT "/"
+         {:keys [request-context headers body]}
+         (update-humanizers request-context headers (slurp body)))
 
     ;; retrieve humanizers
-    (GET "/" {:keys [request-context]}
-      (humanizer-response 200 (humanizer-service/get-humanizers request-context)))
+    (GET "/"
+         {:keys [request-context]}
+         (humanizer-response 200
+                             (humanizer-service/get-humanizers
+                              request-context)))
 
     ;; retrieve the humanizers report
-    (GET "/report" {context :request-context}
-            (humanizers-report context))))
+    (GET "/report"
+         {context :request-context}
+         (humanizers-report context))))
