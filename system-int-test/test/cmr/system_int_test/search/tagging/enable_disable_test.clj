@@ -105,11 +105,11 @@
         (is (= 200 (:status response)))))
 
     (testing "dissociate by query works before disable"
-      (let [response (tags/disassociate-by-query token tag1-key {:provider "PROV1"})]
+      (let [response (tags/dissociate-by-query token tag1-key {:provider "PROV1"})]
         (is (= 200 (:status response)))))
 
-    (testing "disassociate tag with collection works before disable"
-      (let [response (tags/disassociate-by-concept-ids
+    (testing "dissociate tag with collection works before disable"
+      (let [response (tags/dissociate-by-concept-ids
                                token
                                tag1-key
                                [{:concept-id (:concept-id tag-collection)}])]
@@ -123,11 +123,11 @@
         (is (= 503 (:status response)))))
 
     (testing "dissociate by query fails after disable"
-      (let [response (tags/disassociate-by-query token tag1-key {:provider "PROV1"})]
+      (let [response (tags/dissociate-by-query token tag1-key {:provider "PROV1"})]
         (is (= 503 (:status response)))))
 
-    (testing "disassociate tag with collection fails after disable"
-      (let [response (tags/disassociate-by-concept-ids
+    (testing "dissociate tag with collection fails after disable"
+      (let [response (tags/dissociate-by-concept-ids
                                token
                                tag1-key
                                [{:concept-id (:concept-id tag-collection)}])]
@@ -141,11 +141,11 @@
         (is (= 200 (:status response)))))
 
     (testing "dissociate by query works after re-enable"
-      (let [response (tags/disassociate-by-query token tag2-key {:provider "PROV1"})]
+      (let [response (tags/dissociate-by-query token tag2-key {:provider "PROV1"})]
         (is (= 200 (:status response)))))
 
-    (testing "disassociate tag with collection works after re-enable"
-      (let [response (tags/disassociate-by-concept-ids
+    (testing "dissociate tag with collection works after re-enable"
+      (let [response (tags/dissociate-by-concept-ids
                                token
                                tag2-key
                                [{:concept-id (:concept-id tag-collection)}])]

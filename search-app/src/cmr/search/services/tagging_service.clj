@@ -286,8 +286,8 @@
   [context tag-key tag-associations-json]
   (link-tag-to-collections context tag-key tag-associations-json :insert))
 
-(defn disassociate-tag-to-collections
-  "Disassociates a tag from the given list of tag associations in json."
+(defn dissociate-tag-to-collections
+  "Dissociates a tag from the given list of tag associations in json."
   [context tag-key tag-associations-json]
   (link-tag-to-collections context tag-key tag-associations-json :delete))
 
@@ -296,8 +296,8 @@
   [context tag-key json-query]
   (update-tag-associations-with-query context tag-key json-query :insert))
 
-(defn disassociate-tag-by-query
-  "Disassociates a tag from collections that are the result of a JSON query"
+(defn dissociate-tag-by-query
+  "Dissociates a tag from collections that are the result of a JSON query"
   [context tag-key json-query]
   (update-tag-associations-with-query context tag-key json-query :delete))
 

@@ -1,18 +1,16 @@
 (ns cmr.system-int-test.search.tagging.tag-association-collection-revisions-test
   "This tests associating tags with collection revisions."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.util :refer [are2] :as util]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.metadata-db-util :as mdb]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.transmit.tag :as tt]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are2] :as util]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
@@ -201,7 +199,7 @@
     (index/wait-until-indexed)
 
     (testing "successful case"
-      (let [response (tags/disassociate-by-concept-ids
+      (let [response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id (:concept-id coll2-1)
                                        :revision-id (:revision-id coll2-1)}
                                       {:concept-id (:concept-id coll3)}])]
@@ -214,16 +212,16 @@
           response)))
 
     (testing "revision-id must be an integer"
-      (let [{:keys [status errors]} (tags/disassociate-by-concept-ids
+      (let [{:keys [status errors]} (tags/dissociate-by-concept-ids
                                       token tag-key
                                       [{:concept-id (:concept-id coll1-1)
                                         :revision-id "1"}])
             expected-msg "/0/revision_id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
         (is (= [400 [expected-msg]] [status errors]))))
 
-    (testing "disassociate tag of a non-existent collection revision"
+    (testing "dissociate tag of a non-existent collection revision"
       (let [concept-id (:concept-id coll1-1)
-            response (tags/disassociate-by-concept-ids
+            response (tags/dissociate-by-concept-ids
                        token tag-key
                        [{:concept-id concept-id
                          :revision-id 5}])]
@@ -233,10 +231,10 @@
                              concept-id)]}}
           response)))
 
-    (testing "disassociate tag of an invisible collection revision"
+    (testing "dissociate tag of an invisible collection revision"
       (let [concept-id (:concept-id coll4)
             revision-id (:revision-id coll4)
-            response (tags/disassociate-by-concept-ids
+            response (tags/dissociate-by-concept-ids
                        token tag-key
                        [{:concept-id concept-id
                          :revision-id revision-id}])]
@@ -246,10 +244,10 @@
                              concept-id revision-id)]}}
           response)))
 
-    (testing "disassociate tag of a tombstoned revision is invalid"
+    (testing "dissociate tag of a tombstoned revision is invalid"
       (let [concept-id (:concept-id coll1-2-tombstone)
             revision-id (:revision-id coll1-2-tombstone)
-            response (tags/disassociate-by-concept-ids
+            response (tags/dissociate-by-concept-ids
                        token tag-key
                        [{:concept-id concept-id
                          :revision-id revision-id}])
@@ -260,8 +258,8 @@
           {[concept-id revision-id] {:errors [expected-msg]}}
           response)))
 
-    (testing "disassociate tag of collection that already has collection revision tagging"
-      (let [response (tags/disassociate-by-concept-ids
+    (testing "dissociate tag of collection that already has collection revision tagging"
+      (let [response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id (:concept-id coll1-3)}])
             expected-msg (format "Tag [%s] is not associated with collection [%s]."
                                  tag-key (:concept-id coll1-3))]
@@ -269,10 +267,10 @@
           {[(:concept-id coll1-3)] {:warnings [expected-msg]}}
           response)))
 
-    (testing "disassociate tag of individual collection revision that already has been tagged at the collection level"
+    (testing "dissociate tag of individual collection revision that already has been tagged at the collection level"
       (let [concept-id (:concept-id coll3)
             revision-id (:revision-id coll3)
-            response (tags/disassociate-by-concept-ids
+            response (tags/dissociate-by-concept-ids
                        token tag-key
                        [{:concept-id concept-id
                          :revision-id revision-id}])
@@ -283,10 +281,10 @@
           {[concept-id revision-id] {:warnings [expected-msg]}}
           response)))
 
-    (testing "disassociate tag of collection revisions mixed response"
+    (testing "dissociate tag of collection revisions mixed response"
       (let [concept-id (:concept-id coll1-1)
             revision-id (:revision-id coll1-1)
-            response (tags/disassociate-by-concept-ids
+            response (tags/dissociate-by-concept-ids
                        token tag-key
                        [{:concept-id concept-id :revision-id 5}
                         {:concept-id concept-id :revision-id revision-id}])]
@@ -297,7 +295,7 @@
            [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
           response)))))
 
-(deftest associate-disassociate-tag-with-collection-revisions-test
+(deftest associate-dissociate-tag-with-collection-revisions-test
   ;; Grant all collections in PROV1
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
@@ -343,13 +341,13 @@
     (assert-tag-association token [coll1-1 coll1-2 coll1-3 coll2-2] "tag1" {:all-revisions true})
     (assert-tag-association token [coll1-3 coll2-1] "tag2" {:all-revisions true})
 
-    ;; disassociate tag1 from coll1-2 and coll2-2
-    (tags/disassociate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll1-2)
+    ;; dissociate tag1 from coll1-2 and coll2-2
+    (tags/dissociate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll1-2)
                                                      :revision-id (:revision-id coll1-2)}
                                                     {:concept-id (:concept-id coll2-2)
                                                      :revision-id (:revision-id coll2-2)}])
-    ;; disassociate tag2 from coll1-3
-    (tags/disassociate-by-concept-ids token "tag2" [{:concept-id (:concept-id coll1-3)
+    ;; dissociate tag2 from coll1-3
+    (tags/dissociate-by-concept-ids token "tag2" [{:concept-id (:concept-id coll1-3)
                                                      :revision-id (:revision-id coll1-3)}])
     (index/wait-until-indexed)
     ;; verify association, latest revision

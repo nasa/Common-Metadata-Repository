@@ -4,10 +4,11 @@
    [cheshire.core :as json]
    [clojure.string :as str]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.search.services.tagging-service :as tagging-service]
    [compojure.core :refer :all]
    [compojure.route :as route]))
@@ -78,15 +79,19 @@
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
+  (info (format "Tagging [%s] on collections: %s by client: %s."
+                tag-key body (:client-id context)))
   (tag-api-response (tagging-service/associate-tag-to-collections context tag-key body)))
 
-(defn disassociate-tag-to-collections
-  "Disassociate the tag to a list of collections."
+(defn dissociate-tag-to-collections
+  "Dissociate the tag to a list of collections."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-to-collections context tag-key body)))
+  (info (format "Dissociating tag [%s] from collections: %s by client: %s."
+                tag-key body (:client-id context)))
+  (tag-api-response (tagging-service/dissociate-tag-to-collections context tag-key body)))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
@@ -94,15 +99,19 @@
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
+  (info (format "Tagging [%s] on collections by query: %s by client: %s."
+                tag-key body (:client-id context)))
   (tag-api-response (tagging-service/associate-tag-by-query context tag-key body)))
 
-(defn disassociate-tag-by-query
-  "Processes a request to disassociate a tag."
+(defn dissociate-tag-by-query
+  "Processes a request to dissociate a tag."
   [context headers body tag-key]
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
-  (tag-api-response (tagging-service/disassociate-tag-by-query context tag-key body)))
+  (info (format "Dissociating tag [%s] from collections by query: %s by client: %s."
+                tag-key body (:client-id context)))
+  (tag-api-response (tagging-service/dissociate-tag-by-query context tag-key body)))
 
 (defn search-for-tags
   [context params]
@@ -140,9 +149,9 @@
           (associate-tag-to-collections
             request-context headers (slurp body) (str/lower-case tag-key)))
 
-        ;; Disassociate a tag with a list of collections
+        ;; Dissociate a tag with a list of collections
         (DELETE "/" {:keys [request-context headers body]}
-          (disassociate-tag-to-collections
+          (dissociate-tag-to-collections
             request-context headers (slurp body) (str/lower-case tag-key)))
 
         (context "/by_query" []
@@ -151,7 +160,7 @@
             (associate-tag-by-query
               request-context headers (slurp body) (str/lower-case tag-key)))
 
-          ;; Disassociate a tag with collections
+          ;; Dissociate a tag with collections
           (DELETE "/" {:keys [request-context headers body]}
-            (disassociate-tag-by-query
+            (dissociate-tag-by-query
               request-context headers (slurp body) (str/lower-case tag-key))))))))
