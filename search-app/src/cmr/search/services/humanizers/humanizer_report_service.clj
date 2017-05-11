@@ -3,6 +3,9 @@
   (:require
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
+   [cmr.common-app.cache.consistent-cache :as consistent-cache]
+   [cmr.common-app.cache.cubby-cache :as cubby-cache]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
@@ -14,6 +17,10 @@
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import
    (java.io StringWriter)))
+
+(def csv-report-cache-key
+  "The key used when setting the cache value of the report data."
+  "humanizer-report")
 
 (def CSV_HEADER
   ["provider", "concept_id", "short_name" "version", "original_value", "humanized_value"])
@@ -68,8 +75,6 @@
 (defn generate-humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
-  ;;; XXX DEBUG
-  (println "*** GENERATING HUMANIZERS REPORT ***")
   (let [[t1 collection-batches] (u/time-execution
                                   (get-all-collections context))
          string-writer (StringWriter.)
@@ -99,27 +104,65 @@
       (info "Create report " t4)
       (str string-writer))))
 
-(defn humanizers-report-csv
-  "Returns a report on humanizers in use in collections as a CSV.
-
-  This is the function that is called by the web service."
+(defn safe-generate-humanizers-report-csv
+  "This convenience function wraps the report generator in a try/catch."
   [context]
-  ;(generate-humanizers-report-csv context))
-  (slurp "report.csv"))
+  (try
+    (generate-humanizers-report-csv context)
+    (catch Exception e
+      (warn (.getMessage e) "Returning empty report."))))
+
+(def report-cache-key
+  "The key used to store the humanizer report cache in the system cache map."
+  :report-cache)
+
+(defn get-cache
+  "A utility function for returning the system report cache instance."
+  [context]
+  (get-in context [:system :caches report-cache-key]))
+
+(defconfig report-cache-consistent-timeout-seconds
+  "The number of seconds between when the report cache should check with cubby
+  for data consistency."
+  {:default 3600
+   :type Long})
+
+(defn create-report-cache
+  "Used to create the cache that will be used for caching the humanizer
+  report. We get the following features with this setup:
+  * A cubby cache that holds the generated report
+  * A fast access in-memory cache that sits on top of cubby, providing
+    quick local results after the first call to cubby
+  * A single-threaded "
+  []
+  (fallback-cache/create-fallback-cache
+   (consistent-cache/create-consistent-cache
+    {:hash-timeout-seconds (report-cache-consistent-timeout-seconds)})
+   (cubby-cache/create-cubby-cache)))
 
 ;; A job for generating the humanizers report
 (defjob HumanizerReportGeneratorJob
   [ctx system]
-  (dorun
-   (->> system
-        ((fn [x] (info "*** GENERATING HUMANIZERS REPORT ***") x))
-        (hash-map :system)
-        (generate-humanizers-report-csv)
-        (spit "report.csv"))))
+  (let [context {:system system}]
+    (.set-value
+     (get-cache context)
+     csv-report-cache-key
+     (safe-generate-humanizers-report-csv context))))
 
 (def humanizer-report-generator-job
   {:job-type HumanizerReportGeneratorJob
    ;; 24 hours in seconds
    ;:interval (* 60 60 24)
    :interval 10
-   })
+   :start-delay 0})
+
+(defn humanizers-report-csv
+  "Returns a report on humanizers in use in collections as a CSV.
+
+  This is the function that is called by the web service."
+  [context]
+  (let [data (.get-value
+              (get-cache context)
+              csv-report-cache-key)]
+    ;; XXX do check on data ... if not there, get it or something
+    data))

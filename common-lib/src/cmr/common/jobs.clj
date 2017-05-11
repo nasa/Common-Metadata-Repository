@@ -278,8 +278,8 @@
 
 ;; A scheduler that does not track or run jobs
 (defrecord NonRunningJobScheduler
+  ;; no fields
   []
-   ;; no fields
 
   l/Lifecycle
 

@@ -98,7 +98,8 @@
                       kf/kms-cache-key (kf/create-kms-cache)
                       metadata-cache/cache-key (metadata-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
-                      common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)}
+                      common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
+                      hrs/report-cache-key (hrs/create-report-cache)}
              :public-conf search-public-conf
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
