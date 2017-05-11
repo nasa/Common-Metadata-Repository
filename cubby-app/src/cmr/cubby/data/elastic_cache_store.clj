@@ -1,14 +1,15 @@
 (ns cmr.cubby.data.elastic-cache-store
   "Defines an elasticsearch component that implements the PersistentCacheStore protocol"
-  (:require [cmr.cubby.data :as d]
-            [cmr.common.lifecycle :as l]
-            [cmr.common.services.errors :as errors]
-            [cmr.elastic-utils.connect :as esc]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.elastic-utils.index-util :as m :refer [defmapping]]
-            [clojurewerkz.elastisch.rest.index :as esi]
-            [clojurewerkz.elastisch.rest.document :as esd]
-            [clojurewerkz.elastisch.query :as q]))
+  (:require
+   [clojurewerkz.elastisch.query :as q]
+   [clojurewerkz.elastisch.rest.document :as esd]
+   [clojurewerkz.elastisch.rest.index :as esi]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.cubby.data :as d]
+   [cmr.elastic-utils.connect :as esc]
+   [cmr.elastic-utils.index-util :as m :refer [defmapping]]))
 
 (def index-name
   "The name of the index in elastic search."
@@ -71,7 +72,6 @@
 
    ;; The connection to elasticsearch
    conn]
-
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   l/Lifecycle

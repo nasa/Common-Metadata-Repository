@@ -17,7 +17,6 @@
    (util/lazy-get context :user-id)
    (errors/throw-service-error :unauthorized "Humanizer cannot be modified without a valid user token.")))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
 
