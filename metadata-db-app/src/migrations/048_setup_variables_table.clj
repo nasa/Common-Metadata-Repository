@@ -36,7 +36,9 @@
 
 (defn- create-variables-indices
   []
-  (h/sql "CREATE INDEX variables_crdi ON cmr_variables (concept_id, revision_id, deleted)"))
+  (h/sql "CREATE INDEX variables_crdi ON METADATA_DB.cmr_variables (concept_id, revision_id, deleted)")
+  (h/sql "CREATE INDEX variables_vn ON METADATA_DB.cmr_variables (variable_name)")
+  (h/sql "CREATE INDEX variables_meas ON METADATA_DB.cmr_variables (measurement)"))
 
 (defn- create-variables-sequence
   []
