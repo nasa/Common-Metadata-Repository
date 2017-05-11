@@ -27,6 +27,7 @@
    [cmr.search.models.query :as q]
    [cmr.search.routes :as routes]
    [cmr.search.services.acls.collections-cache :as coll-cache]
+   [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.transmit.config :as transmit-config]))
 
@@ -108,7 +109,8 @@
                           hgrf/refresh-has-granules-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
-                          jvm-info/log-jvm-statistics-job])}]
+                          jvm-info/log-jvm-statistics-job
+                          hrs/humanizer-report-generator-job])}]
     (transmit-config/system-with-connections
       sys
       [:index-set :echo-rest :metadata-db :kms :cubby :access-control])))

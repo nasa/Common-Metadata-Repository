@@ -7,13 +7,10 @@
    [cmr.common.lifecycle :as lifecycle]))
 
 (defrecord BackgroundJob
-  [
-   ;; The job-function to run
+  [;; The job-function to run
    job-fn
-
    ;; The interval (in seconds) to run the job
    job-interval-secs
-
    ;; A reference to the thread to run the background job
    ^Thread thread-ref]
 
