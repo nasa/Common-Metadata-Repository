@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Granule>
+  <GranuleUR>SC:SPL1CS0.001:8142312</GranuleUR>
+  <InsertTime>2016-04-25T17:23:38.197Z</InsertTime>
+  <LastUpdate>2016-05-20T19:51:34.738Z</LastUpdate>
+  <Collection>
+    <ShortName>SPL1CS0</ShortName>
+    <VersionId>001</VersionId>
+  </Collection>
+  <Platforms>
+    <Platform>
+      <ShortName>AQUA</ShortName>
+      <Instruments>
+        <Instrument>
+          <ShortName>MODIS</ShortName>
+          <Sensors>
+            <Sensor>
+              <ShortName>MODIS</ShortName>
+            </Sensor>
+          </Sensors>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <Orderable>true</Orderable>
+  <Visible>false</Visible>
+</Granule>
