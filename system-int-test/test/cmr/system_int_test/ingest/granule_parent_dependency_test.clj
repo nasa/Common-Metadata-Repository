@@ -651,7 +651,7 @@
                      (ingest/concept :collection "PROV1" "foo" :iso-smap coll-metadata))
                  gran-metadata (slurp (io/resource "iso-samples/cmr-4125-granule.xml"))
                  {:keys [status]} (ingest/ingest-concept
-                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))
+                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
              (is (= 201 status)))))
 
 ;; Test specific to an issue ingesting an echo10 granule with a polygon in spatial data with
