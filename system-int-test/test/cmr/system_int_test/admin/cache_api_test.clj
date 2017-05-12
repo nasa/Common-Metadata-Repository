@@ -1,16 +1,17 @@
 (ns cmr.system-int-test.admin.cache-api-test
   "Verifies the cache api is working."
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.system :as s]
-            [clj-http.client :as client]
-            [cheshire.core :as json]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (ingest/reset-fixture
                       {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
@@ -71,6 +72,9 @@
     (testing "list caches"
       (are [url caches]
         (is (= (set caches) (set (list-caches-for-app url admin-read-token))))
+        ;; XXX It would be better if we used the respective vars here instead
+        ;; of string values. That way we can change cache names if needed
+        ;; without updating tests.
         (url/indexer-read-caches-url) [
          "acls"
          "collection-granule-aggregation-cache"
@@ -108,7 +112,7 @@
          "index-names"
          "kms"
          "metadata-cache"
-         "report-cache"
+         "humanizer-report-cache"
          "token-imp"
          "token-sid"
          "token-user-id"
