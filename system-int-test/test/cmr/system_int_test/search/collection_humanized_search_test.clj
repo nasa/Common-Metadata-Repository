@@ -1,16 +1,21 @@
 (ns cmr.system-int-test.search.collection-humanized-search-test
   "Integration test for CMR collection search by humanized fields"
   (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
+   [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
 (use-fixtures :each (join-fixtures
@@ -26,6 +31,30 @@
     {:system (get-in user/system [:apps :search])}))
 ;;3. Retrieve the reporting
 ;;  curl http://localhost:3003/humanizers/report
+
+(defn- get-cached-report
+  "Gets the value for a given key from the given cache."
+  []
+  (let [full-url (str (url/search-read-caches-url)
+                      "/"
+                      (name hrs/report-cache-key)
+                      "/"
+                      (name hrs/csv-report-cache-key))
+        admin-read-group-concept-id (e/get-or-create-group (s/context)
+                                                           "admin-read-group")
+        admin-read-token (e/login (s/context)
+                                  "admin"
+                                  [admin-read-group-concept-id])
+        response (client/request {:url full-url
+                                  :method :get
+                                  :query-params {:token admin-read-token}
+                                  :connection-manager (s/conn-mgr)
+                                  :throw-exceptions false})
+        status (:status response)]
+    ;; Make sure the status returned success
+    (when-not (= status 200)
+      (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
+    (json/decode (:body response) true)))
 
 (deftest humanizer-report
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1
@@ -60,7 +89,9 @@
               "PROV1,C1200000008-PROV1,B,V2,AM-1,Terra"
               "PROV1,C1200000009-PROV1,C,V3,Bioosphere,Biosphere"
               "PROV1,C1200000009-PROV1,C,V3,USGS_SOFIA,USGS SOFIA"]
-             (str/split report #"\n"))))))
+             (str/split report #"\n")))
+      (testing "Ensure that the returned report is the same as the cached one"
+      (is (= report (get-cached-report)))))))
 
 (deftest humanizer-report-batch
   (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 10))
