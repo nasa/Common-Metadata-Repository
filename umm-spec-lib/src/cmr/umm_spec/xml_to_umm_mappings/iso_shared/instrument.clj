@@ -60,10 +60,10 @@
    by parsing the given xml element"
  [doc base-xpath]
  (merge
-   (into {}
-         (map (partial xml-elem->child-instrument-mapping doc base-xpath) (select doc (str base-xpath instrument-xpath))))
-   (into {}
-         (map (partial xml-elem->instrument-sensor-mapping doc base-xpath) (select doc (str base-xpath composed-of-xpath))))))
+  (into {} (map (partial xml-elem->child-instrument-mapping doc base-xpath)
+                (select doc (str base-xpath instrument-xpath))))
+  (into {} (map (partial xml-elem->instrument-sensor-mapping doc base-xpath)
+                (select doc (str base-xpath composed-of-xpath))))))
 
 (defn- get-child-instruments
   "Returns the parsed child instruments from the instrument element.
