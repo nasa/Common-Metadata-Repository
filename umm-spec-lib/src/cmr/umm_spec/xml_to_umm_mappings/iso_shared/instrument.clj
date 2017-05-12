@@ -35,25 +35,25 @@
   [doc base-xpath instrument-elem]
   (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
         id (get-in instrument-elem [:attrs :id])
-        mountedOn-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
-    ;; only include child instruments - when mountedOn-id = one of the instrument ids.
-    (when mountedOn-id
-      (let [mountedOn-id-wo-# (.replaceAll mountedOn-id "#" "")
+        mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
+    ;; only include child instruments - when mounted-on-id = one of the instrument ids.
+    (when mounted-on-id
+      (let [mounted-on-id-wo-# (.replaceAll mounted-on-id "#" "")
             instrument (xml-elem->child-instrument instrument-elem)]
-        (when (some #(= mountedOn-id-wo-# %) all-possible-instrument-ids)
-          [(str id "-" mountedOn-id-wo-#) instrument])))))
+        (when (some #(= mounted-on-id-wo-# %) all-possible-instrument-ids)
+          [(str id "-" mounted-on-id-wo-#) instrument])))))
 
 (defn- xml-elem->instrument-sensor-mapping
   [doc base-xpath instrument-elem]
   (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
         id (get-in instrument-elem [:attrs :id])
-        mountedOn-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "eos:mountedOn")))]
-    ;; only include child instruments - when mountedOn-id = one of the instrument ids.
-    (when mountedOn-id
-      (let [mountedOn-id-wo-# (.replaceAll mountedOn-id "#" "")
+        mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "eos:mountedOn")))]
+    ;; only include child instruments - when mounted-on-id = one of the instrument ids.
+    (when mounted-on-id
+      (let [mounted-on-id-wo-# (.replaceAll mounted-on-id "#" "")
             instrument (xml-elem->child-instrument instrument-elem)]
-        (when (some #(= mountedOn-id-wo-# %) all-possible-instrument-ids)
-          [(str id "-" mountedOn-id-wo-#) instrument])))))
+        (when (some #(= mounted-on-id-wo-# %) all-possible-instrument-ids)
+          [(str id "-" mounted-on-id-wo-#) instrument])))))
 
 (defn- xml-elem->child-instruments-mapping
   "Returns the child instrument id-mountedOnid to child Instrument mapping
@@ -70,13 +70,17 @@
    The child instruments' mountedOn = the instrument element's id"
   [doc base-xpath instrument-elem]
   (let [id (get-in instrument-elem [:attrs :id])
+        child-instrument-sub-elems (seq
+                                    (map xml-elem->child-instrument (select instrument-elem "eos:sensor/eos:EOS_Sensor")))
         child-instruments-mapping (xml-elem->child-instruments-mapping doc base-xpath)]
     (remove nil?
-      (for [[k v] child-instruments-mapping]
-        (when (.contains k (str "-" id))
-          v)))))
+            (distinct
+             (concat child-instrument-sub-elems
+                     (for [[k v] child-instruments-mapping]
+                       (when (.contains k (str "-" id))
+                         v)))))))
 
-(defn- xml-elem->instrument
+(defn xml-elem->instrument
   "Returns instrument record from the instrument element."
   [doc base-xpath instrument-elem]
   (let [child-instruments (get-child-instruments doc base-xpath instrument-elem)]
@@ -101,12 +105,16 @@
   [doc base-xpath instrument-elem]
   (let [all-possible-instrument-ids (keep #(get-in % [:attrs :id]) (select doc (str base-xpath instrument-xpath)))
         id (get-in instrument-elem [:attrs :id])
-        mountedOn-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
-    ;; exclude child instruments - when mountedOn-id = one of the instrument ids.
-    (when mountedOn-id
-      (when-not (some #(= (.replaceAll mountedOn-id "#" "") %) all-possible-instrument-ids)
+        mounted-on-id (first (keep #(get-in % [:attrs :xlink/href]) (select instrument-elem "gmi:mountedOn")))]
+    ;; exclude child instruments - when mounted-on-id = one of the instrument ids.
+    (cond
+      mounted-on-id
+      (when-not (some #(= (.replaceAll mounted-on-id "#" "") %) all-possible-instrument-ids)
         (let [instrument (xml-elem->instrument doc base-xpath instrument-elem)]
-          [(str "#" id) instrument])))))
+          [(str "#" id) (assoc instrument :mounted-on-id mounted-on-id)]))
+      :default
+      (let [instrument (xml-elem->instrument doc base-xpath instrument-elem)]
+        [(str "#" id) instrument]))))
 
 (defn xml-elem->instruments-mapping
   "Returns the instrument id to Instrument mapping by parsing the given xml element"
