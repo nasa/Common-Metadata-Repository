@@ -1,6 +1,6 @@
-(ns cmr.umm-spec.xml-to-umm-mappings.iso-smap.characteristics-and-operationalmodes
+(ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.characteristics-and-operationalmodes
   "Functions for parsing UMM characteristics and operationalmodes records out of ISO SMAP XML documents."
-  (:require 
+  (:require
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select text]]
     [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]))
@@ -25,7 +25,7 @@
 (defn parse-operationalmodes
   "Returns the parsed operationalmodes from the element."
   [element]
-  (seq 
+  (seq
     (remove nil?
       (for [chars (select element characteristics-and-operationalmodes-xpath)]
         (when (= "OperationalMode" (char-string-value chars (str pc-attr-base-path "/eos:name")))

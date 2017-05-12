@@ -643,6 +643,17 @@
                                     (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
              (is (= 201 status)))))
 
+(deftest iso-smap-collection-echo10-granule
+  (testing "granule reference collection via platforms and instruments
+           works correctly when the parent collection is in ISO SMAP format"
+           (let [coll-metadata (slurp (io/resource "iso-samples/cmr-4125-iso-collection.xml"))
+                 _ (ingest/ingest-concept
+                     (ingest/concept :collection "PROV1" "foo" :iso-smap coll-metadata))
+                 gran-metadata (slurp (io/resource "iso-samples/cmr-4125-granule.xml"))
+                 {:keys [status]} (ingest/ingest-concept
+                                    (ingest/concept :granule "PROV1" "foo" :echo10 gran-metadata))]
+             (is (= 201 status)))))
+
 ;; Test specific to an issue ingesting an echo10 granule with a polygon in spatial data with
 ;; an iso-19115 parent collection with a nil Granule Spatial representation
 ;; An exception would be seen when ingesting the granule and processing the polygon with a default
