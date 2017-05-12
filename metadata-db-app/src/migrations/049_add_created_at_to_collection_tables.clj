@@ -4,10 +4,6 @@
             [config.migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
 
-(def revision-date-cache
-  "Cache of revision dates by concept-id to avoid repeated lookups"
-  (atom {}))
-
 (defn- add-created-at 
   []
   (doseq [t (h/get-collection-tablenames)]
@@ -23,24 +19,21 @@
 (defn- get-oldest-revision-date-for-concept-id
   "Retrieve the oldest revision-date for the collection in the given table with the given id"
   [sql-stmt concept-id]
-  (or (get @revision-date-cache concept-id)
-      (let [revision-date (->> (j/query (config/db) [sql-stmt concept-id])
-                               (map :revision_date)
-                               first)]
-        (swap! revision-date-cache #(assoc % concept-id revision-date))
-        revision-date)))
+  (->> (j/query (config/db) [sql-stmt concept-id])
+       (map :revision_date)
+       first))
        
 (defn- set-created-at
   "Sets the value of created_at in collection tables to the earliest revision_date for each collection"
   []
   (doseq [t (h/get-collection-tablenames)
           :let [rev-date-sql (revision-date-query-sql t)]
-          result (h/query (format "SELECT * from %s" t))
+          result (h/query (format "SELECT DISTINCT concept_id from %s" t))
           :let [{:keys [concept_id id]} result 
                 oldest-revision-date (get-oldest-revision-date-for-concept-id rev-date-sql 
                                                                               concept_id)]]
     (j/execute! (config/db) 
-                [(format "UPDATE %s SET created_at = ? WHERE id = ?" t) oldest-revision-date id])))
+                [(format "UPDATE %s SET created_at = ? WHERE concept_id = ?" t) oldest-revision-date concept_id])))
 
 (defn up
   "Migrates the database up to version 49."

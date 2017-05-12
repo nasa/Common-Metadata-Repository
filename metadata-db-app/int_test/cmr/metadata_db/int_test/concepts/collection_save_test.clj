@@ -41,10 +41,12 @@
       (c-spec/save-distinct-concepts-test coll1 coll2))))
 
 (defn- created-at-same?
-  "Returns true if the `created-at` for the given concept revisions are the same"
+  "Returns true if the `created-at` for the given concept revisions are the same
+  and none of them are nil"
   [& concepts]
   (let [created-ats (map :created-at concepts)]
-    (apply = created-ats)))
+    (and (apply = created-ats)
+         (not-any? nil? created-ats))))
 
 (deftest save-collection-created-at-test
   (testing "Save collection multiple times gets same created-at" 

@@ -126,7 +126,7 @@
 
 (defmethod set-or-generate-created-at :collection
   [db provider concept & previous-revision]
-  (let [{:keys [concept-id concept-type provider-id]} concept
+  (let [{:keys [concept-id concept-type]} concept
         previous-revision (first previous-revision)
         existing-created-at (:created-at (or previous-revision
                                              (c/get-concept db concept-type provider concept-id)))
