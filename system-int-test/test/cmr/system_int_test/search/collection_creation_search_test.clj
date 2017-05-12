@@ -12,7 +12,7 @@
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
-                       (dev-sys-util/freeze-resume-time-fixture)]))
+                       (dev-system-util/freeze-resume-time-fixture)]))
 
 (defn- current-time
   []
