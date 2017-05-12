@@ -2,19 +2,13 @@
   "Integration test for searching collections created after a given date.
    These tests are to ensure proper CMR Harvesting functionality."
   (:require
-   [camel-snake-kebab.core :as csk]
    [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are2] :as util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -49,6 +43,14 @@
                                 :Version "v1"
                                 :ShortName "Regular"}))
 
+        _ (dev-system-util/freeze-time! "2016-01-01T10:00:00Z")
+        deleted-collection (d/ingest-umm-spec-collection
+                             "PROV1"
+                             (data-umm-c/collection
+                               {:EntryTitle "deleted"
+                                :Version "v1"
+                                :ShortName "Deleted"}))
+
         _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
         youngling-collection (d/ingest-umm-spec-collection
                                "PROV1"
@@ -66,7 +68,7 @@
                                         :Abstract "On second thought, this collection isn't so abstract after all"}))]
 
     (index/wait-until-indexed)
-    (testing "Old collections should not be found."
+    (testing "Old and deleted collections should not be found."
       (let [search-results (search/find-collections-created-after-date
                             {:created-at "2014-01-01T10:00:00Z"})]
         (d/refs-match? [youngling-collection regular-collection] search-results)))
