@@ -1,14 +1,15 @@
 (ns cmr.system-int-test.utils.dev-system-util
   "Methods for accessing the dev system control api."
-  (:require [clj-http.client :as client]
-            [clojure.string :as str]
-            [cheshire.core :as json]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-            [cmr.common.util :as util]
-            [clojure.test :refer [is]]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.string :as str]
+   [clojure.test :refer [is]]
+   [cmr.common.util :as util]
+   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (defn admin-connect-options
   "This returns the options to send when executing admin commands"

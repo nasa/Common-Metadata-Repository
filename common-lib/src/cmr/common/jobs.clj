@@ -66,7 +66,11 @@
   Example:
   (def-stateful-job CleanupJob
   [ctx system]
-  (do-some-cleanup system))"
+  (do-some-cleanup system))
+
+  Note that, due to job state being tracked in the database, each new job
+  that uses `def-stateful-job` will need first to make schema updates to the
+  database."
   [jtype args & body]
   (defjob* `qst/def-stateful-job jtype args body))
 

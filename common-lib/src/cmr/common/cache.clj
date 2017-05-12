@@ -36,5 +36,3 @@
   ;; reset embedded systems caches
   (doseq [[_ v] (get-in context [:system :embedded-systems])]
     (reset-caches {:system v})))
-
-
