@@ -37,6 +37,7 @@ via:
 ## Examples
 
 - [clojang/jiface](https://clojang.github.io/jiface/)
+- [clojang/agent](https://clojang.github.io/agent)
 - [clojang/clojang](https://clojang.github.io/clojang)
 - [clojang/zhang](https://clojang.github.io/zhang)
 - [clojang/zhang-agent](https://clojang.github.io/zhang-agenthtml)
