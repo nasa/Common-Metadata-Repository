@@ -9,6 +9,7 @@
     [cmr.common.services.messages :as cmsg]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.ingest.config :as config]
+    [cmr.ingest.data.bulk-update :as bulk-update]
     [cmr.ingest.data.ingest-events :as ingest-events]
     [cmr.ingest.data.provider-acl-hash :as pah]
     [cmr.ingest.services.helper :as h]
@@ -222,6 +223,7 @@
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
     (queue/reset queue-broker))
+  (bulk-update/reset-db context)
   (cache/reset-caches context))
 
 (def health-check-fns

@@ -165,6 +165,11 @@
   (update-bulk-update-collection-status (context->db context) task-id concept-id
     status status-message))
 
+(defn reset-db
+  "Clear bulk update db"
+  [context]
+  (reset-bulk-update (context->db context)))
+
 (comment
   (reset-bulk-update (context->db context))
   (def db (context->db context)))
