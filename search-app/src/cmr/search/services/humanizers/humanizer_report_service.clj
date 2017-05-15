@@ -175,6 +175,7 @@
 ;; A job for generating the humanizers report
 (defjob HumanizerReportGeneratorJob
   [ctx system]
+  (info "Running scheduled job for generating the humanizer report ...")
   (let [context {:system system}]
     (cache/reset (cache/context->cache context report-cache-key))
     (humanizers-report-csv context)))
