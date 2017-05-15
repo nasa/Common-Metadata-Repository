@@ -3,7 +3,7 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.json-schema :as js]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
@@ -61,36 +61,39 @@
        (ingest-events/ingest-collection-bulk-update-event
          task-id concept-id bulk-update-params)))))
 
-(defn- update-collection
-  "Perform the update on the collection"
+(defn- update-collection-concept
+  "Perform the update on the collection and update the concept"
   [context concept bulk-update-params]
   (let [{:keys [update-type update-field find-value update-value]} bulk-update-params
         update-type (csk/->kebab-case-keyword update-type)
         update-field (csk/->PascalCaseKeyword update-field)]
-    (field-update/update-concept context concept update-type update-field
-                                 update-value find-value)))
+    (-> concept
+        (assoc :metadata (field-update/update-concept context concept update-type
+                                                      update-field update-value find-value))
+        (update :revision-id inc))))
 
 
-(defn- update-and-save-collection
-  "Make collection updates, go through ingest validation. Attempt save to
+(defn- validate-and-save-collection
+  "Put concept through ingest validation. Attempt save to
   metadata db. If validation or save errors are thrown, they will be caught and
-  handled in handle-collection-bulk-update-event. If warnings were returned,
-  return a warning string."
-  [context concept bulk-update-params]
-  (let [updated-metadata (update-collection context concept bulk-update-params)
-        concept (-> concept
-                    (assoc :metadata updated-metadata)
-                    (update :revision-id inc))
-        ;; If errors are caught, an error will be thrown and logged to the DB
-        ;; If we get warnings back, validation was successful, but will still
-        ;; log warnings
-        {:keys [concept warnings]} (ingest-service/validate-and-prepare-collection
+  handled in handle-collection-bulk-update-event. Return warnings."
+  [context concept]
+  (let [{:keys [concept warnings]} (ingest-service/validate-and-prepare-collection
                                      context concept nil)]
+    ;; If errors are caught, an error will be thrown and logged to the DB
+    ;; If we get warnings back, validation was successful, but will still
+    ;; log warnings
     (mdb/save-concept context concept)
-    (when (seq warnings)
-      (str "Collection was updated successfully, but translating the collection "
-           "to UMM-C had the following issues: "
-           (str/join "; " warnings)))))
+    warnings))
+
+(defn- create-success-status-message
+  "If there are warnings, create a status string with warnings, otherwise status
+  is nil"
+  [warnings]
+  (when (seq warnings)
+    (str "Collection was updated successfully, but translating the collection "
+         "to UMM-C had the following issues: "
+         (string/join "; " warnings))))
 
 (defn handle-collection-bulk-update-event
   "Perform update for the given concept id. Log an error status of the concept
@@ -98,9 +101,10 @@
   [context task-id concept-id bulk-update-params]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (let [success-status-message (update-and-save-collection context concept bulk-update-params)]
+      (let [updated-concept (update-collection-concept context concept bulk-update-params)
+            warnings (validate-and-save-collection context updated-concept)]
         (data-bulk-update/update-bulk-update-task-collection-status context task-id
-          concept-id "COMPLETE" success-status-message))
+            concept-id "COMPLETE" (create-success-status-message warnings)))
       (data-bulk-update/update-bulk-update-task-collection-status context task-id
         concept-id "FAILED" (format "Concept-id [%s] is not valid." concept-id)))
     (catch clojure.lang.ExceptionInfo ex-info
