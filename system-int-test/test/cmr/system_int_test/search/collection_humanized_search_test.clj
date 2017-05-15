@@ -33,7 +33,7 @@
 ;;  curl http://localhost:3003/humanizers/report
 
 (defn- get-cached-report
-  "Gets the value for a given key from the given cache."
+  "Pull the report data from its cache."
   []
   (let [full-url (str (url/search-read-caches-url)
                       "/"

@@ -1,19 +1,20 @@
 (ns cmr.system-int-test.search.collection-directory-pages-test
   "This tests a running CMR site's directory links at all levels: top-most,
   eosdis, and provider."
-  (:require [clj-http.client :as client]
-            [clojure.test :refer :all]
-            [clojure.string :as string]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.search.site.routes :as r]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.umm-spec.models.umm-common-models :as cm]
-            [cmr.umm-spec.test.expected-conversion :as exp-conv]))
+  (:require
+   [clj-http.client :as client]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.site.routes :as r]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm-spec.models.umm-common-models :as cm]
+   [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and general utility functions for the tests
