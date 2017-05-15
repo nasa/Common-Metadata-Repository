@@ -11,7 +11,7 @@
 
 (defn build-routes [system]
   (routes
-    (context (get-in system [:ingest-public-conf :relative-root-url]) []
+    (context (get-in system [:public-conf :relative-root-url]) []
       (GET "/"
            {ctx :request-context}
            (pages/home ctx))
@@ -43,5 +43,5 @@
               307)))
       ;; Add routes for general API documentation
       (static/docs-routes
-       (get-in system [:ingest-public-conf :protocol])
-       (get-in system [:ingest-public-conf :relative-root-url])))))
+       (get-in system [:public-conf :protocol])
+       (get-in system [:public-conf :relative-root-url])))))
