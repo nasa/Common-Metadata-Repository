@@ -403,44 +403,6 @@
      :hits (:hits results)
      :result-format result-format}))
 
-(defn get-collections-by-date-created
-  "Executes an Elasticsearch query to find all collections that have been added
-   after a given date. This will *only* return collections that still exist."
-  [context params]
-  (if (and (not= nil (:created-at params))
-           (empty? (common-param-validation/validate-date-time
-                   :created-at (:created-at params))))
-   (let [start-time (System/currentTimeMillis)
-         created-at (:created-at params)
-         result-format (:result-format params)
-         parsed-created-at (time-format/parse
-                            (time-format/formatters :date-time-no-ms)
-                            created-at)
-         query-condition (qm/date-range-condition :created-at parsed-created-at nil true)
-         results (or
-                  (get-highest-visible-revisions context query-condition result-format)
-                  {:hits 0 :items []})
-         elapsed-time (- (System/currentTimeMillis) start-time)
-         formatted-results (common-search/search-results->response
-                            context
-                            (qm/query {:concept-type :collection
-                                       :result-format result-format})
-                            (assoc results :took elapsed-time))]
-    (info (format "Found %d collections created after %s in %d ms in format %s with params %s."
-                  (:hits results)
-                  created-at
-                  elapsed-time
-                  (rfh/printable-result-format result-format)
-                  (pr-str params)))
-
-    {:results formatted-results
-     :hits (:hits results)
-     :result-format result-format})
-
-    (errors/throw-service-error
-     :bad-request
-     (format "Incorrect parameters or date-time given: %s" params))))
-
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"
   [spatial-type shape]

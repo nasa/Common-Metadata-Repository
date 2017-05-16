@@ -2,9 +2,11 @@
   "Integration test for searching collections created after a given date.
    These tests are to ensure proper CMR Harvesting functionality."
   (:require
+   [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -50,6 +52,10 @@
                                {:EntryTitle "deleted"
                                 :Version "v1"
                                 :ShortName "Deleted"}))
+        deleted-concept {:provider-id "PROV1"
+                         :concept-type :collection
+                         :native-id (:EntryTitle deleted-collection)}
+        _ (ingest/delete-concept deleted-concept)
 
         _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
         youngling-collection (d/ingest-umm-spec-collection
@@ -69,21 +75,15 @@
 
     (index/wait-until-indexed)
     (testing "Old and deleted collections should not be found."
-      (let [search-results (search/find-collections-created-after-date
-                            {:created-at "2014-01-01T10:00:00Z"})]
+      (let [search-results (search/find-concepts-with-param-string
+                            "collection"
+                            "created-at=2014-01-01T10:00:00Z")]
         (d/refs-match? [youngling-collection regular-collection] search-results)))
-    (testing "Using unsupported parameters"
+    (testing "Using unsupported or incorrect parameters"
       (are [params]
-        (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                       (search/find-collections-created-after-date params))]
-          (= [400 [(format "Incorrect parameters or date-time given: %s" params)]]
+        (let [{:keys [status errors]} (search/find-concepts-with-param-string "collection" params)]
+          (= [400 [(format "Parameter [%s] was not recognized."
+                          (first (clojure.string/split params #"=")))]]
              [status errors]))
-        {:insert-time "2011-01-01T00:00:00Z" :result-format :xml}
-        {:birthday "2012-01-01T00:00:00Z" :result-format :xml}))
-    (testing "Using invalid parameters"
-      (are [params]
-        (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                       (search/find-collections-created-after-date params))]
-          (= [400 [(format "Incorrect parameters or date-time given: %s" params)]]
-             [status errors]))
-        {:created-at "JUNE" :result-format :xml}))))
+        "insert_time=2011-01-01T00:00:00Z"
+        "birthday=2012-01-01T00:00:00Z"))))

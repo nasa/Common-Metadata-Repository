@@ -298,12 +298,6 @@
   []
   (format "http://localhost:%s/deleted-collections" (transmit-config/search-port)))
 
-(defn search-collections-created-after-date-url
-  "URL to search collections created after given date"
-  []
-  (format "http://localhost:%s/collections-created-after" (transmit-config/search-port)))
-
-
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
   []

@@ -107,6 +107,7 @@
    :attribute exclude-plus-or-option
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
+   :created-at cpv/and-option
    :highlights highlights-option
 
    ;; Tag parameters for use querying other concepts.
@@ -279,6 +280,12 @@
                 (cpv/validate-date-time "revision-date start" start-date)
                 (cpv/validate-date-time "revision-date end" end-date)))))
         revision-date))))
+
+(defn created-at-validation
+  [concept-type params]
+  "Validates that created-at parameter contains valid datetime strings."
+  (when-let [created-at (:created-at params)]
+    (cpv/validate-date-time-range created-at)))
 
 (defn attribute-validation
   [concept-type params]
@@ -527,6 +534,7 @@
                   temporal-format-validation
                   updated-since-validation
                   revision-date-validation
+                  created-at-validation
                   orbit-number-validation
                   equator-crossing-longitude-validation
                   equator-crossing-date-validation

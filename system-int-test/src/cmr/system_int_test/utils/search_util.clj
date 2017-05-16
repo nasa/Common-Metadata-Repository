@@ -624,20 +624,6 @@
                                :accept accept})]
      (parse-reference-response false response))))
 
-(defn find-collections-created-after-date
-  "Returns collection references created after given date"
-  ([params]
-   (find-collections-created-after-date params nil))
-  ([params format-key]
-   (let [accept (when format-key
-                  (mime-types/format->mime-type format-key))
-         response (client/get (url/search-collections-created-after-date-url)
-                              {:query-params params
-                               :connection-manager (s/conn-mgr)
-                               :accept accept})]
-     (parse-reference-response false response))))
-
-
 (defn clear-caches
   "Clears caches in the search application"
   []
