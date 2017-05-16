@@ -13,13 +13,11 @@
   - Convert query results into requested format"
   (:require
    [cheshire.core :as json]
-   [clj-time.format :as time-format]
    [clojure.set :as set]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.params :as common-params]
-   [cmr.common-app.services.search.parameter-validation :as common-param-validation]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.concepts :as cc]
@@ -357,8 +355,9 @@
                                   #(apply max (map :revision-id %))
                                   (group-by :concept-id (:items results)))
           highest-revisions (filter
-                             #((set highest-coll-revisions)
-                               [(:concept-id %) (:revision-id %)])
+                             (fn [coll]
+                               ((set highest-coll-revisions)
+                                [(:concept-id coll) (:revision-id coll)]))
                              (:items results))]
       (-> results
           (assoc :items highest-revisions)
@@ -370,6 +369,7 @@
    Collections that are deleted, then later ingested again are not included in the result.
    Returns references to the highest collection revision prior to the collection tombstone."
   [context params]
+  (pv/validate-deleted-collections-params params)
   ;; 1/ Find all collection revisions that are deleted satisfying the revision-date query -> c1
   ;; 2/ Filters out any collections c1 that still exists -> c2
   ;; 3/ Find all collection revisions for the c2, return the highest revisions that are visible

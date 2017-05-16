@@ -61,7 +61,7 @@
         youngling-collection (d/ingest-umm-spec-collection
                                "PROV1"
                                (data-umm-c/collection
-                                 {:EntryTitle "oldie-with-updates"
+                                 {:EntryTitle "youngling"
                                   :Version "v1"
                                   :ShortName "Oldie 2"}))
 
@@ -69,7 +69,7 @@
                                      "PROV1"
                                      (data-umm-c/collection
                                        {:EntryTitle "oldie"
-                                        :Version "v1"
+                                        :Version "v2"
                                         :ShortName "Oldie"
                                         :Abstract "On second thought, this collection isn't so abstract after all"}))]
 
@@ -79,6 +79,11 @@
                             "collection"
                             "created-at=2014-01-01T10:00:00Z")]
         (d/refs-match? [youngling-collection regular-collection] search-results)))
+    (testing "Multiple date-ranges. elder-collection and deleted-collection should not be found."
+      (let [search-results (search/find-concepts-with-param-string
+                            "collection"
+                            "created_at=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at=2015-01-01T10:00:00Z,")]
+        (d/refs-match? [youngling-collection regular-collection oldest-collection-revision] search-results)))
     (testing "Using unsupported or incorrect parameters"
       (are [params]
         (let [{:keys [status errors]} (search/find-concepts-with-param-string "collection" params)]

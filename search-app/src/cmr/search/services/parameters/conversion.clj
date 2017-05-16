@@ -26,8 +26,8 @@
    :short-name :string
    :version :string
    :updated-since :updated-since
-   :revision-date :revision-date
-   :created-at :revision-date
+   :revision-date :multi-date-range
+   :created-at :multi-date-range
    :processing-level-id :string
    :processing-level-id-h :humanizer
    :collection-data-type :collection-data-type
@@ -80,7 +80,7 @@
    :equator-crossing-date :equator-crossing-date
    :version :collection-query
    :updated-since :updated-since
-   :revision-date :revision-date
+   :revision-date :multi-date-range
    :temporal :temporal
    :platform :inheritance
    :instrument :inheritance
@@ -178,10 +178,11 @@
                    (if (sequential? value) (first value) value))
      :end-date nil}))
 
-(defmethod common-params/parameter->condition :revision-date
+(defmethod common-params/parameter->condition :multi-date-range
   [context concept-type param value options]
   (if (sequential? value)
-    (if (= "true" (get-in options [:revision-date :and]))
+    (if (or (= "true" (get-in options [:revision-date :and]))
+            (= "true" (get-in options [:created-at :and])))
       (gc/and-conds
         (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
