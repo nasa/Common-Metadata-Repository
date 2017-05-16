@@ -31,26 +31,52 @@
   {:default nil
    :parser cfg/maybe-long})
 
-(defconfig access-control-public-protocol
-  "The protocol to use in documentation examples for the access-control application."
-  {:default "http"})
-
-(defconfig access-control-public-host
-  "The host name to use in links returned by the access-control application."
-  {:default "localhost"})
-
-(defconfig access-control-public-port
-  "The port to use in links returned by the access-control application."
-  {:default 3011
-   :type Long})
-
 (defconfig log-level
   "App logging level"
   {:default "info"})
 
-(defn public-conf
-  "Public access-control configuration used for generating example requests in documentation"
-  []
+(defconfig access-control-public-protocol
+  "The protocol to use for public access to the access-control application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required.
+
+  The name given after `defconfig` is important and is used when checking for
+  an ENV variable. The ENV variable for this configuration will be:
+  * CMR_ACCESS_CONTROL_PUBLIC_PROTOCOL"
+  {:default "http"})
+
+(defconfig access-control-public-host
+  "The host name to use for public access to the access-control application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required.
+
+  The name given after `defconfig` is important and is used when checking for
+  an ENV variable. The ENV variable for this configuration will be:
+  * CMR_ACCESS_CONTROL_PUBLIC_HOST"
+  {:default "localhost"})
+
+(defconfig access-control-public-port
+  "The port to use for public access to the access-control application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required.
+
+  The name given after `defconfig` is important and is used when checking for
+  an ENV variable. The ENV variable for this configuration will be:
+  * CMR_ACCESS_CONTROL_PUBLIC_PORT"
+  {:default 3011
+   :type Long})
+
+(def public-conf
+  "Public access-control configuration used for generating proper link URLs in
+  dynamic content (templates), generating example requests in documentation,
+  and running the access-control service in the development environment for use
+  with integration tests."
   {:protocol (access-control-public-protocol)
    :host (access-control-public-host)
    :port (access-control-public-port)
@@ -78,7 +104,7 @@
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
 
-             :public-conf (public-conf)
+             :public-conf public-conf
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler
                          `system-holder
