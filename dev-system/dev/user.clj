@@ -187,11 +187,11 @@
               ;; of templates which (indirectly) make use of/require app
               ;; public-conf data.
               (assoc-in [:apps :search :public-conf]
-                        search-system/public-conf)
+                        (search-system/public-conf))
               (assoc-in [:apps :access-control :public-conf]
-                        access-control-system/public-conf)
+                        (access-control-system/public-conf))
               (assoc-in [:apps :ingest :public-conf]
-                        ingest-system/public-conf))]
+                        (ingest-system/public-conf)))]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))

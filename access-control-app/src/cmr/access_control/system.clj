@@ -40,11 +40,8 @@
 
   Note: this configuration value is used as-is in local, dev environments
   and is overridden with ENV variables in remote deployments. In both cases,
-  this configuration information is utilized and required.
-
-  The name given after `defconfig` is important and is used when checking for
-  an ENV variable. The ENV variable for this configuration will be:
-  * CMR_ACCESS_CONTROL_PUBLIC_PROTOCOL"
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default "http"})
 
 (defconfig access-control-public-host
@@ -52,11 +49,8 @@
 
   Note: this configuration value is used as-is in local, dev environments
   and is overridden with ENV variables in remote deployments. In both cases,
-  this configuration information is utilized and required.
-
-  The name given after `defconfig` is important and is used when checking for
-  an ENV variable. The ENV variable for this configuration will be:
-  * CMR_ACCESS_CONTROL_PUBLIC_HOST"
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default "localhost"})
 
 (defconfig access-control-public-port
@@ -64,19 +58,17 @@
 
   Note: this configuration value is used as-is in local, dev environments
   and is overridden with ENV variables in remote deployments. In both cases,
-  this configuration information is utilized and required.
-
-  The name given after `defconfig` is important and is used when checking for
-  an ENV variable. The ENV variable for this configuration will be:
-  * CMR_ACCESS_CONTROL_PUBLIC_PORT"
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default 3011
    :type Long})
 
-(def public-conf
+(defn public-conf
   "Public access-control configuration used for generating proper link URLs in
   dynamic content (templates), generating example requests in documentation,
   and running the access-control service in the development environment for use
   with integration tests."
+  []
   {:protocol (access-control-public-protocol)
    :host (access-control-public-host)
    :port (access-control-public-port)
@@ -104,7 +96,7 @@
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
 
-             :public-conf public-conf
+             :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)
              :scheduler (jobs/create-scheduler
                          `system-holder
