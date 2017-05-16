@@ -39,17 +39,55 @@
   "Required for jobs"
   (atom nil))
 
-(defconfig public-protocol
-  "The protocol to use in documentation examples for the ingest application."
-  {:default "http"})
-
 (defconfig log-level
   "App logging level"
   {:default "info"})
 
+(defconfig ingest-public-protocol
+  "The protocol to use for public access to the ingest application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required.
+
+  The name given after `defconfig` is important and is used when checking for
+  an ENV variable. The ENV variable for this configuration will be:
+  * CMR_INGEST_PUBLIC_PROTOCOL"
+  {:default "http"})
+
+(defconfig ingest-public-host
+  "The host name to use for public access to the ingest application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required.
+
+  The name given after `defconfig` is important and is used when checking for
+  an ENV variable. The ENV variable for this configuration will be:
+  * CMR_INGEST_PUBLIC_HOST"
+  {:default "localhost"})
+
+(defconfig ingest-public-port
+  "The port to use for public access to the ingest application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required.
+
+  The name given after `defconfig` is important and is used when checking for
+  an ENV variable. The ENV variable for this configuration will be:
+  * CMR_INGEST_PUBLIC_PORT"
+  {:default 3002
+   :type Long})
+
 (def public-conf
-  "Public ingest configuration used for generating example requests in documentation"
-  {:protocol (public-protocol)
+  "Public ingest configuration used for generating proper link URLs in dynamic
+  content (templates), generating example requests in documentation, and
+  running the ingest service in the development environment for use with
+  integration tests."
+  {:protocol (ingest-public-protocol)
+   :host (ingest-public-host)
+   :port (ingest-public-port)
    :relative-root-url (transmit-config/ingest-relative-root-url)})
 
 (defn create-system
