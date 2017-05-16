@@ -96,7 +96,7 @@
          (string/join "; " warnings))))
 
 (defn handle-collection-bulk-update-event
-  "Perform update for the given concept id. Log an error status of the concept
+  "Perform update for the given concept id. Log an error status if the concept
   cannot be found."
   [context task-id concept-id bulk-update-params]
   (try
@@ -110,9 +110,11 @@
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update
-        (ingest-events/publish-ingest-event context
-          (ingest-events/ingest-collection-bulk-update-event
-            task-id concept-id bulk-update-params))
+        (ingest-events/publish-ingest-event
+         context
+         (ingest-events/ingest-collection-bulk-update-event task-id
+                                                            concept-id
+                                                            bulk-update-params))
         (data-bulk-update/update-bulk-update-task-collection-status
           context task-id concept-id "FAILED" (.getMessage ex-info))))
     (catch Exception e
