@@ -30,7 +30,10 @@
         bulk-update-body {:concept-ids concept-ids
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
-                          :update-value "X"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "HUMAN DIMENSIONS"
+                                         :Term "ENVIRONMENTAL IMPACTS"
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
         json-body (json/generate-string bulk-update-body)]
 
     (testing "Bulk update response"
@@ -88,7 +91,10 @@
   (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111"]
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
-                          :update-value "X"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "HUMAN DIMENSIONS"
+                                         :Term "ENVIRONMENTAL IMPACTS"
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
         json-body (json/generate-string bulk-update-body)
         {:keys [task-id]} (ingest/bulk-update-collections "PROV1" bulk-update-body)
         _ (qb-side-api/wait-for-terminal-states)

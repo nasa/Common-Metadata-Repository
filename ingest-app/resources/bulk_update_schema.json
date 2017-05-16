@@ -40,13 +40,11 @@
           "type": "string"
         },
         "update-value": {
-          "type": "string"
+          "type": "object"
         },
         "find-value": {
-          "type": "string"
+          "type": "object"
         }
     },
-    "required": ["update-type", "update-field"],
-    "oneOf": [{"required": ["concept-ids"]},
-              {"required": ["collection-ids"]}]
+    "required": ["update-type", "update-field", "concept-ids"]
 }

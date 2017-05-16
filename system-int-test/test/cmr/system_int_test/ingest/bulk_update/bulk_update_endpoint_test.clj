@@ -15,7 +15,10 @@
   {:concept-ids ["C1", "C2", "C3"]
    :update-type "ADD_TO_EXISTING"
    :update-field "SCIENCE_KEYWORDS"
-   :update-value "X"})
+   :update-value {:Category "EARTH SCIENCE"
+                  :Topic "HUMAN DIMENSIONS"
+                  :Term "ENVIRONMENTAL IMPACTS"
+                  :VariableLevel1 "HEAVY METALS CONCENTRATION"}})
 
 (defn- grant-permissions-create-token
   "Test setup to create read/update ingest permissions for bulk update and
@@ -63,13 +66,11 @@
               (is (= status-code status))
               (is (= error-messages errors)))
 
-            "Missing collection identifiers"
+            "Missing concept-ids"
             {:update-field "SCIENCE_KEYWORDS"
              :update-type "ADD_TO_EXISTING"}
             400
-            ["instance failed to match exactly one schema (matched 0 out of 2)"
-             "object has missing required properties ([\"concept-ids\"])"
-             "object has missing required properties ([\"collection-ids\"])"]
+            ["object has missing required properties ([\"concept-ids\"])"]
 
             "0 concept-ids"
             {:concept-ids []
@@ -78,26 +79,6 @@
             400
             ["/concept-ids array is too short: must have at least 1 elements but instance has 0 elements"]
 
-            "0 collection ids"
-            {:collection-ids []
-             :update-field "SCIENCE_KEYWORDS"
-             :update-type "ADD_TO_EXISTING"}
-            400
-            ["/collection-ids array is too short: must have at least 1 elements but instance has 0 elements"]
-
-            "Missing short-name"
-            {:collection-ids [{:version "V1"}]
-             :update-field "SCIENCE_KEYWORDS"
-             :update-type "ADD_TO_EXISTING"}
-            400
-            ["/collection-ids/0 object has missing required properties ([\"short-name\"])"]
-
-            "Missing version"
-            {:collection-ids [{:short-name "ABC"}]
-             :update-field "SCIENCE_KEYWORDS"
-             :update-type "ADD_TO_EXISTING"}
-            400
-            ["/collection-ids/0 object has missing required properties ([\"version\"])"]
 
             "Missing update field"
             {:concept-ids ["C1", "C2", "C3"]
@@ -129,9 +110,44 @@
             {:concept-ids ["C1", "C2", "C3"]
              :update-field "SCIENCE_KEYWORDS"
              :update-type "FIND_AND_REPLACE"
-             :update-value "X"}
+             :update-value {:Category "EARTH SCIENCE"
+                            :Topic "HUMAN DIMENSIONS"
+                            :Term "ENVIRONMENTAL IMPACTS"
+                            :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
             400
             ["A find value must be supplied when the update is of type FIND_AND_REPLACE"]))))
+
+            ;; Short-name/version currently not supported. Support will be added
+            ;; back in with CMR-4129
+
+            ; "Missing collection identifiers"
+            ; {:update-field "SCIENCE_KEYWORDS"
+            ;  :update-type "ADD_TO_EXISTING"}
+            ; 400
+            ; ["instance failed to match exactly one schema (matched 0 out of 2)"
+            ;  "object has missing required properties ([\"concept-ids\"])"
+            ;  "object has missing required properties ([\"collection-ids\"])"]
+            ;
+            ; "0 collection ids"
+            ; {:collection-ids []
+            ;  :update-field "SCIENCE_KEYWORDS"
+            ;  :update-type "ADD_TO_EXISTING"}
+            ; 400
+            ; ["/collection-ids array is too short: must have at least 1 elements but instance has 0 elements"]
+            ;
+            ; "Missing short-name"
+            ; {:collection-ids [{:version "V1"}]
+            ;  :update-field "SCIENCE_KEYWORDS"
+            ;  :update-type "ADD_TO_EXISTING"}
+            ; 400
+            ; ["/collection-ids/0 object has missing required properties ([\"short-name\"])"]
+            ;
+            ; "Missing version"
+            ; {:collection-ids [{:short-name "ABC"}]
+            ;  :update-field "SCIENCE_KEYWORDS"
+            ;  :update-type "ADD_TO_EXISTING"}
+            ; 400
+            ; ["/collection-ids/0 object has missing required properties ([\"version\"])"]))))
 
 (deftest bulk-update-status-endpoint-validation
   (testing "Invalid provider"

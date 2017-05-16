@@ -1,12 +1,17 @@
 (ns cmr.ingest.services.bulk-update-service
   (:require
+   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.json-schema :as js]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
-   [cmr.transmit.metadata-db2 :as mdb2]))
+   [cmr.ingest.services.ingest-service :as ingest-service]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.metadata-db2 :as mdb2]
+   [cmr.umm-spec.field-update :as field-update]))
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
@@ -56,16 +61,62 @@
        (ingest-events/ingest-collection-bulk-update-event
          task-id concept-id bulk-update-params)))))
 
+(defn- update-collection-concept
+  "Perform the update on the collection and update the concept"
+  [context concept bulk-update-params]
+  (let [{:keys [update-type update-field find-value update-value]} bulk-update-params
+        update-type (csk/->kebab-case-keyword update-type)
+        update-field (csk/->PascalCaseKeyword update-field)]
+    (-> concept
+        (assoc :metadata (field-update/update-concept context concept update-type
+                                                      update-field update-value find-value))
+        (update :revision-id inc))))
+
+
+(defn- validate-and-save-collection
+  "Put concept through ingest validation. Attempt save to
+  metadata db. If validation or save errors are thrown, they will be caught and
+  handled in handle-collection-bulk-update-event. Return warnings."
+  [context concept]
+  (let [{:keys [concept warnings]} (ingest-service/validate-and-prepare-collection
+                                     context concept nil)]
+    ;; If errors are caught, an error will be thrown and logged to the DB
+    ;; If we get warnings back, validation was successful, but will still
+    ;; log warnings
+    (mdb/save-concept context concept)
+    warnings))
+
+(defn- create-success-status-message
+  "If there are warnings, create a status string with warnings, otherwise status
+  is nil"
+  [warnings]
+  (when (seq warnings)
+    (str "Collection was updated successfully, but translating the collection "
+         "to UMM-C had the following issues: "
+         (string/join "; " warnings))))
+
 (defn handle-collection-bulk-update-event
-  "Perform update for the given concept id. Log an error status of the concept
+  "Perform update for the given concept id. Log an error status if the concept
   cannot be found."
   [context task-id concept-id bulk-update-params]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
-      (data-bulk-update/update-bulk-update-task-collection-status context task-id
-        concept-id "COMPLETE" nil)
+      (let [updated-concept (update-collection-concept context concept bulk-update-params)
+            warnings (validate-and-save-collection context updated-concept)]
+        (data-bulk-update/update-bulk-update-task-collection-status context task-id
+            concept-id "COMPLETE" (create-success-status-message warnings)))
       (data-bulk-update/update-bulk-update-task-collection-status context task-id
         concept-id "FAILED" (format "Concept-id [%s] is not valid." concept-id)))
+    (catch clojure.lang.ExceptionInfo ex-info
+      (if (= :conflict (:type (.getData ex-info)))
+        ;; Concurrent update - re-queue concept update
+        (ingest-events/publish-ingest-event
+         context
+         (ingest-events/ingest-collection-bulk-update-event task-id
+                                                            concept-id
+                                                            bulk-update-params))
+        (data-bulk-update/update-bulk-update-task-collection-status
+          context task-id concept-id "FAILED" (.getMessage ex-info))))
     (catch Exception e
       (let [message (.getMessage e)
             concept-id-message (re-find #"Concept-id.*is not valid." message)]

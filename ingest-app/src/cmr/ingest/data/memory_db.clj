@@ -114,7 +114,8 @@
   (reset-bulk-update
     [this]
     (reset! task-status-atom [])
-    (reset! collection-status-atom []))
+    (reset! collection-status-atom [])
+    (reset! task-id-atom 0))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
