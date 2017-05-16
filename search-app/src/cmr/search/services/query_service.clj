@@ -338,28 +338,31 @@
       (map :concept-id (:items results)))))
 
 (defn- get-highest-visible-revisions
-  "Returns the query and the highest visible collection revisions search result
-   from a given query in the desired result format."
-  [context query-condition result-format]
-  ;; find all collection revisions, then filter out the highest revisions
-  ;; and replace the hits and items in results with those of the highest revisions.
-  (let [query (qm/query {:concept-type :collection
-                         :condition query-condition
-                         :all-revisions? true
-                         :page-size :unlimited
-                         :result-format result-format})
-        results (qe/execute-query context query)
-        highest-coll-revisions (u/map-values
-                                #(apply max (map :revision-id %))
-                                (group-by :concept-id (:items results)))
-        highest-revisions (filter
-                           (fn [coll]
-                             ((set highest-coll-revisions)
-                              [(:concept-id coll) (:revision-id coll)]))
-                           (:items results))]
-    (-> results
-        (assoc :items highest-revisions)
-        (assoc :hits (count highest-revisions)))))
+  "Returns the query and the highest visible collection revisions search result of the given
+   collection concept ids in the given result format."
+  [context coll-concept-ids result-format]
+  (when (seq coll-concept-ids)
+    ;; find all collection revisions, then filter out the highest revisions
+    ;; and replace the hits and items in results with those of the highest revisions.
+    (let [condition (gc/and-conds
+                     [(qm/string-conditions :concept-id coll-concept-ids true)
+                      (qm/boolean-condition :deleted false)])
+          query (qm/query {:concept-type :collection
+                           :condition condition
+                           :all-revisions? true
+                           :page-size :unlimited
+                           :result-format result-format})
+          results (qe/execute-query context query)
+          highest-coll-revisions (u/map-values
+                                  #(apply max (map :revision-id %))
+                                  (group-by :concept-id (:items results)))
+          highest-revisions (filter
+                             #((set highest-coll-revisions)
+                               [(:concept-id %) (:revision-id %)])
+                             (:items results))]
+      (-> results
+          (assoc :items highest-revisions)
+          (assoc :hits (count highest-revisions))))))
 
 (defn get-deleted-collections
   "Executes elasticsearch searches to find collections that are deleted.
@@ -367,7 +370,6 @@
    Collections that are deleted, then later ingested again are not included in the result.
    Returns references to the highest collection revision prior to the collection tombstone."
   [context params]
-  (pv/validate-deleted-collections-params params)
   ;; 1/ Find all collection revisions that are deleted satisfying the revision-date query -> c1
   ;; 2/ Filters out any collections c1 that still exists -> c2
   ;; 3/ Find all collection revisions for the c2, return the highest revisions that are visible
@@ -379,11 +381,7 @@
         deleted-concept-ids (seq (set/difference
                                    (set coll-concept-ids)
                                    (set visible-concept-ids)))
-        query-condition (gc/and-conds
-                         [(qm/string-conditions :concept-id deleted-concept-ids true)
-                          (qm/boolean-condition :deleted false)])
-        results (when (seq coll-concept-ids)
-                  (get-highest-visible-revisions context query-condition result-format))
+        results (get-highest-visible-revisions context deleted-concept-ids result-format)
         ;; when results is nil, hits is 0
         results (or results {:hits 0 :items []})
         total-took (- (System/currentTimeMillis) start-time)
