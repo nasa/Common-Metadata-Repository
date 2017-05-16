@@ -1,10 +1,20 @@
 (ns cmr.transmit.config
-  "Contains functions for retrieving application connection information from environment variables"
+  "Contains functions for retrieving application connection information from
+  environment variables.
+
+  The data which this namespace provides to CMR apps is used in all deployment
+  environments for sharing configuration values that are transmitted over a
+  private network, containing values that are specifically for service-to-service
+  communications and not values to be accesed or evaluated over public networks.
+
+  On occasion, application will set their publicly-facing configuration values
+  with those that are defined here, but instances such as that are simply
+  where there are values which are the same in both and not expected to change
+  between public and private communications."
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.util :as util]
             [cmr.transmit.connection :as conn]
             [camel-snake-kebab.core :as csk]))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants for help in testing.
