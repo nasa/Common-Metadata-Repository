@@ -48,11 +48,8 @@
 
   Note: this configuration value is used as-is in local, dev environments
   and is overridden with ENV variables in remote deployments. In both cases,
-  this configuration information is utilized and required.
-
-  The name given after `defconfig` is important and is used when checking for
-  an ENV variable. The ENV variable for this configuration will be:
-  * CMR_INGEST_PUBLIC_PROTOCOL"
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default "http"})
 
 (defconfig ingest-public-host
@@ -60,11 +57,8 @@
 
   Note: this configuration value is used as-is in local, dev environments
   and is overridden with ENV variables in remote deployments. In both cases,
-  this configuration information is utilized and required.
-
-  The name given after `defconfig` is important and is used when checking for
-  an ENV variable. The ENV variable for this configuration will be:
-  * CMR_INGEST_PUBLIC_HOST"
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default "localhost"})
 
 (defconfig ingest-public-port
@@ -72,19 +66,17 @@
 
   Note: this configuration value is used as-is in local, dev environments
   and is overridden with ENV variables in remote deployments. In both cases,
-  this configuration information is utilized and required.
-
-  The name given after `defconfig` is important and is used when checking for
-  an ENV variable. The ENV variable for this configuration will be:
-  * CMR_INGEST_PUBLIC_PORT"
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default 3002
    :type Long})
 
-(def public-conf
+(defn public-conf
   "Public ingest configuration used for generating proper link URLs in dynamic
   content (templates), generating example requests in documentation, and
   running the ingest service in the development environment for use with
   integration tests."
+  []
   {:protocol (ingest-public-protocol)
    :host (ingest-public-host)
    :port (ingest-public-port)
@@ -113,7 +105,7 @@
                        common-health/health-cache-key (common-health/create-health-cache)
                        common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                        humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)}
-              :public-conf public-conf
+              :public-conf (public-conf)
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections
       sys [:metadata-db :indexer :access-control :echo-rest :search :cubby :kms]))))
