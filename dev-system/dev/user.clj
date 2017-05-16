@@ -6,6 +6,7 @@
    [clojure.repl :refer :all]
    [clojure.test :refer [run-all-tests run-tests]]
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+   [cmr.access-control.system :as access-control-system]
    [cmr.common.config :as config]
    [cmr.common.dev.capture-reveal]
    [cmr.common.dev.util :as d]
@@ -14,6 +15,8 @@
    [cmr.common.util :as u]
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
+   [cmr.ingest.system :as ingest-system]
+   [cmr.search.system :as search-system]
    [cmr.system-int-test.system :as sit-sys]
    [cmr.transmit.config :as transmit-config]
    [debugger.core]
@@ -21,17 +24,12 @@
    [refresh-persistent-settings :as settings]
    [selmer.parser :as selmer]))
 
-;; In the development environment, we want to see changes made to templates;
-;; in order to test template page caching in the REPL, simply call
-;; `(selmer/cache-on!)`.
+;; In the development environment, we want to see changes made to templates,
+;; so we turn Selmer caching off by default. In order to test template page
+;; caching in the REPL, simply call `(selmer/cache-on!)`.
 (selmer/cache-off!)
 
 (defonce system nil)
-
-(defonce base-public-conf
-  {:protocol "http"
-   :host "localhost"
-   :relative-root-url ""})
 
 (defn configure-systems-logging
   "Configures the systems in the system map to the indicated level"
@@ -189,14 +187,11 @@
               ;; of templates which (indirectly) make use of/require app
               ;; public-conf data.
               (assoc-in [:apps :search :public-conf]
-                        (assoc base-public-conf
-                               :port (transmit-config/search-port)))
+                        search-system/public-conf)
               (assoc-in [:apps :access-control :public-conf]
-                        (assoc base-public-conf
-                               :port (transmit-config/access-control-port)))
+                        access-control-system/public-conf)
               (assoc-in [:apps :ingest :public-conf]
-                        (assoc base-public-conf
-                               :port (transmit-config/ingest-port))))]
+                        ingest-system/public-conf))]
     (alter-var-root #'system
                     (constantly
                       (system/start s))))
