@@ -181,8 +181,7 @@
 (defmethod common-params/parameter->condition :multi-date-range
   [context concept-type param value options]
   (if (sequential? value)
-    (if (or (= "true" (get-in options [:revision-date :and]))
-            (= "true" (get-in options [:created-at :and])))
+    (if (= "true" (get-in options [param :and]))
       (gc/and-conds
         (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
