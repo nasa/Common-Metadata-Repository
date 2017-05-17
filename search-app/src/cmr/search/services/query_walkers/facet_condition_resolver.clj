@@ -4,10 +4,24 @@
   (:require
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fvrf]))
+
+(defn- string-condition-for-v2-facet-field?
+  "Returns true if the given string condition is on the given v2 facet field"
+  [c field-key]
+  (if (or
+       ;; The first check handles the data-center-h field since its query condition field
+       ;; :organization.humanized2.value does not match the regex on the second check
+       (= (str (fvrf/facets-v2-params->elastic-fields field-key) ".value") (str (:field c)))
+       (re-matches (re-pattern (str field-key ".*")) (str (:field c))))
+    true
+    false))
 
 (defprotocol AdjustFacetQuery
-  "Defines function to adjust facet query for a given facet field."
+  "Defines function to adjust facet query for a given facet field to remove the facet field from
+   the query condition. The field-key is in the form of query parameter and the condition is in
+   the form of simplified query condition."
   (has-field?
     [c field-key]
     "Returns true if the condition has the field key")
@@ -50,19 +64,20 @@
 
   (adjust-facet-query
    [c field-key]
+   ;; drop nested condition that has the facet field
    (when-not (has-field? (:condition c) field-key)
-     (update c :condition #(adjust-facet-query % field-key))))
+     c))
 
   cmr.common_app.services.search.query_model.StringCondition
   (has-field?
    [c field-key]
-   (if (re-matches (re-pattern (str field-key ".*")) (str (:field c)))
+   (if (string-condition-for-v2-facet-field? c field-key)
      true
      false))
 
   (adjust-facet-query
    [c field-key]
-   (when-not (re-matches (re-pattern (str field-key ".*")) (str (:field c)))
+   (when-not (string-condition-for-v2-facet-field? c field-key)
      c))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

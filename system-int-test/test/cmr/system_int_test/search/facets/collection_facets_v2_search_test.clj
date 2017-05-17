@@ -512,6 +512,78 @@
         (assert-facet-field facets-result "Platforms" "P3" 1)
         (assert-facet-field-not-exist facets-result "Platforms" "P2")))))
 
+(deftest organization-facets-v2-test
+  (let [org1 (dc/org :archive-center "DOI/USGS/CMG/WHSC")
+        org2 (dc/org :processing-center "LPDAAC")
+        org3 (dc/org :archive-center "NSIDC")
+        coll (d/ingest "PROV1" (dc/collection
+                                {:entry-title "coll1"
+                                 :short-name "S1"
+                                 :version-id "V1"
+                                 :organizations [org1]}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll2"
+                                  :short-name "S2"
+                                  :version-id "V2"
+                                  :organizations [org2]}))
+        coll3 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll3"
+                                  :short-name "S3"
+                                  :version-id "V3"
+                                  :organizations [org1 org2]
+                                  :projects (dc/projects "proj3")}))
+        coll4 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll4"
+                                  :short-name "S4"
+                                  :version-id "V4"
+                                  :organizations [org3]
+                                  :projects (dc/projects "proj4")}))]
+    (testing "search by data-center parameter filters the other facets, but not Organizations facets"
+      (let [facets-result (search-and-return-v2-facets
+                           {:data-center-h ["NSIDC"]})]
+        (assert-facet-field facets-result "Organizations" "DOI/USGS/CMG/WHSC" 2)
+        (assert-facet-field facets-result "Organizations" "LPDAAC" 2)
+        (assert-facet-field facets-result "Organizations" "NSIDC" 1)
+        (assert-facet-field facets-result "Projects" "proj4" 1)
+        (assert-facet-field-not-exist facets-result "Projects" "proj3")))
+
+    (testing "search by multiple data-centers"
+      (let [facets-result (search-and-return-v2-facets
+                           {:data-center-h ["LPDAAC" "NSIDC"]})]
+        (assert-facet-field facets-result "Organizations" "DOI/USGS/CMG/WHSC" 2)
+        (assert-facet-field facets-result "Organizations" "LPDAAC" 2)
+        (assert-facet-field facets-result "Organizations" "NSIDC" 1)
+        (assert-facet-field facets-result "Projects" "proj3" 1)
+        (assert-facet-field facets-result "Projects" "proj4" 1)))
+
+    (testing "search by params other than data-center"
+      (let [facets-result (search-and-return-v2-facets
+                           {:project-h ["proj4"]})]
+        (assert-facet-field facets-result "Organizations" "NSIDC" 1)
+        (assert-facet-field facets-result "Projects" "proj3" 1)
+        (assert-facet-field facets-result "Projects" "proj4" 1)
+        (assert-facet-field-not-exist facets-result "Organizations" "DOI/USGS/CMG/WHSC")
+        (assert-facet-field-not-exist facets-result "Organizations" "LPDAAC")))
+
+    (testing "search by both data-center facet field param and regular param"
+      (let [facets-result (search-and-return-v2-facets
+                           {:short-name "S1"
+                            :data-center-h ["NSIDC"]})]
+        (assert-facet-field facets-result "Organizations" "DOI/USGS/CMG/WHSC" 1)
+        (assert-facet-field facets-result "Organizations" "NSIDC" 0)
+        (assert-facet-field-not-exist facets-result "Organizations" "LPDAAC")
+        (assert-facet-field-not-exist facets-result "Projects" "proj3")
+        (assert-facet-field-not-exist facets-result "Projects" "proj4")))
+
+    (testing "search by more than one facet field params"
+      (let [facets-result (search-and-return-v2-facets {:data-center-h ["NSIDC"]
+                                                        :project-h ["proj4"]})]
+        (assert-facet-field facets-result "Organizations" "NSIDC" 1)
+        (assert-facet-field facets-result "Projects" "proj4" 1)
+        (assert-facet-field-not-exist facets-result "Organizations" "DOI/USGS/CMG/WHSC")
+        (assert-facet-field-not-exist facets-result "Organizations" "LPDAAC")
+        (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
+
 (comment
  ;; Good for manually testing applying links
  (do
