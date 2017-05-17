@@ -2,9 +2,9 @@
   "Defines the HTTP URL routes for validating and ingesting concepts."
   (:require
    [cheshire.core :as json]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.cache :as cache]
@@ -65,12 +65,14 @@
   <concept-id>C1-PROV1</concept-id>
   </result>"
   [m]
-  (x/emit-str
-    (x/element :result {}
-               (reduce-kv (fn [memo k v]
-                            (conj memo (x/element (keyword k) {} v)))
-                          []
-                          m))))
+  (xml/emit-str
+   (xml/element
+    :result
+    {}
+    (reduce-kv (fn [memo k v]
+                 (conj memo (xml/element (keyword k) {} v)))
+               []
+               m))))
 
 (defn- get-ingest-result-format
   "Returns the requested ingest result format parsed from the Accept header or :xml
@@ -196,16 +198,21 @@
     concept))
 
 (defn- body->concept
-  "Create a metadata concept from the given request body"
-  [concept-type provider-id native-id body content-type headers]
-  (let [metadata (str/trim (slurp body))]
-    (-> {:metadata metadata
-         :format (mt/keep-version content-type)
-         :provider-id provider-id
-         :native-id native-id
-         :concept-type concept-type}
-        (set-concept-id headers)
-        (set-revision-id headers))))
+  "Create a metadata concept from the given request body."
+  ([concept-type body content-type headers]
+   (let [metadata (string/trim (slurp body))]
+     (-> {:metadata metadata
+          :format (mt/keep-version content-type)
+          :native-id (:name metadata)
+          :concept-type concept-type}
+         (set-concept-id headers)
+         (set-revision-id headers))))
+  ([concept-type native-id body content-type headers]
+   (assoc (body->concept concept-type body content-type headers)
+          :native-id native-id))
+  ([concept-type provider-id native-id body content-type headers]
+   (assoc (body->concept concept-type native-id body content-type headers)
+          :provider-id provider-id)))
 
 (defn- concept->loggable-string
   "Returns a string with information about the concept as a loggable string."
@@ -231,8 +238,9 @@
   {:validate-keywords? (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
    :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Collection API Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Collection API Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn validate-collection
   [provider-id native-id request]
@@ -285,8 +293,9 @@
                                                         request-context
                                                         concept-attribs)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Granule API Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Granule API Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
@@ -362,12 +371,16 @@
                   (pr-str concept-attribs) (:client-id request-context)))
     (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Bulk-update API Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn- bulk-update-collections
   "Bulk update collections. Validate provider exists, check ACLs, and validate
   POST body. Writes rows to tables and returns task id"
   [provider-id request]
   (let [{:keys [body headers request-context]} request
-        body (str/trim (slurp body))]
+        body (string/trim (slurp body))]
     (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id body)]
@@ -382,16 +395,16 @@
  ([result status-list-key status-key id-key]
   (generate-xml-status-list result status-list-key status-key id-key nil))
  ([result status-list-key status-key id-key additional-keys]
-  (x/element status-list-key {}
+  (xml/element status-list-key {}
     (for [status (get result status-list-key)
           :let [message (:status-message status)]]
-     (x/element status-key {}
-      (x/element id-key {} (get status id-key))
-      (x/element :status {} (:status status))
+     (xml/element status-key {}
+      (xml/element id-key {} (get status id-key))
+      (xml/element :status {} (:status status))
       (when message
-       (x/element :status-message {} message))
+       (xml/element :status-message {} message))
       (for [k additional-keys]
-       (x/element k {} (get status k))))))))
+       (xml/element k {} (get status k))))))))
 
 (defmulti generate-provider-tasks-response
   "Convert a result to a proper response format"
@@ -408,8 +421,8 @@
   ;; Create an xml response for a list of tasks
   {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
-   :body (x/emit-str
-          (x/element :result {}
+   :body (xml/emit-str
+          (xml/element :result {}
            (generate-xml-status-list result :tasks :task :task-id
              [:request-json-body])))})
 
@@ -439,11 +452,11 @@
   ;; Create an xml response for a list of tasks
   {:status (ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
-   :body (x/emit-str
-          (x/element :result {}
-           (x/element :task-status {} (:task-status result))
-           (x/element :status-message {} (:status-message result))
-           (x/element :request-json-body {} (:request-json-body result))
+   :body (xml/emit-str
+          (xml/element :result {}
+           (xml/element :task-status {} (:task-status result))
+           (xml/element :status-message {} (:status-message result))
+           (xml/element :request-json-body {} (:request-json-body result))
            (generate-xml-status-list result
             :collection-statuses :collection-status :concept-id)))})
 
@@ -466,40 +479,107 @@
       :request-json-body (:request-json-body task-status)
       :collection-statuses collection-statuses}))))
 
-(def ingest-routes
-  "Defines the routes for ingest, validate, delete, and bulk update operations"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; UMM Variable API Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn validate-variable
+  [request]
+  (let [{:keys [body content-type headers request-context]} request
+        concept (body->concept :variable body content-type headers)
+        validation-options (get-validation-options headers)
+        _ (info (format "Validating Variable %s from client %s ..."
+                        (concept->loggable-string concept)
+                        (:client-id request-context)))
+        validation (ingest/validate-variable
+                    request-context concept validation-options)]
+    (->> [:warnings]
+         (select-keys (contextualize-warnings validation))
+         (util/remove-nil-keys)
+         (generate-validate-response headers))))
+
+(defn ingest-variable
+  [request]
+  (let [{:keys [body content-type headers request-context]} request]
+    (acl/verify-ingest-management-permission request-context :update)
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (let [concept (body->concept :variable body content-type headers)
+          validation-options (get-validation-options headers)
+          save-result (ingest/save-variable
+                       request-context
+                       (set-user-id concept request-context headers)
+                       validation-options)]
+      (info (format "Ingesting variable %s from client %s"
+                    (concept->loggable-string
+                     (assoc concept
+                            :long-name (:long-name save-result)))
+                    (:client-id request-context)))
+      (generate-ingest-response
+       headers
+       (contextualize-warnings
+        ;; long-name is added just for the logging above.
+        ;; dissoc it so that it remains the same as the original code.
+        (dissoc save-result :long-name))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Routes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def ingest-provider-routes
+  "Defines the routes for provider ingest, validation, and deletion
+  operations."
   (set-default-error-format
     :xml
     (context "/providers/:provider-id" [provider-id]
 
       (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
-        (POST "/" request
-          (validate-collection provider-id native-id request)))
+        (POST "/"
+              request
+              (validate-collection provider-id native-id request)))
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
-        (PUT "/" request
-          (ingest-collection provider-id native-id request))
-        (DELETE "/" request
-          (delete-collection provider-id native-id request)))
+        (PUT "/"
+             request
+             (ingest-collection provider-id native-id request))
+        (DELETE "/"
+                request
+                (delete-collection provider-id native-id request)))
 
       (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
-        (POST "/" request
-          (validate-granule provider-id native-id request)))
+        (POST "/"
+              request
+              (validate-granule provider-id native-id request)))
 
       (context ["/granules/:native-id" :native-id #".*$"] [native-id]
-        (PUT "/" request
-          (ingest-granule provider-id native-id request))
-        (DELETE "/" request
-          (delete-granule provider-id native-id request)))
+        (PUT "/"
+             request
+             (ingest-granule provider-id native-id request))
+        (DELETE "/"
+                request
+                (delete-granule provider-id native-id request)))
 
-      (context "/bulk-update" []
-        (context "/collections" []
-          (POST "/" request
-           (let [request-context (:request-context request)]
-             (bulk-update-collections provider-id request)))
-          (GET "/status" request ; Gets all tasks for provider
-            (let [request-context (:request-context request)]
-              (get-provider-tasks provider-id request)))
-          (context "/status/:task-id" [task-id]
-            (GET "/" request
-              (let [request-context (:request-context request)]
-                (get-provider-task-status provider-id task-id request)))))))))
+      (context "/bulk-update/collections" []
+        (POST "/"
+              request
+              (bulk-update-collections provider-id request))
+        (GET "/status" ; Gets all tasks for provider
+             request
+             (get-provider-tasks provider-id request))
+        (GET "/status/:task-id"
+             [task-id :as request]
+             (get-provider-task-status provider-id task-id request))))))
+
+(def ingest-variable-routes
+  "Defines the routes for UMM variable ingest, validation, and deletion
+  operations."
+  (set-default-error-format
+    :xml
+    (context "/variables" []
+      (PUT "/"
+           request
+           (ingest-variable request)))))
+
+(def ingest-routes
+  "Combined ingest routes."
+  (routes
+   ingest-provider-routes
+   ingest-variable-routes))

@@ -28,7 +28,7 @@
     [cmr.umm.collection.entry-id :as eid]))
 
 (defn- fix-ingest-concept-format
-   "Fixes formats"
+  "Fixes formats"
   [fmt]
   (if (or
         (not (mt/umm-json? fmt))
@@ -277,7 +277,7 @@
   (let [concept (update-in concept [:format] fix-ingest-concept-format)
         {:keys [format metadata]} concept
         variable (spec/parse-metadata context
-                  :varaible format metadata {:sanitize? false})
+                  :variable format metadata {:sanitize? false})
         sanitized-variable (spec/parse-metadata
                             context :variable format metadata)
         ;; Throw errors for validation on sanitized collection
