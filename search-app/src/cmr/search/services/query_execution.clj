@@ -173,9 +173,8 @@
   ;; We execute a base query with all the parameters to get the result and facets of fields that
   ;; are not in the query, then we merge this base result with only the facets for each individual
   ;; facet field that is in the query.
-  (let [facet-fields-in-query (keep #(when (facet-condition-resolver/has-field? query %)
-                                       %)
-                                    fv2rf/facets-v2-params)
+  (let [facet-fields-in-query (filter #(facet-condition-resolver/has-field? query %)
+                                      fv2rf/facets-v2-params)
         base-facet-fields (set/difference (set fv2rf/facets-v2-params) (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
         base-result (common-qe/execute-query context query)
