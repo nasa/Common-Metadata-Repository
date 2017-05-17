@@ -53,5 +53,9 @@
                  :method :get
                  :raw? raw?
                  :http-options (merge {:headers headers
-                                       :accept :json}
+                                       :accept :json
+                                       ;; :decompress-body false is needed to
+                                       ;; workaround an issue with clj-http.client
+                                       ;; not handling gzip and unicode characters
+                                       :decompress-body false}
                                       http-options)}))))
