@@ -107,6 +107,7 @@
    :attribute exclude-plus-or-option
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
+   :created-at cpv/and-option
    :highlights highlights-option
 
    ;; Tag parameters for use querying other concepts.
@@ -262,6 +263,20 @@
                  (s/join ", " (map name empty-value-keys)))])
       ["Tag data search must be in the form of tag-data[tag-key]=tag-value"])))
 
+(defn- validate-multi-date-range
+  "Validates a given date range that may contain several date ranges."
+  [date-range param-name]
+  (mapcat
+    (fn [value]
+      (let [parts (map s/trim (s/split value #"," -1))
+            [start-date end-date] parts]
+        (if (> (count parts) 2)
+          [(format "Too many commas in %s %s" param-name value)]
+          (concat
+            (cpv/validate-date-time (str param-name " start") start-date)
+            (cpv/validate-date-time (str param-name" end") end-date)))))
+    date-range))
+
 (defn revision-date-validation
   "Validates that revision date parameter contains valid date time strings."
   [concept-type params]
@@ -269,16 +284,16 @@
     (let [revision-date (if (sequential? revision-date)
                           revision-date
                           [revision-date])]
-      (mapcat
-        (fn [value]
-          (let [parts (map s/trim (s/split value #"," -1))
-                [start-date end-date] parts]
-            (if (> (count parts) 2)
-              [(format "Too many commas in revision-date %s" value)]
-              (concat
-                (cpv/validate-date-time "revision-date start" start-date)
-                (cpv/validate-date-time "revision-date end" end-date)))))
-        revision-date))))
+      (validate-multi-date-range revision-date "revision-date"))))
+
+(defn created-at-validation
+  [concept-type params]
+  "Validates that created-at parameter contains valid datetime strings."
+  (when-let [created-at (:created-at params)]
+    (let [created-at (if (sequential? created-at)
+                      created-at
+                      [created-at])]
+      (validate-multi-date-range created-at "created-at"))))
 
 (defn attribute-validation
   [concept-type params]
@@ -527,6 +542,7 @@
                   temporal-format-validation
                   updated-since-validation
                   revision-date-validation
+                  created-at-validation
                   orbit-number-validation
                   equator-crossing-longitude-validation
                   equator-crossing-date-validation

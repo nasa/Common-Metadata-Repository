@@ -234,6 +234,7 @@
           ;; later.
           :revision-date m/date-field-mapping
           :revision-date2 (m/stored m/date-field-mapping)
+          :created-at (m/stored m/date-field-mapping)
 
           :permitted-group-ids (m/stored m/string-field-mapping)
           :concept-id   (m/stored m/string-field-mapping)
@@ -243,8 +244,8 @@
           :concept-seq-id m/int-field-mapping
           :entry-id           (m/stored m/string-field-mapping)
           :entry-id.lowercase m/string-field-mapping
-          :doi           m/string-field-mapping 
-          :doi.lowercase m/string-field-mapping 
+          :doi           m/string-field-mapping
+          :doi.lowercase m/string-field-mapping
           :entry-title           (m/stored m/string-field-mapping)
           :entry-title.lowercase m/string-field-mapping
           :provider-id           (m/stored m/string-field-mapping)

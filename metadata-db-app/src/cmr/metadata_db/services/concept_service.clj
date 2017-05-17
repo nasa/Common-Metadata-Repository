@@ -118,6 +118,25 @@
          :invalid-data (msg/granule-collection-cannot-change coll-concept-id parent-concept-id))
         (assoc concept :concept-id concept-id)))))
 
+(defmulti set-or-generate-created-at
+  "Get the existing created-at value for the given concept and set it or set it to the 
+  current datetime if it has never been saved."
+  (fn [db provider concept & previous-revision]
+    (:concept-type concept)))
+
+(defmethod set-or-generate-created-at :collection
+  [db provider concept & previous-revision]
+  (let [{:keys [concept-id concept-type]} concept
+        previous-revision (first previous-revision)
+        existing-created-at (:created-at (or previous-revision
+                                             (c/get-concept db concept-type provider concept-id)))
+        created-at (if existing-created-at existing-created-at (time-keeper/now))]
+    (assoc concept :created-at created-at)))
+
+(defmethod set-or-generate-created-at :default
+  [_db _provider concept & _previous-revision]
+  concept)
+  
 (defn- set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or
   one if the concept has never been saved."
@@ -439,7 +458,9 @@
         concept (assoc concept :provider-id provider-id)
         provider (provider-service/get-provider-by-id context provider-id true)
         _ (validate-system-level-concept concept provider)
-        concept (set-or-generate-concept-id db provider concept)]
+        concept (->> concept 
+                     (set-or-generate-concept-id db provider)
+                     (set-or-generate-created-at db provider))]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)

@@ -23,7 +23,8 @@
   entry_title VARCHAR(1030) NOT NULL,
   delete_time TIMESTAMP WITH TIME ZONE,
   user_id VARCHAR(30),
-  transaction_id INTEGER DEFAULT 0 NOT NULL")
+  transaction_id INTEGER DEFAULT 0 NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL")
 
 (defmethod collection-column-sql true
   [provider]
@@ -104,6 +105,9 @@
   ;; Need this for transaction-id post commit check
   (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
                                table-name
+                               table-name))
+  (j/db-do-commands db (format "CREATE INDEX %s_c_i ON %s (created_at)"
+                               table-name
                                table-name)))
 
 (defmethod create-collection-indexes true
@@ -123,4 +127,6 @@
   ;; Need this for transaction-id post commit check
   (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
                                 table-name
-                                table-name)))
+                                table-name))
+  (j/db-do-commands db (format "CREATE INDEX %s_c_i ON %s (created_at)"
+                               table-name)))

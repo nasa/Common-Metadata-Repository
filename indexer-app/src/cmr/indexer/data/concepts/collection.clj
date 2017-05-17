@@ -123,8 +123,8 @@
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
-  (let [{:keys [concept-id revision-id provider-id user-id
-                native-id revision-date deleted format extra-fields tag-associations]} concept
+  (let [{:keys [concept-id revision-id provider-id user-id native-id
+                created-at revision-date deleted format extra-fields tag-associations]} concept
         collection (remove-index-irrelevant-defaults collection)
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
@@ -262,6 +262,7 @@
             :related-urls (map json/generate-string opendata-related-urls)
             :update-time update-time
             :insert-time insert-time
+            :created-at created-at
             :coordinate-system coordinate-system
 
             ;; fields added to support keyword searches

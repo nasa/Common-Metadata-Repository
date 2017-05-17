@@ -184,7 +184,7 @@
    (let [contact-info (when email
                         (umm-cmn/map->ContactInformationType
                           {:ContactMechanisms [(umm-cmn/map->ContactMechanismType
-                                                 {:Type "Email" 
+                                                 {:Type "Email"
                                                   :Value email})]}))]
      (umm-cmn/map->ContactPersonType {:FirstName first-name
                                       :LastName last-name
@@ -201,7 +201,7 @@
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"})
 
-(def umm-c-missing-properties-dif 
+(def umm-c-missing-properties-dif
   "This is the minimal valid UMM-C."
   {:DataCenters [u/not-provided-data-center]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
@@ -215,7 +215,7 @@
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"})
 
-(def umm-c-missing-properties-dif10 
+(def umm-c-missing-properties-dif10
   "This is the minimal valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
                  {:ShortName "A340-600" :LongName "Airbus A340-600"})]

@@ -17,9 +17,9 @@
                                                  {:provider-id "SMAL_PROV2" :small true}))
 
 (defn concepts-for-comparison
-  "Removes revision-date from concepts so they can be compared."
+  "Removes revision-date, transaction-id, and created-at from concepts so they can be compared."
   [concepts]
-  (map #(dissoc % :revision-date :transaction-id) concepts))
+  (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
 
 (deftest search-by-concept-revision-id-tuples
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]

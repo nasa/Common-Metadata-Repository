@@ -42,6 +42,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Project](#c-project)
     * [Updated since](#c-updated-since)
     * [Revision date](#c-revision-date)
+    * [Created at](#c-created-at)
     * [Processing level id](#c-processing-level-id)
     * [Platform](#c-platform)
     * [Instrument](#c-instrument)
@@ -1144,6 +1145,14 @@ Find collections that match all of the 'project' param values
   Find collections which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/collections?updated_since=2014-05-08T20:06:38.331Z"
+
+#### <a name="c-created-at"></a> Find collections by created_at
+
+ This supports option `and`.
+
+ Find collections which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+   curl "%CMR-ENDPOINT%/collections?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="c-revision-date"></a> Find collections by revision_date
 

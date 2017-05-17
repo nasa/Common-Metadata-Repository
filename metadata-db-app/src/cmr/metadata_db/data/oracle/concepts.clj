@@ -5,13 +5,13 @@
    [clojure.java.jdbc :as j]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.common.concepts :as cc]
+   [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.services.provider-service :as provider-service]
@@ -149,6 +149,7 @@
                   format
                   revision_id
                   revision_date
+                  created_at
                   deleted
                   transaction_id]} result]
       (util/remove-nil-keys {:concept-type concept-type
@@ -159,6 +160,7 @@
                              :format (db-format->mime-type format)
                              :revision-id (int revision_id)
                              :revision-date (oracle/oracle-timestamp->str-time db revision_date)
+                             :created-at (when created_at (oracle/oracle-timestamp->str-time db created_at))
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
 
@@ -173,6 +175,7 @@
                 format
                 revision-id
                 revision-date
+                created-at
                 deleted]} concept
         fields ["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
         values [native-id
@@ -180,11 +183,14 @@
                 (util/string->gzip-bytes metadata)
                 (mime-type->db-format format)
                 revision-id
-                deleted]]
-    (if revision-date
-      [(cons "revision_date" fields)
-       (cons (cr/to-sql-time (p/parse-datetime revision-date)) values)]
-      [fields values])))
+                deleted]
+        fields (cond->> fields
+                        revision-date (cons "revision_date")
+                        created-at (cons "created_at"))
+        values (cond->> values
+                        revision-date (cons (cr/to-sql-time (p/parse-datetime revision-date)))
+                        created-at (cons (cr/to-sql-time created-at)))]
+    [fields values]))
 
 (defmethod after-save :default
   [db provider concept]
@@ -259,16 +265,16 @@
        :existing-concept-id concept_id
        :existing-native-id native_id})))
 
-(extend-protocol c/ConceptsStore
+(extend-protocol concepts/ConceptsStore
   OracleStore
 
   (generate-concept-id
    [db concept]
    (let [{:keys [concept-type provider-id]} concept
          seq-num (:nextval (first (su/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))]
-     (cc/build-concept-id {:concept-type concept-type
-                           :provider-id provider-id
-                           :sequence-number (biginteger seq-num)})))
+     (common-concepts/build-concept-id {:concept-type concept-type
+                                        :provider-id provider-id
+                                        :sequence-number (biginteger seq-num)})))
 
   (get-concept-id
    [db concept-type provider native-id]
@@ -306,7 +312,7 @@
                                                            (from table)
                                                            (where `(and (= :concept-id ~concept-id)
                                                                         (= :revision-id ~revision-id))))))))
-      (c/get-concept db concept-type provider concept-id))))
+      (concepts/get-concept db concept-type provider concept-id))))
 
   (get-concepts
    [db concept-type provider concept-id-revision-id-tuples]
@@ -335,7 +341,7 @@
 
   (get-latest-concepts
    [db concept-type provider concept-ids]
-   (c/get-concepts
+   (concepts/get-concepts
     db concept-type provider
     (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
 
@@ -344,7 +350,7 @@
    (j/with-db-transaction
     [conn db]
     (let [provider-id (:provider-id provider)
-          concept-type (cc/concept-id->type concept-id)
+          concept-type (common-concepts/concept-id->type concept-id)
           table (tables/get-table-name provider concept-type)
           stmt (su/build (select [:c.revision-id :c.transaction-id]
                                  (from (as (keyword table) :c))
