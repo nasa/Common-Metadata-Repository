@@ -21,13 +21,24 @@
   "The default limit for the number of results to return from any terms query for v2 facets."
   50)
 
+(def facets-v2-params->elastic-fields
+  "Defines the mapping of the base search parameters for the v2 facets fields to its field names
+   in elasticsearch."
+  {:science-keywords :science-keywords.humanized
+   :platform :platform-sn.humanized2
+   :instrument :instrument-sn.humanized2
+   :data-center :organization.humanized2
+   :project :project-sn.humanized2
+   :processing-level-id :processing-level-id.humanized2})
+
 (def facets-v2-params
   "The base search parameters for the v2 facets fields."
-  [:science-keywords :platform :instrument :data-center :project :processing-level-id])
+  (keys facets-v2-params->elastic-fields))
 
 (def facet-fields->aggregation-fields
   "Defines the mapping between facet fields to aggregation fields."
-  (into {} (map (fn [field] [field (keyword (str (name field) "-h"))]) facets-v2-params)))
+  (into {}
+        (map (fn [field] [field (keyword (str (name field) "-h"))]) facets-v2-params)))
 
 (def v2-facets-result-field-in-order
   "Defines the v2 facets result field in order"
@@ -36,20 +47,10 @@
 (defn- facet-query
   "Returns the facet query for the given facet field"
   [facet-field size query-params]
-  (case facet-field
-    :science-keywords
+  (if (= :science-keywords facet-field)
     (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
-      (hv2/nested-facet :science-keywords.humanized size sk-depth))
-    :platform
-    (v2h/prioritized-facet :platform-sn.humanized2 size)
-    :instrument
-    (v2h/prioritized-facet :instrument-sn.humanized2 size)
-    :data-center
-    (v2h/prioritized-facet :organization.humanized2 size)
-    :project
-    (v2h/prioritized-facet :project-sn.humanized2 size)
-    :processing-level-id
-    (v2h/prioritized-facet :processing-level-id.humanized2 size)))
+      (hv2/nested-facet (facets-v2-params->elastic-fields facet-field) size sk-depth))
+    (v2h/prioritized-facet (facets-v2-params->elastic-fields facet-field) size)))
 
 (defn- facets-v2-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results

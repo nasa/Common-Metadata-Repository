@@ -158,7 +158,7 @@
 ;; or have not specified any value for the field and inherit it from their parent collection.
 (defmethod common-params/parameter->condition :inheritance
   [context concept-type param value options]
-  (let [field-condition (common-params/parameter->condition context :collection param value options)        
+  (let [field-condition (common-params/parameter->condition context :collection param value options)
         exclude-collection (= "true" (get-in options [param :exclude-collection]))
         collection-cond (gc/and-conds
                          [(qm/->CollectionQueryCondition field-condition)

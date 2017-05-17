@@ -67,7 +67,8 @@
   [{:keys [result-format all-revisions?] :as query}]
   (and (not= false (:complicated-facets query))
        ((set (:result-features query)) :facets-v2)
-       (util/any? #(facet-condition-resolver/has-field? query %) fv2rf/facets-v2-params)))
+       (util/any? #(facet-condition-resolver/has-field? query %)
+                  fv2rf/facets-v2-params)))
 
 (defn- collection-and-granule-execution-strategy-determiner
   "Determines the execution strategy to use for the given query."
@@ -160,7 +161,9 @@
   "Returns search result by merging the base result and the facet results."
   [base-result facet-results]
   (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)]
-    (update-in base-result [:facets :children] #(merge-facets % individual-facets))))
+    (-> base-result
+        (assoc-in [:facets :has_children] true)
+        (update-in [:facets :children] #(merge-facets % individual-facets)))))
 
 (defmethod common-qe/execute-query :complicated-facets
   [context query]
@@ -170,7 +173,8 @@
   ;; We execute a base query with all the parameters to get the result and facets of fields that
   ;; are not in the query, then we merge this base result with only the facets for each individual
   ;; facet field that is in the query.
-  (let [facet-fields-in-query (keep #(when (facet-condition-resolver/has-field? query %) %)
+  (let [facet-fields-in-query (keep #(when (facet-condition-resolver/has-field? query %)
+                                       %)
                                     fv2rf/facets-v2-params)
         base-facet-fields (set/difference (set fv2rf/facets-v2-params) (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
