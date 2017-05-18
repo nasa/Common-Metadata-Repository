@@ -8,10 +8,10 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
