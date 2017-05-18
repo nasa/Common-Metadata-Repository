@@ -27,6 +27,69 @@
     [cmr.umm-spec.versioning :as ver]
     [cmr.umm.collection.entry-id :as eid]))
 
+(defn- fix-ingest-concept-format
+   "Fixes formats"
+  [fmt]
+  (if (or
+        (not (mt/umm-json? fmt))
+        (mt/version-of fmt))
+    fmt
+    (str fmt ";version=" (config/ingest-accept-umm-version))))
+
+(defn reset
+  "Resets the queue broker"
+  [context]
+  (let [queue-broker (get-in context [:system :queue-broker])]
+    (queue/reset queue-broker))
+  (bulk-update/reset-db context)
+  (cache/reset-caches context))
+
+(def health-check-fns
+  "A map of keywords to functions to be called for health checks"
+  {:oracle #(conn/health (pah/context->db %))
+   :echo rest/health
+   :metadata-db mdb2/get-metadata-db-health
+   :indexer indexer/get-indexer-health
+   :cubby cubby/get-cubby-health
+   :message-queue #(queue/health (get-in % [:system :queue-broker]))})
+
+(defn health
+  "Returns the health state of the app."
+  [context]
+  (let [dep-health (util/map-values #(% context) health-check-fns)
+        ok? (every? :ok? (vals dep-health))]
+    {:ok? ok?
+     :dependencies dep-health}))
+
+(defn-timed delete-concept
+  "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
+  the latest revision for the concept is already a tombstone."
+  [context concept-attribs]
+  (let [{:keys [concept-type provider-id native-id]} concept-attribs
+        existing-concept (first (mdb/find-concepts context
+                                                   {:provider-id provider-id
+                                                    :native-id native-id
+                                                    :exclude-metadata true
+                                                    :latest true}
+                                                   concept-type))
+        concept-id (:concept-id existing-concept)]
+    (when-not concept-id
+      (errors/throw-service-error
+        :not-found (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
+    (when (:deleted existing-concept)
+      (errors/throw-service-error
+        :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                           native-id concept-id)))
+    (let [concept (-> concept-attribs
+                      (dissoc :provider-id :native-id)
+                      (assoc :concept-id concept-id :deleted true))
+          {:keys [revision-id]} (mdb/save-concept context concept)]
+      {:concept-id concept-id, :revision-id revision-id})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Collection Service Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
   under :extra-fields."
@@ -67,15 +130,6 @@
     {:collection sanitized-collection
      :warnings warnings}))
 
-(defn- fix-ingest-concept-format
-   "Fixes formats"
-  [fmt]
-  (if (or
-        (not (mt/umm-json? fmt))
-        (mt/version-of fmt))
-    fmt
-    (str fmt ";version=" (config/ingest-accept-umm-version))))
-
 (defn-timed validate-and-prepare-collection
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
   if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
@@ -91,6 +145,24 @@
      context (assoc coll-concept :umm-concept collection))
     {:concept coll-concept
      :warnings warnings}))
+
+(defn-timed save-collection
+  "Store a concept in mdb and indexer.
+   Return entry-titile, concept-id, revision-id, and warnings."
+  [context concept validation-options]
+  (let [{:keys [concept warnings]} (validate-and-prepare-collection context
+                                                                    concept
+                                                                    validation-options)]
+    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
+          entry-title (get-in concept [:extra-fields :entry-title])]
+      {:entry-title entry-title
+       :concept-id concept-id
+       :revision-id revision-id
+       :warnings warnings})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Granule Service Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- validate-granule-collection-ref
   "Throws bad request exception when collection-ref is missing required fields."
@@ -179,66 +251,54 @@
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
     {:concept-id concept-id, :revision-id revision-id}))
 
-(defn-timed save-collection
-  "Store a concept in mdb and indexer.
-   Return entry-titile, concept-id, revision-id, and warnings."
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Variable Service Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-variable-concept-warnings
+  "Validate the UMM-Var concept against the following:
+  * The JSON schema
+  * Data
+  * Non-fatal errors"
+  [context variable validation-options]
+  (let [schema-warnings (v/validate-variable-umm-spec-schema
+                         variable validation-options)]
+    (->> (concat (v/umm-spec-validate-variable
+                  variable validation-options context true)
+                 (v/umm-spec-validate-variable-warnings
+                  variable validation-options context))
+         (map #(str (:path %) " " (str/join " " (:errors %))))
+         (concat schema-warnings))))
+
+(defn-timed validate-variable
+  "Validates a variable concept and parses it. Returns the UMM record and any
+  warnings from validation."
   [context concept validation-options]
-  (let [{:keys [concept warnings]} (validate-and-prepare-collection context
-                                                                    concept
-                                                                    validation-options)]
-    (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)
-          entry-title (get-in concept [:extra-fields :entry-title])]
-      {:entry-title entry-title
-       :concept-id concept-id
-       :revision-id revision-id
-       :warnings warnings})))
+  (let [concept (update-in concept [:format] fix-ingest-concept-format)
+        {:keys [format metadata]} concept
+        variable (spec/parse-metadata context
+                  :varaible format metadata {:sanitize? false})
+        sanitized-variable (spec/parse-metadata
+                            context :variable format metadata)
+        ;; Throw errors for validation on sanitized collection
+        _ (v/umm-spec-validate-variable
+           sanitized-variable validation-options context false)
+        ;; Return warnings for validation errors
+        warnings (get-variable-concept-warnings
+                  context variable validation-options)]
+    ;; Validate ingest business rules for UMM-Vars
+    (v/validate-business-rules
+     context (assoc concept :umm-concept sanitized-variable))
+    {:concept sanitized-variable
+     :warnings warnings}))
 
-(defn-timed delete-concept
-  "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
-  the latest revision for the concept is already a tombstone."
-  [context concept-attribs]
-  (let [{:keys [concept-type provider-id native-id]} concept-attribs
-        existing-concept (first (mdb/find-concepts context
-                                                   {:provider-id provider-id
-                                                    :native-id native-id
-                                                    :exclude-metadata true
-                                                    :latest true}
-                                                   concept-type))
-        concept-id (:concept-id existing-concept)]
-    (when-not concept-id
-      (errors/throw-service-error
-        :not-found (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
-    (when (:deleted existing-concept)
-      (errors/throw-service-error
-        :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
-                           native-id concept-id)))
-    (let [concept (-> concept-attribs
-                      (dissoc :provider-id :native-id)
-                      (assoc :concept-id concept-id :deleted true))
-          {:keys [revision-id]} (mdb/save-concept context concept)]
-      {:concept-id concept-id, :revision-id revision-id})))
-
-(defn reset
-  "Resets the queue broker"
-  [context]
-  (let [queue-broker (get-in context [:system :queue-broker])]
-    (queue/reset queue-broker))
-  (bulk-update/reset-db context)
-  (cache/reset-caches context))
-
-(def health-check-fns
-  "A map of keywords to functions to be called for health checks"
-  {:oracle #(conn/health (pah/context->db %))
-   :echo rest/health
-   :metadata-db mdb2/get-metadata-db-health
-   :indexer indexer/get-indexer-health
-   :cubby cubby/get-cubby-health
-   :message-queue #(queue/health (get-in % [:system :queue-broker]))})
-
-(defn health
-  "Returns the health state of the app."
-  [context]
-  (let [dep-health (util/map-values #(% context) health-check-fns)
-        ok? (every? :ok? (vals dep-health))]
-    {:ok? ok?
-     :dependencies dep-health}))
+(defn-timed save-variable
+  "Store a variable concept in the mdb and return concept-id and revision-id."
+  [context concept validation-options]
+  (let [{:keys [concept warnings]} (validate-variable
+                                    context concept validation-options)
+        {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+    {:long-name (:long-name concept)
+     :concept-id concept-id
+     :revision-id revision-id
+     :warnings warnings}))
