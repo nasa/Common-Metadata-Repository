@@ -1,21 +1,23 @@
 (ns cmr.umm-spec.json-schema
   "This contains code for loading UMM JSON schemas."
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [cmr.common.log :as log]
-            [cheshire.core :as json]
-            [cheshire.factory :as factory]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.common.validations.json-schema :as js-validations]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.versioning :as ver]))
+  (:require
+   [cheshire.core :as json]
+   [cheshire.factory :as factory]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.log :as log]
+   [cmr.common.util :as util]
+   [cmr.common.validations.json-schema :as js-validations]
+   [cmr.umm-spec.versioning :as ver]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
 (def concept-schema-name
   "A map of concept types to schema names."
   {:collection "umm-c-json-schema.json"
-   :service    "umm-s-json-schema.json"})
+   :service    "umm-s-json-schema.json"
+   :variable   "umm-var-json-schema.json"})
 
 (def search-result-schema-name
   "Defines the name of the search result schema."
@@ -228,6 +230,8 @@
 
 (def umm-s-schema (concept-schema :service))
 
+(def umm-var-schema (concept-schema :variable))
+
 (def umm-cmn-schema-file
   "The schema required to parse umm-common"
   (umm-schema-resource ver/current-version "umm-cmn-json-schema.json"))
@@ -241,7 +245,8 @@
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.umm-common-models
    "umm-c-json-schema.json" 'cmr.umm-spec.models.umm-collection-models
-   "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models})
+   "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
+   "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 
 (defn- record-ctor
   "Returns the map->RecordName function that can be used to construct a type defined in the JSON

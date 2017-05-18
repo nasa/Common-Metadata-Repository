@@ -1,11 +1,13 @@
 (ns cmr.umm-spec.record-generator
   "Defines functions for generating clojure records that represent the UMM."
-  (:require [cmr.umm-spec.json-schema :as js]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [cmr.umm-spec.models.umm-collection-models]
-            [cmr.umm-spec.models.umm-common-models]
-            [cmr.umm-spec.models.umm-service-models]))
+  (:require
+   [cmr.umm-spec.json-schema :as js]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [cmr.umm-spec.models.umm-collection-models]
+   [cmr.umm-spec.models.umm-common-models]
+   [cmr.umm-spec.models.umm-service-models]
+   [cmr.umm-spec.models.umm-variable-models]))
 
 ;; Improvements
 ;; - generate records with fields in the same order as they are defined in the file.
@@ -15,7 +17,8 @@
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.umm-common-models
    "umm-c-json-schema.json" 'cmr.umm-spec.models.umm-collection-models
-   "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models})
+   "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
+   "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 
 (defn schema-type-constructor
   "Returns the map->RecordName function that can be used to construct a type defined in the JSON
@@ -167,17 +170,25 @@
 (defn generate-umm-records
   "Generates all the UMM records"
   []
-  (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.umm-common-models
-                                  :description "Defines UMM Common clojure records."
-                                  :schema-resource js/umm-cmn-schema-file})
+  (generate-clojure-records-file
+   {:the-ns 'cmr.umm-spec.models.umm-common-models
+    :description "Defines UMM Common clojure records."
+    :schema-resource js/umm-cmn-schema-file})
 
-  (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.umm-collection-models
-                                  :description "Defines UMM-C clojure records."
-                                  :schema-resource (js/concept-schema-resource :collection)})
+  (generate-clojure-records-file
+   {:the-ns 'cmr.umm-spec.models.umm-collection-models
+    :description "Defines UMM-C clojure records."
+    :schema-resource (js/concept-schema-resource :collection)})
 
-  (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.umm-service-models
-                                  :description "Defines UMM-S clojure records."
-                                  :schema-resource (js/concept-schema-resource :service)}))
+  (generate-clojure-records-file
+   {:the-ns 'cmr.umm-spec.models.umm-service-models
+    :description "Defines UMM-S clojure records."
+    :schema-resource (js/concept-schema-resource :service)})
+
+  (generate-clojure-records-file
+   {:the-ns 'cmr.umm-spec.models.umm-variable-models
+    :description "Defines UMM-Var clojure records."
+    :schema-resource (js/concept-schema-resource :variable)}))
 
 (comment
 

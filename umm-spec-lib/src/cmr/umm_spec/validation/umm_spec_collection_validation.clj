@@ -40,7 +40,6 @@
   [(vu/unique-by-name-validator :TilingIdentificationSystemName)
    (v/every tiling-identification-system-coordinate-validations)])
 
-
 (def temporal-extent-validation
   {:RangeDateTimes (v/every range-date-time-validation)})
 
