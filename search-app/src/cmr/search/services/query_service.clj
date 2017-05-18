@@ -25,6 +25,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
+   [cmr.indexer.data.concepts.granule :as granule]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.provider-holdings :as ph]
@@ -262,6 +263,47 @@
                    (common-search/validate-query context))
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
+
+(defn- get-new-granules
+  "Finds granules that were added after a given date. Supports CMR Harvesting."
+  [context created-at]
+  (let [query (qm/query {:concept-type :granule
+                         :condition (qm/date-range-condition
+                                     :created-at created-at nil)
+                         :page-size :unlimited
+                         :result-format :query-specified
+                         :result-fields [:entry-title :provider-id :parent-collection]})
+        new-granules (qe/execute-query context query)]
+   (:items new-granules)))
+
+(defn granules->parent-collection-refs
+  "Get desired parent collections and marshall them into collection refs.
+   Supports CMR Harvesting."
+  [context granules]
+  (if nil? granules)
+   nil
+   (let [parent-collection-ids (map :parent-collection-id granules)]
+    (mapv #(granule/get-parent-collection context %) parent-collection-ids)))
+
+(defn get-collections-with-new-granules
+  "Returns refs to collections with granules added after a given date.
+   Supports CMR Harvesting."
+  [context params]
+  (pv/created-at-validation params)
+  (let [{:keys [result-format created-at]} params
+        start-time (System/currentTimeMillis)
+        new-granules (get-new-granules context created-at)
+        parent-collections (granules->parent-collection-refs context new-granules)
+        ;; when results is nil, hits is 0
+        results (or parent-collections {:hits 0 :items []})
+        total-took (- (System/currentTimeMillis) start-time)
+        ;; construct the response results string
+        results-str (common-search/search-results->response
+                     context
+                     ;; pass in a fake query to get the desired response format
+                     (qm/query {:concept-type :collection
+                                :result-format result-format})
+                     (assoc results :took total-took))]))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
