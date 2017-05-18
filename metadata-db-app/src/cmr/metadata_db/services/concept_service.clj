@@ -118,25 +118,34 @@
          :invalid-data (msg/granule-collection-cannot-change coll-concept-id parent-concept-id))
         (assoc concept :concept-id concept-id)))))
 
-(defmulti set-or-generate-created-at
-  "Get the existing created-at value for the given concept and set it or set it to the 
-  current datetime if it has never been saved."
-  (fn [db provider concept & previous-revision]
-    (:concept-type concept)))
-
-(defmethod set-or-generate-created-at :collection
-  [db provider concept & previous-revision]
+(defn- set-or-generate-created-at-for-concept
+  "Set the created-at of the given concept to the value of its previous revision if exists;
+   otherwise, set it to the current datetime."
+  [db provider concept]
   (let [{:keys [concept-id concept-type]} concept
-        previous-revision (first previous-revision)
-        existing-created-at (:created-at (or previous-revision
-                                             (c/get-concept db concept-type provider concept-id)))
+        existing-created-at (:created-at
+                             (c/get-concept db concept-type provider concept-id))
         created-at (if existing-created-at existing-created-at (time-keeper/now))]
     (assoc concept :created-at created-at)))
 
+(defmulti set-or-generate-created-at
+  "Get the existing created-at value for the given concept and set it or set it to the
+  current datetime if it has never been saved."
+  (fn [db provider concept]
+    (:concept-type concept)))
+
+(defmethod set-or-generate-created-at :collection
+  [db provider concept]
+  (set-or-generate-created-at-for-concept db provider concept))
+
+(defmethod set-or-generate-created-at :variable
+  [db provider concept]
+  (set-or-generate-created-at-for-concept db provider concept))
+
 (defmethod set-or-generate-created-at :default
-  [_db _provider concept & _previous-revision]
+  [_db _provider concept]
   concept)
-  
+
 (defn- set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or
   one if the concept has never been saved."
@@ -315,9 +324,11 @@
     (let [concepts (apply concat
                           (for [[provider-id concept-type-tuples-map] split-tuples-map
                                 [concept-type tuples] concept-type-tuples-map]
-                            (let [provider (provider-service/get-provider-by-id context provider-id true)]
+                            (let [provider (provider-service/get-provider-by-id
+                                            context provider-id true)]
                               ;; Retrieve the concepts for this type and provider id.
-                              (if (and (> parallel-chunk-size 0) (< parallel-chunk-size (count tuples)))
+                              (if (and (> parallel-chunk-size 0)
+                                       (< parallel-chunk-size (count tuples)))
                                 ;; retrieving chunks in parallel for faster read performance
                                 (apply concat
                                        (cutil/pmap-n-all
@@ -358,9 +369,11 @@
     (let [concepts (apply concat
                           (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
                                 [concept-type cids] concept-type-concept-id-map]
-                            (let [provider (provider-service/get-provider-by-id context provider-id true)]
+                            (let [provider (provider-service/get-provider-by-id
+                                            context provider-id true)]
                               ;; Retrieve the concepts for this type and provider id.
-                              (if (and (> parallel-chunk-size 0) (< parallel-chunk-size (count cids)))
+                              (if (and (> parallel-chunk-size 0)
+                                       (< parallel-chunk-size (count cids)))
                                 ;; retrieving chunks in parallel for faster read performance
                                 (apply concat
                                        (cutil/pmap-n-all
@@ -458,7 +471,7 @@
         concept (assoc concept :provider-id provider-id)
         provider (provider-service/get-provider-by-id context provider-id true)
         _ (validate-system-level-concept concept provider)
-        concept (->> concept 
+        concept (->> concept
                      (set-or-generate-concept-id db provider)
                      (set-or-generate-created-at db provider))]
     (validate-concept-revision-id db provider concept)
