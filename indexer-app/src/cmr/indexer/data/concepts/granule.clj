@@ -37,7 +37,7 @@
   (let [concept (mdb/get-latest-concept context parent-collection-id)]
     (assoc (umm-spec/parse-metadata context concept) :concept-id parent-collection-id)))
 
-(defn- get-parent-collection
+(defn get-parent-collection
   [context parent-collection-id]
   (if-let [cache (cache/context->cache context parent-collection-cache-key)]
     (cache/get-value cache parent-collection-id

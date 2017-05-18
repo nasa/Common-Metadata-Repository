@@ -25,7 +25,8 @@
        ;; migration. We should change the column to NOT NULL once it is
        ;; fully populated.
        "granule_ur VARCHAR(250),
-        transaction_id INTEGER DEFAULT 0 NOT NULL"))
+        transaction_id INTEGER DEFAULT 0 NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL"))
 
 (defmethod granule-column-sql true
   [provider]

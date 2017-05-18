@@ -100,6 +100,7 @@
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")]
     (index/wait-until-indexed)
+    (println gran-concept-id)
 
     (testing "retrieve metadata from search by concept-id/revision-id"
       (testing "collections and granules"
