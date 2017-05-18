@@ -3,6 +3,7 @@
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
             [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]
+            [cmr.umm-spec.validation.umm-spec-variable-validation :as vv]
             [cmr.umm-spec.validation.granule :as vg]
             [cmr.umm-spec.validation.parent-weaver :as pw]
             [cmr.umm-spec.additional-attribute :as aa]
@@ -36,24 +37,24 @@
                              (map humanize-field-for-error-msg field-path)) errors)})))
 
 (defn validate-collection
-  "Validates the umm record returning a list of error maps containing a path through the
+  "Validates the UMM record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
   ([collection]
    (validate-collection collection nil))
   ([collection additional-validations]
    (validation-errors->path-errors
-     (v/validate (cons vc/collection-validations additional-validations)
+    (v/validate (cons vc/collection-validations additional-validations)
                  collection))))
 
 (defn validate-collection-warnings
- "Validates the umm record against the list of warnings - issues that we want
- to convey to the user, but not consider failures."
- ([collection]
-  (validate-collection-warnings collection nil))
- ([collection additional-validations]
-  (validation-errors->path-errors
+  "Validates the UMM record against the list of warnings - issues that we want
+  to convey to the user, but not consider failures."
+  ([collection]
+   (validate-collection-warnings collection nil))
+  ([collection additional-validations]
+   (validation-errors->path-errors
     (v/validate (cons vc/collection-validation-warnings additional-validations)
-                collection))))
+                 collection))))
 
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the
@@ -62,3 +63,24 @@
   (let [granule-with-parent (pw/set-parent granule (aa/add-parsed-values collection))]
     (validation-errors->path-errors
      (v/validate vg/granule-validations granule-with-parent))))
+
+(defn validate-variable
+  "Validates the UMM record returning a list of error maps containing a path
+  through the UMM model and a list of errors at that path. Returns an empty
+  sequence if it is valid."
+  ([variable]
+   (validate-variable variable nil))
+  ([variable additional-validations]
+   (validation-errors->path-errors
+    (v/validate (cons vv/variable-validations additional-validations)
+                variable))))
+
+(defn validate-variable-warnings
+  "Validates the UMM record against the list of warnings - issues that we want
+  to convey to the user, but which we do not consider failures."
+  ([variable]
+   (validate-variable-warnings variable nil))
+  ([variable additional-validations]
+   (validation-errors->path-errors
+    (v/validate (cons vv/variable-validation-warnings additional-validations)
+                variable))))
