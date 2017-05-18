@@ -9,11 +9,12 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project :as project]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
-   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
-   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
    [cmr.umm-spec.util :as su :refer [char-string]]))
@@ -54,6 +55,12 @@
     "structure"
     "transportation"
     "utilitiesCommunication"})
+
+(defn- generate-projects-keywords
+  "Returns the content generator instructions for descriptive keywords of the given projects."
+  [projects]
+  (let [project-keywords (map iso/generate-title projects)]
+    (kws/generate-iso19115-descriptive-keywords "project" project-keywords)))
 
 (defn- generate-data-dates
   "Returns ISO XML elements for the DataDates of given UMM collection."
@@ -120,54 +127,6 @@
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
-
-(defn- generate-projects-keywords
-  "Returns the content generator instructions for descriptive keywords of the given projects."
-  [projects]
-  (let [project-keywords (map iso/generate-title projects)]
-    (kws/generate-iso19115-descriptive-keywords "project" project-keywords)))
-
-(defn- generate-projects
-  [projects]
-  (for [proj projects]
-    (let [{short-name :ShortName
-           long-name  :LongName
-           start-date :StartDate
-           end-date   :EndDate
-           campaigns  :Campaigns} proj]
-      [:gmi:operation
-       [:gmi:MI_Operation
-     (let [start-date-str (when start-date
-                            (str "StartDate: " start-date))
-           end-date-str (when end-date
-                          (str " EndDate: " end-date))
-           date-str (if start-date-str
-                      (str start-date-str " " end-date-str)
-                      end-date-str)]
-       (when date-str
-        [:gmi:description
-         (char-string date-str)]))
-        [:gmi:identifier
-         [:gmd:MD_Identifier
-          [:gmd:code
-           (char-string short-name)]
-          [:gmd:codeSpace
-           (char-string "gov.nasa.esdis.umm.projectshortname")]
-          [:gmd:description
-           (char-string long-name)]]]
-        [:gmi:status ""]
-        [:gmi:parentOperation {:gco:nilReason "inapplicable"}]
-       (for [campaign campaigns]
-         [:gmi:childOperation
-          [:gmi:MI_Operation
-           [:gmi:identifier
-            [:gmd:MD_Identifier
-             [:gmd:code
-              (char-string campaign)]
-             [:gmd:codeSpace
-              (char-string "gov.nasa.esdis.umm.campaignshortname")]]]
-           [:gmi:status ""]
-           [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])]])))
 
 (defn- generate-publication-references
   [pub-refs]
@@ -448,5 +407,5 @@
         [:gmi:MI_AcquisitionInformation
          (platform/generate-instruments platforms)
          (platform/generate-child-instruments platforms)
-         (generate-projects (:Projects c))
+         (project/generate-projects (:Projects c))
          (platform/generate-platforms platforms)]]])))

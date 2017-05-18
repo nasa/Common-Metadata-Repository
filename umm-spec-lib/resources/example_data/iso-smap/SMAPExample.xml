@@ -194,12 +194,12 @@
                         <gco:CharacterString>Calibrated normalized synthetic aperture radar cross section measures multilooked onto a 1 km grid that conforms to the SMAP spacecraft path.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:purpose>
-                        <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil 
+                        <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil
                             moisture retrieval requirements as well as support other scientific studies while keeping the file sizes manageable for most scientific data users</gco:CharacterString>
                     </gmd:purpose>
                     <gmd:credit>
                         <!-- This field can name individuals or organizations for credit. For now, it specifies NASA. -->
-                        <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented 
+                        <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented
                             at the Jet Propulsion Laboratory, California Institute of Technology in Pasadena, California.</gco:CharacterString>
                     </gmd:credit>
                     <gmd:status>
@@ -928,8 +928,8 @@
                     <gmd:extent>
                         <gmd:EX_Extent>
                             <gmd:description>
-                                <gco:CharacterString>Barring any anomalies during the SMAP science mission, the radar instrument is always on. 
-                                    The radar instrument always generates high resolution and low resolution radar data.  The SMAP spacecraft always downlinks low resolution radar data.  
+                                <gco:CharacterString>Barring any anomalies during the SMAP science mission, the radar instrument is always on.
+                                    The radar instrument always generates high resolution and low resolution radar data.  The SMAP spacecraft always downlinks low resolution radar data.
                                     High resolution radar data are voluminous.  Thus, the SMAP spacecraft downlinks high resolution data when the spacecaft antenna boresight is:
                                     1) Looking forward or looking aft over all land surfaces except Antarctica when the satellite is viewing the Earth at approximately 6:00 AM local time
                                     2) Looking forward over all land surfaces North of 45 degrees North latitude when the satellite is viewing the Earth at approximately 6:00 PM local time, and
@@ -962,7 +962,7 @@
                                     <!-- Mimics use in GHRSST. See no evidence of conformance to standard -->
                                     <gmd:extent>
                                         <gml:TimePeriod gml:id="swathTemporalExtent">
-                                            <!-- This defines the time period covered by all SMAP Radar Level 1C_HiRes data products. 
+                                            <!-- This defines the time period covered by all SMAP Radar Level 1C_HiRes data products.
                                             ECS indicates that they will automatically extend the final time based on receipt of data products. -->
                                             <gml:beginPosition>2013-09-01T00:00:00.000Z</gml:beginPosition>
                                             <gml:endPosition>2020-12-31T23:59:59.999Z</gml:endPosition>
@@ -1762,7 +1762,7 @@
                     <gmi:operation>
                         <gmi:MI_Operation>
                             <gmi:description>
-                                <gco:CharacterString>StartDate: 2001:01:01T01:00:00Z EndDate: 2002:02:02T01:00:00Z</gco:CharacterString>
+                                <gco:CharacterString>StartDate: 2001-01-01T01:00:00Z EndDate: 2002-02-02T01:00:00Z</gco:CharacterString>
                             </gmi:description>
                             <gmi:identifier>
                                 <gmd:MD_Identifier>
