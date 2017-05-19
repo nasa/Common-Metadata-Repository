@@ -25,12 +25,16 @@
                      [:provider_id :entry_title :entry_id :short_name :version_id :delete_time
                       :user_id])
    :tag (into common-columns [:user_id])
-   :tag-association (into common-columns [:associated_concept_id :associated_revision_id :tag_key :user_id])
+   :tag-association (into common-columns
+                          [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
    :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
-   :variable (into common-columns [:variable_name :measurement :user_id])})
+   :variable (into common-columns [:variable_name :measurement :user_id])
+   :variable-association (into common-columns
+                               [:associated_concept_id :associated_revision_id
+                                :variable-name :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept

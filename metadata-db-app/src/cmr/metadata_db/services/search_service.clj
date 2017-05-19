@@ -24,7 +24,9 @@
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
    :humanizer #{:concept-id :native-id}
-   :variable #{:concept-id :native-id}})
+   :variable #{:concept-id :native-id}
+   :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+                           :variable-name}})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags

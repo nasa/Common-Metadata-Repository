@@ -82,7 +82,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "concept-type": "tag",
     "native-id": "org.nasa.something.quality",
     "user-id": "jnorton",
-    "format": "applcation/edn",
+    "format": "application/edn",
     "metadata: {
       "tag-key": "org.nasa.something.quality",
       "description": "A good tag",
@@ -96,7 +96,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "concept-type": "tag-association",
     "native-id": "org.nasa.something.quality/C12-PROV_A42",
     "user-id": "jnorton",
-    "format": "applcation/edn",
+    "format": "application/edn",
     "metadata": {
       "tag-key": "org.nasa.something.quality",
       "originator-id": "jdoe",
@@ -134,6 +134,27 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "extra-fields": {
       "variable-name": "totCldH2OStdErr",
       "measurement": "totCldH2OStdErrMeasurement"
+    }
+  }
+
+#### Variable Association
+
+  {
+    "concept-type": "variable-association",
+    "native-id": "totCldH2OStdErr/C12-PROV_A42",
+    "user-id": "user1",
+    "format": "application/edn",
+    "metadata": {
+      "variable-name": "totCldH2OStdErr",
+      "originator-id": "jdoe",
+      "associated-concept-id": "C12-PROV_A42",
+      "revision-id": 1, (optional field),
+      "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
+    },
+    "extra-fields": {
+      "variable-name": "totCldH2OStdErr",
+      "associated-concept-id": "C12-PROV_A42",
+      "associated-revision-id": 1
     }
   }
 

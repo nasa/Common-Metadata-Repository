@@ -45,7 +45,8 @@
    :tag-association 10
    :access-group 10
    :humanizer 10
-   :variable 10})
+   :variable 10
+   :variable-association 10})
 
 (defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -58,7 +59,7 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :variable})
+  #{:tag :tag-association :humanizer :variable :variable-association})
 
 ;;; utility methods
 
@@ -74,7 +75,9 @@
                       :tag (msg/tags-only-system-level provider-id)
                       :tag-association (msg/tag-associations-only-system-level provider-id)
                       :humanizer (msg/humanizers-only-system-level provider-id)
-                      :variable (msg/variables-only-system-level provider-id))]
+                      :variable (msg/variables-only-system-level provider-id)
+                      :variable-association (msg/variable-associations-only-system-level
+                                             provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
 (defn- provider-ids-for-validation
