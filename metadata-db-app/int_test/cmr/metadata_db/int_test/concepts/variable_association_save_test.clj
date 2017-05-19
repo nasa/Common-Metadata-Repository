@@ -3,7 +3,6 @@
    configurations including checking for proper error handling."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer (are2)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]))
 
@@ -23,18 +22,15 @@
 (deftest save-variable-association-test
   (c-spec/general-save-concept-test :variable-association ["CMR"]))
 
-(deftest save-variable-association-specific-test
-  (testing "saving new variable associations"
-    (are2 [variable-association exp-status exp-errors]
-          (let [variable-collection (util/create-and-save-collection "REG_PROV" 1)
-                variable (util/create-and-save-variable 1)
-                {:keys [status errors]} (util/save-concept variable-association)]
+(deftest save-variable-association-failure-test
+  (testing "saving new variable associations on non system-level provider"
+    (let [coll (util/create-and-save-collection "REG_PROV" 1)
+          variable (util/create-and-save-variable 1)
+          variable-association (-> (util/variable-association-concept coll variable 2)
+                                   (assoc :provider-id "REG_PROV"))
+          {:keys [status errors]} (util/save-concept variable-association)]
 
-            (is (= exp-status status))
-            (is (= (set exp-errors) (set errors))))
-
-          "failure when using non system-level provider"
-          (assoc (util/variable-association-concept variable-collection variable 2) :provider-id "REG_PROV")
-          422
-          [(str "Variable association could not be associated with provider [REG_PROV]. "
-                "Variable associations are system level entities.")])))
+      (is (= 422 status))
+      (is (= [(str "Variable association could not be associated with provider [REG_PROV]. "
+                   "Variable associations are system level entities.")]
+             errors)))))

@@ -3,13 +3,8 @@
    including checking for proper error handling."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer (are2)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]))
-
-
-;;; fixtures
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
 
@@ -27,18 +22,15 @@
 (deftest save-tag-association-test
   (c-spec/general-save-concept-test :tag-association ["CMR"]))
 
-(deftest save-tag-association-specific-test
-  (testing "saving new tag associations"
-    (are2 [tag-association exp-status exp-errors]
-          (let [tag-collection (util/create-and-save-collection "REG_PROV" 1)
-                tag (util/create-and-save-tag 1)
-                {:keys [status errors]} (util/save-concept tag-association)]
+(deftest save-tag-association-failure-test
+  (testing "saving tag associations on non system-level provider"
+    (let [coll (util/create-and-save-collection "REG_PROV" 1)
+          tag (util/create-and-save-tag 1)
+          tag-association (-> (util/tag-association-concept coll tag 2)
+                              (assoc :provider-id "REG_PROV"))
+          {:keys [status errors]} (util/save-concept tag-association)]
 
-            (is (= exp-status status))
-            (is (= (set exp-errors) (set errors))))
-
-          "failure when using non system-level provider"
-          (assoc (util/tag-association-concept tag-collection tag 2) :provider-id "REG_PROV")
-          422
-          [(str "Tag association could not be associated with provider [REG_PROV]. "
-                "Tag associations are system level entities.")])))
+      (is (= 422 status))
+      (is (= [(str "Tag association could not be associated with provider [REG_PROV]. "
+                   "Tag associations are system level entities.")]
+             errors)))))
