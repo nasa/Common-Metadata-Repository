@@ -45,13 +45,17 @@
   "The order of fields that should be displayed in the science keyword human readable list."
   [:Category :Topic :Term :VariableLevel1 :VariableLevel2 :VariableLevel3])
 
-(defn- science-keyword->human-attrib-list
+(def location-keyword-attribute-order
+  "The order of fields that should be displayed in the spatial keyword human readable list."
+  [:Category :Type :Subregion1 :Subregion2 :Subregion3])
+
+(defn- keyword->human-attrib-list
   "Converts a science keyword into a human readable list of attributes with their values."
-  [sk]
+  [k attribute-order]
   (let [human-id-values (keep (fn [field]
-                                (when-let [value (get sk field)]
+                                (when-let [value (get k field)]
                                   (str (vc/humanize-field field) " [" value "]")))
-                              science-keyword-attribute-order)]
+                              attribute-order)]
     (case (count human-id-values)
       1 (first human-id-values)
       2 (str/join " and " human-id-values)
@@ -61,4 +65,9 @@
 (defn science-keyword-not-matches-kms-keywords
   [sk]
   (format "Science keyword %s was not a valid keyword combination."
-          (science-keyword->human-attrib-list sk)))
+          (keyword->human-attrib-list sk science-keyword-attribute-order)))
+
+(defn location-keyword-not-matches-kms-keywords
+  [lk]
+  (format "Location keyword %s was not a valid keyword combination."
+          (keyword->human-attrib-list lk location-keyword-attribute-order)))

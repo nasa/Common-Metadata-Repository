@@ -70,6 +70,11 @@
   [attribs]
   (umm-cmn/map->ScienceKeywordType attribs))
 
+(defn location-keyword
+  "Return a location keyword based on the given attributes."
+  [attribs]
+  (umm-c/map->LocationKeywordType attribs))
+
 (defn instrument
   "Return an instrument based on instrument attribs"
   [attribs]
