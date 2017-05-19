@@ -63,11 +63,13 @@
       (str (str/join ", " (drop-last human-id-values)) ", and " (last human-id-values)))))
 
 (defn science-keyword-not-matches-kms-keywords
+  "Create the invalid science keyword message"
   [sk]
   (format "Science keyword %s was not a valid keyword combination."
           (keyword->human-attrib-list sk science-keyword-attribute-order)))
 
 (defn location-keyword-not-matches-kms-keywords
+  "Create the invalid location keyword message"
   [lk]
   (format "Location keyword %s was not a valid keyword combination."
           (keyword->human-attrib-list lk location-keyword-attribute-order)))
