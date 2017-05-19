@@ -8,9 +8,10 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
@@ -57,6 +58,10 @@
 
 (def data-dates-xpath
   (str md-identification-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
+
+(def projects-xpath
+  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmi:acquisitionInformation/"
+       "gmi:MI_AcquisitionInformation/gmi:operation/gmi:MI_Operation"))
 
 (def base-xpath
   "/gmd:DS_Series/gmd:seriesMetadata")
@@ -132,4 +137,5 @@
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        ;; Required by UMM-C
        :ProcessingLevel (when sanitize? {:Id u/not-provided})
-       :RelatedUrls (dru/parse-related-urls doc sanitize?)}))))
+       :RelatedUrls (dru/parse-related-urls doc sanitize?)
+       :Projects (project/parse-projects doc projects-xpath sanitize?)}))))

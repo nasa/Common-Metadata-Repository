@@ -255,7 +255,6 @@
         (assoc :AdditionalAttributes nil)
         (assoc :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id su/not-provided}))
         (assoc :Distributions nil)
-        (assoc :Projects nil)
         (assoc :PublicationReferences nil)
         (assoc :AncillaryKeywords nil)
         (update :RelatedUrls expected-collection-related-urls)
