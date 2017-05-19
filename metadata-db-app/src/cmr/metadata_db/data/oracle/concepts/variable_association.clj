@@ -1,10 +1,7 @@
 (ns cmr.metadata-db.data.oracle.concepts.variable-association
   "Implements multi-method variations for variables"
   (:require
-   [cmr.metadata-db.data.concepts :as concepts]
-   [cmr.metadata-db.data.oracle.concept-tables :as tables]
-   [cmr.metadata-db.data.oracle.concepts :as c]
-   [cmr.oracle.connection :as oracle]))
+   [cmr.metadata-db.data.oracle.concepts :as c]))
 
 (defmethod c/db-result->concept-map :variable-association
   [concept-type db provider-id result]

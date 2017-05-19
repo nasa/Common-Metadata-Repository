@@ -1,22 +1,18 @@
 (ns cmr.metadata-db.int-test.utility
   "Contains various utility methods to support integration tests."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [clj-http.client :as client]
-            [cheshire.core :as json]
-            [clojure.edn :as edn]
-            [clojure.walk :as walk]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.local :as l]
-            [clj-time.coerce :as cr]
-            [inflections.core :as inf]
-            [cmr.common-app.test.side-api :as side]
-            [cmr.common.util :as util]
-            [cmr.metadata-db.config :as config]
-            [clj-http.conn-mgr :as conn-mgr]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.metadata-db.config :as mdb-config]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-http.conn-mgr :as conn-mgr]
+   [clj-time.format :as f]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.transmit.config :as transmit-config]
+   [inflections.core :as inf]))
 
 (def conn-mgr-atom (atom nil))
 
@@ -269,7 +265,7 @@
    (let [{:keys [concept-id revision-id]} assoc-concept
          tag-id (:native-id tag)
          user-id (str "user" uniq-num)
-         native-id (str/join "/" [tag-id concept-id revision-id])
+         native-id (string/join "/" [tag-id concept-id revision-id])
          extra-fields (merge {:associated-concept-id concept-id
                               :associated-revision-id revision-id
                               :tag-key tag-id}
@@ -356,7 +352,7 @@
   (let [{:keys [concept-id revision-id]} assoc-concept
        variable-name (:native-id variable)
        user-id (str "user" uniq-num)
-       native-id (str/join "/" [variable-name concept-id revision-id])
+       native-id (string/join "/" [variable-name concept-id revision-id])
        extra-fields (merge {:associated-concept-id concept-id
                             :associated-revision-id revision-id
                             :variable-name variable-name}
@@ -575,8 +571,11 @@
 (defmulti expected-concept
   "Modifies a concept for comparison with a retrieved concept."
   (fn [concept]
-    (:concept-type concept)))
-
+    (let [{:keys [concept-type]} concept]
+      (if (concept-service/system-level-concept-types concept-type)
+        ;; system level concept
+        :system
+        concept-type))))
 
 (defmethod expected-concept :granule
   [concept]
@@ -591,23 +590,7 @@
     concept
     (assoc concept :provider-id "CMR")))
 
-(defmethod expected-concept :tag
-  [concept]
-  (assoc concept :provider-id "CMR"))
-
-(defmethod expected-concept :tag-association
-  [concept]
-  (assoc concept :provider-id "CMR"))
-
-(defmethod expected-concept :humanizer
-  [concept]
-  (assoc concept :provider-id "CMR"))
-
-(defmethod expected-concept :variable
-  [concept]
-  (assoc concept :provider-id "CMR"))
-
-(defmethod expected-concept :variable-association
+(defmethod expected-concept :system
   [concept]
   (assoc concept :provider-id "CMR"))
 

@@ -1,12 +1,7 @@
 (ns cmr.metadata-db.data.oracle.concepts.group
   "Implements multi-method variations for groups"
-  (:require [cmr.metadata-db.data.oracle.concepts :as c]
-            [cmr.metadata-db.data.oracle.concept-tables :as tables]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.date-time-parser :as p]
-            [clj-time.coerce :as cr]
-            [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.data.concepts :as concepts]))
+  (:require
+   [cmr.metadata-db.data.oracle.concepts :as c]))
 
 (defmethod c/db-result->concept-map :access-group
   [concept-type db provider-id result]
