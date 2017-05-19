@@ -176,6 +176,13 @@
       "VariableType" "",
       "ScienceKeywords" []}))
 
+(def variable-association-edn
+  "Valid EDN for variable association metadata"
+  (pr-str {:variable-name "totCldH2OStdErr"
+           :associated-concept-id "C120000000-PROV1"
+           :revision-id 1
+           :value "Some Value"}))
+
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
   to look up the metadata for the concepts and parse it. So we need to provide valid
@@ -189,7 +196,8 @@
    :access-group group-edn
    :acl acl-edn
    :humanizer humanizer-json
-   :variable variable-json})
+   :variable variable-json
+   :variable-association variable-association-edn})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -339,6 +347,27 @@
                            (dissoc attributes :extra-fields))]
      ;; no provider-id should be specified for tags
      (dissoc (concept nil :variable uniq-num attributes) :provider-id))))
+
+(defn variable-association-concept
+  "Creates a variable association concept"
+  ([assoc-concept variable uniq-num]
+  (variable-association-concept assoc-concept variable uniq-num {}))
+  ([assoc-concept variable uniq-num attributes]
+  (let [{:keys [concept-id revision-id]} assoc-concept
+       variable-name (:native-id variable)
+       user-id (str "user" uniq-num)
+       native-id (str/join "/" [variable-name concept-id revision-id])
+       extra-fields (merge {:associated-concept-id concept-id
+                            :associated-revision-id revision-id
+                            :variable-name variable-name}
+                           (:extra-fields attributes))
+       attributes (merge {:user-id user-id
+                          :format "application/edn"
+                          :native-id native-id
+                          :extra-fields extra-fields}
+                         (dissoc attributes :extra-fields))]
+   ;; no provider-id should be specified for variable associations
+   (dissoc (concept nil :variable-association uniq-num attributes) :provider-id))))
 
 (defn assert-no-errors
   [save-result]
@@ -578,6 +607,10 @@
   [concept]
   (assoc concept :provider-id "CMR"))
 
+(defmethod expected-concept :variable-association
+  [concept]
+  (assoc concept :provider-id "CMR"))
+
 (defmethod expected-concept :default
   [concept]
   concept)
@@ -698,6 +731,19 @@
    (create-and-save-humanizer num-revisions {}))
   ([num-revisions attributes]
    (let [concept (humanizer-concept 1 attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-variable
+  "Creates, saves, and returns a variable concept with its data from metadata-db"
+  ([uniq-num]
+   (create-and-save-variable uniq-num 1))
+  ([uniq-num num-revisions]
+   (create-and-save-variable uniq-num num-revisions {}))
+  ([uniq-num num-revisions attributes]
+   (let [concept (variable-concept uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
