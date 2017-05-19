@@ -17,6 +17,7 @@
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.parameter-validation :as common-param-validation]
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
@@ -284,16 +285,20 @@
   (if nil? granules)
    nil
    (let [parent-collection-ids (map :parent-collection-id granules)]
-    (mapv #(granule/get-parent-collection context %) parent-collection-ids)))
+    (distinct (mapv
+               #(granule/get-parent-collection context %)
+               parent-collection-ids))))
 
 (defn get-collections-with-new-granules
   "Returns refs to collections with granules added after a given date.
    Supports CMR Harvesting."
   [context params]
-  (pv/created-at-validation params)
-  (let [{:keys [result-format created-at]} params
-        start-time (System/currentTimeMillis)
-        new-granules (get-new-granules context created-at)
+  (common-param-validation/validate-date-time
+   "Granule creation date" (:has-granules-added-after params))
+  (let [start-time (System/currentTimeMillis)
+        result-format (:result-format params)
+        granule-creation-date (:collections-with-new-granules params)
+        new-granules (get-new-granules context granule-creation-date)
         parent-collections (granules->parent-collection-refs context new-granules)
         ;; when results is nil, hits is 0
         results (or parent-collections {:hits 0 :items []})
@@ -304,7 +309,16 @@
                      ;; pass in a fake query to get the desired response format
                      (qm/query {:concept-type :collection
                                 :result-format result-format})
-                     (assoc results :took total-took))]))
+                     (assoc results :took total-took))]
+
+    (info (format "Found %d collections with new granules in %d ms in format %s with params %s."
+                  (:hits results)
+                  total-took
+                  (rfh/printable-result-format result-format) (pr-str params)))
+
+    {:results results-str
+     :hits (:hits results)
+     :result-format result-format}))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"

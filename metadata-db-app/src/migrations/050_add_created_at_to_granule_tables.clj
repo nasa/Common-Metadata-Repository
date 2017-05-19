@@ -17,14 +17,14 @@
   (format "SELECT revision_date FROM %s WHERE concept_id = ? ORDER BY revision_date ASC" table))
 
 (defn- get-oldest-revision-date-for-concept-id
-  "Retrieve the oldest revision-date for the collection in the given table with the given id"
+  "Retrieve the oldest revision-date for the granule in the given table with the given id"
   [sql-stmt concept-id]
   (->> (j/query (config/db) [sql-stmt concept-id])
        (map :revision_date)
        first))
 
 (defn- set-created-at
-  "Sets the value of created_at in collection tables to the earliest revision_date for each collection"
+  "Sets the value of created_at in granule tables to the earliest revision_date for each granule"
   []
   (doseq [t (h/get-granule-tablenames)
           :let [rev-date-sql (revision-date-query-sql t)]
