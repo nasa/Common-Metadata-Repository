@@ -69,7 +69,7 @@
         update-field (csk/->PascalCaseKeyword update-field)]
     (-> concept
         (assoc :metadata (field-update/update-concept context concept update-type
-                                                      update-field update-value find-value))
+                                                      [update-field] update-value find-value))
         (update :revision-id inc))))
 
 

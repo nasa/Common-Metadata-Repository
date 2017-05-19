@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.field-update
  "Functions to apply an update of a particular type to a field-translation"
  (:require
+  [cmr.common.util :as util]
   [cmr.umm-spec.umm-spec-core :as spec-core]))
 
 (defn- value-matches?
@@ -9,35 +10,39 @@
   (= (select-keys value (keys find-value))
      find-value))
 
-(defmulti apply-umm-update
-  "Apply the umm update by type"
+(defmulti apply-umm-list-update
+  "Apply the umm update by type. Assumes that the update-field is a list in
+  the umm collection. Update-field should be a vector to handle nested fields."
   (fn [update-type umm update-field update-value find-value]
     update-type))
 
-(defmethod apply-umm-update :add-to-existing
+(defmethod apply-umm-list-update :add-to-existing
   [update-type umm update-field update-value find-value]
-  (update umm update-field #(conj % update-value)))
+  (update-in umm update-field #(conj % update-value)))
 
-(defmethod apply-umm-update :clear-all-and-replace
+(defmethod apply-umm-list-update :clear-all-and-replace
   [update-type umm update-field update-value find-value]
-  (assoc umm update-field [update-value]))
+  (assoc-in umm update-field [update-value]))
 
-(defmethod apply-umm-update :find-and-remove
+(defmethod apply-umm-list-update :find-and-remove
   [update-type umm update-field update-value find-value]
-  (if (seq (get umm update-field))
-    (update umm update-field #(remove (fn [x]
-                                        (value-matches? find-value x))
-                                      %))
+  (if (seq (get-in umm update-field))
+    (update-in umm update-field #(remove (fn [x]
+                                           (value-matches? find-value x))
+                                         %))
     umm))
 
-(defmethod apply-umm-update :find-and-replace
+(defmethod apply-umm-list-update :find-and-replace
   [update-type umm update-field update-value find-value]
-  (if (seq (get umm update-field))
-    (update umm update-field #(map (fn [x]
-                                     (if (value-matches? find-value x)
-                                       update-value
-                                       x))
-                                   %))
+  (if (seq (get-in umm update-field))
+    (let [update-value (util/remove-nil-keys update-value)]
+      ;; For each entry in update-field, if we find it using the find params,
+      ;; update only the fields supplied in update-value with nils removed
+      (update-in umm update-field #(map (fn [x]
+                                          (if (value-matches? find-value x)
+                                            (merge x update-value)
+                                            x))
+                                        %)))
     umm))
 
 (defn update-concept
@@ -46,5 +51,5 @@
   [context concept update-type update-field update-value find-value]
   (let [{:keys [format metadata concept-type]} concept
         umm (spec-core/parse-metadata context concept-type format metadata {:sanitize? false})
-        umm (apply-umm-update update-type umm update-field update-value find-value)]
+        umm (apply-umm-list-update update-type umm update-field update-value find-value)]
     (spec-core/generate-metadata context umm (:format concept))))
