@@ -8,7 +8,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.log :refer (debug info warn error)]
-   [cmr.ingest.api.ingest :as ingest-api]
+   [cmr.ingest.api.ingest.routes :as ingest-api]
    [cmr.ingest.api.multipart :as mp]
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.translation :as translation-api]
