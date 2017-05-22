@@ -18,7 +18,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
-   [cmr.ingest.api.ingest :as ingest-api]
+   [cmr.ingest.api.ingest.core :as ingest-api]
    [cmr.ingest.config :as config]
    [cmr.ingest.routes :as routes]
    [cmr.ingest.services.event-handler :as event-handler]
