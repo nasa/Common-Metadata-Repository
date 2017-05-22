@@ -42,4 +42,5 @@
 
     {:results result-str
      :hits (:hits results)
-     :result-format (:result-format query)}))
+     :result-format (:result-format query)
+     :scroll-id (:scroll-id results)}))

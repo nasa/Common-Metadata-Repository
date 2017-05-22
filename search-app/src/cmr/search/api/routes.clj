@@ -166,11 +166,12 @@
         ;; a set of search results that would match the UMM-C JSON schema
         result-format (if (= :umm-json (:format result-format))
                         (assoc result-format :format :umm-json-results)
-                        result-format)]
+                        result-format)
+        scroll-id (get headers common-routes/SCROLL_ID_HEADER)]
     (-> params
-        (dissoc :path-w-extension)
-        (dissoc :token)
-        (assoc :result-format result-format))))
+        (dissoc :path-w-extension :token)
+        (assoc :result-format result-format)
+        (conj (when scroll-id [:scroll-id scroll-id])))))
 
 (defn- search-response
   "Returns the response map for finding concepts"

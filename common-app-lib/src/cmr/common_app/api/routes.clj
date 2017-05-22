@@ -26,6 +26,8 @@
 
 (def TOOK_HEADER "CMR-Took")
 
+(def SCROLL_ID_HEADER "CMR-Scroll-Id")
+
 (def CORS_ORIGIN_HEADER
   "This CORS header is to restrict access to the resource to be only from the defined origins,
   value of \"*\" means all request origins have access to the resource"
@@ -55,7 +57,8 @@
           CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id"
           CORS_ORIGIN_HEADER "*"}
          (when (:hits results) {HITS_HEADER (str (:hits results))})
-         (when (:took results) {TOOK_HEADER (str (:took results))})))
+         (when (:took results) {TOOK_HEADER (str (:took results))})
+         (when (:scroll-id results) {SCROLL_ID_HEADER (str (:scroll-id results))})))
 
 (defn search-response
   "Generate the response map for finding concepts"

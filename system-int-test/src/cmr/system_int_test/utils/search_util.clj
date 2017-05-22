@@ -451,6 +451,7 @@
   (let [parsed (-> response :body fx/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
+        scroll-id (get-in response [:headers "CMR-Scroll-Id"])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
                       {:id (cx/string-at-path ref-elem [:id])
@@ -467,6 +468,7 @@
     (util/remove-nil-keys
       {:refs refs
        :hits hits
+       :scroll-id scroll-id
        :took took
        :facets facets})))
 

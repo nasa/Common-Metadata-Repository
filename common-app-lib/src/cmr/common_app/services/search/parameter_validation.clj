@@ -229,7 +229,7 @@
 
 (def standard-valid-params
   "The set of standard valid query level parameters."
-  #{:page-size :page-num :offset :sort-key :result-format :options})
+  #{:offset :options :page-num :page-size :result-format :scroll :scroll-id :sort-key})
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
