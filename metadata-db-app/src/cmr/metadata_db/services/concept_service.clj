@@ -31,6 +31,8 @@
    [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
    [cmr.metadata-db.data.oracle.concepts.tag]
+   [cmr.metadata-db.data.oracle.concepts.variable-association]
+   [cmr.metadata-db.data.oracle.concepts.variable]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.oracle.providers]
    [cmr.metadata-db.data.oracle.search]))

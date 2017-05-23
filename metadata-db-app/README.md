@@ -326,8 +326,8 @@ Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
-  * tags, tag associations or humanizers with concept-id or native-id
-  * tag associations with associated-concept-id, associated-revision-id
+  * tags, tag associations, variables, variable associations or humanizers with concept-id or native-id
+  * tag associations or variable associations with associated-concept-id, associated-revision-id
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
