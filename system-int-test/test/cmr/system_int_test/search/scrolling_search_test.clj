@@ -12,7 +12,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest basic-scrolling
+(deftest granule-scrolling
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" 
                                                      (data-umm-c/collection {:EntryTitle "E1"
                                                                              :ShortName "S1"
@@ -45,31 +45,33 @@
                                                                           {:granule-ur "Granule5"}))
         all-grans [gran1 gran2 gran3 gran4 gran5]]
     (index/wait-until-indexed)
-
-    (testing "Basic scrolling"
-      (let [{:keys [hits scroll-id]} (search/find-refs :granule {:provider "PROV1" :scroll true})]
-        (testing "First call with scroll returns scroll-id header and hits count"
-          (is (= (count all-grans) hits))
-          (is (not (nil? scroll-id))))
-        
-        (testing "Subsequent calls with scroll-id get data"
-          (is (data2-core/refs-match?
-               all-grans
-               (search/find-refs :granule {:scroll true :scroll-id scroll-id}))))))
-
+               
     (testing "Scrolling with page size"
-      (let [{:keys [hits scroll-id]} (search/find-refs :granule {:provider "PROV1" :scroll true :page-size 1})]
-        (testing "First call with scroll and page size returns scroll-id and hits count"
+      (let [{:keys [hits scroll-id] :as result} (search/find-refs :granule {:provider "PROV1" :scroll true :page-size 2})]
+        (testing "First call returns scroll-id and hits count with page-size results"
           (is (= (count all-grans) hits))
-          (is (not (nil? scroll-id))))
+          (is (not (nil? scroll-id)))
+          (is (data2-core/refs-match? [gran1 gran2] result)))
         
-        (testing "Subsequent calls gets page-size results"
-          (doseq [gran all-grans
-                  result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
-            (is (data2-core/refs-match? [gran] result))))))))
-                 
-                  
-          
-                                        
+        (testing "Subsequent call gets page-size results"
+          (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran3 gran4] result))))
 
+        (testing "All results returned eventually"
+          (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [gran5] result))))
+
+        (testing "Calls beyond total hits return empty list"
+          (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
+            (is (= (count all-grans) hits))
+            (is (data2-core/refs-match? [] result))))))
     
+    (testing "page_num is not allowed with scrolling"
+      (let [response (search/find-refs :granule 
+                                      {:provider "PROV1" :scroll true :page-num 2} 
+                                      {:allow-failure? true})]
+        (is (= 400 (:status response)))
+        (is (= "page_num is not allowed with scrolling"
+               (first (:errors response))))))))

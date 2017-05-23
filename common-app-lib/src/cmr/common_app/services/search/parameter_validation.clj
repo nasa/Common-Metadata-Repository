@@ -4,7 +4,7 @@
    [camel-snake-kebab.core :as csk]
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string :as s]
+   [clojure.string :as string]
    [cmr.common-app.services.search.messages :as msg]
    [cmr.common-app.services.search.params :as p]
    [cmr.common.concepts :as cc]
@@ -154,6 +154,15 @@
       ;; This should be handled separately by page-size and page-num validiation
       [])))
 
+(defn scroll-excludes-page-num-validation
+  "Validates that page-num is not present if scroll is true."
+  [concept-type params]
+  (let [{:keys [scroll page-num]} params]
+    (when (and scroll
+               page-num
+               (= "true" (string/lower-case scroll)))
+      ["page_num is not allowed with scrolling"])))
+
 (def string-param-options #{:pattern :ignore-case})
 (def pattern-option #{:pattern})
 (def and-option #{:and})
@@ -263,7 +272,7 @@
   "Validates datetime string is in the given format"
   [date-name dt]
   (try
-    (when-not (s/blank? dt)
+    (when-not (string/blank? dt)
       (dt-parser/parse-datetime dt))
     []
     (catch ExceptionInfo e
@@ -273,7 +282,7 @@
   "Validates datetime range string is in the correct format"
   [dtr]
   (try
-    (when-not (s/blank? dtr)
+    (when-not (string/blank? dtr)
       (dtr-parser/parse-datetime-range dtr))
     []
     (catch ExceptionInfo e
@@ -311,7 +320,7 @@
   instance, [:foo :bar :baz] returns \"foo[bar][baz]\""
   [keys]
   (let [[root & descendants] (map csk/->snake_case_string keys)
-        subscripts (s/join (map #(str "[" % "]") descendants))]
+        subscripts (string/join (map #(str "[" % "]") descendants))]
     (str root subscripts)))
 
 (defn validate-map
@@ -359,6 +368,7 @@
   [single-value-validation
    multiple-value-validation
    concept-id-validation
+   scroll-excludes-page-num-validation
    page-size-validation
    page-num-validation
    offset-validation

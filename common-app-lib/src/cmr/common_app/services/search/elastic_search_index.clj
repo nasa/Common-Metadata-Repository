@@ -18,11 +18,6 @@
    [cmr.elastic-utils.connect :as es]
    [cmr.transmit.connection :as transmit-conn]))
 
-;; TODO make this a defconfig
-(def es-scroll-timeout 
-  "Timeout for ES scrolling"
-  "10m")
-
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
    an :index-name key. :index-name can refer to a single index or a comma separated string of multiple
@@ -57,9 +52,9 @@
   "Returns the execution parameters extracted from the query"
   [query]
   (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id]} query
-        scroll-timeout (when scroll es-scroll-timeout)
+        scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
         search-type (if scroll
-                        "scan"
+                        (es-config/elastic-scroll-search-type)
                         "query_then_fetch")
         sort-params (q2e/query->sort-params query)
         fields (query-fields->elastic-fields
@@ -81,7 +76,7 @@
   [context index-info query]
   (transmit-conn/handle-socket-exception-retries
     (if-let [scroll-id (:scroll-id query)]
-      (esd/scroll (context->conn context) scroll-id :scroll es-scroll-timeout)
+      (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
       (esd/search (context->conn context)
                   (:index-name index-info)
                   [(:type-name index-info)]

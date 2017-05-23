@@ -31,7 +31,7 @@
 
 (defconfig elastic-small-collections-index-num-shards
   "Number of shards to use for the small collections granule index."
-  {:default 1 :type Long})
+  {:default 20 :type Long})
 
 (defconfig elastic-tag-index-num-shards
   "Number of shards to use for the tags index."
