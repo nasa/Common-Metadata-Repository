@@ -42,6 +42,7 @@
           (:ShortName project-map) (:LongName project-map)))
 
 (defn datacenter-not-matches-kms-keywords
+   "Error msg when DataCenter's ShortName, LongName are not in the KMS."
    [datacenter]
    (format "DataCenter short name [%s] and long name [%s] was not a valid keyword combination."
           (:ShortName datacenter) (:LongName datacenter)))
