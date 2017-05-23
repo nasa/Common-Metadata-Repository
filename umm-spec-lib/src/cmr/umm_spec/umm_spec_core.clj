@@ -24,14 +24,16 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.serf :as serf-to-umm])
   (:import (cmr.umm_spec.models.umm_collection_models UMM-C)
-           (cmr.umm_spec.models.umm_service_models UMM-S)))
+           (cmr.umm_spec.models.umm_service_models UMM-S)
+           (cmr.umm_spec.models.umm_variable_models UMM-Var)))
 
 (defn concept-type
   "Returns a concept type keyword from a UMM Clojure record (i.e. defrecord)."
   [record]
   (condp instance? record
     UMM-C :collection
-    UMM-S :service))
+    UMM-S :service
+    UMM-Var :variable))
 
 (defn umm-json-version
   "Returns the UMM JSON version of the given media type. The media type may be a keyword like :echo10
@@ -88,7 +90,8 @@
      [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c
                                context (xpath/context metadata) options)
      [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata) options)
-     [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata) options))))
+     [:service :serf]        (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata) options)
+     [:variable :umm-json]   (umm-json/json->umm context :variable metadata (umm-json-version fmt)))))
 
 (defn generate-metadata
   "Returns the generated metadata for the given metadata format and umm record.
@@ -113,7 +116,12 @@
        [:collection :dif10]    (umm-to-dif10/umm-c-to-dif10-xml umm)
        [:collection :iso19115] (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm)
        [:collection :iso-smap] (umm-to-iso-smap/umm-c-to-iso-smap-xml umm)
-       [:service :serf]        (umm-to-serf/umm-s-to-serf-xml umm)))))
+       [:service :serf]        (umm-to-serf/umm-s-to-serf-xml umm)
+       [:variable :umm-json]   (umm-json/umm->json (vm/migrate-umm context
+                                                                   concept-type
+                                                                   source-version
+                                                                   (umm-json-version fmt)
+                                                                   umm))))))
 
 (defn parse-collection-temporal
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."

@@ -239,6 +239,10 @@
   provider-id
   task-id))
 
+(defn ingest-create-variable-url
+  []
+  (format "http://localhost:%s/variables" (transmit-config/ingest-port)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 

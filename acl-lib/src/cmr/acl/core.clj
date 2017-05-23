@@ -159,14 +159,17 @@
            error-message))
         nil))))
 
-(defn- has-ingest-management-permission?
+(defn has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
   ;; Performance optimization here of returning true if it's the system user.
   (or (transmit-config/echo-system-token? context)
       (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
-        (->> (get-permitting-acls context object-identity-type "INGEST_MANAGEMENT_ACL" permission-type)
+        (->> (get-permitting-acls context
+                                  object-identity-type
+                                  "INGEST_MANAGEMENT_ACL"
+                                  permission-type)
              ;; Find acls for this provider
              (filter #(or (nil? provider-id)
                           (= provider-id (get-in % [acl-oit-key :provider-id]))))
