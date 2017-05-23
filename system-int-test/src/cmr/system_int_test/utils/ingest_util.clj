@@ -23,7 +23,8 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.common-app.test.side-api :as side]
    [cmr.ingest.config :as icfg])
-  (:import [java.lang.NumberFormatException]))
+  (:import
+   [java.lang.NumberFormatException]))
 
 (defn disable-ingest-writes
   "Use the enable/disable endpoint on ingest to disable writes."
@@ -47,6 +48,16 @@
                 :connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
+(defn- create-variable-through-url
+  "Create the variable by http POST on the given url"
+  [variable endpoint-url]
+  (client/post endpoint-url
+              {:body (json/generate-string variable)
+               :content-type :json
+               :throw-exceptions false
+               :connection-manager (s/conn-mgr)
+               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
   [provider]
@@ -56,6 +67,11 @@
   "Create the provider with the given provider id through ingest app"
   [provider]
   (create-provider-through-url provider (url/ingest-create-provider-url)))
+
+(defn create-ingest-variable
+  "Create the variable with the given variable data through ingest app"
+  [variable]
+  (create-variable-through-url variable (url/ingest-create-variable-url)))
 
 (defn get-providers-through-url
   [provider-url]
@@ -302,6 +318,56 @@
                  :throw-exceptions false
                  :connection-manager (s/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
+
+(defn ingest-variable
+  "Ingest a variable."
+  ([variable]
+   (ingest-variable variable {}))
+  ([variable options]
+   (let [{:keys [token client-id user-id validate-keywords validate-umm-var cmr-request-id]} options
+         accept-format (:accept-format options)
+         headers (util/remove-nil-keys {"Cmr-Validate-Keywords" validate-keywords
+                                        "Cmr-Validate-Umm-Var" validate-umm-var
+                                        "Echo-Token" token
+                                        "User-Id" user-id
+                                        "Client-Id" client-id
+                                        "CMR-Request-Id" cmr-request-id})
+         params {:method :post
+                 :url (url/ingest-create-variable-url)
+                 :body  variable
+                 :content-type :json
+                 :headers headers
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
+
+(defn ingest-variable-concept
+  "Ingest a variable that has been wrapped in its concept data."
+  ([concept]
+   (ingest-variable concept {}))
+  ([concept options]
+   (let [{:keys [metadata format concept-type concept-id revision-id native-id]} concept
+         {:keys [token client-id user-id validate-keywords validate-umm-var cmr-request-id]} options
+         accept-format (:accept-format options)
+         headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
+                                        "Cmr-Revision-id" revision-id
+                                        "Cmr-Validate-Keywords" validate-keywords
+                                        "Cmr-Validate-Umm-Var" validate-umm-var
+                                        "Echo-Token" token
+                                        "User-Id" user-id
+                                        "Client-Id" client-id
+                                        "CMR-Request-Id" cmr-request-id})
+         params {:method :post
+                 :url (url/ingest-create-variable-url)
+                 :body  metadata
+                 :content-type format
+                 :headers headers
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))]
+     (println "sys-int ingest-util got params:" params)
      (parse-ingest-response (client/request params) options))))
 
 (defn delete-concept
@@ -646,7 +712,8 @@
   ([providers options]
    (fn [f]
      (dev-sys-util/reset)
-     (setup-providers providers options)
+     (when-not (empty? providers)
+      (setup-providers providers options))
      (f))))
 
 (defn clear-caches
