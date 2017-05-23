@@ -114,7 +114,8 @@
   [context params]
   (validate-find-params params)
   (cond
-    (contains? #{:tag :tag-association :acl :humanizer} (:concept-type params))
+    (contains? #{:tag :tag-association :acl :humanizer :variable :variable-association}
+               (:concept-type params))
     (find-cmr-concepts context params)
 
     (= :access-group (:concept-type params))

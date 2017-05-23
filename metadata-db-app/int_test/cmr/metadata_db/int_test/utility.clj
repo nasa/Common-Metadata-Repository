@@ -572,9 +572,9 @@
   "Modifies a concept for comparison with a retrieved concept."
   (fn [concept]
     (let [{:keys [concept-type]} concept]
-      (if (concept-service/system-level-concept-types concept-type)
+      (if (contains? concept-service/system-level-concept-types concept-type)
         ;; system level concept
-        :system
+        :system-level-concept
         concept-type))))
 
 (defmethod expected-concept :granule
@@ -590,7 +590,7 @@
     concept
     (assoc concept :provider-id "CMR")))
 
-(defmethod expected-concept :system
+(defmethod expected-concept :system-level-concept
   [concept]
   (assoc concept :provider-id "CMR"))
 
@@ -731,6 +731,19 @@
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-variable-association
+  "Creates, saves, and returns a variable association concept with its data from metadata-db"
+  ([concept variable uniq-num]
+   (create-and-save-variable-association concept variable uniq-num 1))
+  ([concept variable uniq-num num-revisions]
+   (create-and-save-variable-association concept variable uniq-num num-revisions {}))
+  ([concept variable uniq-num num-revisions attributes]
+   (let [concept (variable-association-concept concept variable uniq-num attributes)
+          _ (dotimes [n (dec num-revisions)]
+              (assert-no-errors (save-concept concept)))
+          {:keys [concept-id revision-id]} (save-concept concept)]
+      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 ;;; providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
