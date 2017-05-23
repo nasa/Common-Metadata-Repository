@@ -616,10 +616,12 @@
 
 (defn map-matches-path-values?
   "Returns true if the map matches the given path values. Path values are
-  described in the map->path-values function documentation."
+  described in the map->path-values function documentation.  When a value is sequential,
+  any map which matches at least one of the contained values will be considered to match
+  (i.e. the values are ORed)"
   [path-values m]
   (every? (fn [[path value]]
-            (= (get-in m path) value))
+            (some #(= (get-in m path) %) (if (sequential? value) value [value])))
           path-values))
 
 (defn filter-matching-maps

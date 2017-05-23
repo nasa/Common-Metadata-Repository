@@ -306,7 +306,7 @@ returns: list of the latest revisions of concepts matching the ids provided in t
 ### GET /concepts/search/:concept-types?param1=value&...
 
 This returns all revisions of the concept that matches the search parameters by default. It also supports parameter 'latest'. When latest=true, only the latest revision of the concepts are returned.
-Metadata can be excluded from the results by setting the parameter 'exclude-metadata' to 'true'.
+Metadata can be excluded from the results by setting the parameter 'exclude-metadata' to 'true'.  Multiple values for a parameter will be ORed.
 
 Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
@@ -323,6 +323,12 @@ curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native_id
 curl "http://localhost:3001/concepts/search/tags"
 curl "http://localhost:3001/concepts/search/tag-associatons?associated-concept-id=C12-PROV1"
 ```
+
+### POST /concepts/search/:concept-types
+
+Same as the GET endpoint above, but with parameters passed in the body of a POST e.g.
+
+    curl -XPOST -H "Content-Type: application/x-www-form-urlencoded" -d 'provider-id=PROV1&short-name=s&version-id=1' http://localhost:3001/concepts/search/collections
 
 ### GET /concepts/search/expired-collections?provider=PROV
 

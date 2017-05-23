@@ -141,7 +141,7 @@
   [context params concept-type]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))]
-    (client/get request-url (merge
+    (client/post request-url (merge
                               (config/conn-params conn)
                               {:accept :json
                                :query-params params
