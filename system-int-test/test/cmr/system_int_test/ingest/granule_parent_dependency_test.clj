@@ -84,7 +84,8 @@
                     :Version "version"
                     :AdditionalAttributes [psa1]
                     :Platforms [c-p1 c-p2]
-                    :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                    :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                           :ShortName "Larc"})]
                     :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                             :Topic "Cool"
                                                             :Term "Mild"})]
@@ -101,7 +102,8 @@
                    :Version "version"
                    :AdditionalAttributes [psa1]
                    :Platforms[c-p1 c-p3]
-                   :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                          :ShortName "Larc"})]
                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                            :Topic "Cool"
                                                            :Term "Mild"})]
@@ -280,7 +282,8 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms[p1]
-                     :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                            :ShortName "Larc"})]
                      :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                              :Topic "Cool"
                                                              :Term "Mild"})]
@@ -296,7 +299,8 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms[p1]
-                     :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                            :ShortName "Larc"})]
                      :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                              :Topic "Cool"
                                                              :Term "Mild"})]
@@ -401,7 +405,8 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms[pA]
-                     :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                            :ShortName "Larc"})]
                      :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                              :Topic "Cool"
                                                              :Term "Mild"})]
@@ -417,7 +422,8 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms[pB]
-                     :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                            :ShortName "Larc"})]
                      :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                              :Topic "Cool"
                                                              :Term "Mild"})]
@@ -499,7 +505,8 @@
                    :Version "version"
                    :AdditionalAttributes [psa1]
                    :Platforms[p1]
-                   :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                          :ShortName "Larc"})]
                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                            :Topic "Cool"
                                                            :Term "Mild"})]
@@ -592,7 +599,8 @@
                    :Version "version"
                    :AdditionalAttributes [psa1]
                    :Platforms[p1]
-                   :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                          :ShortName "Larc"})]
                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                            :Topic "Cool"
                                                            :Term "Mild"})]
@@ -662,7 +670,8 @@
   (let [coll-data1 {:EntryTitle "short_name1_version"
                     :ShortName "short_name1"
                     :Version "version"
-                    :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                    :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                           :ShortName "Larc"})]
                     :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                             :Topic "Cool"
                                                             :Term "Mild"})]

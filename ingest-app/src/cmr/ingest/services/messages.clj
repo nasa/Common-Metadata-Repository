@@ -41,6 +41,11 @@
   (format "Project short name [%s] and long name [%s] was not a valid keyword combination."
           (:ShortName project-map) (:LongName project-map)))
 
+(defn datacenter-not-matches-kms-keywords
+   [datacenter]
+   (format "DataCenter short name [%s] and long name [%s] was not a valid keyword combination."
+          (:ShortName datacenter) (:LongName datacenter)))
+
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
   [:Category :Topic :Term :VariableLevel1 :VariableLevel2 :VariableLevel3])
@@ -50,7 +55,7 @@
   [:Category :Type :Subregion1 :Subregion2 :Subregion3])
 
 (defn- keyword->human-attrib-list
-  "Converts a science keyword into a human readable list of attributes with their values."
+  "Converts a keyword into a human readable list of attributes with their values."
   [k attribute-order]
   (let [human-id-values (keep (fn [field]
                                 (when-let [value (get k field)]

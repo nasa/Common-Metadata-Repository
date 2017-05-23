@@ -47,11 +47,15 @@
   (testing "Keyword validation using validation endpoint"
     (let [concept (data-umm-c/collection-concept
                    {:Platforms [(data-umm-c/platform {:ShortName "foo"
-                                                      :LongName "Airbus A340-600"})]})
+                                                      :LongName "Airbus A340-600"})]
+                    :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] :ShortName "SomeCenter"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
                         :errors [(str "Platform short name [foo] and long name [Airbus A340-600] "
+                                      "was not a valid keyword combination.")]}
+                       {:path ["DataCenters" 0]
+                        :errors [(str "DataCenter short name [SomeCenter] and long name [null] "
                                       "was not a valid keyword combination.")]}]}
              response))))
 
@@ -120,6 +124,43 @@
 
           "Case Insensitive"
           "a340-600" "aiRBus A340-600"))
+
+  (testing "DataCenter keyword validation"
+    (are3 [attribs]
+          (let [dc (data-umm-c/data-center attribs)]
+            (assert-invalid-keywords
+              {:DataCenters [dc]}
+              ["DataCenters" 0]
+              [(msg/datacenter-not-matches-kms-keywords dc)]))
+
+          "Invalid short name"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO-Invalid"
+           :LongName "Hydrogeophysics Group, Aarhus University "} 
+
+          "Invalid long name"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO"
+           :LongName "Hydrogeophysics Group, Aarhus University Invalid"}
+
+          "Invalid combination"
+          {:Roles ["ARCHIVER"]
+           :ShortName "OR-STATE/EOARC"
+           :LongName "Hydrogeophysics Group, Aarhus University "})
+
+    (are3 [attribs]
+          (let [dc (data-umm-c/data-center attribs)]
+            (assert-valid-keywords {:DataCenters [dc]}))
+
+          "Valid Case Sensitive"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO"
+           :LongName "Hydrogeophysics Group, Aarhus University "}
+
+          "Valid Case Insensitive"
+          {:Roles ["ARCHIVER"]
+           :ShortName "aArHUS-HYDRO"
+           :LongName "hYdrogeophysics Group, Aarhus University "}))
 
   (testing "Instrument keyword validation"
     (are2 [short-name long-name]

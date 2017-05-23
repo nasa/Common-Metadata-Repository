@@ -156,13 +156,16 @@
 (deftest search-by-data-center-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1
                                                      {:DataCenters [(data-umm-c/data-center
-                                                                     ["ARCHIVER"] "NSIDC")]}))
+                                                                     {:Roles ["ARCHIVER"] 
+                                                                      :ShortName "NSIDC"})]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2
                                                      {:DataCenters [(data-umm-c/data-center
-                                                                     ["ARCHIVER"] "NASA/NSIDC_DAAC")]}))
+                                                                     {:Roles ["ARCHIVER"] 
+                                                                      :ShortName "NASA/NSIDC_DAAC"})]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
                                                      {:DataCenters [(data-umm-c/data-center
-                                                                     ["ARCHIVER"] "ASF")]}))]
+                                                                     {:Roles ["ARCHIVER"]
+                                                                      :ShortName "ASF"})]}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized organization"
       (is (d/refs-match? [coll1 coll2]

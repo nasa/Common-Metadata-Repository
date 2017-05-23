@@ -156,11 +156,9 @@
      :LongName (d/unique-str long-name)}))
 
 (defn data-center
-  "Return archive/ processing center"
-  [roles center-name]
-  (umm-cmn/map->DataCenterType
-    {:Roles roles
-     :ShortName center-name}))
+  "Returns data center"
+  [attribs]
+  (umm-cmn/map->DataCenterType attribs))
 
 (defn related-url
   "Creates related url for online_only test"
@@ -208,7 +206,10 @@
 
 (def umm-c-missing-properties-dif
   "This is the minimal valid UMM-C."
-  {:DataCenters [u/not-provided-data-center]
+  {:DataCenters [(umm-cmn/map->DataCenterType
+                   {:Roles ["ARCHIVER"]
+                    :ShortName "AARHUS-HYDRO" 
+                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -224,7 +225,10 @@
   "This is the minimal valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
                  {:ShortName "A340-600" :LongName "Airbus A340-600"})]
-   :DataCenters [u/not-provided-data-center]
+   :DataCenters [(umm-cmn/map->DataCenterType
+                   {:Roles ["ARCHIVER"]
+                    :ShortName "AARHUS-HYDRO"
+                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -243,7 +247,10 @@
   {:Platforms [(umm-cmn/map->PlatformType
                  {:ShortName "A340-600" :LongName "Airbus A340-600"})]
    :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
-   :DataCenters [u/not-provided-data-center]
+   :DataCenters [(umm-cmn/map->DataCenterType
+                   {:Roles ["ARCHIVER"]
+                    :ShortName "AARHUS-HYDRO"
+                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
