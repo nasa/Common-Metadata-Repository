@@ -143,6 +143,10 @@
   [db provider concept]
   (set-or-generate-created-at-for-concept db provider concept))
 
+(defmethod set-or-generate-created-at :granule
+  [db provider concept]
+  (set-or-generate-created-at-for-concept db provider concept))
+
 (defmethod set-or-generate-created-at :variable
   [db provider concept]
   (set-or-generate-created-at-for-concept db provider concept))

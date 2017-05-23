@@ -1,8 +1,9 @@
 (ns migrations.050-add-created-at-to-granule-tables
   "Adds created_at column to granule tables."
-  (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]))
+  (:require
+   [clojure.java.jdbc :as j]
+   [config.mdb-migrate-helper :as h]
+   [config.migrate-config :as config]))
 
 (defn- add-created-at
   []
