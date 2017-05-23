@@ -122,28 +122,30 @@
                                 collection
                                 (when (:validate-keywords? validation-options)
                                   [(keyword-validations context)])))]
-    (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors)
+    (if (or (:validate-umm? validation-options)
+            (config/return-umm-spec-validation-errors)
             (not warn?))
-     (errors/throw-service-errors :invalid-data err-messages)
-     (do
-      (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-      err-messages))))
+      (errors/throw-service-errors :invalid-data err-messages)
+      (do
+        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+        err-messages))))
 
 (defn umm-spec-validate-collection-warnings
- "Validate umm-spec collection validation warnings functions - errors that we want
- to report but we do not want to fail ingest."
- [collection validation-options context]
- (when-let [err-messages (seq (umm-spec-validation/validate-collection-warnings
-                               collection))]
-   (if (or (:validate-umm? validation-options) (config/return-umm-spec-validation-errors))
-     (errors/throw-service-errors :invalid-data err-messages)
-     (do
-      (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-      err-messages))))
+  "Validate umm-spec collection validation warnings functions - errors that we want
+  to report but we do not want to fail ingest."
+  [collection validation-options context]
+  (when-let [err-messages (seq (umm-spec-validation/validate-collection-warnings
+                                collection))]
+    (if (or (:validate-umm? validation-options)
+            (config/return-umm-spec-validation-errors))
+      (errors/throw-service-errors :invalid-data err-messages)
+      (do
+        (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
+        err-messages))))
 
 (defn validate-granule-umm-spec
   "Validates a UMM granule record using rules defined in UMM Spec with a UMM Spec collection record,
-   updated with platform aliases whoes shortnames don't exist in the platforms."
+  updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
   (when-let [errors (seq (umm-spec-validation/validate-granule
                            (humanizer-alias-cache/update-collection-with-aliases
@@ -153,12 +155,59 @@
 
 (defn validate-granule-umm
   "Validates a UMM granule record using rules defined in UMM with a UMM collection record,
-   updated with platform aliases whoes shortnames don't exist in the platforms."
+  updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
-    (if-errors-throw :invalid-data (umm-validation/validate-granule
-                                     (humanizer-alias-cache/update-collection-with-aliases
-                                       context collection false)
-                                     granule)))
+  (if-errors-throw :invalid-data (umm-validation/validate-granule
+                                  (humanizer-alias-cache/update-collection-with-aliases
+                                   context collection false)
+                                  granule)))
+
+(defn validate-variable-umm-spec-schema
+  "Validate the variable against the JSON schema and throw errors if
+  configured or return a list of warnings"
+  [variable validation-options]
+  (if-let [err-messages (seq (json-schema/validate-umm-json
+                              (umm-json/umm->json variable)
+                              :variable))]
+    (if (or (:validate-umm? validation-options)
+            (config/return-umm-json-validation-errors))
+      (errors/throw-service-errors :invalid-data err-messages)
+      (do
+        (warn "UMM-Var JSON-Schema Validation Errors: "
+              (pr-str (vec err-messages)))
+        err-messages))))
+
+(defn umm-spec-validate-variable
+  "Validate variable through umm-spec validation functions. If warn? flag is
+  true and umm-spec-validation is off, log warnings and return messages,
+  otherwise throw errors."
+  [variable validation-options context warn?]
+  (when-let [err-messages (seq (umm-spec-validation/validate-variable
+                                variable
+                                (when (:validate-keywords? validation-options)
+                                  [(keyword-validations context)])))]
+    (if (or (:validate-umm? validation-options)
+            (config/return-umm-spec-validation-errors)
+            (not warn?))
+      (errors/throw-service-errors :invalid-data err-messages)
+      (do
+        (warn "UMM-Var UMM Spec Validation Errors: "
+              (pr-str (vec err-messages)))
+        err-messages))))
+
+(defn umm-spec-validate-variable-warnings
+  "Validate umm-spec variable validation warnings functions - errors that we
+  want to report but we do not want to fail ingest."
+  [variable validation-options context]
+  (when-let [err-messages (seq (umm-spec-validation/validate-variable-warnings
+                               variable))]
+    (if (or (:validate-umm? validation-options)
+            (config/return-umm-spec-validation-errors))
+      (errors/throw-service-errors :invalid-data err-messages)
+      (do
+        (warn "UMM-Var UMM Spec Validation Errors: "
+              (pr-str (vec err-messages)))
+       err-messages))))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
