@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.concepts :as concepts]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -67,11 +68,23 @@
           (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [] result))))))
-    
-    (testing "page_num is not allowed with scrolling"
-      (let [response (search/find-refs :granule 
-                                      {:provider "PROV1" :scroll true :page-num 2} 
-                                      {:allow-failure? true})]
-        (is (= 400 (:status response)))
-        (is (= "page_num is not allowed with scrolling"
-               (first (:errors response))))))))
+
+
+    (testing "invalid parameters"
+      (are3 [query err-msg]
+        (let [response (search/find-refs :granule query {:allow-failure? true})]
+          (is (= 400 (:status response)))
+          (is (= err-msg
+                 (first (:errors response)))))
+
+        "scroll parameter must be boolean"
+        {:provider "PROV1" :scroll "foo"} 
+        "Parameter scroll must take value of true or false but was [foo]"
+
+        "page_num is not allowed with scrolling"
+        {:provider "PROV1" :scroll true :page-num 2}
+        "page_num is not allowed with scrolling"
+        
+        "offset is not allowed with scrolling"
+        {:provider "PROV1" :scroll true :offset 2}
+        "offset is not allowed with scrolling"))))

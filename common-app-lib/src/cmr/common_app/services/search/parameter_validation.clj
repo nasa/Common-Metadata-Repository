@@ -84,6 +84,14 @@
        (map #(format "Parameter [%s] must have a single value or multiple values."
                      (csk/->snake_case_string %)))))
 
+(defn validate-boolean-param
+  "Validates a boolean parameter has a value of true or false."
+  [param concept-type params]
+  (when-let [value (get params param)]
+    (when-not (contains? #{"true" "false"} value)
+      [(format "Parameter %s must take value of true or false but was [%s]"
+               (csk/->snake_case_string param) value)])))
+
 (defn- get-ivalue-from-params
   "Get a value from the params as an Integer or nil value. Throws NumberFormatException
   if the value cannot be converted to an Integer."
@@ -154,6 +162,11 @@
       ;; This should be handled separately by page-size and page-num validiation
       [])))
 
+(defn scroll-validation 
+  "Validates the the scroll parameter (if present) is boolean."
+  [concept-type params]
+  (validate-boolean-param :scroll concept-type params))
+
 (defn scroll-excludes-page-num-validation
   "Validates that page-num is not present if scroll is true."
   [concept-type params]
@@ -162,6 +175,15 @@
                page-num
                (= "true" (string/lower-case scroll)))
       ["page_num is not allowed with scrolling"])))
+
+(defn scroll-excludes-offset-validation
+  "Validates that offset is not present if scroll is true."
+  [concept-type params]
+  (let [{:keys [scroll offset]} params]
+    (when (and scroll
+               offset
+               (= "true" (string/lower-case scroll)))
+      ["offset is not allowed with scrolling"])))
 
 (def string-param-options #{:pattern :ignore-case})
 (def pattern-option #{:pattern})
@@ -299,14 +321,6 @@
         errors)
       [])))
 
-(defn validate-boolean-param
-  "Validates a boolean parameter has a value of true or false."
-  [param concept-type params]
-  (when-let [value (get params param)]
-    (when-not (contains? #{"true" "false"} value)
-      [(format "Parameter %s must take value of true or false but was [%s]"
-               (csk/->snake_case_string param) value)])))
-
 (defn unrecognized-standard-query-params-validation
   "Validates that any query parameters passed to the AQL or JSON search endpoints are valid."
   [concept-type params]
@@ -368,7 +382,9 @@
   [single-value-validation
    multiple-value-validation
    concept-id-validation
+   scroll-validation
    scroll-excludes-page-num-validation
+   scroll-excludes-offset-validation
    page-size-validation
    page-num-validation
    offset-validation
