@@ -17,10 +17,6 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (dev-system-util/freeze-resume-time-fixture)]))
 
-(defn- current-time
-  []
-  (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
-
 (deftest search-for-collections-with-new-granules
   (let [_ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
         oldest-collection (d/ingest-umm-spec-collection
@@ -91,7 +87,6 @@
       (let [search-results (search/find-concepts-with-param-string
                             "collection"
                             "has_granules_added_after=2014-01-01T10:00:00Z")]
-        (proto-repl.saved-values/save 2)
         (d/refs-match? [youngling-collection regular-collection] search-results)))
     (testing "Using unsupported or incorrect parameters"
       (are [params]
