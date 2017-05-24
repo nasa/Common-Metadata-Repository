@@ -54,15 +54,17 @@
 (def variable-routes
   "Defines the routes for UMM variable ingest, validation, and deletion
   operations."
-  (set-default-error-format
-    :xml
-    (context "/variables" []
+  (context "/variables" []
+    (POST "/"
+          {:keys [request-context headers body]}
+          (variables/create-variable request-context headers body))
+    (context "/:variable-key" [variable-key]
       (PUT "/"
-           request
-           (variables/ingest-variable request)))))
+           {:keys [request-context headers body]}
+           (variables/update-variable
+            request-context headers body variable-key)))))
 
 (def ingest-routes
   "Combined ingest routes."
-  (routes
-   provider-routes
-   variable-routes))
+  (routes provider-routes
+          variable-routes))

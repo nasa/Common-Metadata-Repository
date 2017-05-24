@@ -180,41 +180,10 @@
               (pr-str (vec err-messages)))
         err-messages))))
 
-(defn umm-spec-validate-variable
-  "Validate variable through umm-spec validation functions. If warn? flag is
-  true and umm-spec-validation is off, log warnings and return messages,
-  otherwise throw errors."
-  [variable validation-options context warn?]
-  (when-let [err-messages (seq (umm-spec-validation/validate-variable
-                                variable
-                                (when (:validate-keywords? validation-options)
-                                  [(keyword-validations context)])))]
-    (if (or (:validate-umm? validation-options)
-            (config/return-umm-spec-validation-errors)
-            (not warn?))
-      (errors/throw-service-errors :invalid-data err-messages)
-      (do
-        (warn "UMM-Var UMM Spec Validation Errors: "
-              (pr-str (vec err-messages)))
-        err-messages))))
-
-(defn umm-spec-validate-variable-warnings
-  "Validate umm-spec variable validation warnings functions - errors that we
-  want to report but we do not want to fail ingest."
-  [variable validation-options context]
-  (when-let [err-messages (seq (umm-spec-validation/validate-variable-warnings
-                               variable))]
-    (if (or (:validate-umm? validation-options)
-            (config/return-umm-spec-validation-errors))
-      (errors/throw-service-errors :invalid-data err-messages)
-      (do
-        (warn "UMM-Var UMM Spec Validation Errors: "
-              (pr-str (vec err-messages)))
-       err-messages))))
-
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
   [context concept]
   (if-errors-throw :invalid-data
                    (mapcat #(% context concept)
-                           (bv/business-rule-validations (:concept-type concept)))))
+                           (bv/business-rule-validations
+                            (:concept-type concept)))))

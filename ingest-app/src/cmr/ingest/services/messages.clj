@@ -79,3 +79,26 @@
   [lk]
   (format "Location keyword %s was not a valid keyword combination."
           (keyword->human-attrib-list lk location-keyword-attribute-order)))
+
+(defn variable-already-exists
+  [variable concept-id]
+  (format "A variable with native-id [%s] already exists with concept id [%s]."
+          (:native-id variable) concept-id))
+
+(def token-required-for-variable-modification
+  "Variables cannot be modified without a valid user token.")
+
+(defn variable-deleted
+  [variable-key]
+  (format "Variable with variable-key [%s] was deleted." variable-key))
+
+(defn variable-does-not-exist
+  [variable-key]
+  (format "Variable could not be found with variable-key [%s]" variable-key))
+
+(defn variable-already-exists
+  [variable concept-id]
+  (format "A variable with variable-key [%s] already exists with concept id [%s]."
+          (:variable-key variable)
+          concept-id))
+

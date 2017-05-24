@@ -82,7 +82,10 @@
         default-format)))
 
 (defn ingest-status-code
-  "Returns the ingest status code when ingest is successful"
+  "Returns the ingest status code when ingest is successful.
+
+  If the ingest is newly created (a revision id of 1), return HTTP status
+  'Created'."
   [result]
   (if (= 1 (:revision-id result))
     201
