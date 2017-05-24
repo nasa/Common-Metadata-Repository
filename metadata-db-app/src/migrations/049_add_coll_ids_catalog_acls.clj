@@ -15,7 +15,7 @@
       (flatten
        (doseq [t (h/get-regular-provider-collection-tablenames)]
          (doseq [result (h/query (format "SELECT concept-id from % where
-																																									provider-id = % entry-title in (%)" t provider-id entry-titles))]
+																																									provider-id = % and entry-title in (%)" t provider-id entry-titles))]
            (println result)
            (:concept-id result)))))))
 
