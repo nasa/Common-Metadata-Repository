@@ -1,8 +1,7 @@
 (ns cmr.system-int-test.search.scrolling-search-test
-  "Tests for using the scroll parameter to retrieve search resutls"
+  "Tests for using the scroll parameter to retrieve search results"
   (:require
    [clojure.test :refer :all]
-   [cmr.common.concepts :as concepts]
    [cmr.common.util :as util :refer [are3]]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]

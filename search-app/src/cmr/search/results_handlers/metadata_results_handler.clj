@@ -64,6 +64,7 @@
   [context query elastic-results]
   (let [{:keys [concept-type result-format result-features]} query
         hits (get-in elastic-results [:hits :total])
+        scroll-id (:_scroll_id elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         result-items (mapv #(elastic-result->query-result-item concept-type %) elastic-matches)
         tuples (mapv #(vector (:concept-id %) (:revision-id %)) result-items)
@@ -78,7 +79,10 @@
                   (add-tags items concept-tags-map))
                 items)]
     (debug "Transformer metadata request time was" req-time "ms.")
-    (results/map->Results {:hits hits :items items :result-format result-format})))
+    (results/map->Results {:hits hits 
+                           :items items 
+                           :result-format result-format
+                           :scroll-id scroll-id})))
 
 
 ;; Define transormations methods from query results to concept-ids

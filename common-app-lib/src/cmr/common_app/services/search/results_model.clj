@@ -19,7 +19,7 @@
    hits
 
    ;; The session-id to be used for subsequent scroll requests
-   scroll-session-id
+   scroll-id
 
    ;; The number of milliseconds the search took
    took
