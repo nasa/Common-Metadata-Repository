@@ -3,9 +3,9 @@
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.common-app.api.enabled :as common-enabled]
    [cmr.ingest.services.provider-service :as ps]
    [compojure.core :refer :all]))
 

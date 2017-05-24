@@ -165,21 +165,6 @@
                                    context collection false)
                                   granule)))
 
-(defn validate-variable-umm-spec-schema
-  "Validate the variable against the JSON schema and throw errors if
-  configured or return a list of warnings"
-  [variable validation-options]
-  (if-let [err-messages (seq (json-schema/validate-umm-json
-                              (umm-json/umm->json variable)
-                              :variable))]
-    (if (or (:validate-umm? validation-options)
-            (config/return-umm-json-validation-errors))
-      (errors/throw-service-errors :invalid-data err-messages)
-      (do
-        (warn "UMM-Var JSON-Schema Validation Errors: "
-              (pr-str (vec err-messages)))
-        err-messages))))
-
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
   [context concept]

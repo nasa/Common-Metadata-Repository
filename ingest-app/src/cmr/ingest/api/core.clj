@@ -1,4 +1,4 @@
-(ns cmr.ingest.api.ingest.core
+(ns cmr.ingest.api.core
   "Supports the ingest API definitions."
   (:require
    [cheshire.core :as json]
@@ -21,9 +21,6 @@
    [cmr.transmit.echo.tokens :as tokens])
   (:import
    (clojure.lang ExceptionInfo)))
-
-(def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
-(def ENABLE_UMM_C_VALIDATION_HEADER "cmr-validate-umm-c")
 
 (defn verify-provider-exists
   "Verifies the given provider exists."
@@ -230,9 +227,3 @@
                           {:type type
                            :errors errors
                            :default-format default-response-format})))))))
-
-(defn get-validation-options
-  "Returns a map of validation options with boolean values"
-  [headers]
-  {:validate-keywords? (= "true" (get headers VALIDATE_KEYWORDS_HEADER))
-   :validate-umm? (= "true" (get headers ENABLE_UMM_C_VALIDATION_HEADER))})

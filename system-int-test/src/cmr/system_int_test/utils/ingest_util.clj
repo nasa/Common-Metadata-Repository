@@ -325,10 +325,9 @@
   ([variable]
    (ingest-variable variable {}))
   ([variable options]
-   (let [{:keys [token client-id user-id validate-keywords validate-umm-var cmr-request-id]} options
+   (let [{:keys [token client-id user-id validate-umm-var cmr-request-id]} options
          accept-format (:accept-format options)
-         headers (util/remove-nil-keys {"Cmr-Validate-Keywords" validate-keywords
-                                        "Cmr-Validate-Umm-Var" validate-umm-var
+         headers (util/remove-nil-keys {"Cmr-Validate-Umm-Var" validate-umm-var
                                         "Echo-Token" token
                                         "User-Id" user-id
                                         "Client-Id" client-id

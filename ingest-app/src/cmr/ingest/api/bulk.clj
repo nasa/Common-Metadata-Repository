@@ -1,4 +1,4 @@
-(ns cmr.ingest.api.ingest.bulk
+(ns cmr.ingest.api.bulk
   "Bulk ingest functions in support of the ingest API."
   (:require
    [clojure.data.xml :as xml]
@@ -8,11 +8,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.common.xml.gen :refer :all]
-   [cmr.ingest.api.ingest.core :refer [
-     generate-ingest-response
-     get-ingest-result-format
-     ingest-status-code
-     verify-provider-exists]]
+   [cmr.ingest.api.core :as api-core]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
    [cmr.ingest.services.ingest-service :as ingest]))
@@ -23,10 +19,10 @@
   [provider-id request]
   (let [{:keys [body headers request-context]} request
         body (string/trim (slurp body))]
-    (verify-provider-exists request-context provider-id)
+    (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id body)]
-      (generate-ingest-response
+      (api-core/generate-ingest-response
         headers
         {:status 200
          :task-id task-id}))))
@@ -51,17 +47,17 @@
 (defmulti generate-provider-tasks-response
   "Convert a result to a proper response format"
   (fn [headers result]
-    (get-ingest-result-format headers :xml)))
+    (api-core/get-ingest-result-format headers :xml)))
 
 (defmethod generate-provider-tasks-response :json
   [headers result]
   ;; No special processing needed
-  (generate-ingest-response headers result))
+  (api-core/generate-ingest-response headers result))
 
 (defmethod generate-provider-tasks-response :xml
   [headers result]
   ;; Create an xml response for a list of tasks
-  {:status (ingest-status-code result)
+  {:status (api-core/ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (xml/emit-str
           (xml/element :result {}
@@ -72,7 +68,7 @@
  "Get all tasks and task statuses for provider."
  [provider-id request]
  (let [{:keys [headers request-context]} request]
-  (verify-provider-exists request-context provider-id)
+  (api-core/verify-provider-exists request-context provider-id)
   (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
   (generate-provider-tasks-response
    headers
@@ -82,17 +78,17 @@
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"
   (fn [headers result]
-    (get-ingest-result-format headers :xml)))
+    (api-core/get-ingest-result-format headers :xml)))
 
 (defmethod generate-provider-task-status-response :json
   [headers result]
   ;; No special processing needed
-  (generate-ingest-response headers result))
+  (api-core/generate-ingest-response headers result))
 
 (defmethod generate-provider-task-status-response :xml
   [headers result]
   ;; Create an xml response for a list of tasks
-  {:status (ingest-status-code result)
+  {:status (api-core/ingest-status-code result)
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (xml/emit-str
           (xml/element :result {}
@@ -106,7 +102,7 @@
  "Get the status for the given task for the provider including collection statuses"
  [provider-id task-id request]
  (let [{:keys [headers request-context]} request]
-  (verify-provider-exists request-context provider-id)
+  (api-core/verify-provider-exists request-context provider-id)
   (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
   (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider request-context task-id)
         collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
