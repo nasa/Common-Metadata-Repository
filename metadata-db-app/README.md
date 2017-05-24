@@ -83,11 +83,7 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "native-id": "org.nasa.something.quality",
     "user-id": "jnorton",
     "format": "application/edn",
-    "metadata: {
-      "tag-key": "org.nasa.something.quality",
-      "description": "A good tag",
-      "originator-id": "jnorton"
-    }
+    "metadata": "{:tag-key \"org.nasa.something.ozone\", :description \"A very good tag\", :originator-id \"jnorton\"}"
   }
 
 #### Tag Association
@@ -97,19 +93,15 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "native-id": "org.nasa.something.quality/C12-PROV_A42",
     "user-id": "jnorton",
     "format": "application/edn",
-    "metadata": {
-      "tag-key": "org.nasa.something.quality",
-      "originator-id": "jdoe",
-      "associated-concept-id": "C12-PROV_A42",
-      "revision-id": 1, (optional field),
-      "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
-    },
+    "metadata": "{:tag-key \"org.nasa.something.ozone\", :associated-concept-id \"C120000000-PROV1\", :revision-id 1, :value \"string to be indexed\"}",
     "extra-fields": {
       "tag-key": "org.nasa.something.quality",
       "associated-concept-id": "C12-PROV_A42",
       "associated-revision-id": 1
     }
   }
+
+The tag association metadata can have "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
 
 #### Humanizer
 
@@ -125,35 +117,29 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 #### Variable
 
   {
-    "concept-type": "variable",
-    "native-id" : "var123",
-    "metadata" : "{ \"Name\": \"totCldH2OStdErr\", \"LongName\": \"totCldH2OStdErrMeasurement\", \"Units\": \"\", \"DataType\": \"float\", \"DimensionsName\": [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], \"Dimensions\": [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], \"ValidRange\": null, \"Scale\": \"1.0\", \"Offset\": \"0.0\", \"FillValue\": \"-9999.0 \", \"VariableType\": \"\", \"ScienceKeywords\": []}",
-    "user-id" : "user1",
-    "deleted" : false,
-    "format" : "application/json",
-    "extra-fields": {
-      "variable-name": "totCldH2OStdErr",
-      "measurement": "totCldH2OStdErrMeasurement"
-    }
+  "concept-type": "variable",
+  "native-id": "totcldh2ostderr",
+  "metadata": "{ :name \"totCldH2OStdErr\", :long-name \"totCldH2OStdErrMeasurement\", :units \"\", :data-type \"float\", :dimensions-name [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], :dimensions [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], :valid-range null, :scale \"1.0\", :offset \"0.0\", :fill-value \"-9999.0 \", :variable-type \"\", :science-keywords [] :originator-id \"user1\"}",
+  "user-id": "user1",
+  "deleted": false,
+  "format": "application/edn",
+  "extra-fields": {
+    "variable-name": "totCldH2OStdErr",
+    "measurement": "totCldH2OStdErrMeasurement"
   }
+}
 
 #### Variable Association
 
   {
     "concept-type": "variable-association",
-    "native-id": "totCldH2OStdErr/C12-PROV_A42",
+    "native-id": "totCldH2OStdErr/C1200000005-PROV1",
     "user-id": "user1",
     "format": "application/edn",
-    "metadata": {
-      "variable-name": "totCldH2OStdErr",
-      "originator-id": "jdoe",
-      "associated-concept-id": "C12-PROV_A42",
-      "revision-id": 1, (optional field),
-      "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
-    },
+    "metadata": "{:variable-name \"totCldH2OStdErr\", :originator-id \"user1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1, :data {:description \"Needs more work\"}}",
     "extra-fields": {
       "variable-name": "totCldH2OStdErr",
-      "associated-concept-id": "C12-PROV_A42",
+      "associated-concept-id": "C1200000005-PROV1",
       "associated-revision-id": 1
     }
   }
