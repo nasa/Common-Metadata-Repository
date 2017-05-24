@@ -437,13 +437,15 @@
                           :catalog_item_identity {:name "coll1 ACL"
                                                   :provider_id "PROV1"
                                                   :collection_applicable true
-                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
+                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1)]
+                                                                          :concept_ids [(:concept-id coll1)]}}})
     (ac/create-acl token {:group_permissions [{:user_type "guest"
                                                :permissions ["read"]}]
                           :catalog_item_identity {:name "coll1/coll2 ACL"
                                                   :provider_id "PROV1"
                                                   :collection_applicable true
-                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1) (:EntryTitle coll2)]}}})
+                                                  :collection_identifier {:entry_titles [(:EntryTitle coll1) (:EntryTitle coll2)]
+                                                                          :concept_ids [(:concept-id coll1) (:concept-id coll2)]}}})
     (index/wait-until-indexed)
     ;; Verify that the ACLs are found in Access Control Service search.
     (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
@@ -454,13 +456,13 @@
     (index/wait-until-indexed)
     ;; Verify that those ACLs are NOT found.
     (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
-      (is (= [2] (map :revision_id results)))
+      (is (= [3] (map :revision_id results)))
       (is (= ["coll1/coll2 ACL"] (map :name results)))
-      (is (= [(:EntryTitle coll2)]
+      (is (= [(:concept-id coll2)]
              (-> (ac/get-acl token (:concept_id (first results)))
                  :catalog_item_identity
                  :collection_identifier
-                 :entry_titles))))))
+                 :concept_ids))))))
 
 (deftest delete-deleted-collection-with-new-revision-id-returns-404
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection))

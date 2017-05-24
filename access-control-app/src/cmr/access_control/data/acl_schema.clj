@@ -149,6 +149,9 @@
                                               :properties {:entry_titles {:type :array
                                                                           :items {:type :string
                                                                                   :minLength 1}}
+                                                           :concept_ids {:type :array
+                                                                         :items {:type :string
+                                                                                 :minLength 1}}
                                                            :access_value (ref-def :AccessValueType)
                                                            :temporal (ref-def :TemporalIdentifierType)}}
                    :GranuleIdentifierType {:type :object

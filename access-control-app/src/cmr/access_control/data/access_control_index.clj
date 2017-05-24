@@ -316,6 +316,12 @@
   (when-let [entry-titles (get-in acl [:catalog-item-identity :collection-identifier :entry-titles])]
     {:entry-title entry-titles}))
 
+(defn- concept-ids-elastic-doc-map
+  "Returns map for entry titles to be merged into full elastic doc"
+  [acl]
+  (when-let [concept-idss (get-in acl [:catalog-item-identity :collection-identifier :concept-idss])]
+    {:concept-ids concept-idss}))
+
 (defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
   [concept-map]
@@ -334,6 +340,7 @@
      (access-value-elastic-doc-map acl)
      (temporal-elastic-doc-map acl)
      (entry-title-elastic-doc-map acl)
+     (concept-ids-elastic-doc-map acl)
      (identifier-applicable-elastic-doc-map acl)
      (assoc (select-keys concept-map [:concept-id :revision-id])
             :display-name display-name
