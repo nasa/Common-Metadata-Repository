@@ -15,7 +15,7 @@
       (flatten
        (for [t (h/get-regular-provider-collection-tablenames)]
          (for [result (h/query (format "SELECT concept-id from % where
-																																									provider-id = % and entry-title in (%)" t provider-id entry-titles))]
+																																								provider-id = % and entry-title in (%)" t provider-id entry-titles))]
            (println result)
            (:concept-id result)))))))
 
