@@ -27,16 +27,20 @@
   [index provider]
   (format "C120000000%s-%s" index provider))
 
+(defn- ingest-collection-in-each-format
+  "Ingest a collection in each format and return a list of concept-ids"
+  [attribs]
+  (for [x (range (count collection-formats))
+        :let [format (nth collection-formats x)
+              collection (data-umm-c/collection-concept
+                          (data-umm-c/collection x attribs)
+                          format)]]
+    (:concept-id (ingest/ingest-concept
+                  (assoc collection :concept-id (generate-concept-id x "PROV1"))))))
+
 (deftest bulk-update-science-keywords
   ;; Ingest a collection in each format with science keywords to update
-  (let [concept-ids
-        (for [x (range (count collection-formats))
-              :let [format (nth collection-formats x)
-                    collection (data-umm-c/collection-concept
-                                (data-umm-c/collection x science-keywords-umm)
-                                format)]]
-          (:concept-id (ingest/ingest-concept
-                        (assoc collection :concept-id (generate-concept-id x "PROV1")))))
+  (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :update-type "ADD_TO_EXISTING"

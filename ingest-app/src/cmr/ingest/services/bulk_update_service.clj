@@ -16,6 +16,9 @@
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
 
+(def default-exception-message
+  "There was an error updating the concept.")
+
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
   rules."
@@ -48,18 +51,23 @@
         task-id (data-bulk-update/create-bulk-update-task context
                  provider-id json concept-ids)]
     ;; Queue the bulk update event
-    (ingest-events/publish-ingest-event context
-      (ingest-events/ingest-bulk-update-event task-id bulk-update-params))
+    (ingest-events/publish-ingest-event
+      context
+      (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params))
     task-id))
 
 (defn handle-bulk-update-event
   "For each concept-id, queueu collection bulk update messages"
-  [context task-id bulk-update-params]
+  [context provider-id task-id bulk-update-params]
   (let [{:keys [concept-ids]} bulk-update-params]
     (doseq [concept-id concept-ids]
-     (ingest-events/publish-ingest-event context
-       (ingest-events/ingest-collection-bulk-update-event
-         task-id concept-id bulk-update-params)))))
+     (ingest-events/publish-ingest-event
+      context
+      (ingest-events/ingest-collection-bulk-update-event
+       provider-id
+       task-id
+       concept-id
+       bulk-update-params)))))
 
 (defn- update-collection-concept
   "Perform the update on the collection and update the concept"
@@ -95,10 +103,22 @@
          "to UMM-C had the following issues: "
          (string/join "; " warnings))))
 
+(defn- process-bulk-update-complete
+  "Check if the overall bulk update operation is complete and if do, re-index
+  provider collections"
+  [context provider-id task-id]
+  (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider context task-id)]
+    (when (= "COMPLETE" (:status task-status))
+      (ingest-events/publish-ingest-event
+       context
+       (ingest-events/provider-collections-require-reindexing-event
+        provider-id
+        false)))))
+
 (defn handle-collection-bulk-update-event
   "Perform update for the given concept id. Log an error status if the concept
   cannot be found."
-  [context task-id concept-id bulk-update-params]
+  [context provider-id task-id concept-id bulk-update-params]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
       (let [updated-concept (update-collection-concept context concept bulk-update-params)
@@ -118,8 +138,9 @@
         (data-bulk-update/update-bulk-update-task-collection-status
           context task-id concept-id "FAILED" (.getMessage ex-info))))
     (catch Exception e
-      (let [message (.getMessage e)
+      (let [message (or (.getMessage e) default-exception-message)
             concept-id-message (re-find #"Concept-id.*is not valid." message)]
         (if concept-id-message
           (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" concept-id-message)
-          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" message))))))
+          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" message)))))
+  (process-bulk-update-complete context provider-id task-id))
