@@ -1,6 +1,9 @@
 (ns cmr.ingest.services.ingest-service
   (:require
+    [cheshire.core :as json]
+    [clojure.edn :as edn]
     [clojure.string :as str]
+    [cmr.common.api.context :as context-util]
     [cmr.common.cache :as cache]
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.log :refer (debug info warn error)]
@@ -8,6 +11,7 @@
     [cmr.common.services.errors :as errors]
     [cmr.common.services.messages :as cmsg]
     [cmr.common.util :as util :refer [defn-timed]]
+    [cmr.common.validations.core :as cv]
     [cmr.ingest.config :as config]
     [cmr.ingest.data.bulk-update :as bulk-update]
     [cmr.ingest.data.ingest-events :as ingest-events]
@@ -254,51 +258,137 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Variable Service Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Note that next section is primarily inspired by the code seen in the
+;;; following locations:
+;;;
+;;; * cmr.search.api.tags-api
+;;; * cmr.search.services.tagging-service
+;;; * cmr.search.services.tagging.tag-validation
+;;;
+;;; The reason for this is that the code there is not only more recent and
+;;; generally cleaner, it is so because it does not have all the history of
+;;; constraints and special cases that the collection and granule code
+;;; (above) does.
 
-(defn get-variable-concept-warnings
-  "Validate the UMM-Var concept against the following:
-  * The JSON schema
-  * Data
-  * Non-fatal errors"
-  [context variable validation-options]
-  (let [schema-warnings (v/validate-variable-umm-spec-schema
-                         variable validation-options)]
-    (->> (concat (v/umm-spec-validate-variable
-                  variable validation-options context true)
-                 (v/umm-spec-validate-variable-warnings
-                  variable validation-options context))
-         (map #(str (:path %) " " (str/join " " (:errors %))))
-         (concat schema-warnings))))
+(defmulti variable-json->variable
+  "Returns the variable in JSON from the given request body."
+  type)
 
-(defn-timed validate-variable
-  "Validates a variable concept and parses it. Returns the UMM record and any
-  warnings from validation."
-  [context concept validation-options]
-  (let [concept (update-in concept [:format] fix-ingest-concept-format)
-        {:keys [format metadata]} concept
-        variable (spec/parse-metadata context
-                  :variable format metadata {:sanitize? false})
-        sanitized-variable (spec/parse-metadata
-                            context :variable format metadata)
-        ;; Throw errors for validation on sanitized collection
-        _ (v/umm-spec-validate-variable
-           sanitized-variable validation-options context false)
-        ;; Return warnings for validation errors
-        warnings (get-variable-concept-warnings
-                  context variable validation-options)]
-    ;; Validate ingest business rules for UMM-Vars
-    (v/validate-business-rules
-     context (assoc concept :umm-concept sanitized-variable))
-    {:concept sanitized-variable
-     :warnings warnings}))
+(defmethod variable-json->variable java.io.ByteArrayInputStream
+  [data]
+  (variable-json->variable (slurp data)))
 
-(defn-timed save-variable
-  "Store a variable concept in the mdb and return concept-id and revision-id."
-  [context concept validation-options]
-  (let [{:keys [concept warnings]} (validate-variable
-                                    context concept validation-options)
-        {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-    {:long-name (:long-name concept)
-     :concept-id concept-id
-     :revision-id revision-id
-     :warnings warnings}))
+(defmethod variable-json->variable java.lang.String
+  [data]
+  (util/map-keys->kebab-case
+   (json/parse-string data true)))
+
+(def ^:private update-variable-validations
+  "Service level validations when updating a variable."
+  [(cv/field-cannot-be-changed :variable-name)
+   ;; Originator id cannot change but we allow it if they don't specify a
+   ;; value.
+   (cv/field-cannot-be-changed :originator-id true)])
+
+(defn validate-update-variable
+  "Validates a variable update."
+  [existing-variable updated-variable]
+  (cv/validate!
+   update-variable-validations
+   (assoc updated-variable :existing existing-variable)))
+
+(defn overwrite-variable-tombstone
+  "This function is called when the variable exists but was previously
+  deleted."
+  [context concept variable user-id]
+  (mdb2/save-concept context
+                    (-> concept
+                        (assoc :metadata (pr-str variable)
+                               :deleted false
+                               :user-id user-id)
+                        (dissoc :revision-date)
+                        (update-in [:revision-id] inc))))
+
+(defn- variable->new-concept
+  "Converts a variable into a new concept that can be persisted in metadata
+  db."
+  [variable]
+  {:concept-type :variable
+   :native-id (:name variable)
+   :metadata (pr-str variable)
+   :user-id (:originator-id variable)
+   ;; The first version of a variable should always be revision id 1. We
+   ;; always specify a revision id when saving variables to help avoid
+   ;; conflicts
+   :revision-id 1
+   :format mt/edn
+   :extra-fields {
+     :variable-name (:name variable)
+     :measurement (:long-name variable)}})
+
+(defn- fetch-variable-concept
+  "Fetches the latest version of a variable concept variable variable-key."
+  [context variable-key]
+  (if-let [concept (mdb/find-latest-concept context
+                                            {:native-id variable-key
+                                             :latest true}
+                                             :variable)]
+    (if (:deleted concept)
+      (errors/throw-service-error
+       :not-found
+       (msg/variable-deleted variable-key))
+      concept)
+    (errors/throw-service-error
+     :not-found
+     (msg/variable-does-not-exist variable-key))))
+
+(defn-timed create-variable
+  "Creates the variable, saving it as a revision in metadata db. Returns the
+  concept id and revision id of the saved variable."
+  [context variable-json-str]
+  (let [user-id (context-util/context->user-id
+                 context
+                 msg/token-required-for-variable-modification)
+        variable (as-> variable-json-str data
+                       (variable-json->variable data)
+                       (assoc data :originator-id user-id)
+                       (assoc data :native-id (:name data)))]
+    ;; Check if the variable already exists
+    (if-let [concept-id (mdb2/get-concept-id context
+                                             :variable
+                                             "CMR"
+                                             (:native-id variable)
+                                             false)]
+      ;; The variable exists. Check if its latest revision is a tombstone
+      (let [concept (mdb2/get-latest-concept context concept-id false)]
+        (if (:deleted concept)
+          (overwrite-variable-tombstone context concept variable user-id)
+          (errors/throw-service-error
+           :conflict
+           (msg/variable-already-exists variable concept-id))))
+      ;; The variable doesn't exist
+      (mdb2/save-concept context
+       (variable->new-concept variable)))))
+
+(defn update-variable
+  "Updates an existing variable with the given concept id."
+  [context variable-key variable-json-str]
+  (let [updated-variable (variable-json->variable variable-json-str)
+        existing-concept (fetch-variable-concept context variable-key)
+        existing-variable (edn/read-string (:metadata existing-concept))]
+    (validate-update-variable existing-variable updated-variable)
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          ;; The updated variable won't change the originator of the existing
+          ;; variable
+          (assoc :metadata (-> updated-variable
+                               (assoc :originator-id
+                                      (:originator-id existing-variable))
+                               (pr-str))
+                 :user-id (context-util/context->user-id
+                           context
+                           msg/token-required-for-variable-modification))
+          (dissoc :revision-date :transaction-id)
+          (update-in [:revision-id] inc)))))
