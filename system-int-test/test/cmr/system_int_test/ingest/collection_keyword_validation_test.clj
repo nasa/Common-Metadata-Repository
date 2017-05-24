@@ -2,7 +2,7 @@
   "CMR Ingest keyword validation integration tests"
   (:require
     [clojure.test :refer :all]
-    [cmr.common.util :refer [are2]]
+    [cmr.common.util :refer [are2 are3]]
     [cmr.ingest.services.messages :as msg]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -30,11 +30,15 @@
 
 (defn assert-invalid-keywords
   [coll-attributes field-path errors]
-  (assert-invalid coll-attributes field-path errors {:validate-keywords true}))
+  (assert-invalid coll-attributes field-path errors {:validate-keywords true
+                                                     :format :umm-json
+                                                     :accept-format :json}))
 
 (defn assert-valid-keywords
   [coll-attributes]
-  (assert-valid coll-attributes {:validate-keywords true}))
+  (assert-valid coll-attributes {:validate-keywords true
+                                 :format :umm-json
+                                 :accept-format :json}))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -43,11 +47,15 @@
   (testing "Keyword validation using validation endpoint"
     (let [concept (data-umm-c/collection-concept
                    {:Platforms [(data-umm-c/platform {:ShortName "foo"
-                                                      :LongName "Airbus A340-600"})]})
+                                                      :LongName "Airbus A340-600"})]
+                    :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] :ShortName "SomeCenter"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
                         :errors [(str "Platform short name [foo] and long name [Airbus A340-600] "
+                                      "was not a valid keyword combination.")]}
+                       {:path ["DataCenters" 0]
+                        :errors [(str "DataCenter short name [SomeCenter] and long name [null] "
                                       "was not a valid keyword combination.")]}]}
              response))))
 
@@ -116,6 +124,43 @@
 
           "Case Insensitive"
           "a340-600" "aiRBus A340-600"))
+
+  (testing "DataCenter keyword validation"
+    (are3 [attribs]
+          (let [dc (data-umm-c/data-center attribs)]
+            (assert-invalid-keywords
+              {:DataCenters [dc]}
+              ["DataCenters" 0]
+              [(msg/datacenter-not-matches-kms-keywords dc)]))
+
+          "Invalid short name"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO-Invalid"
+           :LongName "Hydrogeophysics Group, Aarhus University "} 
+
+          "Invalid long name"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO"
+           :LongName "Hydrogeophysics Group, Aarhus University Invalid"}
+
+          "Invalid combination"
+          {:Roles ["ARCHIVER"]
+           :ShortName "OR-STATE/EOARC"
+           :LongName "Hydrogeophysics Group, Aarhus University "})
+
+    (are3 [attribs]
+          (let [dc (data-umm-c/data-center attribs)]
+            (assert-valid-keywords {:DataCenters [dc]}))
+
+          "Valid Case Sensitive"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO"
+           :LongName "Hydrogeophysics Group, Aarhus University "}
+
+          "Valid Case Insensitive"
+          {:Roles ["ARCHIVER"]
+           :ShortName "aArHUS-HYDRO"
+           :LongName "hYdrogeophysics Group, Aarhus University "}))
 
   (testing "Instrument keyword validation"
     (are2 [short-name long-name]
@@ -233,4 +278,45 @@
           :Term "ATMOSpHERIC TEMPERATURE"
           :VariableLevel1 "SuRFACE TEMPERATURE"
           :VariableLevel2 "MAXiMUM/MiNiMUM TEMPERATURE"
-          :VariableLevel3 "24 HOUR MAXiMUM TEMPERATURE"})))
+          :VariableLevel3 "24 HOUR MAXiMUM TEMPERATURE"}))
+
+  (testing "Location Keyword validation"
+    (are3 [attribs]
+          (let [lk (data-umm-c/location-keyword attribs)]
+            (assert-valid-keywords {:LocationKeywords [lk]}))
+
+          "Valid location keyword"
+          {:Category "CONTINENT"
+           :Type "AFRICA"
+           :Subregion1 "CENTRAL AFRICA"}
+
+          "Valid full Location Keyword"
+          {:Category "CONTINENT"
+           :Type "ASIA"
+           :Subregion1 "WESTERN ASIA"
+           :Subregion2 "MIDDLE EAST"
+           :Subregion3 "GAZA STRIP"
+           :DetailedLocation "Testing Detailed Location"})
+
+    (are3 [attribs]
+          (let [lk (data-umm-c/location-keyword attribs)]
+            (assert-invalid-keywords
+              {:LocationKeywords [lk]}
+              ["LocationKeywords" 0]
+              [(msg/location-keyword-not-matches-kms-keywords attribs)]))
+
+          "Invalid Type"
+          {:Category "CONTINENT"
+           :Type "GAZA"
+           :Subregion1 "WESTERN ASIA"
+           :Subregion2 "MIDDLE EAST"
+           :Subregion3 "GAZA STRIP"
+           :DetailedLocation "Testing Detailed Location"}
+
+          "Invalid Category"
+          {:Category "XYZ"}
+
+          "Invalid Subregion"
+          {:Category "CONTINENT"
+           :Type "AFRICA"
+           :Subregion1 "WESTERN ASIA"})))

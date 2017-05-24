@@ -327,7 +327,8 @@
                                                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                                                                   :Topic "Cool"
                                                                                                   :Term "Mild"})]
-                                                   :DataCenters [(data-umm-c/data-center ["DISTRIBUTOR"] "Larc")]
+                                                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                                                          :ShortName "Larc"})]
                                            ;; The following fields are needed for DIF10 to pass xml validation
                                                    :TemporalExtents [(data-umm-c/temporal-extent
                                                                        {:beginning-date-time "1965-12-12T12:00:00Z"

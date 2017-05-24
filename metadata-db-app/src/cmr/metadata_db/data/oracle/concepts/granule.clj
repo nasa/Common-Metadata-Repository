@@ -1,11 +1,10 @@
 (ns cmr.metadata-db.data.oracle.concepts.granule
   "Implements multi-method variations for granules"
-  (:require [cmr.metadata-db.data.oracle.concepts :as c]
-            [cmr.metadata-db.data.oracle.concept-tables :as tables]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.date-time-parser :as p]
-            [cmr.oracle.connection :as oracle]
-            [clj-time.coerce :as cr]))
+  (:require
+   [clj-time.coerce :as cr]
+   [cmr.common.date-time-parser :as p]
+   [cmr.metadata-db.data.oracle.concepts :as c]
+   [cmr.oracle.connection :as oracle]))
 
 (defmethod c/db-result->concept-map :granule
   [concept-type db provider-id result]

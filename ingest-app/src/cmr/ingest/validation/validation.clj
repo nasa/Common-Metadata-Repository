@@ -82,7 +82,11 @@
      :ScienceKeywords (match-kms-keywords-validation
                          kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
      :Projects (match-kms-keywords-validation
-                kms-index :projects msg/project-not-matches-kms-keywords)}))
+                kms-index :projects msg/project-not-matches-kms-keywords)
+     :LocationKeywords (match-kms-keywords-validation
+                        kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
+     :DataCenters (match-kms-keywords-validation
+                   kms-index :providers msg/datacenter-not-matches-kms-keywords)}))
 
 (defn validate-concept-metadata
   [concept]

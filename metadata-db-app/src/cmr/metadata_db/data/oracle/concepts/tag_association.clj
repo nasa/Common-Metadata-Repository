@@ -1,20 +1,16 @@
 (ns cmr.metadata-db.data.oracle.concepts.tag-association
-  "Implements multi-method variations for tags"
-  (:require [cmr.metadata-db.data.oracle.concepts :as c]
-            [cmr.metadata-db.data.oracle.concept-tables :as tables]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.date-time-parser :as p]
-            [clj-time.coerce :as cr]
-            [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.data.concepts :as concepts]))
+  "Implements multi-method variations for tag associations"
+  (:require
+   [cmr.metadata-db.data.oracle.concepts :as c]))
 
 (defmethod c/db-result->concept-map :tag-association
   [concept-type db provider-id result]
   (some-> (c/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :tag-association)
           (assoc-in [:extra-fields :associated-concept-id] (:associated_concept_id result))
-          (assoc-in [:extra-fields :associated-revision-id] (when-let [ari (:associated_revision_id result)]
-                                                              (long ari)))
+          (assoc-in [:extra-fields :associated-revision-id]
+                    (when-let [ari (:associated_revision_id result)]
+                      (long ari)))
           (assoc-in [:extra-fields :tag-key] (:tag_key result))
           (assoc :user-id (:user_id result))))
 
