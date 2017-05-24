@@ -81,9 +81,9 @@
         user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
         ;; create some collections
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
-                                                     :entry-title (str % " entry title")
-                                                     :native-id %
-                                                     :short-name %})
+                                                   :entry-title (str % " entry title")
+                                                   :native-id %
+                                                   :short-name %})
         coll1 (save-prov1-collection "coll1")
         coll2 (save-prov1-collection "coll2")
         coll3 (save-prov1-collection "coll3")
@@ -170,11 +170,32 @@
                 "user2" ["read" "order"]))))
 
         (testing "acls granting access to collection by collection identifier"
+          (testing "by concept id"
+            (create-acl
+              {:group_permissions [{:permissions [:read]
+                                    :user_type :guest}]
+               :catalog_item_identity {:name "coll2 guest read concept ids"
+                                       :collection_applicable true
+                                       :collection_identifier {:concept_ids [coll2]}
+                                       :provider_id "PROV1"}})
+            (testing "for collection in ACL's concept ids"
+              (are [user permissions]
+                (= {coll2 permissions}
+                   (get-permissions user coll2))
+                :guest ["read"]
+                :registered []))
+            (testing "for collection not in ACL's concept ids"
+              (are [user permissions]
+                (= {coll3 permissions}
+                   (get-permissions user coll3))
+                :guest []
+                :registered [])))
+
           (testing "by entry title"
             (create-acl
               {:group_permissions [{:permissions [:read]
                                     :user_type :guest}]
-               :catalog_item_identity {:name "coll2 guest read"
+               :catalog_item_identity {:name "coll2 guest read entry titles"
                                        :collection_applicable true
                                        :collection_identifier {:entry_titles ["coll2 entry title"]}
                                        :provider_id "PROV1"}})

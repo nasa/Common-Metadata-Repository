@@ -146,9 +146,7 @@
   (-> concept
       (u/lazy-assoc :AccessConstraints (umm-spec-core/parse-collection-access-value concept))
       (u/lazy-assoc :TemporalExtents (umm-spec-core/parse-collection-temporal concept))
-      (assoc :EntryTitle (get-in concept [:extra-fields :entry-title]))
-      (assoc :ConceptIds (get-in concept [:extra-fields :concept-ids]))))
-
+      (assoc :EntryTitle (get-in concept [:extra-fields :entry-title]))))
 
 (defmethod add-acl-enforcement-fields-to-concept :granule
   [concept]

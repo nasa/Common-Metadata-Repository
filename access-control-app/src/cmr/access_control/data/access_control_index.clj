@@ -160,6 +160,7 @@
    :granule-identifier m/bool-field-mapping
    :granule-applicable m/bool-field-mapping
 
+   :concept-ids m/string-field-mapping
    :entry-title m/string-field-mapping
 
    :collection-access-value-min m/int-field-mapping
@@ -319,8 +320,8 @@
 (defn- concept-ids-elastic-doc-map
   "Returns map for entry titles to be merged into full elastic doc"
   [acl]
-  (when-let [concept-idss (get-in acl [:catalog-item-identity :collection-identifier :concept-idss])]
-    {:concept-ids concept-idss}))
+  (when-let [concept-ids (get-in acl [:catalog-item-identity :collection-identifier :concept-ids])]
+    {:concept-ids concept-ids}))
 
 (defn acl-concept-map->elastic-doc
   "Converts a concept map containing an acl into the elasticsearch document to index."
