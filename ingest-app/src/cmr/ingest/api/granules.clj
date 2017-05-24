@@ -1,4 +1,4 @@
-(ns cmr.ingest.api.ingest.granules
+(ns cmr.ingest.api.granules
   "Granule ingest functions in support of the ingest API."
   (:require
    [cmr.acl.core :as acl]
@@ -6,12 +6,7 @@
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.ingest.api.ingest.core :refer [
-     body->concept
-     concept->loggable-string
-     generate-ingest-response
-     set-revision-id
-     verify-provider-exists]]
+   [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.messages :as msg]))
 
@@ -25,10 +20,10 @@
 
 (defmethod validate-granule :default
   [provider-id native-id {:keys [body content-type headers request-context]}]
-  (verify-provider-exists request-context provider-id)
-  (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+  (api-core/verify-provider-exists request-context provider-id)
+  (let [concept (api-core/body->concept :granule provider-id native-id body content-type headers)]
     (info (format "Validating granule %s from client %s"
-                  (concept->loggable-string concept) (:client-id request-context)))
+                  (api-core/concept->loggable-string concept) (:client-id request-context)))
     (ingest/validate-granule request-context concept)
     {:status 200}))
 
@@ -52,7 +47,7 @@
 
 (defmethod validate-granule :multipart-params
   [provider-id native-id {:keys [multipart-params request-context]}]
-  (verify-provider-exists request-context provider-id)
+  (api-core/verify-provider-exists request-context provider-id)
   (validate-multipart-params #{"granule" "collection"} multipart-params)
 
   (let [coll-concept (multipart-param->concept
@@ -65,26 +60,26 @@
 (defn ingest-granule
   [provider-id native-id request]
   (let [{:keys [body content-type params headers request-context]} request]
-    (verify-provider-exists request-context provider-id)
+    (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
-    (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+    (let [concept (api-core/body->concept :granule provider-id native-id body content-type headers)]
       (info (format "Ingesting granule %s from client %s"
-                    (concept->loggable-string concept) (:client-id request-context)))
-      (generate-ingest-response headers (ingest/save-granule request-context concept)))))
+                    (api-core/concept->loggable-string concept) (:client-id request-context)))
+      (api-core/generate-ingest-response headers (ingest/save-granule request-context concept)))))
 
 (defn delete-granule
   [provider-id native-id request]
   (let [{:keys [request-context params headers]} request
-        concept-attribs (set-revision-id
-                          {:provider-id provider-id
-                           :native-id native-id
-                           :concept-type :granule}
-                          headers)]
+        concept-attribs (api-core/set-revision-id
+                         {:provider-id provider-id
+                          :native-id native-id
+                          :concept-type :granule}
+                         headers)]
 
-    (verify-provider-exists request-context provider-id)
+    (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
     (info (format "Deleting granule %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))
-    (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
+    (api-core/generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))

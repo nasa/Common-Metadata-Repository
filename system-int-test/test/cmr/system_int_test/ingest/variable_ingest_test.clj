@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.ingest.variable-ingest-test
-  "CMR collection ingest integration tests"
+  "CMR variable ingest integration tests."
   (:require
     [clj-http.client :as client]
     [clj-time.core :as t]
@@ -32,7 +32,7 @@
 
 (use-fixtures :each (ingest/reset-fixture))
 
-(defn- ingest-succeeded?
+(defn- permission-to-ingest?
   "Returns true if the provided token has permission to perform the given
   function."
   [response]
@@ -100,7 +100,7 @@
                             variable
                             {:accept-format :json
                              :token update-token})]
-        (is (ingest-succeeded? response))
+        (is (permission-to-ingest? response))
         (index/wait-until-indexed)
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))))

@@ -23,9 +23,10 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.serf :as serf-to-umm])
-  (:import (cmr.umm_spec.models.umm_collection_models UMM-C)
-           (cmr.umm_spec.models.umm_service_models UMM-S)
-           (cmr.umm_spec.models.umm_variable_models UMM-Var)))
+  (:import
+   (cmr.umm_spec.models.umm_collection_models UMM-C)
+   (cmr.umm_spec.models.umm_service_models UMM-S)
+   (cmr.umm_spec.models.umm_variable_models UMM-Var)))
 
 (defn concept-type
   "Returns a concept type keyword from a UMM Clojure record (i.e. defrecord)."

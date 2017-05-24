@@ -1,4 +1,4 @@
-(ns cmr.ingest.api.ingest.variables
+(ns cmr.ingest.api.variables
   "Variable ingest functions in support of the ingest API."
   (:require
    [cheshire.core :as json]
@@ -8,7 +8,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.ingest.api.ingest.core :refer [body->concept ingest-status-code]]
+   [cmr.ingest.api.core :refer [body->concept ingest-status-code]]
    [cmr.ingest.services.ingest-service :as ingest]))
 
 (defn- verify-variable-modification-permission

@@ -5,9 +5,9 @@
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.umm-spec.test.umm-generators :as umm-generators]
-    [cmr.umm-spec.versioning :as ver]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.util :as u]
+    [cmr.umm-spec.versioning :as ver]
     [compojure.core :refer :all]))
 
 (def concept-type->supported-formats
@@ -56,11 +56,11 @@
     (mt/extract-header-mime-type supported-formats headers "content-type" true)
     (mt/extract-header-mime-type supported-formats headers "accept" true)
 
-    ;; Can not skip-sanitize-umm when the target format is not UMM-C 
+    ;; Can not skip-sanitize-umm when the target format is not UMM-C
     (when (and skip-sanitize-umm? (not (mt/umm-json? accept-header)))
       (let [errors ["Skipping santization during translation is only supported when the target format is UMM-C"]]
-        (errors/throw-service-errors :bad-request errors))) 
-   
+        (errors/throw-service-errors :bad-request errors)))
+
     ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
     (if-let [errors (seq (umm-spec/validate-metadata concept-type content-type body))]
       (errors/throw-service-errors :bad-request errors)
