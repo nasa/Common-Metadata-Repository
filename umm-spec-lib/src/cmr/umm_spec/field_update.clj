@@ -4,6 +4,11 @@
   [cmr.common.util :as util]
   [cmr.umm-spec.umm-spec-core :as spec-core]))
 
+(defn field-update-functions
+  "Partial update functions for handling specific update cases"
+  [umm]
+  {[:Instruments] (partial util/update-in-each umm [:Platforms])})
+
 (defn- value-matches?
   "Return true if the value is a match on find value."
   [find-value value]
@@ -45,11 +50,19 @@
                                         %)))
     umm))
 
+(defn apply-update
+  "Apply an update to a umm record. Check for field-specific function and use that
+  if exists, otherwise apply the default list update."
+  [update-type umm update-field update-value find-value]
+  (if-let [partial-update-fn (get (field-update-functions umm) update-field)]
+    (partial-update-fn #(apply-umm-list-update update-type % update-field update-value find-value))
+    (apply-umm-list-update update-type umm update-field update-value find-value)))
+
 (defn update-concept
   "Apply an update to a raw concept. Convert to UMM, apply the update, and
   convert back to native format."
   [context concept update-type update-field update-value find-value]
   (let [{:keys [format metadata concept-type]} concept
         umm (spec-core/parse-metadata context concept-type format metadata {:sanitize? false})
-        umm (apply-umm-list-update update-type umm update-field update-value find-value)]
+        umm (apply-update update-type umm update-field update-value find-value)]
     (spec-core/generate-metadata context umm (:format concept))))
