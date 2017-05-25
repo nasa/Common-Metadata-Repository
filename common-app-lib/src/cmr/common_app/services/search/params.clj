@@ -189,8 +189,8 @@
   [context concept-type params]
   (let [[params query-attribs] (parse-query-level-params concept-type params)
         options (u/map-keys->kebab-case (get params :options {}))
-        scroll-id (:scroll-id params)
-        params (dissoc params :options :scroll-id)
+        scroll-id (:scroll-id context)
+        params (dissoc params :options)
         query (if (empty? params)
                 ;; matches everything
                 (qm/query query-attribs)

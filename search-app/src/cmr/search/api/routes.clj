@@ -2,7 +2,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
@@ -166,12 +166,10 @@
         ;; a set of search results that would match the UMM-C JSON schema
         result-format (if (= :umm-json (:format result-format))
                         (assoc result-format :format :umm-json-results)
-                        result-format)
-        scroll-id (get headers common-routes/SCROLL_ID_HEADER)]
+                        result-format)]
     (-> params
         (dissoc :path-w-extension :token)
-        (assoc :result-format result-format)
-        (conj (when scroll-id [:scroll-id scroll-id])))))
+        (assoc :result-format result-format))))
 
 (defn- search-response
   "Returns the response map for finding concepts"
@@ -193,7 +191,8 @@
   "Invokes query service to parse the parameters query, find results, and return the response"
   [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        ctx (assoc ctx :query-string body)
+        scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
+        ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (process-params params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
@@ -206,7 +205,7 @@
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [ctx path-w-extension params headers body]
-  (let [content-type-header (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER))]
+  (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
@@ -218,7 +217,7 @@
       {:status 415
        :headers {common-routes/CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
-                  (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER)) "]")})))
+                  (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER)) "]")})))
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."

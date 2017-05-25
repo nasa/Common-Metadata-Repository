@@ -18,7 +18,7 @@
 
 (defconfig elastic-scroll-timeout 
   "Timeout for ES scrolling"
-  {:default "10m"})
+  {:default "5m"})
 
 (defconfig elastic-scroll-search-type
   "Search type to use with scrolling - either 'scan' or 'query_then_fetch'"

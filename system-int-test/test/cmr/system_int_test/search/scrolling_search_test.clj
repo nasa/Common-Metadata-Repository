@@ -3,6 +3,7 @@
   (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.common-app.api.routes :as routes]
    [cmr.common.util :as util :refer [are3]]
    [cmr.elastic-utils.config :as es-config]
    [cmr.system-int-test.data2.core :as data2-core]
@@ -53,24 +54,32 @@
     (index/wait-until-indexed)
                
     (testing "Scrolling with page size"
-      (let [{:keys [hits scroll-id] :as result} (search/find-refs :granule {:provider "PROV1" :scroll true :page-size 2})]
+      (let [{:keys [hits scroll-id] :as result} (search/find-refs 
+                                                 :granule 
+                                                 {:provider "PROV1" :scroll true :page-size 2})]
         (testing "First call returns scroll-id and hits count with page-size results"
           (is (= (count all-grans) hits))
           (is (not (nil? scroll-id)))
           (is (data2-core/refs-match? [gran1 gran2] result)))
         
         (testing "Subsequent searches gets page-size results"
-          (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
+          (let [result (search/find-refs :granule 
+                                         {:scroll true}
+                                         {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [gran3 gran4] result))))
 
         (testing "Remaining results returned on last search"
-          (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
+          (let [result (search/find-refs :granule 
+                                         {:scroll true}
+                                         {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [gran5] result))))
 
         (testing "Searches beyond total hits return empty list"
-          (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
+          (let [result (search/find-refs :granule 
+                                         {:scroll true}
+                                         {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [] result))))))
 
@@ -80,49 +89,58 @@
     ;; is set to 1 second it may be many seconds before Elasticsearch disposes of the session. 
     ;; The following test should not be removed and only uncommented during manual testing.
     
-    ; (testing "Expired scroll-id is invalid"
-    ;   (let [timeout (es-config/elastic-scroll-timeout)
-    ;         ;; Set the timeout to one second
-    ;         _ (es-config/set-elastic-scroll-timeout! "1s")
-    ;         {:keys [scroll-id] :as result} (search/find-refs :granule {:provider "PROV1" :scroll true :page-size 2})]   
-    ;     (testing "First call returns scroll-id and hits count with page-size results"
-    ;       (is (data2-core/refs-match? [gran1 gran2] result)))  
-    ;     ;; This is problematic. Can't use timekeeper tricks here since ES is the one enforcing 
-    ;     ;; the timeout, and it seems to have it's own scheule, so our session id does not time out
-    ;     ;; in exaclty one second. 
-    ;     (Thread/sleep 100000)
-    ;     (testing "Subsequent calls get unknown scroll-id error"
-    ;       (let [response (search/find-refs :granule 
-    ;                                        {:scroll true :scroll-id scroll-id}
-    ;                                        {:allow-failure? true})]
-    ;         (is (= 404 (:status response)))
-    ;         (is (= (str "Scroll session [" scroll-id "] does not exist")
-    ;               (first (:errors response))))))
-    ;     (es-config/set-elastic-scroll-timeout! timeout)))
+    #_(testing "Expired scroll-id is invalid"
+        (let [timeout (es-config/elastic-scroll-timeout)
+              ;; Set the timeout to one second
+              _ (es-config/set-elastic-scroll-timeout! "1s")
+              {:keys [scroll-id] :as result} (search/find-refs 
+                                              :granule 
+                                              {:provider "PROV1" :scroll true :page-size 2})]   
+          (testing "First call returns scroll-id and hits count with page-size results"
+            (is (data2-core/refs-match? [gran1 gran2] result)))  
+          ;; This is problematic. Can't use timekeeper tricks here since ES is the one enforcing 
+          ;; the timeout, and it seems to have it's own scheule, so our session id does not time out
+          ;; in exactly one second. 
+          (Thread/sleep 100000)
+          (testing "Subsequent calls get unknown scroll-id error"
+            (let [response (search/find-refs :granule 
+                                            {:scroll true}
+                                            {:allow-failure? true
+                                             :headers {routes/SCROLL_ID_HEADER scroll-id}})]
+              (is (= 404 (:status response)))
+              (is (= (str "Scroll session [" scroll-id "] does not exist")
+                    (first (:errors response))))))
+          (es-config/set-elastic-scroll-timeout! timeout)))
 
     (testing "invalid parameters"
-      (are3 [query err-msg]
-        (let [response (search/find-refs :granule query {:allow-failure? true})]
+      (are3 [query options err-msg]
+        (let [options (merge {:allow-failure? true})
+              response (search/find-refs :granule query options)]
           (is (= 400 (:status response)))
           (is (= err-msg
                  (first (:errors response)))))
 
         "scroll parameter must be boolean"
         {:provider "PROV1" :scroll "foo"} 
+        {}
         "Parameter scroll must take value of true or false but was [foo]"
 
         "page_num is not allowed with scrolling"
         {:provider "PROV1" :scroll true :page-num 2}
+        {}
         "page_num is not allowed with scrolling"
         
         "offset is not allowed with scrolling"
         {:provider "PROV1" :scroll true :offset 2}
+        {}
         "offset is not allowed with scrolling"
 
         "undecodable scroll-id"
-        {:scroll true :scroll-id "foo"}
+        {:scroll true}
+        {:headers {routes/SCROLL_ID_HEADER "foo"}}
         "Invalid scroll id [foo]"
 
         "malformed scroll-id"
-        {:scroll true :scroll-id malformed-scroll-id}
+        {:scroll true}
+        {:headers {routes/SCROLL_ID_HEADER malformed-scroll-id}}
         (str "Invalid scroll id [" malformed-scroll-id "]")))))

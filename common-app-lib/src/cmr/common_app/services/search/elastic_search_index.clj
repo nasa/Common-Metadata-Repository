@@ -50,7 +50,10 @@
   (map #(q2e/query-field->elastic-field (keyword %) concept-type) fields))
 
 (defn- query->execution-params
-  "Returns the execution parameters extracted from the query"
+  "Returns the Elasticsearch execution parameters extracted from the query. These are the
+  actual ES parameters as epxected by the elastisch library. The :scroll-id parameter is special
+  and is stripped out before calling elastisch to determine whether a normal search call or a
+  scroll call should be made."
   [query]
   (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id]} query
         scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
@@ -138,6 +141,8 @@
            "with sort" (pr-str sort-params)
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
+    (when-let [scroll-id (:scroll-id query-map)]
+      (info "Using scroll-id" scroll-id))
     (let [response (send-query context index-info query-map)]
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]

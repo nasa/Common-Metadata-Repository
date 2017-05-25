@@ -60,18 +60,27 @@
             (data2-core/assert-metadata-results-match 
               format-key 
               [g3-echo g4-echo]
-              (search/find-metadata :granule format-key {:scroll true :scroll-id scroll-id})))
+              (search/find-metadata :granule 
+                                    format-key 
+                                    {:scroll true} 
+                                    {:headers {"CMR-Scroll-Id" scroll-id}})))
 
-          (testing "Thrid search gets last granule"
+          (testing "Third search gets last granule"
             (data2-core/assert-metadata-results-match 
               format-key 
               [g5-echo]
-              (search/find-metadata :granule format-key {:scroll true :scroll-id scroll-id})))
+              (search/find-metadata :granule 
+                                    format-key 
+                                    {:scroll true} 
+                                    {:headers {"CMR-Scroll-Id" scroll-id}})))
               
           (testing "Subsequent search gets empty list"
             (data2-core/assert-metadata-results-match 
               format-key 
               []
-              (search/find-metadata :granule format-key {:scroll true :scroll-id scroll-id})))))))
+              (search/find-metadata :granule 
+                                    format-key 
+                                    {:scroll true} 
+                                    {:headers {"CMR-Scroll-Id" scroll-id}})))))))
 
       
