@@ -637,7 +637,7 @@
          :iso19115
 
          ["Collection additional attribute [a-float] is referenced by existing granules, cannot be removed. Found 1 granules."
-          "Collection changing from geodetic granule spatial representation to no_spatial is not allowed when the collection has granules. Found 1 granules."]
+          "Collection changing from GEODETIC granule spatial representation to NO_SPATIAL is not allowed when the collection has granules. Found 1 granules."]
          :iso-smap)))
 
 (deftest nsidc-iso-collection-echo10-granule
