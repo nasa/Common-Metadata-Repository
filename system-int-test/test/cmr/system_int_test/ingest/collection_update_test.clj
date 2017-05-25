@@ -384,7 +384,6 @@
 
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial aa/parse-value "TIME")
-        _ (println (str (dg/psa "time" ["04:02:03Z"])))
         a1 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"
                                              :ParameterRangeBegin (parse-fn "01:02:03Z")
                                              :ParameterRangeEnd (parse-fn "11:02:03Z")})
@@ -393,7 +392,6 @@
                                                      :ShortName "S1"
                                                      :Version "V1"
                                                      :AdditionalAttributes [a1]}))
-        _ (println (str (dg/psa "time" ["04:02:03Z"])))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                       [(dg/psa "time" ["04:02:03Z"])]}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
@@ -781,7 +779,7 @@
 
         "Updating a platform that is referenced by a granule by humanized alias back to its original value is invalid."
         ["AM-1" "p4"]
-        ["Collection Platform [Terra] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection Platform [terra] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-tile-test
   (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE"
@@ -828,11 +826,11 @@
 
         "Removing a tile that is referenced by a granule is invalid."
         ["Replacement_Tile"]
-        ["Collection TilingIdentificationSystemName [Another_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
+        ["Collection TilingIdentificationSystemName [another_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
         ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile"]
-        ["Collection TilingIdentificationSystemName [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection TilingIdentificationSystemName [replacement_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
@@ -902,4 +900,59 @@
 
         "Updating an instrument  that is referenced by a granule by humanized alias back to its original value is invalid."
         ["p2" "i2" "GPS" "s1"]
-        ["Collection Child Instrument [GPS RECEIVERS] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection Child Instrument [gps receivers] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+
+(deftest collection-update-case-insensitivity-test
+  (let [a1 (data-umm-c/additional-attribute {:Name "STRING" :DataType "STRING"})
+        a2 (data-umm-c/additional-attribute {:Name "BOOLEAN" :DataType "BOOLEAN"})
+        a3 (data-umm-c/additional-attribute {:Name "INT" :DataType "INT" :value 5})
+        a4 (data-umm-c/additional-attribute {:Name "FLOAT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+        a5 (data-umm-c/additional-attribute {:Name "DATETIME" :DataType "DATETIME"})
+        a6 (data-umm-c/additional-attribute {:Name "DATE" :DataType "DATE"})
+        a7 (data-umm-c/additional-attribute {:Name "TIME" :DataType "TIME"})
+        a8 (data-umm-c/additional-attribute {:Name "DTS" :DataType "DATETIME_STRING"})
+        collection-map {:EntryTitle "parent-collection"
+                        :ShortName "S1"
+                        :Version "V1"
+                        :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
+                        :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "SOURCE_TILE")
+                        :Projects (data-umm-c/projects "PROJECT")
+                        :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8]}
+
+        coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection collection-map))
+        gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["PROJECT"]
+                                                                                     :two-d-coordinate-system (dg/two-d "SOURCE_TILE")
+                                                                                     :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
+                                                                                     :product-specific-attributes [(dg/psa "STRING" ["alpha"])
+                                                                                                                   (dg/psa "BOOLEAN" ["true"])
+                                                                                                                   (dg/psa "INT" ["2"])
+                                                                                                                   (dg/psa "FLOAT" ["2.0"])
+                                                                                                                   (dg/psa "DATETIME" ["2012-01-01T01:02:03Z"])
+                                                                                                                   (dg/psa "DATE" ["2012-01-02Z"])
+                                                                                                                   (dg/psa "TIME" ["01:02:03Z"])
+                                                                                                                   (dg/psa "DTS" ["2012-01-01T01:02:03Z"])]}))]
+
+    (are3
+      [coll-map]
+      (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-map))
+            {:keys [status errors]} response]
+        (is (= [200 nil] [status errors])))
+
+      "Projects"
+      (assoc collection-map :Projects (data-umm-c/projects "ProJecT"))
+
+      "Tiling Identification Systems"
+      (assoc collection-map :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "sOUrce_tIle"))
+
+      "Platforms Instruments Child Instruments"
+      (assoc collection-map :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "plAtfoRM" "inStrUmEnt" "CHildinSTrument")])
+
+      "Additional Attributes"
+      (assoc collection-map :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "strinG" :DataType "STRING"})
+                                                   (data-umm-c/additional-attribute {:Name "booleaN" :DataType "BOOLEAN"})
+                                                   (data-umm-c/additional-attribute {:Name "inT" :DataType "INT" :value 5})
+                                                   (data-umm-c/additional-attribute {:Name "floaT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+                                                   (data-umm-c/additional-attribute {:Name "datetimE" :DataType "DATETIME"})
+                                                   (data-umm-c/additional-attribute {:Name "datE" :DataType "DATE"})
+                                                   (data-umm-c/additional-attribute {:Name "timE" :DataType "TIME"})
+                                                   (data-umm-c/additional-attribute {:Name "dtS" :DataType "DATETIME_STRING"})]))))

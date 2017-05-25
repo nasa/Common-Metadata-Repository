@@ -8,13 +8,13 @@
   "Checks if the temporal range defined by the first pair of arguments covers the temporal range
    defined by the second pair of arguments."
   [updated-start-time updated-end-time prev-start-time prev-end-time]
-   (and
-     (or (nil? updated-start-time)
-         (and prev-start-time
-              (not (t/after? updated-start-time prev-start-time))))
-     (or (nil? updated-end-time)
-         (and prev-end-time
-              (not (t/before? updated-end-time prev-end-time))))))
+  (and
+   (or (nil? updated-start-time)
+       (and prev-start-time
+            (not (t/after? updated-start-time prev-start-time))))
+   (or (nil? updated-end-time)
+       (and prev-end-time
+            (not (t/before? updated-end-time prev-end-time))))))
 
 (defn- out-of-bounds-params
   "Returns a map containing search parameters to determine granules for the collection with
