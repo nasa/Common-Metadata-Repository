@@ -2,7 +2,6 @@
   "Provides functions to validate the spatial attributes of a collection during its update."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
    [cmr.common.util :as util]))
 
 (defn- extract-granule-spatial-representation
