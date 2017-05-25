@@ -76,6 +76,8 @@
                                  first)]]
         (is (= 2
                (:revision-id (:meta concept))))
+        (is (= "application/vnd.nasa.cmr.umm+json"
+               (:format (:meta concept))))
         (is (= (:ScienceKeywords (:umm concept))
                [{:Category "EARTH SCIENCE"
                  :Term "MARINE SEDIMENTS"
