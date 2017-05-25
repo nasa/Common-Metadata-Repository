@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.ingest.collection-update-test
   "CMR collection update integration tests"
   (:require
-   [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.spatial.point :as p]
