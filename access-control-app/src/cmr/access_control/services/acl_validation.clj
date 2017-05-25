@@ -99,7 +99,7 @@
   [context acl]
   (let [provider-id (-> acl :catalog-item-identity :provider-id)]
     [(v/every (fn [key-path concept-id]
-                (let [regex (re-pattern (str "C\\d+-[A-Za-z0-9_]+"))]
+                (let [regex #"C\d+-\S+"]
                   (when-not (re-matches regex concept-id)
                     {key-path [(format "[%s] is not a valid collection concept-id." concept-id)]}))))
      (v/every (fn [key-path concept-id]
