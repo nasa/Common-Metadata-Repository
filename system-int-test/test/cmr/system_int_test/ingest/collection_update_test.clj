@@ -547,7 +547,7 @@
                :errors [(format (str "Collection changing from %s granule spatial representation to "
                                      "%s is not allowed when the collection has granules."
                                      " Found 1 granules.")
-                                (str/lower-case prev-gsr) (str/lower-case new-gsr))]}
+                                prev-gsr new-gsr)]}
               (update-collection coll new-spatial-params))
 
            coll-geodetic-with-grans {:gsr "CARTESIAN"} "GEODETIC" "CARTESIAN"
