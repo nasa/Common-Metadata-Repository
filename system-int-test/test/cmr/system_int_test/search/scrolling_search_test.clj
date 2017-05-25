@@ -1,8 +1,10 @@
 (ns cmr.system-int-test.search.scrolling-search-test
   "Tests for using the scroll parameter to retrieve search results"
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -11,6 +13,10 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+
+(def malformed-scroll-id
+  "A scroll-id that has a valid length, but was never issued by Elasticsearch"
+  (string/join (repeat 720 "a")))
 
 (deftest granule-scrolling
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" 
@@ -53,21 +59,45 @@
           (is (not (nil? scroll-id)))
           (is (data2-core/refs-match? [gran1 gran2] result)))
         
-        (testing "Subsequent call gets page-size results"
+        (testing "Subsequent searches gets page-size results"
           (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [gran3 gran4] result))))
 
-        (testing "All results returned eventually"
+        (testing "Remaining results returned on last search"
           (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [gran5] result))))
 
-        (testing "Calls beyond total hits return empty list"
+        (testing "Searches beyond total hits return empty list"
           (let [result (search/find-refs :granule {:scroll true :scroll-id scroll-id})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [] result))))))
 
+    ;; The following test is included for completeness to test session timeouts, but it
+    ;; cannot be run regularly because it is impossible to predict how long it will take
+    ;; for Elasticsearch to actually time out a scroll session. Even when the scroll timeout
+    ;; is set to 1 second it may be many seconds before Elasticsearch disposes of the session. 
+    
+    ; (testing "Expired scroll-id is invalid"
+    ;   (let [timeout (es-config/elastic-scroll-timeout)
+    ;         ;; Set the timeout to one second
+    ;         _ (es-config/set-elastic-scroll-timeout! "1s")
+    ;         {:keys [scroll-id] :as result} (search/find-refs :granule {:provider "PROV1" :scroll true :page-size 2})]   
+    ;     (testing "First call returns scroll-id and hits count with page-size results"
+    ;       (is (data2-core/refs-match? [gran1 gran2] result)))  
+    ;     ;; This is problematic. Can't use timekeeper tricks here since ES is the one enforcing 
+    ;     ;; the timeout, and it seems to have it's own scheule, so our session id does not time out
+    ;     ;; in exaclty one second. 
+    ;     (Thread/sleep 100000)
+    ;     (testing "Subsequent calls get unknown scroll-id error"
+    ;       (let [response (search/find-refs :granule 
+    ;                                        {:scroll true :scroll-id scroll-id}
+    ;                                        {:allow-failure? true})]
+    ;         (is (= 404 (:status response)))
+    ;         (is (= (str "Scroll session [" scroll-id "] does not exist")
+    ;               (first (:errors response))))))
+    ;     (es-config/set-elastic-scroll-timeout! timeout)))
 
     (testing "invalid parameters"
       (are3 [query err-msg]
@@ -86,4 +116,12 @@
         
         "offset is not allowed with scrolling"
         {:provider "PROV1" :scroll true :offset 2}
-        "offset is not allowed with scrolling"))))
+        "offset is not allowed with scrolling"
+
+        "undecodable scroll-id"
+        {:scroll true :scroll-id "foo"}
+        "Invalid scroll id [foo]"
+
+        "malformed scroll-id"
+        {:scroll true :scroll-id malformed-scroll-id}
+        (str "Invalid scroll id [" malformed-scroll-id "]")))))

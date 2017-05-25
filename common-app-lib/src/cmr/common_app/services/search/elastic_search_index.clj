@@ -1,6 +1,7 @@
 (ns cmr.common-app.services.search.elastic-search-index
   "Implements searching against Elasticsearch. Defines an Elastic Search Index component."
   (:require
+   [cheshire.core :as json]
    [clojure.set :as set]
    [clojurewerkz.elastisch.aggregation :as a]
    [clojurewerkz.elastisch.rest.document :as esd]
@@ -12,7 +13,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.services.errors :as e]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
@@ -71,16 +72,50 @@
      :search_type search-type
      :highlight highlights}))
 
+(defmulti handle-es-exception
+  "Handles exceptions from ES. Unexpected exceptions are simply re-thrown."
+  (fn [ex scroll-id]
+    (:status (ex-data ex))))
+
+(defmethod handle-es-exception 400
+  [ex scroll-id]
+  (let [body (-> ex ex-data :body)]
+    (if (or (re-find #"Failed to decode scrollId" body)
+            (re-find #"Malformed scrollId" body))
+      (errors/throw-service-error :bad-request (str "Invalid scroll id [" scroll-id "]"))
+      (throw ex))))
+
+(defmethod handle-es-exception 404
+  [ex scroll-id]
+  (if scroll-id
+    (errors/throw-service-error :not-found (str "Scroll session [" scroll-id "] does not exist"))
+    (throw ex)))
+
+(defmethod handle-es-exception :default
+  [ex _]
+  (throw ex))
+
+(defn- scroll-search 
+  "Performs a scroll search, handling errors where possible."
+  [context scroll-id]
+  (try
+    (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
+    (catch clojure.lang.ExceptionInfo e
+           (handle-es-exception e scroll-id))))
+
+(defn- do-send
+  "Sends a query to ES, either normal or using a scroll query."
+  [context index-info query]
+  (if-let [scroll-id (:scroll-id query)]
+    (scroll-search context scroll-id)
+    (esd/search (context->conn context) (:index-name index-info) [(:type-name index-info)] query)))
+      
 (defn- send-query
-  "Send the query to ES using either a normal query or a scroll query"
+  "Send the query to ES using either a normal query or a scroll query. Handle socket exceptions
+  by retrying."
   [context index-info query]
   (transmit-conn/handle-socket-exception-retries
-    (if-let [scroll-id (:scroll-id query)]
-      (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
-      (esd/search (context->conn context)
-                  (:index-name index-info)
-                  [(:type-name index-info)]
-                  query))))
+    (do-send context index-info query)))
 
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
@@ -132,7 +167,7 @@
 (defmethod send-query-to-elastic :unlimited
   [context query]
   (when (:aggregations query)
-    (e/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
+    (errors/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
 
   (loop [offset 0 prev-items [] took-total 0]
     (let [results (send-query-to-elastic
@@ -141,7 +176,7 @@
           current-items (get-in results [:hits :hits])]
 
       (when (> total-hits max-unlimited-hits)
-        (e/internal-error!
+        (errors/internal-error!
           (format "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
                   total-hits max-unlimited-hits (pr-str query))))
 
@@ -165,7 +200,7 @@
         hits (get-in e-results [:hits :total])]
     (info "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
-               (e/internal-error! "Failed to retrieve all hits.")))
+               (errors/internal-error! "Failed to retrieve all hits.")))
     e-results))
 
 (defn refresh
