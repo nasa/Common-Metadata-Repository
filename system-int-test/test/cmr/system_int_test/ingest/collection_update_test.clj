@@ -940,20 +940,20 @@
         (is (= [200 nil] [status errors])))
 
       "Projects"
-      (assoc collection-map :Projects (data-umm-c/projects "project"))
+      (assoc collection-map :Projects (data-umm-c/projects "ProJecT"))
 
       "Tiling Identification Systems"
-      (assoc collection-map :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "source_tile"))
+      (assoc collection-map :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "sOUrce_tIle"))
 
       "Platforms Instruments Child Instruments"
-      (assoc collection-map :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "platform" "instrument" "childinstrument")])
+      (assoc collection-map :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "plAtfoRM" "inStrUmEnt" "CHildinSTrument")])
 
       "Additional Attributes"
-      (assoc collection-map :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "string" :DataType "STRING"})
-                                                   (data-umm-c/additional-attribute {:Name "boolean" :DataType "BOOLEAN"})
-                                                   (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :value 5})
-                                                   (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
-                                                   (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME"})
-                                                   (data-umm-c/additional-attribute {:Name "date" :DataType "DATE"})
-                                                   (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"})
-                                                   (data-umm-c/additional-attribute {:Name "dts" :DataType "DATETIME_STRING"})]))))
+      (assoc collection-map :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "strinG" :DataType "STRING"})
+                                                   (data-umm-c/additional-attribute {:Name "booleaN" :DataType "BOOLEAN"})
+                                                   (data-umm-c/additional-attribute {:Name "inT" :DataType "INT" :value 5})
+                                                   (data-umm-c/additional-attribute {:Name "floaT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+                                                   (data-umm-c/additional-attribute {:Name "datetimE" :DataType "DATETIME"})
+                                                   (data-umm-c/additional-attribute {:Name "datE" :DataType "DATE"})
+                                                   (data-umm-c/additional-attribute {:Name "timE" :DataType "TIME"})
+                                                   (data-umm-c/additional-attribute {:Name "dtS" :DataType "DATETIME_STRING"})]))))

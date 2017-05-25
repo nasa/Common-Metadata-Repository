@@ -6,6 +6,11 @@
    [clojure.string :refer [lower-case]]
    [cmr.umm-spec.additional-attribute :as aa]))
 
+(defn- lower-case-name
+  "For a given addition attribute, return lower-case name"
+  [aa]
+  (lower-case (:Name aa)))
+
 (defn- aa-range-reduced?
   "Returns true if the range of additional attribute is smaller than the range of the previous one."
   [aa prev-aa]
@@ -24,7 +29,7 @@
   [aa]
   (let [{aa-name :Name aa-type :DataType aa-begin :ParameterRangeBegin
          aa-end :ParameterRangeEnd} aa
-        type (str/lower-case aa-type)
+        type aa-type
         params (concat (when aa-begin
                          [(format "%s,%s,,%s" type aa-name aa-begin)])
                        (when aa-end
@@ -39,8 +44,8 @@
   attributes that are still referenced by existing granules. This function build the search parameters
   for identifying such invalid deletions."
   [aas prev-aas]
-  (let [aa-names (set (map #(lower-case (:Name %)) aas))
-        deleted-aas (remove #(aa-names (lower-case (:Name %))) prev-aas)]
+  (let [aa-names (set (map lower-case-name aas))
+        deleted-aas (remove #(aa-names (lower-case-name %)) prev-aas)]
     (map #(hash-map :params {"attribute[]" [(:Name %)]}
                     :error-msg (format "Collection additional attribute [%s] is referenced by existing granules, cannot be removed."
                                        (:Name %)))
@@ -67,9 +72,9 @@
   changed or range changed to a reduced range that needs to verify that no granules will become
   invalidated due to the changes."
   [aas prev-aas]
-  (let [prev-aas-map (group-by #(lower-case (:Name %)) prev-aas)
+  (let [prev-aas-map (group-by lower-case-name prev-aas)
         link-fn (fn [aa]
-                  (when-let [prev-aa (first (prev-aas-map (lower-case (:Name aa))))]
+                  (when-let [prev-aa (first (prev-aas-map lower-case-name aa))]
                     [aa prev-aa]))]
     (->> (map link-fn aas)
          (map single-aa-type-range-search)
