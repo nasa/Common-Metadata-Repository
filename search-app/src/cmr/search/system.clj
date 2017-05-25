@@ -34,15 +34,30 @@
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
 (defconfig search-public-protocol
-  "The protocol to use in links returned by the search application."
+  "The protocol to use for public access to the search application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default "http"})
 
 (defconfig search-public-host
-  "The host name to use in links returned by the search application."
+  "The host name to use for public access to the search application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default "localhost"})
 
 (defconfig search-public-port
-  "The port to use in links returned by the search application."
+  "The port to use for public access to the search application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
   {:default 3003
    :type Long})
 
@@ -55,7 +70,12 @@
   "App logging level"
   {:default "info"})
 
-(def search-public-conf
+(defn public-conf
+  "Public search configuration used for generating proper link URLs in dynamic
+  content (templates), generating example requests in documentation, and
+  running the search service in the development environment for use with
+  integration tests."
+  []
   {:protocol (search-public-protocol)
    :host (search-public-host)
    :port (search-public-port)
@@ -100,7 +120,7 @@
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/report-cache-key (hrs/create-report-cache)}
-             :public-conf search-public-conf
+             :public-conf (public-conf)
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
              :scheduler (jobs/create-scheduler

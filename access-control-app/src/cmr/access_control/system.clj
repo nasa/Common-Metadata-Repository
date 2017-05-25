@@ -31,25 +31,43 @@
   {:default nil
    :parser cfg/maybe-long})
 
-(defconfig access-control-public-protocol
-  "The protocol to use in documentation examples for the access-control application."
-  {:default "http"})
-
-(defconfig access-control-public-host
-  "The host name to use in links returned by the access-control application."
-  {:default "localhost"})
-
-(defconfig access-control-public-port
-  "The port to use in links returned by the access-control application."
-  {:default 3011
-   :type Long})
-
 (defconfig log-level
   "App logging level"
   {:default "info"})
 
+(defconfig access-control-public-protocol
+  "The protocol to use for public access to the access-control application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
+  {:default "http"})
+
+(defconfig access-control-public-host
+  "The host name to use for public access to the access-control application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
+  {:default "localhost"})
+
+(defconfig access-control-public-port
+  "The port to use for public access to the access-control application.
+
+  Note: this configuration value is used as-is in local, dev environments
+  and is overridden with ENV variables in remote deployments. In both cases,
+  this configuration information is utilized and required. See `defconfig` for
+  more details."
+  {:default 3011
+   :type Long})
+
 (defn public-conf
-  "Public access-control configuration used for generating example requests in documentation"
+  "Public access-control configuration used for generating proper link URLs in
+  dynamic content (templates), generating example requests in documentation,
+  and running the access-control service in the development environment for use
+  with integration tests."
   []
   {:protocol (access-control-public-protocol)
    :host (access-control-public-host)
