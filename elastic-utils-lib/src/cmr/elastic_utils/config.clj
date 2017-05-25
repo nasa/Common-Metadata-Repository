@@ -1,8 +1,8 @@
 (ns cmr.elastic-utils.config
   "Contains configuration functions for communicating with elastic search"
   (:require 
-   [cmr.common.config :as config :refer [defconfig]]
    [clojure.data.codec.base64 :as b64]))
+   [cmr.common.config :as config :refer [defconfig]]
 
 (defconfig elastic-host
   "Elastic host or VIP."
