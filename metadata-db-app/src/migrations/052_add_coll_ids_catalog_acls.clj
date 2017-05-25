@@ -12,13 +12,14 @@
   [provider-id collection-identifier]
   (let [entry-titles (get collection-identifier :entry-titles)
         entry-titles (when (seq entry-titles)
-                       (string/join "," (map #(str "'" % "'") entry-titles)))]
+                       (string/join ","
+                                    (map #(str "'" % "'") entry-titles)))]
     (when entry-titles
       (let [provider (-> (h/get-provider provider-id)
                          providers/dbresult->provider)
             t (h/get-provider-collection-tablename provider)]
         (for [result (h/query (format "select concept_id from metadata_db.%s where
- 																																						entry_title in (%s)" t entry-titles))]
+ 																																						entry_title in (?)" t) entry-titles)]
           (:concept_id result))))))
 
 (defn up
