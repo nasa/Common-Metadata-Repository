@@ -82,13 +82,13 @@
   (let [body (-> ex ex-data :body)]
     (if (or (re-find #"Failed to decode scrollId" body)
             (re-find #"Malformed scrollId" body))
-      (errors/throw-service-error :bad-request (str "Invalid scroll id [" scroll-id "]"))
+      (errors/throw-service-error :bad-request (format "Invalid scroll id [%s]" scroll-id))
       (throw ex))))
 
 (defmethod handle-es-exception 404
   [ex scroll-id]
   (if scroll-id
-    (errors/throw-service-error :not-found (str "Scroll session [" scroll-id "] does not exist"))
+    (errors/throw-service-error :not-found (format "Scroll session [%s] does not exist" scroll-id))
     (throw ex)))
 
 (defmethod handle-es-exception :default
