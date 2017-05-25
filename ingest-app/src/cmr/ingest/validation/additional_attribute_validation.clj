@@ -56,7 +56,7 @@
   [[aa prev-aa]]
   (let [{aa-name :Name aa-type :DataType} aa
         {prev-aa-type :DataType} prev-aa]
-    (if (= (lower-case (str aa-type)) (lower-case (str prev-aa-type)))
+    (if (= aa-type prev-aa-type)
       ;; type does not change, check for range change
       (when (aa-range-reduced? aa prev-aa)
         (out-of-range-searches aa))
@@ -74,7 +74,7 @@
   [aas prev-aas]
   (let [prev-aas-map (group-by lower-case-name prev-aas)
         link-fn (fn [aa]
-                  (when-let [prev-aa (first (prev-aas-map lower-case-name aa))]
+                  (when-let [prev-aa (first (prev-aas-map (lower-case-name aa)))]
                     [aa prev-aa]))]
     (->> (map link-fn aas)
          (map single-aa-type-range-search)
