@@ -487,6 +487,7 @@
      :project-refs.lowercase m/string-field-mapping
      :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
+     :created-at (m/doc-values m/date-field-mapping)
      :revision-date         m/date-field-mapping
      :revision-date-doc-values           (m/doc-values m/date-field-mapping)
 

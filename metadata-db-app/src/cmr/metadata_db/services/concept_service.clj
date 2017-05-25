@@ -143,9 +143,22 @@
   [db provider concept]
   (set-or-generate-created-at-for-concept db provider concept))
 
+(defmethod set-or-generate-created-at :granule
+  [db provider concept]
+  (set-or-generate-created-at-for-concept db provider concept))
+
 (defmethod set-or-generate-created-at :variable
   [db provider concept]
   (set-or-generate-created-at-for-concept db provider concept))
+
+(defmethod set-or-generate-created-at :granule
+  [db provider concept & previous-revision]
+  (let [{:keys [concept-id concept-type]} concept
+        previous-revision (first previous-revision)
+        existing-created-at (:created-at (or previous-revision
+                                             (c/get-concept db concept-type provider concept-id)))
+        created-at (if existing-created-at existing-created-at (time-keeper/now))]
+    (assoc concept :created-at created-at)))
 
 (defmethod set-or-generate-created-at :default
   [_db _provider concept]
