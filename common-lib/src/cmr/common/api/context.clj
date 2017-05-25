@@ -1,16 +1,19 @@
 (ns cmr.common.api.context
-  "Contains functions for creating a request context.
+  "Contains functions for creating or operating on a request context.
 
-  Main functions in the CMR system are expected to accept a context object. The shape of a context
-  map is the following
+  Main functions in the CMR system are expected to accept a context object. The
+  shape of a context map is the following.
 
   {:system {
             ;; system level items. (db, cache, etc.)
            }
-   :request {;; fields here related to current request like token or current user.
-            }
-  }"
-  (:require [cmr.common.log :as log]))
+   :request {;; fields here related to current request
+             ;; like token or current user.
+            }}"
+  (:require
+   [cmr.common.log :as log]
+   [cmr.common.util :as util]
+   [cmr.common.services.errors :as errors]))
 
 (defn request-context
   "Creates a new request context with the given system and request id"
@@ -48,3 +51,12 @@
   (when-let [request-id (context->request-id context)]
     {REQUEST_ID_HEADER request-id}))
 
+(defn context->user-id
+  "Returns user id of the token in the context. Throws an error if no token is
+  provided."
+  ([context]
+    (context->user-id context "Valid user token required."))
+  ([context msg]
+    (if-let [token (:token context)]
+      (util/lazy-get context :user-id)
+      (errors/throw-service-error :unauthorized msg))))

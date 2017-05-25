@@ -5,6 +5,7 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.common.api.context :as context-util]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
@@ -31,13 +32,6 @@
   same tag and collection. This means that someone is sending the same request to the CMR at the
   same time.")
 
-(defn- context->user-id
-  "Returns user id of the token in the context. Throws an error if no token is provided"
-  [context]
-  (if-let [token (:token context)]
-    (util/lazy-get context :user-id)
-    (errors/throw-service-error :unauthorized msg/token-required-for-tag-modification)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
 
@@ -60,7 +54,9 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id
   of the saved tag."
   [context tag-json-str]
-  (let [user-id (context->user-id context)
+  (let [user-id (context-util/context->user-id
+                 context
+                 msg/token-required-for-tag-modification)
         tag (-> (tv/create-tag-json->tag tag-json-str)
                 (assoc :originator-id user-id))]
     ;; Check if the tag already exists
@@ -115,7 +111,9 @@
         context
         (-> existing-concept
             (assoc :metadata (pr-str updated-tag)
-                   :user-id (context->user-id context))
+                   :user-id (context-util/context->user-id
+                             context
+                             msg/token-required-for-tag-modification))
             (dissoc :revision-date :transaction-id)
             (update-in [:revision-id] inc))))))
 
@@ -129,7 +127,9 @@
           ;; Remove fields not allowed when creating a tombstone.
           (dissoc :metadata :format :provider-id :native-id :transaction-id)
           (assoc :deleted true
-                 :user-id (context->user-id context))
+                 :user-id (context-util/context->user-id
+                           context
+                           msg/token-required-for-tag-modification))
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
@@ -154,7 +154,9 @@
         {:message {:warnings [(format "Tag association [%s] is already deleted." concept-id)]}}
         (let [concept {:concept-type :tag-association
                        :concept-id concept-id
-                       :user-id (context->user-id mdb-context)
+                       :user-id (context-util/context->user-id
+                                 mdb-context
+                                 msg/token-required-for-tag-modification)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
       {:message {:warnings [(assoc-msg/delete-association-not-found :tag native-id)]}})))
@@ -207,7 +209,9 @@
         native-id (tag-association->native-id tag-association)
         tag-association (-> tag-association
                             (assoc :native-id native-id)
-                            (assoc :user-id (context->user-id mdb-context)))
+                            (assoc :user-id (context-util/context->user-id
+                                             mdb-context
+                                             msg/token-required-for-tag-modification)))
         tagged-item (util/remove-nil-keys
                      {:concept-id coll-concept-id :revision-id coll-revision-id})]
     (if (seq errors)
