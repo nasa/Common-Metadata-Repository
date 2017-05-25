@@ -902,3 +902,58 @@
         "Updating an instrument  that is referenced by a granule by humanized alias back to its original value is invalid."
         ["p2" "i2" "GPS" "s1"]
         ["Collection Child Instrument [gps receivers] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+
+(deftest collection-update-case-insensitivity-test
+  (let [a1 (data-umm-c/additional-attribute {:Name "STRING" :DataType "STRING"})
+        a2 (data-umm-c/additional-attribute {:Name "BOOLEAN" :DataType "BOOLEAN"})
+        a3 (data-umm-c/additional-attribute {:Name "INT" :DataType "INT" :value 5})
+        a4 (data-umm-c/additional-attribute {:Name "FLOAT" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+        a5 (data-umm-c/additional-attribute {:Name "DATETIME" :DataType "DATETIME"})
+        a6 (data-umm-c/additional-attribute {:Name "DATE" :DataType "DATE"})
+        a7 (data-umm-c/additional-attribute {:Name "TIME" :DataType "TIME"})
+        a8 (data-umm-c/additional-attribute {:Name "DTS" :DataType "DATETIME_STRING"})
+        collection-map {:EntryTitle "parent-collection"
+                        :ShortName "S1"
+                        :Version "V1"
+                        :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
+                        :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "SOURCE_TILE")
+                        :Projects (data-umm-c/projects "PROJECT")
+                        :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8]}
+
+        coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection collection-map))
+        gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["PROJECT"]
+                                                                                     :two-d-coordinate-system (dg/two-d "SOURCE_TILE")
+                                                                                     :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
+                                                                                     :product-specific-attributes [(dg/psa "STRING" ["alpha"])
+                                                                                                                   (dg/psa "BOOLEAN" ["true"])
+                                                                                                                   (dg/psa "INT" ["2"])
+                                                                                                                   (dg/psa "FLOAT" ["2.0"])
+                                                                                                                   (dg/psa "DATETIME" ["2012-01-01T01:02:03Z"])
+                                                                                                                   (dg/psa "DATE" ["2012-01-02Z"])
+                                                                                                                   (dg/psa "TIME" ["01:02:03Z"])
+                                                                                                                   (dg/psa "DTS" ["2012-01-01T01:02:03Z"])]}))]
+
+    (are3
+      [coll-map]
+      (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-map))
+            {:keys [status errors]} response]
+        (is (= [200 nil] [status errors])))
+
+      "Projects"
+      (assoc collection-map :Projects (data-umm-c/projects "project"))
+
+      "Tiling Identification Systems"
+      (assoc collection-map :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "source_tile"))
+
+      "Platforms Instruments Child Instruments"
+      (assoc collection-map :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "platform" "instrument" "childinstrument")])
+
+      "Additional Attributes"
+      (assoc collection-map :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "string" :DataType "STRING"})
+                                                   (data-umm-c/additional-attribute {:Name "boolean" :DataType "BOOLEAN"})
+                                                   (data-umm-c/additional-attribute {:Name "int" :DataType "INT" :value 5})
+                                                   (data-umm-c/additional-attribute {:Name "float" :DataType "FLOAT" :min-value 1.0 :max-value 10.0})
+                                                   (data-umm-c/additional-attribute {:Name "datetime" :DataType "DATETIME"})
+                                                   (data-umm-c/additional-attribute {:Name "date" :DataType "DATE"})
+                                                   (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"})
+                                                   (data-umm-c/additional-attribute {:Name "dts" :DataType "DATETIME_STRING"})]))))
