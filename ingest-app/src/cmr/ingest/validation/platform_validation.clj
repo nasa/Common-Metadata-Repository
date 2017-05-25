@@ -16,8 +16,8 @@
         platform-aliases (mapcat #(get platform-alias-map %) (map str/upper-case current-platforms))
         ;; Only the deleted ones that are not part of the platform-aliases need to be validated.
         deleted-platform-names (s/difference
-                                (set previous-platforms)
-                                (set (concat current-platforms platform-aliases)))]
+                                (set (map str/lower-case previous-platforms))
+                                (set (map str/lower-case (concat current-platforms platform-aliases))))]
     (for [name deleted-platform-names]
       {:params {"platform[]" name
                 :collection-concept-id concept-id

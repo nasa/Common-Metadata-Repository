@@ -148,19 +148,21 @@
    updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
   (when-let [errors (seq (umm-spec-validation/validate-granule
-                           (humanizer-alias-cache/update-collection-with-aliases
-                             context collection true)
-                           granule))]
+                          (humanizer-alias-cache/update-collection-with-aliases context
+                                                                                collection
+                                                                                true)
+                          granule))]
     (if-errors-throw :invalid-data errors)))
 
 (defn validate-granule-umm
   "Validates a UMM granule record using rules defined in UMM with a UMM collection record,
    updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
-    (if-errors-throw :invalid-data (umm-validation/validate-granule
-                                     (humanizer-alias-cache/update-collection-with-aliases
-                                       context collection false)
-                                     granule)))
+  (if-errors-throw :invalid-data (umm-validation/validate-granule
+                                  (humanizer-alias-cache/update-collection-with-aliases context
+                                                                                        collection
+                                                                                        false)
+                                  granule)))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
