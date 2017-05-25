@@ -46,10 +46,12 @@
   (get-bulk-update-task-status
     [db task-id]
     ;; Returns a status for the particular task
-    (util/map-keys->kebab-case
-      (su/find-one db (su/select [:status :status-message :request-json-body]
-                                 (su/from "bulk_update_task_status")
-                                 (su/where `(= :task-id ~task-id))))))
+    (-> db
+        (su/find-one (su/select [:status :status-message :request-json-body]
+                                (su/from "bulk_update_task_status")
+                                (su/where `(= :task-id ~task-id))))
+        util/map-keys->kebab-case
+        (update :request-json-body util/gzip-blob->string)))
 
   (get-bulk-update-task-collection-status
     [db task-id]
@@ -110,7 +112,8 @@
        [conn db]
        (let [statement (str "UPDATE bulk_update_coll_status "
                             "SET status = ?, status_message = ?"
-                            "WHERE task_id = ? AND concept_id = ?")]
+                            "WHERE task_id = ? AND concept_id = ?")
+             status-message (util/trunc status-message 255)]
          (j/db-do-prepared db statement [status status-message task-id concept-id])
          (let [task-collections (su/query db
                                  (su/build (su/select

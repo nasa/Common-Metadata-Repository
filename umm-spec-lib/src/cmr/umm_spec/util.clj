@@ -112,7 +112,7 @@
   (get-in valid-url-content-types-map [url-content-type type]))
 
 (defn type->url-content-type
-  "Get the URLContentType from the type" 
+  "Get the URLContentType from the type"
   [type]
   (first
     (for [url-content-type (keys valid-url-content-types-map)
@@ -358,11 +358,13 @@
   "Format the ISBN to make it compliant with UMM"
   [isbn]
   (when (some? isbn)
-    (-> isbn
-        str/trim
-        (str/replace "-" "")
-        (str/replace "ISBN" "")
-        (str/replace "ISSN" ""))))
+    (let [isbn (-> isbn
+                   str/trim
+                   (str/replace "-" "")
+                   (str/replace "ISBN" "")
+                   (str/replace "ISSN" ""))]
+      (when (not (str/blank? isbn))
+        isbn))))
 
 (defn truncate
   "Truncate the string if the sanitize option is enabled, otherwise return the original string"

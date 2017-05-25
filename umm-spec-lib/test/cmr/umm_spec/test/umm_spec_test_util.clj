@@ -56,7 +56,10 @@
     "ISBN-12345678" "12345678"
 
     "Remove ISSN"
-    "ISSN-12345678" "12345678"))
+    "ISSN-12345678" "12345678"
+
+    "No numbers"
+    "ISBN" nil))
 
 (deftest truncation
   (testing "truncation with sanitize? option"
