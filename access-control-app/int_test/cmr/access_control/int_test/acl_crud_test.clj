@@ -419,7 +419,7 @@
                                    :collection_identifier {:entry_titles ["notreal"]}}}
 
           "An error is returned if specifying a collection identifier with collection concept-ids that do not exist."
-          ["[INVALID ID] is not a valid collection concept id."
+          ["[INVALID ID] is not a valid collection concept-id."
            "collection with concept-id [INVALID ID] does not exist in provider [PROV1]"]
           {:group_permissions [{:user_type "guest" :permissions ["read"]}]
            :catalog_item_identity {:name "A Catalog Item ACL"

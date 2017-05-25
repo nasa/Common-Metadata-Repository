@@ -8,11 +8,11 @@
             [clojure.string :as string]))
 
 (defn- get-concept-ids
+  "For a given provider and entry-titles in collection-identifier, returns list of collection concept ids"
   [provider-id collection-identifier]
   (let [entry-titles (get collection-identifier :entry-titles)
-        entry-titles (if (seq entry-titles)
-                       (string/join "," (map #(str "'" % "'") entry-titles))
-                       nil)]
+        entry-titles (when (seq entry-titles)
+                       (string/join "," (map #(str "'" % "'") entry-titles)))]
     (when entry-titles
       (let [provider (-> (h/get-provider provider-id)
                          providers/dbresult->provider)
@@ -32,8 +32,7 @@
           metadata (-> metadata
                        (util/gzip-blob->string)
                        (edn/read-string))
-          {:keys [catalog-item-identity]} metadata
-          {:keys [collection-identifier collection-applicable provider-id]} catalog-item-identity
+          {{:keys [collection-identifier collection-applicable provider-id]} :catalog-item-identity} metadata
           concept-ids (if collection-applicable
                         (get-concept-ids provider-id collection-identifier)
                         nil)
@@ -51,7 +50,7 @@
 (defn down
   "Migrates the database down from version 52."
   []
-  (println "migrations.051-add-coll-ids-catalog-acls down...")
+  (println "migrations.052-add-coll-ids-catalog-acls down...")
   (doseq [result (h/query "select * from cmr_acls where acl_identity like 'catalog-item%'")]
     (println result)
     (let [{:keys [id metadata deleted]} result

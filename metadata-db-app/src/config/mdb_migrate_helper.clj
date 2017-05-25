@@ -79,6 +79,7 @@
   (distinct (map #(concept-tables/get-table-name % :collection) (p/get-providers (config/db)))))
 
 (defn get-provider-collection-tablename
+  "For a given provider, returns table name"
   [provider]
   (concept-tables/get-table-name provider :collection))
 
