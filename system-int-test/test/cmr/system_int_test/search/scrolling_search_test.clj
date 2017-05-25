@@ -62,9 +62,9 @@
           (is (not (nil? scroll-id)))
           (is (data2-core/refs-match? [gran1 gran2] result)))
         
-        (testing "Subsequent searches gets page-size results"
+        (testing "Subsequent searches gets oringinal page-size results"
           (let [result (search/find-refs :granule 
-                                         {:scroll true}
+                                         {:scroll true :page-size 10}
                                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
             (is (= (count all-grans) hits))
             (is (data2-core/refs-match? [gran3 gran4] result))))
