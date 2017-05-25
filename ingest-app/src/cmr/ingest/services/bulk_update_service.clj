@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.json-schema :as js]
+   [cmr.ingest.config :as config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.ingest-service :as ingest-service]
@@ -18,6 +19,10 @@
 
 (def default-exception-message
   "There was an error updating the concept.")
+
+(def update-format
+  "Format to save bulk updates"
+  (str "application/vnd.nasa.cmr.umm+json;version=" (config/ingest-accept-umm-version)))
 
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
@@ -77,7 +82,9 @@
         update-field (csk/->PascalCaseKeyword update-field)]
     (-> concept
         (assoc :metadata (field-update/update-concept context concept update-type
-                                                      [update-field] update-value find-value))
+                                                      [update-field] update-value find-value
+                                                      update-format))
+        (assoc :format update-format)
         (update :revision-id inc))))
 
 
