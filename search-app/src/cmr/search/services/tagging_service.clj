@@ -15,9 +15,10 @@
     [cmr.metadata-db.services.search-service :as mdb-ss]
     [cmr.search.services.json-parameters.conversion :as jp]
     [cmr.search.services.query-service :as query-service]
-    [cmr.search.services.tagging.tag-association-validation :as av]
+    [cmr.search.services.association-validation :as assoc-validation]
     [cmr.search.services.tagging.tag-validation :as tv]
     [cmr.search.services.tagging.tagging-service-messages :as msg]
+    [cmr.search.services.messages.association-messages :as assoc-msg]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb]))
 
@@ -156,7 +157,7 @@
                        :user-id (context->user-id mdb-context)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
-      {:message {:warnings [(msg/delete-tag-association-not-found native-id)]}})))
+      {:message {:warnings [(assoc-msg/delete-association-not-found :tag native-id)]}})))
 
 (defn- tag-association->native-id
   "Returns the native id of the given tag association."
@@ -245,8 +246,10 @@
         [t1 result] (util/time-execution (util/fast-map
                                           (fn [association]
                                             (update-tag-association
-                                             mdb-context (merge association {:tag-key tag-key
-                                                                             :originator-id originator-id}) operation))
+                                             mdb-context
+                                             (merge association {:tag-key tag-key
+                                                                 :originator-id originator-id})
+                                             operation))
                                           tag-associations))]
     (info "update-tag-associations:" t1)
     result))
@@ -268,15 +271,24 @@
     (update-tag-associations
       context tag-concept (map #(hash-map :concept-id %) coll-concept-ids) operation)))
 
+(defn- validate-tag-associations
+  "Validates the tag association for the given tag key and tag associations based on the operation
+  type, which is either :insert or :delete. Returns the tag associations with errors found appended
+  to them. If the provided tag associations fail the basic rules validation (i.e. empty tag
+  associations, conflicts within the request), throws a service error."
+  [context operation-type tag-key tag-associations]
+  (assoc-validation/validate-associations
+   context :tag tag-key tag-associations operation-type))
+
 (defn- link-tag-to-collections
   "Associate/Disassocate a tag to a list of collections in the tag associations json based on
   the given operation type. The ooperation type can be either :insert or :delete.
   Throws service error if the tag with the given tag key is not found."
   [context tag-key tag-associations-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        tag-associations (av/tag-associations-json->tag-associations tag-associations-json)
+        tag-associations (assoc-validation/associations-json->associations tag-associations-json)
         [validation-time tag-associations] (util/time-execution
-                                             (av/validate-tag-associations
+                                             (validate-tag-associations
                                                context operation-type tag-key tag-associations))]
     (debug "link-tag-to-collections validation-time:" validation-time)
     (update-tag-associations context tag-concept tag-associations operation-type)))

@@ -56,107 +56,108 @@
 
     (testing "successful case, the tag association keys can have either _ or -"
       (let [response (tags/associate-by-concept-ids
-                       token tag-key [{:concept_id (:concept-id coll1-1)
-                                       :revision_id (:revision-id coll1-1)
-                                       :data "snow"}
-                                      {:concept-id (:concept-id coll3)
-                                       :data "cloud"}])]
+                      token tag-key [{:concept_id (:concept-id coll1-1)
+                                      :revision_id (:revision-id coll1-1)
+                                      :data "snow"}
+                                     {:concept-id (:concept-id coll3)
+                                      :data "cloud"}])]
         (index/wait-until-indexed)
         (tags/assert-tag-association-response-ok?
-          {[(:concept-id coll1-1) (:revision-id coll1-1)] {:concept-id "TA1200000005-CMR"
-                                                           :revision-id 1}
-           [(:concept-id coll3)] {:concept-id "TA1200000006-CMR"
-                                  :revision-id 1}}
-          response)))
+         {[(:concept-id coll1-1) (:revision-id coll1-1)] {:concept-id "TA1200000005-CMR"
+                                                          :revision-id 1}
+          [(:concept-id coll3)] {:concept-id "TA1200000006-CMR"
+                                 :revision-id 1}}
+         response)))
 
     (testing "revision-id must be an integer"
       (let [{:keys [status errors]} (tags/associate-by-concept-ids
-                                      token tag-key
-                                      [{:concept-id (:concept-id coll1-1)
-                                        :revision-id "1"}])
+                                     token tag-key
+                                     [{:concept-id (:concept-id coll1-1)
+                                       :revision-id "1"}])
             expected-msg "/0/revision_id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
         (is (= [400 [expected-msg]] [status errors]))))
 
     (testing "tag a non-existent collection revision"
       (let [concept-id (:concept-id coll1-1)
             response (tags/associate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id
-                         :revision-id 5}])]
+                      token tag-key
+                      [{:concept-id concept-id
+                        :revision-id 5}])]
         (tags/assert-tag-association-response-ok?
-          {[concept-id 5]
-           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
-                             concept-id)]}}
-          response)))
+         {[concept-id 5]
+          {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
+                            concept-id)]}}
+         response)))
 
     (testing "tag an invisible collection revision"
       (let [concept-id (:concept-id coll4)
             revision-id (:revision-id coll4)
             response (tags/associate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id
-                         :revision-id revision-id}])]
+                      token tag-key
+                      [{:concept-id concept-id
+                        :revision-id revision-id}])]
         (tags/assert-tag-association-response-ok?
-          {[concept-id revision-id]
-           {:errors [(format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
-                             concept-id revision-id)]}}
-          response)))
+         {[concept-id revision-id]
+          {:errors [(format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
+                            concept-id revision-id)]}}
+         response)))
 
     (testing "tag a tombstoned revision is invalid"
       (let [concept-id (:concept-id coll1-2-tombstone)
             revision-id (:revision-id coll1-2-tombstone)
             response (tags/associate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id
-                         :revision-id revision-id}])
-            expected-msg (format (str "Collection with concept id [%s] revision id [%s] is a tombstone. "
-                                      "We don't allow tagging individual revisions that are tombstones.")
+                      token tag-key
+                      [{:concept-id concept-id
+                        :revision-id revision-id}])
+            expected-msg (format (str "Collection with concept id [%s] revision id [%s] is a "
+                                      "tombstone. We don't allow tag association with individual "
+                                      "collection revisions that are tombstones.")
                                  concept-id revision-id)]
         (tags/assert-tag-association-response-ok?
-          {[concept-id revision-id] {:errors [expected-msg]}}
-          response)))
+         {[concept-id revision-id] {:errors [expected-msg]}}
+         response)))
 
     (testing "Cannot tag collection that already has collection revision tagging"
       (let [response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id (:concept-id coll1-3)}])
+                      token tag-key [{:concept-id (:concept-id coll1-3)}])
             expected-msg (format
-                           (str "There are already tag associations with tag key [%s] on "
-                                "collection [%s] revision ids [%s], cannot create tag association "
-                                "on the same collection without revision id.")
-                           tag-key (:concept-id coll1-1) (:revision-id coll1-1))]
+                          (str "There are already tag associations with tag key [%s] on "
+                               "collection [%s] revision ids [%s], cannot create tag association "
+                               "on the same collection without revision id.")
+                          tag-key (:concept-id coll1-1) (:revision-id coll1-1))]
         (tags/assert-tag-association-response-ok?
-          {[(:concept-id coll1-3)] {:errors [expected-msg]}}
-          response)))
+         {[(:concept-id coll1-3)] {:errors [expected-msg]}}
+         response)))
 
     (testing "Cannot tag collection revision that already has collection tagging"
       (let [concept-id (:concept-id coll3)
             revision-id (:revision-id coll3)
             response (tags/associate-by-concept-ids
-                       token tag-key
-                       [{:concept-id (:concept-id coll3)
-                         :revision-id (:revision-id coll3)}])
+                      token tag-key
+                      [{:concept-id (:concept-id coll3)
+                        :revision-id (:revision-id coll3)}])
             expected-msg (format
-                           (str "There are already tag associations with tag key [%s] on "
-                                "collection [%s] without revision id, cannot create tag "
-                                "association on the same collection with revision id [%s].")
-                           tag-key concept-id revision-id)]
+                          (str "There are already tag associations with tag key [%s] on "
+                               "collection [%s] without revision id, cannot create tag "
+                               "association on the same collection with revision id [%s].")
+                          tag-key concept-id revision-id)]
         (tags/assert-tag-association-response-ok?
-          {[concept-id revision-id] {:errors [expected-msg]}}
-          response)))
+         {[concept-id revision-id] {:errors [expected-msg]}}
+         response)))
 
     (testing "tag collection revisions mixed response"
       (let [concept-id (:concept-id coll1-1)
             revision-id (:revision-id coll1-1)
             response (tags/associate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id :revision-id 5}
-                        {:concept-id concept-id :revision-id revision-id}])]
+                      token tag-key
+                      [{:concept-id concept-id :revision-id 5}
+                       {:concept-id concept-id :revision-id revision-id}])]
         (tags/assert-tag-association-response-ok?
-          {[concept-id 5]
-           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
-                             concept-id)]}
-           [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
-          response)))))
+         {[concept-id 5]
+          {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
+                            concept-id)]}
+          [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
+         response)))))
 
 (deftest tag-disassociation-collection-revisions-test
   ;; Grant all collections in PROV1 and 2
@@ -185,115 +186,116 @@
     (tags/create-tag token (tags/make-tag {:tag-key tag-key}))
     (index/wait-until-indexed)
     (tags/associate-by-concept-ids
-      token tag-key [{:concept-id (:concept-id coll1-1)
-                      :revision-id (:revision-id coll1-1)}
-                     {:concept-id (:concept-id coll1-3)
-                      :revision-id (:revision-id coll1-3)}
-                     {:concept-id (:concept-id coll2-1)
-                      :revision-id (:revision-id coll2-1)
-                      :data "snow"}
-                     {:concept-id (:concept-id coll2-2)
-                      :revision-id (:revision-id coll2-2)
-                      :data "cloud"}
-                     {:concept-id (:concept-id coll3)}])
+     token tag-key [{:concept-id (:concept-id coll1-1)
+                     :revision-id (:revision-id coll1-1)}
+                    {:concept-id (:concept-id coll1-3)
+                     :revision-id (:revision-id coll1-3)}
+                    {:concept-id (:concept-id coll2-1)
+                     :revision-id (:revision-id coll2-1)
+                     :data "snow"}
+                    {:concept-id (:concept-id coll2-2)
+                     :revision-id (:revision-id coll2-2)
+                     :data "cloud"}
+                    {:concept-id (:concept-id coll3)}])
     (index/wait-until-indexed)
 
     (testing "successful case"
       (let [response (tags/dissociate-by-concept-ids
-                       token tag-key [{:concept-id (:concept-id coll2-1)
-                                       :revision-id (:revision-id coll2-1)}
-                                      {:concept-id (:concept-id coll3)}])]
+                      token tag-key [{:concept-id (:concept-id coll2-1)
+                                      :revision-id (:revision-id coll2-1)}
+                                     {:concept-id (:concept-id coll3)}])]
         (index/wait-until-indexed)
         (tags/assert-tag-disassociation-response-ok?
-          {[(:concept-id coll2-1) (:revision-id coll2-1)] {:concept-id "TA1200000007-CMR"
-                                                           :revision-id 2}
-           [(:concept-id coll3)] {:concept-id "TA1200000009-CMR"
-                                  :revision-id 2}}
-          response)))
+         {[(:concept-id coll2-1) (:revision-id coll2-1)] {:concept-id "TA1200000007-CMR"
+                                                          :revision-id 2}
+          [(:concept-id coll3)] {:concept-id "TA1200000009-CMR"
+                                 :revision-id 2}}
+         response)))
 
     (testing "revision-id must be an integer"
       (let [{:keys [status errors]} (tags/dissociate-by-concept-ids
-                                      token tag-key
-                                      [{:concept-id (:concept-id coll1-1)
-                                        :revision-id "1"}])
+                                     token tag-key
+                                     [{:concept-id (:concept-id coll1-1)
+                                       :revision-id "1"}])
             expected-msg "/0/revision_id instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])"]
         (is (= [400 [expected-msg]] [status errors]))))
 
     (testing "dissociate tag of a non-existent collection revision"
       (let [concept-id (:concept-id coll1-1)
             response (tags/dissociate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id
-                         :revision-id 5}])]
+                      token tag-key
+                      [{:concept-id concept-id
+                        :revision-id 5}])]
         (tags/assert-tag-disassociation-response-ok?
-          {[concept-id 5]
-           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
-                             concept-id)]}}
-          response)))
+         {[concept-id 5]
+          {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
+                            concept-id)]}}
+         response)))
 
     (testing "dissociate tag of an invisible collection revision"
       (let [concept-id (:concept-id coll4)
             revision-id (:revision-id coll4)
             response (tags/dissociate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id
-                         :revision-id revision-id}])]
+                      token tag-key
+                      [{:concept-id concept-id
+                        :revision-id revision-id}])]
         (tags/assert-tag-disassociation-response-ok?
-          {[concept-id revision-id]
-           {:errors [(format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
-                             concept-id revision-id)]}}
-          response)))
+         {[concept-id revision-id]
+          {:errors [(format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
+                            concept-id revision-id)]}}
+         response)))
 
     (testing "dissociate tag of a tombstoned revision is invalid"
       (let [concept-id (:concept-id coll1-2-tombstone)
             revision-id (:revision-id coll1-2-tombstone)
             response (tags/dissociate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id
-                         :revision-id revision-id}])
-            expected-msg (format (str "Collection with concept id [%s] revision id [%s] is a tombstone. "
-                                      "We don't allow tagging individual revisions that are tombstones.")
+                      token tag-key
+                      [{:concept-id concept-id
+                        :revision-id revision-id}])
+            expected-msg (format (str "Collection with concept id [%s] revision id [%s] is a "
+                                      "tombstone. We don't allow tag association with individual "
+                                      "collection revisions that are tombstones.")
                                  concept-id revision-id)]
         (tags/assert-tag-disassociation-response-ok?
-          {[concept-id revision-id] {:errors [expected-msg]}}
-          response)))
+         {[concept-id revision-id] {:errors [expected-msg]}}
+         response)))
 
     (testing "dissociate tag of collection that already has collection revision tagging"
       (let [response (tags/dissociate-by-concept-ids
-                       token tag-key [{:concept-id (:concept-id coll1-3)}])
+                      token tag-key [{:concept-id (:concept-id coll1-3)}])
             expected-msg (format "Tag [%s] is not associated with collection [%s]."
                                  tag-key (:concept-id coll1-3))]
         (tags/assert-tag-disassociation-response-ok?
-          {[(:concept-id coll1-3)] {:warnings [expected-msg]}}
-          response)))
+         {[(:concept-id coll1-3)] {:warnings [expected-msg]}}
+         response)))
 
     (testing "dissociate tag of individual collection revision that already has been tagged at the collection level"
       (let [concept-id (:concept-id coll3)
             revision-id (:revision-id coll3)
             response (tags/dissociate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id
-                         :revision-id revision-id}])
+                      token tag-key
+                      [{:concept-id concept-id
+                        :revision-id revision-id}])
             expected-msg (format (str "Tag [%s] is not associated with the specific collection concept revision "
                                       "concept id [%s] and revision id [%s].")
                                  tag-key concept-id revision-id)]
         (tags/assert-tag-disassociation-response-ok?
-          {[concept-id revision-id] {:warnings [expected-msg]}}
-          response)))
+         {[concept-id revision-id] {:warnings [expected-msg]}}
+         response)))
 
     (testing "dissociate tag of collection revisions mixed response"
       (let [concept-id (:concept-id coll1-1)
             revision-id (:revision-id coll1-1)
             response (tags/dissociate-by-concept-ids
-                       token tag-key
-                       [{:concept-id concept-id :revision-id 5}
-                        {:concept-id concept-id :revision-id revision-id}])]
+                      token tag-key
+                      [{:concept-id concept-id :revision-id 5}
+                       {:concept-id concept-id :revision-id revision-id}])]
         (tags/assert-tag-disassociation-response-ok?
-          {[concept-id 5]
-           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
-                             concept-id)]}
-           [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
-          response)))))
+         {[concept-id 5]
+          {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
+                            concept-id)]}
+          [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
+         response)))))
 
 (deftest associate-dissociate-tag-with-collection-revisions-test
   ;; Grant all collections in PROV1

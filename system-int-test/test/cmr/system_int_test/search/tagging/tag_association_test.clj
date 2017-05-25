@@ -90,9 +90,9 @@
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
                                     (:concept-id (d/ingest p (dc/collection
-                                                               {:short-name (str "S" n)
-                                                                :version-id (str "V" n)
-                                                                :entry-title (str "ET" n)}))))
+                                                              {:short-name (str "S" n)
+                                                               :version-id (str "V" n)
+                                                               :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag-key "tag1"
@@ -103,63 +103,64 @@
 
     (testing "Associate tag with collections by concept-ids"
       (let [response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id c1-p1}
-                                      {:concept-id c3-p2}])]
+                      token tag-key [{:concept-id c1-p1}
+                                     {:concept-id c3-p2}])]
         (tags/assert-tag-association-response-ok?
-          {["C1200000013-PROV1"] {:concept-id "TA1200000026-CMR"
-                                  :revision-id 1}
-           ["C1200000019-PROV2"] {:concept-id "TA1200000027-CMR"
-                                  :revision-id 1}}
-          response)))
+         {["C1200000013-PROV1"] {:concept-id "TA1200000026-CMR"
+                                 :revision-id 1}
+          ["C1200000019-PROV2"] {:concept-id "TA1200000027-CMR"
+                                 :revision-id 1}}
+         response)))
 
     (testing "Associate to no collections"
       (let [response (tags/associate-by-concept-ids token tag-key [])]
         (tags/assert-invalid-data-error
-          ["At least one collection must be provided for tag association."]
-          response)))
+         ["At least one collection must be provided for tag association."]
+         response)))
 
     (testing "Associate to collection revision and whole collection at the same time"
       (let [response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id c1-p1}
-                                      {:concept-id c1-p1 :revision-id 1}])]
+                      token tag-key [{:concept-id c1-p1}
+                                     {:concept-id c1-p1 :revision-id 1}])]
         (tags/assert-invalid-data-error
-          [(format "Unable to tag a collection revision and the whole collection at the same time for the following collections: %s."
-                   c1-p1)]
-          response)))
+         [(format (str "Unable to create tag association on a collection revision and the whole "
+                       "collection at the same time for the following collections: %s.")
+                  c1-p1)]
+         response)))
 
     (testing "Associate to non-existent collections"
       (let [response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id "C100-P5"}])]
+                      token tag-key [{:concept-id "C100-P5"}])]
         (tags/assert-tag-association-response-ok?
-          {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-          response)))
+         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+         response)))
 
     (testing "Associate to deleted collections"
       (let [c1-p1-concept (mdb/get-concept c1-p1)
             _ (ingest/delete-concept c1-p1-concept)
             _ (index/wait-until-indexed)
             response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id c1-p1}])]
+                      token tag-key [{:concept-id c1-p1}])]
         (tags/assert-tag-association-response-ok?
-          {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
-          response)))
+         {[c1-p1] {:errors [(format "Collection [%s] does not exist or is not visible." c1-p1)]}}
+         response)))
 
     (testing "ACLs are applied to collections found"
       ;; None of PROV3's collections are visible
       (let [response (tags/associate-by-concept-ids token tag-key [{:concept-id c4-p3}])]
         (tags/assert-tag-association-response-ok?
-          {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
-          response)))
+         {[c4-p3] {:errors [(format "Collection [%s] does not exist or is not visible." c4-p3)]}}
+         response)))
 
     (testing "Tag association mixed response"
       (let [response (tags/associate-by-concept-ids
-                       token tag-key [{:concept-id c2-p1}
-                                      {:concept-id "C100-P5"}])]
+                      token tag-key [{:concept-id c2-p1}
+                                     {:concept-id "C100-P5"}])]
         (tags/assert-tag-association-response-ok?
-          {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
-                                  :revision-id 1}
-           ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
-          response)))))
+         {["C1200000014-PROV1"] {:concept-id "TA1200000028-CMR"
+                                 :revision-id 1}
+          ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+         response)))))
 
 (deftest associate-tag-failure-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
