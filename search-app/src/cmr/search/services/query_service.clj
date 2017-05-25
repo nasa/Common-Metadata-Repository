@@ -128,7 +128,6 @@
          (make-concepts-query
            context concept-type params)))
   ([context concept-type params tag-data]
-    (let [])
     (->> params
          common-params/sanitize-params
          (add-tag-data-to-params tag-data)

@@ -78,6 +78,7 @@
     ;; cannot be run regularly because it is impossible to predict how long it will take
     ;; for Elasticsearch to actually time out a scroll session. Even when the scroll timeout
     ;; is set to 1 second it may be many seconds before Elasticsearch disposes of the session. 
+    ;; The following test should not be removed and only uncommented during manual testing.
     
     ; (testing "Expired scroll-id is invalid"
     ;   (let [timeout (es-config/elastic-scroll-timeout)
