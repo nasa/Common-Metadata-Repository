@@ -3,6 +3,7 @@
   (:require
    [clojure.string :as str]
    [cmr.common.util :as util]
+   [clojure.string :refer [lower-case]]
    [cmr.umm-spec.additional-attribute :as aa]))
 
 (defn- aa-range-reduced?
@@ -28,7 +29,6 @@
                          [(format "%s,%s,,%s" type aa-name aa-begin)])
                        (when aa-end
                          [(format "%s,%s,%s," type aa-name aa-end)]))]
-
     {:params {"attribute[]" params
               "options[attribute][or]" true}
      :error-msg (format "Collection additional attribute [%s] cannot be changed since there are existing granules outside of the new value range."
@@ -39,8 +39,8 @@
   attributes that are still referenced by existing granules. This function build the search parameters
   for identifying such invalid deletions."
   [aas prev-aas]
-  (let [aa-names (set (map :Name aas))
-        deleted-aas (remove #(aa-names (:Name %)) prev-aas)]
+  (let [aa-names (set (map #(lower-case (:Name %)) aas))
+        deleted-aas (remove #(aa-names (lower-case (:Name %))) prev-aas)]
     (map #(hash-map :params {"attribute[]" [(:Name %)]}
                     :error-msg (format "Collection additional attribute [%s] is referenced by existing granules, cannot be removed."
                                        (:Name %)))
@@ -51,7 +51,7 @@
   [[aa prev-aa]]
   (let [{aa-name :Name aa-type :DataType} aa
         {prev-aa-type :DataType} prev-aa]
-    (if (= aa-type prev-aa-type)
+    (if (= (lower-case (str aa-type)) (lower-case (str prev-aa-type)))
       ;; type does not change, check for range change
       (when (aa-range-reduced? aa prev-aa)
         (out-of-range-searches aa))
@@ -67,9 +67,9 @@
   changed or range changed to a reduced range that needs to verify that no granules will become
   invalidated due to the changes."
   [aas prev-aas]
-  (let [prev-aas-map (group-by :Name prev-aas)
+  (let [prev-aas-map (group-by #(lower-case (:Name %)) prev-aas)
         link-fn (fn [aa]
-                  (when-let [prev-aa (first (prev-aas-map (:Name aa)))]
+                  (when-let [prev-aa (first (prev-aas-map (lower-case (:Name aa))))]
                     [aa prev-aa]))]
     (->> (map link-fn aas)
          (map single-aa-type-range-search)

@@ -2,6 +2,7 @@
   "Provides functions to validate the spatial attributes of a collection during its update."
   (:require
    [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
    [cmr.common.util :as util]))
 
 (defn- extract-granule-spatial-representation
@@ -16,8 +17,8 @@
   granules. Returns a search that will see if the collection contains any granules if the gsr
   changes."
   [context concept-id concept prev-concept]
-  (let [prev-gsr (extract-granule-spatial-representation prev-concept)
-        new-gsr (extract-granule-spatial-representation concept)]
+  (let [prev-gsr (str/lower-case (extract-granule-spatial-representation prev-concept))
+        new-gsr (str/lower-case (extract-granule-spatial-representation concept))]
     (when-not (= prev-gsr new-gsr)
       [{:params {:collection-concept-id concept-id}
         :error-msg (format (str "Collection changing from %s granule spatial representation to %s"

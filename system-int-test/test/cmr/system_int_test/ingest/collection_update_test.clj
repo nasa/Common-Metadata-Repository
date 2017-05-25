@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-update-test
   "CMR collection update integration tests"
   (:require
+   [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.spatial.point :as p]
@@ -384,7 +385,6 @@
 
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial aa/parse-value "TIME")
-        _ (println (str (dg/psa "time" ["04:02:03Z"])))
         a1 (data-umm-c/additional-attribute {:Name "time" :DataType "TIME"
                                              :ParameterRangeBegin (parse-fn "01:02:03Z")
                                              :ParameterRangeEnd (parse-fn "11:02:03Z")})
@@ -393,7 +393,6 @@
                                                      :ShortName "S1"
                                                      :Version "V1"
                                                      :AdditionalAttributes [a1]}))
-        _ (println (str (dg/psa "time" ["04:02:03Z"])))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
                                                                                       [(dg/psa "time" ["04:02:03Z"])]}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:product-specific-attributes
@@ -548,7 +547,7 @@
                :errors [(format (str "Collection changing from %s granule spatial representation to "
                                      "%s is not allowed when the collection has granules."
                                      " Found 1 granules.")
-                                prev-gsr new-gsr)]}
+                                (str/lower-case prev-gsr) (str/lower-case new-gsr))]}
               (update-collection coll new-spatial-params))
 
            coll-geodetic-with-grans {:gsr "CARTESIAN"} "GEODETIC" "CARTESIAN"
@@ -781,7 +780,7 @@
 
         "Updating a platform that is referenced by a granule by humanized alias back to its original value is invalid."
         ["AM-1" "p4"]
-        ["Collection Platform [Terra] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection Platform [terra] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-tile-test
   (let [;; Tile case-insensitive "REPLACEMENT_TILE" is the humanized alias of "SOURCE_TILE"
@@ -828,11 +827,11 @@
 
         "Removing a tile that is referenced by a granule is invalid."
         ["Replacement_Tile"]
-        ["Collection TilingIdentificationSystemName [Another_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
+        ["Collection TilingIdentificationSystemName [another_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
         ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile"]
-        ["Collection TilingIdentificationSystemName [Replacement_Tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection TilingIdentificationSystemName [replacement_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
@@ -902,4 +901,4 @@
 
         "Updating an instrument  that is referenced by a granule by humanized alias back to its original value is invalid."
         ["p2" "i2" "GPS" "s1"]
-        ["Collection Child Instrument [GPS RECEIVERS] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection Child Instrument [gps receivers] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
