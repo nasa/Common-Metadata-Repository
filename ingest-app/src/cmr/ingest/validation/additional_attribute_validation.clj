@@ -29,7 +29,7 @@
   [aa]
   (let [{aa-name :Name aa-type :DataType aa-begin :ParameterRangeBegin
          aa-end :ParameterRangeEnd} aa
-        type aa-type
+        type (str/lower-case aa-type)
         params (concat (when aa-begin
                          [(format "%s,%s,,%s" type aa-name aa-begin)])
                        (when aa-end
