@@ -68,8 +68,7 @@
   [json-str]
   (js/validate-json! update-tag-schema json-str))
 
-(defn validate-tag-associations-json
-  "Validates the tag associations JSON string against the schema. Throws a service error if it is invalid."
+(defn validate-associations-json
+  "Validates the associations JSON string against the schema. Throws a service error if it is invalid."
   [json-str]
   (js/validate-json! collections-tagging-schema json-str))
-

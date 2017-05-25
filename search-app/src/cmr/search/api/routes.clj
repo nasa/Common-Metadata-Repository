@@ -19,6 +19,7 @@
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
    [cmr.search.api.tags-api :as tags-api]
+   [cmr.search.api.variables-api :as variables-api]
 
    ;; Required here to make sure the multimethod function implementation is available
    [cmr.search.data.elastic-results-to-query-results]
@@ -319,6 +320,9 @@
       (context relative-root-url []
         ;; Add routes for tagging
         tags-api/tag-api-routes
+
+        ;; Add routes for variable association
+        variables-api/variable-api-routes
 
         ;; Add routes for humanizers
         humanizers-api/humanizers-routes
