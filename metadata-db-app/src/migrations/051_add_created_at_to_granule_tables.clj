@@ -1,4 +1,4 @@
-(ns migrations.050-add-created-at-to-granule-tables
+(ns migrations.051-add-created-at-to-granule-tables
   "Adds created_at column to granule tables."
   (:require
    [clojure.java.jdbc :as j]
@@ -37,14 +37,14 @@
                 [(format "UPDATE %s SET created_at = ? WHERE concept_id = ?" t) oldest-revision-date concept_id])))
 
 (defn up
-  "Migrates the database up to version 50."
+  "Migrates the database up to version 51."
   []
   (println "migrations.050-add-created-at-to-granule-tables up...")
   (add-created-at)
   (set-created-at))
 
 (defn down
-  "Migrates the database down from version 50."
+  "Migrates the database down from version 51."
   []
   (println "migrations.050-add-created-at-to-granule-tables down...")
   (doseq [t (h/get-granule-tablenames)]

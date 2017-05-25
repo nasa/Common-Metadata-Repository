@@ -11,7 +11,8 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url-helper]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -84,15 +85,15 @@
 
     (index/wait-until-indexed)
     (testing "Old and deleted collections should not be found."
-      (let [search-results (search/find-concepts-with-param-string
-                            "collection"
-                            "has_granules_added_after=2014-01-01T10:00:00Z")]
-        (d/refs-match? [youngling-collection regular-collection] search-results)))
+      (let [references (search/find-collections-with-new-granules {"created-at" "2014-01-01T10:00:00Z"})]
+        (d/refs-match? [youngling-collection regular-collection] references)))
     (testing "Using unsupported or incorrect parameters"
       (are [params]
-        (let [{:keys [status errors]} (search/find-concepts-with-param-string "collection" params)]
-          (= [400 [(format "Parameter [%s] was not recognized."
-                          (first (clojure.string/split params #"=")))]]
-             [status errors]))
-        "insert_time=2011-01-01T00:00:00Z"
-        "birthday=2012-01-01T00:00:00Z"))))
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                       (search/find-collections-with-new-granules
+                                         {(first params) (second params)}))
+              errors (first (:content (clojure.data.xml/parse-str errors)))]
+          (= [400 [(format "Parameter [%s] was not recognized." (first params))]]
+             [status (:content errors)]))
+        ["insert_time" "2011-01-01T00:00:00Z"]
+        ["birthday" "2012-01-01T00:00:00Z"]))))

@@ -222,9 +222,6 @@
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
 
-      (not (empty? (:has_granules_added_after params)))
-      (get-collections-with-new-granules ctx path-w-extension params headers)
-
       (or (nil? content-type-header) (= mt/form-url-encoded content-type-header))
       (find-concepts-by-parameters ctx path-w-extension params headers body)
 
@@ -380,7 +377,7 @@
                {params :params headers :headers ctx :request-context}
                (get-deleted-collections ctx path-w-extension params headers)))
 
-        (context ["/concepts/:path-w-extension" :path-w-extension #"(?:has_granules_added_after)(?:\..+)?"] [path-w-extension]
+        (context ["/:path-w-extension" :path-w-extension #"(?:has-granules-added-after)(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
                {params :params headers :headers ctx :request-context}
