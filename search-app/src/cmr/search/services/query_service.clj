@@ -319,11 +319,10 @@
   "Returns refs to collections with granules added after a given date.
    Supports CMR Harvesting."
   [context params]
-  (common-param-validation/validate-date-time
-   "Granule creation date" (:has_granules_added_after params))
+  (pv/validate-granule-added-after-search-params params)
   (let [start-time (System/currentTimeMillis)
         result-format (:result-format params)
-        granule-creation-date (:has_granules_added_after params)
+        granule-creation-date (:created-at params)
         new-granules (get-new-granules context granule-creation-date)
         parent-collections (granules->parent-collection-refs context new-granules result-format)
         ;; when results is nil, hits is 0
@@ -336,7 +335,6 @@
                      (qm/query {:concept-type :collection
                                 :result-format result-format})
                      (assoc results :took total-took))]
-
     (info (format "Found %d collections with new granules in %d ms in format %s with params %s."
                   (:hits results)
                   total-took
