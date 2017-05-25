@@ -35,6 +35,7 @@
   (map :provider_id (j/query (config/db) "select provider_id from metadata_db.providers")))
 
 (defn get-provider
+  "Given a provider id, it will return the entire first row from the providers table for that id"
   [provider-id]
   (first
     (j/query (config/db)
