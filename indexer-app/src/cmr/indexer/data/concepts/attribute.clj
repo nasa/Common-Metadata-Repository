@@ -5,6 +5,7 @@
     [clj-time.format :as f]
     [clojure.string :as str]
     [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util]
     [cmr.umm-spec.additional-attribute :as aa]
     [cmr.umm.collection.product-specific-attribute :as coll-psa]))
 
@@ -57,7 +58,7 @@
                               #(coll-psa/parse-value type %))
                         (:values psa-ref))}
        {:name (:name psa-ref)
-        (str field-name ".lowercase") (map (comp str/lower-case
+        (str field-name ".lowercase") (map (comp util/safe-lowercase
                                                  #(value->elastic-value type %)
                                                  #(coll-psa/parse-value type %))
                                            (:values psa-ref))}]
@@ -70,9 +71,9 @@
   "Converts the psa-refs into a list of elastic documents"
   [collection granule]
   (let [parent-type-map (into {} (for [aa (:AdditionalAttributes collection)]
-                                   [(str/lower-case (:Name aa)) (csk/->kebab-case-keyword (:DataType aa))]))]
+                                   [(util/safe-lowercase (:Name aa)) (csk/->kebab-case-keyword (:DataType aa))]))]
     (mapcat (fn [psa-ref]
-              (let [type (parent-type-map (str/lower-case (:name psa-ref)))]
+              (let [type (parent-type-map (util/safe-lowercase (:name psa-ref)))]
                 (when-not type
                   (errors/internal-error!
                    (format "Could not find parent attribute [%s] in collection [%s] for granule [%s]"
@@ -94,7 +95,7 @@
       [(assoc aa-map field-name (value->elastic-value data-type parsed-value))
        (assoc aa-map
               (str field-name ".lowercase")
-              (str/lower-case (value->elastic-value data-type parsed-value)))]
+              (util/safe-lowercase (value->elastic-value data-type parsed-value)))]
       [(assoc aa-map field-name (value->elastic-value data-type parsed-value))])))
 
 (defn aas->elastic-docs
