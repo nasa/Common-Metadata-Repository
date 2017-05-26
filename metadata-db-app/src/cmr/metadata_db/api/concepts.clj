@@ -128,6 +128,8 @@
           (get-expired-collections-concept-ids request-context params))
         ;; Find concepts by parameters
         (GET "/:concept-type" {:keys [params request-context]}
+          (find-concepts request-context params))
+        (POST "/:concept-type" {:keys [params request-context]}
           (find-concepts request-context params)))
 
       ;; saves a concept
@@ -160,5 +162,3 @@
 
     (GET "/provider_holdings" {context :request-context params :params}
       (get-provider-holdings context params))))
-
-

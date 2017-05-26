@@ -382,7 +382,7 @@
     {[:a :b] "B"
      [:a :c] "C"
      [:b :d] "D"
-     [:c] [{:e "E", :f "F"} [{:g "G", :h "H"}]]}
+     [:c] [[{:e "E", :f "F"} [{:g "G", :h "H"}]]]}
     {:a {:b "B"
          :c "C"}
      :b {:d "D"}
@@ -392,7 +392,7 @@
     {[{:a "a"}] "map"
      [(symbol "a+-*&%$#!")] "symbol"
      [1] 2
-     ["str"] [{1 2, 3 4}]
+     ["str"] [[{1 2, 3 4}]]
      [#{7 6 5}] "set"
      [[8 9]] "vec"}
     {{:a "a"} "map"
@@ -424,7 +424,12 @@
               type-map
               {:c [{:e "E"}]}
               {:a {:b "B"}}
-              {:x 1}]]
+              {:x 1}
+              {:j "j"}
+              {:j "jj"}
+              {:j "jjj"}
+              {:k {:l "L"
+                   :m "M"}}]]
     (util/are2
       [matching-map matched]
       (= matched (util/filter-matching-maps matching-map maps))
@@ -434,7 +439,8 @@
       [{:x 1}]
 
       "nested all match"
-      nested-map
+      ;;vectors are treated as OR lists, not matching values, so nest within a top level vector
+      (assoc nested-map :c [(:c nested-map)])
       [nested-map]
 
       "nested partial match"
@@ -446,11 +452,25 @@
       [nested-map {:a {:b "B"}}]
 
       "value is matched exactly"
+      {:k {:l "L" :m "M"}}
+      [{:k {:l "L" :m "M"}}]
+
+      "when value is a vector, it is not matched exactly"
       {:c [{:e "E"}]}
+      []
+
+      "vector value is only matched when nested in a vactor (treated as a OR list)"
+      {:c [[{:e "E"}]]}
       [{:c [{:e "E"}]}]
 
+      "sequential values are ORed"
+      {:j ["j" "jjj"]}
+      [{:j "j"}
+       {:j "jjj"}]
+
       "type match"
-      type-map
+      ;;vectors are treated as OR lists, not matching values, so nest within a top level vector
+      (assoc type-map ["str"] [(get type-map ["str"])])
       [type-map]
 
       "Empty matching map finds everything"
