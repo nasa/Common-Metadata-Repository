@@ -70,9 +70,9 @@
   "Converts the psa-refs into a list of elastic documents"
   [collection granule]
   (let [parent-type-map (into {} (for [aa (:AdditionalAttributes collection)]
-                                   [(:Name aa) (csk/->kebab-case-keyword (:DataType aa))]))]
+                                   [(str/lower-case (:Name aa)) (csk/->kebab-case-keyword (:DataType aa))]))]
     (mapcat (fn [psa-ref]
-              (let [type (parent-type-map (:name psa-ref))]
+              (let [type (parent-type-map (str/lower-case (:name psa-ref)))]
                 (when-not type
                   (errors/internal-error!
                    (format "Could not find parent attribute [%s] in collection [%s] for granule [%s]"
