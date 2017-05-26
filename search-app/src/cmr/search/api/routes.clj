@@ -177,6 +177,18 @@
   [response]
   (common-routes/search-response (update response :result-format mt/format->mime-type)))
 
+(defn- get-collections-with-new-granules
+  "Invokes query service to find collections with granules newly added after a given date.
+   CMR Harvesting route."
+  [ctx path-w-extension params headers]
+  (let [params (process-params params path-w-extension headers mt/xml)]
+    (info (format "Searching for collections with new granules from client %s in format %s with params %s."
+                  (:client-id ctx)
+                  (rfh/printable-result-format (:result-format params))
+                  (pr-str params)))
+    (search-response
+     (query-svc/get-collections-with-new-granules ctx params))))
+
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
   [ctx path-w-extension params headers json-query]
@@ -364,6 +376,12 @@
           (GET "/"
                {params :params headers :headers ctx :request-context}
                (get-deleted-collections ctx path-w-extension params headers)))
+
+        (context ["/:path-w-extension" :path-w-extension #"(?:has-granules-added-after)(?:\..+)?"] [path-w-extension]
+          (OPTIONS "/" req common-routes/options-response)
+          (GET "/"
+               {params :params headers :headers ctx :request-context}
+               (get-collections-with-new-granules ctx path-w-extension params headers)))
 
         ;; AQL search - xml
         (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]

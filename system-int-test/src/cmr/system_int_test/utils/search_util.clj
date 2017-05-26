@@ -624,6 +624,21 @@
                                :accept accept})]
      (parse-reference-response false response))))
 
+(defn find-collections-with-new-granules
+  "Returns references that are found by searching for collections with
+   granules added after a given date."
+  ([params]
+   (find-collections-with-new-granules params nil))
+  ([params format-key]
+   (let [accept (when format-key
+                  (mime-types/format->mime-type format-key))
+         response (client/get (url/search-for-collections-with-new-granules-url)
+                              {:query-params params
+                               :connection-manager (s/conn-mgr)
+                               :accept accept})]
+     (parse-reference-response false response))))
+
+
 (defn clear-caches
   "Clears caches in the search application"
   []
