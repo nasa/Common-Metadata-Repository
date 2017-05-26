@@ -529,12 +529,18 @@
                                                    :collection_identifier {:concept_ids [coll1]}
                                                    :provider_id "PROV1"}})
 
-          (are [user permissions1 permissions2]
+          (are3 [user permissions1 permissions2]
             (= {gran1 permissions1
                 gran2 permissions2}
                (get-permissions user gran1 gran2))
+                
+            "for guest users"
             :guest [] []
+
+            "for registered users"
             :registered ["read" "order"] []
+
+            "for user1"
             "user1" ["read" "order"] []))
 
         (testing "no permissions are granted with granule_applicable = false"
