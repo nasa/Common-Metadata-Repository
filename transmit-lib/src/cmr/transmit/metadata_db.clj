@@ -144,7 +144,7 @@
     (client/post request-url (merge
                               (config/conn-params conn)
                               {:accept :json
-                               :query-params params
+                               :form-params params
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false}))))
 
