@@ -3,6 +3,7 @@
   (:require
    [clojure.set :as s]
    [clojure.string :as str]
+   [cmr.common.util :as util]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn deleted-tiling-searches
@@ -22,8 +23,8 @@
         ;; Only the deleted ones that are not part of the tile-aliases need to be validated.
         deleted-tile-names
          (s/difference
-           (set (map str/lower-case previous-tiles))
-           (set (map str/lower-case (concat current-tiles tile-aliases))))]
+           (set (map util/safe-lowercase previous-tiles))
+           (set (map util/safe-lowercase (concat current-tiles tile-aliases))))]
     (for [name deleted-tile-names]
       {:params {"two-d-coordinate-system[]" name
                 :collection-concept-id concept-id}

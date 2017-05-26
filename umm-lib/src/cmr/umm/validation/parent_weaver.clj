@@ -1,7 +1,8 @@
 (ns cmr.umm.validation.parent-weaver
   "Provides functions to thread together a granule and collection parent objects for validation.
   It weaves together the objects so matching items within the granule and collection are combined"
-  (:require [cmr.umm.umm-collection :as c]
+  (:require [clojure.string :as str]
+            [cmr.umm.umm-collection :as c]
             [cmr.umm.umm-granule :as g]
             [cmr.common.util :as u])
   (:import [cmr.umm.umm_granule

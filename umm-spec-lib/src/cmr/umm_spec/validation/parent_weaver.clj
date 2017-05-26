@@ -21,9 +21,9 @@
    (set-parents-by-name objs parent-objs :name :Name))
   ([objs parent-objs name-field parent-name-field]
    ;; We'll assume there's only a single parent object with a given name
-   (let [parent-obj-by-name (u/map-values first (group-by parent-name-field parent-objs))]
+   (let [parent-obj-by-name (u/map-values first (group-by #(u/safe-lowercase (parent-name-field %)) parent-objs))]
      (for [child objs
-           :let [parent (parent-obj-by-name (name-field child))]]
+           :let [parent (parent-obj-by-name (u/safe-lowercase (name-field child)))]]
        (set-parent child parent)))))
 
 (defn- set-parent-by-name
@@ -33,8 +33,8 @@
   ([obj parent-objs]
    (set-parent-by-name obj parent-objs :name :Name))
   ([obj parent-objs name-field parent-name-field]
-   (let [parent-obj-by-name (u/map-values first (group-by parent-name-field parent-objs))]
-     (set-parent obj (parent-obj-by-name (name-field obj))))))
+   (let [parent-obj-by-name (u/map-values first (group-by  #(u/safe-lowercase (parent-name-field %)) parent-objs))]
+     (set-parent obj (parent-obj-by-name (u/safe-lowercase (name-field obj)))))))
 
 (extend-protocol
   ParentWeaver

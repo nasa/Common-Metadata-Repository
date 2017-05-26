@@ -3,6 +3,7 @@
   (:require
    [clojure.set :as s]
    [clojure.string :as str]
+   [cmr.common.util :as util]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn- get-parent-instruments-from-concept
@@ -39,8 +40,8 @@
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-parent-ins))
         ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
         deleted-parent-instrument-names (s/difference
-                                          (set (map str/lower-case previous-parent-ins))
-                                          (set (map str/lower-case (concat current-parent-ins ins-aliases))))]
+                                          (set (map util/safe-lowercase previous-parent-ins))
+                                          (set (map util/safe-lowercase (concat current-parent-ins ins-aliases))))]
     (for [name deleted-parent-instrument-names]
       {:params {"instrument[]" name
                 :collection-concept-id concept-id
@@ -59,8 +60,8 @@
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-child-ins))
         ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
         deleted-child-instrument-names (s/difference
-                                         (set (map str/lower-case previous-child-ins))
-                                         (set (map str/lower-case (concat current-child-ins ins-aliases))))]
+                                         (set (map util/safe-lowercase previous-child-ins))
+                                         (set (map util/safe-lowercase (concat current-child-ins ins-aliases))))]
     (for [name deleted-child-instrument-names]
       {:params {"sensor[]" name
                 :collection-concept-id concept-id

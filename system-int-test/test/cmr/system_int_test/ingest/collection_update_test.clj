@@ -918,34 +918,41 @@
                         :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "SOURCE_TILE")
                         :Projects (data-umm-c/projects "PROJECT")
                         :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8]}
+                        
+        granule-map {:project-refs ["PROJECT"]
+                     :two-d-coordinate-system (dg/two-d "SOURCE_TILE")
+                     :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
+                     :product-specific-attributes [(dg/psa "STRING" ["alpha"])
+                                                   (dg/psa "BOOLEAN" ["true"])
+                                                   (dg/psa "INT" ["2"])
+                                                   (dg/psa "FLOAT" ["2.0"])
+                                                   (dg/psa "DATETIME" ["2012-01-01T01:02:03Z"])
+                                                   (dg/psa "DATE" ["2012-01-02Z"])
+                                                   (dg/psa "TIME" ["01:02:03Z"])
+                                                   (dg/psa "DTS" ["2012-01-01T01:02:03Z"])]}
 
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection collection-map))
-        gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["PROJECT"]
-                                                                                     :two-d-coordinate-system (dg/two-d "SOURCE_TILE")
-                                                                                     :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
-                                                                                     :product-specific-attributes [(dg/psa "STRING" ["alpha"])
-                                                                                                                   (dg/psa "BOOLEAN" ["true"])
-                                                                                                                   (dg/psa "INT" ["2"])
-                                                                                                                   (dg/psa "FLOAT" ["2.0"])
-                                                                                                                   (dg/psa "DATETIME" ["2012-01-01T01:02:03Z"])
-                                                                                                                   (dg/psa "DATE" ["2012-01-02Z"])
-                                                                                                                   (dg/psa "TIME" ["01:02:03Z"])
-                                                                                                                   (dg/psa "DTS" ["2012-01-01T01:02:03Z"])]}))]
+        gran (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" granule-map))]
 
     (are3
-      [coll-map]
+      [coll-map gran-map]
       (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-map))
+            response2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" gran-map))
             {:keys [status errors]} response]
-        (is (= [200 nil] [status errors])))
+        (is (= [200 nil] [status errors]))
+        (is (= [201 nil] [(:status response2) (:errors response2)])))
 
       "Projects"
       (assoc collection-map :Projects (data-umm-c/projects "ProJecT"))
+      (assoc granule-map :project-refs ["prOJecT"])
 
       "Tiling Identification Systems"
       (assoc collection-map :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "sOUrce_tIle"))
+      (assoc granule-map :two-d-coordinate-system (dg/two-d "SOURCE_tile"))
 
       "Platforms Instruments Child Instruments"
       (assoc collection-map :Platforms [(data-umm-c/platform-with-instrument-and-childinstruments "plAtfoRM" "inStrUmEnt" "CHildinSTrument")])
+      (assoc granule-map :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "platFORM" "instRUMENT" "childINSTRUMENT")])
 
       "Additional Attributes"
       (assoc collection-map :AdditionalAttributes [(data-umm-c/additional-attribute {:Name "strinG" :DataType "STRING"})
@@ -955,4 +962,12 @@
                                                    (data-umm-c/additional-attribute {:Name "datetimE" :DataType "DATETIME"})
                                                    (data-umm-c/additional-attribute {:Name "datE" :DataType "DATE"})
                                                    (data-umm-c/additional-attribute {:Name "timE" :DataType "TIME"})
-                                                   (data-umm-c/additional-attribute {:Name "dtS" :DataType "DATETIME_STRING"})]))))
+                                                   (data-umm-c/additional-attribute {:Name "dtS" :DataType "DATETIME_STRING"})])
+      (assoc granule-map :product-specific-attributes [(dg/psa "strING" ["alpha"])
+                                                       (dg/psa "booLEAN" ["true"])
+                                                       (dg/psa "inT" ["2"])
+                                                       (dg/psa "flOAT" ["2.0"])
+                                                       (dg/psa "dateTIME" ["2012-01-01T01:02:03Z"])
+                                                       (dg/psa "daTE" ["2012-01-02Z"])
+                                                       (dg/psa "tiME" ["01:02:03Z"])
+                                                       (dg/psa "dTS" ["2012-01-01T01:02:03Z"])]))))
