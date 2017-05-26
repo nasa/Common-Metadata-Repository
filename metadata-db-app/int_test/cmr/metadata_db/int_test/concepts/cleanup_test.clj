@@ -235,7 +235,7 @@
 
     (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
       (is (= (set (map util/expected-concept [gran1 gran2 gran4-3]))
-             (set (map #(dissoc % :transaction-id) concepts-after-cleanup))))
+             (set (map #(dissoc % :created-at :transaction-id) concepts-after-cleanup))))
 
       ;; Back to the future!
       ;; Advance one second past granule 1's tombstone cleanup time
@@ -247,7 +247,7 @@
 
       (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
         (is (= (set (map util/expected-concept [gran2 gran4-3]))
-               (set (map #(dissoc % :transaction-id) concepts-after-cleanup)))))))
+               (set (map #(dissoc % :created-at :transaction-id) concepts-after-cleanup)))))))
   (side/eval-form `(tk/clear-current-time!)))
 
 (deftest old-tag-revisions-are-cleaned-up
