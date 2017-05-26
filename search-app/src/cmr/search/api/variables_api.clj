@@ -1,8 +1,8 @@
 (ns cmr.search.api.variables-api
-  "Defines the API for variableging collections in the CMR."
+  "Defines the API for associating/dissociating variables with collections in the CMR."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.log :refer (debug info warn error)]
@@ -52,7 +52,8 @@
   (validate-variable-content-type headers)
   (info (format "Associate variable [%s] on collections: %s by client: %s."
                 variable-name body (:client-id context)))
-  (variable-api-response (variable-service/associate-variable-to-collections context variable-name body)))
+  (variable-api-response
+   (variable-service/associate-variable-to-collections context variable-name body)))
 
 (defn dissociate-variable-to-collections
   "Dissociate the variable to a list of collections."
@@ -62,9 +63,8 @@
   (validate-variable-content-type headers)
   (info (format "Dissociating variable [%s] from collections: %s by client: %s."
                 variable-name body (:client-id context)))
-  ;; TODO implement the following when adding dissociate variable to collections
-  ; (variable-api-response (variable-service/dissociate-variable-to-collections context variable-name body))
-  )
+  (variable-api-response
+   (variable-service/dissociate-variable-to-collections context variable-name body)))
 
 (defn search-for-variables
   [context params]
@@ -84,9 +84,9 @@
         ;; Associate a variable with a list of collections
         (POST "/" {:keys [request-context headers body]}
           (associate-variable-to-collections
-           request-context headers (slurp body) (str/lower-case variable-name)))
+           request-context headers (slurp body) (string/lower-case variable-name)))
 
         ;; Dissociate a variable from a list of collections
         (DELETE "/" {:keys [request-context headers body]}
           (dissociate-variable-to-collections
-           request-context headers (slurp body) (str/lower-case variable-name)))))))
+           request-context headers (slurp body) (string/lower-case variable-name)))))))
