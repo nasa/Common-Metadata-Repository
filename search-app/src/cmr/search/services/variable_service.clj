@@ -29,9 +29,6 @@
     (errors/throw-service-error
      :unauthorized "Variables cannot be modified without a valid user token.")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public API
-
 (defn- save-concept-in-mdb
   "Save the given concept in metadata-db using the given embedded metadata-db context."
   [mdb-context concept]

@@ -1,6 +1,6 @@
 (ns cmr.search.services.association-validation
   "This contains functions for validating the business rules of an association between a collection
-   and a tag or a collection between a variable."
+   and a tag or a variable."
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
@@ -38,7 +38,7 @@
       (set/difference (set coll-concept-ids) (set concept-ids)))))
 
 (defn- get-bad-collection-revisions
-  "Returns the bad collection revisions of the given tag associations partitioned into a set of
+  "Returns the bad collection revisions of the given associations partitioned into a set of
   collection revisions that are tombstones and a set of collection revisions that are inaccessible."
   [context associations]
   (when (seq associations)
@@ -64,21 +64,21 @@
        :inaccessibles inaccessible-coll-revisions})))
 
 (defn- append-error
-  "Returns the tag association with the given error message appended to it."
+  "Returns the association with the given error message appended to it."
   [association error-msg]
   (update association :errors concat [error-msg]))
 
 (defn- validate-collection-concept-id
-  "Validates the tag association collection concept-id is not in the set of inaccessible-concept-ids,
-  returns the tag association with errors appended if applicable."
+  "Validates the association collection concept-id is not in the set of inaccessible-concept-ids,
+  returns the association with errors appended if applicable."
   [inaccessible-concept-ids association]
   (if (contains? inaccessible-concept-ids (:concept-id association))
     (append-error association (assoc-msg/inaccessible-collection (:concept-id association)))
     association))
 
 (defn- validate-collection-revision
-  "Validates the tag association collection revision is not in the set of tombstone-coll-revisions
-  and inaccessible-coll-revisions, returns the tag association with errors appended if applicable."
+  "Validates the association collection revision is not in the set of tombstone-coll-revisions
+  and inaccessible-coll-revisions, returns the association with errors appended if applicable."
   [assoc-type tombstone-coll-revisions inaccessible-coll-revisions association]
   (let [coll-revision (select-keys association [:concept-id :revision-id])]
     (if (contains? tombstone-coll-revisions coll-revision)
@@ -88,9 +88,9 @@
         association))))
 
 (defmulti validate-association-conflict-for-collection
-  "Validate the given tag association does not conflict with existing tag associations in that
-  a tag cannot be associated with a collection revision and the same collection without revision
-  at the same time."
+  "Validate the given association does not conflict with existing tag associations in that
+  a tag/variable cannot be associated with a collection revision and the same collection
+  without revision at the same time."
   (fn [context assoc-type key association]
     assoc-type))
 
@@ -135,14 +135,14 @@
 
 (defmethod validate-association-conflict-for-collection :variable
   [context assoc-type variable-name variable-association]
-  (let [tas (->> (mdb/find-concepts context
+  (let [vas (->> (mdb/find-concepts context
                                     {:variable-name variable-name
                                      :associated-concept-id (:concept-id variable-association)
                                      :exclude-metadata true
                                      :latest true}
                                     :variable-association)
                  (filter #(not (:deleted %))))
-        coll-revision-ids (map #(get-in % [:extra-fields :associated-revision-id]) tas)
+        coll-revision-ids (map #(get-in % [:extra-fields :associated-revision-id]) vas)
         not-nil-revision-ids (remove nil? coll-revision-ids)]
     (cond
       ;; there is no existing variable association found, no need to validate
@@ -174,10 +174,10 @@
               variable-name (:concept-id variable-association)))))
 
 (defn- validate-association-conflict
-  "Validates the tag association (either on a specific revision or over the whole collection)
-  does not conflict with one or more existing tag associations in Metadata DB. Tag associations
+  "Validates the association (either on a specific revision or over the whole collection)
+  does not conflict with one or more existing associations in Metadata DB. Tag/Variable
   cannot be associated with a collection revision and the same collection without revision
-  at the same time. Returns the tag association with errors appended if applicable."
+  at the same time. Returns the association with errors appended if applicable."
   [context assoc-type key association]
   (if-let [error-msg (validate-association-conflict-for-collection
                        context assoc-type key association)]
@@ -185,7 +185,7 @@
     association))
 
 (defn- validate-collection-identifier
-  "Validates the tag association concept-id and revision-id (if given) satisfy tag association rules,
+  "Validates the association concept-id and revision-id (if given) satisfy association rules,
   i.e. collection specified exist and are viewable by the token,
   collection specified are not tombstones."
   [context assoc-type inaccessible-concept-ids tombstone-coll-revisions
@@ -211,25 +211,25 @@
 (defn- validate-conflicts-within-request
   "Validates the two lists have no intersection, otherwise there are conflicts within the same
   request, throws service error if conflicts are found."
-  [assoc-type concept-id-only-tas revision-tas]
-  (let [conflict-tas (set/intersection (set (map :concept-id concept-id-only-tas))
-                                       (set (map :concept-id revision-tas)))]
-    (when (seq conflict-tas)
+  [assoc-type concept-id-only-assocs revision-assocs]
+  (let [conflict-assocs (set/intersection (set (map :concept-id concept-id-only-assocs))
+                                       (set (map :concept-id revision-assocs)))]
+    (when (seq conflict-assocs)
       (errors/throw-service-error
-        :invalid-data (assoc-msg/conflict-associations assoc-type conflict-tas)))))
+        :invalid-data (assoc-msg/conflict-associations assoc-type conflict-assocs)))))
 
 (defn- partition-associations
   "Returns the associations as a list partitioned by if there is a revision-id."
   [associations]
   (let [has-revision-id? #(contains? % :revision-id)
-        {concept-id-only-tas false revision-tas true} (group-by has-revision-id? associations)]
-    [concept-id-only-tas revision-tas]))
+        {concept-id-only-assocs false revision-assocs true} (group-by has-revision-id? associations)]
+    [concept-id-only-assocs revision-assocs]))
 
 (defmulti validate-associations
   "Validates the associations for the given association type (:tag or :variable) based on the
   operation type, which is either :insert or :delete. Id is the identifier value of the tag or
   variable that is associated with the collections. Returns the associations with errors found
-  appended to them. If the provided associations fail the basic rules validation (e.g. empty tag
+  appended to them. If the provided associations fail the basic rules validation (e.g. empty
   associations, conflicts within the request), throws a service error."
   (fn [context assoc-type assoc-id associations operation-type]
     operation-type))
@@ -237,10 +237,10 @@
 (defmethod validate-associations :insert
   [context assoc-type assoc-id associations operation-type]
   (validate-empty-associations assoc-type associations)
-  (let [[concept-id-only-tas revision-tas] (partition-associations associations)
-        _ (validate-conflicts-within-request assoc-type concept-id-only-tas revision-tas)
+  (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
+        _ (validate-conflicts-within-request assoc-type concept-id-only-assocs revision-assocs)
         inaccessible-concept-ids (get-inaccessible-concept-ids
-                                   context (map :concept-id concept-id-only-tas))
+                                   context (map :concept-id concept-id-only-assocs))
         {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context associations)]
     (->> associations
          (map #(validate-collection-identifier
@@ -251,9 +251,9 @@
 (defmethod validate-associations :delete
   [context assoc-type assoc-id associations operation-type]
   (validate-empty-associations assoc-type associations)
-  (let [[concept-id-only-tas revision-tas] (partition-associations associations)
+  (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         inaccessible-concept-ids (get-inaccessible-concept-ids
-                                   context (map :concept-id concept-id-only-tas))
+                                   context (map :concept-id concept-id-only-assocs))
         {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context associations)]
     (->> associations
          (map #(validate-collection-identifier
