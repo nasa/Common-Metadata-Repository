@@ -12,6 +12,10 @@
         "UpdateTypeEnum": {
             "type": "string",
             "enum": ["ADD_TO_EXISTING", "CLEAR_FIELD", "CLEAR_ALL_AND_REPLACE", "FIND_AND_REMOVE", "FIND_AND_REPLACE"]
+        },
+        "UpdateFieldEnum": {
+          "type": "string",
+          "enum": ["SCIENCE_KEYWORDS", "LOCATION_KEYWORDS", "DATA_CENTERS", "PLATFORMS", "INSTRUMENTS"]
         }
     },
     "title": "Ingest Bulk Update",
@@ -33,11 +37,10 @@
           "minItems": 1
         },
         "update-type": {
-            "description": "The mime type of the service.",
             "$ref": "#/definitions/UpdateTypeEnum"
         },
         "update-field": {
-          "type": "string"
+          "$ref": "#/definitions/UpdateFieldEnum"
         },
         "update-value": {
           "type": "object"

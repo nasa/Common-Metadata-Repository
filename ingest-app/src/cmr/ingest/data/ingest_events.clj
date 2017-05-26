@@ -55,14 +55,16 @@
    :provider-id provider-id})
 
 (defn ingest-bulk-update-event
-  [task-id bulk-update-params]
+  [provider-id task-id bulk-update-params]
   {:action :bulk-update
+   :provider-id provider-id
    :task-id task-id
    :bulk-update-params bulk-update-params})
 
 (defn ingest-collection-bulk-update-event
-  [task-id concept-id bulk-update-params]
+  [provider-id task-id concept-id bulk-update-params]
   {:action :collection-bulk-update
+   :provider-id provider-id
    :task-id task-id
    :concept-id concept-id
    :bulk-update-params bulk-update-params})

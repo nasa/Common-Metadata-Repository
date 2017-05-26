@@ -467,7 +467,7 @@
       :collection-statuses collection-statuses}))))
 
 (def ingest-routes
-  "Defines the routes for ingest, validate, and delete operations"
+  "Defines the routes for ingest, validate, delete, and bulk update operations"
   (set-default-error-format
     :xml
     (context "/providers/:provider-id" [provider-id]
