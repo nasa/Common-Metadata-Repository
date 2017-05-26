@@ -6,6 +6,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
@@ -81,9 +82,9 @@
         user1-group (create-group {:name "groupwithuser1" :members ["user1"]})
         ;; create some collections
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
-                                                     :entry-title (str % " entry title")
-                                                     :native-id %
-                                                     :short-name %})
+                                                   :entry-title (str % " entry title")
+                                                   :native-id %
+                                                   :short-name %})
         coll1 (save-prov1-collection "coll1")
         coll2 (save-prov1-collection "coll2")
         coll3 (save-prov1-collection "coll3")
@@ -170,11 +171,41 @@
                 "user2" ["read" "order"]))))
 
         (testing "acls granting access to collection by collection identifier"
+          (testing "by concept id"
+            (create-acl
+              {:group_permissions [{:permissions [:read]
+                                    :user_type :guest}]
+               :catalog_item_identity {:name "coll2 guest read concept ids"
+                                       :collection_applicable true
+                                       :collection_identifier {:concept_ids [coll2]}
+                                       :provider_id "PROV1"}})
+            (testing "for collection in ACL's concept ids"
+              (are3 [user permissions]
+                (= {coll2 permissions}
+                   (get-permissions user coll2))
+
+                "for guest users"
+                :guest ["read"]
+
+                "for registered users"
+                :registered []))
+
+            (testing "for collection not in ACL's concept ids"
+              (are3 [user permissions]
+                (= {coll3 permissions}
+                   (get-permissions user coll3))
+
+                "for guest users"
+                :guest []
+
+                "for guest users"
+                :registered [])))
+
           (testing "by entry title"
             (create-acl
               {:group_permissions [{:permissions [:read]
                                     :user_type :guest}]
-               :catalog_item_identity {:name "coll2 guest read"
+               :catalog_item_identity {:name "coll2 guest read entry titles"
                                        :collection_applicable true
                                        :collection_identifier {:entry_titles ["coll2 entry title"]}
                                        :provider_id "PROV1"}})
@@ -487,6 +518,29 @@
                (get-permissions user gran1 gran2))
             :guest [] []
             :registered ["read" "order"] []
+            "user1" ["read" "order"] []))
+
+        (testing "permissions granted to registered users via concept ids instead of entry-titles"
+          (update-acl acl {:group_permissions [{:permissions [:read :order]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granule read"
+                                                   :granule_applicable true
+                                                   :collection_applicable true
+                                                   :collection_identifier {:concept_ids [coll1]}
+                                                   :provider_id "PROV1"}})
+
+          (are3 [user permissions1 permissions2]
+            (= {gran1 permissions1
+                gran2 permissions2}
+               (get-permissions user gran1 gran2))
+                
+            "for guest users"
+            :guest [] []
+
+            "for registered users"
+            :registered ["read" "order"] []
+
+            "for user1"
             "user1" ["read" "order"] []))
 
         (testing "no permissions are granted with granule_applicable = false"

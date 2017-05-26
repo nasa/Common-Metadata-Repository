@@ -34,6 +34,13 @@
   []
   (map :provider_id (j/query (config/db) "select provider_id from metadata_db.providers")))
 
+(defn get-provider
+  "Given a provider id, it will return the entire first row from the providers table for that id"
+  [provider-id]
+  (first
+    (j/query (config/db)
+             (format "select * from metadata_db.providers where provider_id = '%s'" provider-id))))
+
 (defn get-regular-providers
   "Gets a list of the regular (not small) providers in the database. Primarily for enabling
   migrations of existing provider tables."
@@ -71,6 +78,11 @@
   provider tables."
   []
   (distinct (map #(concept-tables/get-table-name % :collection) (p/get-providers (config/db)))))
+
+(defn get-provider-collection-tablename
+  "For a given provider, returns table name"
+  [provider]
+  (concept-tables/get-table-name provider :collection))
 
 (defn get-granule-tablenames
   "Gets a list of all the granule tablenames. Primarily for enabling migrations of existing

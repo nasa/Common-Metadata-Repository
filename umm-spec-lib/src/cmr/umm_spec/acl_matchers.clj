@@ -13,7 +13,7 @@
    [cmr.umm.acl-matchers :as umm-lib-acl-matchers]))
 
 (def ^:private supported-collection-identifier-keys
-  #{:entry-titles :access-value :temporal})
+  #{:entry-titles :access-value :temporal :concept-ids})
 
 (defmulti matches-access-value-filter?
  "Returns true if the umm item matches the access-value filter"
@@ -86,13 +86,16 @@
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
   (let [coll-entry-title (:EntryTitle coll)
-        {:keys [entry-titles access-value temporal]} coll-id]
+        concept-id (:concept-id coll)
+        {:keys [entry-titles access-value temporal concept-ids]} coll-id]
     (and (or (empty? entry-titles)
              (some (partial = coll-entry-title) entry-titles))
          (or (nil? access-value)
              (matches-access-value-filter? :collection coll access-value))
          (or (nil? temporal)
-             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal)))))
+             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal))
+         (or (empty? concept-ids)
+             (some (partial = concept-id) concept-ids)))))
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."
@@ -113,7 +116,6 @@
                      collection-identifier
                      provider-id]} (:catalog-item-identity acl)]
     (validate-collection-identiier acl collection-identifier)
-
     (and collection-applicable
          (= coll-prov-id provider-id)
          (or (nil? collection-identifier)

@@ -34,7 +34,7 @@ Unlike the other types of resource identities, catalog item identities contain a
 - **provider_id**: The provider with which the identity is associated
 - **collection_applicable**: Flag indicating whether the filter matches collections
 - **granule_applicable**: Flag indicating whether the filter matches granules
-- **collection_identifier**: A filter defining the collections matched by this ACL.  This filter consists of a combination of Collection Entry Titles, a restriction flag(AKA Access Value) range, and a temporal range (see the [schema](acl-schema.html#-collectionidentifiertype-object-))
+- **collection_identifier**: A filter defining the collections matched by this ACL.  This filter consists of a combination of Collection Entry Titles, Collection Concept Ids, a restriction flag(AKA Access Value) range, and a temporal range (see the [schema](acl-schema.html#-collectionidentifiertype-object-))
 - **granule_identifier**: A filter defining the granules matched by this ACL.  This filter consists of a combination of restriction flag (AKA Access Value) range, and a temporal range and can be combined with a collection_identifier (see the [schema](acl-schema.html#-granuleidentifiertype-object-))
 
 It should be noted that while temporal Catalog item filters are supported by the API, they are not currently used operationally.  In addition, a restriction flag (or Access Value) filter  may specify a include_undefined_value flag.  If set to false, only items which have an access value within the specified range will be matched.  If set to true, item with no value set, as well as those with a value in the specified range will be matched. include_undefined_value defaults to 'false'

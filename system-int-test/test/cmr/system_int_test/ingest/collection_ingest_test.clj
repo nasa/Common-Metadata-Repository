@@ -327,7 +327,7 @@
                                                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
                                                                                                   :Topic "Cool"
                                                                                                   :Term "Mild"})]
-                                                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                                                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
                                                                                           :ShortName "Larc"})]
                                            ;; The following fields are needed for DIF10 to pass xml validation
                                                    :TemporalExtents [(data-umm-c/temporal-extent
@@ -421,6 +421,10 @@
                                                                             :ShortName "S1"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                             :ShortName "S2"}))
+        coll3 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E3"
+                                                                            :ShortName "S3"}))
+        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E4"
+                                                                            :ShortName "S4"}))
         token (e/login-guest (s/context))]
 
     ;; wait for the collections to be indexed so that ACLs will be valid
@@ -430,6 +434,12 @@
                                          :permissions ["read" "create"]}]
                     :provider_identity {:provider_id "PROV1"
                                         :target "CATALOG_ITEM_ACL"}})
+
+    (ac/create-acl (transmit-config/echo-system-token)
+                   {:group_permissions [{:user_type "guest"
+                                         :permissions ["read" "create"]}]
+                    :provider_identity {:provider_id "PROV2"
+                                        :target "CATALOG_ITEM_ACL"}})
     (index/wait-until-indexed)
     ;; Ingest some ACLs that reference the collection by concept id.
     (ac/create-acl token {:group_permissions [{:user_type "guest"
@@ -438,29 +448,63 @@
                                                   :provider_id "PROV1"
                                                   :collection_applicable true
                                                   :collection_identifier {:entry_titles [(:EntryTitle coll1)]}}})
+
     (ac/create-acl token {:group_permissions [{:user_type "guest"
                                                :permissions ["read"]}]
                           :catalog_item_identity {:name "coll1/coll2 ACL"
                                                   :provider_id "PROV1"
                                                   :collection_applicable true
                                                   :collection_identifier {:entry_titles [(:EntryTitle coll1) (:EntryTitle coll2)]}}})
+
+    (ac/create-acl token {:group_permissions [{:user_type "guest"
+                                               :permissions ["read" "order"]}]
+                          :catalog_item_identity {:name "coll3 ACL"
+                                                  :provider_id "PROV2"
+                                                  :collection_applicable true
+                                                  :collection_identifier {:concept_ids [(:concept-id coll3)]}}})
+    (ac/create-acl token {:group_permissions [{:user_type "guest"
+                                               :permissions ["read"]}]
+                          :catalog_item_identity {:name "coll3/coll4 ACL"
+                                                  :provider_id "PROV2"
+                                                  :collection_applicable true
+                                                  :collection_identifier {:concept_ids [(:concept-id coll3) (:concept-id coll4)]}}})
     (index/wait-until-indexed)
+
+    (testing "Entry title based catalog item acls"
+      ;; Verify that the ACLs are found in Access Control Service search.
+      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV1"}))]
+        (is (= [1 1] (map :revision_id results)))
+        (is (= ["coll1 ACL" "coll1/coll2 ACL"] (map :name results))))
+      ;; Delete the collection via ingest.
+      (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10))
+      (index/wait-until-indexed)
+      ;; Verify that those ACLs are NOT found.
+      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV1"}))]
+        (is (= [2] (map :revision_id results)))
+        (is (= ["coll1/coll2 ACL"] (map :name results)))
+        (is (= [(:EntryTitle coll2)]
+               (-> (ac/get-acl token (:concept_id (first results)))
+                   :catalog_item_identity
+                   :collection_identifier
+                   :entry_titles)))))
+
     ;; Verify that the ACLs are found in Access Control Service search.
-    (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
-      (is (= [1 1] (map :revision_id results)))
-      (is (= ["coll1 ACL" "coll1/coll2 ACL"] (map :name results))))
-    ;; Delete the collection via ingest.
-    (ingest/delete-concept (d/umm-c-collection->concept coll1 :echo10))
-    (index/wait-until-indexed)
-    ;; Verify that those ACLs are NOT found.
-    (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item"}))]
-      (is (= [2] (map :revision_id results)))
-      (is (= ["coll1/coll2 ACL"] (map :name results)))
-      (is (= [(:EntryTitle coll2)]
-             (-> (ac/get-acl token (:concept_id (first results)))
-                 :catalog_item_identity
-                 :collection_identifier
-                 :entry_titles))))))
+    (testing "Concept id based catalog item acls"
+      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
+        (is (= [1 1] (map :revision_id results)))
+        (is (= ["coll3 ACL" "coll3/coll4 ACL"] (map :name results))))
+      ;; Delete the collection via ingest.
+      (ingest/delete-concept (d/umm-c-collection->concept coll3 :echo10))
+      (index/wait-until-indexed)
+      ;; Verify that those ACLs are NOT found.
+      (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
+        (is (= [2] (map :revision_id results)))
+        (is (= ["coll3/coll4 ACL"] (map :name results)))
+        (is (= [(:concept-id coll4)]
+               (-> (ac/get-acl token (:concept_id (first results)))
+                   :catalog_item_identity
+                   :collection_identifier
+                   :concept_ids)))))))
 
 (deftest delete-deleted-collection-with-new-revision-id-returns-404
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection))
