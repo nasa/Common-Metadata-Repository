@@ -16,7 +16,7 @@
   "Handle the various actions that can be requested for a provider via the provider-queue"
   (fn [context msg]
     (keyword (:action msg))))
-  
+
 (defmethod handle-provider-event :provider-collection-reindexing
   [context {:keys [provider-id force-version? all-revisions-index?]}]
   ;; We set the refresh acls flag to false because the ACLs should have been refreshed as part
@@ -52,8 +52,8 @@
   (if (= :humanizer (cc/concept-id->type concept-id))
     (indexer/update-humanizers context)
     (indexer/index-concept-by-concept-id-revision-id
-      context concept-id revision-id {:ignore-conflict? true
-                                      :all-revisions-index? all-revisions-index?})))
+     context concept-id revision-id {:ignore-conflict? true
+                                     :all-revisions-index? all-revisions-index?})))
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]

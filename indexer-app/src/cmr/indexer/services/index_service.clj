@@ -79,9 +79,13 @@
   [context batch options]
   ;; Get the tag associations as well.
   (let [batch (map (fn [concept]
-                     (let [tag-associations (meta-db/get-tag-associations-for-collection
-                                              context concept)]
-                       (assoc concept :tag-associations tag-associations)))
+                     (let [tag-associations (meta-db/get-associations-for-collection
+                                             context concept :tag-association)
+                           variable-associations (meta-db/get-associations-for-collection
+                                                  context concept :variable-association)]
+                       (-> concept
+                           (assoc :tag-associations tag-associations)
+                           (assoc :variable-associations variable-associations))))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))
 
@@ -138,10 +142,10 @@
 (defn- indexing-applicable?
   "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.
   Indexing is applicable for all concept types if all-revisions-index? is false and only for
-  collection concept type if all-revisions-index? is true."
+  collection, tag-association and variable-association concept types if all-revisions-index? is true."
   [concept-type all-revisions-index?]
   (or (not all-revisions-index?)
-      (and all-revisions-index? (contains? #{:collection :tag-association} concept-type))))
+      (and all-revisions-index? (contains? #{:collection :tag-association :variable-association} concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
 
@@ -223,18 +227,21 @@
               concept-id
               revision-date)))))
 
-(defmulti get-elastic-version-with-tag-associations
+(defmulti get-elastic-version-with-associations
   "Returns the elastic version of the concept and its tag associations"
-  (fn [context concept tag-associations]
+  (fn [context concept tag-associations variable-associations]
     (:concept-type concept)))
 
-(defmethod get-elastic-version-with-tag-associations :default
-  [context concept tag-associations]
+(defmethod get-elastic-version-with-associations :default
+  [context concept tag-associations variable-associations]
   (:revision-id concept))
 
-(defmethod get-elastic-version-with-tag-associations :collection
-  [context concept tag-associations]
-  (es/get-elastic-version (assoc concept :tag-associations tag-associations)))
+(defmethod get-elastic-version-with-associations :collection
+  [context concept tag-associations variable-associations]
+  (es/get-elastic-version
+   (-> concept
+       (assoc :tag-associations tag-associations)
+       (assoc :variable-associations variable-associations))))
 
 (defmulti get-elastic-version
   "Returns the elastic version of the concept"
@@ -247,8 +254,10 @@
 
 (defmethod get-elastic-version :collection
   [context concept]
-  (let [tag-associations (meta-db/get-tag-associations-for-collection context concept)]
-    (get-elastic-version-with-tag-associations context concept tag-associations)))
+  (let [tag-associations (meta-db/get-associations-for-collection context concept :tag-association)
+        variable-associations (meta-db/get-associations-for-collection
+                               context concept :variable-association)]
+    (get-elastic-version-with-associations context concept tag-associations variable-associations)))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"
@@ -261,10 +270,24 @@
 
 (defmethod get-tag-associations :collection
   [context concept]
-  (meta-db/get-tag-associations-for-collection context concept))
+  (meta-db/get-associations-for-collection context concept :tag-association))
+
+(defmulti get-variable-associations
+  "Returns the variable associations of the concept"
+  (fn [context concept]
+    (:concept-type concept)))
+
+(defmethod get-variable-associations :default
+  [context concept]
+  nil)
+
+(defmethod get-variable-associations :collection
+  [context concept]
+  (meta-db/get-associations-for-collection context concept :variable-association))
 
 (defmulti index-concept
-  "Index the given concept with the parsed umm record."
+  "Index the given concept with the parsed umm record. Indexing tag association and variable
+   association concept indexes the associated collection conept."
   (fn [context concept parsed-concept options]
     (:concept-type concept)))
 
@@ -279,14 +302,21 @@
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
           (let [tag-associations (get-tag-associations context concept)
-                elastic-version (get-elastic-version-with-tag-associations
-                                  context concept tag-associations)
-                tag-associations (map #(cp/parse-concept context %)
-                                      (filter #(not (:deleted %)) tag-associations))
+                variable-associations (get-variable-associations context concept)
+                elastic-version (get-elastic-version-with-associations
+                                  context concept tag-associations variable-associations)
+                tag-associations (es/parse-non-tombstone-associations
+                                  context tag-associations)
+                variable-associations (es/parse-non-tombstone-associations
+                                       context variable-associations)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc
-                         context (assoc concept :tag-associations tag-associations) parsed-concept)
+                         context
+                         (-> concept
+                             (assoc :tag-associations tag-associations)
+                             (assoc :variable-associations variable-associations))
+                         parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?])
                                     (assoc :ttl (when delete-time
@@ -301,7 +331,10 @@
               elastic-version
               elastic-options)))))))
 
-(defmethod index-concept :tag-association
+(defn- index-associated-collection
+  "Index the associated collection conept of the given concept. This is used by indexing tag
+   association and variable association. Indexing them is essentially indexing their associated
+   collection concept."
   [context concept parsed-concept options]
   (let [{{:keys [associated-concept-id associated-revision-id]} :extra-fields} concept
         {:keys [all-revisions-index?]} options
@@ -315,6 +348,14 @@
     (when need-to-index?
       (let [parsed-coll-concept (cp/parse-concept context coll-concept)]
         (index-concept context coll-concept parsed-coll-concept options)))))
+
+(defmethod index-concept :tag-association
+  [context concept parsed-concept options]
+  (index-associated-collection context concept parsed-concept options))
+
+(defmethod index-concept :variable-association
+  [context concept parsed-concept options]
+  (index-associated-collection context concept parsed-concept options))
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
@@ -373,12 +414,23 @@
                   {:term {(query-field->elastic-field :collection-concept-id :granule)
                           concept-id}})))))))))
 
-(defmethod delete-concept :tag-association
+(defn- index-association-concept
+  "Index the association concept identified by the given concept-id and revision-id."
   [context concept-id revision-id options]
   (let [concept (meta-db/get-concept context concept-id revision-id)]
-    ;; When tag association is deleted, we want to re-index the associated collection.
-    ;; This is the same thing we do when a tag association is update. So we call the same function.
     (index-concept context concept nil options)))
+
+(defmethod delete-concept :tag-association
+  [context concept-id revision-id options]
+  ;; When tag association is deleted, we want to re-index the associated collection.
+  ;; This is the same thing we do when a tag association is update. So we call the same function.
+  (index-association-concept context concept-id revision-id options))
+
+(defmethod delete-concept :variable-association
+  [context concept-id revision-id options]
+  ;; When variable association is deleted, we want to re-index the associated collection.
+  ;; This is the same thing we do when a variable association is update. So we call the same function.
+  (index-association-concept context concept-id revision-id options))
 
 (defn force-delete-all-collection-revision
   "Removes a collection revision from the all revisions index"
