@@ -6,6 +6,7 @@
    [clojure.test :refer :all]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
@@ -179,16 +180,25 @@
                                        :collection_identifier {:concept_ids [coll2]}
                                        :provider_id "PROV1"}})
             (testing "for collection in ACL's concept ids"
-              (are [user permissions]
+              (are3 [user permissions]
                 (= {coll2 permissions}
                    (get-permissions user coll2))
+
+                "for guest users"
                 :guest ["read"]
+
+                "for registered users"
                 :registered []))
+
             (testing "for collection not in ACL's concept ids"
-              (are [user permissions]
+              (are3 [user permissions]
                 (= {coll3 permissions}
                    (get-permissions user coll3))
+
+                "for guest users"
                 :guest []
+
+                "for guest users"
                 :registered [])))
 
           (testing "by entry title"
