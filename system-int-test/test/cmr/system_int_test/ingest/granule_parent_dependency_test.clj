@@ -369,17 +369,17 @@
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
 
-        sA (data-umm-c/instrument {:ShortName "GPS RECEIVERS"})
-        srA (dg/sensor-ref {:short-name "GPS RECEIVERS"})
-        iA (data-umm-c/instrument {:ShortName "GPS RECEIVERS" :ComposedOf [sA]})
-        irA (dg/instrument-ref {:short-name "GPS RECEIVERS" :sensor-refs [srA]})
+        sA (data-umm-c/instrument {:ShortName "GPS"})
+        srA (dg/sensor-ref {:short-name "GPS"})
+        iA (data-umm-c/instrument {:ShortName "GPS" :ComposedOf [sA]})
+        irA (dg/instrument-ref {:short-name "GPS" :sensor-refs [srA]})
         pA (data-umm-c/platform {:ShortName "platform-Sn A" :Instruments [iA]})
         prA (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [irA]})
 
-        sB (data-umm-c/instrument {:ShortName "GPS Receivers"})
-        srB (dg/sensor-ref {:short-name "GPS Receivers"})
-        iB (data-umm-c/instrument {:ShortName "GPS Receivers" :ComposedOf [sB]})
-        irB (dg/instrument-ref {:short-name "GPS Receivers" :sensor-refs [srB]})
+        sB (data-umm-c/instrument {:ShortName "GPS RECEIVERS"})
+        srB (dg/sensor-ref {:short-name "GPS RECEIVERS"})
+        iB (data-umm-c/instrument {:ShortName "GPS RECEIVERS" :ComposedOf [sB]})
+        irB (dg/instrument-ref {:short-name "GPS RECEIVERS" :sensor-refs [srB]})
         pB (data-umm-c/platform {:ShortName "platform-Sn A" :Instruments [iB]})
         prB (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [irB]})
 
@@ -465,8 +465,8 @@
           gran-A-for-echo10-coll-A
 
           "A granule ingested in collection A with NewName is rejected"
-          ["The following list of Instrument short names did not exist in the referenced parent collection: [GPS Receivers]."
-           "The following list of Sensor short names did not exist in the referenced parent collection: [GPS Receivers]."]
+          ["The following list of Instrument short names did not exist in the referenced parent collection: [GPS RECEIVERS]."
+           "The following list of Sensor short names did not exist in the referenced parent collection: [GPS RECEIVERS]."]
           gran-B-for-echo10-coll-A
 
           "A granule ingested in collection B with OldName is permitted"
