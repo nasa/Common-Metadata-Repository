@@ -57,7 +57,8 @@
           CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id"
           CORS_ORIGIN_HEADER "*"}
          (when (:hits results) {HITS_HEADER (str (:hits results))})
-         (when (:took results) {TOOK_HEADER (str (:took results))})))
+         (when (:took results) {TOOK_HEADER (str (:took results))})
+         (when (:scroll-id results) {SCROLL_ID_HEADER "foo"})))
         ;  (when (:scroll-id results) {SCROLL_ID_HEADER (str (:scroll-id results))})))
 
 (defn search-response
