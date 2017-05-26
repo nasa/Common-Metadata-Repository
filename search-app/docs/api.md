@@ -855,6 +855,24 @@ __Example__
 }
 ```
 
+When retrieving data in UMM JSON that has a native format other than UMM JSON, if there is an error parsing an individual field an "\_errors" field will be added to the UMM with details about the parsing error.
+
+__Example__
+
+```json
+{ "Projects" : [ {
+    "ShortName" : "Project2 Short Name",
+    "LongName" : "Project2 Long Name",
+    "Campaigns" : [ "Project 2 Campaign1 Short Name", "Project 2 Campaign2 Short Name" ],
+    "_errors" : {
+      "StartDate" : "Could not parse date-time value: 2002:03:01T01:00:00Z",
+      "EndDate" : "Could not parse date-time value: 2002:04:02T01:00:00Z"
+    }
+  } ] }
+```
+
+A collection containing "\_errors" is not valid UMM and cannot be ingested into the CMR.
+
 #### <a name="kml"></a> KML
 
 KML is the [XML language](http://www.opengeospatial.org/standards/kml) used by the Google Earth application and is used by the CMR to return spatial data associated with a collection or granule.
