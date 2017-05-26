@@ -1,8 +1,7 @@
 (ns cmr.umm-spec.validation.parent-weaver
   "Provides functions to thread together a granule and collection parent objects for validation.
   It weaves together the objects so matching items within the granule and collection are combined"
-  (:require [clojure.string :as str]
-            [cmr.umm.umm-granule :as g]
+  (:require [cmr.umm.umm-granule :as g]
             [cmr.common.util :as u])
   (:import [cmr.umm.umm_granule
             UmmGranule
@@ -22,9 +21,9 @@
    (set-parents-by-name objs parent-objs :name :Name))
   ([objs parent-objs name-field parent-name-field]
    ;; We'll assume there's only a single parent object with a given name
-   (let [parent-obj-by-name (u/map-values first (group-by #(str/lower-case (parent-name-field %)) parent-objs))]
+   (let [parent-obj-by-name (u/map-values first (group-by #(u/safe-lowercase (parent-name-field %)) parent-objs))]
      (for [child objs
-           :let [parent (parent-obj-by-name (str/lower-case (name-field child)))]]
+           :let [parent (parent-obj-by-name (u/safe-lowercase (name-field child)))]]
        (set-parent child parent)))))
 
 (defn- set-parent-by-name
@@ -34,8 +33,8 @@
   ([obj parent-objs]
    (set-parent-by-name obj parent-objs :name :Name))
   ([obj parent-objs name-field parent-name-field]
-   (let [parent-obj-by-name (u/map-values first (group-by  #(str/lower-case (parent-name-field %)) parent-objs))]
-     (set-parent obj (parent-obj-by-name (str/lower-case (name-field obj)))))))
+   (let [parent-obj-by-name (u/map-values first (group-by  #(u/safe-lowercase (parent-name-field %)) parent-objs))]
+     (set-parent obj (parent-obj-by-name (u/safe-lowercase (name-field obj)))))))
 
 (extend-protocol
   ParentWeaver
