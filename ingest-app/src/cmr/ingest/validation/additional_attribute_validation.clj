@@ -3,13 +3,12 @@
   (:require
    [clojure.string :as str]
    [cmr.common.util :as util]
-   [clojure.string :refer [lower-case]]
    [cmr.umm-spec.additional-attribute :as aa]))
 
 (defn- lower-case-name
   "For a given addition attribute, return lower-case name"
   [aa]
-  (lower-case (:Name aa)))
+  (util/safe-lowercase (:Name aa)))
 
 (defn- aa-range-reduced?
   "Returns true if the range of additional attribute is smaller than the range of the previous one."
