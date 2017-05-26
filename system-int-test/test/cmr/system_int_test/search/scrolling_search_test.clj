@@ -19,128 +19,128 @@
   "A scroll-id that has a valid length, but was never issued by Elasticsearch"
   (string/join (repeat 720 "a")))
 
-(deftest granule-scrolling
-  (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" 
-                                                     (data-umm-c/collection {:EntryTitle "E1"
-                                                                             :ShortName "S1"
-                                                                             :Version "V1"})) 
-        coll2 (data2-core/ingest-umm-spec-collection "PROV1" 
-                                                     (data-umm-c/collection {:EntryTitle "E2"
-                                                                             :ShortName "S2"
-                                                                             :Version "V2"}))
-        coll1-cid (get-in coll1 [:concept-id])
-        coll2-cid (get-in coll2 [:concept-id])
-        gran1 (data2-core/ingest "PROV1" 
-                                 (data2-granule/granule-with-umm-spec-collection coll1 
-                                                                                 coll1-cid 
-                                                                                 {:granule-ur "Granule1"}))
-        gran2 (data2-core/ingest "PROV1" 
-                          (data2-granule/granule-with-umm-spec-collection coll1 
-                                                                          coll1-cid 
-                                                                          {:granule-ur "Granule2"}))
-        gran3 (data2-core/ingest "PROV1" 
-                          (data2-granule/granule-with-umm-spec-collection coll1 
-                                                                          coll1-cid 
-                                                                          {:granule-ur "Granule3"}))
-        gran4 (data2-core/ingest "PROV1" 
-                          (data2-granule/granule-with-umm-spec-collection coll2 
-                                                                          coll2-cid 
-                                                                          {:granule-ur "Granule4"}))
-        gran5 (data2-core/ingest "PROV1" 
-                          (data2-granule/granule-with-umm-spec-collection coll2 
-                                                                          coll2-cid 
-                                                                          {:granule-ur "Granule5"}))
-        all-grans [gran1 gran2 gran3 gran4 gran5]]
-    (index/wait-until-indexed)
+; (deftest granule-scrolling
+;   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" 
+;                                                      (data-umm-c/collection {:EntryTitle "E1"
+;                                                                              :ShortName "S1"
+;                                                                              :Version "V1"})) 
+;         coll2 (data2-core/ingest-umm-spec-collection "PROV1" 
+;                                                      (data-umm-c/collection {:EntryTitle "E2"
+;                                                                              :ShortName "S2"
+;                                                                              :Version "V2"}))
+;         coll1-cid (get-in coll1 [:concept-id])
+;         coll2-cid (get-in coll2 [:concept-id])
+;         gran1 (data2-core/ingest "PROV1" 
+;                                  (data2-granule/granule-with-umm-spec-collection coll1 
+;                                                                                  coll1-cid 
+;                                                                                  {:granule-ur "Granule1"}))
+;         gran2 (data2-core/ingest "PROV1" 
+;                           (data2-granule/granule-with-umm-spec-collection coll1 
+;                                                                           coll1-cid 
+;                                                                           {:granule-ur "Granule2"}))
+;         gran3 (data2-core/ingest "PROV1" 
+;                           (data2-granule/granule-with-umm-spec-collection coll1 
+;                                                                           coll1-cid 
+;                                                                           {:granule-ur "Granule3"}))
+;         gran4 (data2-core/ingest "PROV1" 
+;                           (data2-granule/granule-with-umm-spec-collection coll2 
+;                                                                           coll2-cid 
+;                                                                           {:granule-ur "Granule4"}))
+;         gran5 (data2-core/ingest "PROV1" 
+;                           (data2-granule/granule-with-umm-spec-collection coll2 
+;                                                                           coll2-cid 
+;                                                                           {:granule-ur "Granule5"}))
+;         all-grans [gran1 gran2 gran3 gran4 gran5]]
+;     (index/wait-until-indexed)
                
-    (testing "Scrolling with page size"
-      (let [{:keys [hits scroll-id] :as result} (search/find-refs 
-                                                 :granule 
-                                                 {:provider "PROV1" :scroll true :page-size 2})]
-        (testing "First call returns scroll-id and hits count with page-size results"
-          (is (= (count all-grans) hits))
-          (is (not (nil? scroll-id)))
-          (is (data2-core/refs-match? [gran1 gran2] result)))
+;     (testing "Scrolling with page size"
+;       (let [{:keys [hits scroll-id] :as result} (search/find-refs 
+;                                                  :granule 
+;                                                  {:provider "PROV1" :scroll true :page-size 2})]
+;         (testing "First call returns scroll-id and hits count with page-size results"
+;           (is (= (count all-grans) hits))
+;           (is (not (nil? scroll-id)))
+;           (is (data2-core/refs-match? [gran1 gran2] result)))
         
-        (testing "Subsequent searches gets oringinal page-size results"
-          (let [result (search/find-refs :granule 
-                                         {:scroll true :page-size 10}
-                                         {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-            (is (= (count all-grans) hits))
-            (is (data2-core/refs-match? [gran3 gran4] result))))
+;         (testing "Subsequent searches gets oringinal page-size results"
+;           (let [result (search/find-refs :granule 
+;                                          {:scroll true :page-size 10}
+;                                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+;             (is (= (count all-grans) hits))
+;             (is (data2-core/refs-match? [gran3 gran4] result))))
 
-        (testing "Remaining results returned on last search"
-          (let [result (search/find-refs :granule 
-                                         {:scroll true}
-                                         {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-            (is (= (count all-grans) hits))
-            (is (data2-core/refs-match? [gran5] result))))
+;         (testing "Remaining results returned on last search"
+;           (let [result (search/find-refs :granule 
+;                                          {:scroll true}
+;                                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+;             (is (= (count all-grans) hits))
+;             (is (data2-core/refs-match? [gran5] result))))
 
-        (testing "Searches beyond total hits return empty list"
-          (let [result (search/find-refs :granule 
-                                         {:scroll true}
-                                         {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
-            (is (= (count all-grans) hits))
-            (is (data2-core/refs-match? [] result))))))
+;         (testing "Searches beyond total hits return empty list"
+;           (let [result (search/find-refs :granule 
+;                                          {:scroll true}
+;                                          {:headers {routes/SCROLL_ID_HEADER scroll-id}})]
+;             (is (= (count all-grans) hits))
+;             (is (data2-core/refs-match? [] result))))))
 
-    ;; The following test is included for completeness to test session timeouts, but it
-    ;; cannot be run regularly because it is impossible to predict how long it will take
-    ;; for Elasticsearch to actually time out a scroll session. Even when the scroll timeout
-    ;; is set to 1 second it may be many seconds before Elasticsearch disposes of the session. 
-    ;; The following test should not be removed and only uncommented during manual testing.
+;     ;; The following test is included for completeness to test session timeouts, but it
+;     ;; cannot be run regularly because it is impossible to predict how long it will take
+;     ;; for Elasticsearch to actually time out a scroll session. Even when the scroll timeout
+;     ;; is set to 1 second it may be many seconds before Elasticsearch disposes of the session. 
+;     ;; The following test should not be removed and only uncommented during manual testing.
     
-    #_(testing "Expired scroll-id is invalid"
-        (let [timeout (es-config/elastic-scroll-timeout)
-              ;; Set the timeout to one second
-              _ (es-config/set-elastic-scroll-timeout! "1s")
-              {:keys [scroll-id] :as result} (search/find-refs 
-                                              :granule 
-                                              {:provider "PROV1" :scroll true :page-size 2})]   
-          (testing "First call returns scroll-id and hits count with page-size results"
-            (is (data2-core/refs-match? [gran1 gran2] result)))  
-          ;; This is problematic. Can't use timekeeper tricks here since ES is the one enforcing 
-          ;; the timeout, and it seems to have it's own scheule, so our session id does not time out
-          ;; in exactly one second. 
-          (Thread/sleep 100000)
-          (testing "Subsequent calls get unknown scroll-id error"
-            (let [response (search/find-refs :granule 
-                                            {:scroll true}
-                                            {:allow-failure? true
-                                             :headers {routes/SCROLL_ID_HEADER scroll-id}})]
-              (is (= 404 (:status response)))
-              (is (= (str "Scroll session [" scroll-id "] does not exist")
-                    (first (:errors response))))))
-          (es-config/set-elastic-scroll-timeout! timeout)))
+;     #_(testing "Expired scroll-id is invalid"
+;         (let [timeout (es-config/elastic-scroll-timeout)
+;               ;; Set the timeout to one second
+;               _ (es-config/set-elastic-scroll-timeout! "1s")
+;               {:keys [scroll-id] :as result} (search/find-refs 
+;                                               :granule 
+;                                               {:provider "PROV1" :scroll true :page-size 2})]   
+;           (testing "First call returns scroll-id and hits count with page-size results"
+;             (is (data2-core/refs-match? [gran1 gran2] result)))  
+;           ;; This is problematic. Can't use timekeeper tricks here since ES is the one enforcing 
+;           ;; the timeout, and it seems to have it's own scheule, so our session id does not time out
+;           ;; in exactly one second. 
+;           (Thread/sleep 100000)
+;           (testing "Subsequent calls get unknown scroll-id error"
+;             (let [response (search/find-refs :granule 
+;                                             {:scroll true}
+;                                             {:allow-failure? true
+;                                              :headers {routes/SCROLL_ID_HEADER scroll-id}})]
+;               (is (= 404 (:status response)))
+;               (is (= (str "Scroll session [" scroll-id "] does not exist")
+;                     (first (:errors response))))))
+;           (es-config/set-elastic-scroll-timeout! timeout)))
 
-    (testing "invalid parameters"
-      (are3 [query options err-msg]
-        (let [options (merge {:allow-failure? true})
-              response (search/find-refs :granule query options)]
-          (is (= 400 (:status response)))
-          (is (= err-msg
-                 (first (:errors response)))))
+;     (testing "invalid parameters"
+;       (are3 [query options err-msg]
+;         (let [options (merge {:allow-failure? true})
+;               response (search/find-refs :granule query options)]
+;           (is (= 400 (:status response)))
+;           (is (= err-msg
+;                  (first (:errors response)))))
 
-        "scroll parameter must be boolean"
-        {:provider "PROV1" :scroll "foo"} 
-        {}
-        "Parameter scroll must take value of true or false but was [foo]"
+;         "scroll parameter must be boolean"
+;         {:provider "PROV1" :scroll "foo"} 
+;         {}
+;         "Parameter scroll must take value of true or false but was [foo]"
 
-        "page_num is not allowed with scrolling"
-        {:provider "PROV1" :scroll true :page-num 2}
-        {}
-        "page_num is not allowed with scrolling"
+;         "page_num is not allowed with scrolling"
+;         {:provider "PROV1" :scroll true :page-num 2}
+;         {}
+;         "page_num is not allowed with scrolling"
         
-        "offset is not allowed with scrolling"
-        {:provider "PROV1" :scroll true :offset 2}
-        {}
-        "offset is not allowed with scrolling"
+;         "offset is not allowed with scrolling"
+;         {:provider "PROV1" :scroll true :offset 2}
+;         {}
+;         "offset is not allowed with scrolling"
 
-        "undecodable scroll-id"
-        {:scroll true}
-        {:headers {routes/SCROLL_ID_HEADER "foo"}}
-        "Invalid scroll id [foo]"
+;         "undecodable scroll-id"
+;         {:scroll true}
+;         {:headers {routes/SCROLL_ID_HEADER "foo"}}
+;         "Invalid scroll id [foo]"
 
-        "malformed scroll-id"
-        {:scroll true}
-        {:headers {routes/SCROLL_ID_HEADER malformed-scroll-id}}
-        (str "Invalid scroll id [" malformed-scroll-id "]")))))
+;         "malformed scroll-id"
+;         {:scroll true}
+;         {:headers {routes/SCROLL_ID_HEADER malformed-scroll-id}}
+;         (str "Invalid scroll id [" malformed-scroll-id "]")))))
