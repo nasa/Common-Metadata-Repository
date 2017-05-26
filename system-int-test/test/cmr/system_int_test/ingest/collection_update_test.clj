@@ -918,7 +918,7 @@
                         :TilingIdentificationSystems (data-umm-c/tiling-identification-systems "SOURCE_TILE")
                         :Projects (data-umm-c/projects "PROJECT")
                         :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8]}
-
+                        
         granule-map {:project-refs ["PROJECT"]
                      :two-d-coordinate-system (dg/two-d "SOURCE_TILE")
                      :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]

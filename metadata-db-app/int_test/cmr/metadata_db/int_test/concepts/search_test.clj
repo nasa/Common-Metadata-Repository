@@ -250,7 +250,13 @@
             [coll4-1 coll4-2 coll4-3] {:concept-id (:concept-id coll4-1)}
 
             "concept-id and version-id - all revisions"
-            [coll4-1] {:concept-id (:concept-id coll4-1) :version-id "v3"}))))
+            [coll4-1] {:concept-id (:concept-id coll4-1) :version-id "v3"}
+
+            "params containing a vector are ORed"
+            [coll1 coll3 coll4-3] {:entry-title ["et1" "et3"] :latest true}
+
+            "multiple ORed param lists are ANDed together"
+            [coll3] {:entry-title ["et1" "et3"] :short-name ["s3" "s5"] :latest true}))))
 
 (deftest get-expired-collections-concept-ids
   (let [time-now (tk/now)
