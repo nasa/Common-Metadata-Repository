@@ -84,7 +84,7 @@
         (let [found-concepts (util/find-concepts :granule
                                                  {:granule-ur "GR-UR1" :provider-id provider-id})]
           (is (= [(update-in existing-granule [:extra-fields] dissoc :parent-entry-title)]
-                 (map #(dissoc % :revision-date :transaction-id) (:concepts found-concepts)))))
+                 (map #(dissoc % :created-at :revision-date :transaction-id) (:concepts found-concepts)))))
         (testing "duplicate granule URs are allowed when the constraint is configured as off"
           (try
             (side/eval-form `(cc/set-enforce-granule-ur-constraint! false))
