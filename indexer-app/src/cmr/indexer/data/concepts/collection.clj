@@ -26,6 +26,7 @@
     [cmr.indexer.data.concepts.collection.science-keyword :as sk]
     [cmr.indexer.data.concepts.spatial :as spatial]
     [cmr.indexer.data.concepts.tag :as tag]
+    [cmr.indexer.data.concepts.variable :as variable]
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.umm-spec.acl-matchers :as umm-matchers]
     [cmr.umm-spec.date-util :as date-util]
@@ -124,7 +125,8 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
-                created-at revision-date deleted format extra-fields tag-associations]} concept
+                created-at revision-date deleted format extra-fields
+                tag-associations variable-associations]} concept
         collection (remove-index-irrelevant-defaults collection)
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
@@ -290,7 +292,8 @@
                                (pr-str
                                  (into {} (for [ta tag-associations]
                                             [(:tag-key ta) (util/remove-nil-keys
-                                                             {:data (:data ta)})])))))}
+                                                             {:data (:data ta)})])))))
+            :variables (map variable/variable-association->elastic-doc variable-associations)}
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)

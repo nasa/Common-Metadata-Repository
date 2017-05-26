@@ -63,7 +63,9 @@
    :service nil
    :access-group access-control-exchange-name
    :acl access-control-exchange-name
-   :humanizer ingest-exchange-name})
+   :humanizer ingest-exchange-name
+   ; :variable ingest-exchange-name
+   :variable-association ingest-exchange-name})
 
 (defconfig deleted-collection-revision-exchange-name
   "An exchange that will have messages passed to it whenever a collection revision is removed
