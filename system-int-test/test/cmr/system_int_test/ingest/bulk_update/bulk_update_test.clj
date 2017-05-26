@@ -24,7 +24,7 @@
                       :Term "MARINE SEDIMENTS"}]})
 
 (def data-centers-umm
-  {:DataCenters [{:ShortName "NSID"
+  {:DataCenters [{:ShortName "NSID" ;; intentional misspelling for tests
                   :LongName "National Snow and Ice Data Center"
                   :Roles ["ARCHIVER"]
                   :ContactPersons [{:Roles ["Data Center Contact"]

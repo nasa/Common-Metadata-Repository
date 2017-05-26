@@ -24,6 +24,14 @@
   "Format to save bulk updates"
   (str "application/vnd.nasa.cmr.umm+json;version=" (config/ingest-accept-umm-version)))
 
+(def complete-status
+  "Indicates bulk update operation finished successfully."
+  "COMPLETE")
+
+(def failed-status
+  "Indicates bulk update operation completed with errors"
+  "FAILED")
+
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
   rules."
@@ -111,11 +119,11 @@
          (string/join "; " warnings))))
 
 (defn- process-bulk-update-complete
-  "Check if the overall bulk update operation is complete and if do, re-index
+  "Check if the overall bulk update operation is complete and if so, re-index
   provider collections"
   [context provider-id task-id]
   (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider context task-id)]
-    (when (= "COMPLETE" (:status task-status))
+    (when (= complete-status (:status task-status))
       (ingest-events/publish-ingest-event
        context
        (ingest-events/provider-collections-require-reindexing-event
@@ -131,9 +139,9 @@
       (let [updated-concept (update-collection-concept context concept bulk-update-params)
             warnings (validate-and-save-collection context updated-concept)]
         (data-bulk-update/update-bulk-update-task-collection-status context task-id
-            concept-id "COMPLETE" (create-success-status-message warnings)))
+            concept-id complete-status (create-success-status-message warnings)))
       (data-bulk-update/update-bulk-update-task-collection-status context task-id
-        concept-id "FAILED" (format "Concept-id [%s] is not valid." concept-id)))
+        concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update
@@ -143,11 +151,11 @@
                                                             concept-id
                                                             bulk-update-params))
         (data-bulk-update/update-bulk-update-task-collection-status
-          context task-id concept-id "FAILED" (.getMessage ex-info))))
+          context task-id concept-id failed-status (.getMessage ex-info))))
     (catch Exception e
       (let [message (or (.getMessage e) default-exception-message)
             concept-id-message (re-find #"Concept-id.*is not valid." message)]
         (if concept-id-message
-          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" concept-id-message)
-          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" message)))))
+          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status concept-id-message)
+          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status message)))))
   (process-bulk-update-complete context provider-id task-id))

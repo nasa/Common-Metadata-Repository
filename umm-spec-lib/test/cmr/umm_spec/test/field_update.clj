@@ -131,6 +131,48 @@
        {:Category "EARTH SCIENCE SERVICES"}
        {:EntryTitle "Test"}))))
 
+(deftest location-keyword-updates-test
+  (let [umm {:LocationKeywords [{:Category "CONTINENT"
+                                 :Type "ASIA"
+                                 :Subregion1 "WESTERN ASIA"
+                                 :Subregion2 "MIDDLE EAST"
+                                 :Subregion3 "GAZA STRIP"}]}]
+     (are3 [update-type update-value find-value result]
+       (is (= result
+              (field-update/apply-update update-type umm [:LocationKeywords] update-value find-value)))
+
+       "Add to existing"
+       :add-to-existing
+       {:Category "CONTINENT"
+        :Type "EUROPE"}
+       nil
+       {:LocationKeywords [{:Category "CONTINENT"
+                            :Type "ASIA"
+                            :Subregion1 "WESTERN ASIA"
+                            :Subregion2 "MIDDLE EAST"
+                            :Subregion3 "GAZA STRIP"}
+                           {:Category "CONTINENT"
+                            :Type "EUROPE"}]}
+
+       "Clear all and replace"
+       :clear-all-and-replace
+       {:Category "CONTINENT"
+        :Type "EUROPE"}
+       nil
+       {:LocationKeywords [{:Category "CONTINENT"
+                            :Type "EUROPE"}]}
+
+       "Find and replace"
+       :find-and-replace
+       {:Subregion1 "EASTERN ASIA"}
+       {:Subregion1 "WESTERN ASIA"}
+       {:LocationKeywords [{:Category "CONTINENT"
+                            :Type "ASIA"
+                            :Subregion1 "EASTERN ASIA"
+                            :Subregion2 "MIDDLE EAST"
+                            :Subregion3 "GAZA STRIP"}]})))
+
+
 (deftest platform-instrument-name-updates
  (testing "Platform name updates"
    (let [umm {:Platforms [{:ShortName "Platform 1"
