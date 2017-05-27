@@ -25,7 +25,10 @@
 (defn decode
   "Returns CMR spatial geometry for gmd:geographicElement XML element."
   [element]
-  (-> element gmd/decode flip-polygon-point-order set-coordinate-system))
+  (let [geometry (gmd/decode element)]
+    (if (seq? geometry)
+      (map #(-> % flip-polygon-point-order set-coordinate-system) geometry)
+      (-> geometry flip-polygon-point-order set-coordinate-system))))
 
 (defn encode
   "Returns SMAP XML elements for CMR spatial geometry."

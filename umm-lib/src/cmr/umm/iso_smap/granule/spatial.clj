@@ -12,7 +12,7 @@
   "Returns a UMM SpatialCoverage from a parsed XML structure"
   [xml-struct]
   (let [spatial-elems (cx/elements-at-path xml-struct extent-path)
-        geometries (map spatial/decode spatial-elems)]
+        geometries (flatten (map spatial/decode spatial-elems))]
     (when (seq geometries)
       (g/map->SpatialCoverage {:geometries geometries}))))
 

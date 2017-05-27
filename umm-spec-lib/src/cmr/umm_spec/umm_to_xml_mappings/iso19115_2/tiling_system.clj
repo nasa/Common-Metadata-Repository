@@ -3,43 +3,46 @@
   (:require [cmr.common.xml.gen :refer :all]
             [cmr.umm-spec.util :refer [char-string]]))
 
-(defn- tiling-system-coding-params
-  "Returns ISO tiling system encoding string parameters (coordinate 1 prefix, coordinate 2 prefix,
-  and range separator) for given tiling system map. The parameters are used by tiling-system-string."
-  [tiling-system]
-  (condp #(.contains %2 %1) (:TilingIdentificationSystemName tiling-system)
-    "CALIPSO" ["o" "p" ","]
-    "MISR"    ["p" "b" "-"]
-    "MODIS"   ["h" "v" "-"]
-    "WRS"     ["p" "r" "-"]
-    ["x" "y" "-"]))
-
 (defn- tiling-system-string
-  "Returns an encoded ISO tiling system coordinate string from the given UMM tiling system. The
-  coordinate 1 and coordinate 2 prefixes and separator may be specified, or else they will be looked
-  up based on the tiling system name."
-  ([tiling-system p1 p2 sep]
-   (let [{{c1-min :MinimumValue
-           c1-max :MaximumValue} :Coordinate1
-           {c2-min :MinimumValue
-            c2-max :MaximumValue} :Coordinate2} tiling-system]
-     (str p1 c1-min
+  "Returns an encoded ISO tiling system coordinate string from the given UMM tiling system."
+  [tiling-system]
+  (let [{{c1-min :MinimumValue
+          c1-max :MaximumValue} :Coordinate1
+         {c2-min :MinimumValue
+          c2-max :MaximumValue} :Coordinate2 } tiling-system]
+      (let [buildString ""]
+        (with-out-str
+          (when c1-min
+            (print "c1-min:" c1-min)
+            (when (or c1-max c2-min c2-max)
+              (print " ")))
           (when c1-max
-            (str sep c1-max))
-          p2 c2-min
+            (print "c1-max:" c1-max)
+            (when (or c2-min c2-max)
+              (print " ")))
+          (when c2-min
+            (print "c2-min:" c2-min)
+            (when c2-max
+              (print " ")))
           (when c2-max
-            (str sep c2-max)))))
-  ([tiling-system]
-   (apply tiling-system-string tiling-system (tiling-system-coding-params tiling-system))))
+            (print "c2-max:" c2-max))))))
+
+(defn- tiling-system-subelements
+  "Returns the ISO representation for tiling identification systems."
+  [tiling-system]
+  [:gmd:geographicElement
+   [:gmd:EX_GeographicDescription
+    [:gmd:geographicIdentifier
+     [:gmd:MD_Identifier
+      [:gmd:code
+       (char-string (tiling-system-string tiling-system))]
+      [:gmd:codeSpace
+       (char-string (str "gov.nasa.esdis.umm.tilingidentificationsystem"))]
+      [:gmd:description
+       (char-string (:TilingIdentificationSystemName tiling-system))]]]]])
 
 (defn tiling-system-elements
+  "Returns the ISO representation for tiling identification systems. The full UMM
+   record is passed in. For every tiling identification system translate it to ISO."
   [c]
-  (when-let [tiling-system (first (:TilingIdentificationSystems c))]
-    [:gmd:geographicElement
-     [:gmd:EX_GeographicDescription
-      [:gmd:geographicIdentifier
-       [:gmd:MD_Identifier
-        [:gmd:code
-         (char-string (tiling-system-string tiling-system))]
-        [:gmd:description
-         (char-string (:TilingIdentificationSystemName tiling-system))]]]]]))
+  (map tiling-system-subelements (:TilingIdentificationSystems c)))

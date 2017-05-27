@@ -204,12 +204,10 @@
   "Returns the ISO extent description string (a \"key=value,key=value\" string) for the given UMM-C
   collection record."
   [c]
-  (let [vsd (first (-> c :SpatialExtent :VerticalSpatialDomains))
-        temporal (first (:TemporalExtents c))
-        m {"VerticalSpatialDomainType" (:Type vsd)
-           "VerticalSpatialDomainValue" (:Value vsd)
-           "SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
+  (let [temporal (first (:TemporalExtents c))
+        m {"SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
            "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
+           "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)
            "Temporal Range Type" (:TemporalRangeType temporal)}]
     (str/join "," (for [[k v] m
                         :when (some? v)]
@@ -323,12 +321,19 @@
          (for [topic-category (:ISOTopicCategories c)]
            [:gmd:topicCategory
             [:gmd:MD_TopicCategoryCode (iso-topic-value->sanitized-iso-topic-category topic-category)]])
+         (when (:TilingIdentificationSystems c)
+          [:gmd:extent
+           [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+            [:gmd:description
+             [:gco:CharacterString "Tiling Identitfication System"]]
+            (tiling/tiling-system-elements c)]])
          [:gmd:extent
           [:gmd:EX_Extent {:id "boundingExtent"}
            [:gmd:description
             [:gco:CharacterString (extent-description-string c)]]
-           (tiling/tiling-system-elements c)
+           (spatial/generate-zone-identifier c)
            (spatial/spatial-extent-elements c)
+           (spatial/generate-vertical-domain c)
            (spatial/generate-orbit-parameters c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]

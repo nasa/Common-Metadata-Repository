@@ -157,7 +157,7 @@
                     ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
                     ;; XML, so the values must be updated to match what we expect in the resulting
                     ;; XML document.
-                    (str/trim (iso-util/sanitize-value x))))]
+                    (str/trim x)))]
     (-> vsd
         (update-in [:Type] fix-val)
         (update-in [:Value] fix-val))))
@@ -165,8 +165,6 @@
 (defn- update-iso-spatial
   [spatial-extent]
   (-> spatial-extent
-      (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
-      (update-in [:VerticalSpatialDomains] #(take 1 %))
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       conversion-util/prune-empty-maps))
 
@@ -183,7 +181,6 @@
 (defn- normalize-bounding-rectangle
   [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
            EastBoundingCoordinate SouthBoundingCoordinate]}]
-
   (let [{:keys [west north east south]} (m/mbr WestBoundingCoordinate
                                                NorthBoundingCoordinate
                                                EastBoundingCoordinate
@@ -201,53 +198,6 @@
   (if-let [brs (seq (get-in umm conversion-util/bounding-rectangles-path))]
     (assoc-in umm conversion-util/bounding-rectangles-path (mapv normalize-bounding-rectangle brs))
     umm))
-
-(defn- geom->bounding-rectangle
-  "Create a rectangle from a line or polygon"
-  [boundary]
-  (when-let [points (:Points boundary)]
-   (let [lats (map :Latitude points)
-         lons (map :Longitude points)]
-     (cmn/map->BoundingRectangleType
-      {:WestBoundingCoordinate (apply min lons)
-       :NorthBoundingCoordinate (apply max lats)
-       :EastBoundingCoordinate (apply max lons)
-       :SouthBoundingCoordinate (apply min lats)}))))
-
-(defn- point->bounding-rectangle
-  "Create a bounding rectangle from a point. Take into account special bounding box for the poles."
-  [point]
-  (let [{:keys [Latitude Longitude]} point
-        pole? (or (= Latitude 90.0) (= Latitude -90.0))]
-   (cmn/map->BoundingRectangleType
-     {:WestBoundingCoordinate (if pole?
-                                -180.0
-                                Longitude)
-      :NorthBoundingCoordinate Latitude
-      :EastBoundingCoordinate (if pole?
-                                180.0
-                                Longitude)
-      :SouthBoundingCoordinate Latitude})))
-
-(defn- get-bounding-rectangles-for-geometry
-  "Get a bounding rectangle for each polygon, line, point."
-  [umm]
-  (let [geometry (get-in umm [:SpatialExtent :HorizontalSpatialDomain :Geometry])]
-    (concat (map point->bounding-rectangle (:Points geometry))
-            (map geom->bounding-rectangle (concat (map :Boundary (:GPolygons geometry))
-                                                (:Lines geometry))))))
-
-(defn- update-bounding-rectangles
-  "Update bounding rectangles to mimic what ISO does. For each geometry (polygon, line, point),
-   create a bounding box. For each bounding box, a duplicate is created."
-  [umm]
-  (let [geom-rects (get-bounding-rectangles-for-geometry umm)
-        bounding-rects (get-in umm conversion-util/bounding-rectangles-path)
-        bounding-rects (when (and (seq bounding-rects))
-                         (interleave bounding-rects bounding-rects))]
-    (-> umm
-        (assoc-in conversion-util/bounding-rectangles-path (concat geom-rects bounding-rects))
-        fix-bounding-rectangles)))
 
 (defn- expected-iso19115-additional-attribute
   [attribute]
@@ -412,10 +362,8 @@
   [umm-coll]
   (-> umm-coll
       (assoc :DirectoryNames nil)
-      update-bounding-rectangles
+      fix-bounding-rectangles
       (update :SpatialExtent update-iso-spatial)
-      ;; ISO only supports a single tiling identification system
-      (update :TilingIdentificationSystems #(seq (take 1 %)))
       (update :TemporalExtents expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update :DataDates expected-iso19115-data-dates)

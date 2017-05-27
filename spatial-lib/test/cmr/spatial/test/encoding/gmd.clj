@@ -27,7 +27,7 @@
            <gco:Decimal>-178</gco:Decimal>
          </gmd:westBoundLongitude>
          <gmd:eastBoundLongitude>
-           <gco:Decimal>180</gco:Decimal>                    
+           <gco:Decimal>180</gco:Decimal>
          </gmd:eastBoundLongitude>
          <gmd:southBoundLatitude>
            <gco:Decimal>-78</gco:Decimal>
@@ -35,8 +35,8 @@
          <gmd:northBoundLatitude>
            <gco:Decimal>75</gco:Decimal>
          </gmd:northBoundLatitude>
-       </gmd:EX_GeographicBoundingBox>           
-     </gmd:geographicElement>  
+       </gmd:EX_GeographicBoundingBox>
+     </gmd:geographicElement>
      <gmd:geographicElement>
        <gmd:EX_BoundingPolygon>
          <gmd:polygon>
@@ -58,7 +58,7 @@
                          :xmlns:gco "http://www.isotc211.org/2005/gco")))
 
 (deftest test-decode-gmd-xml
-  (is (= (map gmd/decode (cx/elements-at-path (x/parse-str gmd-xml) [:geographicElement]))
+  (is (= (flatten (map gmd/decode (cx/elements-at-path (x/parse-str gmd-xml) [:geographicElement])))
          [(mbr/mbr -178.0 75.0 180.0 -78.0)
           (p/point -110.45 45.256)])))
 
@@ -70,7 +70,7 @@
                                  spatial-gen/points
                                  spatial-gen/cartesian-lines
                                  spatial-gen/cartesian-polygons-with-holes])]
-    (let [decoded (-> spatial gmd/encode emit-gmd-str x/parse-str gmd/decode)]
+    (let [decoded (first (-> spatial gmd/encode emit-gmd-str x/parse-str gmd/decode))]
       (or (= spatial decoded)
           ;; special fudge for polygons
           (= (:points spatial) (:points decoded))))))
