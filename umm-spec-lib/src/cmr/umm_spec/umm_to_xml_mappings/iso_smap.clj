@@ -141,30 +141,35 @@
               [:gmd:keyword
                (char-string (kws/smap-keyword-str instrument))])]]
           [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
-          [:gmd:extent
-           [:gmd:EX_Extent
-            (tiling/tiling-system-elements c)
-            (generate-spatial-extent (:SpatialExtent c))
-            (for [temporal (:TemporalExtents c)
-                  rdt (:RangeDateTimes temporal)]
-              [:gmd:temporalElement
-               [:gmd:EX_TemporalExtent
-                [:gmd:extent
-                 [:gml:TimePeriod {:gml:id (su/generate-id)}
-                  [:gml:beginPosition (:BeginningDateTime rdt)]
-                  (let [ends-at-present (:EndsAtPresentFlag temporal)]
-                    [:gml:endPosition (if ends-at-present
-                                        {:indeterminatePosition "now"}
-                                        {})
-                     (when-not ends-at-present
-                       (or (:EndingDateTime rdt) ""))])]]]])
-            (for [temporal (:TemporalExtents c)
-                  date (:SingleDateTimes temporal)]
-              [:gmd:temporalElement
-               [:gmd:EX_TemporalExtent
-                [:gmd:extent
-                 [:gml:TimeInstant {:gml:id (su/generate-id)}
-                  [:gml:timePosition date]]]]])]]]]
+        (when (first (:TilingIdentificationSystems c))
+         [:gmd:extent
+          [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+           [:gmd:description
+            [:gco:CharacterString "Tiling Identitfication System"]]
+              (tiling/tiling-system-elements c)]])
+         [:gmd:extent
+          [:gmd:EX_Extent
+           (generate-spatial-extent (:SpatialExtent c))
+           (for [temporal (:TemporalExtents c)
+                 rdt (:RangeDateTimes temporal)]
+             [:gmd:temporalElement
+              [:gmd:EX_TemporalExtent
+               [:gmd:extent
+                [:gml:TimePeriod {:gml:id (su/generate-id)}
+                 [:gml:beginPosition (:BeginningDateTime rdt)]
+                 (let [ends-at-present (:EndsAtPresentFlag temporal)]
+                   [:gml:endPosition (if ends-at-present
+                                       {:indeterminatePosition "now"}
+                                       {})
+                    (when-not ends-at-present
+                      (or (:EndingDateTime rdt) ""))])]]]])
+           (for [temporal (:TemporalExtents c)
+                 date (:SingleDateTimes temporal)]
+             [:gmd:temporalElement
+              [:gmd:EX_TemporalExtent
+               [:gmd:extent
+                [:gml:TimeInstant {:gml:id (su/generate-id)}
+                 [:gml:timePosition date]]]]])]]]]
         [:gmd:identificationInfo
          [:gmd:MD_DataIdentification
           [:gmd:citation

@@ -72,4 +72,5 @@
   [bounding-polygon-element]
   ;; EXBoundingPolygon elements contain a gmd:polygon which contains a
   ;; single gml geometry element
-  (-> bounding-polygon-element (cx/element-at-path [:polygon]) :content first gml/decode))
+  (let [polygons (-> bounding-polygon-element (cx/elements-at-path [:polygon]))]
+    (map #(-> % :content first gml/decode) polygons)))

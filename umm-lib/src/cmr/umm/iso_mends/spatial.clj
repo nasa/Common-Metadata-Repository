@@ -26,7 +26,7 @@
   [xml]
   (let [id-elem   (core/id-elem xml)
         geo-elems (cx/elements-at-path id-elem [:extent :EX_Extent :geographicElement])]
-    (remove nil? (map gmd/decode geo-elems))))
+    (remove nil? (flatten (map gmd/decode geo-elems)))))
 
 (def ref-sys-path-with-ns
   "A namespaced element path sequence for the ISO MENDS coordinate system element."

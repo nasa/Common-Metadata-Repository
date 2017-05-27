@@ -74,7 +74,9 @@
                                                :Geometry {:CoordinateSystem "GEODETIC"
                                                           :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
                     :VerticalSpatialDomains [{:Type "Some kind of type"
-                                              :Value "Some kind of value"}]
+                                              :Value "Some kind of value"}
+                                             {:Type "Some kind of type2"
+                                              :Value "Some kind of value2"}]
                     :OrbitParameters {:SwathWidth 2.0
                                       :Period 96.7
                                       :InclinationAngle 94.0

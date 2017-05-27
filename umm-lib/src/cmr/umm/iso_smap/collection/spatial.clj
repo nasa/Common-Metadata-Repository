@@ -12,7 +12,7 @@
                         xml-struct
                         [:seriesMetadata :MI_Metadata :identificationInfo :MD_DataIdentification
                          :extent :EX_Extent :geographicElement])
-        geometries (map spatial/decode spatial-elems)]
+        geometries (flatten (map spatial/decode spatial-elems))]
     (when (seq geometries)
       (c/map->SpatialCoverage
        {:granule-spatial-representation :geodetic
