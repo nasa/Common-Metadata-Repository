@@ -31,7 +31,8 @@
    :instruments [:short-name :long-name]
    :projects [:short-name :long-name]
    :providers [:short-name :long-name]
-   :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]})
+   :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
+   :concepts [:short-name]})
 
 (defn- normalize-for-lookup
   "Takes a map (either a UMM-C keyword or a KMS keyword) and a list of fields from the map which we

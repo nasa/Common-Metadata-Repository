@@ -86,7 +86,9 @@
      :LocationKeywords (match-kms-keywords-validation
                         kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
      :DataCenters (match-kms-keywords-validation
-                   kms-index :providers msg/datacenter-not-matches-kms-keywords)}))
+                    kms-index :providers msg/datacenter-not-matches-kms-keywords)
+     :DirectoryNames (match-kms-keywords-validation
+                       kms-index :concepts msg/directoryname-not-matches-kms-keywords)}))
 
 (defn validate-concept-metadata
   [concept]

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<concepts xsi:noNamespaceSchemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/kms/kms.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <termsOfUse>http://gcmd.nasa.gov/r/l/TermsOfUse</termsOfUse>
+    <keywordVersion>8.5</keywordVersion>
+    <conceptBrief id="278935" uuid="02f8be65-6bdd-4f4d-9e69-adac5aec33f6" prefLabel="ORDOVICIAN" conceptSchemeId="585" conceptScheme="chronounits" isLeaf="true" status=""/>
+    <conceptBrief id="278937" uuid="0673738a-3751-4d6e-9df0-b2eda0bde993" prefLabel="NOT APPLICABLE" conceptSchemeId="585" conceptScheme="chronounits" isLeaf="false" status=""/>    
+    <conceptBrief id="296137" uuid="0228bd6f-7f35-452d-ba96-19df1f552284" prefLabel="GOSIC/GTOS" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>
+    <conceptBrief id="296139" uuid="02f99b1f-5902-42db-a168-9babe290ef08" prefLabel="GOMMP" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>
+    <conceptBrief id="296141" uuid="03718300-c4bf-43cb-a709-8af9863f0869" prefLabel="GOMC/ESIP" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>
+    <conceptBrief id="296143" uuid="03d77986-98aa-4ad4-9070-2b7a41eadb31" prefLabel="SLOAN" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>

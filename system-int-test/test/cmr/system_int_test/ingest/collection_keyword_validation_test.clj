@@ -161,6 +161,30 @@
           {:Roles ["ARCHIVER"]
            :ShortName "aArHUS-HYDRO"
            :LongName "hYdrogeophysics Group, Aarhus University "}))
+  
+  (testing "DirectoryName keyword validation"
+    (are3 [attribs]
+          (let [dn (data-umm-c/directory-name attribs)]
+            (assert-invalid-keywords
+              {:DirectoryNames [dn]}
+              ["DirectoryNames" 0]
+              [(msg/directoryname-not-matches-kms-keywords dn)]))
+
+          "Invalid short name"
+          {:ShortName "SN Invalid"
+           :LongName "LN NOT VALIDATED"})
+
+    (are3 [attribs]
+          (let [dn (data-umm-c/directory-name attribs)]
+            (assert-valid-keywords {:DirectoryNames [dn]}))
+
+          "Valid Case Sensitive"
+          {:ShortName "GOSIC/GTOS"
+           :LongName "LN NOT VALIDATED "}
+
+          "Valid Case Insensitive"
+          {:ShortName "gOSIC/GtOS"
+           :LongName "LN NOT VALIDATED"}))
 
   (testing "Instrument keyword validation"
     (are2 [short-name long-name]

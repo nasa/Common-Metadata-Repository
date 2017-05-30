@@ -11,15 +11,17 @@
 
   We utilize the clojure.data.csv libary to handle parsing the CSV files. Example KMS keyword files
   can be found in dev-system/resources/kms_examples."
-  (:require [clojure.string :as str]
-            [clojure.set :as set]
-            [clojure.data.csv :as csv]
-            [clj-http.client :as client]
-            [camel-snake-kebab.core :as csk]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.common.util :as util]
-            [cmr.common.log :as log :refer (debug info warn error)]))
+  (:require 
+    [camel-snake-kebab.core :as csk]
+    [clj-http.client :as client]
+    [clojure.data.csv :as csv]
+    [clojure.data.xml :as xml]
+    [clojure.set :as set]
+    [clojure.string :as str]
+    [cmr.common.log :as log :refer (debug info warn error)]
+    [cmr.common.util :as util]
+    [cmr.transmit.config :as config]
+    [cmr.transmit.connection :as conn]))
 
 (def keyword-scheme->leaf-field-name
   "Maps each keyword scheme to the subfield which identifies the keyword as a leaf node."
@@ -29,7 +31,8 @@
    :projects :short-name
    :temporal-keywords :temporal-resolution-range
    :spatial-keywords :uuid
-   :science-keywords :uuid})
+   :science-keywords :uuid
+   :concepts :short-name})
 
 (def keyword-scheme->gcmd-resource-name
   "Maps each keyword scheme to the GCMD resource name"
@@ -39,7 +42,8 @@
    :projects "projects/projects.csv"
    :temporal-keywords "temporalresolutionrange/temporalresolutionrange.csv"
    :spatial-keywords "locations/locations.csv"
-   :science-keywords "sciencekeywords/sciencekeywords.csv"})
+   :science-keywords "sciencekeywords/sciencekeywords.csv"
+   :concepts "concepts/concepts.xml"})
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names."
@@ -50,7 +54,8 @@
    :temporal-keywords [:temporal-resolution-range :uuid]
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3 :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
-                      :detailed-variable :uuid]})
+                      :detailed-variable :uuid]
+   :concepts [:short-name]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
@@ -106,8 +111,12 @@
     m))
 
 (def NUM_HEADER_LINES
-  "Number of lines which contain header information (not the actual keyword values)."
+  "Number of lines which contain header information in csv files (not the actual keyword values)."
   2)
+
+(def NUM_CONCEPT_HEADER_LINES
+  "Number of lines which contain header information in concept.xml (not the actual keyword values)."
+  4)
 
 (defn- validate-subfield-names
   "Validates that the provided subfield names match the expected subfield names for the given
@@ -120,6 +129,34 @@
                        (name keyword-scheme)
                        (pr-str expected-subfield-names)
                        (pr-str subfield-names)))))))
+
+(defn- parse-entries-from-xml
+  "Parses the XML returned by the GCMD KMS. Only when doing the idnnode validation, the kms file
+   is in xml format - concept.xml. The first 4 lines are headers. The rest of the lines are actual
+   data. Those lines with conceptScheme=\"idnnode\", the values of prefLabel are the valid ShortNames.
+   for the DirectoryName:
+   <conceptBrief id=\"296143\" uuid=\"03d77986-98aa-4ad4-9070-2b7a41eadb31\" prefLabel=\"SLOAN\" conceptSchemeId=\"599\" conceptScheme=\"idnnode\" isLeaf=\"true\" status=\"\"/> 
+   Note: even though it's an xml file, we could still use read-csv to read it because they are just lines of strings.
+   Returns a sequence of full hierarchy maps."
+  [keyword-scheme xml-content]
+  (let [all-lines (csv/read-csv xml-content)
+        keyword-entries (->> all-lines
+                             (drop NUM_CONCEPT_HEADER_LINES)
+                             ;; Only keep the entries which contain idnnode
+                             (filter #(.contains (first %) "idnnode"))
+                             ;; Only keep the prefLabel values
+                             (map #(vector (second (re-find #"prefLabel=\"(\S+)\"" (first %))))) 
+                             ;; Create a map for each row using the subfield-names as keys
+                             (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
+                             (map remove-blank-keys))
+        leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
+        invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
+
+    ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
+    (doseq [entry invalid-entries]
+      (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
+                    (:short-name entry) entry)))
+    keyword-entries))
 
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
@@ -184,7 +221,9 @@
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
   (let [keywords
-        (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
+        (if (= "concepts" (name keyword-scheme))
+          (parse-entries-from-xml keyword-scheme (get-by-keyword-scheme context keyword-scheme))
+          (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme)))]
     (debug (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
     keywords))
 
