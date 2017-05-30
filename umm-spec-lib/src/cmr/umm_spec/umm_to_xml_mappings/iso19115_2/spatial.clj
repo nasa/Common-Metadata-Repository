@@ -93,7 +93,7 @@
 (defn generate-zone-identifier
   "Returns a geographic element for the zone identifier"
   [c]
-  (when-let [zone-identifier (-> c :SpatialExtent :HorizontalSpatialDomain :ZoneIdentifier)]
+  (when-let [zone-identifier (get-in c [:SpatialExtent :HorizontalSpatialDomain :ZoneIdentifier])]
     [:gmd:geographicElement
      [:gmd:EX_GeographicDescription {:id "ZoneIdentifier"}
       [:gmd:geographicIdentifier
@@ -113,8 +113,7 @@
 (defn generate-vertical-domain
   "Returns a geographic element for the vertical domain"
   [c]
-  (when-let [vertical-domains (-> c :SpatialExtent :VerticalSpatialDomains)]
-    (def vertical-domains vertical-domains)
+  (when-let [vertical-domains (get-in c [:SpatialExtent :VerticalSpatialDomains])]
     (for [x (range (count vertical-domains))
            :let [vertical-domain (nth vertical-domains x)]]
       [:gmd:geographicElement
