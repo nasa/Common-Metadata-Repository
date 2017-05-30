@@ -18,7 +18,7 @@
      (coll/map->UMM-C
                      {:RelatedUrls [{:URL "http://fresc.usgs.gov/products/dataset/moorhen_telemetry.zip"
                                      :URLContentType "DistributionURL"
-                                     :Type "GET SERVICE"
+                                     :Type "GET DATA"
                                      :SubType "ECHO"}
                                     {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
                                      :URLContentType "PublicationURL"
@@ -30,7 +30,7 @@
      (coll/map->UMM-C
       {:RelatedUrls [{:URL "http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip"
                       :URLContentType "DistributionURL"
-                      :Type "GET SERVICE"
+                      :Type "GET DATA"
                       :SubType "ECHO"}
                      {:URL "http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods"
                       :URLContentType "PublicationURL"
@@ -73,10 +73,10 @@
        :errors ["[http://ingrid.ldgo.columbia.edu/SOURCES/.IGOSS/.fsu/|u|u+|u|v/dods] is not a valid URL"]}
       {:path [:RelatedUrls 0 :URL]
        :errors ["[http:\\\\fresc.usgs.gov\\products\\dataset\\moorhen_telemetry.zip] is not a valid URL"]}
-      {:path [:RelatedUrls 6]
-       :errors ["Only URLContentType: DistributionURL Type: GET DATA can contain GetData, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}
       {:path [:RelatedUrls 5]
-       :errors ["Only URLContentType: DistributionURL Type: GET SERVICE can contain GetService, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}])))
+       :errors ["Only URLContentType: DistributionURL Type: GET SERVICE can contain GetService, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}
+      {:path [:RelatedUrls 6]
+       :errors ["Only URLContentType: DistributionURL Type: GET DATA can contain GetData, RelatedUrl contains URLContentType: PublicationURL Type: VIEW RELATED INFORMATION"]}])))
 ;
 (deftest collection-data-center-related-urls-validation
   (testing "Valid related urls"
@@ -369,3 +369,5 @@
     (coll/map->UMM-C {:RelatedUrls [(merge
                                      url-type
                                      {:URL "https://www.foo.com"})]})))))
+(comment
+ (collection-related-urls-validation))
