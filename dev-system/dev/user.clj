@@ -2,6 +2,7 @@
   (:require
    [alex-and-georges.debug-repl]
    [clojure.main]
+   [clojure.java.io :as io]
    [clojure.pprint :refer [pp pprint]]
    [clojure.repl :refer :all]
    [clojure.test :refer [run-all-tests run-tests]]
@@ -234,5 +235,11 @@
   []
   (future
     (tests/run-all-tests {:fail-fast? true :speak? true})))
+
+(defn banner
+  "Who doesn't like a banner?"
+  []
+  (println (slurp (io/resource "text/banner.txt")))
+  :ok)
 
 (info "Custom dev-system user.clj loaded.")
