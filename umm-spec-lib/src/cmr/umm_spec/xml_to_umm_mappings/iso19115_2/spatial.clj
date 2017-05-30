@@ -107,7 +107,6 @@
                     (sdru/get-substring vertical-string type-index value-index end-index))
             value (when value-index
                     (sdru/get-substring vertical-string value-index end-index))]
-        (def vertical-string vertical-string)
         (when (or type value)
           {:Type type
            :Value value})))))

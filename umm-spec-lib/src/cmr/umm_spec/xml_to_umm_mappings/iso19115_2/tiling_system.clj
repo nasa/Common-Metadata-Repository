@@ -11,14 +11,13 @@
   [str]
   (try
     (Double/parseDouble str)
-    (catch NumberFormatException e (when nil))
-    (catch NullPointerException e (when nil))))
+    (catch NumberFormatException e nil)
+    (catch NullPointerException e nil)))
 
 (defn- parse-tiling-system-coordinates
   "Returns a map containing :Coordinate1 and :Coordinate2 from an encoded ISO tiling system
   parameter string."
   [tiling-system-str]
-  (def tiling-system-str tiling-system-str)
   (let [c1-min-index (sdru/get-index-or-nil tiling-system-str "c1-min:")
         c1-max-index (sdru/get-index-or-nil tiling-system-str "c1-max:")
         c2-min-index (sdru/get-index-or-nil tiling-system-str "c2-min:")
