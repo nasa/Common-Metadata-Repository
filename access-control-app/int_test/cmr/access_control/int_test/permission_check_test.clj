@@ -88,6 +88,8 @@
         coll1 (save-prov1-collection "coll1")
         coll2 (save-prov1-collection "coll2")
         coll3 (save-prov1-collection "coll3")
+        coll4 (save-prov1-collection "coll4")
+
         gran1 (u/save-granule coll1)
         ;; local helpers to make the body of the test cleaner
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
@@ -171,36 +173,6 @@
                 "user2" ["read" "order"]))))
 
         (testing "acls granting access to collection by collection identifier"
-          (testing "by concept id"
-            (create-acl
-              {:group_permissions [{:permissions [:read]
-                                    :user_type :guest}]
-               :catalog_item_identity {:name "coll2 guest read concept ids"
-                                       :collection_applicable true
-                                       :collection_identifier {:concept_ids [coll2]}
-                                       :provider_id "PROV1"}})
-            (testing "for collection in ACL's concept ids"
-              (are3 [user permissions]
-                (= {coll2 permissions}
-                   (get-permissions user coll2))
-
-                "for guest users"
-                :guest ["read"]
-
-                "for registered users"
-                :registered []))
-
-            (testing "for collection not in ACL's concept ids"
-              (are3 [user permissions]
-                (= {coll3 permissions}
-                   (get-permissions user coll3))
-
-                "for guest users"
-                :guest []
-
-                "for guest users"
-                :registered [])))
-
           (testing "by entry title"
             (create-acl
               {:group_permissions [{:permissions [:read]
@@ -220,6 +192,36 @@
                 (= {coll3 permissions}
                    (get-permissions user coll3))
                 :guest []
+                :registered [])))
+
+          (testing "by concept id"
+            (create-acl
+              {:group_permissions [{:permissions [:read :order]
+                                    :user_type :guest}]
+               :catalog_item_identity {:name "coll3 guest read concept ids"
+                                       :collection_applicable true
+                                       :collection_identifier {:concept_ids [coll3]}
+                                       :provider_id "PROV1"}})
+            (testing "for collection in ACL's concept ids"
+              (are3 [user permissions]
+                (is (= {coll3 permissions}
+                       (get-permissions user coll3)))
+
+                "for guest users"
+                :guest ["read" "order"]
+
+                "for registered users"
+                :registered []))
+
+            (testing "for collection not in ACL's concept-ids"
+              (are3 [user permissions]
+                (is (= {coll4 permissions}
+                       (get-permissions user coll4)))
+
+                "for guest users"
+                :guest []
+
+                "for registered users"
                 :registered []))))))
 
     (testing "granule level permissions"
@@ -533,7 +535,7 @@
             (= {gran1 permissions1
                 gran2 permissions2}
                (get-permissions user gran1 gran2))
-                
+
             "for guest users"
             :guest [] []
 

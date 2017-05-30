@@ -95,7 +95,7 @@
          (or (nil? temporal)
              (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal))
          (or (empty? concept-ids)
-             (some (partial = concept-id) concept-ids)))))
+             (some (partial = concept-id) (map name concept-ids))))))
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."
