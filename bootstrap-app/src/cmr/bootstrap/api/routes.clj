@@ -6,7 +6,6 @@
    [cmr.acl.core :as acl]
    [cmr.bootstrap.services.bootstrap-service :as bs]
    [cmr.bootstrap.services.health-service :as hs]
-   [cmr.bootstrap.services.replication :as replication]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
@@ -204,7 +203,7 @@
 
         (DELETE "/concepts" {:keys [request-context body params]}
           (bulk-delete-concepts-from-index-by-id request-context body params)))
-        
+
 
       (context "/rebalancing_collections/:concept-id" [concept-id]
 
@@ -223,12 +222,6 @@
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}
           (bootstrap-virtual-products request-context params)))
-
-      (common-routes/job-api-routes
-        (routes
-          (POST "/index_recently_replicated" {:keys [request-context]}
-            (replication/index-replicated-concepts request-context)
-            {:status 200})))
 
       ;; Add routes for accessing caches
       common-routes/cache-api-routes
