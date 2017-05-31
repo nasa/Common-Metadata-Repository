@@ -15,14 +15,12 @@
     (println result)
     (let [{:keys [id metadata deleted]} result
           deleted (= 1 (long deleted))
+          ;;Remove bad parts of metadata string
           metadata (-> metadata
                        (util/gzip-blob->string)
                        (string/replace #"Executing.*\n" "")
-                       (string/replace #"entry_title.*\n" "")
-                       (edn/read-string))
-          metadata (if deleted
-                     metadata
-                     (update-in metadata [:catalog-item-identity :collection-identifier] dissoc :concept-ids))
+                       (string/replace #"entry_title.*\n" ""))
+
           metadata (-> metadata
                        util/remove-nil-keys
                        pr-str
@@ -34,5 +32,4 @@
 (defn down
   "Migrates the database down from version 54."
   []
-  (println "migrations.054-fix-catalog-acl-concept-ids down...")
-  (throw (Exception. "This migration does not support 'down'")))
+  (println "migrations.054-fix-catalog-acl-concept-ids down..."))
