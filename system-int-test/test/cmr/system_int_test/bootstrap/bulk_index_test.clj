@@ -53,7 +53,7 @@
      ;; Make sure the concept was saved successfully
      (is (= 201 (:status coll)))
      (merge umm (select-keys coll [:concept-id :revision-id])))))
-  
+
 (defn- save-granule
   "Saves a granule concept"
   ([n collection]
@@ -153,16 +153,6 @@
         exp-items (set (map #(dissoc % :status) expected))]
     (is (= exp-items search-items))))
 
-(defn- get-last-replicated-revision-date
-  "Helper to get the last replicated revision date from the database."
-  [db]
-  (j/with-db-transaction
-   [conn db]
-   (->> (j/query conn ["SELECT LAST_REPLICATED_REVISION_DATE FROM REPLICATION_STATUS"])
-        first
-        :last_replicated_revision_date
-        (oracle/oracle-timestamp->str-time conn))))
-
 (deftest index-system-concepts-test
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
@@ -217,102 +207,6 @@
     ;; Re-enable message publishing.
     (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true)))))
 
-;; Commented out due to requiring a database link in order to work - this job is only transitional
-;; for moving to NGAP so we will remove it once we have fully transitioned.
-#_(deftest index-recently-replicated-test
-    (s/only-with-real-database
-     ;; Disable message publishing so items are not indexed as part of the initial save.
-     (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
-     (let [last-replicated-datetime "3016-01-01T10:00:00Z"
-           coll-missed-cutoff (save-collection 1 {:revision-date "3016-01-01T09:59:40Z"})
-           coll-within-buffer (save-collection 2 {:revision-date "3016-01-01T09:59:41Z"})
-           coll-after-date (save-collection 3 {:revision-date "3016-01-02T00:00:00Z"})
-           gran-missed-cutoff (save-granule 1 coll-missed-cutoff {:revision-date "3016-01-01T09:59:40Z"})
-           gran-within-buffer (save-granule 2 coll-within-buffer {:revision-date "3016-01-01T09:59:41Z"})
-           gran-after-date (save-granule 3 coll-after-date {:revision-date "3016-01-02T00:00:00Z"})
-           tag-missed-cutoff (save-tag 1 {:revision-date "3016-01-01T09:59:40Z"})
-           tag-within-buffer (save-tag 2 {:revision-date "3016-01-01T09:59:41Z"})
-           tag-after-date (save-tag 3 {:revision-date "3016-01-02T00:00:00Z"})
-           acl-missed-cutoff (save-acl 1
-                                       {:revision-date "3016-01-01T09:59:40Z"
-                                        :extra-fields {:acl-identity "system:token"
-                                                       :target-provider-id "PROV1"}}
-                                       "TOKEN")
-           acl-within-buffer (save-acl 2
-                                       {:revision-date "3016-01-01T09:59:41Z"
-                                        :extra-fields {:acl-identity "system:group"
-                                                       :target-provider-id "PROV1"}}
-                                       "GROUP")
-           acl-after-date (save-acl 3
-                                    {:revision-date "3016-01-02T00:00:00Z"
-                                     :extra-fields {:acl-identity "system:user"
-                                                    :target-provider-id "PROV1"}}
-                                    "USER")
-           group-missed-cutoff (save-group 1 {:revision-date "3016-01-01T09:59:40Z"})
-           group-within-buffer (save-group 2 {:revision-date "3016-01-01T09:59:41Z"})
-           group-after-date (save-group 3 {:revision-date "3016-01-02T00:00:00Z"})
-           db (get-in (s/context) [:system :bootstrap-db])
-           stmt "UPDATE REPLICATION_STATUS SET LAST_REPLICATED_REVISION_DATE = ?"]
-       (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime last-replicated-datetime))])
-       (bootstrap/index-recently-replicated)
-       ;; Force elastic data to be flushed, not actually waiting for index requests to finish
-       (index/wait-until-indexed)
-       (testing "Concepts with revision date within 20 seconds of last replicated date are indexed."
-         (are3 [concept-type expected]
-           (d/refs-match? expected (search/find-refs concept-type {}))
-
-           "Collections"
-           :collection [coll-within-buffer coll-after-date]
-
-           "Granules"
-           :granule [gran-within-buffer gran-after-date])
-
-         ;; ACLs
-         (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-               items (:items response)]
-           (search-results-match? items [acl-within-buffer acl-after-date]))
-
-         ;; Groups
-         (let [response (ac/search-for-groups (u/conn-context) {})
-               ;; Need to filter out admin group created by fixture
-               items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
-           (search-results-match? items [group-within-buffer group-after-date]))
-
-
-         (are3 [expected-tags]
-           (let [result-tags (update
-                               (tags/search {})
-                               :items
-                               (fn [items]
-                                 (map #(select-keys % [:concept-id :revision-id]) items)))]
-             (tags/assert-tag-search expected-tags result-tags))
-
-           "Tags"
-           [tag-within-buffer tag-after-date])))
-
-     (testing "When there are no concepts to index the date is not changed."
-       (j/db-do-prepared db stmt [(cr/to-sql-time (p/parse-datetime "3016-02-01T10:00:00.000Z"))])
-       (bootstrap/index-recently-replicated)
-       (is (= "3016-02-01T10:00:00.000Z" (get-last-replicated-revision-date db))))
-
-     (testing "Max revision dates are tracked correctly"
-       (testing "for provider concepts"
-         (let [coll (save-collection 1 {:revision-date "3016-02-02T10:59:40Z"})]
-           (save-granule 1 coll {:revision-date "3016-02-01T11:59:40Z"})
-           (save-tag 1 {:revision-date "3016-02-01T18:59:40Z"})
-           (bootstrap/index-recently-replicated))
-         (is (= "3016-02-02T10:59:40.000Z" (get-last-replicated-revision-date db))))
-       (testing "for system concepts"
-         (let [coll (save-collection 1 {:revision-date "3016-02-03T10:59:40Z"})]
-           (save-granule 1 coll {:revision-date "3016-03-01T11:59:40Z"})
-           (save-tag 1 {:revision-date "3016-03-01T12:10:47Z"})
-           (bootstrap/index-recently-replicated))
-         (is (= "3016-03-01T12:10:47.000Z" (get-last-replicated-revision-date db))))))
-
-   ;; Re-enable message publishing.
-   (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true)))
-
-
 (deftest bulk-index-by-concept-id
   (s/only-with-real-database
     ;; Disable message publishing so items are not indexed.
@@ -339,7 +233,7 @@
       (bootstrap/bulk-index-concepts "PROV1" :collection colls)
       (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
       (bootstrap/bulk-index-concepts "PROV1" :tag [(:concept-id tag1)])
-      
+
       ;; Commented out until ACLs and groups are supported in the index by concept-id API
       ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
       ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
@@ -356,7 +250,7 @@
 
           "Granules"
           :granule [gran2])
-        
+
 
         ;; Commented out until ACLs and groups are supported in the index by concept-id API
         ; ;; ACLs
@@ -377,14 +271,14 @@
                               (fn [items]
                                 (map #(select-keys % [:concept-id :revision-id]) items)))]
             (tags/assert-tag-search expected-tags result-tags))
-  
+
           "Tags"
           [tag1])))
 
     ;; Re-enable message publishing.
     (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! true))))
 
-(deftest bulk-delete-by-concept-id 
+(deftest bulk-delete-by-concept-id
   (s/only-with-real-database
     (let [coll1 (save-collection 1)
           coll2 (save-collection 2)
@@ -416,7 +310,7 @@
       (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
       (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
       (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
-      
+
       ;; Commented out until ACLs and groups are supported in the delete by concept-id API
       ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
       ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
@@ -441,7 +335,7 @@
                                 (fn [items]
                                   (map #(select-keys % [:concept-id :revision-id]) items)))]
               (tags/assert-tag-search expected-tags result-tags))
-    
+
             "Tags"
             [tag2])))))
 
