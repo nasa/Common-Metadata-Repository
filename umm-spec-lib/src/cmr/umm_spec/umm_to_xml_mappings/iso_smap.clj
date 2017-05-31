@@ -75,6 +75,13 @@
   (let [project-keywords (map iso/generate-title projects)]
     (kws/generate-iso-smap-descriptive-keywords "project" project-keywords)))
 
+(defn- generate-iso-topic-categories
+  "Returns the content generator instructions for ISOTopicCategory"
+  [c]
+  (for [iso-topic-category (:ISOTopicCategories c)]
+    [:gmd:topicCategory
+     [:gmd:MD_TopicCategoryCode iso-topic-category]]))
+
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
@@ -147,6 +154,7 @@
            [:gmd:description
             [:gco:CharacterString "Tiling Identitfication System"]]
               (tiling/tiling-system-elements c)]])
+         (generate-iso-topic-categories c)
          [:gmd:extent
           [:gmd:EX_Extent
            (generate-spatial-extent (:SpatialExtent c))

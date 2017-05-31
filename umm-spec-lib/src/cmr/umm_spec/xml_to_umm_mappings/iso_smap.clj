@@ -15,6 +15,10 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
+(def iso-topic-category-xpath
+  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:identificationInfo"
+       "/gmd:MD_DataIdentification/gmd:topicCategory"))
+
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
        "/gmd:identificationInfo/gmd:MD_DataIdentification"))
@@ -114,12 +118,15 @@
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [doc {:keys [sanitize?]}]
   (let [data-id-el (first (select doc md-identification-base-xpath))
-        short-name-el (first (select doc short-name-identification-xpath))]
+        short-name-el (first (select doc short-name-identification-xpath))
+        iso-topic-categories-els (select doc iso-topic-category-xpath)]
     (js/parse-umm-c
      (merge
       (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
       {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
+       :ISOTopicCategories (seq (map #(value-of % "gmd:MD_TopicCategoryCode")
+                                   iso-topic-categories-els))
        :DOI (parse-doi doc)
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
