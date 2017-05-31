@@ -1430,7 +1430,7 @@
     "ISOTopicCategoryEnum": {
       "description": "High-level geospatial data thematic classification to assist in the grouping and search of available geospatial collections.",
       "type": "string",
-      "enum": ["farming", "biota", "boundaries", "climatologyMeteorologyAtmosphere", "economy", "elevation", "environment", "geoscientificInformation", "health", "imageryBaseMapsEarthCover", "intelligenceMilitary", "inlandWaters", "location", "oceans", "planningCadastre", "society", "structure", "transportation", "utilitiesCommunication"]
+      "enum": ["INLAND WATERS", "INTELLIGENCE/MILITARY", "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE", "UTILITIES/COMMUNICATIONS", "FARMING", "IMAGERY/BASE MAPS/EARTH COVER", "ISO Topic Categories", "STRUCTURE", "HEALTH", "ELEVATION", "SOCIETY", "ENVIRONMENT", "EXTRA TERRESTRIAL", "BIOTA", "DISASTER", "TRANSPORTATION", "GEOSCIENTIFIC INFORMATION", "OCEANS", "ECONOMY", "PLANNING CADASTRE", "LOCATION", "BOUNDARIES"]
     },
     "ShortNameType": {
       "description": "The unique name.",

@@ -111,9 +111,9 @@
     :CollectionDataType "SCIENCE_QUALITY"
     :CollectionProgress "COMPLETE"
     :Projects [{:ShortName "project short_name"}]
-    :ISOTopicCategory ["farming"
-                       "biota"
-                       "boundaries"]
+    :ISOTopicCategories ["FARMING"
+                         "INTELLIGENCE/MILITARY"
+                         "GEOSCIENTIFIC INFORMATION"]
     :Quality "Pretty good quality"
     :PublicationReferences [{:PublicationDate (t/date-time 2015)
                              :OtherReferenceDetails "Other reference details"
