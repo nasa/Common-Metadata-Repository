@@ -15,10 +15,9 @@
                        providers/dbresult->provider)
           t (h/get-provider-collection-tablename provider)]
       (for [entry-title entry-titles
-            result (j/query (config/db) [(format "select concept_id from metadata_db.%s where
-                                                 entry_title = ?" t)
-                                         entry-title])]
-        (:concept_id result)))))
+            :let [result (j/query (config/db) [(format "select distinct concept_id from metadata_db.%s where entry_title = ?" t)
+                                               entry-title])]]
+          (:concept_id (first result))))))
 
 (defn up
   "Migrates the database up to version 52."
