@@ -3,14 +3,15 @@
   Specifies a ring middleware that can parse out multipart params along with a content type with
   each string parameter. The original version did not allow extracting a content type unless the
   parameter sent was a file type."
-  (:require [ring.util.request :as req])
-  (:use [ring.util.codec :only (assoc-conj)])
-  (:import [org.apache.commons.fileupload.util Streams]
-           [org.apache.commons.fileupload
-            UploadContext
-            FileItemIterator
-            FileItemStream
-            FileUpload]))
+  (:require
+   [ring.util.codec :refer [assoc-conj]]
+   [ring.util.request :as req])
+  (:import
+    (org.apache.commons.fileupload UploadContext
+                                   FileItemIterator
+                                   FileItemStream
+                                   FileUpload)
+    (org.apache.commons.fileupload.util Streams)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Private methods copied from ring.middleware.multipart-params

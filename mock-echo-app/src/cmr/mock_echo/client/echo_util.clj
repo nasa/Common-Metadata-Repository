@@ -376,8 +376,14 @@
   (grant context [(group-ace group-guid [:read])] :catalog_item_identity catalog-item-identity))
 
 (defn grant-group-admin
-  "Creates an ACL in mock echo granting users in the group the given permissions for system ingest
-  management.  If no permissions are provided the group is given read and update permission."
+  "Creates an ACL in mock echo granting users in the group the given
+  permissions for system ingest management. If no permissions are provided the
+  group is given read and update permission.
+
+  Note that not all services have all permissions. In some cases, a service
+  allows for concepts to be created, but doesn't actually have a :create
+  permission enabled. In such circumstances, the group getting admin
+  permissions will need to be granted :update."
   [context group-guid & permission-types]
   (grant context [(group-ace group-guid (or (seq (remove #{:delete} permission-types))
                                             [:read :update]))]

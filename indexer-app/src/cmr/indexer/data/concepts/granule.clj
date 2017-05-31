@@ -116,7 +116,7 @@
 (defn- granule->elastic-doc
   "Returns elastic json that can be used to insert the given granule concept in elasticsearch."
   [context concept umm-granule]
-  (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
+  (let [{:keys [concept-id extra-fields provider-id revision-date format created-at]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover
@@ -200,6 +200,7 @@
             :revision-date-doc-values revision-date
             :downloadable downloadable
             :browsable browsable
+            :created-at created-at
             :start-date (index-util/date->elastic start-date)
             :start-date-doc-values (index-util/date->elastic start-date)
             :end-date (index-util/date->elastic end-date)

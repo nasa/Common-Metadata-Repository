@@ -15,6 +15,7 @@
    [cmr.common.util :as u]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
+   [cmr.search.services.humanizers.humanizer-messages :as msg]
    [cmr.search.services.humanizers.humanizer-service :as hs]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import
@@ -123,7 +124,7 @@
     (generate-humanizers-report-csv context)
     (catch Exception e
       (if (= (ex-data e) humanizer-not-found-error)
-        (warn (.getMessage e) "Returning empty report.")
+        (warn (.getMessage e) msg/returning-empty-report)
         (throw e)))))
 
 (defconfig report-cache-consistent-timeout-seconds

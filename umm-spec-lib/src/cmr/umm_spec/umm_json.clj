@@ -109,7 +109,6 @@
   ([context concept-type json-str]
    ;; default to trying to parse json string according to the current UMM version
    (json->umm context concept-type json-str ver/current-version))
-
   ([context concept-type json-str original-umm-version]
    (let [schema (js/concept-schema ver/current-version concept-type)
          root-type-def (get-in schema [:definitions (:root schema)])

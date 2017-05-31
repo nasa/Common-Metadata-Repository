@@ -56,8 +56,12 @@
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
-  :repl-options {:init-ns user
-                 :timeout 180000}
+  :repl-options {
+    :init-ns user
+    :timeout 180000
+    :welcome ~(do
+               (println (slurp "resources/text/banner.txt"))
+               (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Dclojure.compiler.direct-linking=true"
              ;; Enable logging in jetty.

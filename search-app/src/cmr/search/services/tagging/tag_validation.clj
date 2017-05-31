@@ -25,7 +25,7 @@
       (update :tag-key str/lower-case)))
 
 (defn sanitized-json
-  "Returns the json string with deashes in field names replaced by underscores,
+  "Returns the json string with dashes in field names replaced by underscores,
   e.g. tag-key will be changed to tag_key."
   [json-str]
   (jv/validate-json-structure json-str)
