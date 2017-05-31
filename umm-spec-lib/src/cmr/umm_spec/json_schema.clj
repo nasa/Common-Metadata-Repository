@@ -16,7 +16,8 @@
 (def concept-schema-name
   "A map of concept types to schema names."
   {:collection "umm-c-json-schema.json"
-   :variable   "umm-var-json-schema.json"})
+   :service "umm-s-json-schema.json"
+   :variable "umm-var-json-schema.json"})
 
 (def search-result-schema-name
   "Defines the name of the search result schema."
@@ -227,6 +228,8 @@
 
 (def umm-c-schema (concept-schema :collection))
 
+(def umm-s-schema (concept-schema :service))
+
 (def umm-var-schema (concept-schema :variable))
 
 (def umm-cmn-schema-file
@@ -242,6 +245,7 @@
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.umm-common-models
    "umm-c-json-schema.json" 'cmr.umm-spec.models.umm-collection-models
+   "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
    "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 
 (defn- record-ctor

@@ -117,6 +117,23 @@
           parsed (remove-get-service-and-get-data-nils parsed)]
       (is (= umm-c-record parsed)))))
 
+(deftest all-umm-s-records
+  (checking "all umm-s records" 100
+    [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
+    (let [json (uj/umm->json umm-s-record)
+          _ (is (empty? (js/validate-umm-json json :service)))
+          parsed (uj/json->umm {} :service json)
+          parsed (remove-get-service-and-get-data-nils parsed)]
+      (is (= umm-s-record parsed)))))
+
+(deftest all-umm-var-records
+  (checking "all umm-var records" 100
+    [umm-var-record (gen/no-shrink umm-gen/umm-var-generator)]
+    (let [json (uj/umm->json umm-var-record)
+          _ (is (empty? (js/validate-umm-json json :variable)))
+          parsed (uj/json->umm {} :variable json)]
+      (is (= umm-var-record parsed)))))
+
 (deftest validate-json-with-extra-fields
   (let [json (uj/umm->json (assoc minimal-example-umm-c-record :foo "extra"))]
     (is (= ["object instance has properties which are not allowed by the schema: [\"foo\"]"]
