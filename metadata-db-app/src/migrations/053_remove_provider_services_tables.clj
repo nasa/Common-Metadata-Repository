@@ -1,8 +1,8 @@
 (ns migrations.053-remove-provider-services-tables
-  (:require [clojure.java.jdbc :as j]
-            [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]
-            [cmr.metadata-db.data.oracle.concept-tables :as ct]))
+  (:require
+    [cmr.metadata-db.data.oracle.concept-tables :as ct]
+    [config.mdb-migrate-helper :as h]
+    [config.migrate-config :as config]))
 
 (defn up
   "Migrates the database up to version 53."
