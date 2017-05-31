@@ -80,8 +80,7 @@
    :opendata         "application/opendata+json"
    :native           "application/metadata+xml"
    :edn              "application/edn"
-   :opendap          "application/x-netcdf"
-   :serf             "application/serf+xml"})
+   :opendap          "application/x-netcdf"})
 
 (defn format->mime-type
   "Converts a format structure (a keyword or map containing :format and :version) to a mime type.

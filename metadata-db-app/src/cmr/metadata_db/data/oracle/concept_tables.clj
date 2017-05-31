@@ -13,7 +13,7 @@
 
 (def all-provider-concept-types
   "All the concept types that have tables for each (non-small) provider"
-  [:collection :granule :service])
+  [:collection :granule])
 
 (defmulti get-table-name
   "Get the name for the table for a given provider and concept-type"
@@ -87,16 +87,6 @@
                                  (gt/granule-column-sql provider)
                                  (gt/granule-constraint-sql provider table-name)))
     (gt/create-granule-indexes db provider table-name)))
-
-(defmethod create-concept-table :service
-  [db provider concept-type]
-  (let [table-name (get-table-name provider :service)]
-    (info "Creating table [" table-name "]")
-    (j/db-do-commands db (format "CREATE TABLE %s (%s, %s)"
-                                 table-name
-                                 (st/service-column-sql provider)
-                                 (st/service-constraint-sql provider table-name)))
-    (st/create-service-indexes db provider table-name)))
 
 (defn create-provider-concept-tables
   "Create all the concept tables for the given provider."

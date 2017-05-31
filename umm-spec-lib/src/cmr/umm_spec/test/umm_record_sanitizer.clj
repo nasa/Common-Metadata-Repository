@@ -171,8 +171,8 @@
         #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                          (when (> ct 0) ct))))))
 
-(defn sanitized-umm-record
-  "Returns the sanitized version of the given umm record."
+(defn sanitized-umm-c-record
+  "Returns the sanitized version of the given umm-c record."
   [record]
   (-> record
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
@@ -184,3 +184,15 @@
       sanitize-science-keywords
       sanitize-umm-record-urls
       sanitize-umm-number-of-instruments))
+
+(defn sanitized-umm-s-record
+  "Include only the sanitizers needed for a given umm-s record."
+  [record]
+  (-> record
+      (sanitize-science-keywords)
+      (sanitize-umm-record-related-urls)))
+
+(defn sanitized-umm-var-record
+  "Include only the sanitizers needed for a given umm-var record."
+  [record]
+  (sanitize-science-keywords record))

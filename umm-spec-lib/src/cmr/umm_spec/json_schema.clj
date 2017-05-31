@@ -16,8 +16,8 @@
 (def concept-schema-name
   "A map of concept types to schema names."
   {:collection "umm-c-json-schema.json"
-   :service    "umm-s-json-schema.json"
-   :variable   "umm-var-json-schema.json"})
+   :service "umm-s-json-schema.json"
+   :variable "umm-var-json-schema.json"})
 
 (def search-result-schema-name
   "Defines the name of the search result schema."

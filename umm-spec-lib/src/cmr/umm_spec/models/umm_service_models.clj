@@ -5,35 +5,23 @@
 
 (defrecord UMM-S
   [
-   ;; This includes any metadata related dates.
-   MetadataDates
+   ;; Bounding box corners = lower left (min x, min y), and upper right (max x and max y).
+   BBox
 
-   ;; Describes the language used in the preparation, storage, and description of the service. It is
-   ;; the language of the information object, not the language used to describe or interact with the
-   ;; metadata record. It does not refer to the language of the metadata.
-   ServiceLanguage
+   ;; The name of the contact person who maintains the service.
+   ContactPerson
 
-   ;; This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic
-   ;; Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code
-   ;; List. It is a high-level thematic classification to assist in the grouping and search of
-   ;; available services.
-   ISOTopicCategories
-
-   ;; Abstract provides a brief description of the data or service the metadata represents.
+   ;; Abstract provides a brief description of the service the metadata represents.
    Abstract
 
-   ;; This element contains suggested usage or purpose for the data or service.
-   Purpose
+   ;; The title of the service described by the metadata.
+   Title
 
-   ;; This element describes key bibliographic citations pertaining to the data.
-   PublicationReferences
+   ;; Supported requests of the service.
+   SupportedRequests
 
-   ;; This element permits the user to properly cite the service and specifies how the data should
-   ;; be cited in professional scientific literature. This element provides a citation for the item
-   ;; itself, and is not designed for listing bibliographic references of scientific research
-   ;; articles arising from search results. A list of references related to the research results
-   ;; should be in the Publication Reference element.
-   ServiceCitation
+   ;; This provides a object to define the set of options for the service.
+   ServiceOptions
 
    ;; This element describes any data/service related URLs that include project home pages,
    ;; services, related data archives/servers, metadata extensions, direct links to online software
@@ -49,109 +37,57 @@
    ;; metadata when it isn't ready for public consumption.
    AccessConstraints
 
+   ;; This provides the date (day and time) for which the service record was last reviewed.
+   ReviewDate
+
+   ;; The fee for obtaining data through the provided service. The fee is entered as a number, in US
+   ;; dollars.
+   Fees
+
    ;; This element enables specification of service keywords.
    ServiceKeywords
 
-   ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
-   ;; unique characteristics of the service which extend beyond those defined).
-   AdditionalAttributes
-
-   ;; The entry ID of the service described by the metadata.
-   EntryId
+   ;; The default format for delivery of the service for the specified layer(s).
+   Format
 
    ;; This element enables specification of Earth science keywords.
    ScienceKeywords
 
-   ;; This element permits the author to provide the following information about an item described
-   ;; in the metadata: 1) Quality of the item; and 2) Any quality assurance procedures followed in
-   ;; producing the item. Examples of appropriate element information include: A) succinct
-   ;; description; B) indicators of item quality or quality flags - both validated or invalidated;
-   ;; C) recognized or potential problems with quality; D) established quality control mechanisms;
-   ;; and E) established quantitative quality measurements.
-   Quality
+   ;; The name of the contact organization whhic maintains the service.
+   ContactOrganization
 
-   ;; The title of the service described by the metadata.
-   EntryTitle
+   ;; This element is used to identify which versions of the services are available to accept
+   ;; requests.
+   AcceptVersions
 
-   ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
-   ;; unique characteristics of the service which extend beyond those defined).
-   Distributions
+   ;; The name of the service.
+   Name
 
-   ;; The Use Constraints element is designed to protect privacy and/or intellectual property by
-   ;; allowing the author to specify how the item may or may not be used after access is granted.
-   ;; This includes any special restrictions, legal prerequisites, terms and conditions, and/or
-   ;; limitations on using the item. Providers may request acknowledgement of the item from users
-   ;; and claim no responsibility for quality and completeness. Note: Use Constraints describe how
-   ;; the item may be used once access has been granted; and is distinct from Access Constraints,
-   ;; which refers to any constraints in accessing the item.
-   UseConstraints
+   ;; This element contains a description of the service.
+   Description
 
-   ;; This element allows authors to provide words or phrases to further describe the data.
-   AncillaryKeywords
+   ;; The width of the requested map.
+   Width
 
-   ;; This element describes the relevant platforms used to acquire the data related to the service.
-   ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform,
-   ;; Station, Network, Human, etc.
-   Platforms
+   ;; This element is used to provide a list of layer names (identifiers) which are available via
+   ;; the service.
+   Layers
 
-   ;; The project element describes the name of the scientific program, field campaign, or project
-   ;; from which the data were collected. This element is intended for the non-space assets such as
-   ;; aircraft, ground systems, balloons, sondes, ships, etc. associated with campaigns. This
-   ;; element may also cover a long term project that continuously creates new data sets — like
-   ;; MEaSUREs from ISCCP and NVAP or CMARES from MISR. Project also includes the Campaign
-   ;; sub-element to support multiple campaigns under the same project.
-   Projects
+   ;; Specification of the service, e.g. Web Mapping Service.
+   Type
 
-   ;; This element is used to identify other services, collections, visualizations, granules, and
-   ;; other metadata types and resources that are associated with or dependent on the data described
-   ;; by the metadata. This element is also used to identify a parent metadata record if it exists.
-   ;; This usage should be reserved for instances where a group of metadata records are subsets that
-   ;; can be better represented by one parent metadata record, which describes the entire set. In
-   ;; some instances, a child may point to more than one parent. The EntryId is the same as the
-   ;; element described elsewhere in this document where it contains and ID, and Version.
-   MetadataAssociations
+   ;; Version of the service, e.g. 1.1.1.
+   Version
+
+   ;; This provides the date (day and time) for which the service record was originally created.
+   CreationDate
+
+   ;; The height of the requested map.
+   Height
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-S)
 
-;; This element describes media options, size, data format, and fees involved in distributing or
-;; accessing the data.
-(defrecord ServiceDistributionType
-  [
-   ;; The distribution media of the data or service.
-   DistributionMedia
-
-   ;; The size of the distribution package of the data or service.
-   DistributionSize
-
-   ;; The distribution format of the data.
-   DistributionFormat
-
-   ;; The fee for ordering the data or service.
-   Fees
-  ])
-(record-pretty-printer/enable-record-pretty-printing ServiceDistributionType)
-
-;; This element describes the relevant platforms used to acquire the data. Platform types are
-;; controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human,
-;; etc.
-(defrecord PlatformType
-  [
-   ;; The most relevant platform type.
-   Type
-
-   ShortName
-
-   LongName
-
-   ;; The characteristics of platform specific attributes. The characteristic names must be unique
-   ;; on this platform; however the names do not have to be unique across platforms.
-   Characteristics
-
-   Instruments
-  ])
-(record-pretty-printer/enable-record-pretty-printing PlatformType)
-
-;; This element enables specification of Earth science keywords.
+;; This element enables specification of service keywords.
 (defrecord ServiceKeywordType
   [
    Category
@@ -163,3 +99,45 @@
    ServiceSpecificName
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceKeywordType)
+
+;; This element describes service options, subset type, supported SRSs, interpolation types,
+;; formats, exceptions and whether the service is synchronous or asyncronous.
+(defrecord ServiceOptionsType
+  [
+   ;; The project element describes the list of names of the formats supported by the service.
+   SupportedFormats
+
+   ;; This entity represents the default (native) temporal resolution of the variable in units of
+   ;; km.
+   TemporalResolution
+
+   ;; This entity represents the default (native) spatial resolution of the variable in units of km.
+   ;; See the <gml:offsetVector> flag in the DescribeCoverage request for that coverage.
+   NativeResolution
+
+   ;; Resolution of the x dimension of the requested coverage or map. (Use ResX and ResY or Width
+   ;; and Height - but not both in the same request).
+   ResX
+
+   ;; This field describes the list of exceptions for the service.
+   Exceptions
+
+   ;; This element is used to identify the list of supported subsetting requests.
+   SubsetType
+
+   ;; This element is used to identify the list of supported Spatial Reference Systems (SRS).
+   SupportedSRS
+
+   ;; Resolution of the y dimension of the requested coverage or map. (Use ResX and ResY or Width
+   ;; and Height - but not both in the same request).
+   ResY
+
+   ;; This element is used to identify the list of supported interpolation types. These are used in
+   ;; regridding.
+   InterpolationType
+
+   ;; This provides a field to state whether the service is deemed either synchronous or
+   ;; asynchronous.
+   Synchronous
+  ])
+(record-pretty-printer/enable-record-pretty-printing ServiceOptionsType)
