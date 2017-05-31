@@ -136,9 +136,9 @@
    Returns a sequence of full hierarchy maps."
   [keyword-scheme xml-content]
   (let [parsed-xml (xml/parse (java.io.StringReader. xml-content))
-        conceptBriefs (select parsed-xml "conceptBrief")
-        idnnodeAttrs (filter (fn [x] (= "idnnode" (:conceptScheme x))) (map :attrs conceptBriefs))
-        short-names (map vals (map #(select-keys % [:prefLabel]) idnnodeAttrs))
+        concept-brief-tags (select parsed-xml "conceptBrief")
+        idnnode-attrs (filter (fn [x] (= "idnnode" (:conceptScheme x))) (map :attrs concept-brief-tags))
+        short-names (map vals (map #(select-keys % [:prefLabel]) idnnode-attrs))
         keyword-entries (->> short-names 
                              ;; Create a map for each short-name value using the subfield-names as keys
                              (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
