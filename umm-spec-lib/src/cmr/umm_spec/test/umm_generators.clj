@@ -218,8 +218,16 @@
     (schema-type->generator schema (:root schema) root-type-def)))
 
 (def umm-c-generator
-  (gen/fmap san/sanitized-umm-record
+  (gen/fmap san/sanitized-umm-c-record
             (schema->generator js/umm-c-schema)))
+
+(def umm-s-generator
+  (gen/fmap san/sanitized-umm-s-record
+            (schema->generator js/umm-s-schema)))
+
+(def umm-var-generator
+  (gen/fmap san/sanitized-umm-var-record
+            (schema->generator js/umm-var-schema)))
 
 (comment
 

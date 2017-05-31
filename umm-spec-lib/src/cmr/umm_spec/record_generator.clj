@@ -6,6 +6,7 @@
    [clojure.string :as str]
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]
+   [cmr.umm-spec.models.umm-service-models]
    [cmr.umm-spec.models.umm-variable-models]))
 
 ;; Improvements
@@ -16,6 +17,7 @@
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.umm-common-models
    "umm-c-json-schema.json" 'cmr.umm-spec.models.umm-collection-models
+   "umm-s-json-schema.json" 'cmr.umm-spec.models.umm-service-models
    "umm-var-json-schema.json" 'cmr.umm-spec.models.umm-variable-models})
 
 (defn schema-type-constructor
@@ -177,6 +179,11 @@
    {:the-ns 'cmr.umm-spec.models.umm-collection-models
     :description "Defines UMM-C clojure records."
     :schema-resource (js/concept-schema-resource :collection)})
+
+  (generate-clojure-records-file
+   {:the-ns 'cmr.umm-spec.models.umm-service-models
+    :description "Defines UMM-S clojure records."
+    :schema-resource (js/concept-schema-resource :service)})
 
   (generate-clojure-records-file
    {:the-ns 'cmr.umm-spec.models.umm-variable-models

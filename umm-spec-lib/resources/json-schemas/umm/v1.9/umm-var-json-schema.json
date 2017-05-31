@@ -213,7 +213,7 @@
       },
       "Characteristics": {
         "description": "The characteristics of a variable.  The elements of this section apply to a Variable.",
-        "type": "object",
+        "type": "array",
         "items": {
           "$ref": "#/definitions/CharacteristicsType"
         },
@@ -259,3 +259,4 @@
       "ScienceKeywords"
     ]
 }
+
