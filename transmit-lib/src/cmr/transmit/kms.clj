@@ -20,6 +20,7 @@
     [clojure.string :as str]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.util :as util]
+    [cmr.common.xml.simple-xpath :refer [select]]
     [cmr.transmit.config :as config]
     [cmr.transmit.connection :as conn]))
 
@@ -114,10 +115,6 @@
   "Number of lines which contain header information in csv files (not the actual keyword values)."
   2)
 
-(def NUM_CONCEPT_HEADER_LINES
-  "Number of lines which contain header information in concept.xml (not the actual keyword values)."
-  4)
-
 (defn- validate-subfield-names
   "Validates that the provided subfield names match the expected subfield names for the given
   keyword scheme. Throws an exception if they do not match."
@@ -132,21 +129,18 @@
 
 (defn- parse-entries-from-xml
   "Parses the XML returned by the GCMD KMS. Only when doing the idnnode validation, the kms file
-   is in xml format - concept.xml. The first 4 lines are headers. The rest of the lines are actual
-   data. Those lines with conceptScheme=\"idnnode\", the values of prefLabel are the valid ShortNames.
-   for the DirectoryName:
+   is in xml format - concept.xml. 
+   Those lines under conceptBrief tag, with conceptScheme=\"idnnode\", the values of prefLabel are the valid ShortNames.
+   for the DirectoryName. Here is a example:
    <conceptBrief id=\"296143\" uuid=\"03d77986-98aa-4ad4-9070-2b7a41eadb31\" prefLabel=\"SLOAN\" conceptSchemeId=\"599\" conceptScheme=\"idnnode\" isLeaf=\"true\" status=\"\"/> 
-   Note: even though it's an xml file, we could still use read-csv to read it because they are just lines of strings.
    Returns a sequence of full hierarchy maps."
   [keyword-scheme xml-content]
-  (let [all-lines (csv/read-csv xml-content)
-        keyword-entries (->> all-lines
-                             (drop NUM_CONCEPT_HEADER_LINES)
-                             ;; Only keep the entries which contain idnnode
-                             (filter #(.contains (first %) "idnnode"))
-                             ;; Only keep the prefLabel values
-                             (map #(vector (second (re-find #"prefLabel=\"(\S+)\"" (first %))))) 
-                             ;; Create a map for each row using the subfield-names as keys
+  (let [parsed-xml (xml/parse (java.io.StringReader. xml-content))
+        conceptBriefs (select parsed-xml "conceptBrief")
+        idnnodeAttrs (filter (fn [x] (= "idnnode" (:conceptScheme x))) (map :attrs conceptBriefs))
+        short-names (map vals (map #(select-keys % [:prefLabel]) idnnodeAttrs))
+        keyword-entries (->> short-names 
+                             ;; Create a map for each short-name value using the subfield-names as keys
                              (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
                              (map remove-blank-keys))
         leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)

@@ -44,13 +44,13 @@
 (defn datacenter-not-matches-kms-keywords
    "Error msg when DataCenter's ShortName, LongName are not in the KMS."
    [datacenter]
-   (format "DataCenter short name [%s] and long name [%s] was not a valid keyword combination."
+   (format "Data center short name [%s] and long name [%s] was not a valid keyword combination."
           (:ShortName datacenter) (:LongName datacenter)))
 
 (defn directoryname-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."
    [directoryname]
-   (format "DirectoryName short name [%s] was not a valid keyword."
+   (format "Directory name short name [%s] was not a valid keyword."
           (:ShortName directoryname)))
 
 (def science-keyword-attribute-order

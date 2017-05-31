@@ -55,7 +55,7 @@
                         :errors [(str "Platform short name [foo] and long name [Airbus A340-600] "
                                       "was not a valid keyword combination.")]}
                        {:path ["DataCenters" 0]
-                        :errors [(str "DataCenter short name [SomeCenter] and long name [null] "
+                        :errors [(str "Data center short name [SomeCenter] and long name [null] "
                                       "was not a valid keyword combination.")]}]}
              response))))
 
