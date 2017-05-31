@@ -17,14 +17,14 @@
           deleted (= 1 (long deleted))
           ;;Remove bad parts of metadata string
           metadata (-> metadata
-                       (util/gzip-blob->string)
+                       util/gzip-blob->string
                        (string/replace #"Executing.*\n" "")
                        (string/replace #"entry_title.*\n" "")
                        edn/read-string)
-          {{:keys [collection-identifier collection-applicable concept-ids]} :catalog-item-identity} metadata
-          concept-ids (distinct concept-ids)
+          {{:keys [collection-identifier collection-applicable]} :catalog-item-identity} metadata
+          concept-ids (distinct (:concept-ids collection-identifier))
           metadata (if (seq concept-ids)
-                     (assoc-in [:catalog-item-identity :collection-identifier :concept-ids])
+                     (assoc-in metadata [:catalog-item-identity :collection-identifier :concept-ids] concept-ids)
                      metadata)
           metadata (-> metadata
                        util/remove-nil-keys
