@@ -16,7 +16,6 @@
     [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
     [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
     [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
-    [cmr.umm-spec.test.serf-expected-conversion :as serf]
     [cmr.umm-spec.util :as su]))
 
 (def example-collection-record
@@ -434,10 +433,6 @@
   [umm-coll _]
   (dif10/umm-expected-conversion-dif10 umm-coll))
 
-(defmethod umm->expected-convert :serf
-  [umm-service _]
-  (serf/umm-expected-conversion-serf umm-service))
-
 (defmethod umm->expected-convert :iso19115
   [umm-coll _]
   (iso19115/umm-expected-conversion-iso19115 umm-coll))
@@ -463,12 +458,10 @@
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
   [record metadata-format]
-  (if (contains? #{:serf} metadata-format)
-    record
-    (reduce (fn [r field]
-              (assoc r field nil))
-            record
-            not-implemented-fields)))
+  (reduce (fn [r field]
+            (assoc r field nil))
+          record
+          not-implemented-fields))
 
 ;;; Public API
 

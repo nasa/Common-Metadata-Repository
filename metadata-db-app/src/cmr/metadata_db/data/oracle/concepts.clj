@@ -39,7 +39,6 @@
    mt/dif      "DIF"
    mt/dif10    "DIF10"
    mt/edn      "EDN"
-   mt/serf     "SERF"
    mt/umm-json "UMM_JSON"
    mt/json     "JSON"})
 
