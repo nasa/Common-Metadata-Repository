@@ -17,8 +17,8 @@
           deleted (= 1 (long deleted))
           metadata (-> metadata
                        (util/gzip-blob->string)
-                       (replace #"Executing.*\n" "")
-                       (replace #"entry_title.*\n" "")
+                       (string/replace #"Executing.*\n" "")
+                       (string/replace #"entry_title.*\n" "")
                        (edn/read-string))
           metadata (if deleted
                      metadata
