@@ -23,7 +23,6 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm])
   (:import
    (cmr.umm_spec.models.umm_collection_models UMM-C)
-   (cmr.umm_spec.models.umm_service_models UMM-S)
    (cmr.umm_spec.models.umm_variable_models UMM-Var)))
 
 (defn concept-type
@@ -31,7 +30,6 @@
   [record]
   (condp instance? record
     UMM-C :collection
-    UMM-S :service
     UMM-Var :variable))
 
 (defn umm-json-version
