@@ -15,7 +15,7 @@
                          providers/dbresult->provider)
             t (h/get-provider-collection-tablename provider)]
         (for [entry-title entry-titles
-              result (h/query [(format "select concept_id from metadata_db.%s where
+              result (j/query [(format "select concept_id from metadata_db.%s where
                                         entry_title = ?" t)
                                entry-title])]
           (:concept_id result)))))
