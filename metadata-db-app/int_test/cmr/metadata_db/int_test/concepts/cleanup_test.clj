@@ -118,36 +118,6 @@
     (is (concept-revision-exists? gran5 12)))
  (side/eval-form `(tk/clear-current-time!)))
 
-(deftest old-service-revisions-are-cleaned-up
-  (side/eval-form `(tk/set-time-override! (tk/now)))
-  (let [serv1 (util/create-and-save-service "REG_PROV" 1 13)
-        serv2 (util/create-and-save-service "REG_PROV" 2 3)
-        serv3 (util/create-and-save-service "SMAL_PROV1" 1 12 {:native-id "foo"})
-        serv4 (util/create-and-save-service "SMAL_PROV1" 4 3)
-        serv5 (util/create-and-save-service "SMAL_PROV2" 4 3 {:native-id "foo"})
-        services [serv1 serv2 serv3 serv4 serv5]]
-
-    ;; service 4 has a tombstone
-    (util/delete-concept (:concept-id serv4))
-
-    ;; Verify prior revisions exist
-    (is (every? all-revisions-exist? services))
-
-    (is (= 204 (util/old-revision-concept-cleanup)))
-
-    ;; Any more than 10 of the service revisions should have been cleaned up
-    (is (revisions-removed? serv1 (range 1 4)))
-    (is (revisions-exist? serv1 (range 4 13)))
-
-    (is (all-revisions-exist? serv2))
-
-    (is (revisions-removed? serv3 (range 1 3)))
-    (is (revisions-exist? serv3 (range 3 13)))
-
-    (is (revisions-exist? serv4 (range 1 5)))
-    (is (revisions-exist? serv5 (range 1 4))))
- (side/eval-form `(tk/clear-current-time!)))
-
 (deftest old-tombstones-are-cleaned-up
   (side/eval-form `(tk/set-time-override! (tk/now)))
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1)

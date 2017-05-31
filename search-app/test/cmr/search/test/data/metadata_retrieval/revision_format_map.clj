@@ -64,7 +64,7 @@
   (testing "With Compressed revision format map"
     (is (= (tm/concept-in-format :echo10)
            (r/revision-format-map->concept
-            :echo10 (r/compress (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats)))))) 
+            :echo10 (r/compress (r/concept->revision-format-map nil tm/dif-concept all-metadata-formats))))))
   (testing "With native target format"
     ;; DIF was the native format for sample revision format metadata
     (is (= tm/dif-concept
