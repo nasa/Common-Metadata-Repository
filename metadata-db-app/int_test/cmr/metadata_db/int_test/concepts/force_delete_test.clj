@@ -16,7 +16,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest force-delete-concepts-test
-  (doseq [concept-type [:collection :granule :service]]
+  (doseq [concept-type [:collection :granule]]
     (cd-spec/general-force-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
 (deftest force-delete-tag-test
@@ -29,13 +29,11 @@
   (testing "id not exist"
     (is (= 404 (:status (util/force-delete-concept "C22-REG_PROV" 0))))
     (is (= 404 (:status (util/force-delete-concept "G22-REG_PROV" 0))))
-    (is (= 404 (:status (util/force-delete-concept "S22-REG_PROV" 0))))
     (is (= 404 (:status (util/force-delete-concept "T22-REG_PROV" 0))))
     (is (= 404 (:status (util/force-delete-concept "AG22-REG_PROV" 0)))))
   (testing "provider not exist"
     (is (= 404 (:status (util/force-delete-concept "C22-PROV3" 0))))
     (is (= 404 (:status (util/force-delete-concept "G22-PROV3" 0))))
-    (is (= 404 (:status (util/force-delete-concept "S22-PROV3" 0))))
     (is (= 404 (:status (util/force-delete-concept "T22-PROV3" 0))))
     (is (= 404 (:status (util/force-delete-concept "AG22-PROV3" 0))))))
 
