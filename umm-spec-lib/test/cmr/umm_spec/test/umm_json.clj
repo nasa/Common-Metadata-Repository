@@ -8,7 +8,6 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-   [cmr.umm-spec.models.umm-service-models :as umm-s]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
    [cmr.umm-spec.test.umm-record-sanitizer :as san]
    [cmr.umm-spec.umm-json :as uj]
@@ -37,18 +36,6 @@
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]}))
-
-(def minimal-example-umm-s-record
-  "This is the minimum valid UMM-S"
-  (umm-s/map->UMM-S
-    {:EntryTitle "Test Service"
-     :EntryId "Entry ID Goes Here"
-     :Abstract "An Abstract UMM-S Test Example"
-     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URL "http://google.com"
-                                                 :URLContentType "DistributionURL"
-                                                 :Type "GET DATA"})]
-     :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :ServiceKeywords [(umm-s/map->ServiceKeywordType {:Category "cat" :Topic "top" :Term "ter" :ServiceSpecificName "SSN"})]}))
 
 (def contact-group-example-umm-c-record
   "This is the minimum valid UMM-C with contact groups."
@@ -106,13 +93,6 @@
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929
 
-(deftest generate-and-parse-umm-s-json
-  (testing "minimal umm-s record"
-    (let [json (uj/umm->json  minimal-example-umm-s-record)
-          _ (is (empty? (js/validate-umm-json json :service)))
-          parsed (uj/json->umm {} :service json)]
-      (is (= minimal-example-umm-s-record parsed)))))
-
 (deftest generate-and-parse-umm-c-json
   (testing "minimal umm-c record"
     (let [json (uj/umm->json minimal-example-umm-c-record)
@@ -136,15 +116,6 @@
           parsed (uj/json->umm {} :collection json)
           parsed (remove-get-service-and-get-data-nils parsed)]
       (is (= umm-c-record parsed)))))
-
-(deftest all-umm-s-records
-  (checking "all umm-s records" 100
-    [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
-    (let [json (uj/umm->json umm-s-record)
-          _ (is (empty? (js/validate-umm-json json :service)))
-          parsed (uj/json->umm {} :service json)
-          parsed (remove-get-service-and-get-data-nils parsed)]
-      (is (= umm-s-record parsed)))))
 
 (deftest validate-json-with-extra-fields
   (let [json (uj/umm->json (assoc minimal-example-umm-c-record :foo "extra"))]
