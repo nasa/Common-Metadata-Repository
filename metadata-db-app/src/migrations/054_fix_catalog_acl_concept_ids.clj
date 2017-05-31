@@ -19,8 +19,13 @@
           metadata (-> metadata
                        (util/gzip-blob->string)
                        (string/replace #"Executing.*\n" "")
-                       (string/replace #"entry_title.*\n" ""))
-
+                       (string/replace #"entry_title.*\n" "")
+                       edn/read-string)
+          {{:keys [collection-identifier collection-applicable concept-ids]} :catalog-item-identity} metadata
+          concept-ids (distinct concept-ids)
+          metadata (if (seq concept-ids)
+                     (assoc-in [:catalog-item-identity :collection-identifier :concept-ids])
+                     metadata)
           metadata (-> metadata
                        util/remove-nil-keys
                        pr-str
