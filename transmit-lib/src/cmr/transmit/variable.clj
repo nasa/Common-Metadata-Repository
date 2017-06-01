@@ -1,5 +1,5 @@
-(ns cmr.transmit.tag
-  "This contains functions for interacting with the tagging API."
+(ns cmr.transmit.variable
+  "This contains functions for interacting with the variable API."
   (:require
    [cheshire.core :as json]
    [cmr.transmit.config :as config]
@@ -10,47 +10,46 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
 
-(defn- tags-url
+(defn- variables-url
   [conn]
-  (format "%s/tags" (conn/root-url conn)))
+  (format "%s/variables" (conn/root-url conn)))
 
-(defn- tag-url
-  [conn tag-id]
-  (str (tags-url conn) "/" tag-id))
+(defn- variable-url
+  [conn variable-name]
+  (str (variables-url conn) "/" variable-name))
 
-(defn- tag-associations-by-concept-ids-url
-  [conn tag-id]
-  (str (tag-url conn tag-id) "/associations"))
+(defn- variable-associations-by-concept-ids-url
+  [conn variable-name]
+  (str (variable-url conn variable-name) "/associations"))
 
-(defn- tag-associations-by-query-url
-  [conn tag-id]
-  (str (tag-associations-by-concept-ids-url conn tag-id) "/by_query"))
+;; This function is for the future when we add the associate collections to variables by query
+(defn- variable-associations-by-query-url
+  [conn variable-name]
+  (str (variable-associations-by-concept-ids-url conn variable-name) "/by_query"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
-(h/defcreator create-tag :search tags-url)
-(h/defsearcher search-for-tags :search tags-url)
-(h/defupdater update-tag :search tag-url)
-(h/defdestroyer delete-tag :search tag-url)
-(h/defgetter get-tag :search tag-url)
+(h/defcreator create-variable :ingest variables-url)
+(h/defupdater update-variable :ingest variable-url)
+(h/defdestroyer delete-variable :ingest variable-url)
 
-(defmulti tag-associations-url
-  "Returns the url to associate a tag based on the association type.
+(defmulti variable-associations-url
+  "Returns the url to associate a variable based on the association type.
   Valid association types are :query and :concept-ids."
-  (fn [context tag-key association-type]
+  (fn [context variable-name association-type]
     association-type))
 
-(defmethod tag-associations-url :query
-  [context tag-key _]
-  (tag-associations-by-query-url context tag-key))
+(defmethod variable-associations-url :query
+  [context variable-name _]
+  (variable-associations-by-query-url context variable-name))
 
-(defmethod tag-associations-url :concept-ids
-  [context tag-key _]
-  (tag-associations-by-concept-ids-url context tag-key))
+(defmethod variable-associations-url :concept-ids
+  [context variable-name _]
+  (variable-associations-by-concept-ids-url context variable-name))
 
-(defn associate-tag
-  "Sends a request to associate the tag with collections based on the given association type.
+(defn associate-variable
+  "Sends a request to associate the variable with collections based on the given association type.
   Valid association type are :query and :concept-ids.
   Valid options are
   * :raw? - set to true to indicate the raw response should be returned. See
@@ -58,13 +57,13 @@
   * token - the user token to use when creating the token. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
-  ([association-type context tag-key content]
-   (associate-tag association-type context tag-key content nil))
-  ([association-type context tag-key content {:keys [raw? token http-options]}]
+  ([association-type context variable-key content]
+   (associate-variable association-type context variable-key content nil))
+  ([association-type context variable-key content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
      (h/request context :search
-                {:url-fn #(tag-associations-url % tag-key association-type)
+                {:url-fn #(variable-associations-url % variable-key association-type)
                  :method :post
                  :raw? raw?
                  :http-options (merge {:body (json/generate-string content)
@@ -73,8 +72,8 @@
                                        :accept :json}
                                       http-options)}))))
 
-(defn dissociate-tag
-  "Sends a request to dissociate the tag with collections based on the given association type.
+(defn dissociate-variable
+  "Sends a request to dissociate the variable with collections based on the given association type.
   Valid association type are :query and :concept-ids.
   Valid options are
   * :raw? - set to true to indicate the raw response should be returned. See
@@ -83,12 +82,12 @@
   be used.
   * http-options - Other http-options to be sent to clj-http."
   ([association-type context concept-id content]
-   (dissociate-tag context concept-id content nil))
+   (dissociate-variable context concept-id content nil))
   ([association-type context concept-id content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
      (h/request context :search
-                {:url-fn #(tag-associations-url % concept-id association-type)
+                {:url-fn #(variable-associations-url % concept-id association-type)
                  :method :delete
                  :raw? raw?
                  :http-options (merge {:body (json/generate-string content)

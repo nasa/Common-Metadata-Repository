@@ -41,7 +41,7 @@
              ;; A map of the components (echo, elastic, db, and message queue) to whether they are
              ;; in-memory or external
              :component-type-map component-type-map}]
-    (transmit-config/system-with-connections sys [:echo-rest :search :access-control :urs])))
+    (transmit-config/system-with-connections sys [:echo-rest :search :access-control :urs :ingest])))
 
 (defn- get-component-type-map
   "Returns the component-type-map from dev-system."
