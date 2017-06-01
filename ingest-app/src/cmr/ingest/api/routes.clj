@@ -116,19 +116,19 @@
       (POST "/"
             {:keys [request-context headers body]}
             (variables/create-variable request-context headers body))
-      (PUT "/:variable-key"
-           [variable-key :as {:keys [request-context headers body]}]
+      (PUT "/:variable-id"
+           [variable-id :as {:keys [request-context headers body]}]
            (variables/update-variable
-            request-context headers body variable-key)))
+            request-context headers body variable-id)))
     ;; Services ingest routes
     (context "/services" []
       (POST "/"
             {:keys [request-context headers body]}
             (services/create-service request-context headers body))
-      (PUT "/:service-key"
-           [service-key :as {:keys [request-context headers body]}]
+      (PUT "/:service-id"
+           [service-id :as {:keys [request-context headers body]}]
            (services/update-service
-            request-context headers body service-key)))))
+            request-context headers body service-id)))))
 
 (defn build-routes [system]
   (routes
