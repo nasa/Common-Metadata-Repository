@@ -14,6 +14,7 @@
    [cmr.ingest.api.granules :as granules]
    [cmr.ingest.api.multipart :as mp]
    [cmr.ingest.api.provider :as provider-api]
+   [cmr.ingest.api.services :as services]
    [cmr.ingest.api.translation :as translation-api]
    [cmr.ingest.api.variables :as variables]
    [cmr.ingest.services.ingest-service :as ingest]
@@ -110,16 +111,24 @@
           (GET "/status/:task-id"
                [task-id :as request]
                (bulk/get-provider-task-status provider-id task-id request)))))
-    ;; Variable ingest routes
+    ;; Variables ingest routes
     (context "/variables" []
       (POST "/"
             {:keys [request-context headers body]}
             (variables/create-variable request-context headers body))
-      (context "/:variable-key" [variable-key]
-        (PUT "/"
-             {:keys [request-context headers body]}
-             (variables/update-variable
-              request-context headers body variable-key))))))
+      (PUT "/:variable-key"
+           [variable-key :as {:keys [request-context headers body]}]
+           (variables/update-variable
+            request-context headers body variable-key)))
+    ;; Services ingest routes
+    (context "/services" []
+      (POST "/"
+            {:keys [request-context headers body]}
+            (services/create-service request-context headers body))
+      (PUT "/:service-key"
+           [service-key :as {:keys [request-context headers body]}]
+           (services/update-service
+            request-context headers body service-key)))))
 
 (defn build-routes [system]
   (routes
@@ -129,7 +138,7 @@
       ;; Add routes for translating metadata formats
       translation-api/translation-routes
 
-      ;; Add routes to create, update, delete, validate concepts
+      ;; Add routes to create, update, delete, & validate concepts
       ingest-routes
 
       ;; db migration route
