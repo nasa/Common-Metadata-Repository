@@ -85,7 +85,7 @@
   ([index attribs]
    (merge
     sample-variable
-    {:Name (str "Name " index)
+    {:Name (str "Name" index)
      :Version (str "V" index)
      :LongName (str "Long UMM-Var name " index)}
     attribs)))

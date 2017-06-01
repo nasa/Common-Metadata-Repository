@@ -2,7 +2,7 @@
   (:require
     [cheshire.core :as json]
     [clojure.edn :as edn]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.api.context :as context-util]
     [cmr.common.cache :as cache]
     [cmr.common.config :as cfg :refer [defconfig]]
@@ -127,7 +127,7 @@
                              (v/umm-spec-validate-collection collection validation-options context true)
                              (v/umm-spec-validate-collection-warnings
                               collection validation-options context))
-        collection-warnings (map #(str (:path %) " " (str/join " " (:errors %)))
+        collection-warnings (map #(str (:path %) " " (string/join " " (:errors %)))
                                  collection-warnings)
         warnings (concat warnings collection-warnings)]
     ;; The sanitized UMM Spec collection is returned so that ingest does not fail
@@ -315,7 +315,7 @@
   db."
   [variable]
   {:concept-type :variable
-   :native-id (:name variable)
+   :native-id (:native-id variable)
    :metadata (pr-str variable)
    :user-id (:originator-id variable)
    ;; The first version of a variable should always be revision id 1. We
@@ -323,9 +323,8 @@
    ;; conflicts
    :revision-id 1
    :format mt/edn
-   :extra-fields {
-     :variable-name (:name variable)
-     :measurement (:long-name variable)}})
+   :extra-fields {:variable-name (:name variable)
+                  :measurement (:long-name variable)}})
 
 (defn- fetch-variable-concept
   "Fetches the latest version of a variable concept variable variable-key."
@@ -353,7 +352,7 @@
         variable (as-> variable-json-str data
                        (variable-json->variable data)
                        (assoc data :originator-id user-id)
-                       (assoc data :native-id (:name data)))]
+                       (assoc data :native-id (string/lower-case (:name data))))]
     ;; Check if the variable already exists
     (if-let [concept-id (mdb2/get-concept-id context
                                              :variable
@@ -369,7 +368,7 @@
            (msg/variable-already-exists variable concept-id))))
       ;; The variable doesn't exist
       (mdb2/save-concept context
-       (variable->new-concept variable)))))
+                         (variable->new-concept variable)))))
 
 (defn update-variable
   "Updates an existing variable with the given concept id."
