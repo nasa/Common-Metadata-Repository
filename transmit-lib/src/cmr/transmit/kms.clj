@@ -135,10 +135,10 @@
    <conceptBrief id=\"296143\" uuid=\"03d77986-98aa-4ad4-9070-2b7a41eadb31\" prefLabel=\"SLOAN\" conceptSchemeId=\"599\" conceptScheme=\"idnnode\" isLeaf=\"true\" status=\"\"/> 
    Returns a sequence of full hierarchy maps."
   [keyword-scheme xml-content]
-  (let [parsed-xml (xml/parse (java.io.StringReader. xml-content))
+  (let [parsed-xml (xml/parse-str xml-content)
         concept-brief-tags (select parsed-xml "conceptBrief")
         idnnode-attrs (filter (fn [x] (= "idnnode" (:conceptScheme x))) (map :attrs concept-brief-tags))
-        short-names (map vals (map #(select-keys % [:prefLabel]) idnnode-attrs))
+        short-names (map #(vector (:prefLabel %)) idnnode-attrs) 
         keyword-entries (->> short-names 
                              ;; Create a map for each short-name value using the subfield-names as keys
                              (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
