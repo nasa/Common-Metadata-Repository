@@ -7,6 +7,7 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.query-model :as common-qm]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
@@ -171,10 +172,37 @@
         (dissoc :path-w-extension :token)
         (assoc :result-format result-format))))
 
+(defn- get-scroll-id-from-cache
+  "Returns the full ES scroll-id from the cache using the short scroll-id as a key. Throws a
+  service error :not-found if the key does not exist in the cache."
+  [context short-scroll-id]
+  (when short-scroll-id
+    (if-let [scroll-id (-> context
+                           (cache/context->cache search/scroll-id-cache-key)
+                           (cache/get-value short-scroll-id))]
+      scroll-id
+      (svc-errors/throw-service-error 
+       :not-found 
+       (format "Scroll session [%s] does not exist" short-scroll-id)))))
+
+(defn- add-scroll-id-to-cache
+  "Adds the given ES croll-id to the cache and returns the generated key"
+  [context scroll-id]
+  (when scroll-id
+    (let [short-scroll-id (str (hash scroll-id))
+          id-cache (cache/context->cache context search/scroll-id-cache-key)]
+      (cache/set-value id-cache short-scroll-id scroll-id))))
+
 (defn- search-response
   "Returns the response map for finding concepts"
-  [response]
-  (common-routes/search-response (update response :result-format mt/format->mime-type)))
+  [context response]
+  (let [short-scroll-id (-> (add-scroll-id-to-cache context (:scroll-id response))
+                            vals
+                            first)
+        response (-> response
+                     (update :result mt/format->mime-type)
+                     (update :scroll-id (constantly short-scroll-id)))]
+    (common-routes/search-response response)))
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
@@ -185,13 +213,14 @@
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format (:result-format params)) json-query params))
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
-    (search-response results)))
+    (search-response ctx results)))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and return the response"
   [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
+        short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
+        scroll-id (get-scroll-id-from-cache ctx short-scroll-id)
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (process-params params path-w-extension headers mt/xml)
         result-format (:result-format params)
@@ -200,7 +229,7 @@
                         (rfh/printable-result-format result-format) (pr-str params)))
         search-params (lp/process-legacy-psa params)
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
-    (search-response results)))
+    (search-response ctx results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"

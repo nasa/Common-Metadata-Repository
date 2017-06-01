@@ -1,8 +1,12 @@
 (ns cmr.common-app.services.search
   "This contains common code for implementing search capabilities in a CMR application"
   (:require [cmr.common.util :as u]
+            [cmr.common.cache.fallback-cache :as fallback-cache]
+            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common-app.cache.cubby-cache :as cubby-cache]
+            [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.common-app.services.search.query-validation :as qv]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.common-app.services.search.query-model :as qm]
@@ -10,6 +14,19 @@
             [cmr.common-app.services.search.validators.numeric-range]
             [cmr.common-app.services.search.validators.date-range]))
 
+(def scroll-id-cache-key
+  "Key for the scroll-id cache in the system cache map."
+  "scroll-id-cache")
+
+(defn create-scroll-id-cache
+  "Returns a single-threaded cache wrapping a fallback cache that uses a consistent cache backed by
+  cubby. This cache is used to store a map of cmr scroll-ids to ES scroll-ids in a consistent way 
+  acrosss all instances of search."
+  []
+  (stl-cache/create-single-thread-lookup-cache
+   (fallback-cache/create-fallback-cache
+    (consistent-cache/create-consistent-cache)
+    (cubby-cache/create-cubby-cache))))
 
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.

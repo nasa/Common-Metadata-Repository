@@ -134,7 +134,6 @@
                              routes
                              {:port port
                               :join? false
-                              :response-header-size 100000000
                               :min-threads MIN_THREADS
                               :max-threads MAX_THREADS
                               :configurator (fn [^Server jetty]

@@ -51,7 +51,7 @@
 
 (defn- query->execution-params
   "Returns the Elasticsearch execution parameters extracted from the query. These are the
-  actual ES parameters as epxected by the elastisch library. The :scroll-id parameter is special
+  actual ES parameters as expected by the elastisch library. The :scroll-id parameter is special
   and is stripped out before calling elastisch to determine whether a normal search call or a
   scroll call should be made."
   [query]
@@ -79,14 +79,6 @@
   "Handles exceptions from ES. Unexpected exceptions are simply re-thrown."
   (fn [ex scroll-id]
     (:status (ex-data ex))))
-
-(defmethod handle-es-exception 400
-  [ex scroll-id]
-  (let [body (-> ex ex-data :body)]
-    (if (or (re-find #"Failed to decode scrollId" body)
-            (re-find #"Malformed scrollId" body))
-      (errors/throw-service-error :bad-request (format "Invalid scroll id [%s]" scroll-id))
-      (throw ex))))
 
 (defmethod handle-es-exception 404
   [ex scroll-id]

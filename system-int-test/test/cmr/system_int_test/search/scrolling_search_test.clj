@@ -113,34 +113,33 @@
           (es-config/set-elastic-scroll-timeout! timeout)))
 
     (testing "invalid parameters"
-      (are3 [query options err-msg]
+      (are3 [query options status err-msg]
         (let [options (merge {:allow-failure? true})
               response (search/find-refs :granule query options)]
-          (is (= 400 (:status response)))
+          (is (= status (:status response)))
           (is (= err-msg
                  (first (:errors response)))))
 
         "scroll parameter must be boolean"
         {:provider "PROV1" :scroll "foo"} 
         {}
+        400
         "Parameter scroll must take value of true or false but was [foo]"
 
         "page_num is not allowed with scrolling"
         {:provider "PROV1" :scroll true :page-num 2}
         {}
+        400
         "page_num is not allowed with scrolling"
         
         "offset is not allowed with scrolling"
         {:provider "PROV1" :scroll true :offset 2}
         {}
+        400
         "offset is not allowed with scrolling"
 
-        "undecodable scroll-id"
+        "unknown scroll-id"
         {:scroll true}
         {:headers {routes/SCROLL_ID_HEADER "foo"}}
-        "Invalid scroll id [foo]"
-
-        "malformed scroll-id"
-        {:scroll true}
-        {:headers {routes/SCROLL_ID_HEADER malformed-scroll-id}}
-        (str "Invalid scroll id [" malformed-scroll-id "]")))))
+        404
+        "Scroll session [foo] does not exist"))))
