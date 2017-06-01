@@ -1,7 +1,3 @@
-
-
-
-
 (ns migrations.054-remove-provider-services-tables
   (:require
     [cmr.metadata-db.data.oracle.concept-tables :as ct]
