@@ -160,6 +160,11 @@
   [attribs]
   (umm-cmn/map->DataCenterType attribs))
 
+(defn directory-name
+  "Returns directory name"
+  [attribs]
+  (umm-c/map->DirectoryNameType attribs))
+
 (defn related-url
   "Creates related url for online_only test"
   ([]
