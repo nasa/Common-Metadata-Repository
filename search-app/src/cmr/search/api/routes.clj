@@ -191,14 +191,13 @@
   (when scroll-id
     (let [short-scroll-id (str (hash scroll-id))
           id-cache (cache/context->cache context search/scroll-id-cache-key)]
-      (cache/set-value id-cache short-scroll-id scroll-id))))
+      (cache/set-value id-cache short-scroll-id scroll-id)
+      short-scroll-id)))
 
 (defn- search-response
   "Returns the response map for finding concepts"
   [context response]
-  (let [short-scroll-id (-> (add-scroll-id-to-cache context (:scroll-id response))
-                            vals
-                            first)
+  (let [short-scroll-id (add-scroll-id-to-cache context (:scroll-id response))
         response (-> response
                      (update :result mt/format->mime-type)
                      (update :scroll-id (constantly short-scroll-id)))]

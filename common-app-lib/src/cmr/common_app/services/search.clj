@@ -6,7 +6,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common-app.cache.cubby-cache :as cubby-cache]
-            [cmr.common-app.cache.consistent-cache :as consistent-cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common-app.services.search.query-validation :as qv]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.common-app.services.search.query-model :as qm]
@@ -25,7 +25,7 @@
   []
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
-    (consistent-cache/create-consistent-cache)
+    (mem-cache/create-in-memory-cache)
     (cubby-cache/create-cubby-cache))))
 
 (defn validate-query
