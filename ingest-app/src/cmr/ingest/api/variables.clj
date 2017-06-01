@@ -28,13 +28,21 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
+(defn- snake-case-data
+  "Returns the given data with keys converted to snake case."
+  [data]
+  (cond
+    (sequential? data) (map util/map-keys->snake_case data)
+    (map? data) (util/map-keys->snake_case data)
+    :else data))
+
 (defn- api-response
   "Creates a successful variable response with the given data response"
   ([data]
    (api-response 200 data))
   ([status-code data]
    {:status status-code
-    :body (json/generate-string data)
+    :body (json/generate-string (snake-case-data data))
     :headers {"Content-Type" mt/json}}))
 
 (defn create-variable
@@ -61,4 +69,3 @@
   (common-enabled/validate-write-enabled context "ingest")
   (validate-variable-content-type headers)
   (api-response (ingest/update-variable context variable-key body)))
-

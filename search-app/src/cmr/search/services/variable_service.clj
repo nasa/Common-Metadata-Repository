@@ -53,7 +53,7 @@
                        :user-id (context->user-id mdb-context)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
-      {:message {:warnings [(assoc-msg/delete-association-not-found native-id)]}})))
+      {:message {:warnings [(assoc-msg/delete-association-not-found :variable native-id)]}})))
 
 (defn- variable-association->native-id
   "Returns the native id of the given variable association."

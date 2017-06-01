@@ -4,7 +4,6 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.umm-spec-variable :as data-umm-var]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -24,13 +23,11 @@
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          variable data-umm-var/simple-json-variable]
+          variable (variable-util/make-variable)]
       (is (variable-util/permitted? update-token update-grant-id
-                      update-group-id))
-      (let [{:keys [status concept-id revision-id]} (ingest/ingest-variable
-                                                     variable
-                                                     {:accept-format :json
-                                                      :token update-token})]
+                                    update-group-id))
+      (let [{:keys [status concept-id revision-id]} (variable-util/create-variable
+                                                     update-token variable)]
         (is (= 201 status))
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))))
@@ -59,34 +56,30 @@
                           :system_identity
                           {:target nil})
           reg-user-grant-id (e/grant
-                          (assoc (s/context) :token reg-user-token)
-                          [{:permissions [:read]
-                            :user_type :registered}]
-                          :system_identity
-                          {:target nil})
+                             (assoc (s/context) :token reg-user-token)
+                             [{:permissions [:read]
+                               :user_type :registered}]
+                             :system_identity
+                             {:target nil})
           update-grant-id (e/grant-group-admin
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          variable data-umm-var/simple-json-variable]
-    (testing "acl setup and grants for different users"
-      (is (variable-util/not-permitted? guest-token guest-grant-id
-                          guest-group-id))
-      (is (variable-util/not-permitted? reg-user-token reg-user-grant-id
-                          reg-user-group-id))
-      (is (variable-util/permitted? update-token update-grant-id
-                      update-group-id)))
-    (testing "ingest variable creation permissions"
-      (are3 [token expected]
-        (let [response (ingest/ingest-variable
-                        variable
-                        {:accept-format :json
-                         :token token
-                         :allow-failure? true})]
-          (is (= expected (:status response))))
-        "System update permission allowed"
-        update-token 201
-        "Regular user denied"
-        reg-user-token 401
-        "Guest user denied"
-        guest-token 401)))))
+          variable (variable-util/make-variable)]
+      (testing "acl setup and grants for different users"
+        (is (variable-util/not-permitted? guest-token guest-grant-id
+                                          guest-group-id))
+        (is (variable-util/not-permitted? reg-user-token reg-user-grant-id
+                                          reg-user-group-id))
+        (is (variable-util/permitted? update-token update-grant-id
+                                      update-group-id)))
+      (testing "ingest variable creation permissions"
+        (are3 [token expected]
+          (let [response (variable-util/create-variable token variable)]
+            (is (= expected (:status response))))
+          "System update permission allowed"
+          update-token 201
+          "Regular user denied"
+          reg-user-token 401
+          "Guest user denied"
+          guest-token 401)))))
