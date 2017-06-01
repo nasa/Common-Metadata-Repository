@@ -1,31 +1,26 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system
   "Functions for generating ISO XML tiling system elements."
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :refer [char-string]]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.util :refer [char-string]]))
+
+(defn- accumulate-pairs
+  [acc [k v]]
+  (if v
+    (conj acc (str k ":") v)
+    acc))
 
 (defn- tiling-system-string
-  "Returns an encoded ISO tiling system coordinate string from the given UMM tiling system."
-  [tiling-system]
-  (let [{{c1-min :MinimumValue
-          c1-max :MaximumValue} :Coordinate1
-         {c2-min :MinimumValue
-          c2-max :MaximumValue} :Coordinate2 } tiling-system]
-      (let [buildString ""]
-        (with-out-str
-          (when c1-min
-            (print "c1-min:" c1-min)
-            (when (or c1-max c2-min c2-max)
-              (print " ")))
-          (when c1-max
-            (print "c1-max:" c1-max)
-            (when (or c2-min c2-max)
-              (print " ")))
-          (when c2-min
-            (print "c2-min:" c2-min)
-            (when c2-max
-              (print " ")))
-          (when c2-max
-            (print "c2-max:" c2-max))))))
+  "Returns an encoded ISO tiling system coordinate string from the given
+  UMM tiling system."
+  [{c1 :Coordinate1 c2 :Coordinate2}]
+  (let [{c1-min :MinimumValue c1-max :MaximumValue} c1
+        {c2-min :MinimumValue c2-max :MaximumValue} c2]
+    (->> [["c1-min" c1-min] ["c1-max" c1-max]
+          ["c2-min" c2-min] ["c2-max" c2-max]]
+         (reduce accumulate-pairs [])
+         (string/join " "))))
 
 (defn- tiling-system-subelements
   "Returns the ISO representation for tiling identification systems."

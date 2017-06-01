@@ -1,11 +1,12 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
-  (:require [clojure.string :as str]
-            [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.spatial.encoding.gmd :as gmd]
-            [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as sdru]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.spatial.encoding.gmd :as gmd]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]))
 
 (def coordinate-system-xpath
   (str "/gmi:MI_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem"
@@ -98,18 +99,18 @@
   \"Type: Some type Value: Some value\""
   [doc]
   (when-let [vertical-domains (select doc vertical-string-xpath)]
-    (for [vertical-domain vertical-domains]
-      (let [vertical-string (value-of (clojure.data.xml/emit-str vertical-domain) "CharacterString")
-            type-index (sdru/get-index-or-nil vertical-string "Type:")
-            value-index (sdru/get-index-or-nil vertical-string "Value:")
-            end-index (count vertical-string)
-            type (when type-index
-                    (sdru/get-substring vertical-string type-index value-index end-index))
-            value (when value-index
-                    (sdru/get-substring vertical-string value-index end-index))]
-        (when (or type value)
-          {:Type type
-           :Value value})))))
+    (for [vertical-domain vertical-domains
+          :let [vertical-string (value-of (clojure.data.xml/emit-str vertical-domain) "CharacterString")
+                type-index (iso-shared-distrib/get-index-or-nil vertical-string "Type:")
+                value-index (iso-shared-distrib/get-index-or-nil vertical-string "Value:")
+                end-index (count vertical-string)
+                type (when type-index
+                       (iso-shared-distrib/get-substring vertical-string type-index value-index end-index))
+                value (when value-index
+                       (iso-shared-distrib/get-substring vertical-string value-index end-index))]
+          :when (or type value)]
+      {:Type type
+       :Value value})))
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
