@@ -306,7 +306,7 @@
              (set (comparable-variable-associations expected-tas))]
             [status (set (comparable-variable-associations body))])))))
 
-(defn assert-variable-disassociation-response-ok?
+(defn assert-variable-dissociation-response-ok?
   "Assert the variable association response when status code is 200 is correct."
   [coll-variable-associations response]
   (assert-variable-association-response-ok? coll-variable-associations response false))

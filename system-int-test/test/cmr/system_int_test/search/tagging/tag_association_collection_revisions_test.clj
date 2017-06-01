@@ -159,7 +159,7 @@
           [concept-id revision-id] {:concept-id "TA1200000005-CMR" :revision-id 2}}
          response)))))
 
-(deftest tag-disassociation-collection-revisions-test
+(deftest tag-dissociation-collection-revisions-test
   ;; Grant all collections in PROV1 and 2
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2"))
@@ -205,7 +205,7 @@
                                       :revision-id (:revision-id coll2-1)}
                                      {:concept-id (:concept-id coll3)}])]
         (index/wait-until-indexed)
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
          {[(:concept-id coll2-1) (:revision-id coll2-1)] {:concept-id "TA1200000007-CMR"
                                                           :revision-id 2}
           [(:concept-id coll3)] {:concept-id "TA1200000009-CMR"
@@ -226,7 +226,7 @@
                       token tag-key
                       [{:concept-id concept-id
                         :revision-id 5}])]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}}
@@ -239,7 +239,7 @@
                       token tag-key
                       [{:concept-id concept-id
                         :revision-id revision-id}])]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
          {[concept-id revision-id]
           {:errors [(format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
                             concept-id revision-id)]}}
@@ -256,7 +256,7 @@
                                       "tombstone. We don't allow tag association with individual "
                                       "collection revisions that are tombstones.")
                                  concept-id revision-id)]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
          {[concept-id revision-id] {:errors [expected-msg]}}
          response)))
 
@@ -265,7 +265,7 @@
                       token tag-key [{:concept-id (:concept-id coll1-3)}])
             expected-msg (format "Tag [%s] is not associated with collection [%s]."
                                  tag-key (:concept-id coll1-3))]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
          {[(:concept-id coll1-3)] {:warnings [expected-msg]}}
          response)))
 
@@ -279,7 +279,7 @@
             expected-msg (format (str "Tag [%s] is not associated with the specific collection concept revision "
                                       "concept id [%s] and revision id [%s].")
                                  tag-key concept-id revision-id)]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
          {[concept-id revision-id] {:warnings [expected-msg]}}
          response)))
 
@@ -290,7 +290,7 @@
                       token tag-key
                       [{:concept-id concept-id :revision-id 5}
                        {:concept-id concept-id :revision-id revision-id}])]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
          {[concept-id 5]
           {:errors [(format "Collection with concept id [%s] revision id [5] does not exist or is not visible."
                             concept-id)]}
