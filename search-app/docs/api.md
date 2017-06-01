@@ -60,6 +60,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Short name](#c-short-name)
     * [Version](#c-version)
     * [Tag parameters](#c-tag-parameters)
+    * [Variable parameters](#c-variable-parameters)
     * [Spatial](#c-spatial)
         * [Polygon](#c-polygon)
         * [Bounding Box](#c-bounding-box)
@@ -133,10 +134,14 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Tag association](#tag-association)
     * [Associating Collections with a Tag by query](#associating-collections-with-a-tag-by-query)
     * [Associating Collections with a Tag by collection concept ids](#associating-collections-with-a-tag-by-concept-ids)
-    * [Tag disassociation](#tag-disassociation)
-    * [Disassociating a Tag from Collections by query](#disassociating-collections-with-a-tag-by-query)
-    * [Disassociating a Tag from Collections by collection concept ids](#disassociating-collections-with-a-tag-by-concept-ids)
+    * [Tag dissociation](#tag-dissociation)
+    * [Dissociating a Tag from Collections by query](#dissociating-collections-with-a-tag-by-query)
+    * [Dissociating a Tag from Collections by collection concept ids](#dissociating-collections-with-a-tag-by-concept-ids)
     * [Searching for Tags](#searching-for-tags)
+  * [Variable](#variable)
+    * [Variable Access Control](#variable-access-control)
+    * [Variable association](#variable-association)
+    * [Variable dissociation](#variable-dissociation)
   * [Community Usage Metrics](#community-usage-metrics)
     * [Updating Community Usage Metrics](#updating-community-usage-metrics)
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
@@ -1394,6 +1399,17 @@ Find collections with tag_data in the form of tag_data[tag_key]=tag_value. It fi
 
     curl "%CMR-ENDPOINT%/collections?tag_data[org.ceos.wgiss.cwic.quality]=foo"
 
+#### <a name="c-variable-parameters"></a> Find collections by variable parameters
+
+Collections can be found by searching for associated variables. The following variable parameters are supported.
+
+* variable_name
+  * options: pattern
+
+Find collections matching variable name.
+
+    curl "%CMR-ENDPOINT%/collections?variable_name=totcldh2ostderr"
+
 #### <a name="c-spatial"></a> Find collections by Spatial
 
 ##### <a name="c-polygon"></a> Polygon
@@ -2557,7 +2573,7 @@ Tags have the following fields:
 
 #### <a name="tag-access-control"></a> Tag Access Control
 
-Access to tags is granted through the TAG_ACL system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission in ECHO. Associating and disassociating collections with a tag is considered an update.
+Access to tags is granted through the TAG_ACL system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a tag is considered an update.
 
 #### <a name="creating-a-tag"></a> Creating a Tag
 
@@ -2759,9 +2775,9 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="tag-disassociation"></a> Tag Disassociation
+#### <a name="tag-dissociation"></a> Tag Dissociation
 
-A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag disassociation by query only supports tag disassociation of the latest revision of collections. Tag disassociation by collections supports tag disassociation from any specified collection revisions. The tag disassociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag disassociation responses, one for each tag association attempted to delete. Each tag disassociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag disassociation succeeded or an `errors` or `warnings` field with detailed message when the tag disassociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag disassociation. Here is a sample tag disassociation request and its response:
+A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag dissociation by query only supports tag dissociation of the latest revision of collections. Tag dissociation by collections supports tag dissociation from any specified collection revisions. The tag dissociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag dissociation responses, one for each tag association attempted to delete. Each tag dissociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag dissociation succeeded or an `errors` or `warnings` field with detailed message when the tag dissociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag dissociation. Here is a sample tag dissociation request and its response:
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
@@ -2802,7 +2818,7 @@ Content-Length: 168
 ]
 ```
 
-On occasions when tag disassociation cannot be processed at all due to invalid input, tag disassociation request will return a failure status code. e.g.
+On occasions when tag dissociation cannot be processed at all due to invalid input, tag dissociation request will return a failure status code. e.g.
 
 Status code 400 is returned when:
 * content type is unsupported
@@ -2816,7 +2832,7 @@ Status code 422 is returned when:
 * request body is empty
 * there are conflicts of tagging on collection level and collection revision in the same request
 
-#### <a name="disassociating-collections-with-a-tag-by-query"></a> Disassociating a Tag from Collections by query
+#### <a name="dissociating-collections-with-a-tag-by-query"></a> Dissociating a Tag from Collections by query
 
 Tags can be dissociated from collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
@@ -2853,7 +2869,7 @@ Content-Length: 168
 ]
 ```
 
-#### <a name="disassociating-collections-with-a-tag-by-concept-ids"></a> Disassociating a Tag from Collections by collection concept ids
+#### <a name="dissociating-collections-with-a-tag-by-concept-ids"></a> Dissociating a Tag from Collections by collection concept ids
 
 Tags can be dissociated from collections by sending a DELETE request with a JSON array of collection concept-ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found in the query will be _removed_ from the current set of associated collections.
 
@@ -2949,6 +2965,125 @@ Content-Length: 292
   "hits" : 1
 }
 ```
+
+### <a name="variable"></a> Variable
+
+Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service.
+
+Variable have the following fields:
+
+* variable_name (REQUIRED): free text specifying the key of the variable. Variable name cannot contain `/` character. Variable name is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case.
+* measurement (REQUIRED): the measurement that the variable belongs to.
+* originator_id (REQUIRED): the Earthdata Login ID of the person who created the variable.
+
+#### <a name="variable-access-control"></a> Variable Access Control
+
+Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL system object identity. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.
+
+#### <a name="variable-association"></a> Variable Association
+
+A variable can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has a `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "variable_association":{
+      "concept_id":"VA1200000009-CMR",
+      "revision_id":1
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000006-PROV1] does not exist or is not visible."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  }
+]
+```
+
+On occassions when variable association cannot be processed at all due to invalid input, variable association request will return a failure status code. e.g.
+
+Status code 400 is returned when:
+* content type is unsupported
+* request body is invalid json
+
+Status code 404 is returned when:
+* the variable with the given variable name does not exist
+* the variable with the given variable name has been deleted
+
+Status code 422 is returned when:
+* request body is empty
+* there are conflicts of variable on collection level and collection revision in the same request
+
+#### <a name="variable-dissociation"></a> Variable Dissociation
+
+A variable can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to variable association requests.
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+'[{"concept_id": "C1200000005-PROV1"},
+  {"concept_id": "C1200000006-PROV1"},
+  {"concept_id": "C1200000007-PROV1"}]'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 168
+
+[
+  {
+    "variable_association":{
+      "concept_id":"VA1200000008-CMR",
+      "revision_id":2
+    },
+    "associated_item":{
+      "concept_id":"C1200000005-PROV1"
+    }
+  },
+  {
+    "warnings":[
+      "Variable [totcldh2ostderr] is not associated with collection [C1200000006-PROV1]."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000006-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "Collection [C1200000007-PROV1] does not exist or is not visible."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV1"
+    }
+  }
+]
+```
+
+On occasions when variable dissociation cannot be processed at all due to invalid input, variable dissociation request will return a failure status code. e.g.
+
+Status code 400 is returned when:
+* content type is unsupported
+* request body is invalid json
+
+Status code 404 is returned when:
+* the variable with the given variable name does not exist
+* the variable with the given variable name has been deleted
+
+Status code 422 is returned when:
+* request body is empty
+* there are conflicts of variable on collection level and collection revision in the same request
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 

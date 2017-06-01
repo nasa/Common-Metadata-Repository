@@ -310,7 +310,7 @@
     (testing "Dissociate non-existent collections"
       (let [response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id "C100-P5"}])]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
           {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
           response)))
 
@@ -321,7 +321,7 @@
             _ (index/wait-until-indexed)
             response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id c1-p2-concept-id}])]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
           {["C1200000019-PROV2"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    c1-p2-concept-id)]}}
           response)))
@@ -331,7 +331,7 @@
       (let [coll-concept-id (:concept-id c4-p3)
             response (tags/dissociate-by-concept-ids
                        token tag-key [{:concept-id coll-concept-id}])]
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
           {["C1200000026-PROV3"] {:errors [(format "Collection [%s] does not exist or is not visible."
                                                    coll-concept-id)]}}
           response)))))
@@ -420,7 +420,7 @@
                         {:concept-id (:concept-id coll2) :revision-id 1} ;; success
                         {:concept-id (:concept-id coll3)}])] ;; no tag association
 
-        (tags/assert-tag-disassociation-response-ok?
+        (tags/assert-tag-dissociation-response-ok?
           {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}
            ["C1200000012-PROV1"] {:concept-id "TA1200000016-CMR" :revision-id 2}
            ["C1200000013-PROV1" 1] {:concept-id "TA1200000017-CMR" :revision-id 2}
