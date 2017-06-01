@@ -87,7 +87,15 @@
 
 (defconfig time-zone
   "The time zone where the web server is running. Needed because getting the time zone using
-   java.util.TimeZone is not returning the correct information on EC2 instances running in NGAP."
+   java.util.TimeZone is not returning the correct information on EC2 instances running in NGAP.
+
+   The default value of \"America/New_York\" will work for all of our NGAP EC2 instances (they are
+   all in US_EAST_1) and for developers working on the east coast.
+
+   If you enable access logging locally and need to set a different time zone you can figure out
+   the string to set by running:
+
+   (.getID (java.util.TimeZone/getDefault)))"
   {:default "America/New_York"})
 
 (defn create-access-log-handler
