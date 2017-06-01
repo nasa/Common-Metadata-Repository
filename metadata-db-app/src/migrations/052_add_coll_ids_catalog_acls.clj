@@ -11,14 +11,13 @@
   "For a given provider and entry-titles in collection-identifier, returns list of collection concept ids"
   [provider-id collection-identifier]
   (when-let [entry-titles (get collection-identifier :entry-titles)]
-      (let [provider (-> (h/get-provider provider-id)
-                         providers/dbresult->provider)
-            t (h/get-provider-collection-tablename provider)]
-        (for [entry-title entry-titles
-              result (h/query [(format "select concept_id from metadata_db.%s where
-                                        entry_title = ?" t)
-                               entry-title])]
-          (:concept_id result)))))
+    (let [provider (-> (h/get-provider provider-id)
+                       providers/dbresult->provider)
+          t (h/get-provider-collection-tablename provider)]
+      (for [entry-title entry-titles
+            :let [result (j/query (config/db) [(format "select distinct concept_id from metadata_db.%s where entry_title = ?" t)
+                                               entry-title])]]
+          (:concept_id (first result))))))
 
 (defn up
   "Migrates the database up to version 52."
