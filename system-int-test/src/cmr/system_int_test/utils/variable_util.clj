@@ -24,31 +24,12 @@
                                e/ingest-management-acl
                                :update)))
 
-(defn- grant-permitted?
-  "Check if a given grant id is in the list of provided ACLs."
-  [grant-id acls]
-  (contains?
-    (into
-      #{}
-      (map :guid acls))
-    grant-id))
-
-(defn- group-permitted?
-  "Check if a given group id is in the list of provided ACLs."
-  [group-id acls]
-  (contains?
-    (reduce
-      #(into %1 (map :group-guid %2))
-      #{}
-      (map :aces acls))
-    group-id))
-
 (defn permitted?
   "Check if a the ACLs for the given token include the given grant and group IDs."
   [token grant-id group-id]
   (let [acls (get-system-ingest-update-acls token)]
-    (and (grant-permitted? grant-id acls)
-         (group-permitted? group-id acls))))
+    (and (e/grant-permitted? grant-id acls)
+         (e/group-permitted? group-id acls))))
 
 (defn not-permitted?
   [& args]
@@ -131,7 +112,8 @@
    (update-variable token variable-name variable nil))
   ([token variable-name variable options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (transmit-variable/update-variable (s/context) variable-name variable options)))))
+     (process-response (transmit-variable/update-variable
+                        (s/context) variable-name variable options)))))
 
 (defn delete-variable
   "Deletes a variable"
@@ -146,7 +128,8 @@
   Valid association types are :query and :concept-ids."
   [association-type token variable-name condition options]
   (let [options (merge {:raw? true :token token} options)
-        response (transmit-variable/associate-variable association-type (s/context) variable-name condition options)]
+        response (transmit-variable/associate-variable
+                  association-type (s/context) variable-name condition options)]
     (index/wait-until-indexed)
     (process-response response)))
 
@@ -168,7 +151,8 @@
   "Dissociates a variable with collections found with a JSON query"
   [association-type token variable-name condition options]
   (let [options (merge {:raw? true :token token} options)
-        response (transmit-variable/dissociate-variable association-type (s/context) variable-name condition options)]
+        response (transmit-variable/dissociate-variable
+                  association-type (s/context) variable-name condition options)]
     (index/wait-until-indexed)
     (process-response response)))
 
@@ -187,9 +171,10 @@
    (dissociate-variable :concept-ids token variable-name coll-concept-ids options)))
 
 (defn save-variable
-  "A helper function for creating or updating variables for search tests. If the variable does not have a
-  :concept-id it saves it. If the variable has a :concept-id it updates the variable. Returns the saved variable
-  along with :concept-id, :revision-id, :errors, and :status"
+  "A helper function for creating or updating variables for search tests.
+   If the variable does not have a :concept-id it saves it. If the variable has a :concept-id,
+   it updates the variable. Returns the saved variable along with :concept-id,
+   :revision-id, :errors, and :status"
   ([token variable]
    (let [variable-to-save (select-keys variable [:variable-name :description :revision-date])
          response (if-let [concept-id (:concept-id variable)]
@@ -212,8 +197,8 @@
      (assoc saved-variable :revision-id (:revision-id response)))))
 
 (defn assert-variable-saved
-  "Checks that a variable was persisted correctly in metadata db. The variable should already have originator
-  id set correctly. The user-id indicates which user updated this revision."
+  "Checks that a variable was persisted correctly in metadata db. The variable should already
+   have originator id set correctly. The user-id indicates which user updated this revision."
   [variable user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= {:concept-type :variable
@@ -268,8 +253,8 @@
      (is (= expected-response (dissoc response :took))))))
 
 (defn- coll-variable-association->expected-variable-association
-  "Returns the expected variable association for the given collection concept id to variable association
-  mapping, which is in the format of, e.g.
+  "Returns the expected variable association for the given collection concept id to
+  variable association mapping, which is in the format of, e.g.
   {[C1200000000-CMR 1] {:concept-id \"TA1200000005-CMR\" :revision-id 1}}."
   [coll-variable-association error?]
   (let [[[coll-concept-id coll-revision-id] variable-association] coll-variable-association

@@ -147,6 +147,7 @@
 
     ;; This test is commented out since we don't support delete variable yet
     ;; Once we support delete variable, re-enable this test.
+    ;; See CMR-4168
     #_(testing "Associate deleted variable"
         (vu/delete-variable token variable-name)
         (are [associate-variable-fn request-json]
@@ -269,6 +270,7 @@
 
     ;; This test is commented out since we don't support delete variable yet
     ;; Once we support delete variable, re-enable this test.
+    ;; See CMR-4168.
     #_(testing "Dissociate deleted variable"
         (vu/delete-variable token variable-name)
         (are [dissociate-variable-fn request-json]
@@ -310,6 +312,7 @@
          response)
         (assert-variable-associated [])))))
 
+;; See CMR-4167, CMR-4168
 ; ;; This tests association retention when collections and variables are updated or deleted.
 ; (deftest association-retention-test
 ;   (e/grant-all (s/context) (e/coll-catalog-item-id "PROV1"))
@@ -395,7 +398,7 @@
     ;; verify association
     (assert-variable-association token [coll1] "variable1")
     (assert-variable-association token [coll2] "variable2")
-    
+
     ;; associate variable1 to coll2
     (vu/associate-by-concept-ids token "variable1" [{:concept-id coll2-id}])
     (index/wait-until-indexed)

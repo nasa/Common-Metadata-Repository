@@ -847,3 +847,11 @@
    (if (pos? (compare x y)) x y))
   ([x y & more]
    (reduce max-compare (max-compare x y) more)))
+
+(defn snake-case-data
+  "Returns the given data with keys converted to snake case."
+  [data]
+  (cond
+    (sequential? data) (map map-keys->snake_case data)
+    (map? data) (map-keys->snake_case data)
+    :else data))
