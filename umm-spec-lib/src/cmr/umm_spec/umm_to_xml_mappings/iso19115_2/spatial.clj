@@ -1,16 +1,17 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial
   "Functions for generating ISO19115-2 XML elements from UMM spatial records."
-  (:require [camel-snake-kebab.core :as csk]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.encoding.gmd :as gmd]
-            [cmr.spatial.line-string :as ls]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.relations :as r]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.common.util :as util]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.encoding.gmd :as gmd]
+   [cmr.spatial.line-string :as ls]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.relations :as r]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.common.util :as util]))
 
 (defn spatial-point
   [umm-point]
