@@ -34,26 +34,9 @@
   [n]
   (str/join (repeat n "x")))
 
-(defn- assert-convert-kebab-case
-  "Assert that the field names in the map does not have dashes, and convert the given concept map
-  to use kebab case keys."
-  [concept-map]
-  ;; This is to assert that the tags api response will use underscore, not dash
-  (is (empty? (select-keys concept-map [:concept-id :revision-id :tag-key
-                                        :originator-id :tag-association :tagged-item])))
-  (util/map-keys->kebab-case concept-map))
-
-(defn- kebab-case-body
-  "Returns the body with tags converted to kebab case."
-  [body]
-  (cond
-    (sequential? body) (map assert-convert-kebab-case body)
-    (map? body) (assert-convert-kebab-case body)
-    :else body))
-
 (defn- process-response
   [{:keys [status body]}]
-  (let [body (kebab-case-body body)]
+  (let [body (util/kebab-case-data body)]
     (if (map? body)
       (assoc body :status status)
       {:status status

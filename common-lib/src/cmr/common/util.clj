@@ -855,3 +855,34 @@
     (sequential? data) (map map-keys->snake_case data)
     (map? data) (map-keys->snake_case data)
     :else data))
+
+(defn kebab-case-data
+  "Returns the data with variables converted to kebab case.
+
+  Alternatively, you can provide a function that takes the data as an argument,
+  run before the mapping takes place. This is useful for tests when you want to
+  perform assertion checks upon the raw data, before transofmration."
+  ([data]
+    (cond
+      (sequential? data) (map map-keys->kebab-case data)
+      (map? data) (map-keys->kebab-case data)
+      :else data))
+  ([data fun]
+    (fun data)
+    (kebab-case-data data)))
+
+(defmulti assert-convert-kebab-case
+  "For use in asserting that the field names in the map returned by the ingest
+  app do not have dashes."
+  (fn [_ x] (type x)))
+
+(defmethod assert-convert-kebab-case clojure.lang.IPersistentMap
+  [check-keys concept-map]
+  (->> check-keys
+       (select-keys concept-map)
+       (empty?)
+       (assert)))
+
+(defmethod assert-convert-kebab-case clojure.lang.Sequential
+  [check-keys concept-maps]
+  (map (partial assert-convert-kebab-case check-keys) concept-maps))
