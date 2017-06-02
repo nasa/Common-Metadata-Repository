@@ -5,13 +5,12 @@
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.variable-util :as variable-util]))
 
-(use-fixtures :each (ingest/reset-fixture))
+(use-fixtures :each (ingest-util/reset-fixture))
 
-;; Verify the UMM-Var is ingested successfully.
 (deftest variable-ingest-test
   (testing "ingest of a new concept"
     (let [;; Groups
@@ -24,8 +23,10 @@
                            update-group-id
                            :update)
           variable (variable-util/make-variable)]
-      (is (variable-util/permitted? update-token update-grant-id
-                                    update-group-id))
+      (is (e/permitted? update-token
+                        update-grant-id
+                        update-group-id
+                        (ingest-util/get-ingest-update-acls update-token)))
       (let [{:keys [status concept-id revision-id]} (variable-util/create-variable
                                                      update-token variable)]
         (is (= 201 status))
@@ -67,12 +68,18 @@
                            :update)
           variable (variable-util/make-variable)]
       (testing "acl setup and grants for different users"
-        (is (variable-util/not-permitted? guest-token guest-grant-id
-                                          guest-group-id))
-        (is (variable-util/not-permitted? reg-user-token reg-user-grant-id
-                                          reg-user-group-id))
-        (is (variable-util/permitted? update-token update-grant-id
-                                      update-group-id)))
+        (is (e/not-permitted? guest-token
+                              guest-grant-id
+                              guest-group-id
+                              (ingest-util/get-ingest-update-acls guest-token)))
+        (is (e/not-permitted? reg-user-token
+                              reg-user-grant-id
+                              reg-user-group-id
+                              (ingest-util/get-ingest-update-acls reg-user-token)))
+        (is (e/permitted? update-token
+                          update-grant-id
+                          update-group-id
+                          (ingest-util/get-ingest-update-acls update-token))))
       (testing "ingest variable creation permissions"
         (are3 [token expected]
           (let [response (variable-util/create-variable token variable)]

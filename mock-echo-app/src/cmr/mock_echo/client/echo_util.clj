@@ -506,3 +506,13 @@
     #{}
     (map :aces acls))
    group-id))
+
+(defn permitted?
+  "Check if a the ACLs for the given token include the given grant and group IDs."
+  [token grant-id group-id acls]
+  (and (grant-permitted? grant-id acls)
+       (group-permitted? group-id acls)))
+
+(defn not-permitted?
+  [& args]
+  (not (apply permitted? args)))
