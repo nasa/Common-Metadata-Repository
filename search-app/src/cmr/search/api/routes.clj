@@ -266,7 +266,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
-    (search-response results)))
+    (search-response ctx results)))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
@@ -295,15 +295,18 @@
                       concept-id
                       revision-id))
         ;; else, revision-id is nil
-        (search-response (query-svc/find-concept-by-id-and-revision
-                           ctx result-format concept-id revision-id)))
+        (search-response ctx (query-svc/find-concept-by-id-and-revision
+                              ctx 
+                              result-format 
+                              concept-id 
+                              revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      concept-type-supported-mime-types
                                                      mt/native)
             ;; XML means native in this case
             result-format (if (= result-format :xml) :native result-format)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        (search-response (query-svc/find-concept-by-id ctx result-format concept-id))))))
+        (search-response ctx (query-svc/find-concept-by-id ctx result-format concept-id))))))
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
@@ -312,8 +315,7 @@
     (info (format "Searching for deleted collections from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
-    (search-response
-     (query-svc/get-deleted-collections ctx params))))
+    (search-response ctx (query-svc/get-deleted-collections ctx params))))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
