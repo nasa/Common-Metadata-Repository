@@ -18,7 +18,7 @@
 (defn assert-convert-kebab-case
   [data]
   ; XXX This can be uncommented once service support is added to the metadata db
-  ;     See CMR-
+  ;     See CMR-4172
   ; (util/assert-convert-kebab-case [:concept-id :revision-id
   ;                                  :service-name :originator-id]
   ;                                 data))
@@ -59,8 +59,7 @@
   ([token service options]
    (let [options (merge {:raw? true :token token} options)]
      (ingest-util/parse-map-response
-      (transmit-service/create-service (s/context) service options)
-      assert-convert-kebab-case))))
+      (transmit-service/create-service (s/context) service options)))))
 
 (defn update-service
   "Updates a service."
@@ -71,8 +70,7 @@
   ([token service-name service options]
    (let [options (merge {:raw? true :token token} options)]
      (ingest-util/parse-map-response
-      (transmit-service/update-service (s/context) service-name service options)
-      assert-convert-kebab-case))))
+      (transmit-service/update-service (s/context) service-name service options)))))
 
 (defn save-service
   "A helper function for creating or updating services for search tests.

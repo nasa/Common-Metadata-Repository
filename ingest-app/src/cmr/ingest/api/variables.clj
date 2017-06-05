@@ -8,7 +8,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.ingest.api.core :refer [body->concept ingest-status-code]]
+   [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]))
 
 (defn- verify-variable-modification-permission
@@ -28,15 +28,6 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- api-response
-  "Creates a successful variable response with the given data response"
-  ([data]
-   (api-response 200 data))
-  ([status-code data]
-   {:status status-code
-    :body (json/generate-string (util/snake-case-data data))
-    :headers {"Content-Type" mt/json}}))
-
 (defn create-variable
   "Processes a create variable request.
 
@@ -50,9 +41,9 @@
   (verify-variable-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-variable-content-type headers)
-  (let [result (ingest/create-variable context body)
-        status-code (ingest-status-code result)]
-    (api-response status-code result)))
+  (api-core/generate-ingest-response
+   headers
+   (ingest/create-variable context body)))
 
 (defn update-variable
   "Processes a request to update a variable."
@@ -60,4 +51,6 @@
   (verify-variable-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-variable-content-type headers)
-  (api-response (ingest/update-variable context variable-key body)))
+  (api-core/generate-ingest-response
+   headers
+   (ingest/update-variable context variable-key body)))
