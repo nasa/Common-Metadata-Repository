@@ -59,6 +59,16 @@
                :connection-manager (s/conn-mgr)
                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
+(defn- create-service-through-url
+  "Create the service by http POST on the given url"
+  [service endpoint-url]
+  (client/post endpoint-url
+              {:body (json/generate-string service)
+               :content-type :json
+               :throw-exceptions false
+               :connection-manager (s/conn-mgr)
+               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
   [provider]

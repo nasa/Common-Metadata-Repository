@@ -341,7 +341,8 @@
          {:target tag-acl}))
 
 (defn grant-all-variable
-  "Creates an ACL in mock echo granting registered users ability to do all variable related operations"
+  "Creates an ACL in mock echo granting registered users ability to do all
+  variable related operations"
   [context]
   (grant context
          [{:permissions [:read :update]
@@ -350,6 +351,11 @@
            :user_type :guest}]
          :system_identity
          {:target ingest-management-acl}))
+
+(def grant-all-service
+  "Creates an ACL in mock echo granting registered users ability to do all
+  variable related operations"
+  grant-all-variable)
 
 (defn grant-create-read-groups
   "Creates an ACL in mock echo granting registered users and guests ability to create and read
