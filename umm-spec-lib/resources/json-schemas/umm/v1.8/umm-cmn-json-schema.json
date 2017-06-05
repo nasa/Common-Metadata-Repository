@@ -1327,11 +1327,6 @@
       "type": "string",
       "enum": ["Direct Line", "Email", "Facebook", "Fax", "Mobile", "Modem", "Primary", "TDD/TTY Phone", "Telephone", "Twitter", "U.S. toll free", "Other"]
     },
-    "ISOTopicCategoryEnum": {
-      "description": "High-level geospatial data thematic classification to assist in the grouping and search of available geospatial collections.",
-      "type": "string",
-      "enum": ["farming", "biota", "boundaries", "climatologyMeteorologyAtmosphere", "economy", "elevation", "environment", "geoscientificInformation", "health", "imageryBaseMapsEarthCover", "intelligenceMilitary", "inlandWaters", "location", "oceans", "planningCadastre", "society", "structure", "transportation", "utilitiesCommunication"]
-    },
     "ShortNameType": {
       "description": "The unique name.",
       "type": "string",

@@ -113,7 +113,8 @@
     :Projects [{:ShortName "project short_name"}]
     :ISOTopicCategories ["FARMING"
                          "INTELLIGENCE/MILITARY"
-                         "GEOSCIENTIFIC INFORMATION"]
+                         "GEOSCIENTIFIC INFORMATION"
+                         "EXTRA TERRESTRIAL"]
     :Quality "Pretty good quality"
     :PublicationReferences [{:PublicationDate (t/date-time 2015)
                              :OtherReferenceDetails "Other reference details"

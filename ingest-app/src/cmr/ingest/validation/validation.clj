@@ -80,15 +80,17 @@
                                          kms-index :instruments
                                          msg/instrument-not-matches-kms-keywords)})]
      :ScienceKeywords (match-kms-keywords-validation
-                         kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
+                       kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
      :Projects (match-kms-keywords-validation
                 kms-index :projects msg/project-not-matches-kms-keywords)
      :LocationKeywords (match-kms-keywords-validation
                         kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
      :DataCenters (match-kms-keywords-validation
-                    kms-index :providers msg/datacenter-not-matches-kms-keywords)
+                   kms-index :providers msg/datacenter-not-matches-kms-keywords)
      :DirectoryNames (match-kms-keywords-validation
-                       kms-index :concepts msg/directoryname-not-matches-kms-keywords)}))
+                      kms-index :concepts msg/directoryname-not-matches-kms-keywords)
+     :ISOTopicCategories (match-kms-keywords-validation
+                          kms-index :iso-topic-categories msg/iso-topic-category-not-matches-kms-keywords)}))
 
 (defn validate-concept-metadata
   [concept]

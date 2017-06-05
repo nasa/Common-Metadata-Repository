@@ -7,9 +7,10 @@
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project :as project]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
@@ -74,13 +75,6 @@
   [projects]
   (let [project-keywords (map iso/generate-title projects)]
     (kws/generate-iso-smap-descriptive-keywords "project" project-keywords)))
-
-(defn- generate-iso-topic-categories
-  "Returns the content generator instructions for ISOTopicCategory"
-  [c]
-  (for [iso-topic-category (:ISOTopicCategories c)]
-    [:gmd:topicCategory
-     [:gmd:MD_TopicCategoryCode iso-topic-category]]))
 
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
@@ -148,13 +142,13 @@
               [:gmd:keyword
                (char-string (kws/smap-keyword-str instrument))])]]
           [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
+        (iso-topic-categories/generate-iso-topic-categories c)
         (when (first (:TilingIdentificationSystems c))
          [:gmd:extent
           [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
            [:gmd:description
             [:gco:CharacterString "Tiling Identitfication System"]]
               (tiling/tiling-system-elements c)]])
-         (generate-iso-topic-categories c)
          [:gmd:extent
           [:gmd:EX_Extent
            (generate-spatial-extent (:SpatialExtent c))

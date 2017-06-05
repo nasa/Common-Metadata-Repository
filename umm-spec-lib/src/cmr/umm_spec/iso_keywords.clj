@@ -64,7 +64,7 @@
   (let [category (first (parse-keyword-str iso-keyword))]
     (cond
       (science-keyword-categories category)    :science
-      (re-matches #".*Instruments$" category) :instrument
+      (re-matches #".*Instruments$" category)  :instrument
       (platform-categories category)           :platform
       :else                                    :other)))
 

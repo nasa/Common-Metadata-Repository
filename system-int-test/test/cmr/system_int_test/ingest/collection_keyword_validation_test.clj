@@ -136,7 +136,7 @@
           "Invalid short name"
           {:Roles ["ARCHIVER"]
            :ShortName "AARHUS-HYDRO-Invalid"
-           :LongName "Hydrogeophysics Group, Aarhus University "} 
+           :LongName "Hydrogeophysics Group, Aarhus University "}
 
           "Invalid long name"
           {:Roles ["ARCHIVER"]
@@ -161,7 +161,7 @@
           {:Roles ["ARCHIVER"]
            :ShortName "aArHUS-HYDRO"
            :LongName "hYdrogeophysics Group, Aarhus University "}))
-  
+
   (testing "DirectoryName keyword validation"
     (are3 [attribs]
           (let [dn (data-umm-c/directory-name attribs)]
@@ -185,6 +185,25 @@
           "Valid Case Insensitive"
           {:ShortName "gOSIC/GtOS"
            :LongName "LN NOT VALIDATED"}))
+
+  (testing "ISOTopicCategories keyword validation"
+    (are3 [itc]
+          (assert-invalid-keywords
+            {:ISOTopicCategories [itc]}
+            ["IsoTopicCategories" 0]
+            [(msg/iso-topic-category-not-matches-kms-keywords itc)])
+
+          "Invalid ISOTopicCategory"
+          "Invalid ISOTopicCategory")
+
+    (are3 [itc]
+          (assert-valid-keywords {:ISOTopicCategories [itc]})
+
+          "Valid Case Sensitive"
+          "BIOTA"
+
+          "Valid Case Insensitive"
+          "bIoTa"))
 
   (testing "Instrument keyword validation"
     (are2 [short-name long-name]

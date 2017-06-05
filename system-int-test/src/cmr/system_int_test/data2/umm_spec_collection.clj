@@ -213,8 +213,8 @@
   "This is the minimal valid UMM-C."
   {:DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
-                    :ShortName "AARHUS-HYDRO" 
-                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
+                    :ShortName "AARHUS-HYDRO"
+                    :LongName "Hydrogeophysics Group, Aarhus University "})]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -233,7 +233,7 @@
    :DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
                     :ShortName "AARHUS-HYDRO"
-                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
+                    :LongName "Hydrogeophysics Group, Aarhus University "})]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -255,7 +255,7 @@
    :DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
                     :ShortName "AARHUS-HYDRO"
-                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
+                    :LongName "Hydrogeophysics Group, Aarhus University "})]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"

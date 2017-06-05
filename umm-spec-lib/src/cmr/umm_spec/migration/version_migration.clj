@@ -11,6 +11,7 @@
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.versioning :refer [versions current-version]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -155,11 +156,6 @@
       (update-in [:DataCenters] #(mapv ci/update-data-center-contact-info-to-array %))
       (update-in [:ContactPersons] #(mapv ci/contact-info-to-array %))
       (update-in [:ContactGroups] #(mapv ci/contact-info-to-array %))))
-
-(defmethod migrate-umm-version [:collection "1.6" "1.7"]
-  [context c & _]
-  (-> c
-    (update :ISOTopicCategories #(mapv get-iso-topic-category %))))
 
 (defmethod migrate-umm-version [:collection "1.7" "1.6"]
   [context c & _]

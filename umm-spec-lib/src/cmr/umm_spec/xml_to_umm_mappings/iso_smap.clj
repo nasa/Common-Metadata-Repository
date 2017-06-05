@@ -8,16 +8,13 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
-
-(def iso-topic-category-xpath
-  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata/gmd:identificationInfo"
-       "/gmd:MD_DataIdentification/gmd:topicCategory"))
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -118,15 +115,13 @@
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [doc {:keys [sanitize?]}]
   (let [data-id-el (first (select doc md-identification-base-xpath))
-        short-name-el (first (select doc short-name-identification-xpath))
-        iso-topic-categories-els (select doc iso-topic-category-xpath)]
+        short-name-el (first (select doc short-name-identification-xpath))]
     (js/parse-umm-c
      (merge
       (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
       {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
-       :ISOTopicCategories (seq (map #(value-of % "gmd:MD_TopicCategoryCode")
-                                   iso-topic-categories-els))
+       :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc base-xpath)
        :DOI (parse-doi doc)
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)

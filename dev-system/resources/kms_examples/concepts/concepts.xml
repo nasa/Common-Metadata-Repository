@@ -3,9 +3,31 @@
     <termsOfUse>http://gcmd.nasa.gov/r/l/TermsOfUse</termsOfUse>
     <keywordVersion>8.5</keywordVersion>
     <conceptBrief id="278935" uuid="02f8be65-6bdd-4f4d-9e69-adac5aec33f6" prefLabel="ORDOVICIAN" conceptSchemeId="585" conceptScheme="chronounits" isLeaf="true" status=""/>
-    <conceptBrief id="278937" uuid="0673738a-3751-4d6e-9df0-b2eda0bde993" prefLabel="NOT APPLICABLE" conceptSchemeId="585" conceptScheme="chronounits" isLeaf="false" status=""/>    
+    <conceptBrief id="278937" uuid="0673738a-3751-4d6e-9df0-b2eda0bde993" prefLabel="NOT APPLICABLE" conceptSchemeId="585" conceptScheme="chronounits" isLeaf="false" status=""/>
     <conceptBrief id="296137" uuid="0228bd6f-7f35-452d-ba96-19df1f552284" prefLabel="GOSIC/GTOS" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>
     <conceptBrief id="296139" uuid="02f99b1f-5902-42db-a168-9babe290ef08" prefLabel="GOMMP" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>
     <conceptBrief id="296141" uuid="03718300-c4bf-43cb-a709-8af9863f0869" prefLabel="GOMC/ESIP" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>
     <conceptBrief id="296143" uuid="03d77986-98aa-4ad4-9070-2b7a41eadb31" prefLabel="SLOAN" conceptSchemeId="599" conceptScheme="idnnode" isLeaf="true" status=""/>
+    <conceptBrief id="296389" uuid="0353d44f-2fc2-44df-9143-b1a3b86d5aa1" prefLabel="INLAND WATERS" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296391" uuid="0f6206e9-1c4f-44f5-8c54-5c7daaa2c770" prefLabel="INTELLIGENCE/MILITARY" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296393" uuid="1ebf71bd-d007-42f8-8f9b-8c44a6b65a28" prefLabel="CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296395" uuid="2184c696-62aa-46a8-b2d4-9727b11bc8ea" prefLabel="UTILITIES/COMMUNICATIONS" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296397" uuid="26173055-5433-42b3-bd00-9a1f6ba294e1" prefLabel="FARMING" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296399" uuid="26ebb539-cae2-4961-9252-7f367642fa57" prefLabel="IMAGERY/BASE MAPS/EARTH COVER" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296401" uuid="27fa831b-f131-4f6d-8020-cc4ab0896249" prefLabel="ISO Topic Categories" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="false" status=""/>
+    <conceptBrief id="296403" uuid="2ea4f8f6-204f-4a9a-b711-dde64b4a7908" prefLabel="STRUCTURE" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296405" uuid="3681060f-2927-4bcb-82d0-bff84235ebbf" prefLabel="HEALTH" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296407" uuid="4c68c358-7a7a-4e52-b6eb-86f4ee84e869" prefLabel="ELEVATION" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296409" uuid="817c2e64-1db4-4e63-9872-53a2d2f28ef8" prefLabel="SOCIETY" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296411" uuid="81a52fa1-4a8f-4c4d-9736-7aaf0859df9d" prefLabel="ENVIRONMENT" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296413" uuid="a4fde165-9941-4a03-8728-415d63a68dab" prefLabel="EXTRA TERRESTRIAL" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296415" uuid="c3d9cf68-90b1-46be-914c-38ecb2e70097" prefLabel="BIOTA" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296417" uuid="c4d36195-daba-48a5-9ba6-61755ae75873" prefLabel="DISASTER" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296419" uuid="d68cebd2-9cc9-46ba-b454-7a80efe4e1bf" prefLabel="TRANSPORTATION" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296421" uuid="d9cd5b7e-e9e7-4746-bbc8-bc69f7b606c7" prefLabel="GEOSCIENTIFIC INFORMATION" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296423" uuid="dbff9ea9-3b00-4cd4-b3ed-21790a797207" prefLabel="OCEANS" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296425" uuid="eb1b563c-c8d2-47df-af42-6c2064e74c8e" prefLabel="ECONOMY" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296427" uuid="ef90500d-0b55-4404-9b26-28e216cf1697" prefLabel="PLANNING CADASTRE" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296429" uuid="f061db63-5414-4b8f-a2d4-c8a7a1a650d6" prefLabel="LOCATION" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
+    <conceptBrief id="296431" uuid="f5329742-d55b-4804-82f5-1beb25ff9255" prefLabel="BOUNDARIES" conceptSchemeId="601" conceptScheme="isotopiccategory" isLeaf="true" status=""/>
 </concepts>

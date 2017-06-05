@@ -11,7 +11,7 @@
 
   We utilize the clojure.data.csv libary to handle parsing the CSV files. Example KMS keyword files
   can be found in dev-system/resources/kms_examples."
-  (:require 
+  (:require
     [camel-snake-kebab.core :as csk]
     [clj-http.client :as client]
     [clojure.data.csv :as csv]
@@ -33,7 +33,8 @@
    :temporal-keywords :temporal-resolution-range
    :spatial-keywords :uuid
    :science-keywords :uuid
-   :concepts :short-name})
+   :concepts :short-name
+   :iso-topic-categories :short-name})
 
 (def keyword-scheme->gcmd-resource-name
   "Maps each keyword scheme to the GCMD resource name"
@@ -44,7 +45,8 @@
    :temporal-keywords "temporalresolutionrange/temporalresolutionrange.csv"
    :spatial-keywords "locations/locations.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"
-   :concepts "concepts/concepts.xml"})
+   :concepts "concepts/concepts.xml"
+   :iso-topic-categories "concepts/concepts.xml"})
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names."
@@ -56,7 +58,8 @@
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3 :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                       :detailed-variable :uuid]
-   :concepts [:short-name]})
+   :concepts [:short-name]
+   :iso-topic-categories [:short-name]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
@@ -72,6 +75,11 @@
   (merge keyword-scheme->leaf-field-name
          {:science-keywords :term
           :spatial-keywords :category}))
+
+(def keyword-scheme->concept-scheme
+  "Maps each relevant keyword scheme to the corresponding conceptScheme refrenced in GCMD resource file."
+  {:concepts "idnnode"
+   :iso-topic-categories "isotopiccategory"})
 
 (def cmr-to-gcmd-keyword-scheme-aliases
   "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
@@ -129,17 +137,19 @@
 
 (defn- parse-entries-from-xml
   "Parses the XML returned by the GCMD KMS. Only when doing the idnnode validation, the kms file
-   is in xml format - concept.xml. 
+   is in xml format - concept.xml.
    Those lines under conceptBrief tag, with conceptScheme=\"idnnode\", the values of prefLabel are the valid ShortNames.
    for the DirectoryName. Here is a example:
-   <conceptBrief id=\"296143\" uuid=\"03d77986-98aa-4ad4-9070-2b7a41eadb31\" prefLabel=\"SLOAN\" conceptSchemeId=\"599\" conceptScheme=\"idnnode\" isLeaf=\"true\" status=\"\"/> 
+   <conceptBrief id=\"296143\" uuid=\"03d77986-98aa-4ad4-9070-2b7a41eadb31\" prefLabel=\"SLOAN\" conceptSchemeId=\"599\" conceptScheme=\"idnnode\" isLeaf=\"true\" status=\"\"/>
    Returns a sequence of full hierarchy maps."
   [keyword-scheme xml-content]
   (let [parsed-xml (xml/parse-str xml-content)
         concept-brief-tags (select parsed-xml "conceptBrief")
-        idnnode-attrs (filter (fn [x] (= "idnnode" (:conceptScheme x))) (map :attrs concept-brief-tags))
-        short-names (map #(vector (:prefLabel %)) idnnode-attrs) 
-        keyword-entries (->> short-names 
+        attrs (filter #(= (keyword-scheme->concept-scheme keyword-scheme)
+                          (:conceptScheme %))
+                      (map :attrs concept-brief-tags))
+        short-names (map #(vector (:prefLabel %)) attrs)
+        keyword-entries (->> short-names
                              ;; Create a map for each short-name value using the subfield-names as keys
                              (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
                              (map remove-blank-keys))
@@ -198,6 +208,14 @@
         "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
     (:body response)))
 
+(defn- uses-xml?
+  "For a given keyword-scheme, returns true if it uses an xml resource file.
+   Returns false otherwise."
+  [keyword-scheme]
+  (or
+   (= "concepts" (name keyword-scheme))
+   (= "iso-topic-categories" (name keyword-scheme))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
 
@@ -215,7 +233,7 @@
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
   (let [keywords
-        (if (= "concepts" (name keyword-scheme))
+        (if (uses-xml? keyword-scheme)
           (parse-entries-from-xml keyword-scheme (get-by-keyword-scheme context keyword-scheme))
           (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme)))]
     (debug (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
