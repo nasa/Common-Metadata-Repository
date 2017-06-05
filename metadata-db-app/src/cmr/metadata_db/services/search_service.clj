@@ -20,7 +20,7 @@
   {:collection #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id}
    :tag #{:concept-id :native-id}
    :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
-   :service default-supported-find-parameters
+   :service #{:concept-id :native-id}
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
    :humanizer #{:concept-id :native-id}

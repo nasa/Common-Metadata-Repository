@@ -230,7 +230,7 @@
   (let [db (helper/get-metadata-db-db system)
         providers (p/get-providers db)
         provider-response-map (for [provider providers
-                                    concept-type [:collection :granule :service]]
+                                    concept-type [:collection :granule]]
                                 (fetch-and-index-new-concepts
                                   system provider concept-type date-time))
         provider-concept-count (reduce + (map :num-indexed provider-response-map))
