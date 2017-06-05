@@ -117,15 +117,15 @@
   "Services cannot be modified without a valid user token.")
 
 (defn service-deleted
-  [service-key]
-  (format "Variable with service-key [%s] was deleted." service-key))
+  [service-name]
+  (format "Variable with service-name [%s] was deleted." service-name))
 
 (defn service-does-not-exist
-  [service-key]
-  (format "Service could not be found with service-key [%s]" service-key))
+  [service-name]
+  (format "Service could not be found with service-name [%s]" service-name))
 
 (defn service-already-exists
   [service concept-id]
-  (format "A service with service-key [%s] already exists with concept id [%s]."
-          (:service-key service)
+  (format "A service with service-name [%s] already exists with concept id [%s]."
+          (:service-name service)
           concept-id))

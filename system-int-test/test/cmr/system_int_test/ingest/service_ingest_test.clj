@@ -11,8 +11,8 @@
 
 (use-fixtures :each (ingest-util/reset-fixture))
 
-(deftest service-ingest-test
-  (testing "ingest of a new concept"
+(deftest create-service-ingest-test
+  (testing "ingest a new service"
     (let [;; Groups
           update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
           ;; Tokens
@@ -22,19 +22,26 @@
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          service (service-util/make-service)]
+          service-data (service-util/make-service)]
       (is (e/permitted? update-token
                         update-grant-id
                         update-group-id
                         (ingest-util/get-ingest-update-acls update-token)))
       (let [{:keys [status concept-id revision-id]} (service-util/create-service
-                                                     update-token service)]
+                                                     update-token service-data)]
         (is (= 201 status))
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= 1 revision-id))))))
+        (is (= 1 revision-id))
+        ;; XXX Once services are supported in the metadata-db we can do this
+        ;;     check - See CMR-4172
+        ; (service-util/assert-service-saved service-data
+        ;                                    "umm-var-user1"
+        ;                                    concept-id
+        ;                                    revision-id)
+        ))))
 
-(deftest service-ingest-permissions-test
-  (testing "ingest permissions"
+(deftest create-service-ingest-permissions-test
+  (testing "ingest create service permissions"
     (let [;; Groups
           guest-group-id (e/get-or-create-group
                           (s/context) "umm-var-guid1")
@@ -66,7 +73,7 @@
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          service (service-util/make-service)]
+          service-data (service-util/make-service)]
       (testing "acl setup and grants for different users"
         (is (e/not-permitted? guest-token
                               guest-grant-id
@@ -82,11 +89,13 @@
                           (ingest-util/get-ingest-update-acls update-token))))
       (testing "ingest service creation permissions"
         (are3 [token expected]
-          (let [response (service-util/create-service token service)]
+          (let [response (service-util/create-service token service-data)]
             (is (= expected (:status response))))
           "System update permission allowed"
           update-token 201
           "Regular user denied"
           reg-user-token 401
           "Guest user denied"
-          guest-token 401)))))
+          guest-token 401
+          "No token provided"
+          nil 401)))))

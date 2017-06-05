@@ -444,8 +444,7 @@
    :extra-fields {
      :entry-id (:name service)     ; XXX pending changes from @ygliuvt
      :entry-title (:name service)  ; XXX pending changes from @ygliuvt
-     :service-name (:name service)
-     :measurement (:description service)}})
+     :service-name (:name service)}})
 
 (defn- fetch-service-concept
   "Fetches the latest version of a service concept service service-key."
