@@ -15,6 +15,12 @@
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.variable :as transmit-variable]))
 
+;; XXX Note that once the code in cmr.ingest.api.variables was changed to
+;;     generate an api response using cmr.ingest.api.core/generate-ingest-response
+;;     instead of a custom, private function, the assertion function below
+;;     no longer worked since it couldn't check the key values before they were
+;;     transformed by `generate-ingest-response`. If this isn't important, we
+;;     can delete this function as well as util/assert-convert-kebab-case.
 (defn assert-convert-kebab-case
   [data]
   (util/assert-convert-kebab-case [:concept-id :revision-id
@@ -65,8 +71,7 @@
   ([token variable options]
    (let [options (merge {:raw? true :token token} options)]
      (ingest-util/parse-map-response
-      (transmit-variable/create-variable (s/context) variable options)
-      assert-convert-kebab-case))))
+      (transmit-variable/create-variable (s/context) variable options)))))
 
 (defn update-variable
   "Updates a variable."
@@ -77,8 +82,7 @@
   ([token variable-name variable options]
    (let [options (merge {:raw? true :token token} options)]
      (ingest-util/parse-map-response
-      (transmit-variable/update-variable (s/context) variable-name variable options)
-      assert-convert-kebab-case))))
+      (transmit-variable/update-variable (s/context) variable-name variable options)))))
 
 (defn delete-variable
   "Deletes a variable"
@@ -87,8 +91,7 @@
   ([token variable-name options]
    (let [options (merge {:raw? true :token token} options)]
      (ingest-util/parse-map-response
-      (transmit-variable/delete-variable (s/context) variable-name options)
-      assert-convert-kebab-case))))
+      (transmit-variable/delete-variable (s/context) variable-name options)))))
 
 (defn- associate-variable
   "Associate a variable with collections by the JSON condition.
@@ -98,7 +101,7 @@
         response (transmit-variable/associate-variable
                   association-type (s/context) variable-name condition options)]
     (index/wait-until-indexed)
-    (ingest-util/parse-map-response response assert-convert-kebab-case)))
+    (ingest-util/parse-map-response response)))
 
 (defn associate-by-query
   "Associates a variable with collections found with a JSON query"
@@ -121,7 +124,7 @@
         response (transmit-variable/dissociate-variable
                   association-type (s/context) variable-name condition options)]
     (index/wait-until-indexed)
-    (ingest-util/parse-map-response response assert-convert-kebab-case)))
+    (ingest-util/parse-map-response response)))
 
 (defn dissociate-by-query
   "Dissociates a variable with collections found with a JSON query"

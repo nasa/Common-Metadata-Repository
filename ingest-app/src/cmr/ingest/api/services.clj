@@ -8,11 +8,11 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.ingest.api.core :refer [body->concept ingest-status-code]]
+   [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]))
 
 (defn- verify-service-modification-permission
-  "Verifies the current user has been granted permission to modify variables in
+  "Verifies the current user has been granted permission to modify services in
   ECHO ACLs."
   [context permission-type]
   (when-not (seq (acl/get-permitting-acls context
@@ -28,15 +28,6 @@
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn- api-response
-  "Creates a successful service response with the given data response"
-  ([data]
-   (api-response 200 data))
-  ([status-code data]
-   {:status status-code
-    :body (json/generate-string data)
-    :headers {"Content-Type" mt/json}}))
-
 (defn create-service
   "Processes a create service request.
 
@@ -50,9 +41,9 @@
   (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-service-content-type headers)
-  (let [result (ingest/create-service context body)
-        status-code (ingest-status-code result)]
-    (api-response status-code result)))
+  (api-core/generate-ingest-response
+   headers
+   (ingest/create-service context body)))
 
 (defn update-service
   "Processes a request to update a service."
@@ -60,4 +51,6 @@
   (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-service-content-type headers)
-  (api-response (ingest/update-service context service-key body)))
+  (api-core/generate-ingest-response
+   headers
+   (ingest/update-service context service-key body)))

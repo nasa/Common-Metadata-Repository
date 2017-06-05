@@ -2,6 +2,7 @@
   "Utility functions that might be useful throughout the CMR."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
    [clojure.java.io :as io]
    [clojure.set :as set]
@@ -886,3 +887,7 @@
 (defmethod assert-convert-kebab-case clojure.lang.Sequential
   [check-keys concept-maps]
   (map (partial assert-convert-kebab-case check-keys) concept-maps))
+
+(defmethod assert-convert-kebab-case java.lang.String
+  [check-keys concept-map]
+  (assert-convert-kebab-case check-keys (json/parse-string concept-map)))
