@@ -11,8 +11,8 @@
 
 (use-fixtures :each (ingest-util/reset-fixture))
 
-(deftest variable-ingest-test
-  (testing "ingest of a new concept"
+(deftest create-variable-ingest-test
+  (testing "ingest a new variable"
     (let [;; Groups
           update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
           ;; Tokens
@@ -33,8 +33,8 @@
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))))
 
-(deftest variable-ingest-permissions-test
-  (testing "ingest permissions"
+(deftest create-variable-ingest-permissions-test
+  (testing "ingest create variable permissions"
     (let [;; Groups
           guest-group-id (e/get-or-create-group
                           (s/context) "umm-var-guid1")
@@ -80,7 +80,7 @@
                           update-grant-id
                           update-group-id
                           (ingest-util/get-ingest-update-acls update-token))))
-      (testing "ingest variable creation permissions"
+      (testing "create responses"
         (are3 [token expected]
           (let [response (variable-util/create-variable token variable)]
             (is (= expected (:status response))))
@@ -89,4 +89,6 @@
           "Regular user denied"
           reg-user-token 401
           "Guest user denied"
-          guest-token 401)))))
+          guest-token 401
+          "No token provided"
+          nil 401)))))

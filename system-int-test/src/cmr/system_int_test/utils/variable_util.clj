@@ -23,10 +23,11 @@
 ;;     can delete this function as well as util/assert-convert-kebab-case.
 (defn assert-convert-kebab-case
   [data]
-  (util/assert-convert-kebab-case [:concept-id :revision-id
-                                   :variable-name :originator-id
-                                   :variable-association :associated-item]
-                                  data))
+  (ingest-util/assert-convert-kebab-case
+   [:concept-id :revision-id
+    :variable-name :originator-id
+    :variable-association :associated-item]
+   data))
 
 (defn grant-all-variable-fixture
   "A test fixture that grants all users the ability to create and modify variables."
@@ -172,7 +173,7 @@
   [variable user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= {:concept-type :variable
-            :native-id (:variable-name variable)
+            :native-id (string/lower-case (:variable-name variable))
             :provider-id "CMR"
             :format mt/edn
             :metadata (pr-str variable)

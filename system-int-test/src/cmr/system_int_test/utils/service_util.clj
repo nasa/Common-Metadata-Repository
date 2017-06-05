@@ -4,7 +4,6 @@
    [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
@@ -19,9 +18,10 @@
   [data]
   ; XXX This can be uncommented once service support is added to the metadata db
   ;     See CMR-4172
-  ; (util/assert-convert-kebab-case [:concept-id :revision-id
-  ;                                  :service-name :originator-id]
-  ;                                 data))
+  ; (ingest-util/assert-convert-kebab-case
+  ;  [:concept-id :revision-id
+  ;   :service-name :originator-id]
+  ;  data))
   true)
 
 (defn grant-all-service-fixture
@@ -47,7 +47,7 @@
   ([index attrs]
    (merge
     sample-service
-    {:Name (str "Name" index)
+    {:Name (str "name" index)
      :Version (str "V" index)
      :Description (str "UMM-S description " index)}
     attrs)))
@@ -64,13 +64,13 @@
 (defn update-service
   "Updates a service."
   ([token service]
-   (update-service token (:service-name service) service nil))
-  ([token service-name service]
-   (update-service token service-name service nil))
-  ([token service-name service options]
+   (update-service token (:service-id service) service nil))
+  ([token service-id service]
+   (update-service token service-id service nil))
+  ([token service-id service options]
    (let [options (merge {:raw? true :token token} options)]
      (ingest-util/parse-map-response
-      (transmit-service/update-service (s/context) service-name service options)))))
+      (transmit-service/update-service (s/context) service-id service options)))))
 
 (defn save-service
   "A helper function for creating or updating services for search tests.
@@ -98,7 +98,7 @@
   [service user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= {:concept-type :service
-            :native-id (:service-name service)
+            :native-id (string/lower-case (:service-name service))
             :provider-id "CMR"
             :format mt/edn
             :metadata (pr-str service)

@@ -871,23 +871,3 @@
   ([data fun]
     (fun data)
     (kebab-case-data data)))
-
-(defmulti assert-convert-kebab-case
-  "For use in asserting that the field names in the map returned by the ingest
-  app do not have dashes."
-  (fn [_ x] (type x)))
-
-(defmethod assert-convert-kebab-case clojure.lang.IPersistentMap
-  [check-keys concept-map]
-  (->> check-keys
-       (select-keys concept-map)
-       (empty?)
-       (assert)))
-
-(defmethod assert-convert-kebab-case clojure.lang.Sequential
-  [check-keys concept-maps]
-  (map (partial assert-convert-kebab-case check-keys) concept-maps))
-
-(defmethod assert-convert-kebab-case java.lang.String
-  [check-keys concept-map]
-  (assert-convert-kebab-case check-keys (json/parse-string concept-map)))
