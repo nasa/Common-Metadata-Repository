@@ -13,12 +13,10 @@
   - Convert query results into requested format"
   (:require
    [cheshire.core :as json]
-   [clj-time.format :as time-format]
    [clojure.set :as set]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.parameter-validation :as common-param-validation]
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
@@ -27,7 +25,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
-   [cmr.indexer.data.concepts.granule :as granule]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.provider-holdings :as ph]
@@ -269,57 +266,33 @@
 (defn- get-new-granules
   "Finds granules that were added after a given date. Supports CMR Harvesting."
   [context created-at]
-  (if-let [created-at (time-format/parse created-at)]
+  (when-let [created-at (time-format/parse created-at)]
     (let [query (qm/query {:concept-type :granule
                            :condition (qm/date-range-condition
                                        :created-at created-at nil)
                            :page-size :unlimited
                            :result-format :query-specified
-                           :result-fields [:entry-title :provider-id :collection-concept-id]})
+                           :result-fields [:collection-concept-id]})
           new-granules (qe/execute-query context query)]
-     (:items new-granules))
-    nil))
-
-(defn- get-highest-visible-revisions
-  "Returns the query and the highest visible collection revisions search result of the given
-   collection concept ids in the given result format."
-  [context coll-concept-ids result-format]
-  (when (seq coll-concept-ids)
-    ;; find all collection revisions, then filter out the highest revisions
-    ;; and replace the hits and items in results with those of the highest revisions.
-    (let [condition (gc/and-conds
-                     [(qm/string-conditions :concept-id coll-concept-ids true)
-                      (qm/boolean-condition :deleted false)])
-          query (qm/query {:concept-type :collection
-                           :condition condition
-                           :all-revisions? true
-                           :page-size :unlimited
-                           :result-format result-format})
-          results (qe/execute-query context query)
-          highest-coll-revisions (u/map-values
-                                  #(apply max (map :revision-id %))
-                                  (group-by :concept-id (:items results)))
-          highest-revisions (filter
-                             (fn [coll]
-                               ((set highest-coll-revisions)
-                                [(:concept-id coll) (:revision-id coll)]))
-                             (:items results))]
-      (-> results
-          (assoc :items highest-revisions)
-          (assoc :hits (count highest-revisions))))))
+     (:items new-granules))))
 
 (defn granules->parent-collection-refs
   "Get desired parent collections and marshall them into collection refs.
    Supports CMR Harvesting."
   [context granules result-format]
   (when-let [parent-collection-ids (not-empty (remove nil? (map :collection-concept-id granules)))]
-   (get-highest-visible-revisions context (distinct parent-collection-ids) result-format)))
+    (let [query (qm/query {:concept-type :collection
+                           :condition (qm/string-conditions
+                                        :concept-id (map :collection-concept-id granules))
+                           :page-size :unlimited
+                           :result-format :query-specified})
+          collections-with-new-granules (qe/execute-query context query)]
+      (:items collections-with-new-granules))))
 
-(defn get-collections-with-new-granules
+(defn find-collections-with-new-granules
   "Returns refs to collections with granules added after a given date.
    Supports CMR Harvesting."
   [context params]
-  (pv/validate-granule-added-after-search-params params)
   (let [start-time (System/currentTimeMillis)
         result-format (:result-format params)
         granule-creation-date (:created-at params)
@@ -414,6 +387,34 @@
                            :result-fields []})
           results (qe/execute-query context query)]
       (map :concept-id (:items results)))))
+
+(defn- get-highest-visible-revisions
+  "Returns the query and the highest visible collection revisions search result of the given
+   collection concept ids in the given result format."
+  [context coll-concept-ids result-format]
+  (when (seq coll-concept-ids)
+    ;; find all collection revisions, then filter out the highest revisions
+    ;; and replace the hits and items in results with those of the highest revisions.
+    (let [condition (gc/and-conds
+                     [(qm/string-conditions :concept-id coll-concept-ids true)
+                      (qm/boolean-condition :deleted false)])
+          query (qm/query {:concept-type :collection
+                           :condition condition
+                           :all-revisions? true
+                           :page-size :unlimited
+                           :result-format result-format})
+          results (qe/execute-query context query)
+          highest-coll-revisions (u/map-values
+                                  #(apply max (map :revision-id %))
+                                  (group-by :concept-id (:items results)))
+          highest-revisions (filter
+                             (fn [coll]
+                               ((set highest-coll-revisions)
+                                [(:concept-id coll) (:revision-id coll)]))
+                             (:items results))]
+      (-> results
+          (assoc :items highest-revisions)
+          (assoc :hits (count highest-revisions))))))
 
 (defn get-deleted-collections
   "Executes elasticsearch searches to find collections that are deleted.

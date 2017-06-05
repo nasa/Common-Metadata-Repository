@@ -110,9 +110,10 @@
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
    :created-at cpv/and-option
+   :granule-created-at cpv/and-option
    :highlights highlights-option
 
-   ;; Tag related parameters 
+   ;; Tag related parameters
    :tag-key cpv/pattern-option
    :tag-data cpv/pattern-option
    :tag-originator-id cpv/pattern-option
@@ -294,7 +295,7 @@
 (defn created-at-validation
   [concept-type params]
   "Validates that created-at parameter contains valid datetime strings."
-  (when-let [created-at (:created-at params)]
+  (when-let [created-at (or (:granule-created-at params)(:created-at params))]
     (let [created-at (if (sequential? created-at)
                       created-at
                       [created-at])]
@@ -694,9 +695,6 @@
     :revision_date
     :result-format})
 
-(def ^:private valid-collections-with-new-granules-search-params
-  #{:created-at :created_at :result-format :result_format})
-
 (defn- filter-unrecognized-parameters
   "Given a set of parameters and a map of valid parameters, determine if the given
    parameters are supported."
@@ -708,11 +706,6 @@
   "Validates that no invalid parameters were supplied to deleted collections search"
   [params]
   (filter-unrecognized-parameters params valid-deleted-collections-search-params))
-
-(defn- unrecognized-granule-created-params-validation
-  "Ensures that no unrecognized parameters are given to the query service"
-  [params]
-  (filter-unrecognized-parameters params valid-collections-with-new-granules-search-params))
 
 (defn- deleted-colls-result-format-validation
   "Validates that the only result format support by deleted collections search is :xml"
@@ -733,10 +726,6 @@
   [revision-date]
   (validate-single-date-search revision-date "revision-date"))
 
-(defn- validate-created-at-date-string
-  [created-at]
-  (validate-single-date-search created-at "has-granules-added-after"))
-
 (defn- validate-date-search-as-singular
   "Ensure that only one date was provided to perform the search."
   [date param-name]
@@ -753,35 +742,18 @@
   [params]
   (when-let [revision-date (or (:revision-date params)
                                (:revision_date params))]
-    (validate-date-search-as-singular revision-date "revision-date")))
-
-(defn- granule-created-at-date-validation
-  [params]
-  (when-let [created-after (or (:created-at params)
-                               (:created_at params))]
-    (concat (validate-date-search-as-singular created-after "datetime")
-            (cpv/validate-date-time "has_granules_added_after" created-after))))
-
-(defn- validate-parameters-against-list-of-validations
-  [parameters validations]
-  (let [errors (mapcat #(% parameters) validations)]
-    (when (seq errors)
-      (errors/throw-service-errors :bad-request errors))))
-
-(defn validate-granule-added-after-search-params
-  "Validates query parameters padded in with granules added after search.
-   Failures result in thrown exceptions."
-  [params]
-  (validate-parameters-against-list-of-validations params
-                                                   [unrecognized-granule-created-params-validation
-                                                    granule-created-at-date-validation
-                                                    deleted-colls-result-format-validation]))
+    (if (sequential? revision-date)
+      (if (> (count revision-date) 1)
+        [(format "Only one revision date is allowed, but %s were provided." (count revision-date))]
+        (validate-deleted-colls-revision-date-str (first revision-date)))
+      (validate-deleted-colls-revision-date-str revision-date))))
 
 (defn validate-deleted-collections-params
   "Validates the query parameters passed in with deleted collections search.
    Throws exceptions to send to the user if a validation fails."
   [params]
-  (validate-parameters-against-list-of-validations params
-                                                   [unrecognized-deleted-colls-params-validation
-                                                    deleted-colls-result-format-validation
-                                                    deleted-colls-revision-date-validation]))
+  (let [errors (mapcat #(% params) [unrecognized-deleted-colls-params-validation
+                                        deleted-colls-result-format-validation
+                                        deleted-colls-revision-date-validation])]
+    (when (seq errors)
+      (errors/throw-service-errors :bad-request errors))))

@@ -110,6 +110,13 @@
 (def find-by-concept-id-concept-types
   #{:collection :granule})
 
+(def multi-part-query-params
+  "Parameters that signify the need to search collections with data taken from
+   a granule search.
+
+  This could be generalized to support parameters that require multiple queries"
+  [:has-granules-created-at])
+
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
   [concept-type-w-extension]
@@ -204,18 +211,6 @@
                      (update :scroll-id (constantly short-scroll-id)))]
     (common-routes/search-response response)))
 
-(defn- get-collections-with-new-granules
-  "Invokes query service to find collections with granules newly added after a given date.
-   CMR Harvesting route."
-  [ctx path-w-extension params headers]
-  (let [params (process-params params path-w-extension headers mt/xml)]
-    (info (format "Searching for collections with new granules from client %s in format %s with params %s."
-                  (:client-id ctx)
-                  (rfh/printable-result-format (:result-format params))
-                  (pr-str params)))
-    (search-response
-     (query-svc/get-collections-with-new-granules ctx params))))
-
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
   [ctx path-w-extension params headers json-query]
@@ -243,13 +238,46 @@
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (search-response ctx results)))
 
+(defn- find-granule-parent-collections
+  "Invokes query service to find collections based on data found in a granule search."
+  [ctx path-w-extension params headers body]
+  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+        ctx (assoc ctx :query-string body)
+        params (process-params params path-w-extension headers mt/xml)
+        result-format (:result-format params)
+        _ (info (format "Searching for %ss from client %s in format %s with params %s."
+                        (name concept-type) (:client-id ctx)
+                        (rfh/printable-result-format result-format) (pr-str params)))
+        search-params (lp/process-legacy-psa params)
+        results (query-svc/find-collections-with-new-granules ctx concept-type search-params)]
+    (search-response results)))
+
+(defn- multi-part-query?
+  "Return true if parameters match any from the list of `multi-part-query-params`
+   defined above. Supports CMR Harvesting."
+  [search-parameters]
+  (some true?
+        (map (fn [multi-part-query-parameter]
+               (contains? multi-part-query-parameter search-parameters)
+               multi-part-query-params))))
+
 (defn- find-concepts
-  "Invokes query service to find results and returns the response"
+  "Invokes query service to find results and returns the response.
+
+  This function supports several approaches/cases/whatevs for obtaining concept data:
+  * By JSON query
+  * By parameter string and URL parameters
+  * Collections from Granules - due to the fact that ES doesn't suport joins in the way
+    that we need, we have to make two queires here to support CMR Harvesting. This can
+    later be generalized easily, should the need arise."
   [ctx path-w-extension params headers body]
   (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
+
+      (multi-part-query? params)
+      (find-granule-parent-collections ctx path-w-extension params headers body)
 
       (or (nil? content-type-header) (= mt/form-url-encoded content-type-header))
       (find-concepts-by-parameters ctx path-w-extension params headers body)
@@ -410,12 +438,6 @@
           (GET "/"
                {params :params headers :headers ctx :request-context}
                (get-deleted-collections ctx path-w-extension params headers)))
-
-        (context ["/:path-w-extension" :path-w-extension #"(?:has-granules-added-after)(?:\..+)?"] [path-w-extension]
-          (OPTIONS "/" req common-routes/options-response)
-          (GET "/"
-               {params :params headers :headers ctx :request-context}
-               (get-collections-with-new-granules ctx path-w-extension params headers)))
 
         ;; AQL search - xml
         (context ["/concepts/:path-w-extension" :path-w-extension #"(?:search)(?:\..+)?"] [path-w-extension]
