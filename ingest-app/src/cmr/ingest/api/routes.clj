@@ -112,23 +112,27 @@
                [task-id :as request]
                (bulk/get-provider-task-status provider-id task-id request)))))
     ;; Variables ingest routes
-    (context "/variables" []
-      (POST "/"
-            {:keys [request-context headers body]}
-            (variables/create-variable request-context headers body))
-      (PUT "/:variable-id"
-           [variable-id :as {:keys [request-context headers body]}]
-           (variables/update-variable
-            request-context headers body variable-id)))
+    (api-core/set-default-error-format
+      :xml
+      (context "/variables" []
+        (POST "/"
+              {:keys [request-context headers body]}
+              (variables/create-variable request-context headers body))
+        (PUT "/:variable-id"
+             [variable-id :as {:keys [request-context headers body]}]
+             (variables/update-variable
+              request-context headers body variable-id))))
     ;; Services ingest routes
-    (context "/services" []
-      (POST "/"
-            {:keys [request-context headers body]}
-            (services/create-service request-context headers body))
-      (PUT "/:service-id"
-           [service-id :as {:keys [request-context headers body]}]
-           (services/update-service
-            request-context headers body service-id)))))
+    (api-core/set-default-error-format
+      :xml
+      (context "/services" []
+        (POST "/"
+              {:keys [request-context headers body]}
+              (services/create-service request-context headers body))
+        (PUT "/:service-id"
+             [service-id :as {:keys [request-context headers body]}]
+             (services/update-service
+              request-context headers body service-id))))))
 
 (defn build-routes [system]
   (routes
