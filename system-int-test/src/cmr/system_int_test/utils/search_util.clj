@@ -11,6 +11,7 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [clojure.walk]
+   [cmr.common-app.api.routes :as routes]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.concepts :as cs]
    [cmr.common.mime-types :as mime-types]
@@ -387,8 +388,10 @@
    (get-search-failure-xml-data
      (let [format-mime-type (mime-types/format->mime-type format-key)
            response (find-concepts-in-format format-mime-type concept-type params options)
+           scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
            body (:body response)
            parsed (fx/parse-str body)
+           hits (cx/long-at-path parsed [:hits])
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                        (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
            items (map (fn [result metadata]
@@ -413,7 +416,9 @@
                       metadatas)
            facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]
        (util/remove-nil-keys {:items items
-                              :facets facets})))))
+                              :facets facets
+                              :hits hits
+                              :scroll-id scroll-id})))))
 
 (defn find-metadata-tags
   "Search metadata, parse out the collection concept id to tags mapping from the search response
@@ -451,6 +456,7 @@
   (let [parsed (-> response :body fx/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
+        scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
                       {:id (cx/string-at-path ref-elem [:id])
@@ -467,6 +473,7 @@
     (util/remove-nil-keys
       {:refs refs
        :hits hits
+       :scroll-id scroll-id
        :took took
        :facets facets})))
 

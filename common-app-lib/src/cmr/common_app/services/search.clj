@@ -1,15 +1,40 @@
 (ns cmr.common-app.services.search
   "This contains common code for implementing search capabilities in a CMR application"
-  (:require [cmr.common.util :as u]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-validation :as qv]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.common-app.services.search.query-model :as qm]
-            ;; Must be required to be available
-            [cmr.common-app.services.search.validators.numeric-range]
-            [cmr.common-app.services.search.validators.date-range]))
+  (:require 
+   [cmr.common.util :as u]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common-app.cache.cubby-cache :as cubby-cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common-app.services.search.query-validation :as qv]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]
+   ;; Must be required to be available
+   [cmr.common-app.services.search.validators.numeric-range]
+   [cmr.common-app.services.search.validators.date-range]))
 
+(def scroll-id-cache-key
+  "Key for the scroll-id cache in the system cache map."
+  "scroll-id-cache")
+
+(defconfig scroll-id-cache-ttl
+  "Time in milliseconds scroll-ids can stay in the cache before getting evicted."
+  {:type Long
+   ;; 24 hours
+   :default (* 24 3600 1000)})
+
+(defn create-scroll-id-cache
+  "Returns a single-threaded cache wrapping a fallback cache that uses a consistent cache backed by
+  cubby. This cache is used to store a map of cmr scroll-ids to ES scroll-ids in a consistent way 
+  acrosss all instances of search."
+  []
+  (stl-cache/create-single-thread-lookup-cache
+   (fallback-cache/create-fallback-cache
+    (mem-cache/create-in-memory-cache :ttl {} {:time-to-live (scroll-id-cache-ttl)})
+    (cubby-cache/create-cubby-cache))))
 
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
@@ -42,4 +67,5 @@
 
     {:results result-str
      :hits (:hits results)
-     :result-format (:result-format query)}))
+     :result-format (:result-format query)
+     :scroll-id (:scroll-id results)}))

@@ -137,7 +137,6 @@
          lp/replace-parameter-aliases
          (lp/process-legacy-multi-params-conditions concept-type)
          (lp/replace-science-keywords-or-option concept-type)
-
          (psn/replace-provider-short-names context)
          (pv/validate-parameters concept-type)
          (common-params/parse-parameter-query
