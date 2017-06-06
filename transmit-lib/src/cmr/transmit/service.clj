@@ -18,5 +18,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
-(h/defcreator create-service :ingest services-url)
-(h/defupdater update-service :ingest service-url)
+(h/defcreator create-service :ingest services-url {:accept :xml})
+(h/defupdater update-service :ingest service-url {:accept :xml})

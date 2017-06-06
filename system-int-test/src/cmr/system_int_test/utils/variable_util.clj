@@ -15,20 +15,6 @@
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.variable :as transmit-variable]))
 
-;; XXX Note that once the code in cmr.ingest.api.variables was changed to
-;;     generate an api response using cmr.ingest.api.core/generate-ingest-response
-;;     instead of a custom, private function, the assertion function below
-;;     no longer worked since it couldn't check the key values before they were
-;;     transformed by `generate-ingest-response`. If this isn't important, we
-;;     can delete this function as well as util/assert-convert-kebab-case.
-(defn assert-convert-kebab-case
-  [data]
-  (ingest-util/assert-convert-kebab-case
-   [:concept-id :revision-id
-    :variable-name :originator-id
-    :variable-association :associated-item]
-   data))
-
 (defn grant-all-variable-fixture
   "A test fixture that grants all users the ability to create and modify variables."
   [f]

@@ -14,16 +14,6 @@
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.service :as transmit-service]))
 
-(defn assert-convert-kebab-case
-  [data]
-  ; XXX This can be uncommented once service support is added to the metadata db
-  ;     See CMR-4172
-  ; (ingest-util/assert-convert-kebab-case
-  ;  [:concept-id :revision-id
-  ;   :service-name :originator-id]
-  ;  data))
-  true)
-
 (defn grant-all-service-fixture
   "A test fixture that grants all users the ability to create and modify
   services."

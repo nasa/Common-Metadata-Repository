@@ -28,17 +28,20 @@
   (str (variable-associations-by-concept-ids-url conn variable-name) "/by_query"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Request functions
+;; Ingest Request functions - uses XML
 
-(h/defcreator create-variable :ingest variables-url)
-(h/defupdater update-variable :ingest variable-url)
-(h/defdestroyer delete-variable :ingest variable-url)
+(h/defcreator create-variable :ingest variables-url {:accept :xml})
+(h/defupdater update-variable :ingest variable-url {:accept :xml})
+(h/defdestroyer delete-variable :ingest variable-url {:accept :xml})
 
 (defmulti variable-associations-url
   "Returns the url to associate a variable based on the association type.
   Valid association types are :query and :concept-ids."
   (fn [context variable-name association-type]
     association-type))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Search Request functions - uses JSON
 
 (defmethod variable-associations-url :query
   [context variable-name _]
