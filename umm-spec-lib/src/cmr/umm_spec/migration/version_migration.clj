@@ -157,6 +157,11 @@
       (update-in [:ContactPersons] #(mapv ci/contact-info-to-array %))
       (update-in [:ContactGroups] #(mapv ci/contact-info-to-array %))))
 
+(defmethod migrate-umm-version [:collection "1.6" "1.7"]
+  [context c & _]
+  ;; migration removed CMR-4718
+  c)
+
 (defmethod migrate-umm-version [:collection "1.7" "1.6"]
   [context c & _]
   ;; Don't need to migrate ISOTopicCategories

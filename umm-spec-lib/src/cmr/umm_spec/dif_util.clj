@@ -262,7 +262,7 @@
    "UTILITIES/COMMUNICATION" "utilitiesCommunication"})
 
 (def dif-iso-topic-categories
-   (keys dif-iso-topic-category->umm-iso-topic-category))
+  (keys dif-iso-topic-category->umm-iso-topic-category))
 
 (defn umm-language->dif-language
   "Return DIF9/DIF10 dataset language for the given umm DataLanguage.

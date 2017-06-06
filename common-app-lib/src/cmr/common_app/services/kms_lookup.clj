@@ -36,9 +36,14 @@
    :iso-topic-categories [:short-name]})
 
 (defn- normalize-for-lookup
-  "Takes a map (either a UMM-C keyword or a KMS keyword) and a list of fields from the map which we
-  want to use for comparison. We return a map containing only the keys we are interested in and with
-  all values in lower case."
+  "Takes a map (either a UMM-C keyword or a KMS keyword) or string m,
+  and a list of fields from the map which we want to use for comparison.
+  When m is a map we return a map containing only the keys we are interested
+  in and with all values in lower case. When m is not a map, takes the first
+  field from fields-to-compare as key and returns map of the form:
+  {
+    field-to-compares m
+  }"
   [m fields-to-compare]
   (if (map? m)
     (->> (select-keys m fields-to-compare)
