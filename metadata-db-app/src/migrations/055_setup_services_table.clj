@@ -35,7 +35,9 @@
 
 (defn- create-services-indices
   []
+  ;; Supports queries to find service revisions that are deleted
   (h/sql "CREATE INDEX services_crdi ON METADATA_DB.cmr_services (concept_id, revision_id, deleted)")
+  ;; Supports queries to find services by service name
   (h/sql "CREATE INDEX services_vn ON METADATA_DB.cmr_services (service_name)"))
 
 (defn- create-services-sequence
