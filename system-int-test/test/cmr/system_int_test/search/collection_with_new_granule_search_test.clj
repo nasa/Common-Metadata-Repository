@@ -89,6 +89,11 @@
                          "collection"
                          "has-granules-created-at=2014-01-01T10:00:00Z")]
         (d/refs-match? [youngling-collection regular-collection] references)))
+    (testing "Granule search by created-at"
+      (let [references (search/find-concepts-with-param-string
+                         "granule"
+                         "created-at=2014-01-01T10:00:00Z,")]
+        (d/refs-match? [regular-granule young-granule] references)))
     (testing "Using unsupported or incorrect parameters in conjunction with multi-part-query-params"
       (are [params]
         (let [{:keys [status errors]} (search/find-concepts-with-param-string

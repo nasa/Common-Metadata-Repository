@@ -146,6 +146,7 @@
    :provider cpv/string-param-options
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
+   :created-at cpv/and-option
    :revision-date cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :tag
@@ -295,7 +296,7 @@
 (defn created-at-validation
   [concept-type params]
   "Validates that created-at parameter contains valid datetime strings."
-  (when-let [created-at (or (:granule-created-at params)(:created-at params))]
+  (when-let [created-at (:created-at params)]
     (let [created-at (if (sequential? created-at)
                       created-at
                       [created-at])]
@@ -570,6 +571,7 @@
    :granule (concat
               cpv/common-validations
               [temporal-format-validation
+               created-at-validation
                updated-since-validation
                revision-date-validation
                orbit-number-validation
