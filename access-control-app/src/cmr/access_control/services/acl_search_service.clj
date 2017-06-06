@@ -231,7 +231,8 @@
       (nf/parse-nested-condition :group-permission {:permission "create"} false false)
       (nf/parse-nested-condition :group-permission {:permission "read"} false false)
       (nf/parse-nested-condition :group-permission {:permission "update"} false false)
-      (nf/parse-nested-condition :group-permission {:permission "delete"} false false))
+      (nf/parse-nested-condition :group-permission {:permission "delete"} false false)
+      (nf/parse-nested-condition :group-permission {:permission "order"} false false))
      (cp/string-parameter->condition concept-type :permitted-group groups options))))
 
 (defmethod cp/parameter->condition :legacy-guid
