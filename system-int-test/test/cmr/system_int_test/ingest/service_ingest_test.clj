@@ -30,10 +30,16 @@
       (let [{:keys [status concept-id revision-id]} (service-util/create-service
                                                      update-token service-data)]
         (is (= 201 status))
-        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))
-        ;; XXX Once services are supported in the metadata-db we can do this
-        ;;     check - See CMR-4172
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (is (= (:name service-data)
+               (:name (mdb/get-concept concept-id revision-id))))
+        ;; XXX Once CMR-4172 (metdata-db services support) was added, we tried to
+        ;;     enable the following test; this required the work that we've since
+        ;;     put into ticket CMR-4193, which in turn is probably blocked by an
+        ;;     as-yet unfiled ticket for addressing what seems to be an ACL caching
+        ;;     issue. Once those two tickets are resolved, this test will be
+        ;;     enabled and should then pass.
         ; (service-util/assert-service-saved service-data
         ;                                    "umm-var-user1"
         ;                                    concept-id

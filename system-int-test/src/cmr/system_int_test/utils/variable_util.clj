@@ -153,35 +153,35 @@
      (assert (= 200 (:status response)) (pr-str condition))
      (assoc saved-variable :revision-id (:revision-id response)))))
 
+(defn expected-concept
+  "Create an expected concept given a service, its concept-id, a revision-id,
+  and a user-id."
+  [variable concept-id revision-id user-id]
+  {:concept-type :variable
+   :native-id (string/lower-case (or (:variable-name variable) ""))
+   :provider-id "CMR"
+   :format mt/edn
+   :metadata (pr-str variable)
+   :user-id user-id
+   :deleted false
+   :concept-id concept-id
+   :revision-id revision-id})
+
 (defn assert-variable-saved
   "Checks that a variable was persisted correctly in metadata db. The variable should already
    have originator id set correctly. The user-id indicates which user updated this revision."
   [variable user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= {:concept-type :variable
-            :native-id (string/lower-case (:variable-name variable))
-            :provider-id "CMR"
-            :format mt/edn
-            :metadata (pr-str variable)
-            :user-id user-id
-            :deleted false
-            :concept-id concept-id
-            :revision-id revision-id}
+    (is (= (expected-concept variable concept-id revision-id user-id)
            (dissoc concept :revision-date :transaction-id)))))
 
 (defn assert-variable-deleted
   "Checks that a variable tombstone was persisted correctly in metadata db."
   [variable user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= {:concept-type :variable
-            :native-id (:variable-name variable)
-            :provider-id "CMR"
-            :metadata ""
-            :format mt/edn
-            :user-id user-id
-            :deleted true
-            :concept-id concept-id
-            :revision-id revision-id}
+    (is (= (-> variable
+               (expected-concept concept-id revision-id user-id)
+               (assoc :metadata "" :deleted true))
            (dissoc concept :revision-date :transaction-id)))))
 
 (defn sort-expected-variables

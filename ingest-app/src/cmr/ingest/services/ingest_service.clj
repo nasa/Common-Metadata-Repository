@@ -432,7 +432,7 @@
   db."
   [service]
   {:concept-type :service
-   :native-id (:name service)
+   :native-id (:native-id service)
    :metadata (pr-str service)
    :user-id (:originator-id service)
    ;; The first version of a service should always be revision id 1. We
@@ -440,10 +440,7 @@
    ;; conflicts
    :revision-id 1
    :format mt/edn
-   :provider-id "CMR"              ; XXX pending changes from @ygliuvt
    :extra-fields {
-     :entry-id (:name service)     ; XXX pending changes from @ygliuvt
-     :entry-title (:name service)  ; XXX pending changes from @ygliuvt
      :service-name (:name service)}})
 
 (defn- fetch-service-concept
@@ -470,9 +467,9 @@
                  context
                  msg/token-required-for-service-modification)
         service (as-> service-json-str data
-                       (concept-json->concept data)
-                       (assoc data :originator-id user-id)
-                       (assoc data :native-id (:name data)))]
+                      (concept-json->concept data)
+                      (assoc data :originator-id user-id)
+                      (assoc data :native-id (string/lower-case (:name data))))]
     ;; Check if the service already exists
     (if-let [concept-id (mdb2/get-concept-id context
                                              :service

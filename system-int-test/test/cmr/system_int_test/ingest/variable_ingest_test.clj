@@ -22,16 +22,29 @@
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          variable (variable-util/make-variable)]
+          variable-data (variable-util/make-variable)]
       (is (e/permitted? update-token
                         update-grant-id
                         update-group-id
                         (ingest-util/get-ingest-update-acls update-token)))
       (let [{:keys [status concept-id revision-id]} (variable-util/create-variable
-                                                     update-token variable)]
+                                                     update-token variable-data)]
         (is (= 201 status))
+        (is (= 1 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= 1 revision-id))))))
+        (is (= (:name variable-data)
+               (:name (mdb/get-concept concept-id revision-id))))
+        ;; XXX Once CMR-4172 (metdata-db services support) was added, we tried to
+        ;;     enable the following test; this required the work that we've since
+        ;;     put into ticket CMR-4193, which in turn is probably blocked by an
+        ;;     as-yet unfiled ticket for addressing what seems to be an ACL caching
+        ;;     issue. Once those two tickets are resolved, this test will be
+        ;;     enabled and should then pass.
+        ; (variable-util/assert-variable-saved variable-data
+        ;                                      "umm-var-user1"
+        ;                                      concept-id
+        ;                                      revision-id)
+        ))))
 
 (deftest create-variable-ingest-permissions-test
   (testing "ingest create variable permissions"
@@ -66,7 +79,7 @@
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          variable (variable-util/make-variable)]
+          variable-data (variable-util/make-variable)]
       (testing "acl setup and grants for different users"
         (is (e/not-permitted? guest-token
                               guest-grant-id
@@ -82,7 +95,7 @@
                           (ingest-util/get-ingest-update-acls update-token))))
       (testing "create responses"
         (are3 [token expected]
-          (let [response (variable-util/create-variable token variable)]
+          (let [response (variable-util/create-variable token variable-data)]
             (is (= expected (:status response))))
           "System update permission allowed"
           update-token 201
