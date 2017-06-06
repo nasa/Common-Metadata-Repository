@@ -17,7 +17,9 @@
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
-   [cmr.transmit.connection :as transmit-conn]))
+   [cmr.transmit.connection :as transmit-conn])
+  (:import
+   (clojure.lang ExceptionInfo)))
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
@@ -95,7 +97,7 @@
   [context scroll-id]
   (try
     (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
-    (catch clojure.lang.ExceptionInfo e
+    (catch ExceptionInfo e
            (handle-es-exception e scroll-id))))
 
 (defn- do-send

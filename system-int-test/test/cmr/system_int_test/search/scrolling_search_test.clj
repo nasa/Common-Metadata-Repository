@@ -9,6 +9,7 @@
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
@@ -107,6 +108,18 @@
               (is (= (str "Scroll session [" scroll-id "] does not exist")
                     (first (:errors response))))))
           (es-config/set-elastic-scroll-timeout! timeout)))
+
+    (testing "disable scrolling"
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.common-app.services.search.parameter-validation/set-scrolling-enabled! false))
+      (let [response (search/find-refs :granule 
+                                       {:provider "PROV1" :scroll true}
+                                       {:allow-failure? true})]
+        (is (= 400 (:status response)))
+        (is (= "Scrolling is disabled."
+                (first (:errors response)))))
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.common-app.services.search.parameter-validation/set-scrolling-enabled! true)))
 
     (testing "invalid parameters"
       (are3 [query options status err-msg]

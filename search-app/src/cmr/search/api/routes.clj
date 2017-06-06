@@ -187,7 +187,7 @@
        (format "Scroll session [%s] does not exist" short-scroll-id)))))
 
 (defn- add-scroll-id-to-cache
-  "Adds the given ES croll-id to the cache and returns the generated key"
+  "Adds the given ES scroll-id to the cache and returns the generated key"
   [context scroll-id]
   (when scroll-id
     (let [short-scroll-id (str (hash scroll-id))

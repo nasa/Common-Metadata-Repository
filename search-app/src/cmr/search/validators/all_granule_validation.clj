@@ -58,8 +58,9 @@
 (defn no-all-granules-with-scroll
   "Validates that the query is not an all granules query if it is a scroll query."
   [query]
-  (when (and (all-granules-query? query) 
-             (:scroll query)
+  (when (and (:scroll query) 
+             (all-granules-query? query) 
+             
              ;; Subsequent calls to scroll look like all-granules queries since the query
              ;; is empty. Anything with a scroll-id is a subsequent scroll request, so we ignore 
              ;; those.
