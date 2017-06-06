@@ -239,27 +239,24 @@
     (search-response ctx results)))
 
 (defn- find-granule-parent-collections
-  "Invokes query service to find collections based on data found in a granule search."
+  "Invokes query service to find collections based on data found in a granule search,
+   then executes a search for collections with the found concept-ids. Supports CMR Harvesting."
   [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
-        result-format (:result-format params)
-        _ (info (format "Searching for %ss from client %s in format %s with params %s."
-                        (name concept-type) (:client-id ctx)
-                        (rfh/printable-result-format result-format) (pr-str params)))
-        search-params (lp/process-legacy-psa params)
-        results (query-svc/find-collections-with-new-granules ctx concept-type search-params)]
-    (search-response results)))
+        collections-with-new-granules (query-svc/new-granules->collection-ids ctx params)
+        search-params (-> params
+                          (assoc :echo-collection-id collections-with-new-granules)
+                          (dissoc :has-granules-created-at)
+                          lp/process-legacy-psa)]
+    (find-concepts-by-parameters ctx path-w-extension search-params headers body)))
 
 (defn- multi-part-query?
   "Return true if parameters match any from the list of `multi-part-query-params`
    defined above. Supports CMR Harvesting."
   [search-parameters]
-  (some true?
-        (map (fn [multi-part-query-parameter]
-               (contains? multi-part-query-parameter search-parameters)
-               multi-part-query-params))))
+  (some true? (map #(contains? search-parameters %) multi-part-query-params)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response.

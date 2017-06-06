@@ -13,6 +13,7 @@
   - Convert query results into requested format"
   (:require
    [cheshire.core :as json]
+   [clj-time.format :as time-format]
    [clojure.set :as set]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
@@ -263,59 +264,19 @@
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
 
-(defn- get-new-granules
-  "Finds granules that were added after a given date. Supports CMR Harvesting."
-  [context created-at]
-  (when-let [created-at (time-format/parse created-at)]
+(defn new-granules->collection-ids
+  "Finds granules that were added after a given date and return their parent collection ids.
+   Supports CMR Harvesting."
+  [context params]
+  (when-let [granule-created-at (time-format/parse (:has-granules-created-at params))]
     (let [query (qm/query {:concept-type :granule
                            :condition (qm/date-range-condition
-                                       :created-at created-at nil)
+                                       :created-at granule-created-at nil)
                            :page-size :unlimited
                            :result-format :query-specified
                            :result-fields [:collection-concept-id]})
-          new-granules (qe/execute-query context query)]
-     (:items new-granules))))
-
-(defn granules->parent-collection-refs
-  "Get desired parent collections and marshall them into collection refs.
-   Supports CMR Harvesting."
-  [context granules result-format]
-  (when-let [parent-collection-ids (not-empty (remove nil? (map :collection-concept-id granules)))]
-    (let [query (qm/query {:concept-type :collection
-                           :condition (qm/string-conditions
-                                        :concept-id (map :collection-concept-id granules))
-                           :page-size :unlimited
-                           :result-format :query-specified})
-          collections-with-new-granules (qe/execute-query context query)]
-      (:items collections-with-new-granules))))
-
-(defn find-collections-with-new-granules
-  "Returns refs to collections with granules added after a given date.
-   Supports CMR Harvesting."
-  [context params]
-  (let [start-time (System/currentTimeMillis)
-        result-format (:result-format params)
-        granule-creation-date (:created-at params)
-        new-granules (get-new-granules context granule-creation-date)
-        parent-collections (granules->parent-collection-refs context new-granules result-format)
-        ;; when results is nil, hits is 0
-        results (or parent-collections {:hits 0 :items []})
-        total-took (- (System/currentTimeMillis) start-time)
-        ;; construct the response results string
-        results-str (common-search/search-results->response
-                     context
-                     ;; pass in a fake query to get the desired response format
-                     (qm/query {:concept-type :collection
-                                :result-format result-format})
-                     (assoc results :took total-took))]
-    (info (format "Found %d collections with new granules in %d ms in format %s with params %s."
-                  (:hits results)
-                  total-took
-                  (rfh/printable-result-format result-format) (pr-str params)))
-
-    {:results results-str
-     :hits (:hits results)
-     :result-format result-format}))
+          new-granules (:items (qe/execute-query context query))]
+      (map :collection-concept-id new-granules))))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"

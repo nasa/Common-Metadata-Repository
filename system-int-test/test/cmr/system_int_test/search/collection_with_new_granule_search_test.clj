@@ -87,14 +87,13 @@
     (testing "Old and deleted collections should not be found."
       (let [references (search/find-concepts-with-param-string
                          "collection"
-                         "granules-created-at=2014-01-01T10:00:00Z")]
+                         "has-granules-created-at=2014-01-01T10:00:00Z")]
         (d/refs-match? [youngling-collection regular-collection] references)))
-    (testing "Using unsupported or incorrect parameters"
+    (testing "Using unsupported or incorrect parameters in conjunction with multi-part-query-params"
       (are [params]
         (let [{:keys [status errors]} (search/find-concepts-with-param-string
                                         "collection" params)]
           (= [400 [(format "Parameter [%s] was not recognized."
                            (first (clojure.string/split params #"=")))]]
              [status errors]))
-        "granules-created-at=2011-01-01T00:00:00Z"
-        "granules-created-at=2012-01-01T00:00:00Z"))))
+        "birthday=2011-01-01T00:00:00Z&has-granules-created-at=2014-01-01T10:00:00Z"))))
