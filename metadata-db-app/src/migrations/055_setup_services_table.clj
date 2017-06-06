@@ -13,7 +13,7 @@
   created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30),
-  service_name VARCHAR(20),
+  service_name VARCHAR(80),
   transaction_id INTEGER DEFAULT 0 NOT NULL")
 
 (def ^:private services-constraint-sql

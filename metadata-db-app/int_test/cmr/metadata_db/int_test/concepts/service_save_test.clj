@@ -3,7 +3,7 @@
   checking for proper error handling."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer (are2)]
+   [cmr.common.util :refer (are3)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]))
 
@@ -21,10 +21,9 @@
 (deftest save-service-test
   (c-spec/general-save-concept-test :service ["CMR"]))
 
-
 (deftest save-service-specific-test
   (testing "saving new services"
-    (are2 [service exp-status exp-errors]
+    (are3 [service exp-status exp-errors]
           (let [{:keys [status errors]} (util/save-concept service)]
             (is (= exp-status status))
             (is (= (set exp-errors) (set errors))))
