@@ -15,10 +15,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(def malformed-scroll-id
-  "A scroll-id that has a valid length, but was never issued by Elasticsearch"
-  (string/join (repeat 720 "a")))
-
 (deftest granule-scrolling
   (let [coll1 (data2-core/ingest-umm-spec-collection "PROV1" 
                                                      (data-umm-c/collection {:EntryTitle "E1"
@@ -120,6 +116,14 @@
           (is (= err-msg
                  (first (:errors response)))))
 
+        "Scroll queries cannot be all-granule queries"
+        {:scroll true}
+        {}
+        400
+        (str "The CMR does not allow querying across granules in all collections when scrolling." 
+             " You should limit your query using conditions that identify one or more collections "
+             "such as provider, concept_id, short_name, or entry_title.")
+
         "scroll parameter must be boolean"
         {:provider "PROV1" :scroll "foo"} 
         {}
@@ -138,7 +142,7 @@
         400
         "offset is not allowed with scrolling"
 
-        "unknown scroll-id"
+        "Unknown scroll-id"
         {:scroll true}
         {:headers {routes/SCROLL_ID_HEADER "foo"}}
         404

@@ -28,6 +28,11 @@
   {:type Long
    :default 1000000})
 
+(defconfig scrolling-enabled
+  "Indicates whether or not scroll queries are allowed."
+   {:type Boolean
+    :default true})
+
 (def basic-params-config
   "Defines a map of parameter validation types to a set of the parameters."
   {;; Parameters that must take a single value, never a vector of values.
@@ -161,6 +166,14 @@
     (catch NumberFormatException e
       ;; This should be handled separately by page-size and page-num validiation
       [])))
+
+(defn scroll-enabled-validation
+  "Validates that scrolling is enabled if the scroll parameter is true"
+  [concept-type params]
+  (when-let [scroll (:scroll params)]
+    (when (and (= "true" (string/lower-case scroll))
+               (not (scrolling-enabled)))
+      ["Scrolling is disabled."])))
 
 (defn scroll-validation 
   "Validates the the scroll parameter (if present) is boolean."
@@ -382,6 +395,7 @@
   [single-value-validation
    multiple-value-validation
    concept-id-validation
+   scroll-enabled-validation
    scroll-validation
    scroll-excludes-page-num-validation
    scroll-excludes-offset-validation
