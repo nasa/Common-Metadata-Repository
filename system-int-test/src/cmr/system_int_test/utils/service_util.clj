@@ -24,14 +24,13 @@
 (def sample-service
   {:Name "A name"
    :Description "A UMM-S description"
-   :Format ""
    :Type "Web Mapping Service"
    :Version "1.1.1"})
 
 (defn make-service
   "Makes a valid service based on the given input."
   ([]
-   (make-service nil))
+   (make-service {}))
   ([attrs]
    (merge sample-service attrs))
   ([index attrs]
@@ -81,21 +80,27 @@
       (assoc service :originator-id (tokens/get-user-id (s/context) token))
       service)))
 
+(defn expected-concept
+  "Create an expected concept given a service, its concept-id, a revision-id,
+  and a user-id."
+  [service concept-id revision-id user-id]
+  {:concept-type :service
+   :native-id (string/lower-case (or (:service-name service) ""))
+   :provider-id "CMR"
+   :format mt/edn
+   :metadata (pr-str service)
+   :user-id user-id
+   :deleted false
+   :concept-id concept-id
+   :revision-id revision-id})
+
 (defn assert-service-saved
   "Checks that a service was persisted correctly in metadata db. The service
   should already have originator id set correctly. The user-id indicates which
   user updated this revision."
   [service user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= {:concept-type :service
-            :native-id (string/lower-case (:service-name service))
-            :provider-id "CMR"
-            :format mt/edn
-            :metadata (pr-str service)
-            :user-id user-id
-            :deleted false
-            :concept-id concept-id
-            :revision-id revision-id}
+    (is (= (expected-concept service concept-id revision-id user-id)
            (dissoc concept :revision-date :transaction-id)))))
 
 (defn sort-expected-services
