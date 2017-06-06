@@ -89,6 +89,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
     * [Updated since](#g-updated-since)
     * [Revision date](#g-revision-date)
+    * [Created at](#g-created-at)
     * [Cloud cover](#g-cloud-cover)
     * [Platform](#g-platform)
     * [Instrument](#g-instrument)
@@ -1695,6 +1696,14 @@ This supports option `and`.
 Find granules which have revision date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
     curl "%CMR-ENDPOINT%/granules?revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
+
+#### <a name="g-created-at"></a> Find granules by created_at
+
+ This supports option `and`.
+
+ Find granules which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+   curl "%CMR-ENDPOINT%/granules?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="g-cloud-cover"></a> Find granules by cloud_cover
 
