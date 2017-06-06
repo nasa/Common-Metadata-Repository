@@ -41,17 +41,33 @@
   (format "Project short name [%s] and long name [%s] was not a valid keyword combination."
           (:ShortName project-map) (:LongName project-map)))
 
+(defn datacenter-not-matches-kms-keywords
+   "Error msg when DataCenter's ShortName, LongName are not in the KMS."
+   [datacenter]
+   (format "Data center short name [%s] and long name [%s] was not a valid keyword combination."
+          (:ShortName datacenter) (:LongName datacenter)))
+
+(defn directoryname-not-matches-kms-keywords
+   "Error msg when DirectoryName's ShortName is not in the KMS."
+   [directoryname]
+   (format "Directory name short name [%s] was not a valid keyword."
+          (:ShortName directoryname)))
+
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
   [:Category :Topic :Term :VariableLevel1 :VariableLevel2 :VariableLevel3])
 
-(defn- science-keyword->human-attrib-list
-  "Converts a science keyword into a human readable list of attributes with their values."
-  [sk]
+(def location-keyword-attribute-order
+  "The order of fields that should be displayed in the spatial keyword human readable list."
+  [:Category :Type :Subregion1 :Subregion2 :Subregion3])
+
+(defn- keyword->human-attrib-list
+  "Converts a keyword into a human readable list of attributes with their values."
+  [k attribute-order]
   (let [human-id-values (keep (fn [field]
-                                (when-let [value (get sk field)]
+                                (when-let [value (get k field)]
                                   (str (vc/humanize-field field) " [" value "]")))
-                              science-keyword-attribute-order)]
+                              attribute-order)]
     (case (count human-id-values)
       1 (first human-id-values)
       2 (str/join " and " human-id-values)
@@ -59,6 +75,36 @@
       (str (str/join ", " (drop-last human-id-values)) ", and " (last human-id-values)))))
 
 (defn science-keyword-not-matches-kms-keywords
+  "Create the invalid science keyword message"
   [sk]
   (format "Science keyword %s was not a valid keyword combination."
-          (science-keyword->human-attrib-list sk)))
+          (keyword->human-attrib-list sk science-keyword-attribute-order)))
+
+(defn location-keyword-not-matches-kms-keywords
+  "Create the invalid location keyword message"
+  [lk]
+  (format "Location keyword %s was not a valid keyword combination."
+          (keyword->human-attrib-list lk location-keyword-attribute-order)))
+
+(defn variable-already-exists
+  [variable concept-id]
+  (format "A variable with native-id [%s] already exists with concept id [%s]."
+          (:native-id variable) concept-id))
+
+(def token-required-for-variable-modification
+  "Variables cannot be modified without a valid user token.")
+
+(defn variable-deleted
+  [variable-key]
+  (format "Variable with variable-key [%s] was deleted." variable-key))
+
+(defn variable-does-not-exist
+  [variable-key]
+  (format "Variable could not be found with variable-key [%s]" variable-key))
+
+(defn variable-already-exists
+  [variable concept-id]
+  (format "A variable with variable-key [%s] already exists with concept id [%s]."
+          (:variable-key variable)
+          concept-id))
+

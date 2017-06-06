@@ -34,7 +34,10 @@
   [concept]
   (let [concept-type (cs/concept-id->type (:concept-id concept))]
     (if (= concept-type :collection)
-      (apply max (:transaction-id concept) (map :transaction-id (:tag-associations concept)))
+      (apply max
+             (:transaction-id concept)
+             (concat (map :transaction-id (:tag-associations concept))
+                     (map :transaction-id (:variable-associations concept))))
       (:revision-id concept))))
 
 (defn- get-elastic-id
@@ -175,10 +178,10 @@
   [context]
   (get-in context [:system :db :config]))
 
-(defn- parse-non-tombstone-tag-associations
+(defn parse-non-tombstone-associations
   "Returns the parsed tag associations that are not tombstones"
-  [context tag-associations]
-  (map #(cp/parse-concept context %) (filter #(not (:deleted %)) tag-associations)))
+  [context associations]
+  (map #(cp/parse-concept context %) (filter #(not (:deleted %)) associations)))
 
 (defn- non-tombstone-concept->bulk-elastic-doc
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
@@ -214,7 +217,9 @@
     (let [{:keys [concept-id revision-id]} concept
           type (name (concept->type concept))
           elastic-version (get-elastic-version concept)
-          concept (update concept :tag-associations #(parse-non-tombstone-tag-associations context %))
+          concept (-> concept
+                      (update :tag-associations #(parse-non-tombstone-associations context %))
+                      (update :variable-associations #(parse-non-tombstone-associations context %)))
           elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
           index-names (idx-set/get-concept-index-names
                        context concept-id revision-id options

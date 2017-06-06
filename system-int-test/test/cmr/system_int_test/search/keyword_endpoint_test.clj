@@ -436,6 +436,6 @@
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are: "
                           "platforms, instruments, projects, temporal_keywords, spatial_keywords, "
-                          "science_keywords, archive_centers, data_centers, location_keywords, "
+                          "science_keywords, concepts, archive_centers, data_centers, location_keywords, "
                           "and providers.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))

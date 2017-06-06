@@ -166,3 +166,8 @@
 (defn variables-only-system-level [provider-id]
   (format "Variable could not be associated with provider [%s]. Variables are system level entities."
           provider-id))
+
+(defn variable-associations-only-system-level [provider-id]
+  (format (str "Variable association could not be associated with provider [%s]. "
+               "Variable associations are system level entities.")
+          provider-id))

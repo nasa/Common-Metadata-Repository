@@ -17,9 +17,9 @@
                                                  {:provider-id "SMAL_PROV2" :small true}))
 
 (defn concepts-for-comparison
-  "Removes revision-date from concepts so they can be compared."
+  "Removes revision-date, transaction-id, and created-at from concepts so they can be compared."
   [concepts]
-  (map #(dissoc % :revision-date :transaction-id) concepts))
+  (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
 
 (deftest search-by-concept-revision-id-tuples
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -250,7 +250,13 @@
             [coll4-1 coll4-2 coll4-3] {:concept-id (:concept-id coll4-1)}
 
             "concept-id and version-id - all revisions"
-            [coll4-1] {:concept-id (:concept-id coll4-1) :version-id "v3"}))))
+            [coll4-1] {:concept-id (:concept-id coll4-1) :version-id "v3"}
+
+            "params containing a vector are ORed"
+            [coll1 coll3 coll4-3] {:entry-title ["et1" "et3"] :latest true}
+
+            "multiple ORed param lists are ANDed together"
+            [coll3] {:entry-title ["et1" "et3"] :short-name ["s3" "s5"] :latest true}))))
 
 (deftest get-expired-collections-concept-ids
   (let [time-now (tk/now)
@@ -417,32 +423,33 @@
             :errors ["Finding concept type [tag-association] with parameters [provider-id] is not supported."]}
            (util/find-concepts :tag-association {:provider-id "REG_PROV"})))))
 
-(deftest find-services
-  (let [serv1 (util/create-and-save-service "REG_PROV" 1 3)
-        serv2 (util/create-and-save-service "SMAL_PROV1" 2 2)]
-    (testing "find latest revsions"
-      (are2 [servs params]
-            (= (set servs)
-               (set (->> (util/find-latest-concepts :service params)
-                         :concepts
-                         (map #(dissoc % :revision-date :transaction-id)))))
-            "with metadata"
-            [serv1 serv2] {}
-
-            "exclude metadata"
-            [(dissoc serv1 :metadata) (dissoc serv2 :metadata)] {:exclude-metadata true}))
-
-    (testing "find all revisions"
-      (let [num-of-servs (-> (util/find-concepts :service {})
-                            :concepts
-                            count)]
-        (is (= 5 num-of-servs))))))
-
-(deftest find-services-with-invalid-parameters
-  (testing "extra parameters"
-    (is (= {:status 400
-            :errors ["Finding concept type [service] with parameters [short-name] is not supported."]}
-           (util/find-concepts :service {:short-name "SN1"})))))
+;; CMR-4173 should update
+; (deftest find-services
+;   (let [serv1 (util/create-and-save-service "REG_PROV" 1 3)
+;         serv2 (util/create-and-save-service "SMAL_PROV1" 2 2)]
+;     (testing "find latest revsions"
+;       (are2 [servs params]
+;             (= (set servs)
+;                (set (->> (util/find-latest-concepts :service params)
+;                          :concepts
+;                          (map #(dissoc % :revision-date :transaction-id)))))
+;             "with metadata"
+;             [serv1 serv2] {}
+;
+;             "exclude metadata"
+;             [(dissoc serv1 :metadata) (dissoc serv2 :metadata)] {:exclude-metadata true}))
+;
+;     (testing "find all revisions"
+;       (let [num-of-servs (-> (util/find-concepts :service {})
+;                             :concepts
+;                             count)]
+;         (is (= 5 num-of-servs))))))
+;
+; (deftest find-services-with-invalid-parameters
+;   (testing "extra parameters"
+;     (is (= {:status 400
+;             :errors ["Finding concept type [service] with parameters [short-name] is not supported."]}
+;            (util/find-concepts :service {:short-name "SN1"})))))
 
 (deftest find-groups
   (let [group1 (util/create-and-save-group "REG_PROV" 1 3)
@@ -472,7 +479,75 @@
               "everything"
               5 {})))))
 
-(comment
- (util/find-concepts
-  :access-group
-  {:provider-id "REG_PROV" :native-id "native-id 1"}))
+(deftest find-variables
+  (let [variable1 (util/create-and-save-variable 1 3)
+        variable2 (util/create-and-save-variable 2 2)]
+    (testing "find latest revsions"
+      (are2 [variables params]
+        (= (set variables)
+           (set (->> (util/find-latest-concepts :variable params)
+                     :concepts
+                     (map #(dissoc % :provider-id :revision-date :transaction-id :created-at)))))
+
+        "with metadata"
+        [variable1 variable2]
+        {}
+
+        "exclude metadata"
+        [(dissoc variable1 :metadata) (dissoc variable2 :metadata)]
+        {:exclude-metadata true}))
+
+    (testing "find all revisions"
+      (let [num-of-variables (-> (util/find-concepts :variable {})
+                                 :concepts
+                                 count)]
+        (is (= 5 num-of-variables))))))
+
+(deftest find-variables-with-invalid-parameters
+  (testing "extra parameters"
+    (is (= {:status 400
+            :errors ["Finding concept type [variable] with parameters [provider-id] is not supported."]}
+           (util/find-concepts :variable {:provider-id "REG_PROV"})))))
+
+(deftest find-variable-associations
+  (let [coll1 (save-collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
+                                                            :entry-title "et1"
+                                                            :version-id "v1"
+                                                            :short-name "s1"}})
+        coll2 (save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
+                                                            :entry-title "et2"
+                                                            :version-id "v1"
+                                                            :short-name "s2"}})
+        associated-variable (util/create-and-save-variable 1)
+        var-association1 (util/create-and-save-variable-association coll1 associated-variable 1 3)
+        var-association2 (util/create-and-save-variable-association coll2 associated-variable 2 2)]
+    (testing "find latest revisions"
+      (are2 [variable-associations params]
+        (= (set variable-associations)
+           (set (->> (util/find-latest-concepts :variable-association params)
+                     :concepts
+                     (map #(dissoc % :provider-id :revision-date :transaction-id)))))
+
+        "by associated-concept-id"
+        [var-association1]
+        {:associated-concept-id "C1200000000-REG_PROV"}
+
+        "with metadata"
+        [var-association1 var-association2]
+        {}
+
+        "exclude metadata"
+        [(dissoc var-association1 :metadata) (dissoc var-association2 :metadata)]
+        {:exclude-metadata true}))
+
+    (testing "find all revisions"
+      (let [num-of-variable-associations (-> (util/find-concepts :variable-association {})
+                                             :concepts
+                                             count)]
+        (is (= 5 num-of-variable-associations))))))
+
+(deftest find-variable-associations-with-invalid-parameters
+  (testing "extra parameters"
+    (is (= {:status 400
+            :errors ["Finding concept type [variable-association] with parameters [provider-id] is not supported."]}
+           (util/find-concepts :variable-association {:provider-id "REG_PROV"})))))

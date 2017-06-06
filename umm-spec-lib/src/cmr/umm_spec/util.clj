@@ -31,44 +31,44 @@
   85)
 
 (def valid-url-content-types-map
-  {"DistributionURL" {"GET SERVICE" ["DATACAST URL"
-                                     "EARTHDATA SEARCH"
-                                     "ECHO"
-                                     "EDG"
-                                     "EOSDIS DATA POOL"
-                                     "GDS"
-                                     "GIOVANNI"
-                                     "KML"
-                                     "LAADS"
-                                     "LANCE"
-                                     "LAS"
-                                     "MIRADOR"
-                                     "MODAPS"
-                                     "NOAA CLASS"
-                                     "ON-LINE ARCHIVE"
-                                     "REVERB"]
-                      "GET DATA" ["ACCESS MAP VIEWER"
-                                  "ACCESS MOBILE APP"
-                                  "ACCESS WEB SERVICE"
-                                  "DIF"
-                                  "MAP SERVICE"
-                                  "NOMADS"
-                                  "OPENDAP DATA"
-                                  "OPENDAP DATA (DODS)"
-                                  "OPENDAP DIRECTORY (DODS)"
-                                  "OpenSearch"
-                                  "SERF"
-                                  "SOFTWARE PACKAGE"
-                                  "SSW"
-                                  "SUBSETTER"
-                                  "THREDDS CATALOG"
-                                  "THREDDS DATA"
-                                  "THREDDS DIRECTORY"
-                                  "WEB COVERAGE SERVICE (WCS)"
-                                  "WEB FEATURE SERVICE (WFS)"
-                                  "WEB MAP FOR TIME SERIES"
-                                  "WEB MAP SERVICE (WMS)"
-                                  "WORKFLOW (SERVICE CHAIN)"]}
+  {"DistributionURL" {"GET DATA" ["DATACAST URL"
+                                  "EARTHDATA SEARCH"
+                                  "ECHO"
+                                  "EDG"
+                                  "EOSDIS DATA POOL"
+                                  "GDS"
+                                  "GIOVANNI"
+                                  "KML"
+                                  "LAADS"
+                                  "LANCE"
+                                  "LAS"
+                                  "MIRADOR"
+                                  "MODAPS"
+                                  "NOAA CLASS"
+                                  "ON-LINE ARCHIVE"
+                                  "REVERB"]
+                      "GET SERVICE" ["ACCESS MAP VIEWER"
+                                     "ACCESS MOBILE APP"
+                                     "ACCESS WEB SERVICE"
+                                     "DIF"
+                                     "MAP SERVICE"
+                                     "NOMADS"
+                                     "OPENDAP DATA"
+                                     "OPENDAP DATA (DODS)"
+                                     "OPENDAP DIRECTORY (DODS)"
+                                     "OpenSearch"
+                                     "SERF"
+                                     "SOFTWARE PACKAGE"
+                                     "SSW"
+                                     "SUBSETTER"
+                                     "THREDDS CATALOG"
+                                     "THREDDS DATA"
+                                     "THREDDS DIRECTORY"
+                                     "WEB COVERAGE SERVICE (WCS)"
+                                     "WEB FEATURE SERVICE (WFS)"
+                                     "WEB MAP FOR TIME SERIES"
+                                     "WEB MAP SERVICE (WMS)"
+                                     "WORKFLOW (SERVICE CHAIN)"]}
    "VisualizationURL" {"GET RELATED VISUALIZATION" ["GIBS" "GIOVANNI"]}
    "CollectionURL" {"DATA SET LANDING PAGE" []
                     "DOI" []
@@ -112,7 +112,7 @@
   (get-in valid-url-content-types-map [url-content-type type]))
 
 (defn type->url-content-type
-  "Get the URLContentType from the type" 
+  "Get the URLContentType from the type"
   [type]
   (first
     (for [url-content-type (keys valid-url-content-types-map)
@@ -358,11 +358,13 @@
   "Format the ISBN to make it compliant with UMM"
   [isbn]
   (when (some? isbn)
-    (-> isbn
-        str/trim
-        (str/replace "-" "")
-        (str/replace "ISBN" "")
-        (str/replace "ISSN" ""))))
+    (let [isbn (-> isbn
+                   str/trim
+                   (str/replace "-" "")
+                   (str/replace "ISBN" "")
+                   (str/replace "ISSN" ""))]
+      (when (not (str/blank? isbn))
+        isbn))))
 
 (defn truncate
   "Truncate the string if the sanitize option is enabled, otherwise return the original string"

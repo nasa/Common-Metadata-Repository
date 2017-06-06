@@ -8,9 +8,8 @@
    [cmr.mock-echo.client.mock-urs-client :as urs-client]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as config]
-   [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.echo.conversion :as c]))
-
+   [cmr.transmit.echo.conversion :as c]
+   [cmr.transmit.echo.tokens :as tokens]))
 
 (defn reset
   "Resets the mock echo."
@@ -180,28 +179,39 @@
 
         cmr-response (ac/create-acl context cmr-acl {:raw? true :token (config/echo-system-token)})
         ;;attempt to create ACL.  If it already exists, then get the existing ACL and update.
-        cmr-response
-              (if (= 409 (:status cmr-response))
-                (let [existing-concept-id (->> (get-in cmr-response [:body :errors])
-                                               first
-                                               (re-find #"\[([\w\d-]+)\]")
-                                               second)
-                      existing-concept (:body (ac/get-acl context existing-concept-id {:raw? true :token (config/echo-system-token)}))
-                      updated-concept (assoc existing-concept
-                                             :group_permissions (into (:group_permissions existing-concept) group-permissions))]
-                  (assoc
-                   (ac/update-acl context existing-concept-id updated-concept {:raw? true :token (config/echo-system-token)})
-                   :acl updated-concept))
-                cmr-response)
+        cmr-response (if (= 409 (:status cmr-response))
+                       (let [existing-concept-id (->> (get-in cmr-response [:body :errors])
+                                                      first
+                                                      (re-find #"\[([\w\d-]+)\]")
+                                                      second)
+                             existing-concept (:body
+                                               (ac/get-acl context
+                                                           existing-concept-id
+                                                           {:raw? true
+                                                            :token (config/echo-system-token)}))
+                             updated-concept (assoc existing-concept
+                                                    :group_permissions
+                                                    (into (:group_permissions existing-concept)
+                                                          group-permissions))]
+
+                         (assoc
+                          (ac/update-acl context
+                                         existing-concept-id
+                                         updated-concept
+                                         {:raw? true
+                                          :token (config/echo-system-token)})
+                          :acl updated-concept))
+                       cmr-response)
         group-permissions (or (get-in cmr-response [:acl :group_permissions]) group-permissions)
         echo-acl (-> {:aces (map #(clojure.set/rename-keys % {:user_type :user-type :group_id :group-guid}) group-permissions)
                       object-identity-type (clojure.set/rename-keys echo-identity {:provider_id :provider-guid  :collection_identifier :collection-identifier})
                       :id (get-in cmr-response [:body :concept_id])}
                      (set/rename-keys {:system_identity :system-object-identity :provider_identity :provider-object-identity :catalog_item_identity :catalog-item-identity}))
         ;; Dont save to ECHO if CMR create fails
-        echo-acl-response (if (< (:status cmr-response) 300) (echo-client/create-acl context echo-acl)
-                              (info "Failed to ingest ACL to access-control: " cmr-response))]
-      (get-in cmr-response [:body :concept_id])))
+        echo-acl-response (if (< (:status cmr-response) 300)
+                            (echo-client/create-acl context echo-acl)
+                            (info "Failed to ingest ACL to access-control: " cmr-response))]
+    (get-in cmr-response [:body :concept_id])))
 
 (defn ungrant
   "Removes the acl"
@@ -330,6 +340,17 @@
          :system_identity
          {:target tag-acl}))
 
+(defn grant-all-variable
+  "Creates an ACL in mock echo granting registered users ability to do all variable related operations"
+  [context]
+  (grant context
+         [{:permissions [:read :update]
+           :user_type :registered}
+          {:permissions [:read :update]
+           :user_type :guest}]
+         :system_identity
+         {:target ingest-management-acl}))
+
 (defn grant-create-read-groups
   "Creates an ACL in mock echo granting registered users and guests ability to create and read
   groups. If a provider id is provided this it permits it for the given provider. If not provided
@@ -376,8 +397,14 @@
   (grant context [(group-ace group-guid [:read])] :catalog_item_identity catalog-item-identity))
 
 (defn grant-group-admin
-  "Creates an ACL in mock echo granting users in the group the given permissions for system ingest
-  management.  If no permissions are provided the group is given read and update permission."
+  "Creates an ACL in mock echo granting users in the group the given
+  permissions for system ingest management. If no permissions are provided the
+  group is given read and update permission.
+
+  Note that not all services have all permissions. In some cases, a service
+  allows for concepts to be created, but doesn't actually have a :create
+  permission enabled. In such circumstances, the group getting admin
+  permissions will need to be granted :update."
   [context group-guid & permission-types]
   (grant context [(group-ace group-guid (or (seq (remove #{:delete} permission-types))
                                             [:read :update]))]
@@ -460,3 +487,22 @@
          :provider_identity
          {:target "GROUP"
           :provider_id provider-guid}))
+
+(defn grant-permitted?
+  "Check if a given grant id is in the list of provided ACLs."
+  [grant-id acls]
+  (contains?
+   (into
+    #{}
+    (map :guid acls))
+   grant-id))
+
+(defn group-permitted?
+  "Check if a given group id is in the list of provided ACLs."
+  [group-id acls]
+  (contains?
+   (reduce
+    #(into %1 (map :group-guid %2))
+    #{}
+    (map :aces acls))
+   group-id))

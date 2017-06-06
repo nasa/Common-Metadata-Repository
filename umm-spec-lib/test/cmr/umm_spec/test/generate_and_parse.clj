@@ -145,10 +145,6 @@
             actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
         (is (= expected actual))))))
 
-(deftest roundtrip-example-service-record
-  (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
-         (xml-round-trip :service :serf expected-conversion/example-service-record))))
-
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.
   (doseq [[format filename] collection-format-examples
@@ -173,13 +169,6 @@
           actual (convert-to-sets actual)]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
-
-(deftest roundtrip-generated-service-records
-  (checking "service round tripping" 100
-    [umm-record (gen/no-shrink umm-gen/umm-s-generator)
-     metadata-format (gen/elements tested-service-formats)]
-    (is (= (expected-conversion/convert umm-record metadata-format)
-           (xml-round-trip :service metadata-format umm-record)))))
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"

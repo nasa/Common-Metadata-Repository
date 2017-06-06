@@ -260,7 +260,7 @@
              (set (comparable-tag-associations expected-tas))]
             [status (set (comparable-tag-associations body))])))))
 
-(defn assert-tag-disassociation-response-ok?
+(defn assert-tag-dissociation-response-ok?
   "Assert the tag association response when status code is 200 is correct."
   [coll-tag-associations response]
   (assert-tag-association-response-ok? coll-tag-associations response false))

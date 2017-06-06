@@ -141,10 +141,10 @@
   [context params concept-type]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))]
-    (client/get request-url (merge
+    (client/post request-url (merge
                               (config/conn-params conn)
                               {:accept :json
-                               :query-params params
+                               :form-params params
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false}))))
 
@@ -174,18 +174,19 @@
         (format "%s search failed. status: %s body: %s"
                 (str/capitalize (name concept-type)) status body)))))
 
-(defn get-tag-associations-for-collection
-  "Get all the tag associations (including tombstones) for a collection."
-  [context concept]
+(defn get-associations-for-collection
+  "Get all the associations of the given type (including tombstones) for a collection.
+   assoc-type can be either :tag-association or :variable-association."
+  [context concept assoc-type]
   (let [params {:associated-concept-id (:concept-id concept)
                 :latest true}
-        tag-associations (find-concepts context params :tag-association)]
+        associations (find-concepts context params assoc-type)]
     ;; we only want the tag associations that have no associated revision id or one equal to the
     ;; revision of this collection
     (filter (fn [ta] (let [rev-id (get-in ta [:extra-fields :associated-revision-id])]
                        (or (nil? rev-id)
                            (= rev-id (:revision-id concept)))))
-            tag-associations)))
+            associations)))
 
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."

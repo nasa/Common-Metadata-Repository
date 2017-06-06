@@ -261,7 +261,7 @@
         (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
         (update-in-each [:AdditionalAttributes] expected-dif-additional-attribute)
         (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
-        (update :RelatedUrls conversion-util/expected-related-urls-for-dif-serf)
+        (update :RelatedUrls conversion-util/expected-related-urls-for-dif)
         ;;CMR-2716 SpatialKeywords are being replaced by LocationKeywords.
         (assoc :SpatialKeywords nil)
         (assoc :MetadataDates (expected-metadata-dates umm-coll))

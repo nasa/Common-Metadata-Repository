@@ -23,7 +23,8 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.common-app.test.side-api :as side]
    [cmr.ingest.config :as icfg])
-  (:import [java.lang.NumberFormatException]))
+  (:import
+   [java.lang.NumberFormatException]))
 
 (defn disable-ingest-writes
   "Use the enable/disable endpoint on ingest to disable writes."
@@ -46,6 +47,16 @@
                 :throw-exceptions false
                 :connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
+(defn- create-variable-through-url
+  "Create the variable by http POST on the given url"
+  [variable endpoint-url]
+  (client/post endpoint-url
+              {:body (json/generate-string variable)
+               :content-type :json
+               :throw-exceptions false
+               :connection-manager (s/conn-mgr)
+               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
@@ -646,7 +657,8 @@
   ([providers options]
    (fn [f]
      (dev-sys-util/reset)
-     (setup-providers providers options)
+     (when-not (empty? providers)
+      (setup-providers providers options))
      (f))))
 
 (defn clear-caches

@@ -15,11 +15,12 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
@@ -96,32 +97,6 @@
                            ;; expression, the first group of the matching string is returned.
                            (if (string? match) match (second match))))]
       (str/join matches))))
-
-(defn- parse-projects
-  "Returns the projects parsed from the given xml document."
-  [doc sanitize?]
-  (for [proj (select doc projects-xpath)]
-    (let [short-name (value-of proj iso-util/short-name-xpath)
-          long-name (value-of proj iso-util/long-name-xpath)
-          start-end-date (when-let [date (value-of proj "gmi:description/gco:CharacterString")]
-                           (str/split (str/trim date) #"\s+"))
-          ;; date is built as: StartDate: 2001:01:01T01:00:00Z EndDate: 2002:02:02T01:00:00Z
-          ;; One date can exist without the other.
-          start-date (when start-end-date
-                       (if (= "StartDate:" (get start-end-date 0))
-                         (get start-end-date 1)
-                         (get start-end-date 3)))
-          end-date (when start-end-date
-                     (if (= "EndDate:" (get start-end-date 0))
-                       (get start-end-date 1)
-                       (get start-end-date 3)))
-          campaigns (seq (map #(value-of % iso-util/campaign-xpath) (select proj "gmi:childOperation")))]
-      (util/remove-nil-keys
-        {:ShortName short-name
-         :LongName (su/truncate long-name su/PROJECT_LONGNAME_MAX sanitize?)
-         :StartDate start-date
-         :EndDate end-date
-         :Campaigns campaigns}))))
 
 (defn- temporal-ends-at-present?
   [temporal-el]
@@ -268,7 +243,7 @@
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
       :Distributions (dru/parse-distributions doc sanitize?)
       :Platforms (platform/parse-platforms doc "" sanitize?)
-      :Projects (parse-projects doc sanitize?)
+      :Projects (project/parse-projects doc projects-xpath sanitize?)
 
       :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
                                    :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"

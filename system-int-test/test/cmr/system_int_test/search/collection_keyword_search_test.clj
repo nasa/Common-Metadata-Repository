@@ -103,7 +103,8 @@
         personnel3 (data-umm-c/contact-person "Otto" "Octavious" "otto.octavious@noaa.gov")
         tdcs1 (data-umm-c/tiling-identification-system "XYZ")
         tdcs2 (data-umm-c/tiling-identification-system "twoduniq")
-        org (data-umm-c/data-center ["ARCHIVER"] "Some&Place")
+        org (data-umm-c/data-center {:Roles ["ARCHIVER"] 
+                                     :ShortName "Some&Place"})
         url1 (data-umm-c/related-url {:URL "http://cmr.earthdata.nasa.gov"
                                       :Description "Earthdata"})
         url2 (data-umm-c/related-url {:URL "http://nsidc.org/"

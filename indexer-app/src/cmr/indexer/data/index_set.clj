@@ -98,6 +98,12 @@
    :originator-id.lowercase m/string-field-mapping
    :tag-value.lowercase m/string-field-mapping})
 
+(defnestedmapping variable-associations-mapping
+  "Defines mappings for variable associations."
+  {:variable-name.lowercase m/string-field-mapping
+   :originator-id.lowercase m/string-field-mapping
+   :variable-value.lowercase m/string-field-mapping})
+
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:category m/string-field-mapping
@@ -234,6 +240,7 @@
           ;; later.
           :revision-date m/date-field-mapping
           :revision-date2 (m/stored m/date-field-mapping)
+          :created-at (m/stored m/date-field-mapping)
 
           :permitted-group-ids (m/stored m/string-field-mapping)
           :concept-id   (m/stored m/string-field-mapping)
@@ -243,8 +250,8 @@
           :concept-seq-id m/int-field-mapping
           :entry-id           (m/stored m/string-field-mapping)
           :entry-id.lowercase m/string-field-mapping
-          :doi           m/string-field-mapping 
-          :doi.lowercase m/string-field-mapping 
+          :doi           m/string-field-mapping
+          :doi.lowercase m/string-field-mapping
           :entry-title           (m/stored m/string-field-mapping)
           :entry-title.lowercase m/string-field-mapping
           :provider-id           (m/stored m/string-field-mapping)
@@ -377,6 +384,9 @@
           ;; associated tags stored as EDN gzipped and base64 encoded for retrieving purpose
           :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
 
+          ;; associated variables
+          :variables variable-associations-mapping
+
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}
          spatial-coverage-fields))
@@ -486,6 +496,7 @@
      :project-refs.lowercase m/string-field-mapping
      :project-refs.lowercase-doc-values (m/doc-values m/string-field-mapping)
 
+     :created-at (m/doc-values m/date-field-mapping)
      :revision-date         m/date-field-mapping
      :revision-date-doc-values           (m/doc-values m/date-field-mapping)
 

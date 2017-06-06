@@ -3,7 +3,7 @@
    [clojure.test :refer :all]
    [cmr.common.test.time-util :as tu]
    [cmr.common.time-keeper :as tk]
-   [cmr.common.util :refer [are2]]
+   [cmr.common.util :refer [are2 are3]]
    [cmr.umm-spec.acl-matchers :as a]))
 
 (use-fixtures :each tk/freeze-resume-time-fixture)
@@ -24,8 +24,9 @@
   "Helper function for creating a collection"
   ([]
    (collection {}))
-  ([{:keys [entry-title access-value]}]
-   {:EntryTitle (or entry-title "entry title")
+  ([{:keys [entry-title access-value concept-id]}]
+   {:concept-id concept-id
+    :EntryTitle (or entry-title "entry title")
     :AccessConstraints {:Value access-value}}))
 
 (deftest collection-applicable-acl-test
@@ -44,7 +45,29 @@
                "PROV2" (collection) (acl-with-cat-identity
                                            {:collection-applicable true
                                             :provider-id "PROV1"})))))
-  (testing "applicable by collection identifier with collection id"
+  (testing "applicable by collection identifier with concept id"
+    (let [acl (acl-with-cat-identity
+                {:collection-applicable true
+                 :provider-id "PROV1"
+                 :collection-identifier {:concept-ids ["C1" "C2"]}})]
+      (are3 [applicable? coll]
+           (= applicable?
+              (boolean (a/coll-applicable-acl? "PROV1" coll acl)))
+
+           ;; dataset id
+           "for C1"
+           true
+           (collection {:concept-id "C1"})
+
+           "for C2"
+           true
+           (collection {:concept-id "C2"})
+
+           "for C3"
+           false
+           (collection {:concept-id "C3"}))))
+
+  (testing "applicable by collection identifier with entry-title"
     (let [acl (acl-with-cat-identity
                 {:collection-applicable true
                  :provider-id "PROV1"

@@ -125,8 +125,8 @@
 (defn- projects-reference-collection
   "Validate projects in granule must reference those in the parent collection"
   [_ granule]
-  (let [project-ref-names (set (:project-refs granule))
-        parent-project-names (->> granule :parent :Projects (map :ShortName) set)
+  (let [project-ref-names (set (map str/lower-case (:project-refs granule)))
+        parent-project-names (->> granule :parent :Projects (map :ShortName) (map str/lower-case) set)
         missing-project-refs (seq (set/difference project-ref-names parent-project-names))]
     (when missing-project-refs
       {[:project-refs]

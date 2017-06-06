@@ -38,16 +38,16 @@
 (defmulti tag-associations-url
   "Returns the url to associate a tag based on the association type.
   Valid association types are :query and :concept-ids."
-  (fn [context concept-id association-type]
+  (fn [context tag-key association-type]
     association-type))
 
 (defmethod tag-associations-url :query
-  [context concept-id _]
-  (tag-associations-by-query-url context concept-id))
+  [context tag-key _]
+  (tag-associations-by-query-url context tag-key))
 
 (defmethod tag-associations-url :concept-ids
-  [context concept-id _]
-  (tag-associations-by-concept-ids-url context concept-id))
+  [context tag-key _]
+  (tag-associations-by-concept-ids-url context tag-key))
 
 (defn associate-tag
   "Sends a request to associate the tag with collections based on the given association type.

@@ -1,5 +1,6 @@
 (ns cmr.ingest.test.validation.additional-attribute-validation
   (:require
+    [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.common.util :as util]
     [cmr.ingest.validation.additional-attribute-validation :as v]
@@ -45,3 +46,13 @@
     ["alpha" "INT" 1 nil] ["int,alpha,,1"]
     ["alpha" "INT" nil 5] ["int,alpha,5,"]
     ["alpha" "FLOAT" nil 1.23] ["float,alpha,1.23,"]))
+
+(deftest case-insensitivity-test
+  (let [name "InT NaMe"
+        type "iNt"
+        prev-aa {:Name (str/lower-case name)
+                 :DataType (str/lower-case type)}
+        aa {:Name name
+            :DataType type}]
+    (empty? (#'v/build-aa-deleted-searches [aa] [prev-aa]))
+    (empty? (#'v/build-aa-type-range-searches [aa] [prev-aa]))))

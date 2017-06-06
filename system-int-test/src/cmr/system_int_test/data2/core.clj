@@ -25,7 +25,7 @@
   (let [entry-title (some #(get item %) [:entry-title :EntryTitle])]
     ;; If the item contains an entry title it will be trimmed.
     (or (some-> entry-title str/trim)
-        (some #(get item %) [:granule-ur :native-id]))))
+        (some #(get item %) [:granule-ur :native-id :LongName]))))
 
 (def context (lkt/setup-context-for-test))
 
@@ -106,7 +106,8 @@
              :metadata (when-not (:deleted collection)
                          (umm-spec/generate-metadata
                           context
-                          (dissoc collection :provider-id) format-key))
+                          (dissoc collection :provider-id)
+                          format-key))
              :format format}
             (when (:concept-id collection)
               {:concept-id (:concept-id collection)})
@@ -158,6 +159,25 @@
               :format-key format-key
               :warnings (:warnings response))
        response))))
+
+(defn umm-var->concept
+  "Returns a concept map from a UMM item or tombstone."
+  ([variable]
+   (umm-var->concept variable :json))
+  ([variable format-key]
+   (let [format (mime-types/format->mime-type format-key)]
+     (merge {:concept-type :variable
+             :native-id (or (:native-id variable) (item->native-id variable))
+             :metadata (when-not (:deleted variable)
+                         (umm-spec/generate-metadata
+                          context
+                          variable
+                          format-key))
+             :format format}
+            (when (:concept-id variable)
+              {:concept-id (:concept-id variable)})
+            (when (:revision-id variable)
+              {:revision-id (:revision-id variable)})))))
 
 (defn remove-ingest-associated-keys
   "Removes the keys associated into the item from the ingest function."

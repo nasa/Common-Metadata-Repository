@@ -8,14 +8,118 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.log :refer (debug info warn error)]
-   [cmr.ingest.api.ingest :as ingest-api]
+   [cmr.ingest.api.bulk :as bulk]
+   [cmr.ingest.api.collections :as collections]
+   [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.api.granules :as granules]
    [cmr.ingest.api.multipart :as mp]
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.translation :as translation-api]
+   [cmr.ingest.api.variables :as variables]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.services.jobs :as jobs]
-   [compojure.core :refer [POST context routes]]
+   [compojure.core :refer [DELETE GET POST PUT context routes]]
    [drift.execute :as drift]))
+
+(def db-migration-routes
+  (POST "/db-migrate"
+      {ctx :request-context params :params}
+      (acl/verify-ingest-management-permission ctx :update)
+      (let [migrate-args (if-let [version (:version params)]
+                           ["migrate" "-version" version]
+                           ["migrate"])]
+        (info "Running db migration:" migrate-args)
+        (drift/run
+         (conj
+          migrate-args
+          "-c"
+          "config.migrate-config/app-migrate-config")))
+      {:status 204}))
+
+(def job-management-routes
+  (common-routes/job-api-routes
+   (routes
+     (POST "/reindex-collection-permitted-groups"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/reindex-collection-permitted-groups ctx)
+           {:status 200})
+     (POST "/reindex-all-collections"
+           {ctx :request-context params :params}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/reindex-all-collections
+            ctx (= "true" (:force_version params)))
+           {:status 200})
+     (POST "/cleanup-expired-collections"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/cleanup-expired-collections ctx)
+           {:status 200})
+     (POST "/trigger-full-collection-granule-aggregate-cache-refresh"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/trigger-full-refresh-collection-granule-aggregation-cache
+            ctx)
+           {:status 200})
+     (POST "/trigger-partial-collection-granule-aggregate-cache-refresh"
+           {ctx :request-context}
+           (acl/verify-ingest-management-permission ctx :update)
+           (jobs/trigger-partial-refresh-collection-granule-aggregation-cache
+            ctx)
+           {:status 200}))))
+
+(def ingest-routes
+  (routes
+    ;; Provider ingest routes
+    (api-core/set-default-error-format
+      :xml
+      (context "/providers/:provider-id" [provider-id]
+
+        (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
+          (POST "/"
+                request
+                (collections/validate-collection provider-id native-id request)))
+        (context ["/collections/:native-id" :native-id #".*$"] [native-id]
+          (PUT "/"
+               request
+               (collections/ingest-collection provider-id native-id request))
+          (DELETE "/"
+                  request
+                  (collections/delete-collection provider-id native-id request)))
+
+        (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
+          (POST "/"
+                request
+                (granules/validate-granule provider-id native-id request)))
+
+        (context ["/granules/:native-id" :native-id #".*$"] [native-id]
+          (PUT "/"
+               request
+               (granules/ingest-granule provider-id native-id request))
+          (DELETE "/"
+                  request
+                  (granules/delete-granule provider-id native-id request)))
+
+        (context "/bulk-update/collections" []
+          (POST "/"
+                request
+                (bulk/bulk-update-collections provider-id request))
+          (GET "/status" ; Gets all tasks for provider
+               request
+               (bulk/get-provider-tasks provider-id request))
+          (GET "/status/:task-id"
+               [task-id :as request]
+               (bulk/get-provider-task-status provider-id task-id request)))))
+    ;; Variable ingest routes
+    (context "/variables" []
+      (POST "/"
+            {:keys [request-context headers body]}
+            (variables/create-variable request-context headers body))
+      (context "/:variable-key" [variable-key]
+        (PUT "/"
+             {:keys [request-context headers body]}
+             (variables/update-variable
+              request-context headers body variable-key))))))
 
 (defn build-routes [system]
   (routes
@@ -26,54 +130,13 @@
       translation-api/translation-routes
 
       ;; Add routes to create, update, delete, validate concepts
-      ingest-api/ingest-routes
+      ingest-routes
 
       ;; db migration route
-      (POST "/db-migrate"
-            {ctx :request-context params :params}
-            (acl/verify-ingest-management-permission ctx :update)
-            (let [migrate-args (if-let [version (:version params)]
-                                 ["migrate" "-version" version]
-                                 ["migrate"])]
-              (info "Running db migration:" migrate-args)
-              (drift/run
-               (conj
-                migrate-args
-                "-c"
-                "config.migrate-config/app-migrate-config")))
-            {:status 204})
+      db-migration-routes
 
       ;; add routes for managing jobs
-      (common-routes/job-api-routes
-       (routes
-         (POST "/reindex-collection-permitted-groups"
-               {ctx :request-context}
-               (acl/verify-ingest-management-permission ctx :update)
-               (jobs/reindex-collection-permitted-groups ctx)
-               {:status 200})
-         (POST "/reindex-all-collections"
-               {ctx :request-context params :params}
-               (acl/verify-ingest-management-permission ctx :update)
-               (jobs/reindex-all-collections
-                ctx (= "true" (:force_version params)))
-               {:status 200})
-         (POST "/cleanup-expired-collections"
-               {ctx :request-context}
-               (acl/verify-ingest-management-permission ctx :update)
-               (jobs/cleanup-expired-collections ctx)
-               {:status 200})
-         (POST "/trigger-full-collection-granule-aggregate-cache-refresh"
-               {ctx :request-context}
-               (acl/verify-ingest-management-permission ctx :update)
-               (jobs/trigger-full-refresh-collection-granule-aggregation-cache
-                ctx)
-               {:status 200})
-         (POST "/trigger-partial-collection-granule-aggregate-cache-refresh"
-               {ctx :request-context}
-               (acl/verify-ingest-management-permission ctx :update)
-               (jobs/trigger-partial-refresh-collection-granule-aggregation-cache
-                ctx)
-               {:status 200})))
+      job-management-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

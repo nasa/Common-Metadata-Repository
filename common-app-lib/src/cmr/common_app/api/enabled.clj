@@ -59,7 +59,7 @@
    :body (json/generate-string (if (app-write-enabled? request-context) "Enabled" "Disabled"))})
 
 (defn validate-write-enabled
-  "Validate that the app is enabled for writes. Throughs a service error if not."
+  "Validate that the app is enabled for writes. Throws a service error if not."
   [context service]
   (when-not (app-write-enabled? context)
     (errors/throw-service-error :service-unavailable (service-write-disabled-message service))))

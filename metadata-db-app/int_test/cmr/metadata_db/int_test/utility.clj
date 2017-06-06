@@ -1,22 +1,18 @@
 (ns cmr.metadata-db.int-test.utility
   "Contains various utility methods to support integration tests."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [clj-http.client :as client]
-            [cheshire.core :as json]
-            [clojure.edn :as edn]
-            [clojure.walk :as walk]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.local :as l]
-            [clj-time.coerce :as cr]
-            [inflections.core :as inf]
-            [cmr.common-app.test.side-api :as side]
-            [cmr.common.util :as util]
-            [cmr.metadata-db.config :as config]
-            [clj-http.conn-mgr :as conn-mgr]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.metadata-db.config :as mdb-config]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clj-http.conn-mgr :as conn-mgr]
+   [clj-time.format :as f]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.transmit.config :as transmit-config]
+   [inflections.core :as inf]))
 
 (def conn-mgr-atom (atom nil))
 
@@ -176,6 +172,13 @@
       "VariableType" "",
       "ScienceKeywords" []}))
 
+(def variable-association-edn
+  "Valid EDN for variable association metadata"
+  (pr-str {:variable-name "totCldH2OStdErr"
+           :associated-concept-id "C120000000-PROV1"
+           :revision-id 1
+           :value "Some Value"}))
+
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
   to look up the metadata for the concepts and parse it. So we need to provide valid
@@ -189,7 +192,8 @@
    :access-group group-edn
    :acl acl-edn
    :humanizer humanizer-json
-   :variable variable-json})
+   :variable variable-json
+   :variable-association variable-association-edn})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -261,7 +265,7 @@
    (let [{:keys [concept-id revision-id]} assoc-concept
          tag-id (:native-id tag)
          user-id (str "user" uniq-num)
-         native-id (str/join "/" [tag-id concept-id revision-id])
+         native-id (string/join "/" [tag-id concept-id revision-id])
          extra-fields (merge {:associated-concept-id concept-id
                               :associated-revision-id revision-id
                               :tag-key tag-id}
@@ -339,6 +343,27 @@
                            (dissoc attributes :extra-fields))]
      ;; no provider-id should be specified for tags
      (dissoc (concept nil :variable uniq-num attributes) :provider-id))))
+
+(defn variable-association-concept
+  "Creates a variable association concept"
+  ([assoc-concept variable uniq-num]
+  (variable-association-concept assoc-concept variable uniq-num {}))
+  ([assoc-concept variable uniq-num attributes]
+  (let [{:keys [concept-id revision-id]} assoc-concept
+       variable-name (:native-id variable)
+       user-id (str "user" uniq-num)
+       native-id (string/join "/" [variable-name concept-id revision-id])
+       extra-fields (merge {:associated-concept-id concept-id
+                            :associated-revision-id revision-id
+                            :variable-name variable-name}
+                           (:extra-fields attributes))
+       attributes (merge {:user-id user-id
+                          :format "application/edn"
+                          :native-id native-id
+                          :extra-fields extra-fields}
+                         (dissoc attributes :extra-fields))]
+   ;; no provider-id should be specified for variable associations
+   (dissoc (concept nil :variable-association uniq-num attributes) :provider-id))))
 
 (defn assert-no-errors
   [save-result]
@@ -546,8 +571,11 @@
 (defmulti expected-concept
   "Modifies a concept for comparison with a retrieved concept."
   (fn [concept]
-    (:concept-type concept)))
-
+    (let [{:keys [concept-type]} concept]
+      (if (contains? concept-service/system-level-concept-types concept-type)
+        ;; system level concept
+        :system-level-concept
+        concept-type))))
 
 (defmethod expected-concept :granule
   [concept]
@@ -562,19 +590,7 @@
     concept
     (assoc concept :provider-id "CMR")))
 
-(defmethod expected-concept :tag
-  [concept]
-  (assoc concept :provider-id "CMR"))
-
-(defmethod expected-concept :tag-association
-  [concept]
-  (assoc concept :provider-id "CMR"))
-
-(defmethod expected-concept :humanizer
-  [concept]
-  (assoc concept :provider-id "CMR"))
-
-(defmethod expected-concept :variable
+(defmethod expected-concept :system-level-concept
   [concept]
   (assoc concept :provider-id "CMR"))
 
@@ -587,7 +603,7 @@
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (is (= (expected-concept concept) (dissoc stored-concept :revision-date :transaction-id)))))
+    (is (= (expected-concept concept) (dissoc stored-concept :revision-date :transaction-id :created-at)))))
 
 (defn is-tag-association-deleted?
   "Returns if the ta is marked as deleted in metadata-db"
@@ -702,6 +718,32 @@
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-variable
+  "Creates, saves, and returns a variable concept with its data from metadata-db"
+  ([uniq-num]
+   (create-and-save-variable uniq-num 1))
+  ([uniq-num num-revisions]
+   (create-and-save-variable uniq-num num-revisions {}))
+  ([uniq-num num-revisions attributes]
+   (let [concept (variable-concept uniq-num attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-variable-association
+  "Creates, saves, and returns a variable association concept with its data from metadata-db"
+  ([concept variable uniq-num]
+   (create-and-save-variable-association concept variable uniq-num 1))
+  ([concept variable uniq-num num-revisions]
+   (create-and-save-variable-association concept variable uniq-num num-revisions {}))
+  ([concept variable uniq-num num-revisions attributes]
+   (let [concept (variable-association-concept concept variable uniq-num attributes)
+          _ (dotimes [n (dec num-revisions)]
+              (assert-no-errors (save-concept concept)))
+          {:keys [concept-id revision-id]} (save-concept concept)]
+      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 ;;; providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

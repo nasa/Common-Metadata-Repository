@@ -70,6 +70,11 @@
   [attribs]
   (umm-cmn/map->ScienceKeywordType attribs))
 
+(defn location-keyword
+  "Return a location keyword based on the given attributes."
+  [attribs]
+  (umm-c/map->LocationKeywordType attribs))
+
 (defn instrument
   "Return an instrument based on instrument attribs"
   [attribs]
@@ -151,11 +156,14 @@
      :LongName (d/unique-str long-name)}))
 
 (defn data-center
-  "Return archive/ processing center"
-  [roles center-name]
-  (umm-cmn/map->DataCenterType
-    {:Roles roles
-     :ShortName center-name}))
+  "Returns data center"
+  [attribs]
+  (umm-cmn/map->DataCenterType attribs))
+
+(defn directory-name
+  "Returns directory name"
+  [attribs]
+  (umm-c/map->DirectoryNameType attribs))
 
 (defn related-url
   "Creates related url for online_only test"
@@ -184,7 +192,7 @@
    (let [contact-info (when email
                         (umm-cmn/map->ContactInformationType
                           {:ContactMechanisms [(umm-cmn/map->ContactMechanismType
-                                                 {:Type "Email" 
+                                                 {:Type "Email"
                                                   :Value email})]}))]
      (umm-cmn/map->ContactPersonType {:FirstName first-name
                                       :LastName last-name
@@ -201,9 +209,12 @@
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"})
 
-(def umm-c-missing-properties-dif 
+(def umm-c-missing-properties-dif
   "This is the minimal valid UMM-C."
-  {:DataCenters [u/not-provided-data-center]
+  {:DataCenters [(umm-cmn/map->DataCenterType
+                   {:Roles ["ARCHIVER"]
+                    :ShortName "AARHUS-HYDRO" 
+                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -215,11 +226,14 @@
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"})
 
-(def umm-c-missing-properties-dif10 
+(def umm-c-missing-properties-dif10
   "This is the minimal valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
                  {:ShortName "A340-600" :LongName "Airbus A340-600"})]
-   :DataCenters [u/not-provided-data-center]
+   :DataCenters [(umm-cmn/map->DataCenterType
+                   {:Roles ["ARCHIVER"]
+                    :ShortName "AARHUS-HYDRO"
+                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -238,7 +252,10 @@
   {:Platforms [(umm-cmn/map->PlatformType
                  {:ShortName "A340-600" :LongName "Airbus A340-600"})]
    :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
-   :DataCenters [u/not-provided-data-center]
+   :DataCenters [(umm-cmn/map->DataCenterType
+                   {:Roles ["ARCHIVER"]
+                    :ShortName "AARHUS-HYDRO"
+                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"

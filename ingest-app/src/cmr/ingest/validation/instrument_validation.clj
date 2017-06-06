@@ -3,6 +3,7 @@
   (:require
    [clojure.set :as s]
    [clojure.string :as str]
+   [cmr.common.util :as util]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn- get-parent-instruments-from-concept
@@ -29,8 +30,8 @@
     (:ShortName child-instrument)))
 
 (defn deleted-parent-instrument-searches
-  "Returns granule searches for deleted parent instruments. We should not delete instruments in a 
-   collection that are still referenced by existing granules. This function builds the search 
+  "Returns granule searches for deleted parent instruments. We should not delete instruments in a
+   collection that are still referenced by existing granules. This function builds the search
    parameters to identify such invalid deletions."
   [context concept-id concept prev-concept]
   (let [ins-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "instrument")
@@ -39,8 +40,8 @@
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-parent-ins))
         ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
         deleted-parent-instrument-names (s/difference
-                                          (set previous-parent-ins)
-                                          (set (concat current-parent-ins ins-aliases)))]
+                                          (set (map util/safe-lowercase previous-parent-ins))
+                                          (set (map util/safe-lowercase (concat current-parent-ins ins-aliases))))]
     (for [name deleted-parent-instrument-names]
       {:params {"instrument[]" name
                 :collection-concept-id concept-id
@@ -49,8 +50,8 @@
                                " granules, cannot be removed.") name)})))
 
 (defn deleted-child-instrument-searches
-  "Returns granule searches for deleted child instruments. We should not delete instruments in a 
-   collection that are still referenced by existing granules. This function builds the search 
+  "Returns granule searches for deleted child instruments. We should not delete instruments in a
+   collection that are still referenced by existing granules. This function builds the search
    parameters to identify such invalid deletions."
   [context concept-id concept prev-concept]
   (let [ins-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "instrument")
@@ -59,8 +60,8 @@
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-child-ins))
         ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
         deleted-child-instrument-names (s/difference
-                                         (set previous-child-ins)
-                                         (set (concat current-child-ins ins-aliases)))]
+                                         (set (map util/safe-lowercase previous-child-ins))
+                                         (set (map util/safe-lowercase (concat current-child-ins ins-aliases))))]
     (for [name deleted-child-instrument-names]
       {:params {"sensor[]" name
                 :collection-concept-id concept-id

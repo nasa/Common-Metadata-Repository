@@ -9,11 +9,12 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project :as project]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
-   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]
-   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
    [cmr.umm-spec.util :as su :refer [char-string]]))
@@ -54,6 +55,12 @@
     "structure"
     "transportation"
     "utilitiesCommunication"})
+
+(defn- generate-projects-keywords
+  "Returns the content generator instructions for descriptive keywords of the given projects."
+  [projects]
+  (let [project-keywords (map iso/generate-title projects)]
+    (kws/generate-iso19115-descriptive-keywords "project" project-keywords)))
 
 (defn- generate-data-dates
   "Returns ISO XML elements for the DataDates of given UMM collection."
@@ -120,54 +127,6 @@
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
-
-(defn- generate-projects-keywords
-  "Returns the content generator instructions for descriptive keywords of the given projects."
-  [projects]
-  (let [project-keywords (map iso/generate-title projects)]
-    (kws/generate-iso19115-descriptive-keywords "project" project-keywords)))
-
-(defn- generate-projects
-  [projects]
-  (for [proj projects]
-    (let [{short-name :ShortName
-           long-name  :LongName
-           start-date :StartDate
-           end-date   :EndDate
-           campaigns  :Campaigns} proj]
-      [:gmi:operation
-       [:gmi:MI_Operation
-     (let [start-date-str (when start-date
-                            (str "StartDate: " start-date))
-           end-date-str (when end-date
-                          (str " EndDate: " end-date))
-           date-str (if start-date-str
-                      (str start-date-str " " end-date-str)
-                      end-date-str)]
-       (when date-str
-        [:gmi:description
-         (char-string date-str)]))
-        [:gmi:identifier
-         [:gmd:MD_Identifier
-          [:gmd:code
-           (char-string short-name)]
-          [:gmd:codeSpace
-           (char-string "gov.nasa.esdis.umm.projectshortname")]
-          [:gmd:description
-           (char-string long-name)]]]
-        [:gmi:status ""]
-        [:gmi:parentOperation {:gco:nilReason "inapplicable"}]
-       (for [campaign campaigns]
-         [:gmi:childOperation
-          [:gmi:MI_Operation
-           [:gmi:identifier
-            [:gmd:MD_Identifier
-             [:gmd:code
-              (char-string campaign)]
-             [:gmd:codeSpace
-              (char-string "gov.nasa.esdis.umm.campaignshortname")]]]
-           [:gmi:status ""]
-           [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])]])))
 
 (defn- generate-publication-references
   [pub-refs]
@@ -245,12 +204,10 @@
   "Returns the ISO extent description string (a \"key=value,key=value\" string) for the given UMM-C
   collection record."
   [c]
-  (let [vsd (first (-> c :SpatialExtent :VerticalSpatialDomains))
-        temporal (first (:TemporalExtents c))
-        m {"VerticalSpatialDomainType" (:Type vsd)
-           "VerticalSpatialDomainValue" (:Value vsd)
-           "SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
+  (let [temporal (first (:TemporalExtents c))
+        m {"SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
            "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
+           "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)
            "Temporal Range Type" (:TemporalRangeType temporal)}]
     (str/join "," (for [[k v] m
                         :when (some? v)]
@@ -364,12 +321,19 @@
          (for [topic-category (:ISOTopicCategories c)]
            [:gmd:topicCategory
             [:gmd:MD_TopicCategoryCode (iso-topic-value->sanitized-iso-topic-category topic-category)]])
+         (when (:TilingIdentificationSystems c)
+          [:gmd:extent
+           [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
+            [:gmd:description
+             [:gco:CharacterString "Tiling Identitfication System"]]
+            (tiling/tiling-system-elements c)]])
          [:gmd:extent
           [:gmd:EX_Extent {:id "boundingExtent"}
            [:gmd:description
             [:gco:CharacterString (extent-description-string c)]]
-           (tiling/tiling-system-elements c)
+           (spatial/generate-zone-identifier c)
            (spatial/spatial-extent-elements c)
+           (spatial/generate-vertical-domain c)
            (spatial/generate-orbit-parameters c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]
@@ -448,5 +412,5 @@
         [:gmi:MI_AcquisitionInformation
          (platform/generate-instruments platforms)
          (platform/generate-child-instruments platforms)
-         (generate-projects (:Projects c))
+         (project/generate-projects (:Projects c))
          (platform/generate-platforms platforms)]]])))

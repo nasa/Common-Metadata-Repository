@@ -230,12 +230,12 @@
        collection
        (make-granule {:project-refs ["C4"]})
        [:project-refs]
-       ["Project References have [C4] which do not reference any projects in parent collection."])
+       ["Project References have [c4] which do not reference any projects in parent collection."])
       (assert-invalid-gran
        collection
        (make-granule {:project-refs ["C1" "C2" "C3" "C4" "C5"]})
        [:project-refs]
-       ["Project References have [C5, C4] which do not reference any projects in parent collection."]))
+       ["Project References have [c4, c5] which do not reference any projects in parent collection."]))
     (testing "Invalid project-refs unique name"
       (assert-invalid-gran
        collection

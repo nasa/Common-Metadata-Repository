@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.json-schema :as js]
+   [cmr.ingest.config :as config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.ingest-service :as ingest-service]
@@ -15,6 +16,21 @@
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
+
+(def default-exception-message
+  "There was an error updating the concept.")
+
+(def update-format
+  "Format to save bulk updates"
+  (str "application/vnd.nasa.cmr.umm+json;version=" (config/ingest-accept-umm-version)))
+
+(def complete-status
+  "Indicates bulk update operation finished successfully."
+  "COMPLETE")
+
+(def failed-status
+  "Indicates bulk update operation completed with errors"
+  "FAILED")
 
 (defn validate-bulk-update-post-params
   "Validate post body for bulk update. Validate against schema and validation
@@ -48,18 +64,23 @@
         task-id (data-bulk-update/create-bulk-update-task context
                  provider-id json concept-ids)]
     ;; Queue the bulk update event
-    (ingest-events/publish-ingest-event context
-      (ingest-events/ingest-bulk-update-event task-id bulk-update-params))
+    (ingest-events/publish-ingest-event
+      context
+      (ingest-events/ingest-bulk-update-event provider-id task-id bulk-update-params))
     task-id))
 
 (defn handle-bulk-update-event
   "For each concept-id, queueu collection bulk update messages"
-  [context task-id bulk-update-params]
+  [context provider-id task-id bulk-update-params]
   (let [{:keys [concept-ids]} bulk-update-params]
     (doseq [concept-id concept-ids]
-     (ingest-events/publish-ingest-event context
-       (ingest-events/ingest-collection-bulk-update-event
-         task-id concept-id bulk-update-params)))))
+     (ingest-events/publish-ingest-event
+      context
+      (ingest-events/ingest-collection-bulk-update-event
+       provider-id
+       task-id
+       concept-id
+       bulk-update-params)))))
 
 (defn- update-collection-concept
   "Perform the update on the collection and update the concept"
@@ -69,7 +90,9 @@
         update-field (csk/->PascalCaseKeyword update-field)]
     (-> concept
         (assoc :metadata (field-update/update-concept context concept update-type
-                                                      update-field update-value find-value))
+                                                      [update-field] update-value find-value
+                                                      update-format))
+        (assoc :format update-format)
         (update :revision-id inc))))
 
 
@@ -95,18 +118,30 @@
          "to UMM-C had the following issues: "
          (string/join "; " warnings))))
 
+(defn- process-bulk-update-complete
+  "Check if the overall bulk update operation is complete and if so, re-index
+  provider collections"
+  [context provider-id task-id]
+  (let [task-status (data-bulk-update/get-bulk-update-task-status-for-provider context task-id)]
+    (when (= complete-status (:status task-status))
+      (ingest-events/publish-ingest-event
+       context
+       (ingest-events/provider-collections-require-reindexing-event
+        provider-id
+        false)))))
+
 (defn handle-collection-bulk-update-event
   "Perform update for the given concept id. Log an error status if the concept
   cannot be found."
-  [context task-id concept-id bulk-update-params]
+  [context provider-id task-id concept-id bulk-update-params]
   (try
     (if-let [concept (mdb2/get-latest-concept context concept-id)]
       (let [updated-concept (update-collection-concept context concept bulk-update-params)
             warnings (validate-and-save-collection context updated-concept)]
         (data-bulk-update/update-bulk-update-task-collection-status context task-id
-            concept-id "COMPLETE" (create-success-status-message warnings)))
+            concept-id complete-status (create-success-status-message warnings)))
       (data-bulk-update/update-bulk-update-task-collection-status context task-id
-        concept-id "FAILED" (format "Concept-id [%s] is not valid." concept-id)))
+        concept-id failed-status (format "Concept-id [%s] is not valid." concept-id)))
     (catch clojure.lang.ExceptionInfo ex-info
       (if (= :conflict (:type (.getData ex-info)))
         ;; Concurrent update - re-queue concept update
@@ -116,10 +151,11 @@
                                                             concept-id
                                                             bulk-update-params))
         (data-bulk-update/update-bulk-update-task-collection-status
-          context task-id concept-id "FAILED" (.getMessage ex-info))))
+          context task-id concept-id failed-status (.getMessage ex-info))))
     (catch Exception e
-      (let [message (.getMessage e)
+      (let [message (or (.getMessage e) default-exception-message)
             concept-id-message (re-find #"Concept-id.*is not valid." message)]
         (if concept-id-message
-          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" concept-id-message)
-          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id "FAILED" message))))))
+          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status concept-id-message)
+          (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status message)))))
+  (process-bulk-update-complete context provider-id task-id))

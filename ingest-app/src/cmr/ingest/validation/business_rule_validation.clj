@@ -95,4 +95,5 @@
                 concept-id-validation
                 version-is-not-nil-validation
                 collection-update-validation]
-   :granule []})
+   :granule []
+   :variable []})

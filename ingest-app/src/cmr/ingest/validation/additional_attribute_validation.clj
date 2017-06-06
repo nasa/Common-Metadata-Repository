@@ -5,6 +5,11 @@
    [cmr.common.util :as util]
    [cmr.umm-spec.additional-attribute :as aa]))
 
+(defn- lower-case-name
+  "For a given addition attribute, return lower-case name"
+  [aa]
+  (util/safe-lowercase (:Name aa)))
+
 (defn- aa-range-reduced?
   "Returns true if the range of additional attribute is smaller than the range of the previous one."
   [aa prev-aa]
@@ -28,7 +33,6 @@
                          [(format "%s,%s,,%s" type aa-name aa-begin)])
                        (when aa-end
                          [(format "%s,%s,%s," type aa-name aa-end)]))]
-
     {:params {"attribute[]" params
               "options[attribute][or]" true}
      :error-msg (format "Collection additional attribute [%s] cannot be changed since there are existing granules outside of the new value range."
@@ -39,8 +43,8 @@
   attributes that are still referenced by existing granules. This function build the search parameters
   for identifying such invalid deletions."
   [aas prev-aas]
-  (let [aa-names (set (map :Name aas))
-        deleted-aas (remove #(aa-names (:Name %)) prev-aas)]
+  (let [aa-names (set (map lower-case-name aas))
+        deleted-aas (remove #(aa-names (lower-case-name %)) prev-aas)]
     (map #(hash-map :params {"attribute[]" [(:Name %)]}
                     :error-msg (format "Collection additional attribute [%s] is referenced by existing granules, cannot be removed."
                                        (:Name %)))
@@ -67,9 +71,9 @@
   changed or range changed to a reduced range that needs to verify that no granules will become
   invalidated due to the changes."
   [aas prev-aas]
-  (let [prev-aas-map (group-by :Name prev-aas)
+  (let [prev-aas-map (group-by lower-case-name prev-aas)
         link-fn (fn [aa]
-                  (when-let [prev-aa (first (prev-aas-map (:Name aa)))]
+                  (when-let [prev-aa (first (prev-aas-map (lower-case-name aa)))]
                     [aa prev-aa]))]
     (->> (map link-fn aas)
          (map single-aa-type-range-search)

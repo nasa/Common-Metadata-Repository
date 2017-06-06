@@ -82,12 +82,8 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "concept-type": "tag",
     "native-id": "org.nasa.something.quality",
     "user-id": "jnorton",
-    "format": "applcation/edn",
-    "metadata: {
-      "tag-key": "org.nasa.something.quality",
-      "description": "A good tag",
-      "originator-id": "jnorton"
-    }
+    "format": "application/edn",
+    "metadata": "{:tag-key \"org.nasa.something.ozone\", :description \"A very good tag\", :originator-id \"jnorton\"}"
   }
 
 #### Tag Association
@@ -96,20 +92,16 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
     "concept-type": "tag-association",
     "native-id": "org.nasa.something.quality/C12-PROV_A42",
     "user-id": "jnorton",
-    "format": "applcation/edn",
-    "metadata": {
-      "tag-key": "org.nasa.something.quality",
-      "originator-id": "jdoe",
-      "associated-concept-id": "C12-PROV_A42",
-      "revision-id": 1, (optional field),
-      "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
-    },
+    "format": "application/edn",
+    "metadata": "{:tag-key \"org.nasa.something.ozone\", :associated-concept-id \"C120000000-PROV1\", :revision-id 1, :value \"string to be indexed\"}",
     "extra-fields": {
       "tag-key": "org.nasa.something.quality",
       "associated-concept-id": "C12-PROV_A42",
       "associated-revision-id": 1
     }
   }
+
+The tag association metadata can have "value": "string to be indexed" or "data": "arbitrary JSON <= 32K" (optional fields)
 
 #### Humanizer
 
@@ -125,15 +117,30 @@ The provider-id can be "CMR" (for system level groups) or another provider id.
 #### Variable
 
   {
-    "concept-type": "variable",
-    "native-id" : "var123",
-    "metadata" : "{ \"Name\": \"totCldH2OStdErr\", \"LongName\": \"totCldH2OStdErrMeasurement\", \"Units\": \"\", \"DataType\": \"float\", \"DimensionsName\": [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], \"Dimensions\": [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], \"ValidRange\": null, \"Scale\": \"1.0\", \"Offset\": \"0.0\", \"FillValue\": \"-9999.0 \", \"VariableType\": \"\", \"ScienceKeywords\": []}",
-    "user-id" : "user1",
-    "deleted" : false,
-    "format" : "application/json",
+  "concept-type": "variable",
+  "native-id": "totcldh2ostderr",
+  "metadata": "{ :name \"totCldH2OStdErr\", :long-name \"totCldH2OStdErrMeasurement\", :units \"\", :data-type \"float\", :dimensions-name [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], :dimensions [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], :valid-range null, :scale \"1.0\", :offset \"0.0\", :fill-value \"-9999.0 \", :variable-type \"\", :science-keywords [] :originator-id \"user1\"}",
+  "user-id": "user1",
+  "deleted": false,
+  "format": "application/edn",
+  "extra-fields": {
+    "variable-name": "totCldH2OStdErr",
+    "measurement": "totCldH2OStdErrMeasurement"
+  }
+}
+
+#### Variable Association
+
+  {
+    "concept-type": "variable-association",
+    "native-id": "totCldH2OStdErr/C1200000005-PROV1",
+    "user-id": "user1",
+    "format": "application/edn",
+    "metadata": "{:variable-name \"totCldH2OStdErr\", :originator-id \"user1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1, :data {:description \"Needs more work\"}}",
     "extra-fields": {
       "variable-name": "totCldH2OStdErr",
-      "measurement": "totCldH2OStdErrMeasurement"
+      "associated-concept-id": "C1200000005-PROV1",
+      "associated-revision-id": 1
     }
   }
 
@@ -299,14 +306,14 @@ returns: list of the latest revisions of concepts matching the ids provided in t
 ### GET /concepts/search/:concept-types?param1=value&...
 
 This returns all revisions of the concept that matches the search parameters by default. It also supports parameter 'latest'. When latest=true, only the latest revision of the concepts are returned.
-Metadata can be excluded from the results by setting the parameter 'exclude-metadata' to 'true'.
+Metadata can be excluded from the results by setting the parameter 'exclude-metadata' to 'true'.  Multiple values for a parameter will be ORed.
 
 Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
-  * tags, tag associations or humanizers with concept-id or native-id
-  * tag associations with associated-concept-id, associated-revision-id
+  * tags, tag associations, variables, variable associations or humanizers with concept-id or native-id
+  * tag associations or variable associations with associated-concept-id, associated-revision-id
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
@@ -316,6 +323,12 @@ curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native_id
 curl "http://localhost:3001/concepts/search/tags"
 curl "http://localhost:3001/concepts/search/tag-associatons?associated-concept-id=C12-PROV1"
 ```
+
+### POST /concepts/search/:concept-types
+
+Same as the GET endpoint above, but with parameters passed in the body of a POST e.g.
+
+    curl -XPOST -H "Content-Type: application/x-www-form-urlencoded" -d 'provider-id=PROV1&short-name=s&version-id=1' http://localhost:3001/concepts/search/collections
 
 ### GET /concepts/search/expired-collections?provider=PROV
 

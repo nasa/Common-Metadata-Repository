@@ -26,7 +26,8 @@
    :short-name :string
    :version :string
    :updated-since :updated-since
-   :revision-date :revision-date
+   :revision-date :multi-date-range
+   :created-at :multi-date-range
    :processing-level-id :string
    :processing-level-id-h :humanizer
    :collection-data-type :collection-data-type
@@ -60,7 +61,10 @@
    ;; Tag parameters
    :tag-key :tag-query
    :tag-originator-id :tag-query
-   :tag-data :tag-query})
+   :tag-data :tag-query
+
+   ;; Variable parameters
+   :variable-name :variable-query})
 
 (defmethod common-params/param-mappings :granule
   [_]
@@ -79,7 +83,7 @@
    :equator-crossing-date :equator-crossing-date
    :version :collection-query
    :updated-since :updated-since
-   :revision-date :revision-date
+   :revision-date :multi-date-range
    :temporal :temporal
    :platform :inheritance
    :instrument :inheritance
@@ -136,6 +140,27 @@
                    (common-params/pattern-field? concept-type param options))]
     (tag-param->condition param value pattern?)))
 
+(defmulti variable-param->condition
+  "Convert variable param and value into query condition"
+  (fn [param value pattern?]
+    param))
+
+(defmethod variable-param->condition :variable-name
+  [param value pattern?]
+  (nf/parse-nested-condition :variables {param value} false pattern?))
+
+(defmethod variable-param->condition :variable-originator-id
+  [param value pattern?]
+  (nf/parse-nested-condition :variables {:originator-id value} false pattern?))
+
+(defmethod common-params/parameter->condition :variable-query
+  [_context concept-type param value options]
+  (let [;; variable-name defaults to pattern true
+        pattern? (if (= :variable-name param)
+                   (not= "false" (get-in options [param :pattern]))
+                   (common-params/pattern-field? concept-type param options))]
+    (variable-param->condition param value pattern?)))
+
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
 (defmethod common-params/parameter->condition :granule-concept-id
@@ -158,7 +183,7 @@
 ;; or have not specified any value for the field and inherit it from their parent collection.
 (defmethod common-params/parameter->condition :inheritance
   [context concept-type param value options]
-  (let [field-condition (common-params/parameter->condition context :collection param value options)        
+  (let [field-condition (common-params/parameter->condition context :collection param value options)
         exclude-collection (= "true" (get-in options [param :exclude-collection]))
         collection-cond (gc/and-conds
                          [(qm/->CollectionQueryCondition field-condition)
@@ -177,10 +202,10 @@
                    (if (sequential? value) (first value) value))
      :end-date nil}))
 
-(defmethod common-params/parameter->condition :revision-date
+(defmethod common-params/parameter->condition :multi-date-range
   [context concept-type param value options]
   (if (sequential? value)
-    (if (= "true" (get-in options [:revision-date :and]))
+    (if (= "true" (get-in options [param :and]))
       (gc/and-conds
         (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds

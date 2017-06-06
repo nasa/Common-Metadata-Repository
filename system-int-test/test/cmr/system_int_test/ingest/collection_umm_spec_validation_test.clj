@@ -106,7 +106,8 @@
                                                              :Term "Mild"})]
                      :SpatialExtent (data-umm-c/spatial {:gsr "CARTESIAN"})
                      :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                     :DataCenters [(data-umm-c/data-center ["ARCHIVER"] "Larc")]
+                     :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] 
+                                                            :ShortName "Larc"})]
                      :Platforms [{:ShortName "plat"
                                   :LongName "plat"
                                   :Type "Aircraft"

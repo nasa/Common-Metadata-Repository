@@ -115,7 +115,15 @@
                             :Term "ENVIRONMENTAL IMPACTS"
                             :VariableLevel1 "HEAVY METALS CONCENTRATION"}}
             400
-            ["A find value must be supplied when the update is of type FIND_AND_REPLACE"]))))
+            ["A find value must be supplied when the update is of type FIND_AND_REPLACE"]
+
+            "Invalid update field"
+            {:concept-ids ["C1", "C2", "C3"]
+             :update-field "Science keywords"
+             :update-type "ADD_TO_EXISTING"
+             :update-value {:Category "EARTH SCIENCE"}}
+            400
+            ["/update-field instance value (\"Science keywords\") not found in enum (possible values: [\"SCIENCE_KEYWORDS\",\"LOCATION_KEYWORDS\",\"DATA_CENTERS\",\"PLATFORMS\",\"INSTRUMENTS\"])"]))))
 
             ;; Short-name/version currently not supported. Support will be added
             ;; back in with CMR-4129

@@ -7,6 +7,7 @@
     [cmr.acl.core :as acl]
     [cmr.common.date-time-parser :as dtp]
     [cmr.common.validations.core :as v]
+    [cmr.common.concepts :as concepts]
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.transmit.metadata-db2 :as mdb]))
 
@@ -93,6 +94,18 @@
                (when-not (seq (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-title} :collection))
                  {key-path [(format "collection with entry-title [%s] does not exist in provider [%s]" entry-title provider-id)]})))))
 
+(defn- make-collection-concept-ids-validations
+  "Returns a validation for the concept_ids part of a collection identifier, closed over the context and ACL to be validated."
+  [context acl]
+  (let [provider-id (-> acl :catalog-item-identity :provider-id)]
+    [(v/every (fn [key-path concept-id]
+                (let [regex #"C\d+-\S+"]
+                  (when-not (re-matches regex concept-id)
+                    {key-path [(format "[%s] is not a valid collection concept-id." concept-id)]}))))
+     (v/every (fn [key-path concept-id]
+                (when-not (seq (mdb1/find-concepts context {:provider-id provider-id :concept-id concept-id} :collection))
+                  {key-path [(format "collection with concept-id [%s] does not exist in provider [%s]" concept-id provider-id)]})))]))
+
 (defn- access-value-validation
   "Validates the access_value part of a collection or granule identifier."
   [key-path access-value-map]
@@ -121,6 +134,7 @@
   "Returns a validation for an ACL catalog_item_identity.collection_identifier closed over the given context and ACL to be validated."
   [context acl]
   {:entry-titles (v/when-present (make-collection-entry-titles-validation context acl))
+   :concept-ids (v/when-present (make-collection-concept-ids-validations context acl))
    :access-value (v/when-present [access-value-validation access-value-min-max-value-validation])
    :temporal (v/when-present temporal-identifier-validation)})
 

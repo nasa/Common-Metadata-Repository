@@ -3,6 +3,7 @@
   (:require
    [clojure.set :as s]
    [clojure.string :as str]
+   [cmr.common.util :as util]
    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn deleted-platform-searches
@@ -16,8 +17,8 @@
         platform-aliases (mapcat #(get platform-alias-map %) (map str/upper-case current-platforms))
         ;; Only the deleted ones that are not part of the platform-aliases need to be validated.
         deleted-platform-names (s/difference
-                                (set previous-platforms)
-                                (set (concat current-platforms platform-aliases)))]
+                                (set (map util/safe-lowercase previous-platforms))
+                                (set (map util/safe-lowercase (concat current-platforms platform-aliases))))]
     (for [name deleted-platform-names]
       {:params {"platform[]" name
                 :collection-concept-id concept-id

@@ -17,6 +17,15 @@
   (when (>= index 0)
    index)))
 
+(defn get-substring
+  "Get a substring from the input string. Use start as the starting index. All of the rest
+   of the input parameters are stop indexes in numerical order or nil i.e. (34 nil 50). The
+   function uses the first non nil value as the stop value. The function returns the
+   substring with trimmed whitespace before and after the string."
+  [str start & args]
+  (let [value (subs str start (some #(when % %) args))]
+    (str/trim (subs value (inc (.indexOf value ":"))))))
+
 (defn parse-url-types-from-description
  "In ISO, since there are not separate fields for the types, they are put in the
  description in the format 'Description: X URLContentType: Y Type: Z Subtype: A'

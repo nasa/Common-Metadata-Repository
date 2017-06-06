@@ -1,16 +1,17 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial
   "Functions for generating ISO19115-2 XML elements from UMM spatial records."
-  (:require [camel-snake-kebab.core :as csk]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.encoding.gmd :as gmd]
-            [cmr.spatial.line-string :as ls]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.relations :as r]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.common.util :as util]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.encoding.gmd :as gmd]
+   [cmr.spatial.line-string :as ls]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.relations :as r]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.common.util :as util]))
 
 (defn spatial-point
   [umm-point]
@@ -70,13 +71,15 @@
   [c]
   (when-let [orbit-parameters (-> c :SpatialExtent :OrbitParameters)]
     [:gmd:geographicElement
-     [:gmd:EX_GeographicDescription
+     [:gmd:EX_GeographicDescription {:id "OrbitParameters"}
       [:gmd:geographicIdentifier
        [:gmd:MD_Identifier
         [:gmd:code
-         [:gco:CharacterString "Orbit"]]
+         [:gco:CharacterString (orbit-parameters->encoded-str orbit-parameters)]]
+        [:gmd:codeSpace
+         [:gco:CharacterString "gov.nasa.esdis.umm.orbitparameters"]]
         [:gmd:description
-         [:gco:CharacterString (orbit-parameters->encoded-str orbit-parameters)]]]]]]))
+         [:gco:CharacterString "OrbitParameters"]]]]]]))
 
 (defn spatial-extent-elements
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
@@ -86,7 +89,41 @@
         shapes (spatial-lib-shapes (-> spatial :HorizontalSpatialDomain :Geometry))]
     (->> shapes
          (map (partial umm-s/set-coordinate-system coordinate-system))
-         (map d/calculate-derived)
-         ;; ISO MENDS interleaves MBRs and actual spatial areas
-         (mapcat (juxt r/mbr identity))
          (map gmd/encode))))
+
+(defn generate-zone-identifier
+  "Returns a geographic element for the zone identifier"
+  [c]
+  (when-let [zone-identifier (get-in c [:SpatialExtent :HorizontalSpatialDomain :ZoneIdentifier])]
+    [:gmd:geographicElement
+     [:gmd:EX_GeographicDescription {:id "ZoneIdentifier"}
+      [:gmd:geographicIdentifier
+       [:gmd:MD_Identifier
+        [:gmd:code
+         [:gco:CharacterString zone-identifier]]
+        [:gmd:codeSpace
+          [:gco:CharacterString "gov.nasa.esdis.umm.zoneidentifier"]]
+        [:gmd:description
+         [:gco:CharacterString "ZoneIdentifier"]]]]]]))
+
+(defn- vertical-domain->encoded-str
+  "Encodes the vertical domain values as a string."
+  [{:keys [Type Value]}]
+  (format "Type: %s Value: %s" Type Value))
+
+(defn generate-vertical-domain
+  "Returns a geographic element for the vertical domain"
+  [c]
+  (when-let [vertical-domains (get-in c [:SpatialExtent :VerticalSpatialDomains])]
+    (for [x (range (count vertical-domains))
+           :let [vertical-domain (nth vertical-domains x)]]
+      [:gmd:geographicElement
+       [:gmd:EX_GeographicDescription {:id (str "VerticalSpatialDomain" x)}
+        [:gmd:geographicIdentifier
+         [:gmd:MD_Identifier
+          [:gmd:code
+           [:gco:CharacterString (vertical-domain->encoded-str vertical-domain)]]
+          [:gmd:codeSpace
+           [:gco:CharacterString "gov.nasa.esdis.umm.verticalspatialdomain"]]
+          [:gmd:description
+           [:gco:CharacterString "VerticalSpatialDomain"]]]]]])))

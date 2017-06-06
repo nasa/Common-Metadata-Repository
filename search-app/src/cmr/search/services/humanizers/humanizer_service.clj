@@ -2,20 +2,15 @@
   "Provides functions for storing and retrieving humanizers"
   (:require
    [cheshire.core :as json]
+   [cmr.common.api.context :as context-util]
    [cmr.common.concepts :as cc]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.search.services.humanizers.humanizer-messages :as msg]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb]))
-
-(defn- context->user-id
-  "Returns user id of the token in the context. Throws an error if no token is provided"
-  [context]
-  (if-let [token (:token context)]
-   (util/lazy-get context :user-id)
-   (errors/throw-service-error :unauthorized "Humanizer cannot be modified without a valid user token.")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
@@ -26,7 +21,9 @@
   {:concept-type :humanizer
    :native-id cc/humanizer-native-id
    :metadata humanizer-json-str
-   :user-id (context->user-id context)
+   :user-id (context-util/context->user-id
+             context
+             msg/token-required-for-humanizer-modification)
    :format mt/json
    :revision-id revision-id})
 
@@ -54,9 +51,9 @@
   [context]
   (if-let [concept (find-latest-humanizer-concept context)]
     (if (:deleted concept)
-      (errors/throw-service-error :not-found "Humanizer has been deleted.")
+      (errors/throw-service-error :not-found msg/humanizer-deleted)
       concept)
-    (errors/throw-service-error :not-found "Humanizer does not exist.")))
+    (errors/throw-service-error :not-found msg/non-existant-humanizer)))
 
 (defn update-humanizers-metadata
   "Update and save the humanizers metadata function which includes humanizers and community usage.

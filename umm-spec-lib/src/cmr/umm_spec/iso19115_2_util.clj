@@ -15,7 +15,7 @@
 
 ;; relative to gmi:childOperation
 (def campaign-xpath
-  "gmi:MI_Operation/gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString") 
+  "gmi:MI_Operation/gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
 
 (defn char-string-value
   "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
@@ -92,7 +92,7 @@
     (if (seq long-name) (str short-name keyword-separator-join long-name) short-name)))
 
 (def extent-xpath
-  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent")
+  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent[@id='boundingExtent']")
 
 (defn- parse-key-val-str
   "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."

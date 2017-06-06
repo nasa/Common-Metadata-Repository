@@ -5,6 +5,7 @@
     [clojure.edn :as edn]
     [clojure.string :as str]
     [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.common.api.context :as context-util]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.mime-types :as mt]
@@ -15,9 +16,10 @@
     [cmr.metadata-db.services.search-service :as mdb-ss]
     [cmr.search.services.json-parameters.conversion :as jp]
     [cmr.search.services.query-service :as query-service]
-    [cmr.search.services.tagging.tag-association-validation :as av]
+    [cmr.search.services.association-validation :as assoc-validation]
     [cmr.search.services.tagging.tag-validation :as tv]
     [cmr.search.services.tagging.tagging-service-messages :as msg]
+    [cmr.search.services.messages.association-messages :as assoc-msg]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db :as mdb]))
 
@@ -29,13 +31,6 @@
   "Failed to %s tag [%s] with collection [%s] because it conflicted with a concurrent %s on the
   same tag and collection. This means that someone is sending the same request to the CMR at the
   same time.")
-
-(defn- context->user-id
-  "Returns user id of the token in the context. Throws an error if no token is provided"
-  [context]
-  (if-let [token (:token context)]
-    (util/lazy-get context :user-id)
-    (errors/throw-service-error :unauthorized msg/token-required-for-tag-modification)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB Concept Map Manipulation
@@ -59,7 +54,9 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id
   of the saved tag."
   [context tag-json-str]
-  (let [user-id (context->user-id context)
+  (let [user-id (context-util/context->user-id
+                 context
+                 msg/token-required-for-tag-modification)
         tag (-> (tv/create-tag-json->tag tag-json-str)
                 (assoc :originator-id user-id))]
     ;; Check if the tag already exists
@@ -114,7 +111,9 @@
         context
         (-> existing-concept
             (assoc :metadata (pr-str updated-tag)
-                   :user-id (context->user-id context))
+                   :user-id (context-util/context->user-id
+                             context
+                             msg/token-required-for-tag-modification))
             (dissoc :revision-date :transaction-id)
             (update-in [:revision-id] inc))))))
 
@@ -128,7 +127,9 @@
           ;; Remove fields not allowed when creating a tombstone.
           (dissoc :metadata :format :provider-id :native-id :transaction-id)
           (assoc :deleted true
-                 :user-id (context->user-id context))
+                 :user-id (context-util/context->user-id
+                           context
+                           msg/token-required-for-tag-modification))
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
@@ -153,10 +154,12 @@
         {:message {:warnings [(format "Tag association [%s] is already deleted." concept-id)]}}
         (let [concept {:concept-type :tag-association
                        :concept-id concept-id
-                       :user-id (context->user-id mdb-context)
+                       :user-id (context-util/context->user-id
+                                 mdb-context
+                                 msg/token-required-for-tag-modification)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
-      {:message {:warnings [(msg/delete-tag-association-not-found native-id)]}})))
+      {:message {:warnings [(assoc-msg/delete-association-not-found :tag native-id)]}})))
 
 (defn- tag-association->native-id
   "Returns the native id of the given tag association."
@@ -206,7 +209,9 @@
         native-id (tag-association->native-id tag-association)
         tag-association (-> tag-association
                             (assoc :native-id native-id)
-                            (assoc :user-id (context->user-id mdb-context)))
+                            (assoc :user-id (context-util/context->user-id
+                                             mdb-context
+                                             msg/token-required-for-tag-modification)))
         tagged-item (util/remove-nil-keys
                      {:concept-id coll-concept-id :revision-id coll-revision-id})]
     (if (seq errors)
@@ -245,8 +250,10 @@
         [t1 result] (util/time-execution (util/fast-map
                                           (fn [association]
                                             (update-tag-association
-                                             mdb-context (merge association {:tag-key tag-key
-                                                                             :originator-id originator-id}) operation))
+                                             mdb-context
+                                             (merge association {:tag-key tag-key
+                                                                 :originator-id originator-id})
+                                             operation))
                                           tag-associations))]
     (info "update-tag-associations:" t1)
     result))
@@ -268,15 +275,24 @@
     (update-tag-associations
       context tag-concept (map #(hash-map :concept-id %) coll-concept-ids) operation)))
 
+(defn- validate-tag-associations
+  "Validates the tag association for the given tag key and tag associations based on the operation
+  type, which is either :insert or :delete. Returns the tag associations with errors found appended
+  to them. If the provided tag associations fail the basic rules validation (i.e. empty tag
+  associations, conflicts within the request), throws a service error."
+  [context operation-type tag-key tag-associations]
+  (assoc-validation/validate-associations
+   context :tag tag-key tag-associations operation-type))
+
 (defn- link-tag-to-collections
   "Associate/Disassocate a tag to a list of collections in the tag associations json based on
   the given operation type. The ooperation type can be either :insert or :delete.
   Throws service error if the tag with the given tag key is not found."
   [context tag-key tag-associations-json operation-type]
   (let [tag-concept (fetch-tag-concept context tag-key)
-        tag-associations (av/tag-associations-json->tag-associations tag-associations-json)
+        tag-associations (assoc-validation/associations-json->associations tag-associations-json)
         [validation-time tag-associations] (util/time-execution
-                                             (av/validate-tag-associations
+                                             (validate-tag-associations
                                                context operation-type tag-key tag-associations))]
     (debug "link-tag-to-collections validation-time:" validation-time)
     (update-tag-associations context tag-concept tag-associations operation-type)))

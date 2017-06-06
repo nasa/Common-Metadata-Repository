@@ -131,6 +131,10 @@ Properties of the `CollectionIdentifierType` object:
 
 The object is an array with all elements of the type `string`.
 
+#### `concept-ids` (array)
+
+The object is an array with all elements of the type `string`.
+
 #### `access_value` (AccessValueType)
 
 #### `temporal` (TemporalIdentifierType)

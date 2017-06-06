@@ -1,33 +1,26 @@
 (ns cmr.search.services.parameters.parameter-validation
   "Contains functions for validating query parameters"
-  (:require 
+  (:require
    [camel-snake-kebab.core :as csk]
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as s]
+   [cmr.common-app.services.search.messages :as d-msg]
+   [cmr.common-app.services.search.parameter-validation :as cpv]
+   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
+   [cmr.common-app.services.search.params :as common-params]
+   [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.services.messages :as c-msg]
-   [cmr.common.parameter-parser :as parser]
    [cmr.common.config :as cfg]
-   [cmr.common.util :as util]
    [cmr.common.date-time-parser :as dt-parser]
    [cmr.common.date-time-range-parser :as dtr-parser]
-   [cmr.common-app.services.search.messages :as d-msg]
-   [cmr.common-app.services.search.params :as common-params]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-   [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.search.data.keywords-to-elastic :as k2e]
-   [cmr.search.services.messages.attribute-messages :as attrib-msg]
-   [cmr.search.services.messages.common-messages :as msg]
-   [cmr.search.services.messages.orbit-number-messages :as on-msg]
-   [cmr.search.services.parameters.converters.attribute :as attrib]
-   [cmr.search.services.parameters.converters.orbit-number :as on]
-   [cmr.search.services.parameters.legacy-parameters :as lp]
-   [cmr.spatial.codec :as spatial-codec])
-  (:import clojure.lang.ExceptionInfo
-           java.lang.Integer))
+   [cmr.common.parameter-parser :as parser]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as c-msg]
+   [cmr.common.util :as util]
+  (:import
+   (clojure.lang ExceptionInfo)
+   (java.lang Integer)))
 
 (defmethod cpv/params-config :collection
   [_]
@@ -108,12 +101,16 @@
    :attribute exclude-plus-or-option
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
+   :created-at cpv/and-option
    :highlights highlights-option
 
-   ;; Tag parameters for use querying other concepts.
+   ;; Tag related parameters 
    :tag-key cpv/pattern-option
    :tag-data cpv/pattern-option
-   :tag-originator-id cpv/pattern-option})
+   :tag-originator-id cpv/pattern-option
+
+   ;; Variable related parameters
+   :variable-name cpv/pattern-option})
 
 (defmethod cpv/valid-parameter-options :granule
   [_]
@@ -263,6 +260,20 @@
                  (s/join ", " (map name empty-value-keys)))])
       ["Tag data search must be in the form of tag-data[tag-key]=tag-value"])))
 
+(defn- validate-multi-date-range
+  "Validates a given date range that may contain several date ranges."
+  [date-range param-name]
+  (mapcat
+    (fn [value]
+      (let [parts (map s/trim (s/split value #"," -1))
+            [start-date end-date] parts]
+        (if (> (count parts) 2)
+          [(format "Too many commas in %s %s" param-name value)]
+          (concat
+            (cpv/validate-date-time (str param-name " start") start-date)
+            (cpv/validate-date-time (str param-name" end") end-date)))))
+    date-range))
+
 (defn revision-date-validation
   "Validates that revision date parameter contains valid date time strings."
   [concept-type params]
@@ -270,16 +281,16 @@
     (let [revision-date (if (sequential? revision-date)
                           revision-date
                           [revision-date])]
-      (mapcat
-        (fn [value]
-          (let [parts (map s/trim (s/split value #"," -1))
-                [start-date end-date] parts]
-            (if (> (count parts) 2)
-              [(format "Too many commas in revision-date %s" value)]
-              (concat
-                (cpv/validate-date-time "revision-date start" start-date)
-                (cpv/validate-date-time "revision-date end" end-date)))))
-        revision-date))))
+      (validate-multi-date-range revision-date "revision-date"))))
+
+(defn created-at-validation
+  [concept-type params]
+  "Validates that created-at parameter contains valid datetime strings."
+  (when-let [created-at (:created-at params)]
+    (let [created-at (if (sequential? created-at)
+                      created-at
+                      [created-at])]
+      (validate-multi-date-range created-at "created-at"))))
 
 (defn attribute-validation
   [concept-type params]
@@ -528,6 +539,7 @@
                   temporal-format-validation
                   updated-since-validation
                   revision-date-validation
+                  created-at-validation
                   orbit-number-validation
                   equator-crossing-longitude-validation
                   equator-crossing-date-validation
