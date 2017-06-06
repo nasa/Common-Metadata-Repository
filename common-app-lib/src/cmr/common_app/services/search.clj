@@ -1,19 +1,20 @@
 (ns cmr.common-app.services.search
   "This contains common code for implementing search capabilities in a CMR application"
-  (:require [cmr.common.util :as u]
-            [cmr.common.cache.fallback-cache :as fallback-cache]
-            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common-app.cache.cubby-cache :as cubby-cache]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common-app.services.search.query-validation :as qv]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.common-app.services.search.query-model :as qm]
-            ;; Must be required to be available
-            [cmr.common-app.services.search.validators.numeric-range]
-            [cmr.common-app.services.search.validators.date-range]))
+  (:require 
+   [cmr.common.util :as u]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common-app.cache.cubby-cache :as cubby-cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common-app.services.search.query-validation :as qv]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as qm]
+   ;; Must be required to be available
+   [cmr.common-app.services.search.validators.numeric-range]
+   [cmr.common-app.services.search.validators.date-range]))
 
 (def scroll-id-cache-key
   "Key for the scroll-id cache in the system cache map."

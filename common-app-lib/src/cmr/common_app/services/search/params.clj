@@ -1,11 +1,12 @@
 (ns cmr.common-app.services.search.params
   "Contains common code for handling search parameters and converting them into a query model."
-  (:require [cmr.common.util :as u]
-            [cmr.common.services.errors :as errors]
-            [clojure.string :as string]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.query-model :as qm]
-            [camel-snake-kebab.core :as csk]))
+  (:require 
+   [cmr.common.util :as u]
+   [cmr.common.services.errors :as errors]
+   [clojure.string :as string]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-model :as qm]
+   [camel-snake-kebab.core :as csk]))
 
 
 (defn- sanitize-sort-key

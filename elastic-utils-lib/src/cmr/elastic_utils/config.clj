@@ -34,11 +34,4 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
-
-
-(comment
-  (doseq [n (range 1 4)
-          i (range 1 n)]
-    (println "n = " n)
-    (println "i = " i)))
   
