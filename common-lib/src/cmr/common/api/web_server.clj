@@ -96,8 +96,7 @@
     (.setRequestLog
       (doto (NCSARequestLog.)
         (.setLogLatency true)
-        (.setLogTimeZone (.getID (TimeZone/getDefault)))
-        (.setLogDateFormat "yyyy-MM-dd hh:mm:ss.SSS")))))
+        (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
 
 (defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
