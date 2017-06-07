@@ -42,7 +42,7 @@
   in and with all values in lower case. When m is not a map, takes the first
   field from fields-to-compare as key and returns map of the form:
   {
-    field-to-compares m
+    field-to-compare m
   }"
   [m fields-to-compare]
   (if (map? m)
