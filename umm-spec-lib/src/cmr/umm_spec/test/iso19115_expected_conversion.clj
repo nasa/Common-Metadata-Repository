@@ -19,7 +19,8 @@
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
-    [cmr.umm-spec.util :as su]))
+    [cmr.umm-spec.util :as su]
+    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
 
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
@@ -173,10 +174,14 @@
   (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
     (seq (concat other-types input-types))))
 
-(defn- update-iso-topic-categories
+(defn- expected-iso-topic-categories
   "Update ISOTopicCategories values to a default value if it's not one of the specified values."
   [categories]
-  (seq (map iso/iso-topic-value->sanitized-iso-topic-category categories)))
+  (->> categories
+       (map iso-topic-categories/umm->xml-iso-topic-category-map)
+       (map iso-topic-categories/xml->umm-iso-topic-category-map)
+       (remove nil?)
+       seq))
 
 (defn- normalize-bounding-rectangle
   [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
@@ -375,7 +380,7 @@
       (update :RelatedUrls expected-collection-related-urls)
       (update :AdditionalAttributes expected-iso19115-additional-attributes)
       (update :MetadataAssociations group-metadata-assocations)
-      (update :ISOTopicCategories update-iso-topic-categories)
+      (update :ISOTopicCategories expected-iso-topic-categories)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
       (assoc :ContactPersons (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll)))

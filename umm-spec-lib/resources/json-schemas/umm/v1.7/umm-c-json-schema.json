@@ -413,7 +413,9 @@
       "description": "Identifies the topic categories from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List that pertain to this collection, based on the Science Keywords associated with the collection. An ISO Topic Category is a high-level thematic classification to assist in the grouping of and search for available collections.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/ISOTopicCategoryEnum"
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4000
       },
       "minItems": 0
     },

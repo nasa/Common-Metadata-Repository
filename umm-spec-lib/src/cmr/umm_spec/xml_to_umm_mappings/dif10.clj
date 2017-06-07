@@ -144,7 +144,7 @@
    :DataLanguage (dif-util/dif-language->umm-language (value-of doc "/DIF/Dataset_Language"))
    :DataDates (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
-   :ISOTopicCategories (dif-util/parse-iso-topic-categories doc sanitize?)
+   :ISOTopicCategories (dif-util/parse-iso-topic-categories doc)
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (u/with-default (value-of doc "/DIF/Dataset_Progress") sanitize?)
    :LocationKeywords (for [lk (select doc "/DIF/Location")]

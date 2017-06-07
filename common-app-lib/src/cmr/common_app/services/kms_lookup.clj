@@ -32,16 +32,24 @@
    :projects [:short-name :long-name]
    :providers [:short-name :long-name]
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
-   :concepts [:short-name]})
+   :concepts [:short-name]
+   :iso-topic-categories [:short-name]})
 
 (defn- normalize-for-lookup
-  "Takes a map (either a UMM-C keyword or a KMS keyword) and a list of fields from the map which we
-  want to use for comparison. We return a map containing only the keys we are interested in and with
-  all values in lower case."
+  "Takes a map (either a UMM-C keyword or a KMS keyword) or string m,
+  and a list of fields from the map which we want to use for comparison.
+  When m is a map we return a map containing only the keys we are interested
+  in and with all values in lower case. When m is not a map, takes the first
+  field from fields-to-compare as key and returns map of the form:
+  {
+    field-to-compare m
+  }"
   [m fields-to-compare]
-  (->> (select-keys m fields-to-compare)
-       util/remove-nil-keys
-       (util/map-values str/lower-case)))
+  (if (map? m)
+    (->> (select-keys m fields-to-compare)
+         util/remove-nil-keys
+         (util/map-values str/lower-case))
+    {(first fields-to-compare) (str/lower-case m)}))
 
 (defn- generate-lookup-by-umm-c-map
   "Takes a GCMD keywords map and stores them in a way for faster lookup when trying to find

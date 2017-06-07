@@ -434,8 +434,8 @@
 (deftest invalid-keywords-test
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
-            :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are: "
-                          "platforms, instruments, projects, temporal_keywords, spatial_keywords, "
-                          "science_keywords, concepts, archive_centers, data_centers, location_keywords, "
-                          "and providers.")]}
+            :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are:"
+                          " providers, spatial_keywords, iso_topic_categories, instruments,"
+                          " science_keywords, concepts, temporal_keywords, platforms,"
+                          " archive_centers, data_centers, location_keywords, and projects.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))

@@ -83,7 +83,7 @@
        url-type
        {:URL (url/format-url url sanitize?)
         :Description description}))))
-       
+
 (defn parse-temporal-extents
  "Return a list of temporal extents from the XML doc"
  [doc sanitize?]
@@ -109,7 +109,7 @@
      :Purpose (su/truncate (value-of doc "/DIF/Summary/Purpose") su/PURPOSE_MAX sanitize?)
      :DataLanguage (dif-util/dif-language->umm-language (value-of doc "/DIF/Data_Set_Language"))
      :MetadataDates (parse-metadata-dates doc)
-     :ISOTopicCategories (dif-util/parse-iso-topic-categories doc sanitize?)
+     :ISOTopicCategories (dif-util/parse-iso-topic-categories doc)
      :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
      :Projects (for [proj (select doc "/DIF/Project")]
                  {:ShortName (value-of proj "Short_Name")

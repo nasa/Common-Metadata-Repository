@@ -234,6 +234,10 @@
   "Mapping from the DIF10 enumeration dataset languages to ISO 639-2 language code."
   (set/map-invert iso-639-2->dif10-dataset-language))
 
+(def ^:private dif10-dataset-languages
+  "Set of Dataset_Languages supported in DIF10"
+  (set (vals iso-639-2->dif10-dataset-language)))
+
 (def dif-iso-topic-category->umm-iso-topic-category
   "DIF ISOTopicCategory to UMM ISOTopicCategory mapping. Some of the DIF ISOTopicCategory are made
   up based on intuition and may not be correct. Fix them when identified."
@@ -257,13 +261,8 @@
    "TRANSPORTATION" "transportation"
    "UTILITIES/COMMUNICATION" "utilitiesCommunication"})
 
-(def umm-iso-topic-category->dif-iso-topic-category
-  "UMM ISOTopicCategory to DIF ISOTopicCategory mapping."
-  (set/map-invert dif-iso-topic-category->umm-iso-topic-category))
-
-(def ^:private dif10-dataset-languages
-  "Set of Dataset_Languages supported in DIF10"
-  (set (vals iso-639-2->dif10-dataset-language)))
+(def dif-iso-topic-categories
+  (keys dif-iso-topic-category->umm-iso-topic-category))
 
 (defn umm-language->dif-language
   "Return DIF9/DIF10 dataset language for the given umm DataLanguage.
@@ -303,22 +302,10 @@
     (when (seq (common-util/remove-nil-keys access-constraints-record))
       (update access-constraints-record :Description #(util/with-default % sanitize?)))))
 
-(defn- parse-iso-topic-category
-  "Returns the parsed UMM iso topic category for the given dif iso topic category"
-  [dif-itc sanitize?]
-  (if-let [umm-itc (dif-iso-topic-category->umm-iso-topic-category dif-itc)]
-    umm-itc
-    ;; When the DIF iso topic category is not in the defined mappings,
-    ;; if sanitize? is true, we return nil so that the invalid iso topic category will be dropped
-    ;; if sanitize? is false, we return the original value and it will fail the UMM JSON schema validation
-    (when-not sanitize?
-      dif-itc)))
-
 (defn parse-iso-topic-categories
   "Returns parsed UMM IsoTopicCategories"
-  [doc sanitize?]
-  (let [iso-topic-categories (values-at doc "DIF/ISO_Topic_Category")]
-    (keep #(parse-iso-topic-category % sanitize?) iso-topic-categories)))
+  [doc]
+  (values-at doc "DIF/ISO_Topic_Category"))
 
 (defn parse-publication-reference-online-resouce
  "Parse the Online Resource from the XML publication reference. Name and description are hardcoded."

@@ -258,7 +258,6 @@
         (assoc :PublicationReferences nil)
         (assoc :AncillaryKeywords nil)
         (update :RelatedUrls expected-collection-related-urls)
-        (assoc :ISOTopicCategories nil)
         (update :ScienceKeywords expected-science-keywords)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)

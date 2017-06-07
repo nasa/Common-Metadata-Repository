@@ -53,6 +53,12 @@
    (format "Directory name short name [%s] was not a valid keyword."
           (:ShortName directoryname)))
 
+(defn iso-topic-category-not-matches-kms-keywords
+   "Error msg when ISOTopicCategory is not in the KMS."
+   [iso-topic-category]
+   (format "ISO Topic Category [%s] was not a valid keyword."
+           iso-topic-category))
+
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
   [:Category :Topic :Term :VariableLevel1 :VariableLevel2 :VariableLevel3])

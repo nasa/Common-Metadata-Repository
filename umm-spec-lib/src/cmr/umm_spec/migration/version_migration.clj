@@ -11,6 +11,7 @@
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.versioning :refer [versions current-version]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -158,8 +159,8 @@
 
 (defmethod migrate-umm-version [:collection "1.6" "1.7"]
   [context c & _]
-  (-> c
-    (update :ISOTopicCategories #(mapv get-iso-topic-category %))))
+  ;; migration removed CMR-4718
+  c)
 
 (defmethod migrate-umm-version [:collection "1.7" "1.6"]
   [context c & _]

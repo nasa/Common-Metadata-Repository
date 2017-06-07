@@ -8,6 +8,7 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
@@ -120,6 +121,7 @@
       (data-contact/parse-contacts doc sanitize?) ; DataCenters, ContactPersons, ContactGroups
       {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
+       :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc base-xpath)
        :DOI (parse-doi doc)
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
