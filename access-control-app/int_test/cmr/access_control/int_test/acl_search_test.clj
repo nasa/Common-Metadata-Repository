@@ -523,6 +523,10 @@
         acl-group2 (u/ingest-acl admin-token (assoc (u/provider-acl "OPTION_ASSIGNMENT")
                                               :group_permissions
                                               [{:group_id (:concept_id group2) :permissions ["create"]}]))
+        ;; Added for CMR-4043
+        acl-registered-no-perm (u/ingest-acl admin-token (assoc (u/provider-acl "AUDIT_REPORT")
+                                                          :group_permissions
+                                                          [{:user_type "registered" :permissions []}]))
         ;; No user should match this acl since group3 has no members
         acl-group3 (u/ingest-acl admin-token (assoc (u/catalog-item-acl "All Granules")
                                               :group_permissions

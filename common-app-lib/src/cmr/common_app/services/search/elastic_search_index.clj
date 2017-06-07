@@ -1,6 +1,7 @@
 (ns cmr.common-app.services.search.elastic-search-index
   "Implements searching against Elasticsearch. Defines an Elastic Search Index component."
   (:require
+   [cheshire.core :as json]
    [clojure.set :as set]
    [clojurewerkz.elastisch.aggregation :as a]
    [clojurewerkz.elastisch.rest.document :as esd]
@@ -12,11 +13,13 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.services.errors :as e]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
-   [cmr.transmit.connection :as transmit-conn]))
+   [cmr.transmit.connection :as transmit-conn])
+  (:import
+   (clojure.lang ExceptionInfo)))
 
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
@@ -48,6 +51,69 @@
   [concept-type fields]
   (map #(q2e/query-field->elastic-field (keyword %) concept-type) fields))
 
+(defn- query->execution-params
+  "Returns the Elasticsearch execution parameters extracted from the query. These are the
+  actual ES parameters as expected by the elastisch library. The :scroll-id parameter is special
+  and is stripped out before calling elastisch to determine whether a normal search call or a
+  scroll call should be made."
+  [query]
+  (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id]} query
+        scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
+        search-type (if scroll
+                        (es-config/elastic-scroll-search-type)
+                        "query_then_fetch")
+        sort-params (q2e/query->sort-params query)
+        fields (query-fields->elastic-fields
+                 concept-type
+                 (or (:result-fields query) (concept-type+result-format->fields concept-type query)))]
+    {:version true
+     :sort sort-params
+     :size page-size
+     :from offset
+     :fields fields
+     :aggs aggregations
+     :scroll scroll-timeout
+     :scroll-id scroll-id
+     :search_type search-type
+     :highlight highlights}))
+
+(defmulti handle-es-exception
+  "Handles exceptions from ES. Unexpected exceptions are simply re-thrown."
+  (fn [ex scroll-id]
+    (:status (ex-data ex))))
+
+(defmethod handle-es-exception 404
+  [ex scroll-id]
+  (if scroll-id
+    (errors/throw-service-error :not-found (format "Scroll session [%s] does not exist" scroll-id))
+    (throw ex)))
+
+(defmethod handle-es-exception :default
+  [ex _]
+  (throw ex))
+
+(defn- scroll-search 
+  "Performs a scroll search, handling errors where possible."
+  [context scroll-id]
+  (try
+    (esd/scroll (context->conn context) scroll-id :scroll (es-config/elastic-scroll-timeout))
+    (catch ExceptionInfo e
+           (handle-es-exception e scroll-id))))
+
+(defn- do-send
+  "Sends a query to ES, either normal or using a scroll query."
+  [context index-info query]
+  (if-let [scroll-id (:scroll-id query)]
+    (scroll-search context scroll-id)
+    (esd/search (context->conn context) (:index-name index-info) [(:type-name index-info)] query)))
+      
+(defn- send-query
+  "Send the query to ES using either a normal query or a scroll query. Handle socket exceptions
+  by retrying."
+  [context index-info query]
+  (transmit-conn/handle-socket-exception-retries
+    (do-send context index-info query)))
+
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
   (fn [context query]
@@ -55,32 +121,23 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
-  (let [{:keys [page-size offset concept-type aggregations highlights]} query
-        elastic-query (q2e/query->elastic query)
-        sort-params (q2e/query->sort-params query)
+  (let [elastic-query (q2e/query->elastic query)
+        {sort-params :sort-params 
+         aggregations :aggs 
+         highlights :highlight :as execution-params} (query->execution-params query)
+        concept-type (:concept-type query)
         index-info (concept-type->index-info context concept-type query)
-        fields (query-fields->elastic-fields
-                concept-type
-                (or (:result-fields query) (concept-type+result-format->fields concept-type query)))
-        from offset
-        query-map (util/remove-nil-keys (merge elastic-query
-                                               {:version true
-                                                :sort sort-params
-                                                :size page-size
-                                                :from from
-                                                :fields fields
-                                                :aggs aggregations
-                                                :highlight highlights}))]
+        query-map (-> elastic-query
+                      (merge execution-params)
+                      util/remove-nil-keys)]
     (info "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
            "with sort" (pr-str sort-params)
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
-    (let [response (transmit-conn/handle-socket-exception-retries
-                    (esd/search (context->conn context)
-                                (:index-name index-info)
-                                [(:type-name index-info)]
-                                query-map))]
+    (when-let [scroll-id (:scroll-id query-map)]
+      (info "Using scroll-id" scroll-id))
+    (let [response (send-query context index-info query-map)]
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
                  (fn [all-concepts]
@@ -109,7 +166,7 @@
 (defmethod send-query-to-elastic :unlimited
   [context query]
   (when (:aggregations query)
-    (e/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
+    (errors/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
 
   (loop [offset 0 prev-items [] took-total 0]
     (let [results (send-query-to-elastic
@@ -118,7 +175,7 @@
           current-items (get-in results [:hits :hits])]
 
       (when (> total-hits max-unlimited-hits)
-        (e/internal-error!
+        (errors/internal-error!
           (format "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
                   total-hits max-unlimited-hits (pr-str query))))
 
@@ -142,7 +199,7 @@
         hits (get-in e-results [:hits :total])]
     (info "Elastic query took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits])))
-               (e/internal-error! "Failed to retrieve all hits.")))
+               (errors/internal-error! "Failed to retrieve all hits.")))
     e-results))
 
 (defn refresh

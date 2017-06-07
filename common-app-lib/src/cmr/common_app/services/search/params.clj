@@ -1,11 +1,12 @@
 (ns cmr.common-app.services.search.params
   "Contains common code for handling search parameters and converting them into a query model."
-  (:require [cmr.common.util :as u]
-            [cmr.common.services.errors :as errors]
-            [clojure.string :as str]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.query-model :as qm]
-            [camel-snake-kebab.core :as csk]))
+  (:require 
+   [cmr.common.util :as u]
+   [cmr.common.services.errors :as errors]
+   [clojure.string :as string]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.query-model :as qm]
+   [camel-snake-kebab.core :as csk]))
 
 
 (defn- sanitize-sort-key
@@ -20,7 +21,7 @@
   or string with just whitespaces"
   [params]
   (let [not-empty-string? (fn [value]
-                            (not (and (string? value) (= "" (str/trim value)))))]
+                            (not (and (string? value) (= "" (string/trim value)))))]
     (into {} (filter (comp not-empty-string? second) params))))
 
 (defn sanitize-params
@@ -114,7 +115,7 @@
   (cond
     (or (= "true" value) (= "false" value))
     (qm/boolean-condition param (= "true" value))
-    (= "unset" (str/lower-case value))
+    (= "unset" (string/lower-case value))
     qm/match-all
 
     :else
@@ -141,7 +142,7 @@
 
                         :else
                         ;; score sorts default to descending sort, everything else ascending
-                        (if (= "score" (str/lower-case sort-key))
+                        (if (= "score" (string/lower-case sort-key))
                           :desc
                           :asc))
             field (keyword field)]
@@ -154,10 +155,13 @@
    (default-parse-query-level-params concept-type params {}))
   ([concept-type params aliases]
    (let [page-size (Integer. (get params :page-size qm/default-page-size))
+         scroll (when-let [scroll-param (:scroll params)]
+                  (= (string/lower-case scroll-param) "true"))
          {:keys [offset page-num]} params]
-     [(dissoc params :page-size :page-num :offset :sort-key :result-format)
+     [(dissoc params :offset :page-size :page-num :result-format :scroll :sort-key)
       {:concept-type concept-type
        :page-size page-size
+       :scroll scroll
        :offset (cond
                  page-num (* (dec (Integer. page-num)) page-size)
                  offset (Integer. offset)
@@ -186,13 +190,17 @@
   [context concept-type params]
   (let [[params query-attribs] (parse-query-level-params concept-type params)
         options (u/map-keys->kebab-case (get params :options {}))
-        params (dissoc params :options)]
-    (if (empty? params)
-      ;; matches everything
-      (qm/query query-attribs)
-      ;; Convert params into conditions
-      (let [conditions (map (fn [[param value]]
-                              (parameter->condition context concept-type param value options))
-                            params)]
-        (qm/query (assoc query-attribs
-                         :condition (gc/and-conds conditions)))))))
+        scroll-id (:scroll-id context)
+        params (dissoc params :options)
+        query (if (empty? params)
+                ;; matches everything
+                (qm/query query-attribs)
+                ;; Convert params into conditions
+                (let [conditions (map (fn [[param value]]
+                                        (parameter->condition context concept-type param value options))
+                                      params)]
+                  (qm/query (assoc query-attribs :condition (gc/and-conds conditions)))))]
+    ;; add the scroll-id if present
+    (merge query (when scroll-id {:scroll-id scroll-id}))))
+                    
+    

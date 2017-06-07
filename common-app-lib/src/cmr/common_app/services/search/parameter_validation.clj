@@ -4,7 +4,7 @@
    [camel-snake-kebab.core :as csk]
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string :as s]
+   [clojure.string :as string]
    [cmr.common-app.services.search.messages :as msg]
    [cmr.common-app.services.search.params :as p]
    [cmr.common.concepts :as cc]
@@ -27,6 +27,11 @@
   "The maximum value for page-num * page-size"
   {:type Long
    :default 1000000})
+
+(defconfig scrolling-enabled
+  "Indicates whether or not scroll queries are allowed."
+   {:type Boolean
+    :default true})
 
 (def basic-params-config
   "Defines a map of parameter validation types to a set of the parameters."
@@ -83,6 +88,14 @@
        (map first)
        (map #(format "Parameter [%s] must have a single value or multiple values."
                      (csk/->snake_case_string %)))))
+
+(defn validate-boolean-param
+  "Validates a boolean parameter has a value of true or false."
+  [param concept-type params]
+  (when-let [value (get params param)]
+    (when-not (contains? #{"true" "false"} value)
+      [(format "Parameter %s must take value of true or false but was [%s]"
+               (csk/->snake_case_string param) value)])))
 
 (defn- get-ivalue-from-params
   "Get a value from the params as an Integer or nil value. Throws NumberFormatException
@@ -153,6 +166,37 @@
     (catch NumberFormatException e
       ;; This should be handled separately by page-size and page-num validiation
       [])))
+
+(defn scroll-enabled-validation
+  "Validates that scrolling is enabled if the scroll parameter is true"
+  [concept-type params]
+  (when-let [scroll (:scroll params)]
+    (when (and (= "true" (string/lower-case scroll))
+               (not (scrolling-enabled)))
+      ["Scrolling is disabled."])))
+
+(defn scroll-validation 
+  "Validates the the scroll parameter (if present) is boolean."
+  [concept-type params]
+  (validate-boolean-param :scroll concept-type params))
+
+(defn scroll-excludes-page-num-validation
+  "Validates that page-num is not present if scroll is true."
+  [concept-type params]
+  (let [{:keys [scroll page-num]} params]
+    (when (and scroll
+               page-num
+               (= "true" (string/lower-case scroll)))
+      ["page_num is not allowed with scrolling"])))
+
+(defn scroll-excludes-offset-validation
+  "Validates that offset is not present if scroll is true."
+  [concept-type params]
+  (let [{:keys [scroll offset]} params]
+    (when (and scroll
+               offset
+               (= "true" (string/lower-case scroll)))
+      ["offset is not allowed with scrolling"])))
 
 (def string-param-options #{:pattern :ignore-case})
 (def pattern-option #{:pattern})
@@ -229,7 +273,7 @@
 
 (def standard-valid-params
   "The set of standard valid query level parameters."
-  #{:page-size :page-num :offset :sort-key :result-format :options})
+  #{:offset :options :page-num :page-size :result-format :scroll :sort-key})
 
 (defn unrecognized-params-validation
   "Validates that no invalid parameters were supplied"
@@ -263,7 +307,7 @@
   "Validates datetime string is in the given format"
   [date-name dt]
   (try
-    (when-not (s/blank? dt)
+    (when-not (string/blank? dt)
       (dt-parser/parse-datetime dt))
     []
     (catch ExceptionInfo e
@@ -273,7 +317,7 @@
   "Validates datetime range string is in the correct format"
   [dtr]
   (try
-    (when-not (s/blank? dtr)
+    (when-not (string/blank? dtr)
       (dtr-parser/parse-datetime-range dtr))
     []
     (catch ExceptionInfo e
@@ -290,14 +334,6 @@
         errors)
       [])))
 
-(defn validate-boolean-param
-  "Validates a boolean parameter has a value of true or false."
-  [param concept-type params]
-  (when-let [value (get params param)]
-    (when-not (contains? #{"true" "false"} value)
-      [(format "Parameter %s must take value of true or false but was [%s]"
-               (csk/->snake_case_string param) value)])))
-
 (defn unrecognized-standard-query-params-validation
   "Validates that any query parameters passed to the AQL or JSON search endpoints are valid."
   [concept-type params]
@@ -311,7 +347,7 @@
   instance, [:foo :bar :baz] returns \"foo[bar][baz]\""
   [keys]
   (let [[root & descendants] (map csk/->snake_case_string keys)
-        subscripts (s/join (map #(str "[" % "]") descendants))]
+        subscripts (string/join (map #(str "[" % "]") descendants))]
     (str root subscripts)))
 
 (defn validate-map
@@ -359,6 +395,10 @@
   [single-value-validation
    multiple-value-validation
    concept-id-validation
+   scroll-enabled-validation
+   scroll-validation
+   scroll-excludes-page-num-validation
+   scroll-excludes-offset-validation
    page-size-validation
    page-num-validation
    offset-validation

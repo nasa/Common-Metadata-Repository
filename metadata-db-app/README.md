@@ -46,17 +46,14 @@
 
   {
       "concept-type": "service",
-      "native-id": "provider service id",
-      "concept-id": "S1-PROV1",
-      "provider-id": "PROV1",
+      "native-id": "mod10cm",
       "user-id": "user101",
-      "metadata": "xml here",
-      "format": "application/serf+xml",
+      "metadata": "service edn here",
+      "format": "application/edn",
       "revision-id": 1, //(optional field)
       "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
-        "entry-id": "short_V01"
-        "entry-title": "Dataset V01"
+        "service-name": "MOD10CM"
       }
     }
 

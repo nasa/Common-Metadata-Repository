@@ -1,5 +1,5 @@
-(ns cmr.system-int-test.ingest.variable-ingest-test
-  "CMR variable ingest integration tests."
+(ns cmr.system-int-test.ingest.service-ingest-test
+  "CMR service ingest integration tests."
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
@@ -7,12 +7,12 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.variable-util :as variable-util]))
+   [cmr.system-int-test.utils.service-util :as service-util]))
 
 (use-fixtures :each (ingest-util/reset-fixture))
 
-(deftest create-variable-ingest-test
-  (testing "ingest a new variable"
+(deftest create-service-ingest-test
+  (testing "ingest a new service"
     (let [;; Groups
           update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
           ;; Tokens
@@ -22,17 +22,17 @@
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          variable-data (variable-util/make-variable)]
+          service-data (service-util/make-service)]
       (is (e/permitted? update-token
                         update-grant-id
                         update-group-id
                         (ingest-util/get-ingest-update-acls update-token)))
-      (let [{:keys [status concept-id revision-id]} (variable-util/create-variable
-                                                     update-token variable-data)]
+      (let [{:keys [status concept-id revision-id]} (service-util/create-service
+                                                     update-token service-data)]
         (is (= 201 status))
         (is (= 1 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= (:name variable-data)
+        (is (= (:name service-data)
                (:name (mdb/get-concept concept-id revision-id))))
         ;; XXX Once CMR-4172 (metdata-db services support) was added, we tried to
         ;;     enable the following test; this required the work that we've since
@@ -40,14 +40,14 @@
         ;;     as-yet unfiled ticket for addressing what seems to be an ACL caching
         ;;     issue. Once those two tickets are resolved, this test will be
         ;;     enabled and should then pass.
-        ; (variable-util/assert-variable-saved variable-data
-        ;                                      "umm-var-user1"
-        ;                                      concept-id
-        ;                                      revision-id)
+        ; (service-util/assert-service-saved service-data
+        ;                                    "umm-var-user1"
+        ;                                    concept-id
+        ;                                    revision-id)
         ))))
 
-(deftest create-variable-ingest-permissions-test
-  (testing "ingest create variable permissions"
+(deftest create-service-ingest-permissions-test
+  (testing "ingest create service permissions"
     (let [;; Groups
           guest-group-id (e/get-or-create-group
                           (s/context) "umm-var-guid1")
@@ -79,7 +79,7 @@
                            (assoc (s/context) :token update-token)
                            update-group-id
                            :update)
-          variable-data (variable-util/make-variable)]
+          service-data (service-util/make-service)]
       (testing "acl setup and grants for different users"
         (is (e/not-permitted? guest-token
                               guest-grant-id
@@ -93,9 +93,9 @@
                           update-grant-id
                           update-group-id
                           (ingest-util/get-ingest-update-acls update-token))))
-      (testing "create responses"
+      (testing "ingest service creation permissions"
         (are3 [token expected]
-          (let [response (variable-util/create-variable token variable-data)]
+          (let [response (service-util/create-service token service-data)]
             (is (= expected (:status response))))
           "System update permission allowed"
           update-token 201

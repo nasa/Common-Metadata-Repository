@@ -147,7 +147,8 @@
         ;; Concurrent update - re-queue concept update
         (ingest-events/publish-ingest-event
          context
-         (ingest-events/ingest-collection-bulk-update-event task-id
+         (ingest-events/ingest-collection-bulk-update-event provider-id
+                                                            task-id
                                                             concept-id
                                                             bulk-update-params))
         (data-bulk-update/update-bulk-update-task-collection-status

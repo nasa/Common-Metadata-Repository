@@ -1,28 +1,29 @@
 (ns cmr.system-int-test.utils.ingest-util
   (:require
-   [clojure.test :refer :all]
-   [clj-http.client :as client]
-   [clojure.string :as str]
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.data :as d]
    [clojure.data.xml :as x]
-   [cmr.common.xml :as cx]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.umm.echo10.echo10-collection :as c]
-   [cmr.umm.echo10.granule :as g]
-   [cmr.system-int-test.data2.provider-holdings :as ph]
-   [cmr.umm.echo10.echo10-core :as echo10]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.access-control :as ac]
-   [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.system-int-test.utils.index-util :as index]
-   [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.ingest.config :as icfg]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.provider-holdings :as ph]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-   [cmr.common-app.test.side-api :as side]
-   [cmr.ingest.config :as icfg])
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm.echo10.echo10-collection :as c]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.echo10.granule :as g])
   (:import
    [java.lang.NumberFormatException]))
 
@@ -53,6 +54,16 @@
   [variable endpoint-url]
   (client/post endpoint-url
               {:body (json/generate-string variable)
+               :content-type :json
+               :throw-exceptions false
+               :connection-manager (s/conn-mgr)
+               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
+(defn- create-service-through-url
+  "Create the service by http POST on the given url"
+  [service endpoint-url]
+  (client/post endpoint-url
+              {:body (json/generate-string service)
                :content-type :json
                :throw-exceptions false
                :connection-manager (s/conn-mgr)
@@ -278,6 +289,38 @@
   [params]
   (parse-ingest-response
     (client/request (assoc params :throw-exceptions false :connection-manager (s/conn-mgr))) {}))
+
+(defn parse-map-response
+  "Parse the response as a Clojure map, optionally providing a data validation
+  function."
+  ([response]
+    (parse-map-response response identity))
+  ([{:keys [status body]} data-validator]
+    (let [body (util/kebab-case-data body data-validator)]
+      (if (map? body)
+        (assoc body :status status)
+        {:status status
+         :body body}))))
+
+(defmulti assert-convert-kebab-case
+  "For use in asserting that the field names in the map returned by the ingest
+  app do not have dashes."
+  (fn [_ x] (type x)))
+
+(defmethod assert-convert-kebab-case clojure.lang.IPersistentMap
+  [check-keys concept-map]
+  (->> check-keys
+       (select-keys concept-map)
+       (empty?)
+       (assert)))
+
+(defmethod assert-convert-kebab-case clojure.lang.Sequential
+  [check-keys concept-maps]
+  (map (partial assert-convert-kebab-case check-keys) concept-maps))
+
+(defmethod assert-convert-kebab-case java.lang.String
+  [check-keys concept-map]
+  (assert-convert-kebab-case check-keys (json/parse-string concept-map)))
 
 (defn concept
   "Returns the concept map for ingest"
@@ -572,6 +615,15 @@
         params (merge params (when token {:headers {transmit-config/token-header token}}))
         response (client/request params)]
    (parse-bulk-update-task-status-response response options))))
+
+(defn get-ingest-update-acls
+  "Get a token's system ingest management update ACLs."
+  [token]
+  (-> (s/context)
+      (assoc :token token)
+      (acl/get-permitting-acls :system-object
+                               echo-util/ingest-management-acl
+                               :update)))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
