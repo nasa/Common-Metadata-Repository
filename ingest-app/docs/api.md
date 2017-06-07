@@ -485,7 +485,7 @@ Example output:
 
 The bulk update API is used perform the same collection update to multiple concepts in one call. Bulk update is currently for collections only, granules are not supported.
 
-Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM, **making the native format of the collection now UMM**. Previous revisions of the collection are retained in the original native format.
+Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format.
 
 Updated collections are validated through ingest validation and the updates will not be saved if the updated collection is not valid UMM or fails business rule validation. The error will be recorded in the individual collection status, which can be queried via the status endpoint. Collection validation warnings will not prevent saving the updated collection and the warnings will be recorded in the individual collection status.
 
@@ -521,8 +521,8 @@ The POST request takes the following parameters:
   * Concept-ids (required) - a list of concept ids to update
   * Update type (required) - choose from the enumeration: ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE, FIND_AND_REMOVE
   * Update field (required) - choose from the enumeration: SCIENCE_KEYWORDS, LOCATION_KEYWORDS, DATA_CENTERS, PLATFORMS, INSTRUMENTS
-  * Update value (required when update type is ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE) - UMM representation of the update to make
-  * Find value (required when update type is FIND_AND_REPLACE or FIND_AND_REMOVE) - UMM representation of the data to find
+  * Update value (required when update type is ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE) - UMM-JSON representation of the update to make
+  * Find value (required when update type is FIND_AND_REPLACE or FIND_AND_REMOVE) - UMM-JSON representation of the data to find
 
 The return value includes a status code indicating that the bulk update was successfully initiated, any errors if not successful, and on success a task-id that can be used for querying the bulk update status. The bulk update will be run asynchronously and the status of the overall bulk update task as well as the status of individual collection updates can be queried using the task id.
 
