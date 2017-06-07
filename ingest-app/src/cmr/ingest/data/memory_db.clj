@@ -44,14 +44,14 @@
     [this task-id]
     (some->> @collection-status-atom
              (into [])
-             (filter #(= task-id (str (:task-id %))))
+             (filter #(= (str task-id) (str (:task-id %))))
              (map #(select-keys % [:concept-id :status :status-message]))))
 
   (get-bulk-update-collection-status
     [this task-id concept-id]
     (let [coll-status (some->> @collection-status-atom
                                (some #(when (and (= concept-id (:concept-id %))
-                                                 (= task-id (:task-id %)))
+                                                 (= (str task-id) (:task-id %)))
                                             %)))]
       (select-keys coll-status [:concept-id :status :status-message])))
 

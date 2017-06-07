@@ -28,7 +28,7 @@
    :tag-association (into common-columns
                           [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
-   :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])
+   :service (into common-columns [:service_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
    :variable (into common-columns [:variable_name :measurement :user_id])

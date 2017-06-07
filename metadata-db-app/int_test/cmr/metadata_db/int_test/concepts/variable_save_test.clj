@@ -3,7 +3,7 @@
   checking for proper error handling."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer (are2)]
+   [cmr.common.util :refer (are3)]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]))
 
@@ -21,10 +21,9 @@
 (deftest save-variable-test
   (c-spec/general-save-concept-test :variable ["CMR"]))
 
-
 (deftest save-variable-specific-test
   (testing "saving new variables"
-    (are2 [variable exp-status exp-errors]
+    (are3 [variable exp-status exp-errors]
           (let [{:keys [status errors]} (util/save-concept variable)]
             (is (= exp-status status))
             (is (= (set exp-errors) (set errors))))

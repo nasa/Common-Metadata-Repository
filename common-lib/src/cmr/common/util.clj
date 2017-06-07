@@ -2,6 +2,7 @@
   "Utility functions that might be useful throughout the CMR."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
    [clojure.java.io :as io]
    [clojure.set :as set]
@@ -855,3 +856,18 @@
     (sequential? data) (map map-keys->snake_case data)
     (map? data) (map-keys->snake_case data)
     :else data))
+
+(defn kebab-case-data
+  "Returns the data with variables converted to kebab case.
+
+  Alternatively, you can provide a function that takes the data as an argument,
+  run before the mapping takes place. This is useful for tests when you want to
+  perform assertion checks upon the raw data, before transofmration."
+  ([data]
+    (cond
+      (sequential? data) (map map-keys->kebab-case data)
+      (map? data) (map-keys->kebab-case data)
+      :else data))
+  ([data fun]
+    (fun data)
+    (kebab-case-data data)))

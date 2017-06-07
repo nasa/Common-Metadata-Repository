@@ -1,11 +1,12 @@
 (ns cmr.metadata-db.services.concept-validations
-  (:require [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.provider-service :as providers]
-            [cmr.common.concepts :as cc]
-            [clojure.set :as set]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.date-time-parser :as p]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.concepts :as cc]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.provider-service :as providers]))
 
 (def MAX_REVISION_ID
   "The maximum value a revision ID can take so as not to conflict with transaction ids.
@@ -42,7 +43,7 @@
    :granule {true #{:parent-collection-id}
              false #{:parent-collection-id :parent-entry-title :granule-ur}}
    :service {true #{}
-             false #{:entry-id :entry-title}}
+             false #{:service-name}}
    :tag-association {true #{}
                      false #{:associated-concept-id :associated-revision-id}}
    :variable {true #{}
@@ -182,6 +183,12 @@
                                   concept-id-matches-concept-fields-validation-no-provider
                                   extra-fields-missing-validation)))
 
+(def service-concept-validation
+  "Builds a function that validates a concept map that has no provider and returns a list of errors"
+  (util/compose-validations (conj base-concept-validations
+                                  concept-id-matches-concept-fields-validation-no-provider
+                                  extra-fields-missing-validation)))
+
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data default-concept-validation))
@@ -205,6 +212,10 @@
 (def validate-variable-concept
   "validates a variable concept. Throws an error if invalid."
   (util/build-validator :invalid-data variable-concept-validation))
+
+(def validate-service-concept
+  "validates a service concept. Throws an error if invalid."
+  (util/build-validator :invalid-data service-concept-validation))
 
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
@@ -234,6 +245,10 @@
 (defmethod validate-concept :variable-association
   [concept]
   (validate-association-concept concept))
+
+(defmethod validate-concept :service
+  [concept]
+  (validate-service-concept concept))
 
 (defmethod validate-concept :default
   [concept]

@@ -224,10 +224,16 @@
   [context concept-type param value options]
   ;; reject non-existent users
   (groups/validate-members-exist context [value])
-
   (let [groups (->> (auth-util/get-sids context value)
                     (map name))]
-    (cp/string-parameter->condition concept-type :permitted-group groups options)))
+    (gc/and
+     (gc/or
+      (nf/parse-nested-condition :group-permission {:permission "create"} false false)
+      (nf/parse-nested-condition :group-permission {:permission "read"} false false)
+      (nf/parse-nested-condition :group-permission {:permission "update"} false false)
+      (nf/parse-nested-condition :group-permission {:permission "delete"} false false)
+      (nf/parse-nested-condition :group-permission {:permission "order"} false false))
+     (cp/string-parameter->condition concept-type :permitted-group groups options))))
 
 (defmethod cp/parameter->condition :legacy-guid
   [context concept-type param value options]

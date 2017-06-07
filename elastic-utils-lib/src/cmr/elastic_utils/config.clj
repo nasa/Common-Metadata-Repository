@@ -1,7 +1,8 @@
 (ns cmr.elastic-utils.config
   "Contains configuration functions for communicating with elastic search"
-  (:require [cmr.common.config :as config :refer [defconfig]]
-            [clojure.data.codec.base64 :as b64]))
+  (:require 
+   [clojure.data.codec.base64 :as b64]
+   [cmr.common.config :as config :refer [defconfig]]))
 
 (defconfig elastic-host
   "Elastic host or VIP."
@@ -15,6 +16,14 @@
     "Token used for basic auth authentication with elastic."
     {:default (str "Basic " (b64/encode (.getBytes "echo-elasticsearch")))})
 
+(defconfig elastic-scroll-timeout 
+  "Timeout for ES scrolling"
+  {:default "5m"})
+
+(defconfig elastic-scroll-search-type
+  "Search type to use with scrolling - either 'scan' or 'query_then_fetch'"
+  {:default "query_then_fetch"})
+
 (defn elastic-config
   "Returns the elastic config as a map"
   []
@@ -25,3 +34,4 @@
    ;; to retry again
    :retry-handler nil
    :admin-token (elastic-admin-token)})
+  

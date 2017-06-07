@@ -113,3 +113,25 @@
   (format "A variable with variable-key [%s] already exists with concept id [%s]."
           (:variable-key variable)
           concept-id))
+
+(defn service-already-exists
+  [service concept-id]
+  (format "A service with native-id [%s] already exists with concept id [%s]."
+          (:native-id service) concept-id))
+
+(def token-required-for-service-modification
+  "Services cannot be modified without a valid user token.")
+
+(defn service-deleted
+  [service-name]
+  (format "Variable with service-name [%s] was deleted." service-name))
+
+(defn service-does-not-exist
+  [service-name]
+  (format "Service could not be found with service-name [%s]" service-name))
+
+(defn service-already-exists
+  [service concept-id]
+  (format "A service with service-name [%s] already exists with concept id [%s]."
+          (:service-name service)
+          concept-id))

@@ -41,9 +41,9 @@
   ONE_MB)
 
 (def MAX_REQUEST_BODY_SIZE
- "The maximum size of a request to body. This is set to 5 MB prevent large requests coming in
+ "The maximum size of a request to body. This is set to 500KB prevent large requests coming in
   that cause out of memory exceptions. A large ISO document like AST_L1A can be 120K characters which
-  would take up about 240KB in Java."
+  would take up about 240KB in Java. This value is set to 5 MB."
  (* 5 ONE_MB))
 
 (defn- routes-fn-verify-size
@@ -85,19 +85,6 @@
                                                  (+ total-bytes-read bytes-read)))))
               (recur (+ total-bytes-read bytes-read)))))))))
 
-(defconfig time-zone
-  "The time zone where the web server is running. Needed because getting the time zone using
-   java.util.TimeZone is not returning the correct information on EC2 instances running in NGAP.
-
-   The default value of \"America/New_York\" will work for all of our NGAP EC2 instances (they are
-   all in US_EAST_1) and for developers working on the east coast.
-
-   If you enable access logging locally and need to set a different time zone you can figure out
-   the string to set by running:
-
-   (.getID (java.util.TimeZone/getDefault)))"
-  {:default "America/New_York"})
-
 (defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
   application logging. As a result the access log entries will be in the same log as the
@@ -108,8 +95,7 @@
     (.setRequestLog
       (doto (NCSARequestLog.)
         (.setLogLatency true)
-        (.setLogTimeZone (time-zone))
-        (.setLogDateFormat "yyyy-MM-dd hh:mm:ss.SSS")))))
+        (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
 
 (defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than

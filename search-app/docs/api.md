@@ -168,6 +168,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `page_size` - number of results per page - default is 10, max is 2000
  * `page_num` - The page number to return
  * `offset` - As an alternative to page_num, a 0-based offset of individual results may be specified
+ * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
  * `sort_key` - Indicates one or more fields to sort on. Described below
  * `pretty` - return formatted results if set to true
  * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
@@ -182,6 +183,14 @@ The CMR contains many more results than can be returned in a single response so 
 `offset` is a 0 based index into the result set of a query. If a search matched 50 items the parameters `offset=3&page_size=5` would return 4th result through the 8th result.
 
 You can not page past the 1 millionth item. Please contact the CMR Team through the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) if you need to retrieve items in excess of 1 million from the CMR. Additionally granule queries which do not target a set of collections are limited to paging up to the 10000th item.
+
+#### <a name="scrolling-details"></a> Scrolling Details
+
+Scrolling allows the retrieval of all results of a query in an efficient manner. This parameter is primarily intended to support harvesting of metadata. Scrolling is only supported for parameter queries, but all query parameters are available with the exception of the `page_num` and `offset` parameters. The response format for scrolling queries is identical to the response for normal paremter queries with the exception of the addition of the `CMR-Scroll-Id` header. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
+
+Scrolling is *session based*; the first search conducted with the `scroll` parameter set to `true` will return a session id in the form of a `CMR-Scroll-Id` header. This header should be included in subsequent searches until the desired number of results have been retrieved. Sessions time out after 10 minutes of inactivity; each new query before the timeout is reached with a given `CMR-Scroll-Id` header will reset the timeout to 10 minutes. Queries occurring after a session has timed out will result in an HTTP 404 status code and error message.
+
+When all the results have been returned subsequent calls using the same `CMR-Scroll-Id` header will return an empty list.
 
 #### <a name="parameter-options"></a> Parameter Options
 

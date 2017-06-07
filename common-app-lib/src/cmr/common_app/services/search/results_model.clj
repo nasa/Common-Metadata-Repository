@@ -18,6 +18,9 @@
    ;; The number of hits
    hits
 
+   ;; The session-id to be used for subsequent scroll requests
+   scroll-id
+
    ;; The number of milliseconds the search took
    took
 

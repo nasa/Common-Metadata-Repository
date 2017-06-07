@@ -2,11 +2,12 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.query-model :as common-qm]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
@@ -169,14 +170,39 @@
                         (assoc result-format :format :umm-json-results)
                         result-format)]
     (-> params
-        (dissoc :path-w-extension)
-        (dissoc :token)
+        (dissoc :path-w-extension :token)
         (assoc :result-format result-format))))
+
+(defn- get-scroll-id-from-cache
+  "Returns the full ES scroll-id from the cache using the short scroll-id as a key. Throws a
+  service error :not-found if the key does not exist in the cache."
+  [context short-scroll-id]
+  (when short-scroll-id
+    (if-let [scroll-id (-> context
+                           (cache/context->cache search/scroll-id-cache-key)
+                           (cache/get-value short-scroll-id))]
+      scroll-id
+      (svc-errors/throw-service-error 
+       :not-found 
+       (format "Scroll session [%s] does not exist" short-scroll-id)))))
+
+(defn- add-scroll-id-to-cache
+  "Adds the given ES scroll-id to the cache and returns the generated key"
+  [context scroll-id]
+  (when scroll-id
+    (let [short-scroll-id (str (hash scroll-id))
+          id-cache (cache/context->cache context search/scroll-id-cache-key)]
+      (cache/set-value id-cache short-scroll-id scroll-id)
+      short-scroll-id)))
 
 (defn- search-response
   "Returns the response map for finding concepts"
-  [response]
-  (common-routes/search-response (update response :result-format mt/format->mime-type)))
+  [context response]
+  (let [short-scroll-id (add-scroll-id-to-cache context (:scroll-id response))
+        response (-> response
+                     (update :result mt/format->mime-type)
+                     (update :scroll-id (constantly short-scroll-id)))]
+    (common-routes/search-response response)))
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
@@ -187,13 +213,15 @@
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format (:result-format params)) json-query params))
         results (query-svc/find-concepts-by-json-query ctx concept-type params json-query)]
-    (search-response results)))
+    (search-response ctx results)))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and return the response"
   [ctx path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        ctx (assoc ctx :query-string body)
+        short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
+        scroll-id (get-scroll-id-from-cache ctx short-scroll-id)
+        ctx (assoc ctx :query-string body :scroll-id scroll-id)
         params (process-params params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
@@ -201,12 +229,12 @@
                         (rfh/printable-result-format result-format) (pr-str params)))
         search-params (lp/process-legacy-psa params)
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
-    (search-response results)))
+    (search-response ctx results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [ctx path-w-extension params headers body]
-  (let [content-type-header (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER))]
+  (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
@@ -218,7 +246,7 @@
       {:status 415
        :headers {common-routes/CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
-                  (get headers (str/lower-case common-routes/CONTENT_TYPE_HEADER)) "]")})))
+                  (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER)) "]")})))
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
@@ -239,7 +267,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
-    (search-response results)))
+    (search-response ctx results)))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
@@ -268,15 +296,18 @@
                       concept-id
                       revision-id))
         ;; else, revision-id is nil
-        (search-response (query-svc/find-concept-by-id-and-revision
-                           ctx result-format concept-id revision-id)))
+        (search-response ctx (query-svc/find-concept-by-id-and-revision
+                              ctx 
+                              result-format 
+                              concept-id 
+                              revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      concept-type-supported-mime-types
                                                      mt/native)
             ;; XML means native in this case
             result-format (if (= result-format :xml) :native result-format)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        (search-response (query-svc/find-concept-by-id ctx result-format concept-id))))))
+        (search-response ctx (query-svc/find-concept-by-id ctx result-format concept-id))))))
 
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
@@ -285,8 +316,7 @@
     (info (format "Searching for deleted collections from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
-    (search-response
-     (query-svc/get-deleted-collections ctx params))))
+    (search-response ctx (query-svc/get-deleted-collections ctx params))))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
