@@ -8,10 +8,11 @@
    [cmr.acl.core :as acl]
    [cmr.ingest.api.multipart :as mp]
    [cmr.ingest.api.routes :as api-routes]
-   [cmr.ingest.site.routes :as site-routes]
+   [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as context]
+   [cmr.ingest.site.routes :as site-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.mime-types :as mt]
    [compojure.core :refer [routes]]
@@ -34,6 +35,10 @@
 
 (defn handlers [system]
   (-> (build-routes system)
+      ;; add-authentication-handler adds the token and client id for user to
+      ;; the context add-user-id-and-sids-handler lazy adds the user id and
+      ;; sids for that token Need to maintain this order (works backwards).
+      context-augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params

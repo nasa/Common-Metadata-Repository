@@ -716,6 +716,9 @@
 (defn clear-caches
   "Clears caches in the ingest application"
   []
+  (client/post (url/dev-system-clear-cache-url)
+               {:connection-manager (s/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
   (client/post (url/ingest-clear-cache-url)
                {:connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
