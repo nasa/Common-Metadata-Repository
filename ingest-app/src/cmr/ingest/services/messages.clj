@@ -28,8 +28,8 @@
 
 (defn platform-not-matches-kms-keywords
   [platform]
-  (format "Platform short name [%s] and long name [%s] was not a valid keyword combination."
-          (:ShortName platform) (:LongName platform)))
+  (format "Platform short name [%s], long name [%s], and type [%s] was not a valid keyword combination."
+          (:ShortName platform) (:LongName platform) (:Type platform)))
 
 (defn instrument-not-matches-kms-keywords
   [instrument]
