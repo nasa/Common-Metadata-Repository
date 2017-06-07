@@ -3,6 +3,7 @@
    These tests are to ensure proper CMR Harvesting functionality."
   (:require
    [clj-http.client :as client]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -71,24 +72,27 @@
         _ (ingest/delete-concept deleted-concept)
 
         _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
-        youngling-collection (d/ingest-umm-spec-collection
-                               "PROV1"
-                               (data-umm-c/collection
-                                 {:EntryTitle "youngling"
-                                  :Version "v1"
-                                  :ShortName "Oldie 2"}))
+        whippersnapper-collection (d/ingest-umm-spec-collection
+                                   "PROV1"
+                                   (data-umm-c/collection
+                                     {:EntryTitle "youngling"
+                                      :Version "v1"
+                                      :ShortName "Oldie 2"}))
 
         _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
         young-granule (d/ingest "PROV1"
                           (dg/granule-with-umm-spec-collection
-                            youngling-collection (:concept-id youngling-collection)))]
+                            whippersnapper-collection (:concept-id whippersnapper-collection)))]
 
     (index/wait-until-indexed)
     (testing "Old and deleted collections should not be found."
       (let [references (search/find-concepts-with-param-string
                          "collection"
-                         "has-granules-created-at=2014-01-01T10:00:00Z")]
-        (d/refs-match? [youngling-collection regular-collection] references)))
+                         "has-granules-created-at=2014-01-01T10:00:00Z")
+            range-references (search/find-concepts-with-param-string
+                               "collection"
+                               "has-granules-created-at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")]
+        (d/refs-match? [regular-collection] range-references)))
     (testing "Granule search by created-at"
       (let [references (search/find-concepts-with-param-string
                          "granule"
@@ -99,6 +103,6 @@
         (let [{:keys [status errors]} (search/find-concepts-with-param-string
                                         "collection" params)]
           (= [400 [(format "Parameter [%s] was not recognized."
-                           (first (clojure.string/split params #"=")))]]
+                           (first (string/split params #"=")))]]
              [status errors]))
         "birthday=2011-01-01T00:00:00Z&has-granules-created-at=2014-01-01T10:00:00Z"))))

@@ -261,7 +261,7 @@
 (defn- find-concepts
   "Invokes query service to find results and returns the response.
 
-  This function supports several approaches/cases/whatevs for obtaining concept data:
+  This function supports several cases for obtaining concept data:
   * By JSON query
   * By parameter string and URL parameters
   * Collections from Granules - due to the fact that ES doesn't suport joins in the way

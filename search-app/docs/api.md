@@ -1190,9 +1190,11 @@ Find collections that match all of the 'project' param values
 
 #### <a name="c-with-new-granules"></a> Find collections with new granules
 
-  Find collections containing granules added after a given date. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
+  This supports option `and`.
 
-  curl "%CMR_ENDPOINT%/collections?has-granules-added-after=\[\]2015-01-01T10:00:00Z"
+  Find collections containing granules added within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+  curl "%CMR_ENDPOINT%/collections?has_granules_created_at=\[\]2015-01-01T10:00:00Z"
 
 #### <a name="c-revision-date"></a> Find collections by revision_date
 

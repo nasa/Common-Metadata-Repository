@@ -15,6 +15,7 @@
    [cheshire.core :as json]
    [clj-time.format :as time-format]
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -268,10 +269,11 @@
   "Finds granules that were added after a given date and return their parent collection ids.
    Supports CMR Harvesting."
   [context params]
-  (when-let [granule-created-at (time-format/parse (:has-granules-created-at params))]
+  (when-let [[start-date end-date] (mapv time-format/parse
+                                         (string/split (:has-granules-created-at params) #","))]
     (let [query (qm/query {:concept-type :granule
                            :condition (qm/date-range-condition
-                                       :created-at granule-created-at nil)
+                                       :created-at start-date end-date)
                            :page-size :unlimited
                            :result-format :query-specified
                            :result-fields [:collection-concept-id]})

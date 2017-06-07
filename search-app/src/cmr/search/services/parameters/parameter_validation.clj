@@ -110,7 +110,6 @@
    :temporal (conj exclude-plus-and-or-option :limit-to-granules)
    :revision-date cpv/and-option
    :created-at cpv/and-option
-   :granule-created-at cpv/and-option
    :highlights highlights-option
 
    ;; Tag related parameters
