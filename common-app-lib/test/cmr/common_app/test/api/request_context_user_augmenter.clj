@@ -1,9 +1,9 @@
-(ns cmr.search.test.api.request-context-user-augmenter
+(ns cmr.common-app.test.api.request-context-user-augmenter
   "Tests to verify functionality in cmr.search.api.request-context-user-augmenter namespace."
   (:require
    [clojure.test :refer :all]
+   [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common.cache :as cache]
-   [cmr.search.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common.util :as util]))
 
 (deftest token-and-user-id-context-cache
