@@ -245,7 +245,7 @@
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
-        collections-with-new-granules (query-svc/new-granules->collection-ids ctx params)
+        collections-with-new-granules (query-svc/get-collection-ids-from-new-granules ctx params)
         search-params (-> params
                           (assoc :echo-collection-id collections-with-new-granules)
                           (dissoc :has-granules-created-at)

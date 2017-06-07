@@ -77,7 +77,7 @@
                                    (data-umm-c/collection
                                      {:EntryTitle "youngling"
                                       :Version "v1"
-                                      :ShortName "Oldie 2"}))
+                                      :ShortName "whippersnapper"}))
 
         _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
         young-granule (d/ingest "PROV1"

@@ -265,7 +265,7 @@
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
 
-(defn new-granules->collection-ids
+(defn get-collection-ids-from-new-granules
   "Finds granules that were added after a given date and return their parent collection ids.
    Supports CMR Harvesting."
   [context params]
@@ -278,7 +278,7 @@
                            :result-format :query-specified
                            :result-fields [:collection-concept-id]})
           new-granules (:items (qe/execute-query context query))]
-      (map :collection-concept-id new-granules))))
+      (distinct (map :collection-concept-id new-granules)))))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"

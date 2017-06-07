@@ -1194,7 +1194,7 @@ Find collections that match all of the 'project' param values
 
   Find collections containing granules added within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-  curl "%CMR_ENDPOINT%/collections?has_granules_created_at=\[\]2015-01-01T10:00:00Z"
+  curl "%CMR_ENDPOINT%/collections?has_granules_created_at=\[\]2015-01-01T10:00:00Z,"
 
 #### <a name="c-revision-date"></a> Find collections by revision_date
 
