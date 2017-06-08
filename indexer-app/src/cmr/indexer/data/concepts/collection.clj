@@ -195,7 +195,7 @@
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                               :Geometry :CoordinateSystem])
         permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
-        measurement (remove nil?
+        measurements (remove nil?
                             (map #(variable/variable-association->measurement context %)
                                  variable-associations))]
     (merge {:concept-id concept-id
@@ -297,8 +297,8 @@
                                           [(:tag-key ta) (util/remove-nil-keys
                                                           {:data (:data ta)})])))))
             :variables (map variable/variable-association->elastic-doc variable-associations)
-            :measurement measurement
-            :measurement.lowercase (map str/lower-case measurement)}
+            :measurements measurements
+            :measurements.lowercase (map str/lower-case measurements)}
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)

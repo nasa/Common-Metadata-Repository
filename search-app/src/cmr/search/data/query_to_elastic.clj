@@ -70,7 +70,8 @@
                           :sensor :sensor-sn
                           :data-center-h :organization.humanized2
                           :processing-level-id-h :processing-level-id.humanized2
-                          :revision-date :revision-date2}]
+                          :revision-date :revision-date2
+                          :measurement :measurements}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -121,7 +122,8 @@
    :sensor-sn :sensor
    :organization.humanized2 :data-center-h
    :processing-level-id.humanized2 :processing-level-id-h
-   :revision-date2 :revision-date})
+   :revision-date2 :revision-date
+   :measurements :measurement})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
@@ -144,7 +146,8 @@
    :two-d-coordinate-system-name "two-d-coord-name.lowercase"
    :platform "platform-sn.lowercase"
    :instrument "instrument-sn.lowercase"
-   :sensor "sensor-sn.lowercase"})
+   :sensor "sensor-sn.lowercase"
+   :measurement "measurements.lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
