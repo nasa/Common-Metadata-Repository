@@ -142,7 +142,7 @@
       [:DOI (:DOI doi)]
       [:Authority (:Authority doi)]])
      [:CollectionDataType (:CollectionDataType c)]
-     [:Orderable "true"]
+     [:Orderable "false"]
      [:Visible "true"]
      (when-let [revision-date (date/metadata-update-date c)]
        [:RevisionDate (f/unparse (f/formatters :date-time) revision-date)])
