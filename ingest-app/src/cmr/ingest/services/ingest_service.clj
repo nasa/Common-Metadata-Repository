@@ -397,6 +397,22 @@
           (dissoc :revision-date :transaction-id)
           (update-in [:revision-id] inc)))))
 
+(defn delete-variable
+  "Deletes a tag with the given concept id"
+  [context variable-key]
+  (let [existing-concept (fetch-variable-concept context variable-key)]
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          ;; Remove fields not allowed when creating a tombstone.
+          (dissoc :metadata :format :provider-id :native-id :transaction-id)
+          (assoc :deleted true
+                 :user-id (context-util/context->user-id
+                           context
+                           msg/token-required-for-variable-modification))
+          (dissoc :revision-date)
+          (update-in [:revision-id] inc)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Service Ingest Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

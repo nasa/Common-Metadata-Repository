@@ -121,7 +121,11 @@
         (PUT "/:variable-id"
              [variable-id :as {:keys [request-context headers body]}]
              (variables/update-variable
-              request-context headers body variable-id))))
+              request-context headers body variable-id))
+        (DELETE "/:variable-id"
+                [variable-id :as {:keys [request-context headers]}]
+                (variables/delete-variable
+                 request-context headers variable-id))))
     ;; Services ingest routes
     (api-core/set-default-error-format
       :xml
