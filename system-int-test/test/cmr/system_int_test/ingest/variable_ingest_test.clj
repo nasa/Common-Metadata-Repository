@@ -14,7 +14,7 @@
 (use-fixtures :each (ingest-util/reset-fixture))
 
 (deftest create-variable-ingest-test
-  (testing "ingest:"
+  (testing "Variable ingest:"
     (let [acl-data (variable-util/setup-update-acl (s/context))
           {:keys [user-name group-name group-id token grant-id]} acl-data
           variable-data (variable-util/make-variable)
@@ -56,7 +56,7 @@
                  (first errors))))))))
 
 (deftest update-variable-ingest-test
-  (testing "ingest:"
+  (testing "Variable ingest:"
     (let [acl-data (variable-util/setup-update-acl (s/context))
           {:keys [user-name group-name group-id token grant-id]} acl-data
           variable-data (variable-util/make-variable)
@@ -86,7 +86,7 @@
                  (first errors))))))))
 
 (deftest delete-variable-ingest-test
-  (testing "ingest:"
+  (testing "Variable ingest:"
     (let [acl-data (variable-util/setup-update-acl (s/context))
           {:keys [user-name group-name group-id token grant-id]} acl-data
           variable-data (variable-util/make-variable)
@@ -102,10 +102,27 @@
         (is (= 2 revision-id))
         (is (:deleted fetched))
         (is (= (string/lower-case (:Name variable-data))
-               (:native-id fetched)))))))
+               (:native-id fetched))))
+      (testing "attempt to update a deleted variable"
+        (let [response (variable-util/update-variable
+                        token
+                        (string/lower-case (:Name variable-data))
+                        (assoc variable-data :LongName new-long-name))
+              {:keys [status errors]} response]
+          (is (= 404 status))
+          (is (= (format "Variable with variable-name '%s' was deleted."
+                         (string/lower-case (:Name variable-data)))
+                 (first errors)))))
+      (testing "create a variable over a variable's tombstone"
+        (let [response (variable-util/create-variable
+                        token
+                        variable-data)
+              {:keys [status concept-id revision-id]} response]
+          (is (= 200 status))
+          (is (= 3 revision-id)))))))
 
 (deftest variable-ingest-permissions-test
-  (testing "Ingest variable permissions:"
+  (testing "Variable ingest permissions:"
     (let [;; Groups
           guest-group-id (e/get-or-create-group
                           (s/context) "umm-var-guid1")
