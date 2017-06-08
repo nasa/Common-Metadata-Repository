@@ -20,6 +20,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [camel-snake-kebab.extras :as csk-extras]
+   [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common.util :as util]))
 
@@ -27,7 +28,7 @@
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
   between UMM-C and KMS."
   {:science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
-   :platforms [:short-name :long-name]
+   :platforms [:category :short-name :long-name]
    :instruments [:short-name :long-name]
    :projects [:short-name :long-name]
    :providers [:short-name :long-name]
@@ -144,6 +145,11 @@
   insensitively."
   [kms-index keyword-scheme umm-c-keyword]
   (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+        ;; CMR-3696 This is needed to compare the keyword category, which is mapped
+        ;; to the UMM Platform Type field.  This will avoid complications with facets.
+        umm-c-keyword (if (= :platforms keyword-scheme)
+                         (set/rename-keys umm-c-keyword {:type :category})
+                         umm-c-keyword)
         comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
                                                             keyword-scheme))]
     (get-in kms-index [:umm-c-index keyword-scheme comparison-map])))

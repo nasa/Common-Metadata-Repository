@@ -183,7 +183,6 @@
                              (filter (keyword-scheme->required-field keyword-scheme)))
         leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
         invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
-
     ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
     (doseq [entry invalid-entries]
       (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)

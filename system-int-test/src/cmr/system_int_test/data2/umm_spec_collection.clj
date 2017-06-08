@@ -250,7 +250,7 @@
 (def minimal-umm-c
   "This is the minimal valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
-                 {:ShortName "A340-600" :LongName "Airbus A340-600"})]
+                 {:ShortName "A340-600" :LongName "Airbus A340-600" :Type "Aircraft"})]
    :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
    :DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
