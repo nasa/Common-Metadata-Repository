@@ -357,7 +357,7 @@
         variable (as-> variable-json-str data
                        (concept-json->concept data)
                        (assoc data :originator-id user-id)
-                       (assoc data :native-id (:name data)))]
+                       (assoc data :native-id (string/lower-case (:name data))))]
     ;; Check if the variable already exists
     (if-let [concept-id (mdb2/get-concept-id context
                                              :variable
