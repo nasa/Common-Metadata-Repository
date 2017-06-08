@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.variable-ingest-test
   "CMR variable ingest integration tests."
   (:require
+   [clojure.edn :as edn]
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
@@ -12,39 +13,56 @@
 (use-fixtures :each (ingest-util/reset-fixture))
 
 (deftest variable-ingest-test
-  (testing "ingest a new variable"
-    (let [;; Groups
-          update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
-          ;; Tokens
-          update-token (e/login (s/context) "umm-var-user1" [update-group-id])
-          ;; Grants
-          update-grant-id (e/grant-group-admin
-                           (assoc (s/context) :token update-token)
-                           update-group-id
-                           :update)
-          variable-data (variable-util/make-variable)]
-      (is (e/permitted? update-token
-                        update-grant-id
-                        update-group-id
-                        (ingest-util/get-ingest-update-acls update-token)))
+  (let [;; Groups
+        update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
+        ;; Tokens
+        update-token (e/login (s/context) "umm-var-user1" [update-group-id])
+        ;; Grants
+        update-grant-id (e/grant-group-admin
+                         (assoc (s/context) :token update-token)
+                         update-group-id
+                         :update)
+        variable-data (variable-util/make-variable)]
+    (is (e/permitted? update-token
+                      update-grant-id
+                      update-group-id
+                      (ingest-util/get-ingest-update-acls update-token)))
+    (testing "ingest: create a new variable"
       (let [{:keys [status concept-id revision-id]} (variable-util/create-variable
                                                      update-token variable-data)]
         (is (= 201 status))
         (is (= 1 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= (:name variable-data)
-               (:name (mdb/get-concept concept-id revision-id))))
-        ;; XXX Once CMR-4172 (metdata-db services support) was added, we tried to
-        ;;     enable the following test; this required the work that we've since
-        ;;     put into ticket CMR-4193, which in turn is probably blocked by an
-        ;;     as-yet unfiled ticket for addressing what seems to be an ACL caching
-        ;;     issue. Once those two tickets are resolved, this test will be
-        ;;     enabled and should then pass.
-        ; (variable-util/assert-variable-saved variable-data
-        ;                                      "umm-var-user1"
-        ;                                      concept-id
-        ;                                      revision-id)
-        ))))
+        (let [fetched (mdb/get-concept concept-id revision-id)
+              metadata (edn/read-string (:metadata fetched))]
+          (is (= (:Name variable-data) (:native-id fetched)))
+          (is (= (:LongName variable-data) (:long-name metadata)))
+          ;; XXX Once CMR-4172 (metdata-db services support) was added, we tried to
+          ;;     enable the following test; this required the work that we've since
+          ;;     put into ticket CMR-4193, which in turn is probably blocked by an
+          ;;     as-yet unfiled ticket for addressing what seems to be an ACL caching
+          ;;     issue. Once those two tickets are resolved, this test will be
+          ;;     enabled and should then pass.
+          ; (variable-util/assert-variable-saved variable-data
+          ;                                      "umm-var-user1"
+          ;                                      concept-id
+          ;                                      revision-id)
+          )))
+    (testing "ingest: update an existing variable"
+      (let [new-long-name "A new long name"
+            {:keys [status concept-id revision-id]} (variable-util/update-variable
+                                                     update-token
+                                                     (:Name variable-data)
+                                                     (assoc variable-data
+                                                            :LongName
+                                                            new-long-name))]
+        (is (= 200 status))
+        (is (= 2 revision-id))
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (let [fetched (mdb/get-concept concept-id revision-id)
+              metadata (edn/read-string (:metadata fetched))]
+          (is (= (:name variable-data) (:name fetched)))
+          (is (= new-long-name (:long-name metadata))))))))
 
 (deftest variable-ingest-permissions-test
   (testing "Ingest variable permissions:"
@@ -121,7 +139,7 @@
                                                              variable-data)
               update-response (variable-util/update-variable
                                update-token
-                               "A-name"
+                               (:Name variable-data)
                                variable-data)]
           (testing "create variable status"
             (is (= 201 (:status create-response))))
