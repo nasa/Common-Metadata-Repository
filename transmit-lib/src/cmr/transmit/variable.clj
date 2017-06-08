@@ -8,7 +8,7 @@
    [ring.util.codec :as codec]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; URL functions
+;;; URL functions
 
 (defn- variables-url
   [conn]
@@ -16,6 +16,7 @@
 
 (defn- variable-url
   [conn variable-name]
+  ;; XXX debug
   (str (variables-url conn) "/" variable-name))
 
 (defn- variable-associations-by-concept-ids-url
@@ -28,20 +29,24 @@
   (str (variable-associations-by-concept-ids-url conn variable-name) "/by_query"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Ingest Request functions - uses XML
+;;; Ingest Request functions
+;;;
+;;; Note: ingest functions return XML responses
 
 (h/defcreator create-variable :ingest variables-url {:accept :xml})
 (h/defupdater update-variable :ingest variable-url {:accept :xml})
 (h/defdestroyer delete-variable :ingest variable-url {:accept :xml})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Search Request functions
+;;;
+;;; Note: search functions return JSON responses
 
 (defmulti variable-associations-url
   "Returns the url to associate a variable based on the association type.
   Valid association types are :query and :concept-ids."
   (fn [context variable-name association-type]
     association-type))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Search Request functions - uses JSON
 
 (defmethod variable-associations-url :query
   [context variable-name _]

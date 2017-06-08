@@ -101,17 +101,17 @@
   "Variables cannot be modified without a valid user token.")
 
 (defn variable-deleted
-  [variable-key]
-  (format "Variable with variable-key [%s] was deleted." variable-key))
+  [variable-name]
+  (format "Variable with variable-name '%s' was deleted." variable-name))
 
 (defn variable-does-not-exist
-  [variable-key]
-  (format "Variable could not be found with variable-key [%s]" variable-key))
+  [variable-name]
+  (format "Variable could not be found with variable-name '%s'" variable-name))
 
 (defn variable-already-exists
   [variable concept-id]
-  (format "A variable with variable-key [%s] already exists with concept id [%s]."
-          (:variable-key variable)
+  (format "A variable with variable-name '%s' already exists with concept id '%s'."
+          (:variable-name variable)
           concept-id))
 
 (defn service-already-exists
@@ -124,14 +124,14 @@
 
 (defn service-deleted
   [service-name]
-  (format "Variable with service-name [%s] was deleted." service-name))
+  (format "Service with service-name '%s' was deleted." service-name))
 
 (defn service-does-not-exist
   [service-name]
-  (format "Service could not be found with service-name [%s]" service-name))
+  (format "Service could not be found with service-name '%s'" service-name))
 
 (defn service-already-exists
   [service concept-id]
-  (format "A service with service-name [%s] already exists with concept id [%s]."
+  (format "A service with service-name '%s]'' already exists with concept id '%s'."
           (:service-name service)
           concept-id))

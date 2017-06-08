@@ -11,7 +11,7 @@
 
 (use-fixtures :each (ingest-util/reset-fixture))
 
-(deftest create-variable-ingest-test
+(deftest variable-ingest-test
   (testing "ingest a new variable"
     (let [;; Groups
           update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
@@ -46,8 +46,8 @@
         ;                                      revision-id)
         ))))
 
-(deftest create-variable-ingest-permissions-test
-  (testing "ingest create variable permissions"
+(deftest variable-ingest-permissions-test
+  (testing "Ingest variable permissions:"
     (let [;; Groups
           guest-group-id (e/get-or-create-group
                           (s/context) "umm-var-guid1")
@@ -93,15 +93,37 @@
                           update-grant-id
                           update-group-id
                           (ingest-util/get-ingest-update-acls update-token))))
-      (testing "create responses"
+      (testing "disallowed create responses:"
         (are3 [token expected]
           (let [response (variable-util/create-variable token variable-data)]
             (is (= expected (:status response))))
-          "System update permission allowed"
-          update-token 201
-          "Regular user denied"
-          reg-user-token 401
-          "Guest user denied"
+          "no token provided"
+          nil 401
+          "guest user denied"
           guest-token 401
-          "No token provided"
-          nil 401)))))
+          "regular user denied"
+          reg-user-token 401))
+      (testing "disallowed update responses:"
+        (are3 [token expected]
+          (let [update-response (variable-util/update-variable
+                                 token
+                                 "A-name"
+                                 variable-data)]
+            (is (= expected (:status update-response))))
+          "no token provided"
+          nil 401
+          "guest user denied"
+          guest-token 401
+          "regular user denied"
+          reg-user-token 401))
+      (testing "allowed responses:"
+        (let [create-response (variable-util/create-variable update-token
+                                                             variable-data)
+              update-response (variable-util/update-variable
+                               update-token
+                               "A-name"
+                               variable-data)]
+          (testing "create variable status"
+            (is (= 201 (:status create-response))))
+          (testing "update variable status"
+            (is (= 200 (:status update-response)))))))))

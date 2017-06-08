@@ -22,7 +22,7 @@
   (f))
 
 (def sample-variable
-  {:Name "A name"
+  {:Name "A-name"
    :LongName "A long UMM-Var name"
    :Units "m"
    :DataType "float32"
