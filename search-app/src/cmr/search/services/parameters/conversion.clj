@@ -64,7 +64,8 @@
    :tag-data :tag-query
 
    ;; Variable parameters
-   :variable-name :variable-query})
+   :variable-name :variable-query
+   :measurement :string})
 
 (defmethod common-params/param-mappings :granule
   [_]
