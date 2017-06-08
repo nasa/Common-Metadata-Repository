@@ -58,7 +58,7 @@
 (defn delete-variable
   "Deletes the variable with the given variable-key."
   [context headers variable-key]
-  (verify-variable-modification-permission context :delete)
+  (verify-variable-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (api-core/generate-ingest-response
    headers
