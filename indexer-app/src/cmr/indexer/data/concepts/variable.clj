@@ -4,7 +4,8 @@
    [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
-   [cmr.indexer.data.elasticsearch :as es]))
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.transmit.metadata-db :as mdb]))
 
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
@@ -28,3 +29,15 @@
      :originator-id.lowercase  (util/safe-lowercase originator-id)
      :variable-value.lowercase (when (string? data)
                                  (string/lower-case data))}))
+
+(defn variable-association->measurement
+  "Returns the measurement of the variable for the given variable association."
+  [context variable-association]
+  (let [{:keys [variable-name]} variable-association
+        native-id (string/lower-case variable-name)
+        variable-concept (mdb/find-latest-concept context
+                                                  {:native-id native-id
+                                                   :latest true}
+                                                  :variable)]
+    (when-not (:deleted variable-concept)
+      (get-in variable-concept [:extra-fields :measurement]))))

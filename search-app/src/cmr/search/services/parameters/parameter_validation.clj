@@ -40,7 +40,7 @@
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :platform :platform-h :processing-level-id :processing-level-id-h
-                       :sensor :data-center-h}
+                       :sensor :data-center-h :measurement}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
      :allow-or #{:attribute :science-keywords :science-keywords-h}}))
@@ -118,7 +118,8 @@
    :tag-originator-id cpv/pattern-option
 
    ;; Variable related parameters
-   :variable-name cpv/pattern-option})
+   :variable-name cpv/pattern-option
+   :measurement cpv/string-plus-and-options})
 
 (defmethod cpv/valid-parameter-options :granule
   [_]

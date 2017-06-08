@@ -386,6 +386,8 @@
 
           ;; associated variables
           :variables variable-associations-mapping
+          :measurement m/string-field-mapping
+          :measurement.lowercase m/string-field-mapping
 
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}

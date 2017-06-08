@@ -136,7 +136,7 @@
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords
-                           (:LocationKeywords collection))
+                          (:LocationKeywords collection))
         access-value (get-in collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
@@ -193,8 +193,11 @@
         insert-time (date-util/data-create-date collection)
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
-                                                       :Geometry :CoordinateSystem])
-        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
+                                              :Geometry :CoordinateSystem])
+        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
+        measurement (remove nil?
+                            (map #(variable/variable-association->measurement context %)
+                                 variable-associations))]
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
@@ -289,11 +292,13 @@
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
-                               (pr-str
-                                 (into {} (for [ta tag-associations]
-                                            [(:tag-key ta) (util/remove-nil-keys
-                                                             {:data (:data ta)})])))))
-            :variables (map variable/variable-association->elastic-doc variable-associations)}
+                              (pr-str
+                               (into {} (for [ta tag-associations]
+                                          [(:tag-key ta) (util/remove-nil-keys
+                                                          {:data (:data ta)})])))))
+            :variables (map variable/variable-association->elastic-doc variable-associations)
+            :measurement measurement
+            :measurement.lowercase (map str/lower-case measurement)}
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)
