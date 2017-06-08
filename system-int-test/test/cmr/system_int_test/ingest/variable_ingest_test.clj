@@ -85,6 +85,25 @@
           (is (= "Variable could not be found with variable-name 'i-don't-exist'"
                  (first errors))))))))
 
+(deftest delete-variable-ingest-test
+  (testing "ingest:"
+    (let [acl-data (variable-util/setup-update-acl (s/context))
+          {:keys [user-name group-name group-id token grant-id]} acl-data
+          variable-data (variable-util/make-variable)
+          new-long-name "A new long name"
+          _ (variable-util/create-variable token variable-data)
+          response (variable-util/delete-variable
+                    token
+                    (string/lower-case (:Name variable-data)))
+          {:keys [status concept-id revision-id]} response
+          fetched (mdb/get-concept concept-id revision-id)]
+      (testing "delete a variable"
+        (is (= 200 status))
+        (is (= 2 revision-id))
+        (is (:deleted fetched))
+        (is (= (string/lower-case (:Name variable-data))
+               (:native-id fetched)))))))
+
 (deftest variable-ingest-permissions-test
   (testing "Ingest variable permissions:"
     (let [;; Groups
@@ -96,7 +115,7 @@
           guest-token (e/login
                        (s/context) "umm-var-user1" [guest-group-id])
           reg-user-token (e/login
-                          (s/context) "umm-var-user1" [reg-user-group-id])
+                          (s/context) "umm-var-user2" [reg-user-group-id])
           ;; Grants
           guest-grant-id (e/grant
                           (assoc (s/context) :token guest-token)
@@ -152,14 +171,31 @@
           guest-token 401
           "regular user denied"
           reg-user-token 401))
+       (testing "disallowed delete responses:"
+        (are3 [token expected]
+          (let [update-response (variable-util/delete-variable
+                                 token
+                                 (string/lower-case (:Name variable-data)))]
+            (is (= expected (:status update-response))))
+          "no token provided"
+          nil 401
+          "guest user denied"
+          guest-token 401
+          "regular user denied"
+          reg-user-token 401))
       (testing "allowed responses:"
         (let [create-response (variable-util/create-variable update-token
                                                              variable-data)
               update-response (variable-util/update-variable
                                update-token
                                (string/lower-case (:Name variable-data))
-                               variable-data)]
+                               variable-data)
+              delete-response (variable-util/delete-variable
+                               update-token
+                               (string/lower-case (:Name variable-data)))]
           (testing "create variable status"
             (is (= 201 (:status create-response))))
           (testing "update variable status"
-            (is (= 200 (:status update-response)))))))))
+            (is (= 200 (:status update-response))))
+          (testing "update variable status"
+            (is (= 200 (:status delete-response)))))))))

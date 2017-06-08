@@ -410,7 +410,7 @@
                  :user-id (context-util/context->user-id
                            context
                            msg/token-required-for-variable-modification))
-          (dissoc :revision-date)
+          (dissoc :revision-date :created-at :extra-fields)
           (update-in [:revision-id] inc)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
