@@ -18,14 +18,10 @@
                 vu/grant-all-variable-fixture]))
 
 (deftest collection-measurement-search-test
-
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                                     (d/ingest-umm-spec-collection
                                      "PROV1"
-                                     (data-umm-c/collection
-                                      {:ShortName (str "S" n)
-                                       :Version (str "V" n)
-                                       :EntryTitle (str "ET" n)})))
+                                     (data-umm-c/collection n {})))
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
         variable1 (vu/make-variable {:Name "variable1"

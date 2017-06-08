@@ -1431,6 +1431,10 @@ Find collections matching variable name.
 
     curl "%CMR-ENDPOINT%/collections?variable_name=totcldh2ostderr"
 
+Find collections matching measurement.
+
+    curl "%CMR-ENDPOINT%/collections?measurement\[\]=Ozone&measurement\[\]=radiance"
+
 #### <a name="c-spatial"></a> Find collections by Spatial
 
 ##### <a name="c-polygon"></a> Polygon
