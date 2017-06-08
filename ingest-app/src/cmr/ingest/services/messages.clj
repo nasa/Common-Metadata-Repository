@@ -92,11 +92,6 @@
   (format "Location keyword %s was not a valid keyword combination."
           (keyword->human-attrib-list lk location-keyword-attribute-order)))
 
-(defn variable-already-exists
-  [variable concept-id]
-  (format "A variable with native-id [%s] already exists with concept id [%s]."
-          (:native-id variable) concept-id))
-
 (def token-required-for-variable-modification
   "Variables cannot be modified without a valid user token.")
 
@@ -110,14 +105,9 @@
 
 (defn variable-already-exists
   [variable concept-id]
-  (format "A variable with variable-name '%s' already exists with concept id '%s'."
-          (:variable-name variable)
+  (format "A variable with native-id '%s' already exists with concept id '%s'."
+          (:native-id variable)
           concept-id))
-
-(defn service-already-exists
-  [service concept-id]
-  (format "A service with native-id [%s] already exists with concept id [%s]."
-          (:native-id service) concept-id))
 
 (def token-required-for-service-modification
   "Services cannot be modified without a valid user token.")
@@ -132,6 +122,6 @@
 
 (defn service-already-exists
   [service concept-id]
-  (format "A service with service-name '%s]'' already exists with concept id '%s'."
-          (:service-name service)
+  (format "A service with native-id '%s' already exists with concept id '%s'."
+          (:native-id service)
           concept-id))

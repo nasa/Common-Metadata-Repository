@@ -16,10 +16,28 @@
    [cmr.transmit.variable :as transmit-variable]))
 
 (defn grant-all-variable-fixture
-  "A test fixture that grants all users the ability to create and modify variables."
+  "A test fixture that grants all users the ability to create and modify
+  variables."
   [f]
   (echo-util/grant-all-variable (s/context))
   (f))
+
+(defn setup-update-acl
+  "Set up the ACLs for UMM-Var update permissions and return the ids+token"
+  [context]
+  (let [user-name "umm-var-user42"
+        group-name "umm-var-guid42"
+        update-group-id (echo-util/get-or-create-group context group-name)
+        update-token (echo-util/login context user-name [update-group-id])
+        token-context (assoc context :token update-token)
+        update-grant-id (echo-util/grant-group-admin token-context
+                                                     update-group-id
+                                                     :update)]
+    {:user-name user-name
+     :group-name group-name
+     :group-id update-group-id
+     :grant-id update-grant-id
+     :token update-token}))
 
 (def sample-variable
   {:Name "A-name"
@@ -137,10 +155,8 @@
          response (if-let [concept-id (:concept-id variable)]
                     (update-variable token (:variable-name variable) variable-to-save)
                     (create-variable token variable-to-save))
-         variable (-> variable
-                 (update :variable-name string/lower-case)
-                 (into (select-keys response [:status :errors :concept-id :revision-id])))]
-
+         variable (into variable
+                        (select-keys response [:status :errors :concept-id :revision-id]))]
      (if (= (:revision-id variable) 1)
        ;; Get the originator id for the variable
        (assoc variable :originator-id (tokens/get-user-id (s/context) token))
@@ -158,7 +174,7 @@
   and a user-id."
   [variable concept-id revision-id user-id]
   {:concept-type :variable
-   :native-id (string/lower-case (or (:variable-name variable) ""))
+   :native-id (string/lower-case (:variable-name variable))
    :provider-id "CMR"
    :format mt/edn
    :metadata (pr-str variable)

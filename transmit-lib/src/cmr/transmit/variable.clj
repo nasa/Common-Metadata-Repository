@@ -16,7 +16,6 @@
 
 (defn- variable-url
   [conn variable-name]
-  ;; XXX debug
   (str (variables-url conn) "/" variable-name))
 
 (defn- variable-associations-by-concept-ids-url
