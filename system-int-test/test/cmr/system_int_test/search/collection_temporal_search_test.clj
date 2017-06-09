@@ -5,7 +5,7 @@
     [clj-time.format :as f]
     [clojure.test :refer :all]
     [cmr.common.time-keeper :as tk]
-    [cmr.common.util :refer [are2]]
+    [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -79,7 +79,16 @@
         dt-1-day-ago (f/unparse (f/formatters :date-time) (t/minus (t/now) (t/days 1)))
         c6-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll6 (:concept-id coll6) {:granule-ur "c6-g1"
                                                    :beginning-date-time "2009-01-01T00:00:00Z"
-                                                   :ending-date-time dt-2-days-ago}))]
+                                                   :ending-date-time dt-2-days-ago}))
+        ;; collection 7 contains multiple temporal ranges with gaps and has no ganules
+        coll7 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 7 
+                                                      {:EntryTitle "coll7"
+                                                       :TemporalExtents [(data-umm-c/temporal-extent 
+                                                                           {:beginning-date-time "1997-05-01T00:00:00Z"
+                                                                            :ending-date-time "1997-05-02T00:00:00Z"})
+                                                                         (data-umm-c/temporal-extent 
+                                                                           {:beginning-date-time "1997-05-05T00:00:00Z"
+                                                                            :ending-date-time "1997-05-06T00:00:00Z"})]}))]
     (index/wait-until-indexed)
 
     ;; Refresh the aggregate cache so that it includes all the granules that were added.
@@ -88,10 +97,10 @@
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
 
-    (are2 [items search]
+    (are3 [items search]
       (is (d/refs-match? items (search/find-refs :collection search)))
 
-      "All are found"
+      "All are found except for coll7 which is out of the range"
       [coll1 coll2 coll3 coll4 coll5 coll6] {"temporal[]" "2000-01-01T00:00:00Z,2010-01-01T00:00:00Z"
                                              "options[temporal][limit_to_granules]" true}
 
@@ -127,6 +136,20 @@
       ;; coll6 is found because it has a granule with a temporal ending within 2 days ago.
       ;; This is a special rule for collections with recent data.
       [coll4 coll5 coll6] {"temporal[]" (str dt-1-day-ago ",")
+                           "options[temporal][limit_to_granules]" true}
+
+      "coll7 is returned when searching with a temporal range that intersects the collection's temporal ranges"
+      [coll7] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-06T00:00:00Z"}
+
+      "coll7 is returned when searching with a temporal range that intersects the collection's temporal ranges limit-to-granules case"
+      [coll7] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-06T00:00:00Z"
+                           "options[temporal][limit_to_granules]" true}
+
+      "coll7 is not returned when searching with a temporal range that's within the gap of the collection's temporal ranges"
+      [] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-04T00:00:00Z"}
+
+      "coll7 is not returned when searching with a temporal range that's within the gap of the collection's temporal ranges limit-to-granules case"
+      [] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-04T00:00:00Z"
                            "options[temporal][limit_to_granules]" true})))
 
 (deftest search-by-temporal-limit-to-granules-updates-are-handled-by-partial-refresh
@@ -251,18 +274,34 @@
                                                                                 :TemporalExtents [(data-umm-c/temporal-extent {
                                                  :beginning-date-time "1965-12-12T12:00:00Z"
                                                  :ending-date-time "1966-01-03T12:00:00Z"
-                                                 :ends-at-present? true})]}))]
+                                                 :ends-at-present? true})]}))
+
+        ;; collection 14 contains multiple temporal ranges with gaps and has no ganules
+        coll14 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 14 
+                                                      {:EntryTitle "Dataset14"
+                                                       :TemporalExtents [(data-umm-c/temporal-extent
+                                                                           {:beginning-date-time "1960-05-01T00:00:00Z"
+                                                                            :ending-date-time "1960-05-02T00:00:00Z"})
+                                                                         (data-umm-c/temporal-extent
+                                                                           {:beginning-date-time "1960-05-05T00:00:00Z"
+                                                                            :ending-date-time "1960-05-06T00:00:00Z"})]}))]
     (index/wait-until-indexed)
 
     (testing "search by temporal params"
-      (are2 [items search]
+      (are3 [items search]
         (d/refs-match? items (search/find-refs :collection (assoc search :page-size 20)))
 
         "search by temporal_start"
         [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll13] {"temporal[]" "2010-12-12T12:00:00Z,"}
 
         "search by temporal_end"
-        [coll1 coll2 coll3 coll4 coll6 coll7 coll9 coll10 coll11 coll12 coll13] {"temporal[]" "/2010-12-12T12:00:00Z"}
+        [coll1 coll2 coll3 coll4 coll6 coll7 coll9 coll10 coll11 coll12 coll13 coll14] {"temporal[]" "/2010-12-12T12:00:00Z"}
+
+        "search by temporal_range that falls into the gap of the collection temporal ranges"
+        [] {"temporal[]" "1960-05-03T00:00:00Z, 1960-05-04T00:00:00Z"}
+ 
+        "search by temporal_range that intersects with the collection temporal ranges"
+        [coll14] {"temporal[]" "1960-05-03T00:00:00Z, 1960-05-06T00:00:00Z"}
 
         "search by temporal_range"
         [coll1 coll13 coll9] {"temporal[]" "2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z"}
@@ -295,7 +334,7 @@
         [coll1 coll13 coll9] {"temporal[]" "2010-01-01T10:00:00Z/P10DT2H"}))
 
     (testing "search by temporal date-range with aql"
-      (are2 [items start-date stop-date]
+      (are3 [items start-date stop-date]
         (d/refs-match? items (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
                                                                                  :stop-date stop-date}}]))
 
@@ -309,7 +348,7 @@
         [coll2 coll6 coll9 coll10 coll13] "2010-04-01T10:00:00Z" "2010-06-10T12:00:00Z"))
 
     (testing "Search collections by temporal using a JSON Query"
-      (are2 [items search]
+      (are3 [items search]
         (d/refs-match? items (search/find-refs-with-json-query :collection {:page-size 20} search))
 
         "search by range"
@@ -321,7 +360,7 @@
         {:temporal {:start_date "2010-12-12T12:00:00Z"}}
 
         "search by end date"
-        [coll1 coll2 coll3 coll4 coll6 coll7 coll9 coll10 coll11 coll12 coll13]
+        [coll1 coll2 coll3 coll4 coll6 coll7 coll9 coll10 coll11 coll12 coll13 coll14]
         {:temporal {:end_date "2010-12-12T12:00:00Z"}}
 
         "search by not temporal"
@@ -391,7 +430,7 @@
 
 (deftest search-temporal-json-error-scenarios
   (testing "search by invalid temporal date format"
-    (are2 [search invalid-field-dates]
+    (are3 [search invalid-field-dates]
           (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} search)
                 expected-errors (map #(apply format "/condition/temporal/%s string \"%s\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]" %)
                                      invalid-field-dates)]
