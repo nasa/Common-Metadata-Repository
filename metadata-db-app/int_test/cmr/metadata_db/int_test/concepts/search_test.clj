@@ -438,11 +438,11 @@
             "with metadata search by native-id"
             [serv2] {:native-id (:native-id serv2)}
 
-            "exclude metadata serach by concept-id"
+            "exclude metadata search by concept-id"
             [(dissoc serv1 :metadata)] {:concept-id (:concept-id serv1)
                                         :exclude-metadata true}
 
-            "exclude metadata serach by native-id"
+            "exclude metadata search by native-id"
             [(dissoc serv2 :metadata)] {:native-id (:native-id serv2)
                                         :exclude-metadata true}))
 
