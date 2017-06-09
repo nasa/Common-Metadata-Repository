@@ -444,7 +444,10 @@
 
             "exclude metadata search by native-id"
             [(dissoc serv2 :metadata)] {:native-id (:native-id serv2)
-                                        :exclude-metadata true}))
+                                        :exclude-metadata true}
+
+            "no match"
+            [] {:native-id "foo"}))
 
     (testing "find all revisions"
       (let [num-of-servs (-> (util/find-concepts :service {})
