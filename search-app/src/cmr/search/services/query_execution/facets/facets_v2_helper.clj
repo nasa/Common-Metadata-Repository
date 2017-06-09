@@ -16,8 +16,7 @@
    :platform-h "Platforms"
    :instrument-h "Instruments"
    :processing-level-id-h "Processing levels"
-   :science-keywords-h "Keywords"
-   :output-format "Output File Formats"})
+   :science-keywords-h "Keywords"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results

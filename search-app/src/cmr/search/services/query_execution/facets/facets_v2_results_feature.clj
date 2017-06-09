@@ -31,8 +31,6 @@
    :data-center :organization.humanized2
    :project :project-sn.humanized2
    :processing-level-id :processing-level-id.humanized2})
-   ;; To add
-   ;  :output-formats :output-formats})
 
 (def facets-v2-params
   "The base search parameters for the v2 facets fields."
