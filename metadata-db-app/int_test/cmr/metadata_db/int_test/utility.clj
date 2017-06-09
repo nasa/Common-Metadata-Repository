@@ -715,7 +715,7 @@
           {:keys [concept-id revision-id]} (save-concept concept)]
       (assoc concept :concept-id concept-id :revision-id revision-id))))
 
-;;; providers
+;;; Providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn save-provider
@@ -786,7 +786,7 @@
                  (util/remove-nil-keys provider-map))}
         (:providers (get-providers))))
 
-;;; miscellaneous
+;;; Miscellaneous
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn old-revision-concept-cleanup
@@ -814,6 +814,7 @@
    (client/post (reset-url) {:throw-exceptions false
                              :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                              :connection-manager (conn-mgr)})))
+
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn reset-database-fixture
