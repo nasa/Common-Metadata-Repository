@@ -112,7 +112,7 @@
    :created-at cpv/and-option
    :highlights highlights-option
 
-   ;; Tag related parameters 
+   ;; Tag related parameters
    :tag-key cpv/pattern-option
    :tag-data cpv/pattern-option
    :tag-originator-id cpv/pattern-option
@@ -145,6 +145,7 @@
    :provider cpv/string-param-options
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
+   :created-at cpv/and-option
    :revision-date cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :tag
@@ -569,6 +570,7 @@
    :granule (concat
               cpv/common-validations
               [temporal-format-validation
+               created-at-validation
                updated-since-validation
                revision-date-validation
                orbit-number-validation

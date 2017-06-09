@@ -84,6 +84,7 @@
    :version :collection-query
    :updated-since :updated-since
    :revision-date :multi-date-range
+   :created-at :multi-date-range
    :temporal :temporal
    :platform :inheritance
    :instrument :inheritance

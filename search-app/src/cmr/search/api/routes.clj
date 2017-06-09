@@ -110,6 +110,13 @@
 (def find-by-concept-id-concept-types
   #{:collection :granule})
 
+(def granule-parent-collection-params
+  "Parameters that signify the need to search collections with data taken from
+   a granule search.
+
+  This could be generalized to support parameters that require multiple queries"
+  #{:has-granules-created-at})
+
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
   [concept-type-w-extension]
@@ -182,8 +189,8 @@
                            (cache/context->cache search/scroll-id-cache-key)
                            (cache/get-value short-scroll-id))]
       scroll-id
-      (svc-errors/throw-service-error 
-       :not-found 
+      (svc-errors/throw-service-error
+       :not-found
        (format "Scroll session [%s] does not exist" short-scroll-id)))))
 
 (defn- add-scroll-id-to-cache
@@ -231,13 +238,43 @@
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (search-response ctx results)))
 
+(defn- find-granule-parent-collections
+  "Invokes query service to find collections based on data found in a granule search,
+   then executes a search for collections with the found concept-ids. Supports CMR Harvesting."
+  [ctx path-w-extension params headers body]
+  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+        ctx (assoc ctx :query-string body)
+        params (process-params params path-w-extension headers mt/xml)
+        collections-with-new-granules (query-svc/get-collection-ids-from-new-granules ctx params)
+        search-params (-> params
+                          (assoc :echo-collection-id collections-with-new-granules)
+                          (dissoc :has-granules-created-at)
+                          lp/process-legacy-psa)]
+    (find-concepts-by-parameters ctx path-w-extension search-params headers body)))
+
+(defn- granule-parent-collection-query?
+  "Return true if parameters match any from the list of `multi-part-query-params`
+   defined above. Supports CMR Harvesting."
+  [search-params]
+  (boolean (some granule-parent-collection-params (keys search-params))))
+
 (defn- find-concepts
-  "Invokes query service to find results and returns the response"
+  "Invokes query service to find results and returns the response.
+
+  This function supports several cases for obtaining concept data:
+  * By JSON query
+  * By parameter string and URL parameters
+  * Collections from Granules - due to the fact that ES doesn't suport joins in the way
+    that we need, we have to make two queries here to support CMR Harvesting. This can
+    later be generalized easily, should the need arise."
   [ctx path-w-extension params headers body]
   (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))]
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
+
+      (granule-parent-collection-query? params)
+      (find-granule-parent-collections ctx path-w-extension params headers body)
 
       (or (nil? content-type-header) (= mt/form-url-encoded content-type-header))
       (find-concepts-by-parameters ctx path-w-extension params headers body)
@@ -297,9 +334,9 @@
                       revision-id))
         ;; else, revision-id is nil
         (search-response ctx (query-svc/find-concept-by-id-and-revision
-                              ctx 
-                              result-format 
-                              concept-id 
+                              ctx
+                              result-format
+                              concept-id
                               revision-id)))
       (let [result-format (get-search-results-format path-w-extension headers
                                                      concept-type-supported-mime-types

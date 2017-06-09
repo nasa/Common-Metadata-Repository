@@ -13,7 +13,9 @@
   - Convert query results into requested format"
   (:require
    [cheshire.core :as json]
+   [clj-time.format :as time-format]
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -262,6 +264,21 @@
                    (common-search/validate-query context))
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
+
+(defn get-collection-ids-from-new-granules
+  "Finds granules that were added after a given date and return their parent collection ids.
+   Supports CMR Harvesting."
+  [context params]
+  (when-let [[start-date end-date] (mapv time-format/parse
+                                         (string/split (:has-granules-created-at params) #","))]
+    (let [query (qm/query {:concept-type :granule
+                           :condition (qm/date-range-condition
+                                       :created-at start-date end-date)
+                           :page-size :unlimited
+                           :result-format :query-specified
+                           :result-fields [:collection-concept-id]})
+          new-granules (:items (qe/execute-query context query))]
+      (distinct (map :collection-concept-id new-granules)))))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"

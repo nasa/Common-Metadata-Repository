@@ -43,6 +43,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Updated since](#c-updated-since)
     * [Revision date](#c-revision-date)
     * [Created at](#c-created-at)
+    * [Collections with new Granules](#c-with-new-granules)
     * [Processing level id](#c-processing-level-id)
     * [Platform](#c-platform)
     * [Instrument](#c-instrument)
@@ -88,6 +89,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Orbit equator crossing date](#g-orbit-equator-crossing-date)
     * [Updated since](#g-updated-since)
     * [Revision date](#g-revision-date)
+    * [Created at](#g-created-at)
     * [Cloud cover](#g-cloud-cover)
     * [Platform](#g-platform)
     * [Instrument](#g-instrument)
@@ -1186,6 +1188,14 @@ Find collections that match all of the 'project' param values
 
    curl "%CMR-ENDPOINT%/collections?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
+#### <a name="c-with-new-granules"></a> Find collections with new granules
+
+  This supports option `and`.
+
+  Find collections containing granules added within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+  curl "%CMR_ENDPOINT%/collections?has_granules_created_at=\[\]2015-01-01T10:00:00Z,"
+
 #### <a name="c-revision-date"></a> Find collections by revision_date
 
   This supports option `and`.
@@ -1688,6 +1698,14 @@ This supports option `and`.
 Find granules which have revision date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
     curl "%CMR-ENDPOINT%/granules?revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
+
+#### <a name="g-created-at"></a> Find granules by created_at
+
+ This supports option `and`.
+
+ Find granules which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+   curl "%CMR-ENDPOINT%/granules?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="g-cloud-cover"></a> Find granules by cloud_cover
 
