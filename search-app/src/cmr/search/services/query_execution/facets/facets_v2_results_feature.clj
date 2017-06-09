@@ -45,7 +45,8 @@
 
 (def v2-facets-result-field-in-order
   "Defines the v2 facets result field in order"
-  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"])
+  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
+   "Output File Formats" "Reprojections"])
 
 (defn- facet-query
   "Returns the facet query for the given facet field"

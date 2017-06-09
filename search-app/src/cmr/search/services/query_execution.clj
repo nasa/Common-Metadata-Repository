@@ -152,10 +152,14 @@
     (common-qe/execute-query context query)))
 
 (defn- merge-facets
-  "Returns the facets by merging the two lists of facets and sort the fields in the correct order."
+  "Returns the facets by merging the two lists of facets and sort the fields in the correct order.
+  If a facet with the same title already exists in others, overwrite that facet with the one
+  provided in facets."
   [facets others]
-  (let [sort-fn (fn [facet] (.indexOf fv2rf/v2-facets-result-field-in-order (:title facet)))]
-    (sort-by sort-fn (concat facets others))))
+  (let [facets-sort-fn (fn [facet] (.indexOf fv2rf/v2-facets-result-field-in-order (:title facet)))
+        facet-titles (set (map :title facets))
+        unique-others (remove #(contains? facet-titles (:title %)) others)]
+    (sort-by facets-sort-fn (concat facets unique-others))))
 
 (defn- merge-search-result-facets
   "Returns search result by merging the base result and the facet results."
