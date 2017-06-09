@@ -205,6 +205,10 @@
             :start-date-doc-values (index-util/date->elastic start-date)
             :end-date (index-util/date->elastic end-date)
             :end-date-doc-values (index-util/date->elastic end-date)
+            ;; this is to make granule temporal search nested because it 
+            ;; shares the same code as the nested collection temporal search.
+            :temporals [{:start-date (index-util/date->elastic start-date) 
+                         :end-date (index-util/date->elastic end-date)}]
             :two-d-coord-name two-d-coord-name
             :two-d-coord-name.lowercase (when two-d-coord-name (s/lower-case two-d-coord-name))
             :start-coordinate-1 start-coordinate-1

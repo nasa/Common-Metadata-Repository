@@ -3,6 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clj-time.core :as t]
+    [clojure.set :as set]
     [clojure.string :as str]
     [cmr.acl.acl-fetcher :as acl-fetcher]
     [cmr.common-app.services.kms-fetcher :as kf]
@@ -48,6 +49,9 @@
 
       :else
       (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
+
+(defn- update-values [m f & args]
+  (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
 
 (defn- collection-temporal-elastic
   "Returns a map of collection temporal fields for indexing in Elasticsearch."
@@ -131,7 +135,7 @@
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
-         related-urls :RelatedUrls} collection
+         related-urls :RelatedUrls temporal-extents :TemporalExtents} collection
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
@@ -183,6 +187,15 @@
         archive-center-names (keep meaningful-short-name-fn archive-centers)
         data-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
                           (map str/trim (data-center/extract-data-center-names collection)))
+        ;; returns a list of {:start-date xxx :end-date yyy} 
+        temporal-extents (->> temporal-extents
+                              ;; converts each temporal-extent into a list of 
+                              ;; {:BeginningDateTime xxx :EndingDateTime xxx}
+                              (map spec-time/temporal-ranges)
+                              (flatten)
+                              (map #(set/rename-keys % {:BeginningDateTime :start-date 
+                                                        :EndingDateTime :end-date}))
+                              (map #(update-values % index-util/date->elastic)))
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
@@ -194,7 +207,15 @@
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                                        :Geometry :CoordinateSystem])
-        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
+        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
+        {:keys [granule-start-date granule-end-date]} (cgac/get-coll-gran-aggregates context concept-id)
+        last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
+        granule-end-date (if (and granule-end-date (t/within? last-3-days granule-end-date))
+                           ;; If the granule end date is within the last 3 days we indicate that
+                           ;; the collection has no end date. This allows NRT collections to be
+                           ;; found even if the collection has been reindexed recently.
+                           nil
+                           granule-end-date)]
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
@@ -234,6 +255,14 @@
             :instruments instruments-nested
             :archive-centers archive-centers
             :data-centers data-centers
+            :temporals temporal-extents
+            ;; added so that we can respect all collection temporal ranges in search 
+            ;; when limit_to_granules is set and there are no granules for the collection.
+            :limit-to-granules-temporals 
+              (if granule-start-date
+                [{:start-date (index-util/date->elastic granule-start-date)
+                  :end-date (index-util/date->elastic granule-end-date)}]
+                temporal-extents) 
             :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
                                    (:ScienceKeywords collection))
             :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)
