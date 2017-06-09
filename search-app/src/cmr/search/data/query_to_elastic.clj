@@ -71,6 +71,7 @@
                           :data-center-h :organization.humanized2
                           :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2
+                          :variable-name :variable-names
                           :measurement :measurements}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
@@ -123,6 +124,7 @@
    :organization.humanized2 :data-center-h
    :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date
+   :variable-names :variable-name
    :measurements :measurement})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
@@ -147,6 +149,7 @@
    :platform "platform-sn.lowercase"
    :instrument "instrument-sn.lowercase"
    :sensor "sensor-sn.lowercase"
+   :variable-name "variable-names.lowercase"
    :measurement "measurements.lowercase"})
 
 (defn- doc-values-lowercase-field-name
