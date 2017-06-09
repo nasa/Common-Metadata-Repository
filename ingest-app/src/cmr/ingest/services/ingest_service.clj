@@ -31,6 +31,10 @@
     [cmr.umm-spec.versioning :as ver]
     [cmr.umm.collection.entry-id :as eid]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; General Support/Utility Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn- fix-ingest-concept-format
   "Fixes formats"
   [fmt]
@@ -89,6 +93,20 @@
                       (assoc :concept-id concept-id :deleted true))
           {:keys [revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))
+
+(defmulti concept-json->concept
+  "Converts the concept in JSON format to a standard Clojure data structure. It
+  is expected that this function will be used to parse a request's body."
+  type)
+
+(defmethod concept-json->concept java.io.ByteArrayInputStream
+  [data]
+  (concept-json->concept (slurp data)))
+
+(defmethod concept-json->concept java.lang.String
+  [data]
+  (util/map-keys->kebab-case
+   (json/parse-string data true)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Service Functions
@@ -256,7 +274,7 @@
     {:concept-id concept-id, :revision-id revision-id}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Variable Service Functions
+;;; Variable Ingest Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Note that next section is primarily inspired by the code seen in the
@@ -270,19 +288,6 @@
 ;;; generally cleaner, it is so because it does not have all the history of
 ;;; constraints and special cases that the collection and granule code
 ;;; (above) does.
-
-(defmulti variable-json->variable
-  "Returns the variable in JSON from the given request body."
-  type)
-
-(defmethod variable-json->variable java.io.ByteArrayInputStream
-  [data]
-  (variable-json->variable (slurp data)))
-
-(defmethod variable-json->variable java.lang.String
-  [data]
-  (util/map-keys->kebab-case
-   (json/parse-string data true)))
 
 (def ^:private update-variable-validations
   "Service level validations when updating a variable."
@@ -350,7 +355,7 @@
                  context
                  msg/token-required-for-variable-modification)
         variable (as-> variable-json-str data
-                       (variable-json->variable data)
+                       (concept-json->concept data)
                        (assoc data :originator-id user-id)
                        (assoc data :native-id (string/lower-case (:name data))))]
     ;; Check if the variable already exists
@@ -373,7 +378,7 @@
 (defn update-variable
   "Updates an existing variable with the given concept id."
   [context variable-key variable-json-str]
-  (let [updated-variable (variable-json->variable variable-json-str)
+  (let [updated-variable (concept-json->concept variable-json-str)
         existing-concept (fetch-variable-concept context variable-key)
         existing-variable (edn/read-string (:metadata existing-concept))]
     (validate-update-variable existing-variable updated-variable)
@@ -389,5 +394,133 @@
                  :user-id (context-util/context->user-id
                            context
                            msg/token-required-for-variable-modification))
+          (dissoc :revision-date :transaction-id)
+          (update-in [:revision-id] inc)))))
+
+(defn delete-variable
+  "Deletes a tag with the given concept id"
+  [context variable-key]
+  (let [existing-concept (fetch-variable-concept context variable-key)]
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          ;; Remove fields not allowed when creating a tombstone.
+          (dissoc :metadata :format :provider-id :native-id :transaction-id)
+          (assoc :deleted true
+                 :user-id (context-util/context->user-id
+                           context
+                           msg/token-required-for-variable-modification))
+          (dissoc :revision-date :created-at :extra-fields)
+          (update-in [:revision-id] inc)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Service Ingest Functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def ^:private update-service-validations
+  "Service level validations when updating a service."
+  [(cv/field-cannot-be-changed :service-name)
+   ;; Originator id cannot change but we allow it if they don't specify a
+   ;; value.
+   (cv/field-cannot-be-changed :originator-id true)])
+
+(defn validate-update-service
+  "Validates a service update."
+  [existing-service updated-service]
+  (cv/validate!
+   update-service-validations
+   (assoc updated-service :existing existing-service)))
+
+(defn overwrite-service-tombstone
+  "This function is called when the service exists but was previously
+  deleted."
+  [context concept service user-id]
+  (mdb2/save-concept context
+                    (-> concept
+                        (assoc :metadata (pr-str service)
+                               :deleted false
+                               :user-id user-id)
+                        (dissoc :revision-date)
+                        (update-in [:revision-id] inc))))
+
+(defn- service->new-concept
+  "Converts a service into a new concept that can be persisted in metadata
+  db."
+  [service]
+  {:concept-type :service
+   :native-id (:native-id service)
+   :metadata (pr-str service)
+   :user-id (:originator-id service)
+   ;; The first version of a service should always be revision id 1. We
+   ;; always specify a revision id when saving variables to help avoid
+   ;; conflicts
+   :revision-id 1
+   :format mt/edn
+   :extra-fields {
+     :service-name (:name service)}})
+
+(defn- fetch-service-concept
+  "Fetches the latest version of a service concept service service-key."
+  [context service-key]
+  (if-let [concept (mdb/find-latest-concept context
+                                            {:native-id service-key
+                                             :latest true}
+                                             :service)]
+    (if (:deleted concept)
+      (errors/throw-service-error
+       :not-found
+       (msg/service-deleted service-key))
+      concept)
+    (errors/throw-service-error
+     :not-found
+     (msg/service-does-not-exist service-key))))
+
+(defn-timed create-service
+  "Creates the service, saving it as a revision in metadata db. Returns the
+  concept id and revision id of the saved service."
+  [context service-json-str]
+  (let [user-id (context-util/context->user-id
+                 context
+                 msg/token-required-for-service-modification)
+        service (as-> service-json-str data
+                      (concept-json->concept data)
+                      (assoc data :originator-id user-id)
+                      (assoc data :native-id (string/lower-case (:name data))))]
+    ;; Check if the service already exists
+    (if-let [concept-id (mdb2/get-concept-id context
+                                             :service
+                                             "CMR"
+                                             (:native-id service)
+                                             false)]
+      ;; The service exists. Check if its latest revision is a tombstone
+      (let [concept (mdb2/get-latest-concept context concept-id false)]
+        (if (:deleted concept)
+          (overwrite-service-tombstone context concept service user-id)
+          (errors/throw-service-error
+           :conflict
+           (msg/service-already-exists service concept-id))))
+      ;; The service doesn't exist
+      (mdb2/save-concept context
+       (service->new-concept service)))))
+
+(defn update-service
+  "Updates an existing service with the given concept id."
+  [context service-key service-json-str]
+  (let [updated-service (concept-json->concept service-json-str)
+        existing-concept (fetch-service-concept context service-key)
+        existing-service (edn/read-string (:metadata existing-concept))]
+    (validate-update-service existing-service updated-service)
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          ;; The updated service won't change the originator of the existing
+          ;; service
+          (assoc :metadata (-> updated-service
+                               (assoc :originator-id
+                                      (:originator-id existing-service))
+                               (pr-str))
+                 :user-id (context-util/context->user-id
+                           context
+                           msg/token-required-for-service-modification))
           (dissoc :revision-date :transaction-id)
           (update-in [:revision-id] inc)))))

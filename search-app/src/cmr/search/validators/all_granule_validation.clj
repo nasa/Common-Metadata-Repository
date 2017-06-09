@@ -58,14 +58,13 @@
 (defn no-all-granules-with-scroll
   "Validates that the query is not an all granules query if it is a scroll query."
   [query]
-  (when (and (:scroll query) 
-             (all-granules-query? query) 
-             
+  (when (and (:scroll query)
+             (all-granules-query? query)
+
              ;; Subsequent calls to scroll look like all-granules queries since the query
-             ;; is empty. Anything with a scroll-id is a subsequent scroll request, so we ignore 
+             ;; is empty. Anything with a scroll-id is a subsequent scroll request, so we ignore
              ;; those.
              (not (:scroll-id query)))
     [(str "The CMR does not allow querying across granules in all collections when scrolling. "
           "You should limit your query using conditions that identify one or more collections"
           " such as provider, concept_id, short_name, or entry_title.")]))
-

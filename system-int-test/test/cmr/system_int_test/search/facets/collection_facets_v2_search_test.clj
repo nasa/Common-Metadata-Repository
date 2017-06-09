@@ -3,12 +3,12 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are3]]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -583,6 +583,37 @@
         (assert-facet-field-not-exist facets-result "Organizations" "DOI/USGS/CMG/WHSC")
         (assert-facet-field-not-exist facets-result "Organizations" "LPDAAC")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
+
+(deftest dummy-service-facets
+  (testing "Service facets are not returned by default"
+    (let [facets-result (search-and-return-v2-facets {})]
+      (are [facet-group facet-value]
+        (assert-facet-field-not-exist facets-result facet-group facet-value)
+
+        "Output File Formats" "ASCII"
+        "Output File Formats" "GeoTIFF"
+        "Output File Formats" "NetCDF4-CF"
+        "Reprojections" "Geographic"
+        "Reprojections" "Lambert Conic Conformal"
+        "Reprojections" "Universal Transverse Mercator")))
+
+  (testing "Service facets returned when configured on"
+    (dev-sys-util/eval-in-dev-sys
+     `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-service-facets!
+       true))
+    (let [facets-result (search-and-return-v2-facets {})]
+      (are [facet-group facet-value facet-count]
+        (assert-facet-field facets-result facet-group facet-value facet-count)
+
+        "Output File Formats" "ASCII" 4
+        "Output File Formats" "GeoTIFF" 15
+        "Output File Formats" "NetCDF4-CF" 8
+        "Reprojections" "Geographic" 14
+        "Reprojections" "Lambert Conic Conformal" 1
+        "Reprojections" "Universal Transverse Mercator" 3))
+    (dev-sys-util/eval-in-dev-sys
+     `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-service-facets!
+       false))))
 
 (comment
  ;; Good for manually testing applying links

@@ -2,7 +2,6 @@
   "This tests associating variables with collections."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer [are2] :as util]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -11,8 +10,7 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.variable-util :as vu]
-   [cmr.transmit.variable :as transmit-variable]))
+   [cmr.system-int-test.utils.variable-util :as vu]))
 
 (use-fixtures
  :each

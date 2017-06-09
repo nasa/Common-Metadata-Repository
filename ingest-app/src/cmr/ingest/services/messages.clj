@@ -28,8 +28,8 @@
 
 (defn platform-not-matches-kms-keywords
   [platform]
-  (format "Platform short name [%s] and long name [%s] was not a valid keyword combination."
-          (:ShortName platform) (:LongName platform)))
+  (format "Platform short name [%s], long name [%s], and type [%s] was not a valid keyword combination."
+          (:ShortName platform) (:LongName platform) (:Type platform)))
 
 (defn instrument-not-matches-kms-keywords
   [instrument]
@@ -52,6 +52,12 @@
    [directoryname]
    (format "Directory name short name [%s] was not a valid keyword."
           (:ShortName directoryname)))
+
+(defn iso-topic-category-not-matches-kms-keywords
+   "Error msg when ISOTopicCategory is not in the KMS."
+   [iso-topic-category]
+   (format "ISO Topic Category [%s] was not a valid keyword."
+           iso-topic-category))
 
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
@@ -86,25 +92,36 @@
   (format "Location keyword %s was not a valid keyword combination."
           (keyword->human-attrib-list lk location-keyword-attribute-order)))
 
-(defn variable-already-exists
-  [variable concept-id]
-  (format "A variable with native-id [%s] already exists with concept id [%s]."
-          (:native-id variable) concept-id))
-
 (def token-required-for-variable-modification
   "Variables cannot be modified without a valid user token.")
 
 (defn variable-deleted
-  [variable-key]
-  (format "Variable with variable-key [%s] was deleted." variable-key))
+  [variable-name]
+  (format "Variable with variable-name '%s' was deleted." variable-name))
 
 (defn variable-does-not-exist
-  [variable-key]
-  (format "Variable could not be found with variable-key [%s]" variable-key))
+  [variable-name]
+  (format "Variable could not be found with variable-name '%s'" variable-name))
 
 (defn variable-already-exists
   [variable concept-id]
-  (format "A variable with variable-key [%s] already exists with concept id [%s]."
-          (:variable-key variable)
+  (format "A variable with native-id '%s' already exists with concept id '%s'."
+          (:native-id variable)
           concept-id))
 
+(def token-required-for-service-modification
+  "Services cannot be modified without a valid user token.")
+
+(defn service-deleted
+  [service-name]
+  (format "Service with service-name '%s' was deleted." service-name))
+
+(defn service-does-not-exist
+  [service-name]
+  (format "Service could not be found with service-name '%s'" service-name))
+
+(defn service-already-exists
+  [service concept-id]
+  (format "A service with native-id '%s' already exists with concept id '%s'."
+          (:native-id service)
+          concept-id))

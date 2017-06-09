@@ -47,12 +47,13 @@
   (testing "Keyword validation using validation endpoint"
     (let [concept (data-umm-c/collection-concept
                    {:Platforms [(data-umm-c/platform {:ShortName "foo"
-                                                      :LongName "Airbus A340-600"})]
+                                                      :LongName "Airbus A340-600"
+                                                      :Type "Aircraft"})]
                     :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] :ShortName "SomeCenter"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
-                        :errors [(str "Platform short name [foo] and long name [Airbus A340-600] "
+                        :errors [(str "Platform short name [foo], long name [Airbus A340-600], and type [Aircraft] "
                                       "was not a valid keyword combination.")]}
                        {:path ["DataCenters" 0]
                         :errors [(str "Data center short name [SomeCenter] and long name [null] "
@@ -96,34 +97,37 @@
           "EUDaSM" "European DIgItal ArchIve of SoIl MAps"))
 
   (testing "Platform keyword validation"
-    (are2 [short-name long-name]
+    (are2 [short-name long-name type]
           (assert-invalid-keywords
-            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name})]}
+            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name :Type type})]}
             ["Platforms" 0]
-            [(format (str "Platform short name [%s] and long name [%s]"
+            [(format (str "Platform short name [%s], long name [%s], and type [%s]"
                           " was not a valid keyword combination.")
-                     short-name long-name)])
+                     short-name long-name type)])
 
           "Invalid short name"
-          "foo" "Airbus A340-600"
+          "foo" "Airbus A340-600" "Aircraft"
 
           "Long name is nil in KMS"
-          "AIRCRAFT" "Airbus A340-600"
+          "AIRCRAFT" "Airbus A340-600" "Aircraft"
 
           "Invalid long name"
-          "DMSP 5B/F3" "foo"
+          "DMSP 5B/F3" "foo" "Earth Observation Satellites"
+
+          "Invalid long name"
+          "DMSP 5B/F3" "Defense Meteorological Satellite Program-F3" "foo"
 
           "Invalid combination"
-          "DMSP 5B/F3" "Airbus A340-600")
+          "DMSP 5B/F3" "Airbus A340-600" "Earth Observation Satellites")
 
-    (are2 [short-name long-name]
+    (are2 [short-name long-name type]
           (assert-valid-keywords
-            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name})]})
+            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name :Type type})]})
           "Exact match"
-          "A340-600" "Airbus A340-600"
+          "A340-600" "Airbus A340-600" "Aircraft"
 
           "Case Insensitive"
-          "a340-600" "aiRBus A340-600"))
+          "a340-600" "aiRBus A340-600" "aIrCrAfT"))
 
   (testing "DataCenter keyword validation"
     (are3 [attribs]
@@ -136,7 +140,7 @@
           "Invalid short name"
           {:Roles ["ARCHIVER"]
            :ShortName "AARHUS-HYDRO-Invalid"
-           :LongName "Hydrogeophysics Group, Aarhus University "} 
+           :LongName "Hydrogeophysics Group, Aarhus University "}
 
           "Invalid long name"
           {:Roles ["ARCHIVER"]
@@ -161,7 +165,7 @@
           {:Roles ["ARCHIVER"]
            :ShortName "aArHUS-HYDRO"
            :LongName "hYdrogeophysics Group, Aarhus University "}))
-  
+
   (testing "DirectoryName keyword validation"
     (are3 [attribs]
           (let [dn (data-umm-c/directory-name attribs)]
@@ -186,6 +190,25 @@
           {:ShortName "gOSIC/GtOS"
            :LongName "LN NOT VALIDATED"}))
 
+  (testing "ISOTopicCategories keyword validation"
+    (are3 [itc]
+          (assert-invalid-keywords
+            {:ISOTopicCategories [itc]}
+            ["IsoTopicCategories" 0]
+            [(msg/iso-topic-category-not-matches-kms-keywords itc)])
+
+          "Invalid ISOTopicCategory"
+          "Invalid ISOTopicCategory")
+
+    (are3 [itc]
+          (assert-valid-keywords {:ISOTopicCategories [itc]})
+
+          "Valid Case Sensitive"
+          "BIOTA"
+
+          "Valid Case Insensitive"
+          "bIoTa"))
+
   (testing "Instrument keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords
@@ -193,6 +216,7 @@
              [(data-umm-c/platform
                 {:ShortName "A340-600"
                  :LongName "Airbus A340-600"
+                 :Type "Aircraft"
                  :Instruments [(data-umm-c/instrument {:ShortName short-name
                                                        :LongName long-name})]})]}
             ["Platforms" 0 "Instruments" 0]
@@ -217,6 +241,7 @@
              [(data-umm-c/platform
                 {:ShortName "A340-600"
                  :LongName "Airbus A340-600"
+                 :Type "Aircraft"
                  :Instruments [(data-umm-c/instrument {:ShortName short-name
                                                        :LongName long-name})]})]})
           "Exact match"

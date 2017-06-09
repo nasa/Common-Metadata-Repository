@@ -213,8 +213,8 @@
   "This is the minimal valid UMM-C."
   {:DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
-                    :ShortName "AARHUS-HYDRO" 
-                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
+                    :ShortName "AARHUS-HYDRO"
+                    :LongName "Hydrogeophysics Group, Aarhus University "})]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -233,7 +233,7 @@
    :DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
                     :ShortName "AARHUS-HYDRO"
-                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
+                    :LongName "Hydrogeophysics Group, Aarhus University "})]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"
@@ -250,12 +250,12 @@
 (def minimal-umm-c
   "This is the minimal valid UMM-C."
   {:Platforms [(umm-cmn/map->PlatformType
-                 {:ShortName "A340-600" :LongName "Airbus A340-600"})]
+                 {:ShortName "A340-600" :LongName "Airbus A340-600" :Type "Aircraft"})]
    :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
    :DataCenters [(umm-cmn/map->DataCenterType
                    {:Roles ["ARCHIVER"]
                     :ShortName "AARHUS-HYDRO"
-                    :LongName "Hydrogeophysics Group, Aarhus University "})] 
+                    :LongName "Hydrogeophysics Group, Aarhus University "})]
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "EARTH SCIENCE SERVICES"
                        :Topic "DATA ANALYSIS AND VISUALIZATION"

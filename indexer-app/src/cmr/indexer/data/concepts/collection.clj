@@ -140,7 +140,7 @@
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
         spatial-keywords (lk/location-keywords->spatial-keywords
-                           (:LocationKeywords collection))
+                          (:LocationKeywords collection))
         access-value (get-in collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
@@ -318,11 +318,11 @@
             ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
-                               (pr-str
-                                 (into {} (for [ta tag-associations]
-                                            [(:tag-key ta) (util/remove-nil-keys
-                                                             {:data (:data ta)})])))))
-            :variables (map variable/variable-association->elastic-doc variable-associations)}
+                              (pr-str
+                               (into {} (for [ta tag-associations]
+                                          [(:tag-key ta) (util/remove-nil-keys
+                                                          {:data (:data ta)})])))))}
+           (variable/variable-associations->elastic-doc context variable-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)

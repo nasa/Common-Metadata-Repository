@@ -1,48 +1,46 @@
 (ns cmr.system-int-test.utils.variable-util
-  "This contains utilities for testing variable"
+  "This contains utilities for testing variables."
   (:require
    [clojure.string :as string]
-   [cmr.acl.core :as acl]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.variable :as transmit-variable]))
 
-(defn- get-system-ingest-update-acls
-  "Get a token's system ingest management update ACLs."
-  [token]
-  (-> (s/context)
-      (assoc :token token)
-      (acl/get-permitting-acls :system-object
-                               e/ingest-management-acl
-                               :update)))
-
-(defn permitted?
-  "Check if a the ACLs for the given token include the given grant and group IDs."
-  [token grant-id group-id]
-  (let [acls (get-system-ingest-update-acls token)]
-    (and (e/grant-permitted? grant-id acls)
-         (e/group-permitted? group-id acls))))
-
-(defn not-permitted?
-  [& args]
-  (not (apply permitted? args)))
-
 (defn grant-all-variable-fixture
-  "A test fixture that grants all users the ability to create and modify variables"
+  "A test fixture that grants all users the ability to create and modify
+  variables."
   [f]
-  (e/grant-all-variable (s/context))
+  (echo-util/grant-all-variable (s/context))
   (f))
 
+(defn setup-update-acl
+  "Set up the ACLs for UMM-Var update permissions and return the ids+token"
+  [context]
+  (let [user-name "umm-var-user42"
+        group-name "umm-var-guid42"
+        update-group-id (echo-util/get-or-create-group context group-name)
+        update-token (echo-util/login context user-name [update-group-id])
+        token-context (assoc context :token update-token)
+        update-grant-id (echo-util/grant-group-admin token-context
+                                                     update-group-id
+                                                     :update)]
+    {:user-name user-name
+     :group-name group-name
+     :group-id update-group-id
+     :grant-id update-grant-id
+     :token update-token}))
+
 (def sample-variable
-  {:Name "A name"
+  {:Name "A-name"
    :LongName "A long UMM-Var name"
    :Units "m"
    :DataType "float32"
@@ -61,40 +59,15 @@
   "Makes a valid variable based on the given input"
   ([]
    (make-variable nil))
-  ([attributes]
-   (merge sample-variable attributes))
-  ([index attribs]
+  ([attrs]
+   (merge sample-variable attrs))
+  ([index attrs]
    (merge
     sample-variable
     {:Name (str "Name" index)
      :Version (str "V" index)
      :LongName (str "Long UMM-Var name " index)}
-    attribs)))
-
-(defn- assert-convert-kebab-case
-  "Assert that the field names in the map does not have dashes, and convert the given concept map
-  to use kebab case keys."
-  [concept-map]
-  ;; This is to assert that the variables api response will use underscore, not dash
-  (is (empty? (select-keys concept-map [:concept-id :revision-id :variable-name
-                                        :originator-id :variable-association :associated-item])))
-  (util/map-keys->kebab-case concept-map))
-
-(defn- kebab-case-body
-  "Returns the body with variables converted to kebab case."
-  [body]
-  (cond
-    (sequential? body) (map assert-convert-kebab-case body)
-    (map? body) (assert-convert-kebab-case body)
-    :else body))
-
-(defn- process-response
-  [{:keys [status body]}]
-  (let [body (kebab-case-body body)]
-    (if (map? body)
-      (assoc body :status status)
-      {:status status
-       :body body})))
+    attrs)))
 
 (defn create-variable
   "Creates a variable."
@@ -102,7 +75,8 @@
    (create-variable token variable nil))
   ([token variable options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (transmit-variable/create-variable (s/context) variable options)))))
+     (ingest-util/parse-map-response
+      (transmit-variable/create-variable (s/context) variable options)))))
 
 (defn update-variable
   "Updates a variable."
@@ -112,8 +86,8 @@
    (update-variable token variable-name variable nil))
   ([token variable-name variable options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (transmit-variable/update-variable
-                        (s/context) variable-name variable options)))))
+     (ingest-util/parse-map-response
+      (transmit-variable/update-variable (s/context) variable-name variable options)))))
 
 (defn delete-variable
   "Deletes a variable"
@@ -121,7 +95,8 @@
    (delete-variable token variable-name nil))
   ([token variable-name options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (transmit-variable/delete-variable (s/context) variable-name options)))))
+     (ingest-util/parse-map-response
+      (transmit-variable/delete-variable (s/context) variable-name options)))))
 
 (defn- associate-variable
   "Associate a variable with collections by the JSON condition.
@@ -131,7 +106,7 @@
         response (transmit-variable/associate-variable
                   association-type (s/context) variable-name condition options)]
     (index/wait-until-indexed)
-    (process-response response)))
+    (ingest-util/parse-map-response response)))
 
 (defn associate-by-query
   "Associates a variable with collections found with a JSON query"
@@ -154,7 +129,7 @@
         response (transmit-variable/dissociate-variable
                   association-type (s/context) variable-name condition options)]
     (index/wait-until-indexed)
-    (process-response response)))
+    (ingest-util/parse-map-response response)))
 
 (defn dissociate-by-query
   "Dissociates a variable with collections found with a JSON query"
@@ -180,10 +155,8 @@
          response (if-let [concept-id (:concept-id variable)]
                     (update-variable token (:variable-name variable) variable-to-save)
                     (create-variable token variable-to-save))
-         variable (-> variable
-                 (update :variable-name string/lower-case)
-                 (into (select-keys response [:status :errors :concept-id :revision-id])))]
-
+         variable (into variable
+                        (select-keys response [:status :errors :concept-id :revision-id]))]
      (if (= (:revision-id variable) 1)
        ;; Get the originator id for the variable
        (assoc variable :originator-id (tokens/get-user-id (s/context) token))
@@ -196,35 +169,35 @@
      (assert (= 200 (:status response)) (pr-str condition))
      (assoc saved-variable :revision-id (:revision-id response)))))
 
+(defn expected-concept
+  "Create an expected concept given a service, its concept-id, a revision-id,
+  and a user-id."
+  [variable concept-id revision-id user-id]
+  {:concept-type :variable
+   :native-id (string/lower-case (:variable-name variable))
+   :provider-id "CMR"
+   :format mt/edn
+   :metadata (pr-str variable)
+   :user-id user-id
+   :deleted false
+   :concept-id concept-id
+   :revision-id revision-id})
+
 (defn assert-variable-saved
   "Checks that a variable was persisted correctly in metadata db. The variable should already
    have originator id set correctly. The user-id indicates which user updated this revision."
   [variable user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= {:concept-type :variable
-            :native-id (:variable-name variable)
-            :provider-id "CMR"
-            :format mt/edn
-            :metadata (pr-str variable)
-            :user-id user-id
-            :deleted false
-            :concept-id concept-id
-            :revision-id revision-id}
+    (is (= (expected-concept variable concept-id revision-id user-id)
            (dissoc concept :revision-date :transaction-id)))))
 
 (defn assert-variable-deleted
   "Checks that a variable tombstone was persisted correctly in metadata db."
   [variable user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= {:concept-type :variable
-            :native-id (:variable-name variable)
-            :provider-id "CMR"
-            :metadata ""
-            :format mt/edn
-            :user-id user-id
-            :deleted true
-            :concept-id concept-id
-            :revision-id revision-id}
+    (is (= (-> variable
+               (expected-concept concept-id revision-id user-id)
+               (assoc :metadata "" :deleted true))
            (dissoc concept :revision-date :transaction-id)))))
 
 (defn sort-expected-variables

@@ -8,7 +8,7 @@
    [ring.util.codec :as codec]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; URL functions
+;;; URL functions
 
 (defn- variables-url
   [conn]
@@ -28,11 +28,18 @@
   (str (variable-associations-by-concept-ids-url conn variable-name) "/by_query"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Request functions
+;;; Ingest Request functions
+;;;
+;;; Note: ingest functions return XML responses
 
-(h/defcreator create-variable :ingest variables-url)
-(h/defupdater update-variable :ingest variable-url)
-(h/defdestroyer delete-variable :ingest variable-url)
+(h/defcreator create-variable :ingest variables-url {:accept :xml})
+(h/defupdater update-variable :ingest variable-url {:accept :xml})
+(h/defdestroyer delete-variable :ingest variable-url {:accept :xml})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Search Request functions
+;;;
+;;; Note: search functions return JSON responses
 
 (defmulti variable-associations-url
   "Returns the url to associate a variable based on the association type.

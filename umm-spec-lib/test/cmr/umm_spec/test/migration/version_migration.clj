@@ -767,19 +767,6 @@
              :ContactInstruction "Call"}]
          (:ContactInformation (first (:ContactGroups result)))))))
 
-(deftest migrate-1_6-up-to-1_7
-  (let [result (vm/migrate-umm {} :collection "1.6" "1.7"
-                               {:ISOTopicCategories
-                                ["biota" "cloud" "climatologyMeteorologyAtmosphere"]})]
-    ;; Any ISOTopicCategory that is not in the defined enumeration list is converted to "location"
-    (is (= ["biota" "location" "climatologyMeteorologyAtmosphere"] (:ISOTopicCategories result)))))
-
-(deftest migrate-1_7-down-to-1_6
-  (let [result (vm/migrate-umm {} :collection "1.7" "1.6"
-                               {:ISOTopicCategories
-                                ["biota" "location" "climatologyMeteorologyAtmosphere"]})]
-    (is (= ["biota" "location" "climatologyMeteorologyAtmosphere"] (:ISOTopicCategories result)))))
-
 (deftest migrate-1_7-up-to-1_8
   (let [result (vm/migrate-umm {} :collection "1.7" "1.8"
                                {:Version "003"})]

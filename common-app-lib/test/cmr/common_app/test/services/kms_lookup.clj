@@ -12,7 +12,7 @@
   {:providers [{:level-0 "ACADEMIC" :level-1 "OR-STATE/EOARC" :short-name "PROV1"
                 :long-name "Eastern Oregon Agriculture Research Center, Oregon State University"
                 :uuid "prov1-uuid"}]
-   :platforms [{:short-name "PLAT1" :long-name "Platform 1" :other-random-key 7 :uuid "plat1-uuid"}]
+   :platforms [{:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}]
    :instruments [{:short-name "INST1" :long-name "Instrument 1" :uuid "inst1-uuid"}]
    :projects [{:short-name "PROJ1" :long-name "Project 1" :uuid "proj1-uuid"}]
    :spatial-keywords [{:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"
@@ -25,6 +25,8 @@
                       {:category "SPACE" :uuid "location5-uuid"}
                       {:category "CONTINENT" :type "UNITED STATES" :subregion-1 "GEORGIA"
                        :uuid "location6-uuid"}]
+   :iso-topic-categories [{:short-name "BIOTA" :uuid "itc1-uuid"} {:short-name "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" :uuid "itc2-uuid"}]
+   :concepts [{:short-name "GOSIC/GTOS" :uuid "dn1-uuid"} {:short-name "GOMMP" :uuid "dn2-uuid"}]
    :science-keywords [{:category "EARTH SCIENCE" :topic "TOPIC1" :term "TERM1"
                        :variable-level-1 "VL1" :variable-level-2 "VL2"
                        :variable-level-3 "VL3" :uuid "sk1-uuid"}]})
@@ -65,25 +67,25 @@
 
 (deftest lookup-by-umm-c-keyword-test
   (testing "Full keyword map is returned by umm-c lookup"
-    (is (= {:short-name "PLAT1" :long-name "Platform 1" :other-random-key 7 :uuid "plat1-uuid"}
+    (is (= {:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}
            (kms-lookup/lookup-by-umm-c-keyword kms-index :platforms
-                                               {:short-name "Plat1" :long-name "Platform 1"}))))
+                                               {:short-name "Plat1" :long-name "Platform 1" :type "Aircraft"}))))
   ;; Test each of the different keywords with fields present and missing
   (are3 [keyword-scheme umm-c-keyword expected-uuid]
     (is (= expected-uuid
            (:uuid (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme umm-c-keyword))))
 
     "Lookup Platform"
-    :platforms {:short-name "PLAT1" :long-name "Platform 1"} "plat1-uuid"
+    :platforms {:short-name "PLAT1" :long-name "Platform 1" :type "Aircraft"} "plat1-uuid"
 
     "Lookups are case insensitive"
-    :platforms {:short-name "plAt1" :long-name "PLATFORm 1"} "plat1-uuid"
+    :platforms {:short-name "plAt1" :long-name "PLATFORm 1" :type "AirCrAFt"} "plat1-uuid"
 
     "Lookup without all keys used in the lookup returns nil"
     :platforms {:short-name "PLAT1"} nil
 
     "Lookup platform with extra keys finds the platform"
-    :platforms {:a-key "a" :b-key "b" :short-name "PLAT1" :long-name "Platform 1"} "plat1-uuid"
+    :platforms {:a-key "a" :b-key "b" :short-name "PLAT1" :long-name "Platform 1" :type "Aircraft"} "plat1-uuid"
 
     "Lookup Instrument"
     :instruments {:short-name "inst1" :long-name "Instrument 1"} "inst1-uuid"
@@ -96,6 +98,12 @@
     "Lookup project"
     :projects {:short-name "proj1" :long-name "Project 1"} "proj1-uuid"
 
+    "Lookup concepts"
+    :concepts {:short-name "GOSIC/GTOS"} "dn1-uuid"
+
+    "Lookup project"
+    :iso-topic-categories {:short-name "BIOTA"} "itc1-uuid"
+
     "Lookup spatial keyword"
     :spatial-keywords {:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"
                        :subregion-2 "CHAD" :subregion-3 "AOUZOU"} "location1-uuid"
@@ -105,7 +113,7 @@
 
 (deftest lookup-by-short-name-test
   (testing "Full keyword map is returned by short-name lookup"
-    (is (= {:short-name "PLAT1" :long-name "Platform 1" :other-random-key 7 :uuid "plat1-uuid"}
+    (is (= {:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}
            (kms-lookup/lookup-by-short-name kms-index :platforms "PLAT1"))))
   ;; Test each of the different keywords with fields present and missing
   (are3 [keyword-scheme short-name expected-uuid]

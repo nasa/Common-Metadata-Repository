@@ -15,6 +15,7 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
@@ -228,7 +229,7 @@
       :LocationKeywords (kws/parse-location-keywords md-data-id-el)
       :TemporalKeywords (kws/descriptive-keywords md-data-id-el "temporal")
       :DataLanguage (char-string-value md-data-id-el "gmd:language")
-      :ISOTopicCategories (values-at doc topic-categories-xpath)
+      :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc "")
       :SpatialExtent (spatial/parse-spatial doc extent-info sanitize?)
       :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
       :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))

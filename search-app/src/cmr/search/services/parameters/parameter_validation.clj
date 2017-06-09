@@ -40,7 +40,7 @@
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :platform :platform-h :processing-level-id :processing-level-id-h
-                       :sensor :data-center-h}
+                       :sensor :data-center-h :measurement}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
      :allow-or #{:attribute :science-keywords :science-keywords-h}}))
@@ -112,13 +112,14 @@
    :created-at cpv/and-option
    :highlights highlights-option
 
-   ;; Tag related parameters 
+   ;; Tag related parameters
    :tag-key cpv/pattern-option
    :tag-data cpv/pattern-option
    :tag-originator-id cpv/pattern-option
 
    ;; Variable related parameters
-   :variable-name cpv/pattern-option})
+   :variable-name cpv/string-plus-and-options
+   :measurement cpv/string-plus-and-options})
 
 (defmethod cpv/valid-parameter-options :granule
   [_]
@@ -145,6 +146,7 @@
    :provider cpv/string-param-options
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
+   :created-at cpv/and-option
    :revision-date cpv/and-option})
 
 (defmethod cpv/valid-parameter-options :tag
@@ -569,6 +571,7 @@
    :granule (concat
               cpv/common-validations
               [temporal-format-validation
+               created-at-validation
                updated-since-validation
                revision-date-validation
                orbit-number-validation

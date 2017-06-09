@@ -1,5 +1,5 @@
-(ns cmr.ingest.api.variables
-  "Variable ingest functions in support of the ingest API."
+(ns cmr.ingest.api.services
+  "Service ingest functions in support of the ingest API."
   (:require
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
@@ -11,8 +11,8 @@
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]))
 
-(defn- verify-variable-modification-permission
-  "Verifies the current user has been granted permission to modify variables in
+(defn- verify-service-modification-permission
+  "Verifies the current user has been granted permission to modify services in
   ECHO ACLs."
   [context permission-type]
   (when-not (seq (acl/get-permitting-acls context
@@ -21,15 +21,15 @@
                   permission-type))
     (errors/throw-service-error
       :unauthorized
-      (format "You do not have permission to %s a variable." (name permission-type)))))
+      (format "You do not have permission to %s a service." (name permission-type)))))
 
-(defn- validate-variable-content-type
-  "Validates that content type sent with a variable is JSON"
+(defn- validate-service-content-type
+  "Validates that content type sent with a service is JSON"
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
-(defn create-variable
-  "Processes a create variable request.
+(defn create-service
+  "Processes a create service request.
 
   IMPORTANT: Note that the permission require for creating a concept
              during ingest is :update and not :create. This is due to
@@ -38,28 +38,19 @@
              allowed for ingest operations. The mock ACL system (rightly)
              inherits this limitation from the real system."
   [context headers body]
-  (verify-variable-modification-permission context :update)
+  (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
-  (validate-variable-content-type headers)
+  (validate-service-content-type headers)
   (api-core/generate-ingest-response
    headers
-   (ingest/create-variable context body)))
+   (ingest/create-service context body)))
 
-(defn update-variable
-  "Processes a request to update a variable."
-  [context headers body variable-key]
-  (verify-variable-modification-permission context :update)
+(defn update-service
+  "Processes a request to update a service."
+  [context headers body service-key]
+  (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
-  (validate-variable-content-type headers)
+  (validate-service-content-type headers)
   (api-core/generate-ingest-response
    headers
-   (ingest/update-variable context variable-key body)))
-
-(defn delete-variable
-  "Deletes the variable with the given variable-key."
-  [context headers variable-key]
-  (verify-variable-modification-permission context :update)
-  (common-enabled/validate-write-enabled context "ingest")
-  (api-core/generate-ingest-response
-   headers
-   (ingest/delete-variable context variable-key)))
+   (ingest/update-service context service-key body)))

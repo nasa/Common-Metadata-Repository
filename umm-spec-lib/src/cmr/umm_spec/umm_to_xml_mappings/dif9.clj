@@ -67,8 +67,7 @@
        [:Topic u/not-provided]
        [:Term u/not-provided]])
     (for [topic-category (:ISOTopicCategories c)]
-      [:ISO_Topic_Category (dif-util/umm-iso-topic-category->dif-iso-topic-category
-                             topic-category)])
+      [:ISO_Topic_Category topic-category])
     (for [ak (:AncillaryKeywords c)]
       [:Keyword ak])
     (generate-instruments (:Platforms c))

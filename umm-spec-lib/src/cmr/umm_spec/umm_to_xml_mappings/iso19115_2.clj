@@ -10,6 +10,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project :as project]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
@@ -318,9 +319,7 @@
          (generate-publication-references (:PublicationReferences c))
          (sdru/generate-publication-related-urls c)
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
-         (for [topic-category (:ISOTopicCategories c)]
-           [:gmd:topicCategory
-            [:gmd:MD_TopicCategoryCode (iso-topic-value->sanitized-iso-topic-category topic-category)]])
+         (iso-topic-categories/generate-iso-topic-categories c)
          (when (:TilingIdentificationSystems c)
           [:gmd:extent
            [:gmd:EX_Extent {:id "TilingIdentificationSystem"}
