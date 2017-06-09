@@ -2,6 +2,7 @@
   "Returns facets v2 along with collection search results. See
   https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response"
   (:require [cmr.common.util :as util]
+            [cmr.common.config :refer [defconfig]]
             [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
             [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
@@ -42,7 +43,8 @@
 
 (def v2-facets-result-field-in-order
   "Defines the v2 facets result field in order"
-  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"])
+  ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
+   "Output File Formats" "Reprojections"])
 
 (defn- facet-query
   "Returns the facet query for the given facet field"
@@ -111,6 +113,34 @@
                                               {:relative-root-url :context})]
     (format "%s/collections.json" (conn/root-url public-search-config))))
 
+(defconfig include-service-facets
+  "Controls whether or not to display service facets. Feature toggle needed while prototyping
+  with EDSC in certain environments."
+  {:type Boolean :default false})
+
+(defn- dummy-service-filter-node
+  "Creates a dummy service filter node"
+  [term count links]
+  {:title term
+   :type :filter
+   :applied false
+   :links links
+   :count count
+   :has_children false})
+
+(defn- generate-service-placeholder-facets
+  "Returns dummy service facets for EDSC services prototype."
+  [base-url query-params]
+  (let [links-with-no-change [{:apply (lh/generate-query-string base-url query-params)}]
+        output-formats [(dummy-service-filter-node "ASCII" 4 links-with-no-change)
+                        (dummy-service-filter-node "GeoTIFF" 15 links-with-no-change)
+                        (dummy-service-filter-node "NetCDF4-CF" 8 links-with-no-change)]
+        reprojection-options [(dummy-service-filter-node "Geographic" 14 links-with-no-change)
+                              (dummy-service-filter-node "Lambert Conic Conformal" 1 links-with-no-change)
+                              (dummy-service-filter-node "Universal Transverse Mercator" 3 links-with-no-change)]]
+    [(v2h/generate-group-node "Output File Formats" false output-formats)
+     (v2h/generate-group-node "Reprojections" false reprojection-options)]))
+
 (defn- create-v2-facets
   "Create the facets v2 response. Parses an elastic aggregations result and returns the facets."
   [context aggs facet-fields]
@@ -119,8 +149,12 @@
         flat-facet-fields (remove #{:science-keywords} facet-fields)
         hierarchical-facets (when ((set facet-fields) :science-keywords)
                               (hv2/create-hierarchical-v2-facets aggs base-url query-params))
-        facets (concat hierarchical-facets
-                       (create-prioritized-v2-facets aggs flat-facet-fields base-url query-params))]
+        facets (if (include-service-facets)
+                 (concat hierarchical-facets
+                        (create-prioritized-v2-facets aggs flat-facet-fields base-url query-params)
+                        (generate-service-placeholder-facets base-url query-params))
+                 (concat hierarchical-facets
+                        (create-prioritized-v2-facets aggs flat-facet-fields base-url query-params)))]
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))
