@@ -24,7 +24,7 @@
           metadata (edn/read-string (:metadata fetched))]
       (testing "create a new variable"
         ;; Sanity check on tokens; we've had issues with ACLs, so the following is
-        ;; handy when firest testing ingest. More complete ACL testing is done
+        ;; handy when first testing ingest. More complete ACL testing is done
         ;; below as well as in other sys-int test namespaces (e.g., associations).
         (is (e/permitted? token
                           grant-id
@@ -33,24 +33,14 @@
         (is (= 201 status))
         (is (= 1 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= (:name variable-data)
-               (:name (mdb/get-concept concept-id revision-id))))
-        ;; XXX DEBUG
-        (is (= "XXX"
-               (variable-util/expected-concept
-                variable-data concept-id revision-id "umm-var-user1")))
-        ;; XXX Once CMR-4172 (metdata-db services support) was added, we tried to
-        ;;     enable the following test; this required the work that we've since
-        ;;     put into ticket CMR-4193, which in turn is probably blocked by an
-        ;;     as-yet unfiled ticket for addressing what seems to be an ACL caching
-        ;;     issue. Once those two tickets are resolved, this test will be
-        ;;     enabled and should then pass.
-        ; (variable-util/assert-variable-saved variable-data
-        ;                                      "umm-var-user1"
-        ;                                      concept-id
-        ;                                      revision-id)
+        (is (= user-name (:user-id fetched)))
+        (is (= user-name (:originator-id metadata)))
         (is (= (string/lower-case (:Name variable-data)) (:native-id fetched)))
-        (is (= (:LongName variable-data) (:long-name metadata))))
+        (is (= (:LongName variable-data) (:long-name metadata)))
+        (variable-util/assert-variable-saved variable-data
+                                             user-name
+                                             concept-id
+                                             revision-id))
       (testing "attempt to create a new variable when it already exists"
         (let [response (variable-util/create-variable token variable-data)
               {:keys [status errors]} response]
@@ -108,7 +98,11 @@
         (is (= 2 revision-id))
         (is (:deleted fetched))
         (is (= (string/lower-case (:Name variable-data))
-               (:native-id fetched))))
+               (:native-id fetched)))
+        (variable-util/assert-variable-deleted variable-data
+                                               user-name
+                                               concept-id
+                                               revision-id))
       (testing "attempt to update a deleted variable"
         (let [response (variable-util/update-variable
                         token

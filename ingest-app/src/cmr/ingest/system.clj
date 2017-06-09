@@ -7,6 +7,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -97,6 +98,10 @@
                                 (af/refresh-acl-cache-job "ingest-acl-cache-refresh")
                                 jvm-info/log-jvm-statistics-job))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
+                       ;; Caches a map of tokens to the security identifiers
+                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
+                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
+
                        pc/providers-cache-key (pc/create-providers-cache)
                        af/acl-cache-key (af/create-consistent-acl-cache
                                          [:catalog-item :system-object :provider-object])

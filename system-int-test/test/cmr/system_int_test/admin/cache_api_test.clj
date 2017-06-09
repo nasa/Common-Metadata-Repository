@@ -97,6 +97,8 @@
          "kms"
          "providers"
          "token-imp"
+         "token-sid"
+         "token-user-id"
          "token-user-ids"
          "write-enabled"]
         (url/access-control-read-caches-url) [

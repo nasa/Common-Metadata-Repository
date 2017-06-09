@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
@@ -84,15 +85,18 @@
   "Create an expected concept given a service, its concept-id, a revision-id,
   and a user-id."
   [service concept-id revision-id user-id]
-  {:concept-type :service
-   :native-id (string/lower-case (or (:service-name service) ""))
-   :provider-id "CMR"
-   :format mt/edn
-   :metadata (pr-str service)
-   :user-id user-id
-   :deleted false
-   :concept-id concept-id
-   :revision-id revision-id})
+  (let [native-id (string/lower-case (:Name service))]
+    {:concept-type :service
+     :native-id native-id
+     :provider-id "CMR"
+     :format mt/edn
+     :metadata (pr-str (assoc (util/kebab-case-data service)
+                              :originator-id user-id
+                              :native-id native-id))
+     :user-id user-id
+     :deleted false
+     :concept-id concept-id
+     :revision-id revision-id}))
 
 (defn assert-service-saved
   "Checks that a service was persisted correctly in metadata db. The service
@@ -101,7 +105,7 @@
   [service user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= (expected-concept service concept-id revision-id user-id)
-           (dissoc concept :revision-date :transaction-id)))))
+           (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
 
 (defn sort-expected-services
   "Sorts the services using the expected default sort key."
