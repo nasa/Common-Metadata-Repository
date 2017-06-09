@@ -1423,7 +1423,7 @@ Find collections with tag_data in the form of tag_data[tag_key]=tag_value. It fi
 Collections can be found by searching for associated variables. The following variable parameters are supported.
 
 * variable_name
-  * supports `pattern`
+  * supports `pattern`, `ignore_case` and option `and`
 * measurement
   * supports `pattern`, `ignore_case` and option `and`
 

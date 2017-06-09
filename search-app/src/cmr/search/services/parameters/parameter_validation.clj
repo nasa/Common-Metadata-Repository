@@ -118,7 +118,7 @@
    :tag-originator-id cpv/pattern-option
 
    ;; Variable related parameters
-   :variable-name cpv/pattern-option
+   :variable-name cpv/string-plus-and-options
    :measurement cpv/string-plus-and-options})
 
 (defmethod cpv/valid-parameter-options :granule

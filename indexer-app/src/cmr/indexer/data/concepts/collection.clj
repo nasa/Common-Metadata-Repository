@@ -194,10 +194,7 @@
         insert-time (index-util/date->elastic insert-time)
         coordinate-system (get-in collection [:SpatialExtent :HorizontalSpatialDomain
                                               :Geometry :CoordinateSystem])
-        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)
-        measurements (remove nil?
-                            (map #(variable/variable-association->measurement context %)
-                                 variable-associations))]
+        permitted-group-ids (get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
@@ -295,10 +292,8 @@
                               (pr-str
                                (into {} (for [ta tag-associations]
                                           [(:tag-key ta) (util/remove-nil-keys
-                                                          {:data (:data ta)})])))))
-            :variables (map variable/variable-association->elastic-doc variable-associations)
-            :measurements measurements
-            :measurements.lowercase (map str/lower-case measurements)}
+                                                          {:data (:data ta)})])))))}
+           (variable/variable-associations->elastic-doc context variable-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)

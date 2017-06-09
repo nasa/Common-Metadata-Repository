@@ -98,12 +98,6 @@
    :originator-id.lowercase m/string-field-mapping
    :tag-value.lowercase m/string-field-mapping})
 
-(defnestedmapping variable-associations-mapping
-  "Defines mappings for variable associations."
-  {:variable-name.lowercase m/string-field-mapping
-   :originator-id.lowercase m/string-field-mapping
-   :variable-value.lowercase m/string-field-mapping})
-
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:category m/string-field-mapping
@@ -385,7 +379,8 @@
           :tags-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))
 
           ;; associated variables
-          :variables variable-associations-mapping
+          :variable-names m/string-field-mapping
+          :variable-names.lowercase m/string-field-mapping
           :measurements m/string-field-mapping
           :measurements.lowercase m/string-field-mapping
 

@@ -21,23 +21,27 @@
        :description description
        :originator-id.lowercase  (util/safe-lowercase originator-id)})))
 
-(defn variable-association->elastic-doc
-  "Converts the variable association into the portion going in the collection elastic document."
-  [variable-association]
-  (let [{:keys [variable-name originator-id data]} variable-association]
-    {:variable-name.lowercase (string/lower-case variable-name)
-     :originator-id.lowercase  (util/safe-lowercase originator-id)
-     :variable-value.lowercase (when (string? data)
-                                 (string/lower-case data))}))
-
-(defn variable-association->measurement
-  "Returns the measurement of the variable for the given variable association."
+(defn variable-association->variable-fields
+  "Returns the extra-fields of the variable for the given variable association."
   [context variable-association]
   (let [{:keys [variable-name]} variable-association
         native-id (string/lower-case variable-name)
-        variable-concept (mdb/find-latest-concept context
-                                                  {:native-id native-id
-                                                   :latest true}
-                                                  :variable)]
+        variable-concept (mdb/find-latest-concept
+                          context
+                          {:native-id native-id
+                           :latest true}
+                          :variable)]
     (when-not (:deleted variable-concept)
-      (get-in variable-concept [:extra-fields :measurement]))))
+      (:extra-fields variable-concept))))
+
+(defn variable-associations->elastic-doc
+  "Converts the variable association into the portion going in the collection elastic document."
+  [context variable-associations]
+  (let [variable-fields (map #(variable-association->variable-fields context %)
+                             variable-associations)
+        variable-names (map :variable-name variable-fields)
+        measurements (map :measurement variable-fields)]
+    {:variable-names variable-names
+     :variable-names.lowercase (map string/lower-case variable-names)
+     :measurements measurements
+     :measurements.lowercase (map string/lower-case measurements)}))

@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.search.variable.collection-measurement-search-test
-  "Tests searching for collections by associated measurements"
+  "Tests searching for collections by associated variables and measurements"
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
@@ -17,16 +17,16 @@
                [(ingest/reset-fixture {"provguid1" "PROV1"})
                 vu/grant-all-variable-fixture]))
 
-(deftest collection-measurement-search-test
+(deftest collection-variable-measurement-search-test
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                                     (d/ingest-umm-spec-collection
                                      "PROV1"
                                      (data-umm-c/collection n {})))
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
-        variable1 (vu/make-variable {:Name "variable1"
+        variable1 (vu/make-variable {:Name "Variable1"
                                      :LongName "Measurement1"})
-        variable2 (vu/make-variable {:Name "variable2"
+        variable2 (vu/make-variable {:Name "Variable2"
                                      :LongName "Measurement2"})
         token (e/login (s/context) "user1")]
 
@@ -42,6 +42,43 @@
     (vu/associate-by-concept-ids token "variable2" [{:concept-id (:concept-id coll2)}
                                                     {:concept-id (:concept-id coll3)}])
     (index/wait-until-indexed)
+
+    (testing "search collections by variables"
+      (are3 [items variable options]
+        (let [params (merge {:variable_name variable}
+                            (when options
+                              {"options[variable_name]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single variable search"
+        [coll1 coll2] "Variable1" {}
+
+        "no matching variable"
+        [] "Variable3" {}
+
+        "multiple variables"
+        [coll1 coll2 coll3] ["Variable1" "Variable2"] {}
+
+        "AND option false"
+        [coll1 coll2 coll3] ["Variable1" "Variable2"] {:and false}
+
+        "AND option true"
+        [coll2] ["Variable1" "Variable2"] {:and true}
+
+        "pattern true"
+        [coll1 coll2 coll3] "Var*" {:pattern true}
+
+        "pattern false"
+        [] "Var*" {:pattern false}
+
+        "default pattern is false"
+        [] "Var*" {}
+
+        "ignore-case true"
+        [coll1 coll2] "variable1" {:ignore-case true}
+
+        "ignore-case false"
+        [] "variable1" {:ignore-case false}))
 
     (testing "search collections by measurements"
       (are3 [items measurement options]
