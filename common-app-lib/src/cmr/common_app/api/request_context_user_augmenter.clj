@@ -1,17 +1,23 @@
 (ns cmr.common-app.api.request-context-user-augmenter
- "Adds data to the context for the current user for performance improvements. Adds user id and sids
- as well as caches for those. Data on the context is lazy assoc'd to delay expensive work since
- this is done for every call that hits the search API."
- (:require
-  [cheshire.core :as json]
-  [cmr.acl.core :as acl]
-  [cmr.common.cache :as cache]
-  [cmr.common.cache.in-memory-cache :as mem-cache]
-  [cmr.common.log :refer (info)]
-  [cmr.common.services.errors :as errors]
-  [cmr.common.util :as util]
-  [cmr.transmit.access-control :as access-control]
-  [cmr.transmit.echo.tokens :as tokens]))
+  "Adds data to the context for the current user for performance improvements.
+  Adds user id and sids as well as caches for those. Data on the context is
+  lazy assoc'd to delay expensive work since this is done for every call that
+  hits the search API.
+
+  Note: for any CMR applications that need to make use of the request-
+  augmenting Ring handler in this namespace, that project's system namespace
+  needs to be updated to include the two caches defined below when it builds
+  the system datastructure."
+  (:require
+   [cheshire.core :as json]
+   [cmr.acl.core :as acl]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.log :refer (info)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.echo.tokens :as tokens]))
 
 (def CACHE_TIME
  "The number of milliseconds token information will be cached for."
