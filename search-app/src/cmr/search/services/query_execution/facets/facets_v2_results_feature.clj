@@ -1,18 +1,19 @@
 (ns cmr.search.services.query-execution.facets.facets-v2-results-feature
   "Returns facets v2 along with collection search results. See
   https://wiki.earthdata.nasa.gov/display/CMR/Updated+facet+response"
-  (:require [cmr.common.util :as util]
-            [cmr.common.config :refer [defconfig]]
-            [cmr.common-app.services.search.query-execution :as query-execution]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
-            [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
-            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.search.services.query-execution.facets.links-helper :as lh]
-            [camel-snake-kebab.core :as csk]
-            [ring.util.codec :as codec]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [cmr.transmit.connection :as conn]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common-app.services.search.query-execution :as query-execution]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
+   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
+   [cmr.search.services.query-execution.facets.links-helper :as lh]
+   [cmr.transmit.connection :as conn]
+   [ring.util.codec :as codec]))
 
 (def UNLIMITED_TERMS_SIZE
   "The maximum number of allowed results to return from any terms query."
@@ -30,7 +31,8 @@
    :instrument :instrument-sn.humanized2
    :data-center :organization.humanized2
    :project :project-sn.humanized2
-   :processing-level-id :processing-level-id.humanized2})
+   :processing-level-id :processing-level-id.humanized2
+   :variables :variables})
 
 (def facets-v2-params
   "The base search parameters for the v2 facets fields."
@@ -44,14 +46,19 @@
 (def v2-facets-result-field-in-order
   "Defines the v2 facets result field in order"
   ["Keywords" "Platforms" "Instruments" "Organizations" "Projects" "Processing levels"
-   "Output File Formats" "Reprojections"])
+   "Measurements" "Output File Formats" "Reprojections"])
 
 (defn- facet-query
   "Returns the facet query for the given facet field"
   [facet-field size query-params]
-  (if (= :science-keywords facet-field)
+  (case  facet-field
+    :science-keywords
     (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
       (hv2/nested-facet (facets-v2-params->elastic-fields facet-field) size sk-depth))
+    :variables
+    (let [variable-depth (hv2/get-depth-for-hierarchical-field query-params :variables-h)]
+      (hv2/nested-facet (facets-v2-params->elastic-fields facet-field) size variable-depth))
+    ;; else
     (v2h/prioritized-facet (facets-v2-params->elastic-fields facet-field) size)))
 
 (defn- facets-v2-aggregations
@@ -146,15 +153,21 @@
   [context aggs facet-fields]
   (let [base-url (collection-search-root-url context)
         query-params (parse-params (:query-string context) "UTF-8")
-        flat-facet-fields (remove #{:science-keywords} facet-fields)
-        hierarchical-facets (when ((set facet-fields) :science-keywords)
-                              (hv2/create-hierarchical-v2-facets aggs base-url query-params))
+        flat-facet-fields (remove #{:science-keywords :variables} facet-fields)
+        science-keywords-facets (when ((set facet-fields) :science-keywords)
+                                  (hv2/create-hierarchical-v2-facets
+                                   aggs base-url query-params :science-keywords-h))
+        variables-facets (when ((set facet-fields) :variables)
+                           (hv2/create-hierarchical-v2-facets
+                            aggs base-url query-params :variables-h))
+        v2-facets (concat science-keywords-facets
+                          (create-prioritized-v2-facets
+                           aggs flat-facet-fields base-url query-params)
+                          variables-facets)
         facets (if (include-service-facets)
-                 (concat hierarchical-facets
-                        (create-prioritized-v2-facets aggs flat-facet-fields base-url query-params)
-                        (generate-service-placeholder-facets base-url query-params))
-                 (concat hierarchical-facets
-                        (create-prioritized-v2-facets aggs flat-facet-fields base-url query-params)))]
+                 (concat v2-facets
+                         (generate-service-placeholder-facets base-url query-params))
+                 v2-facets)]
     (if (seq facets)
       (assoc v2-facets-root :has_children true :children facets)
       (assoc v2-facets-root :has_children false))))

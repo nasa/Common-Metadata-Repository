@@ -3,19 +3,23 @@
   fields which contain some subfields such as science keywords which have subfields of Category,
   Topic, Term, and Variable Levels 1, 2, and 3. On the query parameter API hierarchical fields are
   specified with field[index][subfield] such as science_keyword[0][category]."
-  (:require [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
-            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
-            [cmr.common.util :as util]
-            [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as string]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+   [cmr.common.util :as util]
+   [cmr.common-app.services.search.parameters.converters.nested-field :as nested-field]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
+   [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]))
 
 (defn- nested-fields-mappings
   "Returns nested field mappings for the given field, ignoring humanizer suffixes"
   [field]
-  (let [stripped-field (str/replace (str/replace (name field) #"-h$" "") #"\.humanized$" "")]
-    (kms-fetcher/nested-fields-mappings (keyword stripped-field))))
+  (let [stripped-field (string/replace (string/replace (name field) #"-h$" "") #"\.humanized$" "")]
+    (if (= "variables" stripped-field)
+      nested-field/variable-sub-fields
+      (kms-fetcher/nested-fields-mappings (keyword stripped-field)))))
 
 (defn- get-max-subfield-index
   "Return the maximum subfield index from the hierarchical-field-mappings for any of the supplied
@@ -98,10 +102,10 @@
   Example: Params of {\"foo[2][bar]\" \"alpha\"} \"foo\" \"bar\" \"alpha\" returns #{2}."
   [query-params base-field subfield value]
   (when (and base-field subfield value)
-    (let [value-lowercase (str/lower-case value)
+    (let [value-lowercase (string/lower-case value)
           subfield-reg-ex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
           relevant-indexes (keep (fn [[k v]]
-                                   (when (= value-lowercase (str/lower-case v))
+                                   (when (= value-lowercase (string/lower-case v))
                                      (second (re-matches subfield-reg-ex k))))
                                  query-params)]
       (set (map #(Integer/parseInt %) relevant-indexes)))))
@@ -133,14 +137,14 @@
   [query-params base-field parent-subfield parent-value subfield value]
   (some?
     (when (and parent-value value)
-      (let [parent-value-lowercase (str/lower-case parent-value)
-            value-lowercase (str/lower-case value)
-            query-params-lowercase (util/map-values str/lower-case query-params)
+      (let [parent-value-lowercase (string/lower-case parent-value)
+            value-lowercase (string/lower-case value)
+            query-params-lowercase (util/map-values string/lower-case query-params)
             subfield-regex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
             ;; Find the indexes for all the query parameters that are at the same level in the
             ;; hierarchy as the provided parameter.
             same-level-indexes (for [[k v] query-params-lowercase
-                                     :when (not= value-lowercase (str/lower-case v))]
+                                     :when (not= value-lowercase (string/lower-case v))]
                                  (second (re-matches subfield-regex k)))]
         ;; Filter the query-params to just those with the same index, parent-subfield, and
         ;; parent-value when compared case insensitively
@@ -274,11 +278,11 @@
               :let [search-terms (get-search-terms-for-hierarchical-field field subfield
                                                                           query-params)]
               :when (seq search-terms)]
-          (let [terms-in-facets (map str/lower-case
+          (let [terms-in-facets (map string/lower-case
                                      (get-terms-for-subfield hierarchical-facet subfield
                                                              field-hierarchy))]
             (for [term search-terms
-                  :when (not (some #{(str/lower-case term)} terms-in-facets))]
+                  :when (not (some #{(string/lower-case term)} terms-in-facets))]
               [subfield term])))))))
 
 (defn- prune-hierarchical-facet
@@ -348,19 +352,17 @@
       hierarchical-facet)))
 
 (defn create-hierarchical-v2-facets
-  "Parses the elastic aggregations and generates the v2 facets for all hierarchical fields."
-  [elastic-aggregations base-url query-params]
-  (let [hierarchical-fields [:science-keywords-h]]
-    (for [field hierarchical-fields
-          :let [sub-facets (hierarchical-bucket-map->facets-v2 field (field elastic-aggregations)
-                                                               base-url query-params)]
-          :when (seq sub-facets)]
+  "Parses the elastic aggregations and generates the v2 facets for the given hierarchical field."
+  [elastic-aggregations base-url query-params field]
+  (let [sub-facets (hierarchical-bucket-map->facets-v2
+                    field (field elastic-aggregations) base-url query-params)]
+    (when (seq sub-facets)
       (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
             applied? (->> query-params
                           (filter (fn [[k v]] (re-matches field-reg-ex k)))
                           seq
                           some?)]
-        (merge v2h/sorted-facet-map
-               (assoc sub-facets
-                      :title (field v2h/fields->human-readable-label)
-                      :applied applied?))))))
+        [(merge v2h/sorted-facet-map
+                (assoc sub-facets
+                       :title (field v2h/fields->human-readable-label)
+                       :applied applied?))]))))

@@ -1,10 +1,15 @@
 (ns cmr.common-app.services.search.parameters.converters.nested-field
   "Contains functions for converting query parameters to conditions for nested fields."
-  (:require [clojure.string :as str]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.params :as p]
-            [cmr.transmit.kms :as kms]))
+  (:require
+   [clojure.string :as str]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.params :as p]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.transmit.kms :as kms]))
+
+(def variable-sub-fields
+  "The subfields of variable nested field."
+  [:measurement :variable])
 
 (defn get-subfield-names
   [parent-field]
@@ -12,8 +17,11 @@
   'any'."
   ;; Remove any modifiers from parent field, e.g. :science-keyword.humanized -> :science-keyword
   (let [base-parent-field (keyword (str/replace (name parent-field) #"\..*$" ""))]
-    (conj (kms/keyword-scheme->field-names (kms/translate-keyword-scheme-to-gcmd base-parent-field))
-          :any)))
+    (if (= :variables base-parent-field)
+      variable-sub-fields
+      (conj (kms/keyword-scheme->field-names
+             (kms/translate-keyword-scheme-to-gcmd base-parent-field))
+            :any))))
 
 (defn- nested-field->elastic-keyword
   "Returns the elastic keyword for the given nested field and subfield.

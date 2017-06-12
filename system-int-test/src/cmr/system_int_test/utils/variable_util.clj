@@ -78,6 +78,11 @@
      (ingest-util/parse-map-response
       (transmit-variable/create-variable (s/context) variable options)))))
 
+(defn create-variable-with-attrs
+  "Helper function to create a variable with the given variable attributes"
+  [token attrs]
+  (create-variable token (make-variable attrs)))
+
 (defn update-variable
   "Updates a variable."
   ([token variable]
