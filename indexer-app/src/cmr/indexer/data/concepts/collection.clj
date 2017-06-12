@@ -50,8 +50,9 @@
       :else
       (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
 
-(defn- apply-function-to-all-values-in-map [m f]
+(defn- apply-function-to-all-values-in-map 
   "Applies function f to all the values in map m." 
+  [m f]
   (reduce-kv (fn [m k v] (assoc m k (f v))) {} m))
 
 (defn- collection-temporal-elastic
@@ -211,10 +212,12 @@
         {:keys [granule-start-date granule-end-date]} (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (when-not (and granule-end-date (t/within? last-3-days granule-end-date))
-                           granule-end-date)]
                            ;; If the granule end date is within the last 3 days we indicate that
                            ;; the collection has no end date. This allows NRT collections to be
                            ;; found even if the collection has been reindexed recently.
+                           ;; otherwise, use granule-end-date
+                           granule-end-date)]
+
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
