@@ -2,16 +2,15 @@
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/core.async "0.2.385"]
-                 [org.ow2.asm/asm "5.1"]
-
-                 [com.taoensso/timbre "4.1.4"]
-
-                 [org.clojure/test.check "0.9.0"]
+  :dependencies [[camel-snake-kebab "0.4.0"]
                  [com.gfredericks/test.chuck "0.2.7"]
+                 [com.taoensso/timbre "4.1.4"]
+                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/core.async "0.2.385"]
                  [org.clojure/data.xml "0.0.8"]
-                 [camel-snake-kebab "0.4.0"]
+                 [org.clojure/test.check "0.9.0"]
+                 [org.ow2.asm/asm "5.1"]
+                 [potemkin "1.0.0"]
 
                  ;; Note that we copied some code from this library into in memory cache. Replace that when updating.
                  [org.clojure/core.cache "0.6.5"]
