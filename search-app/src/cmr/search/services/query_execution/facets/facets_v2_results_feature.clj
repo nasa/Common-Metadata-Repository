@@ -152,10 +152,11 @@
   (let [base-url (collection-search-root-url context)
         query-params (parse-params (:query-string context) "UTF-8")
         flat-facet-fields (remove #{:science-keywords :variables} facet-fields)
-        science-keywords-facets (when ((set facet-fields) :science-keywords)
+        facet-fields-set (set facet-fields)
+        science-keywords-facets (when (facet-fields-set :science-keywords)
                                   (hv2/create-hierarchical-v2-facets
                                    aggs base-url query-params :science-keywords-h))
-        variables-facets (when ((set facet-fields) :variables)
+        variables-facets (when (facet-fields-set :variables)
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
         v2-facets (concat science-keywords-facets

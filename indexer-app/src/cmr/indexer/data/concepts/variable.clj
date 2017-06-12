@@ -47,9 +47,7 @@
      :measurement.lowercase (string/lower-case measurement)
      :variable variable-name
      :variable.lowercase (string/lower-case variable-name)
-     :originator-id.lowercase  (util/safe-lowercase originator-id)
-     :variable-value.lowercase (when (string? data)
-                                 (string/lower-case data))}))
+     :originator-id.lowercase  (util/safe-lowercase originator-id)}))
 
 (defn variable-associations->elastic-doc
   "Converts the variable association into the portion going in the collection elastic document."

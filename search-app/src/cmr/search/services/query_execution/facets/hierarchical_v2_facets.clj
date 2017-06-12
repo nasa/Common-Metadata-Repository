@@ -60,9 +60,9 @@
         field-regex (re-pattern (format "%s\\[\\d+\\]\\[(.*)\\]" parent-field-snake-case))
         matching-subfields (keep #(second (re-matches field-regex %)) (keys query-params))
         all-subfields (remove #{:url} (nested-fields-mappings parent-field))]
-    (max (get min-hierarchical-depth parent-field)
+    (max (get min-hierarchical-depth parent-field 3)
          (min (count all-subfields)
-              (+ (get num-levels-below-subfield parent-field)
+              (+ (get num-levels-below-subfield parent-field 2)
                  (get-max-subfield-index matching-subfields all-subfields))))))
 
 (defn- hierarchical-aggregation-builder
