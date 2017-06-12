@@ -37,7 +37,7 @@
       ;; elastic document for nested variables field
       (assoc variable-concept :variable-association variable-association))))
 
-(defn- variable-concept->elstic-doc
+(defn- variable-concept->elastic-doc
   "Converts the augmented variable concept into the portion going in the collection elastic document."
   [variable-concept]
   (let [{:keys [variable-association]} variable-concept
@@ -64,4 +64,4 @@
      :variable-names.lowercase (map string/lower-case variable-names)
      :measurements measurements
      :measurements.lowercase (map string/lower-case measurements)
-     :variables (map variable-concept->elstic-doc variable-concepts)}))
+     :variables (map variable-concept->elastic-doc variable-concepts)}))

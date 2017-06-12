@@ -52,12 +52,10 @@
   "Returns the facet query for the given facet field"
   [facet-field size query-params]
   (case  facet-field
-    :science-keywords
-    (let [sk-depth (hv2/get-depth-for-hierarchical-field query-params :science-keywords-h)]
-      (hv2/nested-facet (facets-v2-params->elastic-fields facet-field) size sk-depth))
-    :variables
-    (let [variable-depth (hv2/get-depth-for-hierarchical-field query-params :variables-h)]
-      (hv2/nested-facet (facets-v2-params->elastic-fields facet-field) size variable-depth))
+    (:science-keywords :variables)
+    (let [hierarchical-field (keyword (str (name facet-field) "-h"))
+          depth (hv2/get-depth-for-hierarchical-field query-params hierarchical-field)]
+      (hv2/nested-facet (facets-v2-params->elastic-fields facet-field) size depth))
     ;; else
     (v2h/prioritized-facet (facets-v2-params->elastic-fields facet-field) size)))
 

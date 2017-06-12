@@ -225,3 +225,15 @@
         {:0 {:variable "Variable2"
              :measurement "Measurement2"}}
         {:or true}))))
+
+(deftest collection-variables-search-error-scenarios
+  (testing "search by invalid format."
+    (let [{:keys [status errors]} (search/find-refs :collection
+                                                    {:variables {:0 {:and "true"}}})]
+      (is (= 400 status))
+      (is (re-find #"Parameter \[variables\] was not recognized." (first errors)))))
+  (testing "search by invalid format."
+    (let [{:keys [status errors]} (search/find-refs :collection
+                                                    {:variables-h {:0 {:and "true"}}})]
+      (is (= 400 status))
+      (is (re-find #"parameter \[and\] is not a valid variable search term." (first errors))))))

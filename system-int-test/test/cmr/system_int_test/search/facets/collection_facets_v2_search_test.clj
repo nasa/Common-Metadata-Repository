@@ -108,19 +108,20 @@
                        :instrument-h ["ATM"]
                        :processing-level-id-h ["PL1"]
                        :data-center-h "DOI/USGS/CMG/WHSC"
-                       :variables-h {:0 {:variable "Variable1"}}}]
+                       :variables-h {:0 {:measurement "Measurement1"
+                                         :variable "Variable1"}}}]
     (testing "All fields applied for facets"
       (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params))))
     (testing "Some fields not applied for facets"
-        (let [response (search-and-return-v2-facets
-                        (dissoc search-params :platform-h :project-h :data-center-h))]
-          (is (not (fu/applied? response :platform-h)))
-          (is (not (fu/applied? response :project-h)))
-          (is (not (fu/applied? response :data-center-h)))
-          (is (fu/applied? response :science-keywords-h))
-          (is (fu/applied? response :variables-h))
-          (is (fu/applied? response :instrument-h))
-          (is (fu/applied? response :processing-level-id-h))))))
+      (let [response (search-and-return-v2-facets
+                      (dissoc search-params :platform-h :project-h :data-center-h))]
+        (is (not (fu/applied? response :platform-h)))
+        (is (not (fu/applied? response :project-h)))
+        (is (not (fu/applied? response :data-center-h)))
+        (is (fu/applied? response :science-keywords-h))
+        (is (fu/applied? response :variables-h))
+        (is (fu/applied? response :instrument-h))
+        (is (fu/applied? response :processing-level-id-h))))))
 
 (def science-keywords-all-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
@@ -690,8 +691,8 @@
                                             "somevariable"
                                             [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
-    
-    ;; We only check the topic level variables facet for convenience since the whole
+
+    ;; We only check the top level variables facet for convenience since the whole
     ;; hierarchical structure of variables facet has been covered in all facets test.
     (testing "search by variables param filters the other facets, but not variables facets"
       (let [facets-result (search-and-return-v2-facets

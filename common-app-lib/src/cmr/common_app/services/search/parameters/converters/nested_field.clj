@@ -12,9 +12,9 @@
   [:measurement :variable])
 
 (defn get-subfield-names
-  [parent-field]
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
+  [parent-field]
   ;; Remove any modifiers from parent field, e.g. :science-keyword.humanized -> :science-keyword
   (let [base-parent-field (keyword (str/replace (name parent-field) #"\..*$" ""))]
     (if (= :variables base-parent-field)
