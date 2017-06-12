@@ -5,7 +5,8 @@
    [clojure.java.io :as io]
    [clojure.pprint :refer [pp pprint]]
    [clojure.repl :refer :all]
-   [clojure.test :refer [run-all-tests run-tests]]
+   [clojure.string :as string]
+   [clojure.test :refer [*test-out* run-all-tests run-tests]]
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
    [cmr.access-control.system :as access-control-system]
    [cmr.common.config :as config]
@@ -13,6 +14,9 @@
    [cmr.common.dev.util :as d]
    [cmr.common.jobs :as jobs]
    [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.test.runners.default :as test-runner]
+   [cmr.common.test.runners.ltest :as ltest]
+   [cmr.common.test.runners.util :as runner-util]
    [cmr.common.util :as u]
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
@@ -235,6 +239,17 @@
   []
   (future
     (tests/run-all-tests {:fail-fast? true :speak? true})))
+
+(defn run-suites
+  "Runs the suites defined by the ltest runner (unit and integration), first
+  setting the log level to `:fatal` to keep the terminal output cleaner. To
+  run with the usual error messages to STDOUT, simply use `ltest/run-suites`
+  directly."
+  ([]
+    (let [orig-log-level @settings/logging-level]
+      (set-logging-level! :fatal)
+      (ltest/run-suites)
+      (set-logging-level! orig-log-level))))
 
 (defn banner
   "Who doesn't like a banner?"
