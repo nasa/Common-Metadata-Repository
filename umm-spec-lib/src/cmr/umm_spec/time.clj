@@ -4,6 +4,21 @@
   (:require
     [clj-time.core :as t]))
 
+(defn temporal-ranges
+  "Returns all the :RangeDateTimes and :SingeDateTimes contained in the given TemporalExtent record,
+   as a list of {:BeginningDateTime xxx :EndingDateTime xxx}"
+  [temporal]
+  (let [ranges (:RangeDateTimes temporal)
+        ;; when :EndsAtPresentFlag is set to true, set :EndingDateTime for each range to nil.
+        ;; otherwise, set :EndingDateTime to nil if it doesn't exist.
+        normalized-ranges (if (:EndsAtPresentFlag temporal) 
+                            (map #(assoc % :EndingDateTime nil) ranges)
+                            (map #(if (nil? (:EndingDateTime %)) (assoc % :EndingDateTime nil) %) ranges))
+        singles (:SingleDateTimes temporal)
+        ;; Treat the singles as ranges with the same :BegingDateTime and :EndingDateTime.
+        single-ranges (map #(zipmap [:BeginningDateTime :EndingDateTime] (repeat %)) singles)]
+     (concat normalized-ranges single-ranges))) 
+ 
 (defn temporal-all-dates
   "Returns the set of all dates contained in the given TemporalExtent record. :present is used to
    indicate the temporal range goes to the present date."

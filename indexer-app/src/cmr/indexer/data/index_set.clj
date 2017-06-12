@@ -179,6 +179,11 @@
    :value.lowercase m/string-field-mapping
    :priority m/int-field-mapping})
 
+(defnestedmapping temporal-mapping
+  "Defines mappings for TemporalExtents."
+  {:start-date m/date-field-mapping
+   :end-date m/date-field-mapping}) 
+
 (def spatial-coverage-fields
   "Defines the sets of fields shared by collections and granules for indexing spatial data."
   {;; Minimum Bounding Rectangle Fields
@@ -317,7 +322,15 @@
           ;; centers, distribution centers, processing centers, and
           ;; originating centers.
           :data-centers data-center-hierarchical-mapping
+         
+          ;; nested mapping containing all the temporal ranges within a collection.
+          :temporals temporal-mapping
 
+          ;; nested mapping for limit_to_granules case. 
+          ;; it either contains [{:start-date granule-start-date :end-date granule-end-date}]
+          ;; or when there're no granules, contains all the temporal ranges within the collection
+          :limit-to-granules-temporals temporal-mapping         
+ 
           ;; Facet fields
           ;; We can run aggregations on the above science keywords as a
           ;; nested document. However the counts that come back are counts
@@ -480,7 +493,11 @@
      :end-date (m/stored m/date-field-mapping)
      :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
 
-
+     ;; granule temporal search is not nested but it shares the same code
+     ;; with the collection temporal search which is nested. So we need
+     ;; a nested index structure even though for granules it's just using one 
+     ;; start-date, end-date.
+     :temporals temporal-mapping
      :size (m/stored m/float-field-mapping)
      :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
 
