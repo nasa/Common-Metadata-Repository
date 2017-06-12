@@ -205,7 +205,7 @@ where parameter is the URL parameter whose behavior is to be affected, value is 
  * `ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.
  * `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '\*' matches zero or more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false. **NOTE:** Patterns with leading wildcards, like "\*ODIS", are computationally expensive. The CMR limits the maximum number of patterns with a leading wildcard per query to 5.
  * `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
- * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.
+ * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, the collection/granule will match when any of the grouped search condition is matched. The default is false.
 
 ##### <a name="collection-result-features"></a> Collection Result Feature Parameters
 
@@ -1434,6 +1434,18 @@ Find collections matching variable name.
 Find collections matching measurement.
 
     curl "%CMR-ENDPOINT%/collections?measurement\[\]=Ozone&measurement\[\]=radiance"
+
+#### <a name="c-variables"></a> Find collections by variables
+
+This supports option _or_.
+
+Find collections matching 'variables' param value
+
+     curl "%CMR-ENDPOINT%/collections?variables\[0\]\[variable\]=Var1"
+
+Find collections matching multiple 'variables' param values, default is :and
+
+     curl "%CMR-ENDPOINT%/collections?variables\[0\]\[variable\]=Var1&variables\[0\]\[measurement\]=M1&variables\[1\]\[variable\]=Var2"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 
