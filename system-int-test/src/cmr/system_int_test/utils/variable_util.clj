@@ -173,15 +173,20 @@
   "Create an expected concept given a service, its concept-id, a revision-id,
   and a user-id."
   [variable concept-id revision-id user-id]
-  {:concept-type :variable
-   :native-id (string/lower-case (:variable-name variable))
-   :provider-id "CMR"
-   :format mt/edn
-   :metadata (pr-str variable)
-   :user-id user-id
-   :deleted false
-   :concept-id concept-id
-   :revision-id revision-id})
+  (let [native-id (string/lower-case (:Name variable))]
+    {:concept-type :variable
+     :native-id native-id
+     :provider-id "CMR"
+     ;; XXX The next two lines will change very soon, with the implementation
+     ;;     of CMR-4204.
+     :format mt/edn
+     :metadata (pr-str (assoc (util/kebab-case-data variable)
+                              :originator-id user-id
+                              :native-id native-id))
+     :user-id user-id
+     :deleted false
+     :concept-id concept-id
+     :revision-id revision-id}))
 
 (defn assert-variable-saved
   "Checks that a variable was persisted correctly in metadata db. The variable should already
@@ -189,7 +194,7 @@
   [variable user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= (expected-concept variable concept-id revision-id user-id)
-           (dissoc concept :revision-date :transaction-id)))))
+           (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
 
 (defn assert-variable-deleted
   "Checks that a variable tombstone was persisted correctly in metadata db."
@@ -198,7 +203,7 @@
     (is (= (-> variable
                (expected-concept concept-id revision-id user-id)
                (assoc :metadata "" :deleted true))
-           (dissoc concept :revision-date :transaction-id)))))
+           (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
 
 (defn sort-expected-variables
   "Sorts the variables using the expected default sort key."

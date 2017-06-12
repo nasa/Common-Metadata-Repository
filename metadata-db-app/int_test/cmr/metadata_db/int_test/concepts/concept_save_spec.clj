@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
             [cmr.common.concepts :as cc]
+            [cmr.common.time-keeper :as time-keeper]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.concept-validations :as v]))
 
@@ -45,6 +46,7 @@
   "Save a concept once then save it again with the provided revision id, validating that the
   response matches the expected response, and possibly that the second save succeeded."
   [concept exp-status new-revision-id exp-errors]
+  (time-keeper/clear-current-time!)
   (testing "save concept with revision id"
     (let [{:keys [concept-id revision-id]} (util/save-concept concept)
           revision-date1 (get-in (util/get-concept-by-id-and-revision concept-id revision-id)

@@ -9,7 +9,7 @@
             [cmr.metadata-db.services.messages :as msg]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
-            [cmr.common.util :refer [are2]]))
+            [cmr.common.util :refer [are3]]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                  {:provider-id "REG_PROV1" :small false}
@@ -170,7 +170,7 @@
                                                              :version-id "v7"
                                                              :short-name "s7"}})]
     (testing "find-with-parameters"
-      (are2 [collections params]
+      (are3 [collections params]
             (= (set collections)
                (set (-> (util/find-concepts :collection params)
                         :concepts
@@ -310,7 +310,7 @@
                                              :extra-fields {:granule-ur "G2-UR"}})]
     (testing "find with parameters"
       (testing "latest revsions"
-        (are2 [granules params]
+        (are3 [granules params]
               (= (set (map util/expected-concept granules))
                  (set (-> (util/find-latest-concepts :granule params)
                           :concepts
@@ -328,7 +328,7 @@
                                           :exclude-metadata true}))
 
       (testing "all revisions"
-        (are2 [rev-count params]
+        (are3 [rev-count params]
               (= rev-count
                  (count (-> (util/find-concepts :granule params)
                             :concepts)))
@@ -360,7 +360,7 @@
   (let [tag1 (util/create-and-save-tag 1 3)
         tag2 (util/create-and-save-tag 2 2)]
     (testing "find latest revsions"
-      (are2 [tags params]
+      (are3 [tags params]
             (= (set tags)
                (set (->> (util/find-latest-concepts :tag params)
                          :concepts
@@ -396,7 +396,7 @@
         tag-association1 (util/create-and-save-tag-association coll1 associated-tag 1 3)
         tag-association2 (util/create-and-save-tag-association coll2 associated-tag 2 2)]
     (testing "find latest revisions"
-      (are2 [tag-associations params]
+      (are3 [tag-associations params]
             (= (set tag-associations)
                (set (->> (util/find-latest-concepts :tag-association params)
                          :concepts
@@ -423,40 +423,50 @@
             :errors ["Finding concept type [tag-association] with parameters [provider-id] is not supported."]}
            (util/find-concepts :tag-association {:provider-id "REG_PROV"})))))
 
-;; CMR-4173 should update
-; (deftest find-services
-;   (let [serv1 (util/create-and-save-service "REG_PROV" 1 3)
-;         serv2 (util/create-and-save-service "SMAL_PROV1" 2 2)]
-;     (testing "find latest revsions"
-;       (are2 [servs params]
-;             (= (set servs)
-;                (set (->> (util/find-latest-concepts :service params)
-;                          :concepts
-;                          (map #(dissoc % :revision-date :transaction-id)))))
-;             "with metadata"
-;             [serv1 serv2] {}
-;
-;             "exclude metadata"
-;             [(dissoc serv1 :metadata) (dissoc serv2 :metadata)] {:exclude-metadata true}))
-;
-;     (testing "find all revisions"
-;       (let [num-of-servs (-> (util/find-concepts :service {})
-;                             :concepts
-;                             count)]
-;         (is (= 5 num-of-servs))))))
-;
-; (deftest find-services-with-invalid-parameters
-;   (testing "extra parameters"
-;     (is (= {:status 400
-;             :errors ["Finding concept type [service] with parameters [short-name] is not supported."]}
-;            (util/find-concepts :service {:short-name "SN1"})))))
+(deftest find-services
+  (let [serv1 (util/create-and-save-service 1 3)
+        serv2 (util/create-and-save-service 2 2)]
+    (testing "find latest revsions"
+      (are3 [servs params]
+            (= (set servs)
+               (set (->> (util/find-latest-concepts :service params)
+                         :concepts
+                         (map #(dissoc % :provider-id :revision-date :transaction-id)))))
+            "with metadata search by concept-id"
+            [serv1] {:concept-id (:concept-id serv1)}
+
+            "with metadata search by native-id"
+            [serv2] {:native-id (:native-id serv2)}
+
+            "exclude metadata search by concept-id"
+            [(dissoc serv1 :metadata)] {:concept-id (:concept-id serv1)
+                                        :exclude-metadata true}
+
+            "exclude metadata search by native-id"
+            [(dissoc serv2 :metadata)] {:native-id (:native-id serv2)
+                                        :exclude-metadata true}
+
+            "no match"
+            [] {:native-id "foo"}))
+
+    (testing "find all revisions"
+      (let [num-of-servs (-> (util/find-concepts :service {})
+                            :concepts
+                            count)]
+        (is (= 5 num-of-servs))))))
+
+(deftest find-services-with-invalid-parameters
+  (testing "extra parameters"
+    (is (= {:status 400
+            :errors ["Finding concept type [service] with parameters [short-name] is not supported."]}
+           (util/find-concepts :service {:short-name "SN1"})))))
 
 (deftest find-groups
   (let [group1 (util/create-and-save-group "REG_PROV" 1 3)
         group2 (util/create-and-save-group "CMR" 2 2)]
     (testing "find with parameters"
       (testing "latest revisions"
-        (are2 [groups params]
+        (are3 [groups params]
               (= (set (map util/expected-concept groups))
                  (set (-> (util/find-latest-concepts :access-group params)
                           :concepts
@@ -470,7 +480,7 @@
                                            :exclude-metadata true}))
 
       (testing "all revisions"
-        (are2 [rev-count params]
+        (are3 [rev-count params]
               (= rev-count
                  (count (-> (util/find-concepts :access-group params)
                             :concepts)))
@@ -483,7 +493,7 @@
   (let [variable1 (util/create-and-save-variable 1 3)
         variable2 (util/create-and-save-variable 2 2)]
     (testing "find latest revsions"
-      (are2 [variables params]
+      (are3 [variables params]
         (= (set variables)
            (set (->> (util/find-latest-concepts :variable params)
                      :concepts
@@ -522,7 +532,7 @@
         var-association1 (util/create-and-save-variable-association coll1 associated-variable 1 3)
         var-association2 (util/create-and-save-variable-association coll2 associated-variable 2 2)]
     (testing "find latest revisions"
-      (are2 [variable-associations params]
+      (are3 [variable-associations params]
         (= (set variable-associations)
            (set (->> (util/find-latest-concepts :variable-association params)
                      :concepts

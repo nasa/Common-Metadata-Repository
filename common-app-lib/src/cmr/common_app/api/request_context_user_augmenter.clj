@@ -1,19 +1,23 @@
-(ns cmr.search.api.request-context-user-augmenter
- "Adds data to the context for the current user for performance improvements. Adds user id and sids
- as well as caches for those. Data on the context is lazy assoc'd to delay expensive work since
- this is done for every call that hits the search API."
- (:require
-  [cheshire.core :as json]
-  [cmr.acl.core :as acl]
-  [cmr.common.cache :as cache]
-  [cmr.common.cache.in-memory-cache :as mem-cache]
-  [cmr.common.log :refer (info)]
-  [cmr.common.services.errors :as errors]
-  [cmr.common.util :as util]
-  [cmr.transmit.access-control :as access-control]
-  [cmr.transmit.echo.tokens :as tokens]))
+(ns cmr.common-app.api.request-context-user-augmenter
+  "Adds data to the context for the current user for performance improvements.
+  Adds user id and sids as well as caches for those. Data on the context is
+  lazy assoc'd to delay expensive work since this is done for every call that
+  hits the search API.
 
-
+  Note: for any CMR applications that need to make use of the request-
+  augmenting Ring handler in this namespace, that project's system namespace
+  needs to be updated to include the two caches defined below when it builds
+  the system datastructure."
+  (:require
+   [cheshire.core :as json]
+   [cmr.acl.core :as acl]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.log :refer (info)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.echo.tokens :as tokens]))
 
 (def CACHE_TIME
  "The number of milliseconds token information will be cached for."
@@ -62,8 +66,8 @@
   (if-let [token (:token context)]
     (if-let [cache (cache/context->cache context token-user-id-cache-name)]
      (cache/get-value cache
-                     token
-                     #(tokens/get-user-id context token))
+                      token
+                      #(tokens/get-user-id context token))
      (tokens/get-user-id context token))
     (when token-required-message
      (errors/throw-service-error :unauthorized token-required-message)))))
@@ -80,7 +84,9 @@
 (defn add-user-id-and-sids-handler
   "This is a ring handler that adds the authentication token and client id to the request context.
   It expects the request context is already associated with the request."
-  [f]
+  [handler]
   (fn [request]
     (let [{:keys [request-context params headers]} request]
-      (f (update-in request [:request-context] add-user-id-and-sids-to-context params headers)))))
+      (-> request
+          (update-in [:request-context] add-user-id-and-sids-to-context params headers)
+          (handler)))))
