@@ -12,35 +12,17 @@
   Note that this functionality was originally provided in the `cmr.common.test.test-runner`
   namespace."
   (:require
+   [clojure.set :as set]
    [clojure.test :as t]
-   [cmr.common.util :as u]
    [cmr.common.dev.util :as du]
-   [clojure.set :as set]))
+   [cmr.common.test.runners.util]
+   [cmr.common.util :as u]
+   [potemkin :refer [import-vars]]))
 
-(defn integration-test-namespaces
-  "The list of integration test namespaces. Anything that contains 'cmr.' and 'int-test' is
-  considered an integration test namespace. This must be a function instead of a var because of its
-  use of all-ns. It must be executed right before test execution to find all test namespaces."
-  []
-  (->> (all-ns)
-       (map str)
-       (filter #(re-find #"cmr\..*int-test" %))
-       vec
-       sort))
-
-(defn unit-test-namespaces
-  "This defines a list of unit test namespaaces. Anything namespace name that contains 'cmr.' and
-  'test' that is not an integration test namespace is considered a unit test namespace. This must be
-  a function instead of a var because of its use of all-ns. It must be executed right before test
-  execution to find all test namespaces."
-  []
-  (->> (all-ns)
-       (map str)
-       (filter #(re-find #"cmr\..*test" %))
-       set
-       (#(set/difference % (set (integration-test-namespaces))))
-       vec
-       sort))
+(import-vars
+  [cmr.common.test.runners.util
+   integration-test-namespaces
+   unit-test-namespaces])
 
 (defn run-tests
   "Runs all the tests matching the list of namespace regular expressions. The tests are run

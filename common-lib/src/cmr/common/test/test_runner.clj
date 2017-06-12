@@ -7,16 +7,19 @@
   This namespace is currently maintained for backwards compatibility."
   (:require
    [cmr.common.test.runners.default]
+   [cmr.common.test.runners.util]
    [potemkin :refer [import-vars]]))
 
 (import-vars
   [cmr.common.test.runners.default
-   integration-test-namespaces
-   unit-test-namespaces
    run-tests
    analyze-results
    print-results
    failed-test-result?
    fail-fast?->test-results-handler
    last-test-results
-   run-all-tests])
+   run-all-tests]
+
+  [cmr.common.test.runners.util
+   integration-test-namespaces
+   unit-test-namespaces])
