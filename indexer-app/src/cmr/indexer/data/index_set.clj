@@ -104,8 +104,7 @@
    :measurement.lowercase m/string-field-mapping
    :variable m/string-field-mapping
    :variable.lowercase m/string-field-mapping
-   :originator-id.lowercase m/string-field-mapping
-   :variable-value.lowercase m/string-field-mapping})
+   :originator-id.lowercase m/string-field-mapping})
 
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
