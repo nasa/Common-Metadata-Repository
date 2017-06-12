@@ -54,5 +54,6 @@
                              (clojure.string/join ", " duplicate-names))]}))))
 
 (def platforms-validation
+  "Defines the list of validation functions for validating collection platforms"
   [(v/every platform-validations)
    (unique-platform-validator unique-fields)])
