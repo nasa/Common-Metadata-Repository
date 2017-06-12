@@ -62,6 +62,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Version](#c-version)
     * [Tag parameters](#c-tag-parameters)
     * [Variable parameters](#c-variable-parameters)
+    * [Variables](#c-variables)
     * [Spatial](#c-spatial)
         * [Polygon](#c-polygon)
         * [Bounding Box](#c-bounding-box)
@@ -1435,17 +1436,17 @@ Find collections matching measurement.
 
     curl "%CMR-ENDPOINT%/collections?measurement\[\]=Ozone&measurement\[\]=radiance"
 
-#### <a name="c-variables"></a> Find collections by variables
+#### <a name="c-variables"></a> Find collections by hierarchical variables
 
 This supports option _or_.
 
-Find collections matching 'variables' param value
+Find collections matching 'variables-h' param value
 
-     curl "%CMR-ENDPOINT%/collections?variables\[0\]\[variable\]=Var1"
+     curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[variable\]=Var1"
 
-Find collections matching multiple 'variables' param values, default is :and
+Find collections matching multiple 'variables-h' param values, default is :and
 
-     curl "%CMR-ENDPOINT%/collections?variables\[0\]\[variable\]=Var1&variables\[0\]\[measurement\]=M1&variables\[1\]\[variable\]=Var2"
+     curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[variable\]=Var1&variables-h\[0\]\[measurement\]=M1&variables-h\[1\]\[variable\]=Var2"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 

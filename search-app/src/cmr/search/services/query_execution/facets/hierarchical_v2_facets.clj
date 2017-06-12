@@ -36,13 +36,16 @@
 
 (def min-hierarchical-depth
   "Minimum depth to request for hierarchical aggregations queries from elastic. Default to a minimum
-  depth of 3 levels (e.g. Category, Topic, and Term for science keywords)."
-  3)
+  depth of 3 levels (e.g. Category, Topic, and Term for science keywords) for science keywords,
+  and 2 for variables."
+  {:science-keywords-h 3
+   :variables-h 2})
 
 (def num-levels-below-subfield
   "Number of levels below the lowest level subfield to request for hierarchical aggregations queries
   from elastic."
-  2)
+  {:science-keywords-h 2
+   :variables-h 1})
 
 (defn get-depth-for-hierarchical-field
   "Returns what depth should be used when requesting aggregations for facets for a hierarchical
@@ -57,9 +60,9 @@
         field-regex (re-pattern (format "%s\\[\\d+\\]\\[(.*)\\]" parent-field-snake-case))
         matching-subfields (keep #(second (re-matches field-regex %)) (keys query-params))
         all-subfields (remove #{:url} (nested-fields-mappings parent-field))]
-    (max min-hierarchical-depth
+    (max (get min-hierarchical-depth parent-field)
          (min (count all-subfields)
-              (+ num-levels-below-subfield
+              (+ (get num-levels-below-subfield parent-field)
                  (get-max-subfield-index matching-subfields all-subfields))))))
 
 (defn- hierarchical-aggregation-builder
@@ -290,14 +293,16 @@
   one-additional-level? is set to true it will not prune at the current level, but at one filter
   node below the current level. This is used for example to always return Category and Topic for
   science keywords."
-  [hierarchical-facet one-additional-level?]
+  [hierarchical-facet field one-additional-level?]
   (if (:children hierarchical-facet)
     (if (or one-additional-level? (:applied hierarchical-facet))
-      ;; The initial facet can have a pseudo-group node that gets replaced by later processing.
-      ;; In this case we want to return two additional levels instead of just one.
-      (let [additional-level? (= :group (:type hierarchical-facet))]
+      ;; For science keywords, the initial facet can have a pseudo-group node that gets replaced by
+      ;; later processing. In this case we want to return two additional levels instead of just one.
+      (let [additional-level? (and (= :science-keywords-h field)
+                                   (= :group (:type hierarchical-facet)))]
         (update hierarchical-facet :children (fn [original-children]
-                                               (mapv #(prune-hierarchical-facet % additional-level?)
+                                               (mapv #(prune-hierarchical-facet
+                                                       % field additional-level?)
                                                      original-children))))
       ;; Else prune the children
       (dissoc hierarchical-facet :children))
@@ -339,7 +344,7 @@
   (let [field-hierarchy (nested-fields-mappings field)
         hierarchical-facet (-> (parse-hierarchical-bucket-v2 field field-hierarchy base-url
                                                              query-params bucket-map)
-                               (prune-hierarchical-facet true)
+                               (prune-hierarchical-facet field true)
                                (remove-non-earth-science-keywords field))
         subfield-term-tuples (get-missing-subfield-term-tuples field field-hierarchy
                                                                hierarchical-facet query-params)

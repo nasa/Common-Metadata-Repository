@@ -42,8 +42,7 @@
                        :entry-title :doi :platform :platform-h :processing-level-id :processing-level-id-h
                        :sensor :data-center-h :measurement}
      :always-case-sensitive #{:echo-collection-id}
-     :disallow-pattern #{:echo-collection-id}
-     :allow-or #{:attribute :science-keywords :science-keywords-h :varialbes-h}}))
+     :disallow-pattern #{:echo-collection-id}}))
 
 (defmethod cpv/params-config :granule
   [_]
@@ -54,8 +53,7 @@
                        :producer-granule-id :project :version :provider :entry-title
                        :platform :sensor}
      :always-case-sensitive #{:echo-granule-id}
-     :disallow-pattern #{:echo-granule-id}
-     :allow-or #{:attribute}}))
+     :disallow-pattern #{:echo-granule-id}}))
 
 (defmethod cpv/params-config :tag
   [_]
@@ -64,8 +62,7 @@
     {:single-value #{}
      :multiple-value #{:tag-key :originator-id}
      :always-case-sensitive #{}
-     :disallow-pattern #{}
-     :allow-or #{}}))
+     :disallow-pattern #{}}))
 
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
