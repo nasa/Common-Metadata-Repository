@@ -1,17 +1,18 @@
 (ns cmr.search.services.parameters.conversion
   "Contains functions for parsing and converting query parameters to query conditions"
-  (:require [clojure.string :as str]
-            [clojure.set :as set]
-            [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common.util :as u]
-            [cmr.common-app.services.search.params :as common-params]
-            [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-            [cmr.common.concepts :as cc]
-            [cmr.common.date-time-parser :as parser]))
+  (:require
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
+   [cmr.common-app.services.search.params :as common-params]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common.concepts :as cc]
+   [cmr.common.date-time-parser :as parser]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.search.models.query :as qm]
+   [cmr.search.services.parameters.legacy-parameters :as lp]))
 
 ;; Note: the suffix "-h" on parameters denotes the humanized version of a parameter
 
@@ -65,7 +66,8 @@
 
    ;; Variable parameters
    :variable-name :string
-   :measurement :string})
+   :measurement :string
+   :variables-h :variables})
 
 (defmethod common-params/param-mappings :granule
   [_]
@@ -141,6 +143,24 @@
                    (not= "false" (get-in options [param :pattern]))
                    (common-params/pattern-field? concept-type param options))]
     (tag-param->condition param value pattern?)))
+
+(defmethod common-params/parameter->condition :variables
+  [_context concept-type param value options]
+  (let [case-sensitive? (common-params/case-sensitive-field? concept-type param options)
+        pattern? (common-params/pattern-field? concept-type param options)
+        group-operation (common-params/group-operation param options :and)
+        target-field (keyword (str/replace (name param) #"-h$" ""))]
+
+    (if (map? (first (vals value)))
+      ;; If multiple variables are passed in like the following
+      ;;  -> variables-h[0][measurement]=foo&variables-h[1][measurement]=bar
+      ;; then this recurses back into this same function to handle each separately
+      (gc/group-conds
+        group-operation
+        (map #(common-params/parameter->condition _context concept-type param % options)
+             (vals value)))
+      ;; Creates the  variable condition for a group of variable fields and values.
+      (nf/parse-nested-condition target-field value case-sensitive? pattern?))))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id

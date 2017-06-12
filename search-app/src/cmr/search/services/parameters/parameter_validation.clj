@@ -43,7 +43,7 @@
                        :sensor :data-center-h :measurement}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}
-     :allow-or #{:attribute :science-keywords :science-keywords-h}}))
+     :allow-or #{:attribute :science-keywords :science-keywords-h :varialbes-h}}))
 
 (defmethod cpv/params-config :granule
   [_]
@@ -119,7 +119,8 @@
 
    ;; Variable related parameters
    :variable-name cpv/string-plus-and-options
-   :measurement cpv/string-plus-and-options})
+   :measurement cpv/string-plus-and-options
+   :variables-h cpv/string-plus-or-options})
 
 (defmethod cpv/valid-parameter-options :granule
   [_]
@@ -325,6 +326,23 @@
             []
             (mapcat keys values))))
       [(msg/science-keyword-invalid-format-msg)])))
+
+(defn variables-validation
+  [concept-type params]
+  (when-let [variables (get params :variables-h)]
+    (if (map? variables)
+      (let [values (vals variables)]
+        (if (some #(not (map? %)) values)
+          [(msg/variable-invalid-format-msg)]
+          (reduce
+            (fn [errors param]
+              (if-not (some #{param} (nf/get-subfield-names :variables))
+                (conj errors (format "parameter [%s] is not a valid variable search term."
+                                     (name param)))
+                errors))
+            []
+            (mapcat keys values))))
+      [(msg/variable-invalid-format-msg)])))
 
 ;; This method is for processing legacy numeric ranges in the form of
 ;; param_nam[value], param_name[minValue], and param_name[maxValue].
@@ -557,6 +575,7 @@
                   attribute-validation
                   (partial science-keywords-validation-for-field :science-keywords)
                   (partial science-keywords-validation-for-field :science-keywords-h)
+                  variables-validation
                   exclude-validation
                   boolean-value-validation
                   polygon-validation

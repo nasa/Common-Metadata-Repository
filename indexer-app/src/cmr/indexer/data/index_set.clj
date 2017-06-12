@@ -98,6 +98,15 @@
    :originator-id.lowercase m/string-field-mapping
    :tag-value.lowercase m/string-field-mapping})
 
+(defnestedmapping variables-mapping
+  "Defines mappings for variables."
+  {:measurement m/string-field-mapping
+   :measurement.lowercase m/string-field-mapping
+   :variable m/string-field-mapping
+   :variable.lowercase m/string-field-mapping
+   :originator-id.lowercase m/string-field-mapping
+   :variable-value.lowercase m/string-field-mapping})
+
 (defnestedmapping platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
   {:category m/string-field-mapping
@@ -396,6 +405,7 @@
           :variable-names.lowercase m/string-field-mapping
           :measurements m/string-field-mapping
           :measurements.lowercase m/string-field-mapping
+          :variables variables-mapping
 
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}

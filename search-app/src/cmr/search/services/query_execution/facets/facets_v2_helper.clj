@@ -1,7 +1,8 @@
 (ns cmr.search.services.query-execution.facets.facets-v2-helper
   "Helper vars and functions for generating v2 facet responses."
-  (:require [cmr.search.services.query-execution.facets.links-helper :as lh]
-            [cmr.common.util :as util]))
+  (:require
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.links-helper :as lh]))
 
 (def sorted-facet-map
   "A map that sorts the keys of the facet map so it is presented in a pleasing way to Users
@@ -16,7 +17,8 @@
    :platform-h "Platforms"
    :instrument-h "Instruments"
    :processing-level-id-h "Processing levels"
-   :science-keywords-h "Keywords"})
+   :science-keywords-h "Keywords"
+   :variables-h "Measurements"})
 
 (defn terms-facet
   "Construct a terms query to be applied for the given field. Size specifies the number of results

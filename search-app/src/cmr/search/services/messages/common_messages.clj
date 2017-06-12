@@ -14,6 +14,12 @@
        "should be in the format of science_keywords[0/group number (if multiple groups are present)]"
        "[category/topic/term/variable_level_1/variable_level_2/variable_level_3/detailed_variable]."))
 
+(defn variable-invalid-format-msg
+  []
+  (str "Parameter variables is invalid, "
+       "should be in the format of variables[0/group number (if multiple groups are present)]"
+       "[measurement/variable]."))
+
 (defn invalid-exclude-param-msg
   "Creates a message saying supplied parameter(s) are not in exclude params set."
   [params-set]
@@ -40,4 +46,3 @@
   (format "Invalid %s query condition %s. Must contain at least one subfield."
           (v/humanize-field condition-name)
           condition-value))
-

@@ -3,21 +3,25 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
+   [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
+   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.variable-util :as variable-util]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        hu/grant-all-humanizers-fixture
-                       hu/save-sample-humanizers-fixture]))
+                       hu/save-sample-humanizers-fixture
+                       variable-util/grant-all-variable-fixture]))
 
 (def sk1 (dc/science-keyword {:category "Earth science"
                               :topic "Topic1"
@@ -61,41 +65,62 @@
      (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
 
 (deftest all-facets-v2-test
-  (fu/make-coll 1 "PROV1"
-                (fu/science-keywords sk1 sk2)
-                (fu/projects "proj1" "PROJ2")
-                (fu/platforms fu/FROM_KMS 2 2 1)
-                (fu/processing-level-id "PL1")
-                {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
-  (fu/make-coll 2 "PROV1"
-                (fu/science-keywords sk1 sk3)
-                (fu/projects "proj1" "PROJ2")
-                (fu/platforms fu/FROM_KMS 2 2 1)
-                (fu/processing-level-id "PL1")
-                {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
-  (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets)))
-  (testing "All fields applied for all facets"
-    (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
-                                                  :topic "Topic1"
-                                                  :term "Term1"
-                                                  :variable-level-1 "Level1-1"
-                                                  :variable-level-2 "Level1-2"
-                                                  :variable-level-3 "Level1-3"}}
-                         :project-h ["proj1"]
-                         :platform-h ["DIADEM-1D"]
-                         :instrument-h ["ATM"]
-                         :processing-level-id-h ["PL1"]
-                         :data-center-h "DOI/USGS/CMG/WHSC"}]
-      (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params)))
-      (testing "Some group fields not applied"
+  (let [token (e/login (s/context) "user1")
+        coll1 (fu/make-coll 1 "PROV1"
+                            (fu/science-keywords sk1 sk2)
+                            (fu/projects "proj1" "PROJ2")
+                            (fu/platforms fu/FROM_KMS 2 2 1)
+                            (fu/processing-level-id "PL1")
+                            {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
+        coll2 (fu/make-coll 2 "PROV1"
+                            (fu/science-keywords sk1 sk3)
+                            (fu/projects "proj1" "PROJ2")
+                            (fu/platforms fu/FROM_KMS 2 2 1)
+                            (fu/processing-level-id "PL1")
+                            {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})]
+    (index/wait-until-indexed)
+    ;; create variables
+    (variable-util/create-variable-with-attrs token
+                                              {:Name "Variable1"
+                                               :LongName "Measurement1"})
+    (variable-util/create-variable-with-attrs token
+                                              {:Name "Variable2"
+                                               :LongName "Measurement2"})
+    ;; create variable associations
+    (variable-util/associate-by-concept-ids token
+                                            "variable1"
+                                            [{:concept-id (:concept-id coll1)}
+                                             {:concept-id (:concept-id coll2)}])
+    (variable-util/associate-by-concept-ids token
+                                            "variable2"
+                                            [{:concept-id (:concept-id coll2)}]))
+  (index/wait-until-indexed)
+  (testing "No fields applied for facets"
+    (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
+  (let [search-params {:science-keywords-h {:0 {:category "Earth Science"
+                                                :topic "Topic1"
+                                                :term "Term1"
+                                                :variable-level-1 "Level1-1"
+                                                :variable-level-2 "Level1-2"
+                                                :variable-level-3 "Level1-3"}}
+                       :project-h ["proj1"]
+                       :platform-h ["DIADEM-1D"]
+                       :instrument-h ["ATM"]
+                       :processing-level-id-h ["PL1"]
+                       :data-center-h "DOI/USGS/CMG/WHSC"
+                       :variables-h {:0 {:variable "Variable1"}}}]
+    (testing "All fields applied for facets"
+      (is (= fr/expected-v2-facets-remove-links (search-and-return-v2-facets search-params))))
+    (testing "Some fields not applied for facets"
         (let [response (search-and-return-v2-facets
                         (dissoc search-params :platform-h :project-h :data-center-h))]
           (is (not (fu/applied? response :platform-h)))
           (is (not (fu/applied? response :project-h)))
           (is (not (fu/applied? response :data-center-h)))
           (is (fu/applied? response :science-keywords-h))
+          (is (fu/applied? response :variables-h))
           (is (fu/applied? response :instrument-h))
-          (is (fu/applied? response :processing-level-id-h)))))))
+          (is (fu/applied? response :processing-level-id-h))))))
 
 (def science-keywords-all-applied
   "Facet response with just the title, applied, and children fields. Used to verify that when
@@ -352,7 +377,7 @@
     (is (= count (:count field-match-value)))))
 
 (deftest platform-facets-v2-test
-  (let [coll (d/ingest "PROV1" (dc/collection
+  (let [coll1 (d/ingest "PROV1" (dc/collection
                                 {:entry-title "coll1"
                                  :short-name "S1"
                                  :version-id "V1"
@@ -431,7 +456,7 @@
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
 (deftest science-keywords-facets-v2-test
-  (let [coll (d/ingest "PROV1" (dc/collection
+  (let [coll1 (d/ingest "PROV1" (dc/collection
                                 {:entry-title "coll1"
                                  :short-name "S1"
                                  :version-id "V1"
@@ -516,7 +541,7 @@
   (let [org1 (dc/org :archive-center "DOI/USGS/CMG/WHSC")
         org2 (dc/org :processing-center "LPDAAC")
         org3 (dc/org :archive-center "NSIDC")
-        coll (d/ingest "PROV1" (dc/collection
+        coll1 (d/ingest "PROV1" (dc/collection
                                 {:entry-title "coll1"
                                  :short-name "S1"
                                  :version-id "V1"
@@ -614,6 +639,88 @@
     (dev-sys-util/eval-in-dev-sys
      `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-service-facets!
        false))))
+
+(deftest variables-facets-v2-test
+  (let [token (e/login (s/context) "user1")
+        coll1 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll1"
+                                  :short-name "S1"
+                                  :version-id "V1"
+                                  :platforms (dc/platforms "P1")}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll2"
+                                  :short-name "S2"
+                                  :version-id "V2"
+                                  :platforms (dc/platforms "P2")}))
+        coll3 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll3"
+                                  :short-name "S3"
+                                  :version-id "V3"
+                                  :platforms (dc/platforms "P3")}))
+        coll4 (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "coll4"
+                                  :short-name "S4"
+                                  :version-id "V4"}))]
+
+    ;; index the collections so that they can be found during variable association
+    (index/wait-until-indexed)
+    ;; create variables
+    (variable-util/create-variable-with-attrs token
+                                              {:Name "Variable1"
+                                               :LongName "Measurement1"})
+    (variable-util/create-variable-with-attrs token
+                                              {:Name "Variable2"
+                                               :LongName "Measurement2"})
+    (variable-util/create-variable-with-attrs token
+                                              {:Name "SomeVariable"
+                                               :LongName "Measurement2"})
+    ;; create variable associations
+    ;; variable1 is associated with coll1 and coll2
+    ;; variable2 is associated with coll2 and coll3
+    ;; somevariable is associated with coll4
+    (variable-util/associate-by-concept-ids token
+                                            "variable1"
+                                            [{:concept-id (:concept-id coll1)}
+                                             {:concept-id (:concept-id coll2)}])
+    (variable-util/associate-by-concept-ids token
+                                            "variable2"
+                                            [{:concept-id (:concept-id coll2)}
+                                             {:concept-id (:concept-id coll3)}])
+    (variable-util/associate-by-concept-ids token
+                                            "somevariable"
+                                            [{:concept-id (:concept-id coll4)}])
+    (index/wait-until-indexed)
+    
+    ;; We only check the topic level variables facet for convenience since the whole
+    ;; hierarchical structure of variables facet has been covered in all facets test.
+    (testing "search by variables param filters the other facets, but not variables facets"
+      (let [facets-result (search-and-return-v2-facets
+                           {:variables-h {:0 {:variable "Variable1"}}})]
+        (assert-facet-field facets-result "Measurements" "Measurement1" 2)
+        (assert-facet-field facets-result "Measurements" "Measurement2" 3)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field facets-result "Platforms" "P2" 1)
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+
+    (testing "search by both variables param and regular param"
+      (let [facets-result (search-and-return-v2-facets
+                           {:short-name "S1"
+                            :variables-h {:0 {:variable "Variable1"}}})]
+        (assert-facet-field facets-result "Measurements" "Measurement1" 1)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+
+    (testing "search by both variables param and another facet field param"
+      (let [facets-result (search-and-return-v2-facets
+                           {:platform-h "P1"
+                            :variables-h {:0 {:variable "Variable1"}}})]
+        (assert-facet-field facets-result "Measurements" "Measurement1" 1)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field facets-result "Platforms" "P2" 1)
+        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))))
 
 (comment
  ;; Good for manually testing applying links
