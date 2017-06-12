@@ -325,6 +325,8 @@
       [(msg/science-keyword-invalid-format-msg)])))
 
 (defn variables-validation
+  "Validates the variables-h search parameters are in the format of e.g.
+   variables-h[0][measurement]=vaule."
   [concept-type params]
   (when-let [variables (get params :variables-h)]
     (if (map? variables)
