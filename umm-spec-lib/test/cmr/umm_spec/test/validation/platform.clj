@@ -13,7 +13,11 @@
         i2 (c/map->InstrumentType {:ShortName "I2"
                                    :ComposedOf [s1 s2]})
         c1 (c/map->CharacteristicType {:Name "C1"})
-        c2 (c/map->CharacteristicType {:Name "C2"})]
+        c2 (c/map->CharacteristicType {:Name "C2"})
+        c3 (c/map->CharacteristicType {:Name "C3"
+                                       :Value "C3"})
+        c4 (c/map->CharacteristicType {:Name "C3"
+                                       :Value "C4"})]
     (testing "valid platforms"
       (h/assert-valid (coll/map->UMM-C
                        {:Platforms [(c/map->PlatformType {:ShortName "P1"
@@ -21,7 +25,12 @@
                                                           :Characteristics [c1 c2]})
                                     (c/map->PlatformType {:ShortName "P2"
                                                           :Instruments [i1 i2]
-                                                          :Characteristics [c1 c2]})]})))
+                                                          :Characteristics [c1 c2]})]}))
+      (h/assert-valid (coll/map->UMM-C
+                       {:Platforms [(c/map->PlatformType {:ShortName "P1"
+                                                          :Characteristics [c3]})
+                                    (c/map->PlatformType {:ShortName "P1"
+                                                          :Characteristics [c4]})]})))
 
     (testing "invalid platforms"
       (testing "duplicate platform short names"
@@ -31,7 +40,17 @@
           (h/assert-invalid
             coll
             [:Platforms]
-            ["Platforms must be unique. This contains duplicates named [P1]."])))
+            ["Platforms must be unique. The combination of platform ShortName with Characteristics Name and Value contain duplicates named [P1]."])))
+      (testing "duplicate platform short names with characteristics"
+        (let [coll (coll/map->UMM-C
+                     {:Platforms [(c/map->PlatformType {:ShortName "P1"
+                                                        :Characteristics [c3]})
+                                  (c/map->PlatformType {:ShortName "P1"
+                                                        :Characteristics [c3]})]})]
+          (h/assert-invalid
+            coll
+            [:Platforms]
+            ["Platforms must be unique. The combination of platform ShortName with Characteristics Name and Value contain duplicates named [P1C3C3]."])))
       (testing "duplicate platform characteristics names"
         (let [coll (coll/map->UMM-C
                      {:Platforms [(c/map->PlatformType {:ShortName "P1"
@@ -40,6 +59,15 @@
             coll
             [:Platforms 0 :Characteristics]
             ["Characteristics must be unique. This contains duplicates named [C1]."])))
+      (testing "duplicate platform characteristics values"
+        (let [coll (coll/map->UMM-C
+                     {:Platforms [(c/map->PlatformType {:ShortName "P1"
+                                                        :Characteristics [c3 c3]})]})]
+          (h/assert-invalid
+            coll
+            [:Platforms 0 :Characteristics]
+            ["Characteristics must be unique. This contains duplicates named [C3]."])))
+
       (testing "duplicate instrument short names"
         (let [coll (coll/map->UMM-C
                      {:Platforms [(c/map->PlatformType {:ShortName "P1"
@@ -99,5 +127,5 @@
                                {:path [:Platforms 1 :Instruments]
                                 :errors ["Instruments must be unique. This contains duplicates named [I1]."]}
                                {:path [:Platforms]
-                                :errors ["Platforms must be unique. This contains duplicates named [P1]."]}]]
+                                :errors ["Platforms must be unique. The combination of platform ShortName with Characteristics Name and Value contain duplicates named [P1]."]}]]
           (h/assert-multiple-invalid coll expected-errors))))))

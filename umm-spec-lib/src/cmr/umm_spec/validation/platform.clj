@@ -50,7 +50,7 @@
   (fn valid [field-path values]
     (let [freqs (frequencies (get-platform-identifiers values unique-fields))]
       (when-let [duplicate-names (seq (for [[v freq] freqs :when (> freq 1)] v))]
-        {field-path [(format "%%s must be unique. This contains duplicates named [%s]."
+        {field-path [(format "%%s must be unique. The combination of platform ShortName with Characteristics Name and Value contain duplicates named [%s]."
                              (clojure.string/join ", " duplicate-names))]}))))
 
 (def platforms-validation
