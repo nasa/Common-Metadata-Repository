@@ -3,6 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
 
   :dependencies [[camel-snake-kebab "0.4.0"]
+                 [clojusc/ltest "0.2.0-SNAPSHOT"]
                  [com.gfredericks/test.chuck "0.2.7"]
                  [com.taoensso/timbre "4.1.4"]
                  [org.clojure/clojure "1.8.0"]
@@ -10,7 +11,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/test.check "0.9.0"]
                  [org.ow2.asm/asm "5.1"]
-                 [potemkin "1.0.0"]
+                 [potemkin "0.4.3"]
 
                  ;; Note that we copied some code from this library into in memory cache. Replace that when updating.
                  [org.clojure/core.cache "0.6.5"]
