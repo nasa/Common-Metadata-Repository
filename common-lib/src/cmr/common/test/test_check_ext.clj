@@ -1,13 +1,14 @@
 (ns cmr.common.test.test-check-ext
-  (:require [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [clj-time.coerce :as c]
-            [clojure.test.check.clojure-test]
-            [clojure.test.check :as test-check]
-            [com.gfredericks.test.chuck.clojure-test :as chuck]
-            [clojure.test.check.properties :as prop]
-            [clojure.test]
-            [clojure.pprint])
+  (:require
+   [clj-time.coerce :as c]
+   [clojure.string :as s]
+   [clojure.pprint]
+   [clojure.test]
+   [clojure.test.check :as test-check]
+   [clojure.test.check.clojure-test]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :as prop]
+   [com.gfredericks.test.chuck.clojure-test :as chuck])
   (:import java.util.Random))
 
 (defn require-proto-repl-saved-values
@@ -51,6 +52,23 @@
 
           (chuck/pass? reports#))))))
 
+(defmacro qc-and-report-exception-with-seed
+  [name seed final-reports tests bindings & body]
+  `(chuck/report-exception-or-shrunk
+    (test-check/quick-check
+      ~tests
+      (prop/for-all ~bindings
+        (let [reports# (chuck/capture-reports ~@body)]
+          (swap! ~final-reports chuck/save-to-final-reports reports#)
+
+          ;; CODE Added to original qc-and-report-exception function
+          ;; Saves the values into the Proto REPL saved values atom so they can be displayed.
+          (when-not (chuck/pass? reports#)
+            (save-last-failed-values ~name (symbol (str *ns*)) ~(binding-values bindings)))
+
+          (chuck/pass? reports#)))
+      :seed ~seed)))
+
 (defmacro checking
   "Copied from com.gfredericks.test.chuck.clojure-test so that we can add code to capture the generated
    values.
@@ -61,7 +79,7 @@
   generative, you simply have to change it to
   (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
 
-  For more details on this code, see http://blog.colinwilliams.name/blog/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check/"
+  For more details on this code, see http://blog.colinwilliams.name/clojure/testing/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check.html"
   [name tests bindings & body]
   `(do
      (require-proto-repl-saved-values)
@@ -72,6 +90,29 @@
           (qc-and-report-exception ~name final-reports# ~tests ~bindings ~@body)
           (doseq [r# @final-reports#]
             (chuck/-report r#)))))))
+
+(defmacro checking-with-seed
+  "Copied from com.gfredericks.test.chuck.clojure-test so that we can add code to capture the generated
+   values.
+
+  ORIGINAL DESCRIPTION:
+  A macro intended to replace the testing macro in clojure.test with a
+  generative form. To make (testing \"doubling\" (is (= (* 2 2) (+ 2 2))))
+  generative, you simply have to change it to
+  (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
+
+  For more details on this code, see http://blog.colinwilliams.name/clojure/testing/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check.html"
+  [name tests seed bindings & body]
+  `(do
+     (require-proto-repl-saved-values)
+     (chuck/-testing
+      ~name
+      (fn []
+        (let [final-reports# (atom [])]
+          (qc-and-report-exception-with-seed ~name ~seed final-reports# ~tests ~bindings ~@body)
+          (doseq [r# @final-reports#]
+            (chuck/-report r#)))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEPRECATED

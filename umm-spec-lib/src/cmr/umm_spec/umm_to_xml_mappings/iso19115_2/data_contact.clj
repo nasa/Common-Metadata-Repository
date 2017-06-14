@@ -159,7 +159,8 @@
  "Generate a contact group in ISO. A contact group is distinguished from a contact person by not
   having an individualName."
  [contact-group]
- [:gmd:pointOfContact
+ (when contact-group
+  [:gmd:pointOfContact
    [:gmd:CI_ResponsibleParty
     [:gmd:organisationName (char-string (:GroupName contact-group))]
     [:gmd:positionName (char-string (:NonDataCenterAffiliation contact-group))]
@@ -167,7 +168,7 @@
     [:gmd:role
      [:gmd:CI_RoleCode
        {:codeList (:ndgc iso/code-lists)
-        :codeListValue "pointOfContact"} "pointOfContact"]]]])
+        :codeListValue "pointOfContact"} "pointOfContact"]]]]))
 
 (defn generate-data-center-contact-groups
  "Generate contact groups in ISO."

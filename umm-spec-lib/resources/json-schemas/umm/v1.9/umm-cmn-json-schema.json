@@ -45,7 +45,7 @@
         },
         "ShortName": {
           "description": "This is the short name of the data center.",
-           "$ref": "#/definitions/ShortNameType"
+           "$ref": "#/definitions/DataCenterShortNameType"
         },
         "LongName": {
           "description": "This is the long name of the data center.",
@@ -1432,6 +1432,13 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 85
+    },
+    "DataCenterShortNameType": {
+      "description": "The unique name of the data center.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 85,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,84}"
     },
     "PlatformShortNameType": {
       "description": "The unique name of the platform.",
