@@ -53,6 +53,9 @@
           (chuck/pass? reports#))))))
 
 (defmacro qc-and-report-exception-with-seed
+  "This macro re-runs a failed test so that it can capture the information to produce a failed test report.
+   The only difference between this function and the one above is that this one uses a seed value so that
+   the generated values of a UMM record are repeatable."
   [name seed final-reports tests bindings & body]
   `(chuck/report-exception-or-shrunk
     (test-check/quick-check

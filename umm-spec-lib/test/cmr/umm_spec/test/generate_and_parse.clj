@@ -152,6 +152,12 @@
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
 
+;; This test starts with a umm record where the values of the record
+;; are generated with different values every time. This test takes the
+;; UMM record and converts it into another supported format, then converts it back
+;; to UMM and then back to the other format then compares the
+;; expected output with the result of the actual conversions. This test runs a record
+;; through all of the supported formats.
 (deftest roundtrip-generated-collection-records
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
@@ -170,6 +176,16 @@
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
+;; This test starts with a umm record where the values of the record
+;; are generated with a seed number. When using a seed number you can
+;; regenerate the same random values everytime.  This allows for repeated
+;; testing and to re-create a test that failed with a specific seed number.
+;; While this test specifically tests CMR-4047, it also provides other an example
+;; of how to use the seed numbers from the test failure reports. This test takes the
+;; UMM record and converts it into another supported format, then converts it back
+;; to UMM and then back to the other format then compares the
+;; expected output with the result of the actual conversions. This test runs a record
+;; through all of the supported formats.
 (deftest roundtrip-generated-collection-records-with-seed
   (checking-with-seed "collection round tripping seed" 100 1496683985472
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
