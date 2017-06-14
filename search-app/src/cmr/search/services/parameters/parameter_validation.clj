@@ -39,7 +39,7 @@
                      :all-revisions}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
-                       :entry-title :doi :platform :platform-h :processing-level-id :processing-level-id-h
+                       :entry-title :doi :native-id :platform :platform-h :processing-level-id :processing-level-id-h
                        :sensor :data-center-h :measurement}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}}))
@@ -50,7 +50,7 @@
     cpv/basic-params-config
     {:single-value #{:echo-compatible}
      :multiple-value #{:granule-ur :short-name :instrument :collection-concept-id
-                       :producer-granule-id :project :version :provider :entry-title
+                       :producer-granule-id :project :version :native-id :provider :entry-title
                        :platform :sensor}
      :always-case-sensitive #{:echo-granule-id}
      :disallow-pattern #{:echo-granule-id}}))
@@ -77,7 +77,7 @@
 
 (defmethod cpv/valid-parameter-options :collection
   [_]
-  {:native-id cpv/pattern-option
+  {:native-id cpv/string-param-options
    :data-center cpv/string-plus-and-options
    :data-center-h cpv/string-plus-and-options
    :archive-center cpv/string-param-options
@@ -121,7 +121,8 @@
 
 (defmethod cpv/valid-parameter-options :granule
   [_]
-  {:collection-concept-id cpv/pattern-option
+  {:native-id cpv/string-param-options
+   :collection-concept-id cpv/pattern-option
    :data-center cpv/string-plus-and-options
    :dataset-id cpv/pattern-option
    :entry-title cpv/string-plus-and-options

@@ -33,6 +33,7 @@
   {;; collection query params
    :entry-title :string
    :doi :string
+   :native-id :string
    :entry-id :string
    :provider :string
    :short-name :string

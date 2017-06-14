@@ -6,6 +6,7 @@
     [cmr.common-app.services.search.messages :as cmsg]
     [cmr.common-app.services.search.messages :as vmsg]
     [cmr.common.services.messages :as msg]
+    [cmr.common.util :refer [are3]]
     [cmr.search.services.messages.common-messages :as smsg]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -24,6 +25,46 @@
 
   (def coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {})))
   (def gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 "C1-PROV1" {:granule-ur "Granule1"}))))
+
+(deftest search-by-native-id
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+                                                        :ShortName "S1"
+                                                        :Version "V1"}))
+        coll2 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+                                                        :ShortName "S2"
+                                                        :Version "V2"}))
+        coll1-cid (get-in coll1 [:concept-id])
+        coll2-cid (get-in coll2 [:concept-id])
+        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule2"}))
+        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 coll1-cid {:granule-ur "Granule3"}))
+        gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "Granule4"}))
+        gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "Granule5"}))]
+    (index/wait-until-indexed)
+
+    (are3 [items search]
+      (is (d/refs-match? items (search/find-refs :granule search)))
+
+      "search by non-existent native id."
+      [] {:native-id "NON_EXISTENT"}
+      
+      "search by existing native id."
+      [gran1] {:native-id "Granule1"}
+
+      "search by native-id using wildcard *."
+      [gran1 gran2 gran3 gran4 gran5] {:native-id "Gran*" "options[native-id][pattern]" "true"}
+
+      "search by native-id using wildcard ?."
+      [gran1 gran2 gran3 gran4 gran5] {:native-id "Granule?" "options[native-id][pattern]" "true"}
+
+      "search by native-id defaut is ignore case true."
+      [gran1] {:native-id "granule1"}
+
+      "search by native-id ignore case false"
+      []{:native-id "granule1" "options[native-id][ignore-case]" "false"}
+
+      "search by native-id ignore case true."
+      [gran1] {:native-id "granule1" "options[native-id][ignore-case]" "true"})))
 
 (deftest search-by-provider-id
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"

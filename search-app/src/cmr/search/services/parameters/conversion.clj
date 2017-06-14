@@ -71,7 +71,8 @@
 
 (defmethod common-params/param-mappings :granule
   [_]
-  {:granule-ur :string
+  {:native-id :string
+   :granule-ur :string
    :concept-id :granule-concept-id
    :collection-concept-id :string
    :producer-granule-id :string

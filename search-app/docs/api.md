@@ -58,6 +58,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Browsable](#c-browsable)
     * [Keyword (free text)](#c-keyword)
     * [Provider](#c-provider)
+    * [Native Id](#c-native-id)
     * [Short name](#c-short-name)
     * [Version](#c-version)
     * [Tag parameters](#c-tag-parameters)
@@ -100,6 +101,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Day/night flag](#g-day-night-flag)
     * [TwoD coordinate system](#g-twod-coordinate-system)
     * [Provider](#g-provider)
+    * [Native Id](#g-native-id)
     * [Short name](#g-short-name)
     * [Version](#g-version)
     * [Entry title](#g-entry-title)
@@ -1370,6 +1372,18 @@ Find collections matching any of the 'provider' param values
 
     curl "%CMR-ENDPOINT%/collections?provider=ASF&provider=SEDAC"
 
+#### <a name="c-native-id"></a> Find collections by native_id
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'native_id' param value
+
+    curl "%CMR-ENDPOINT%/collections?native_id=nativeid1"
+
+Find collections matching any of the 'native_id' param values
+
+    curl "%CMR-ENDPOINT%/collections?native_id[]=nativeid1&native_id[]=nativeid2"
+
 #### <a name="c-short-name"></a> Find collections by short name
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
@@ -1834,6 +1848,18 @@ Find granules matching 'provider' param value
 Find granules matching any of the 'provider' param values
 
     curl "%CMR-ENDPOINT%/granules?provider=ASF&provider=SEDAC"
+
+#### <a name="g-native-id"></a> Find granules by native_id 
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find granules matching 'native_id' param value
+
+    curl "%CMR-ENDPOINT%/granules?native_id=nativeid1"
+
+Find granules matching any of the 'native_id' param values
+
+    curl "%CMR-ENDPOINT%/granules?native_id[]=nativeid1&native_id[]=nativeid2"
 
 #### <a name="g-short-name"></a> Find granules by short name
 
