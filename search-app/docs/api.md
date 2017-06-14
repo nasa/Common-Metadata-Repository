@@ -1442,11 +1442,11 @@ This supports option _or_.
 
 Find collections matching 'variables-h' param value
 
-     curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[variable\]=Var1"
+     curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[measurement\]=M1"
 
 Find collections matching multiple 'variables-h' param values, default is :and
 
-     curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[variable\]=Var1&variables-h\[0\]\[measurement\]=M1&variables-h\[1\]\[variable\]=Var2"
+     curl "%CMR-ENDPOINT%/collections?variables-h\[0\]\[measurement\]=M1&variables-h\[0\]\[variable\]=Var1&variables-h\[1\]\[measurement\]=M2"
 
 #### <a name="c-spatial"></a> Find collections by Spatial
 
