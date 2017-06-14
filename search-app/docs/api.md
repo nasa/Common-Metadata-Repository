@@ -1372,17 +1372,17 @@ Find collections matching any of the 'provider' param values
 
     curl "%CMR-ENDPOINT%/collections?provider=ASF&provider=SEDAC"
 
-#### <a name="c-native-id"></a> Find collections by native-id
+#### <a name="c-native-id"></a> Find collections by native_id
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
-Find collections matching 'native-id' param value
+Find collections matching 'native_id' param value
 
-    curl "%CMR-ENDPOINT%/collections?native-id=nativeid1"
+    curl "%CMR-ENDPOINT%/collections?native_id=nativeid1"
 
-Find collections matching any of the 'nativie-id' param values
+Find collections matching any of the 'native_id' param values
 
-    curl "%CMR-ENDPOINT%/collections?native-id=nativeid1&native-id=nativeid2"
+    curl "%CMR-ENDPOINT%/collections?native_id[]=nativeid1&native_id[]=nativeid2"
 
 #### <a name="c-short-name"></a> Find collections by short name
 
@@ -1849,17 +1849,17 @@ Find granules matching any of the 'provider' param values
 
     curl "%CMR-ENDPOINT%/granules?provider=ASF&provider=SEDAC"
 
-#### <a name="g-native-id"></a> Find granules by native-id 
+#### <a name="g-native-id"></a> Find granules by native_id 
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
-Find granules matching 'native-id' param value
+Find granules matching 'native_id' param value
 
-    curl "%CMR-ENDPOINT%/granules?native-id=nativeid1"
+    curl "%CMR-ENDPOINT%/granules?native_id=nativeid1"
 
-Find granules matching any of the 'native-id' param values
+Find granules matching any of the 'native_id' param values
 
-    curl "%CMR-ENDPOINT%/granules?native-id=nativeid1&native-id=nativeid2"
+    curl "%CMR-ENDPOINT%/granules?native_id[]=nativeid1&native_id[]=nativeid2"
 
 #### <a name="g-short-name"></a> Find granules by short name
 
