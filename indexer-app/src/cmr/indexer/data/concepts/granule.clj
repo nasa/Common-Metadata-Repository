@@ -116,7 +116,7 @@
 (defn- granule->elastic-doc
   "Returns elastic json that can be used to insert the given granule concept in elasticsearch."
   [context concept umm-granule]
-  (let [{:keys [concept-id extra-fields provider-id revision-date format created-at]} concept
+  (let [{:keys [concept-id extra-fields native-id provider-id revision-date format created-at]} concept
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover
@@ -161,10 +161,14 @@
             :version-id.lowercase (when Version (s/lower-case Version))
             :version-id.lowercase-doc-values (when Version (s/lower-case Version))
 
+            :native-id native-id
+            :native-id.lowercase (s/lower-case native-id)
+            
             :provider-id provider-id
             :provider-id-doc-values provider-id
             :provider-id.lowercase (s/lower-case provider-id)
             :provider-id.lowercase-doc-values (s/lower-case provider-id)
+
             :granule-ur granule-ur
             :granule-ur.lowercase2 (s/lower-case granule-ur)
             :producer-gran-id producer-gran-id

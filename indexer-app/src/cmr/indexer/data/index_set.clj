@@ -416,6 +416,9 @@
   (merge
     {:concept-id (m/stored m/string-field-mapping)
 
+     :native-id m/string-field-mapping
+     :native-id.lowercase m/string-field-mapping
+
      ;; This is used explicitly for sorting. The values take up less space in the
      ;; fielddata cache.
      :concept-seq-id m/int-field-mapping
