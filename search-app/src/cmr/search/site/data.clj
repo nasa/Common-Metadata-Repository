@@ -31,12 +31,13 @@
 (defn collection-data
   "Get the collection data associated with a provider and tag."
   [context tag provider-id]
-  (->> {:tag-key tag
-        :provider provider-id
-        :result-format {:format :umm-json-results}}
-       (query-svc/make-concepts-query context :collection)
-       (query-exec/execute-query context)
-       :items))
+  (as-> {:tag-key tag
+         :provider provider-id
+         :result-format {:format :umm-json-results}} data
+        (query-svc/make-concepts-query context :collection data)
+        (assoc data :page-size :unlimited)
+        (query-exec/execute-query context data)
+        (:items data)))
 
 (defn provider-data
   "Create a provider data structure suitable for template iteration to
