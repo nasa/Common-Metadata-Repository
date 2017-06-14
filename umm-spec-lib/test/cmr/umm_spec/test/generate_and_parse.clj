@@ -6,8 +6,8 @@
    [clojure.java.io :as io]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
-   [cmr.common.test.test-check-ext :as ext :refer [checking]]
-   [cmr.common.util :refer [update-in-each update-in-all are2]]
+   [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
+   [cmr.common.util :refer [update-in-each update-in-all are3]]
    [cmr.common.xml.simple-xpath :refer [select context]]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iu]
@@ -154,6 +154,24 @@
 
 (deftest roundtrip-generated-collection-records
   (checking "collection round tripping" 100
+    [umm-record (gen/no-shrink umm-gen/umm-c-generator)
+     metadata-format (gen/elements tested-collection-formats)]
+    (let [umm-record (js/parse-umm-c
+                        (assoc umm-record
+                               :DataDates [{:Date (t/date-time 2012)
+                                            :Type "CREATE"}
+                                           {:Date (t/date-time 2013)
+                                            :Type "UPDATE"}]))
+          expected (expected-conversion/convert umm-record metadata-format)
+          actual (xml-round-trip :collection metadata-format umm-record)
+          ;; Change fields to sets for comparison
+          expected (convert-to-sets expected)
+          actual (convert-to-sets actual)]
+      (is (= expected actual)
+          (str "Unable to roundtrip with format " metadata-format)))))
+
+(deftest roundtrip-generated-collection-records-with-seed
+  (checking-with-seed "collection round tripping seed" 100 1496683985472
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
     (let [umm-record (js/parse-umm-c

@@ -347,11 +347,3 @@
 (defn parse-umm-c
   [x]
   (coerce umm-c-schema x))
-
-(comment
-  (coerce umm-c-schema
-          {:EntryTitle "This is a test"
-           :TemporalExtents [{:EndsAtPresentFlag "true"
-                              :SingleDateTimes ["2000-01-01T00:00:00.000Z"]}]
-           :Distributions [{:Fees "123.4"
-                            :Sizes [{:Size "123" :Unit "MB"}]}]}))
