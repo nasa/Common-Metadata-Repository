@@ -12,7 +12,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
-   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project :as project]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]

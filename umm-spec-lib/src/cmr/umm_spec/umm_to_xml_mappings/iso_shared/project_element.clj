@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.project
+(ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element
   "Functions for generating ISO-19115 and ISO-SMAP XML elements from UMM project records."
   (:require
     [cmr.common.xml.gen :refer :all]
