@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.project
+(ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element
  "Functions to parse Projects from ISO 19115-2 and SMAP"
  (:require
   [clojure.string :as string]
