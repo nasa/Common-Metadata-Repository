@@ -57,43 +57,53 @@
 
     (index/wait-until-indexed)
 
+    (testing "JSON format"
+      (let [params {:collection_concept_id (:concept-id coll1-echo) :scroll true :page-size 2}
+            options {:accept nil
+                     :url-extension "native"}
+            response (search/find-metadata :granule :json params options)
+            scroll-id (:scroll-id response)]
+        (testing "First search gets expected count and scroll-id"
+          (is (= (count coll1-grans) (:hits response)))
+          (is (not (nil? scroll-id))))))
+         
     (testing "Harvest by collection-concept-id"
-        (let [params {:collection_concept_id (:concept-id coll1-echo) :scroll true :page-size 2}
-              options {:accept nil
-                       :url-extension "native"}
-              response (search/find-metadata :granule format-key params options)
-              scroll-id (:scroll-id response)]
-          (testing "First search gets expected granules and scroll-id"
-            (is (= (count coll1-grans) (:hits response)))
-            (is (not (nil? scroll-id)))
-            (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response))
+      (let [params {:collection_concept_id (:concept-id coll1-echo) :scroll true :page-size 2}
+            options {:accept nil
+                      :url-extension "native"}
+            response (search/find-metadata :granule format-key params options)
+            scroll-id (:scroll-id response)]
+        (testing "First search gets expected granules and scroll-id"
+          (is (= (count coll1-grans) (:hits response)))
+          (is (not (nil? scroll-id)))
+          (data2-core/assert-metadata-results-match format-key [g1-echo g2-echo] response))
 
-          (testing "Second search gets next two granules"
-            (data2-core/assert-metadata-results-match
-              format-key
-              [g3-echo g4-echo]
-              (search/find-metadata :granule
-                                    format-key
-                                    {:scroll true}
-                                    {:headers {"CMR-Scroll-Id" scroll-id}})))
+        (testing "Second search gets next two granules"
+          (data2-core/assert-metadata-results-match
+            format-key
+            [g3-echo g4-echo]
+            (search/find-metadata :granule
+                                  format-key
+                                  {:scroll true}
+                                  {:headers {"CMR-Scroll-Id" scroll-id}})))
 
-          (testing "Third search gets last granule"
-            (data2-core/assert-metadata-results-match
-              format-key
-              [g5-echo]
-              (search/find-metadata :granule
-                                    format-key
-                                    {:scroll true}
-                                    {:headers {"CMR-Scroll-Id" scroll-id}})))
+        (testing "Third search gets last granule"
+          (data2-core/assert-metadata-results-match
+            format-key
+            [g5-echo]
+            (search/find-metadata :granule
+                                  format-key
+                                  {:scroll true}
+                                  {:headers {"CMR-Scroll-Id" scroll-id}})))
 
-          (testing "Subsequent search gets empty list"
-            (data2-core/assert-metadata-results-match
-              format-key
-              []
-              (search/find-metadata :granule
-                                    format-key
-                                    {:scroll true}
-                                    {:headers {"CMR-Scroll-Id" scroll-id}})))))
+        (testing "Subsequent search gets empty list"
+          (data2-core/assert-metadata-results-match
+            format-key
+            []
+            (search/find-metadata :granule
+                                  format-key
+                                  {:scroll true}
+                                  {:headers {"CMR-Scroll-Id" scroll-id}})))))
     (testing "Harvest granules by created-at"
       (let [params {:concept-id [coll1-concept-id coll2-concept-id]
                     :created-at "2010-01-01T10:00:00Z,2014-02-01T10:00:00Z"
