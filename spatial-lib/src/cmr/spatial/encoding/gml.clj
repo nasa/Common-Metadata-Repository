@@ -40,13 +40,13 @@
   short string)."
   [s]
   (condp re-find s
-    #"EPSG[:/]9825" :cartesian
+    #"EPSG:9825|EPSG/0/9825" :cartesian
     #"EPSG:4326|EPSG/0/4326" :geodetic
     nil))
 
 (def srs-url
   "Returns the canonical URL for a coordinate system keyword."
-  {:cartesian "http://www.opengis.net/def/crs/EPSG/9825"
+  {:cartesian "http://www.opengis.net/def/crs/EPSG/0/9825"
    :geodetic  "http://www.opengis.net/def/crs/EPSG/0/4326"})
 
 (defn parse-lat-lon-string
