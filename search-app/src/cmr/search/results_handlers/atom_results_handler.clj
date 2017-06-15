@@ -239,11 +239,15 @@
 (defn- elastic-results->query-results
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
+        scroll-id (:_scroll_id elastic-results)
         elastic-matches (get-in elastic-results [:hits :hits])
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
-    (r/map->Results {:hits hits :items items :result-format (:result-format query)})))
+    (r/map->Results {:hits hits 
+                     :items items 
+                     :result-format (:result-format query)
+                     :scroll-id scroll-id})))
 
 (defmethod elastic-results/elastic-results->query-results [:collection :atom]
   [context query elastic-results]
