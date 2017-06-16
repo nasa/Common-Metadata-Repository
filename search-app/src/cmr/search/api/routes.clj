@@ -250,6 +250,11 @@
                           (assoc :echo-collection-id collections-with-new-granules)
                           (dissoc :has-granules-created-at)
                           lp/process-legacy-psa)]
+    
+    (info (format "Found %d collections. Were they distinct? - %s"
+                  (count collections-with-new-granules)
+                  (distinct? collections-with-new-granules)))
+
     (find-concepts-by-parameters ctx path-w-extension search-params headers body)))
 
 (defn- granule-parent-collection-query?
