@@ -643,12 +643,12 @@
     </xs:simpleType>
     <xs:complexType name="DoiType">
       <xs:annotation>
-        <xs:documentation>This entity describes the digital object identifier, and who created it.</xs:documentation>
+        <xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of http://dx.doi.org/ should be used.</xs:documentation>
       </xs:annotation>
       <xs:sequence>
         <xs:element name="DOI">
           <xs:annotation>
-            <xs:documentation>This element describes the digital object identifier.</xs:documentation>
+            <xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource.</xs:documentation>
           </xs:annotation>
           <xs:simpleType>
             <xs:restriction base="xs:string">
@@ -659,7 +659,7 @@
         </xs:element>
         <xs:element name="Authority" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>This element describes who created the digital object identifier. This is not the group who issues the DOI ID and registers it, but the group to which the identifier belongs i.e. a DAAC or a scientist team.</xs:documentation>
+            <xs:documentation>The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of http://dx.doi.org/ should be used.</xs:documentation>
           </xs:annotation>
           <xs:simpleType>
             <xs:restriction base="xs:string">
