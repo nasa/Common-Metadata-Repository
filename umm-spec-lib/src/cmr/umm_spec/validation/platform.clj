@@ -34,7 +34,9 @@
    with the model number. So the short name is not specific enough to identify
    specific platform instances. Therefore we are adding Characteristic names and values
    so that specific aircraft tail numbers, or boat IDS, etc. can be specified with the
-   short name."
+   short name. The |-| string is also added as a delimiter between the fields. This is used
+   in the getErrorString parameter-parser to parse out the different fields, so that a
+   meaningful error string can be suppplied back to the user."
   [values unique-fields]
   (let [{:keys [ShortName Characteristics Name Value]} unique-fields]
     (map (fn [value]
@@ -46,7 +48,7 @@
 
 (defn- getErrorString
   "Creates the error string for platforms depending on which elements (ShortName, Characteristic/Name, Characteristic/Value) are present.
-   The element order is ShortName, Name, Value"
+   The element order is ShortName, Name, Value. The values are separated by the |-| string."
   [duplicate-name]
   (let [platformElements (clojure.string/split duplicate-name #"\|-\|")
         platCounts (count platformElements)]
