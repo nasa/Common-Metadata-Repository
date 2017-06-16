@@ -318,9 +318,7 @@
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})
-     :post-components {:control-server control-server
-                       :gorilla-repl (when-not (zero? (gorilla-repl-port))
-                                       (gorilla-repl/create-gorilla-repl-server (gorilla-repl-port)))}}))
+     :post-components {:control-server control-server}}))
 
 (defn- stop-components
   [system components-key]
