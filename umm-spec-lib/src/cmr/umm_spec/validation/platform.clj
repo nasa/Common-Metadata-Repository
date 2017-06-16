@@ -40,8 +40,23 @@
     (map (fn [value]
            (apply str
                  (ShortName value)
-                 (map #(str (Name %) (Value %)) (Characteristics value))))
+                 "|-|"
+                 (map #(str (Name %) "|-|" (Value %)) (Characteristics value))))
          values)))
+
+(defn- getErrorString
+  "Creates the error string for platforms depending on which elements (ShortName, Characteristic/Name, Characteristic/Value) are present.
+   The element order is ShortName, Name, Value"
+  [duplicate-name]
+  (let [platformElements (clojure.string/split duplicate-name #"\|-\|")
+        platCounts (count platformElements)]
+    ;; The case of 0 or greater than 3 shouldn't exist.  If it is either value then the validation
+    ;; software is not working.
+    (if (or (< platCounts 1) (> platCounts 3)) (throw (Exception. "The platform validation checking for duplicates either has 0 or more than 3 elements, neither is valid. There is a software problem."))
+      (case platCounts
+        1  (format "The Platform ShortName [%s] must be unique. This record contains duplicates." (get platformElements 0))
+        2  (format "The combination of Platform ShortName [%s] along with its Characteristic Name [%s] must be unique. This record contains duplicates." (get platformElements 0) (get platformElements 1))
+        3  (format "The combination of Platform ShortName [%s] along with its Characteristic Name [%s] and Characteristic Value [%s] must be unique. This record contains duplicates." (get platformElements 0) (get platformElements 1) (get platformElements 2))))))
 
 (defn- unique-platform-validator
   "Validates a list of items is unique by a specified field. Takes the name field and returns a
@@ -50,8 +65,10 @@
   (fn valid [field-path values]
     (let [freqs (frequencies (get-platform-identifiers values unique-fields))]
       (when-let [duplicate-names (seq (for [[v freq] freqs :when (> freq 1)] v))]
-        {field-path [(format "%%s must be unique. The combination of platform ShortName with Characteristics Name and Value contain duplicates named [%s]."
-                             (clojure.string/join ", " duplicate-names))]}))))
+        (def duplicate-names duplicate-names)
+        (def field-path field-path)
+        (let [errorMsgs (map getErrorString duplicate-names)]
+          {field-path (vec errorMsgs)})))))
 
 (def platforms-validation
   "Defines the list of validation functions for validating collection platforms"
