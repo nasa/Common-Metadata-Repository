@@ -109,16 +109,9 @@
           :codeListValue ""} "Date"]]
        [:gmd:domainValue
         [:gco:CharacterString (f/unparse (f/formatters :date-time) (:Date date))]]
-       [:gmd:parentEntity
-        [:gco:CharacterString ""]]
-       [:gmd:rule
-        [:gco:CharacterString ""]]
-       [:gmd:source
-        [:gmd:CI_ResponsibleParty
-         [:gmd:role
-          [:gmd:CI_RoleCode
-            {:codeList ""
-             :codeListValue ""} "Role"]]]]]]]]))
+       [:gmd:parentEntity {:gco:nilReason "inapplicable"}]
+       [:gmd:rule {:gco:nilReason "inapplicable"}]
+       [:gmd:source {:gco:nilReason "inapplicable"}]]]]]))
 
 (defn iso-topic-value->sanitized-iso-topic-category
   "Ensures an uncontrolled IsoTopicCategory value is on the schema-defined list or substitues a
