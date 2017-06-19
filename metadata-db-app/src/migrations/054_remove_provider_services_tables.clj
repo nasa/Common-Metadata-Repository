@@ -1,23 +1,35 @@
 (ns migrations.054-remove-provider-services-tables
   (:require
-    [cmr.metadata-db.data.oracle.concept-tables :as ct]
     [config.mdb-migrate-helper :as h]
     [config.migrate-config :as config]))
+
+(defn- get-services-table-name
+  "Returns a provider specific services table-name. Needed in this migration because the
+  concept-tables function which does the same has a different behavior after this migration
+  was initially written."
+  [provider]
+  (format "%s_SERVICES" provider))
+
+(defn- get-services-sequence-name
+  "Returns a provider specific services sequence name."
+  [provider]
+  (format "%s_SERVICES_SEQ" provider))
 
 (defn up
   "Migrates the database up to version 54."
   []
   (println "migrations.054-remove-provider-services-tables up...")
-  (doseq [provider (h/get-regular-providers)
-          :let [t (ct/get-table-name provider :service)
-                sequence-name (str t "_seq")]]
-    (h/sql (format "drop table %s" t))
-    (h/sql (format "drop sequence %s" sequence-name)))
-  (h/sql "drop table small_prov_services")
-  (h/sql "drop sequence small_prov_services_seq"))
+  (doseq [provider (conj (map :provider-id (h/get-regular-providers)) "SMALL_PROV")
+          :let [table-name (get-services-table-name provider)
+                sequence-name (get-services-sequence-name provider)]]
+    (h/sql (format "drop table %s" table-name))
+    (h/sql (format "drop sequence %s" sequence-name))))
 
-(def create-service-sql
-  "CREATE TABLE small_prov_services (
+(defn- create-service-table-for-provider-sql
+  "Returns the SQL to create a service table for a provider."
+  [provider]
+  (format
+   "CREATE TABLE %s_SERVICES (
     id NUMBER,
     concept_id VARCHAR(255) NOT NULL,
     native_id VARCHAR(1030) NOT NULL,
@@ -31,23 +43,22 @@
     delete_time TIMESTAMP WITH TIME ZONE,
     user_id VARCHAR(30) NULL,
     provider_id VARCHAR(255) NOT NULL,
-    CONSTRAINT small_prov_services_pk PRIMARY KEY (id),
-    CONSTRAINT small_prov_services_con_rev
+    CONSTRAINT %s_services_pk PRIMARY KEY (id),
+    CONSTRAINT %s_services_con_rev
       UNIQUE (provider_id, native_id, revision_id)
-      USING INDEX (create unique index small_prov_services_ucr_i
-                          ON small_prov_services(provider_id, native_id, revision_id)),
-    CONSTRAINT small_prov_services_cid_rev
+      USING INDEX (create unique index %s_services_ucr_i
+                          ON %s_services(provider_id, native_id, revision_id)),
+    CONSTRAINT %s_services_cid_rev
       UNIQUE (concept_id, revision_id)
-      USING INDEX (create unique index small_prov_services_cri
-                          ON small_prov_services(concept_id, revision_id)))")
-
+      USING INDEX (create unique index %s_services_cri
+                          ON %s_services(concept_id, revision_id)))"
+   provider provider provider provider provider provider provider provider))
 
 (defn down
   "Migrates the database down from version 54."
   []
   (println "migrations.054-remove-provider-services-tables down...")
-  (doseq [provider (h/get-regular-providers)]
-    (ct/create-concept-table (config/db) provider :service)
-    (ct/create-concept-table-id-sequence (config/db) provider :service))
-  (h/sql create-service-sql)
-  (h/sql "CREATE SEQUENCE small_prov_services_seq"))
+  (doseq [provider (conj (map :provider-id (h/get-regular-providers)) "SMALL_PROV")
+          :let [sequence-name (get-services-sequence-name provider)]]
+    (h/sql (create-service-table-for-provider-sql provider))
+    (h/sql (format "create sequence %s" sequence-name))))
