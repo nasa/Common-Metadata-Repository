@@ -1,7 +1,10 @@
 (ns cmr.umm-spec.validation.platform
   "Defines validations for UMM collection platform."
-  (:require [cmr.common.validations.core :as v]
-            [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
+  (:require
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.core :as v]
+   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
+
 
 (def ^:private sensor-validations
   "Defines the sensor validations for collections"
@@ -50,19 +53,20 @@
   "Creates the error string for platforms depending on which elements (ShortName, Characteristic/Name, Characteristic/Value) are present.
    The element order is ShortName, Name, Value. The values are separated by the |-| string."
   [duplicate-name]
-  (let [platform-elements (clojure.string/split duplicate-name #"\|-\|")
-        platform-counts (count platform-elements)
-        shortname (first platform-elements)
-        characteristic-name (second platform-elements)
-        characteristic-value (last platform-elements)]
-    ;; The case of 0 or greater than 3 shouldn't exist.  If it is either value then the validation
-    ;; software is not working.
-    (if (or (< platform-counts 1) (> platform-counts 3))
-      (throw (Exception. "The platform validation checking for duplicates either has 0 or more than 3 elements, neither is valid. There is a software problem."))
-      (case platform-counts
-        1  (format "The Platform ShortName [%s] must be unique. This record contains duplicates." shortname)
-        2  (format "The combination of Platform ShortName [%s] along with its Characteristic Name [%s] must be unique. This record contains duplicates." shortname characteristic-name)
-        3  (format "The combination of Platform ShortName [%s] along with its Characteristic Name [%s] and Characteristic Value [%s] must be unique. This record contains duplicates." shortname characteristic-name characteristic-value)))))
+  (when duplicate-name
+    (let [platform-elements (clojure.string/split duplicate-name #"\|-\|")
+          platform-counts (count platform-elements)
+          shortname (first platform-elements)
+          characteristic-name (second platform-elements)
+          characteristic-value (last platform-elements)]
+      ;; The case of 0 or greater than 3 shouldn't exist.  If it is either value then the validation
+      ;; software is not working.
+      (if (or (< platform-counts 1) (> platform-counts 3))
+        (errors/throw-service-error (Exception. "The platform validation checking for duplicates either has 0 or more than 3 elements, neither is valid. There is a software problem."))
+        (case platform-counts
+          1  (format "The Platform ShortName [%s] must be unique. This record contains duplicates." shortname)
+          2  (format "The combination of Platform ShortName [%s] along with its Characteristic Name [%s] must be unique. This record contains duplicates." shortname characteristic-name)
+          3  (format "The combination of Platform ShortName [%s] along with its Characteristic Name [%s] and Characteristic Value [%s] must be unique. This record contains duplicates." shortname characteristic-name characteristic-value))))))
 
 (defn- unique-platform-validator
   "Validates a list of items is unique by a specified field. Takes the name field and returns a
