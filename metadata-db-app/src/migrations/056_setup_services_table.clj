@@ -4,10 +4,10 @@
 
 (def ^:private services-column-sql
   "id NUMBER,
-  concept_id VARCHAR(256) NOT NULL,
+  concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
   metadata BLOB NOT NULL,
-  format VARCHAR(256) NOT NULL,
+  format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
   revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
