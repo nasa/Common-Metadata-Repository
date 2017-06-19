@@ -32,4 +32,6 @@
   ([context app-title]
    (assoc (time-page)
           :base-url (config/application-public-root-url context)
-          :app-title app-title)))
+          :app-title app-title
+          :partner-url "https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide"
+          :partner-text "Client Partner's Guide")))
