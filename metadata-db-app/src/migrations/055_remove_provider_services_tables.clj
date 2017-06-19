@@ -1,4 +1,4 @@
-(ns migrations.054-remove-provider-services-tables
+(ns migrations.055-remove-provider-services-tables
   (:require
     [config.mdb-migrate-helper :as h]
     [config.migrate-config :as config]))
@@ -16,9 +16,9 @@
   (format "%s_SERVICES_SEQ" provider))
 
 (defn up
-  "Migrates the database up to version 54."
+  "Migrates the database up to version 55."
   []
-  (println "migrations.054-remove-provider-services-tables up...")
+  (println "migrations.055-remove-provider-services-tables up...")
   (doseq [provider (conj (map :provider-id (h/get-regular-providers)) "SMALL_PROV")
           :let [table-name (get-services-table-name provider)
                 sequence-name (get-services-sequence-name provider)]]
@@ -55,9 +55,9 @@
    provider provider provider provider provider provider provider provider))
 
 (defn down
-  "Migrates the database down from version 54."
+  "Migrates the database down from version 55."
   []
-  (println "migrations.054-remove-provider-services-tables down...")
+  (println "migrations.055-remove-provider-services-tables down...")
   (doseq [provider (conj (map :provider-id (h/get-regular-providers)) "SMALL_PROV")
           :let [sequence-name (get-services-sequence-name provider)]]
     (h/sql (create-service-table-for-provider-sql provider))
