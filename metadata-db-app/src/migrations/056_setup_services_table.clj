@@ -1,13 +1,13 @@
-(ns migrations.055-setup-services-table
+(ns migrations.056-setup-services-table
   (:require
    [config.mdb-migrate-helper :as h]))
 
 (def ^:private services-column-sql
   "id NUMBER,
-  concept_id VARCHAR(255) NOT NULL,
+  concept_id VARCHAR(256) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
   metadata BLOB NOT NULL,
-  format VARCHAR(255) NOT NULL,
+  format VARCHAR(256) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
   revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
@@ -45,16 +45,16 @@
   (h/sql "CREATE SEQUENCE cmr_services_seq"))
 
 (defn up
-  "Migrates the database up to version 55."
+  "Migrates the database up to version 56."
   []
-  (println "migrations.055-setup-services-table up...")
+  (println "migrations.056-setup-services-table up...")
   (create-services-table)
   (create-services-indices)
   (create-services-sequence))
 
 (defn down
-  "Migrates the database down from version 55."
+  "Migrates the database down from version 56."
   []
-  (println "migrations.055-setup-services-table down...")
+  (println "migrations.056-setup-services-table down...")
   (h/sql "DROP SEQUENCE METADATA_DB.cmr_services_seq")
   (h/sql "DROP TABLE METADATA_DB.cmr_services"))
