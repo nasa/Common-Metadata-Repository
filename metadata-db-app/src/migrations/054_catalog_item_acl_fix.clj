@@ -1,11 +1,12 @@
 (ns migrations.054-catalog-item-acl-fix
-  (:require [clojure.java.jdbc :as j]
-            [clojure.edn :as edn]
-            [cmr.common.util :as util]
-            [config.migrate-config :as config]
-            [config.mdb-migrate-helper :as h]
-            [cmr.metadata-db.data.oracle.providers :as providers]
-            [clojure.string :as string]))
+  (:require
+   [clojure.java.jdbc :as j]
+   [clojure.edn :as edn]
+   [cmr.common.util :as util]
+   [config.migrate-config :as config]
+   [config.mdb-migrate-helper :as h]
+   [cmr.metadata-db.data.oracle.providers :as providers]
+   [clojure.string :as string]))
 
 (defn- get-concept-ids
   "For a given provider and entry-titles in collection-identifier, returns list of collection concept ids"
