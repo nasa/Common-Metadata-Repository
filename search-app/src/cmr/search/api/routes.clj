@@ -245,17 +245,20 @@
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
-        collections-with-new-granules (query-svc/get-collection-ids-from-new-granules ctx params)
+        collections-with-new-granules-search (query-svc/get-collections-from-new-granules ctx params)
+        collection-ids (distinct (map :collection-concept-id (:items collections-with-new-granules-search)))
         search-params (-> params
-                          (assoc :echo-collection-id collections-with-new-granules)
+                          (assoc :echo-collection-id collection-ids)
                           (dissoc :has-granules-created-at)
                           lp/process-legacy-psa)]
-    
-    (info (format "Found %d collections. Were they distinct? - %s"
-                  (count collections-with-new-granules)
-                  (distinct? collections-with-new-granules)))
 
-    (find-concepts-by-parameters ctx path-w-extension search-params headers body)))
+    (info (format "Found %d collections. Were they distinct? - %s"
+                  (count collection-ids)
+                  (distinct? collection-ids)))
+
+    (if (empty? collection-ids)
+      (search-response ctx collections-with-new-granules-search)
+      (find-concepts-by-parameters ctx path-w-extension search-params headers body))))
 
 (defn- granule-parent-collection-query?
   "Return true if parameters match any from the list of `multi-part-query-params`
