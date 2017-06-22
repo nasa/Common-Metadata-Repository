@@ -106,7 +106,7 @@
 
 (defn sync-entry-titles-concept-ids
   "If the given ACL is a catalog item acl with a collection identifier that includes concept-ids or
-   entry-titles, return the ACL such that both are a unioned with each other."
+   entry-titles, return the ACL such that both are unioned with each other."
   [context acl]
   (if-let [collection-identifier (get-in acl [:catalog-item-identity :collection-identifier])]
     (let [entry-titles (:entry-titles collection-identifier)
