@@ -480,7 +480,7 @@
       (index/wait-until-indexed)
       ;; Verify that those ACLs are NOT found.
       (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV1"}))]
-        (is (= [3] (map :revision_id results)))
+        (is (= [2] (map :revision_id results)))
         (is (= ["coll1/coll2 ACL"] (map :name results)))
         (is (= [(:EntryTitle coll2)]
                (-> (ac/get-acl token (:concept_id (first results)))
@@ -498,7 +498,7 @@
       (index/wait-until-indexed)
       ;; Verify that those ACLs are NOT found.
       (let [results (:items (ac/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
-        (is (= [3] (map :revision_id results)))
+        (is (= [2] (map :revision_id results)))
         (is (= ["coll3/coll4 ACL"] (map :name results)))
         (is (= [(:concept-id coll4)]
                (-> (ac/get-acl token (:concept_id (first results)))
