@@ -81,27 +81,26 @@
   [context {:keys [concept-id revision-id]}]
   (let [concept-map (mdb/get-concept context concept-id revision-id)
         collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)]
-    (doseq [key-path [:entry-titles :concept-ids]
-            acl-concept (acl-service/get-all-acl-concepts context)
+    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
             :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                   catalog-item-id (:catalog-item-identity parsed-acl)
-                  value (if (= key-path :entry-titles)
-                          (:EntryTitle collection-concept)
-                          (:concept-id collection-concept))
-                  acl-values (get (:collection-identifier catalog-item-id) key-path)]
+                  concept-ids (get (:collection-identifier catalog-item-id) :concept-ids)]
             :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))
-                       (some #{value} acl-values))]
-      (if (= 1 (count acl-values))
+                       (some #{concept-id} concept-ids))]
+      (if (= 1 (count concept-ids))
         ;; The ACL only references the collection being deleted, and therefore the ACL should be deleted.
         ;; With the addition of concept-ids, this assumes entry-titles and concept-ids are in sync.
         (acl-service/delete-acl (transmit-config/with-echo-system-token context)
                                 (:concept-id acl-concept))
         ;; Otherwise the ACL references other collections, and will be updated
-        (let [new-acl (update-in parsed-acl
-                                 [:catalog-item-identity :collection-identifier key-path]
-                                 #(remove #{value} %))]
+        (let [new-acl (-> parsed-acl
+                          (assoc-in [:catalog-item-identity :collection-identifier :concept-ids]
+                                    (remove #(= % concept-id) concept-ids))
+                          (update-in [:catalog-item-identity :collection-identifier]
+                                     dissoc :entry-titles))]
           (acl-service/update-acl (transmit-config/with-echo-system-token context)
                                   (:concept-id acl-concept) new-acl))))))
+
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"
