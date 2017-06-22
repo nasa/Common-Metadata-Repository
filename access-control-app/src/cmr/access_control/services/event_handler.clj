@@ -84,10 +84,9 @@
     (doseq [acl-concept (acl-service/get-all-acl-concepts context)
             :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                   catalog-item-id (:catalog-item-identity parsed-acl)
-                  coll-concept-id (:concept-id collection-concept)
                   concept-ids (get (:collection-identifier catalog-item-id) :concept-ids)]
             :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))
-                       (some #{coll-concept-id} concept-ids))]
+                       (some #{concept-id} concept-ids))]
       (if (= 1 (count concept-ids))
         ;; The ACL only references the collection being deleted, and therefore the ACL should be deleted.
         ;; With the addition of concept-ids, this assumes entry-titles and concept-ids are in sync.
