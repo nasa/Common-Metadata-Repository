@@ -44,16 +44,16 @@
    :LongName "A long UMM-Var name"
    :Units "m"
    :DataType "float32"
-   :DimensionsName ["H2OFunc"
-                    "H2OPressureLay"
-                    "MWHingeSurf"
-                    "Cloud"]
-   :Dimensions ["11" "14" "7" "2"]
-   :ValidRange []
-   :Scale 1.0
-   :Offset 0.0
-   :FillValue -9999.0
-   :VariableType "SCIENCE_VARIABLE"})
+   :DimensionsName "H2OFunc"
+   :Dimensions "11"
+   :ValidRange {}
+   :Scale "1.0"
+   :Offset "0.0"
+   :FillValue "-9999.0"
+   :VariableType "SCIENCE_VARIABLE"
+   :ScienceKeywords [{:Category "sk-A"
+                       :Topic "sk-B"
+                       :Term "sk-C"}]})
 
 (defn make-variable
   "Makes a valid variable based on the given input"
@@ -65,7 +65,6 @@
    (merge
     sample-variable
     {:Name (str "Name" index)
-     :Version (str "V" index)
      :LongName (str "Long UMM-Var name " index)}
     attrs)))
 
@@ -74,7 +73,10 @@
   ([token variable]
    (create-variable token variable nil))
   ([token variable options]
-   (let [options (merge {:raw? true :token token} options)]
+   (let [options (merge {:raw? true
+                         :token token
+                         :http-options {:content-type "application/vnd.nasa.cmr.umm+json"}}
+                        options)]
      (ingest-util/parse-map-response
       (transmit-variable/create-variable (s/context) variable options)))))
 
@@ -90,7 +92,10 @@
   ([token variable-name variable]
    (update-variable token variable-name variable nil))
   ([token variable-name variable options]
-   (let [options (merge {:raw? true :token token} options)]
+   (let [options (merge {:raw? true
+                         :token token
+                         :http-options {:content-type "application/vnd.nasa.cmr.umm+json"}}
+                        options)]
      (ingest-util/parse-map-response
       (transmit-variable/update-variable (s/context) variable-name variable options)))))
 

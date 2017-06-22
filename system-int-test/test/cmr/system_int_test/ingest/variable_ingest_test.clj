@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.variable-ingest-test
   "CMR variable ingest integration tests."
   (:require
+   [clj-http.client :as client]
    [clojure.edn :as edn]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -9,6 +10,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.system-int-test.utils.variable-util :as variable-util]))
 
 (use-fixtures :each (ingest-util/reset-fixture))
@@ -216,3 +218,39 @@
             (is (= 200 (:status update-response))))
           (testing "update variable status"
             (is (= 200 (:status delete-response)))))))))
+
+(defn- ingest-variable
+  "This is a temporary function created to ingest a variable with the specified metadata.
+   Once we move the variable's CRUD API onto provider routes in CMR-4239, we should remove
+   this function and update the invalid-variable-metadata-ingest-test to use
+   ingest-util/ingest-concept function instead."
+  [token metadata]
+   (let [params {:method :post
+                 :url (url/ingest-create-variable-url)
+                 :body  metadata
+                 :content-type "application/vnd.nasa.cmr.umm+json"
+                 :headers {"Echo-Token" token}
+                 :accept :xml
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}]
+     (ingest-util/parse-ingest-response (client/request params) {})))
+
+(deftest invalid-variable-metadata-ingest-test
+  (let [acl-data (variable-util/setup-update-acl (s/context))
+        {:keys [user-name group-name group-id token grant-id]} acl-data]
+    (testing "empty request body"
+      (let [{:keys [status errors]} (ingest-variable token "")]
+        (is (= status 400))
+        (is (re-find #"XML content is too short." (first errors)))))
+
+    (testing "invalid JSON request body"
+      (let [{:keys [status errors]} (ingest-variable token "This is not a valid JSON string")]
+        (is (= status 400))
+        (is (re-find #"Invalid JSON: Unrecognized token 'This'" (first errors)))))
+
+    (testing "invalid JSON against the UMM-Var schema"
+      (let [invalid-variable-json "{\"variableName\": \"Latitude\", \"longName\": \"Latitude\"}"
+            {:keys [status errors]} (ingest-variable token invalid-variable-json)]
+        (is (= status 400))
+        (is (= "object instance has properties which are not allowed by the schema: [\"longName\",\"variableName\"]"
+               (first errors)))))))

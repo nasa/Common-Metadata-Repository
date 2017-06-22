@@ -35,7 +35,7 @@
 ;;; General Support/Utility Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- fix-ingest-concept-format
+(defn fix-ingest-concept-format
   "Fixes formats"
   [fmt]
   (if (or
