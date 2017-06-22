@@ -25,11 +25,6 @@
       :unauthorized
       (format "You do not have permission to %s a variable." (name permission-type)))))
 
-(defn- validate-variable-content-type
-  "Validates that content type sent with a variable is JSON"
-  [headers]
-  (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
-
 (defn- validate-variable-metadata
   "Validate variable metadata, throws error if the metadata is not a valid against the
    UMM variable JSON schema."
