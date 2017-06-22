@@ -123,7 +123,7 @@
         {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
     (index/wait-until-indexed)
     (is (= 400 status))
-    (is (re-find #"XML content is too short." (first errors)))))
+    (is (re-find #"Request content is too short." (first errors)))))
 
 ;; Verify that the accept header works
 (deftest granule-ingest-accept-header-response-test

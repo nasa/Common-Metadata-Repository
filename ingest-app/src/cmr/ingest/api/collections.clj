@@ -20,7 +20,7 @@
 (defn validate-collection
   [provider-id native-id request]
   (let [{:keys [body content-type params headers request-context]} request
-        concept (api-core/body->concept :collection provider-id native-id body content-type headers)
+        concept (api-core/body->concept! :collection provider-id native-id body content-type headers)
         validation-options (get-validation-options headers)]
     (api-core/verify-provider-exists request-context provider-id)
     (info (format "Validating Collection %s from client %s"
@@ -40,7 +40,7 @@
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
-    (let [concept (api-core/body->concept :collection provider-id native-id body content-type headers)
+    (let [concept (api-core/body->concept! :collection provider-id native-id body content-type headers)
           validation-options (get-validation-options headers)
           save-collection-result (ingest/save-collection
                                   request-context

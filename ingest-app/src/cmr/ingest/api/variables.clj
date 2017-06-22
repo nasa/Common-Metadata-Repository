@@ -45,7 +45,7 @@
              inherits this limitation from the real system."
   [request]
   (let [{:keys [body content-type headers request-context]} request
-        metadata (string/trim (slurp body))]
+        metadata (api-core/read-body! body)]
     (verify-variable-modification-permission request-context :update)
     (common-enabled/validate-write-enabled request-context "ingest")
     (validate-variable-metadata content-type headers metadata)
@@ -57,7 +57,7 @@
   "Processes a request to update a variable."
   [variable-key request]
   (let [{:keys [body content-type headers request-context]} request
-        metadata (string/trim (slurp body))]
+        metadata (api-core/read-body! body)]
     (verify-variable-modification-permission request-context :update)
     (common-enabled/validate-write-enabled request-context "ingest")
     (validate-variable-metadata content-type headers metadata)

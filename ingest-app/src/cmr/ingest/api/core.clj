@@ -193,6 +193,13 @@
     (assoc concept :concept-id concept-id)
     concept))
 
+(defn read-body!
+  "Returns the body content string by slurping the request body.
+  This function has the side effect of emptying the request body.
+  Don't try to read the body again after calling this function."
+  [body]
+  (string/trim (slurp body)))
+
 (defn metadata->concept
   "Create a metadata concept from the given metadata"
   [concept-type metadata content-type headers]
@@ -203,18 +210,18 @@
       (set-concept-id headers)
       (set-revision-id headers)))
 
-(defn body->concept
+(defn body->concept!
   "Create a metadata concept from the given request body.
-   This function has the side effect of emptying the request body.
-   Don't try to read the body again after calling this function."
+  This function has the side effect of emptying the request body.
+  Don't try to read the body again after calling this function."
   ([concept-type body content-type headers]
-   (let [metadata (string/trim (slurp body))]
+   (let [metadata (read-body! body)]
      (metadata->concept concept-type metadata content-type headers)))
   ([concept-type native-id body content-type headers]
-   (assoc (body->concept concept-type body content-type headers)
+   (assoc (body->concept! concept-type body content-type headers)
           :native-id native-id))
   ([concept-type provider-id native-id body content-type headers]
-   (assoc (body->concept concept-type native-id body content-type headers)
+   (assoc (body->concept! concept-type native-id body content-type headers)
           :provider-id provider-id)))
 
 (defn concept->loggable-string

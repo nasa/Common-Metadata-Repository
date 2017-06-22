@@ -18,10 +18,10 @@
   POST body. Writes rows to tables and returns task id"
   [provider-id request]
   (let [{:keys [body headers request-context]} request
-        body (string/trim (slurp body))]
+        content (api-core/read-body! body)]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id body)]
+    (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content)]
       (api-core/generate-ingest-response
         headers
         {:status 200
