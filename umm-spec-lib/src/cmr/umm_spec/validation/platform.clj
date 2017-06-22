@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.validation.platform
   "Defines validations for UMM collection platform."
   (:require
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
@@ -54,14 +55,14 @@
    The element order is ShortName, Name, Value. The values are separated by the Unicode Character 'SYMBOL FOR GROUP SEPARATOR' \u241D character."
   [duplicate-name]
   (when duplicate-name
-    (let [platform-elements (clojure.string/split duplicate-name #"\u241D")
+    (let [platform-elements (string/split duplicate-name #"\u241D")
           platform-counts (count platform-elements)
           shortname (first platform-elements)
           characteristic-name (second platform-elements)
           characteristic-value (last platform-elements)]
       ;; The case of 0 or greater than 3 shouldn't exist.  If it is either value then the validation
       ;; software is not working.
-      (if (or (< platform-counts 1) (> platform-counts 3))
+      (if-not (<= 1 platform-counts 3)
         (errors/throw-service-error (Exception. "The platform validation checking for duplicates either has 0 or more than 3 elements, neither is valid. There is a software problem."))
         (case platform-counts
           1  (format "The Platform ShortName [%s] must be unique. This record contains duplicates." shortname)
