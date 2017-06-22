@@ -59,6 +59,8 @@
   [context tag providers]
   (->> providers
        (map (partial provider-data context tag))
+       ;; Only want to include providers with EOSDIS collections
+       (remove #(zero? (get % :collections-count 0)))
        (sort-by :id)))
 
 (defn get-doi

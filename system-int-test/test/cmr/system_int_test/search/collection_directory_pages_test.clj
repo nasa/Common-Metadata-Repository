@@ -57,25 +57,25 @@
       (string/includes? body (format "%s/%s/%s" url "PROV1" tag))
       (string/includes? body (format "%s/%s/%s" url "PROV2" tag))
       (string/includes? body (format "%s/%s/%s" url "PROV3" tag))
-      (not (string/includes? body (format "%s/%s/%s" url "PROV4" tag)))
-      (string/includes? body "PROV4"))))
+      (not (string/includes? body "NOCOLLS"))
+      (not (string/includes? body "NONEOSDIS")))))
 
 (defn expected-provider1-level-links?
   [body]
   (let [url (format "%sconcepts" base-url)]
     (and
-      (string/includes? body (format "%s/%s" url "C1200000019-PROV1.html"))
+      (string/includes? body (format "%s/%s" url "C2-PROV1.html"))
       (string/includes? body "Collection Item 2")
-      (string/includes? body (format "%s/%s" url "C1200000020-PROV1.html"))
+      (string/includes? body (format "%s/%s" url "C3-PROV1.html"))
       (string/includes? body "Collection Item 3"))))
 
 (defn expected-provider2-level-links?
   [body]
   (let [url (format "%sconcepts" base-url)]
     (and
-      (string/includes? body (format "%s/%s" url "C1200000022-PROV2.html"))
+      (string/includes? body (format "%s/%s" url "C2-PROV2.html"))
       (string/includes? body "Collection Item 2")
-      (string/includes? body (format "%s/%s" url "C1200000023-PROV2.html"))
+      (string/includes? body (format "%s/%s" url "C3-PROV2.html"))
       (string/includes? body "Collection Item 3"))))
 
 (defn expected-provider3-level-links?
@@ -91,7 +91,7 @@
   [body]
   (let [url (format "%sconcepts" base-url)]
     (and
-      (string/includes? body (format "%s/%s" url "C1200000014-PROV1.html"))
+      (string/includes? body (format "%s/%s" url "C1-PROV1.html"))
       (string/includes? body "Collection Item 1"))))
 
 (def expected-over-ten-count
@@ -106,13 +106,15 @@
   need to test."
   []
   (let [[c1-p1 c2-p1 c3-p1
-         c1-p2 c2-p2 c3-p2] (for [p ["PROV1" "PROV2"]
+         c1-p2 c2-p2 c3-p2
+         c1-p4 c2-p4 c3-p4] (for [p ["PROV1" "PROV2" "NONEOSDIS"]
                                   n (range 1 4)]
                               (d/ingest-umm-spec-collection
                                p
                                (assoc exp-conv/example-collection-record
                                       :ShortName (str "s" n)
-                                      :EntryTitle (str "Collection Item " n))
+                                      :EntryTitle (str "Collection Item " n)
+                                      :concept-id (format "C%d-%s" n p))
                                {:format :umm-json
                                 :accept-format :json}))
          [c1-p3 c2-p3 c3-p3] (for [n (range 4 7)]
@@ -123,7 +125,8 @@
                                        :EntryTitle (str "Collection Item " n)
                                        :DOI (cm/map->DoiType
                                              {:DOI (str "doi" n)
-                                              :Authority (str "auth" n)}))
+                                              :Authority (str "auth" n)})
+                                       :concept-id (format "C%d-PROV3" n))
                                 {:format :umm-json
                                  :accept-format :json}))
          ;; Let's create another collection that will put the total over the
@@ -134,7 +137,8 @@
                            "PROV2"
                            (assoc exp-conv/example-collection-record
                                   :ShortName (str "s" n)
-                                  :EntryTitle (str "Collection Item " n))
+                                  :EntryTitle (str "Collection Item " n)
+                                  :concept-id (format "C%d-PROV2" n))
                            {:format :umm-json
                             :accept-format :json}))]
     ;; Wait until collections are indexed so tags can be associated with them
@@ -144,7 +148,8 @@
           notag-colls [c1-p1 c1-p2 c1-p3]
           nodoi-colls [c1-p1 c2-p1 c3-p1 c1-p2 c2-p2 c3-p2]
           doi-colls [c1-p3 c2-p3 c3-p3]
-          all-colls (flatten [over-ten-colls nodoi-colls doi-colls])
+          non-eosdis-provider-colls [c1-p4 c2-p4 c3-p4]
+          all-colls (flatten [over-ten-colls nodoi-colls doi-colls non-eosdis-provider-colls])
           tag-colls (into over-ten-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3])
           tag (tags/save-tag
                 user-token
@@ -156,7 +161,7 @@
     (is (= (count nodoi-colls) 6))
     (is (= (count doi-colls) 3))
     (is (= (count tag-colls) 27))
-    (is (= (count all-colls) 30)))))
+    (is (= (count all-colls) 33)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures
@@ -170,7 +175,8 @@
 ;; Note tha the fixtures are created out of order such that sorting can be
 ;; checked.
 (use-fixtures :once (join-fixtures
-                      [(ingest/reset-fixture {"provguid4" "PROV4"
+                      [(ingest/reset-fixture {"provguid5" "NOCOLLS"
+                                              "provguid4" "NONEOSDIS"
                                               "provguid3" "PROV3"
                                               "provguid1" "PROV1"
                                               "provguid2" "PROV2"})
@@ -226,7 +232,7 @@
                   provider tag)
         response (get-response url-path)
         body (:body response)]
-    (testing "check the status and links for PROV3"
+    (testing "check the status and links for PROV1"
       (is (= 200 (:status response)))
       (is (expected-provider1-level-links? body)))
     (testing "the collections not tagged with eosdis shouldn't show up"
@@ -242,7 +248,7 @@
                   provider tag)
         response (get-response url-path)
         body (:body response)]
-    (testing "check the status and links for PROV3"
+    (testing "check the status and links for PROV2"
       (is (= 200 (:status response)))
       (is (expected-provider2-level-links? body)))
     (testing "the collections not tagged with eosdis shouldn't show up"

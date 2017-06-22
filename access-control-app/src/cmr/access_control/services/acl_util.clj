@@ -14,6 +14,7 @@
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.transmit.metadata-db :as mdb1]
     [cmr.common-app.services.search.group-query-conditions :as gc]))
 
 (def acl-provider-id
@@ -102,3 +103,25 @@
                             (qm/string-condition :target target))
                     identity-type-condition)]
     (get-acls-by-condition context condition)))
+
+(defn sync-entry-titles-concept-ids
+  "If the given ACL is a catalog item acl with a collection identifier that includes concept-ids or
+   entry-titles, return the ACL such that both are unioned with each other."
+  [context acl]
+  (if-let [collection-identifier (get-in acl [:catalog-item-identity :collection-identifier])]
+    (let [entry-titles (:entry-titles collection-identifier)
+          concept-ids (:concept-ids collection-identifier)
+          provider-id (get-in acl [:catalog-item-identity :provider-id])
+          colls-from-entry-titles (when (seq entry-titles)
+                                    (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-titles} :collection))
+          colls-from-concept-ids (when (seq concept-ids)
+                                   (mdb1/find-concepts context {:provider-id provider-id :concept-id concept-ids} :collection))
+          collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))
+          concept-ids (map :concept-id collections)
+          entry-titles (map #(get-in % [:extra-fields :entry-title]) collections)
+          collection-identifier (-> collection-identifier
+                                    (assoc :entry-titles entry-titles)
+                                    (assoc :concept-ids concept-ids)
+                                    util/remove-nil-keys)]
+      (assoc-in acl [:catalog-item-identity :collection-identifier] collection-identifier))
+    acl))

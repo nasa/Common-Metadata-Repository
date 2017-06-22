@@ -18,18 +18,27 @@
   []
   {:datestamp (str (clj-time/today))})
 
+(def default-partner-guide
+  "Data for templates that display a link to Partner Guides. Clients should overrirde these keys
+  in their own base static and base page maps if they need to use different values."
+  {:partner-url "https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide"
+   :partner-text "Client Partner's Guide"})
+
 (defn base-static
   "Data that all static pages have in common.
 
   Note that static pages don't have any context."
   []
-  (assoc (time-page) :base-url "../../../"))
+  (merge (time-page)
+         default-partner-guide
+         {:base-url "../../../"}))
 
 (defn base-page
   "Data that all pages have in common."
   ([context]
    (base-page context "CMR"))
   ([context app-title]
-   (assoc (time-page)
-          :base-url (config/application-public-root-url context)
-          :app-title app-title)))
+   (merge (time-page)
+          default-partner-guide
+          {:base-url (config/application-public-root-url context)
+           :app-title app-title})))

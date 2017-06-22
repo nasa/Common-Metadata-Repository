@@ -159,7 +159,8 @@
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
-  (system/set-gorilla-repl-port! 8090)
+  ;; uncomment this line to start gorilla repl.
+  ;;(system/set-gorilla-repl-port! 8090)
 
   (let [run-modes @settings/run-modes]
     (when-not (empty? new-modes)

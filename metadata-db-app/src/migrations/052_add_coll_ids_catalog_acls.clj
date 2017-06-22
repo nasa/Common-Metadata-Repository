@@ -48,20 +48,4 @@
 (defn down
   "Migrates the database down from version 52."
   []
-  (println "migrations.052-add-coll-ids-catalog-acls down...")
-  (doseq [result (h/query "select * from cmr_acls where acl_identity like 'catalog-item%'")]
-    (println result)
-    (let [{:keys [id metadata deleted]} result
-          deleted (= 1 (long deleted))
-          metadata (-> metadata
-                       (util/gzip-blob->string)
-                       (edn/read-string))
-          metadata (if deleted
-                     metadata
-                     (update-in metadata [:catalog-item-identity :collection-identifier] dissoc :concept-ids))
-          metadata (-> metadata
-                       util/remove-nil-keys
-                       pr-str
-                       util/string->gzip-bytes)
-          result (assoc result :metadata metadata)]
-      (j/update! (config/db) "cmr_acls" result ["id = ?" id]))))
+  (println "migrations.052-add-coll-ids-catalog-acls down..."))
