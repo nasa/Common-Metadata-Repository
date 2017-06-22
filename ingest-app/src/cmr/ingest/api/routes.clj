@@ -116,12 +116,11 @@
       :xml
       (context "/variables" []
         (POST "/"
-              {:keys [request-context headers body]}
-              (variables/create-variable request-context headers body))
+              request
+              (variables/create-variable request))
         (PUT "/:variable-id"
-             [variable-id :as {:keys [request-context headers body]}]
-             (variables/update-variable
-              request-context headers body variable-id))
+             [variable-id :as request]
+             (variables/update-variable variable-id request))
         (DELETE "/:variable-id"
                 [variable-id :as {:keys [request-context headers]}]
                 (variables/delete-variable
