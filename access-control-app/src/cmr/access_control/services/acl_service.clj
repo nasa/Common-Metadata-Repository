@@ -53,7 +53,7 @@
   (common-enabled/validate-write-enabled context "access control")
   (v/validate-acl-save! context acl :create)
   (acl-auth/authorize-acl-action context :create acl)
-  (let [acl (acl-util/sync-entry-titles-concept-ids context :create acl)]
+  (let [acl (acl-util/sync-entry-titles-concept-ids context acl)]
     (acl-util/create-acl context acl)))
 
 (defn update-acl
@@ -74,7 +74,7 @@
       (errors/throw-service-error :invalid-data
                                   (format "ACL legacy guid cannot be updated, was [%s] and now [%s]"
                                           existing-legacy-guid legacy-guid)))
-    (let [acl (acl-util/sync-entry-titles-concept-ids context :update acl)
+    (let [acl (acl-util/sync-entry-titles-concept-ids context acl)
           new-concept (merge (acl-util/acl->base-concept context acl)
                             {:concept-id concept-id
                               :native-id (:native-id existing-concept)})

@@ -1025,6 +1025,10 @@
                             (-> catalog-item-acl
                                 (assoc-in [:catalog_item_identity :name] name)
                                 (assoc-in [:catalog_item_identity :collection_identifier] coll-id)))
+        actual->set (fn [coll-id]
+                      (-> coll-id
+                          (update :entry_titles set)
+                          (update :concept_ids set)))
         coll1 (u/save-collection {:entry-title "coll1 entry title"
                                   :short-name "coll1"
                                   :native-id "coll1"
@@ -1067,20 +1071,21 @@
                                                        :entry_titles ["coll2 entry title"
                                                                       "coll3 entry title"]})
                             {:token token})
-        expected-collection-identifier {:concept_ids [coll3 coll2 coll1]
-                                        :entry_titles ["coll3 entry title"
-                                                       "coll2 entry title"
-                                                       "coll1 entry title"]}
-        expected-collection-identifier2 {:concept_ids [coll4 coll3 coll2 coll1]
-                                         :entry_titles ["coll4 entry title"
-                                                        "coll3 entry title"
+        expected-collection-identifier {:concept_ids #{coll1 coll2 coll3}
+                                        :entry_titles #{"coll1 entry title"
                                                         "coll2 entry title"
-                                                        "coll1 entry title"]}]
+                                                        "coll3 entry title"}}
+        expected-collection-identifier2 {:concept_ids #{coll4 coll3 coll2 coll1}
+                                         :entry_titles #{"coll1 entry title"
+                                                         "coll2 entry title"
+                                                         "coll3 entry title"
+                                                         "coll4 entry title"}}]
     (testing "create acls"
       (are3 [concept-id]
         (is (= expected-collection-identifier
-               (get-in (ac/get-acl (u/conn-context) concept-id {:token token})
-                       [:catalog_item_identity :collection_identifier])))
+               (actual->set
+                (get-in (ac/get-acl (u/conn-context) concept-id {:token token})
+                        [:catalog_item_identity :collection_identifier]))))
 
         "Only entry-titles"
         (:concept_id acl1)
@@ -1094,7 +1099,7 @@
         "Disjoint entry-titles and concept-ids"
         (:concept_id acl4)))
 
-    (testing "update acls add collection"
+    (testing "update acls add collection via concept-ids"
       (ac/update-acl (u/conn-context)
                      (:concept_id acl4)
                      (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3 coll4]
@@ -1104,8 +1109,9 @@
 
                      {:token token})
       (is (= expected-collection-identifier2
-             (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
-                     [:catalog_item_identity :collection_identifier]))))
+             (actual->set
+              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+                      [:catalog_item_identity :collection_identifier])))))
 
     (testing "update acls remove collection"
       (ac/update-acl (u/conn-context)
@@ -1117,18 +1123,22 @@
 
                      {:token token})
       (is (= expected-collection-identifier
-             (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
-                     [:catalog_item_identity :collection_identifier]))))
+             (actual->set
+              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+                      [:catalog_item_identity :collection_identifier])))))
 
-    (testing "update acls only entry-titles"
+    (testing "update acls via entry-titles"
       (ac/update-acl (u/conn-context)
                      (:concept_id acl4)
-                     (make-catalog-item "acl4" {:entry_titles ["coll1 entry title"
+                     (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3]
+                                                :entry_titles ["coll1 entry title"
                                                                "coll2 entry title"
                                                                "coll3 entry title"
                                                                "coll4 entry title"]})
 
+
                      {:token token})
       (is (= expected-collection-identifier2
-             (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
-                     [:catalog_item_identity :collection_identifier]))))))
+             (actual->set
+              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+                      [:catalog_item_identity :collection_identifier])))))))

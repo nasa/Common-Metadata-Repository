@@ -106,18 +106,13 @@
 
 (defn sync-entry-titles-concept-ids
   "If the given ACL is a catalog item acl with a collection identifier that includes concept-ids or
-   entry-titles, return ACL such that both are a unioned with each other for :create action. If action is
-   :update and there are only entry-titles, then sync against entry-titles, otherwise sync against concept-ids.
-   If there are no concept-ids or entry-titles, acl remains unchanged."
-  [context action acl]
+   entry-titles, return the ACL such that both are a unioned with each other."
+  [context acl]
   (if-let [collection-identifier (get-in acl [:catalog-item-identity :collection-identifier])]
     (let [entry-titles (:entry-titles collection-identifier)
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
-          colls-from-entry-titles (when (and (seq entry-titles)
-                                             (or (and (empty? concept-ids)
-                                                      (= action :update))
-                                                 (= action :create)))
+          colls-from-entry-titles (when (seq entry-titles)
                                     (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-titles} :collection))
           colls-from-concept-ids (when (seq concept-ids)
                                    (mdb1/find-concepts context {:provider-id provider-id :concept-id concept-ids} :collection))
