@@ -105,8 +105,10 @@
     (get-acls-by-condition context condition)))
 
 (defn sync-entry-titles-concept-ids
-  "If the ACL is a catalog item acl with a collection identifier that includes concept-ids or
-   entry-titles, return ACL such that both are a union of each list"
+  "If the given ACL is a catalog item acl with a collection identifier that includes concept-ids or
+   entry-titles, return ACL such that both are a unioned with each other for :create action. If action is
+   :update and there are only entry-titles, then sync against entry-titles, otherwise sync against concept-ids.
+   If there are no concept-ids or entry-titles, acl remains unchanged."
   [context action acl]
   (if-let [collection-identifier (get-in acl [:catalog-item-identity :collection-identifier])]
     (let [entry-titles (:entry-titles collection-identifier)
