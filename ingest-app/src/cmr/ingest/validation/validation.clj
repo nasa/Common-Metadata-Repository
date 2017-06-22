@@ -43,7 +43,7 @@
   "Validates the metadata length is not unreasonable."
   [concept]
   (when (<= (count (:metadata concept)) 4)
-    (errors/throw-service-error :bad-request "XML content is too short.")))
+    (errors/throw-service-error :bad-request "Request content is too short.")))
 
 (defn validate-concept-request
   "Validates the initial request to ingest a concept."

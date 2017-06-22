@@ -241,7 +241,7 @@
     (testing "empty request body"
       (let [{:keys [status errors]} (ingest-variable token "")]
         (is (= status 400))
-        (is (re-find #"XML content is too short." (first errors)))))
+        (is (re-find #"Request content is too short." (first errors)))))
 
     (testing "invalid JSON request body"
       (let [{:keys [status errors]} (ingest-variable token "This is not a valid JSON string")]

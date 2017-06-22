@@ -166,13 +166,13 @@
           response (ingest/ingest-concept concept-with-empty-body
                                           {:accept-format :json :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (re-find #"XML content is too short." (first errors)))))
+      (is (re-find #"Request content is too short." (first errors)))))
   (testing "xml response"
     (let [concept-with-empty-body  (assoc (data-umm-c/collection-concept {}) :metadata "")
           response (ingest/ingest-concept concept-with-empty-body
                                           {:accept-format :xml :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"XML content is too short." (first errors))))))
+      (is (re-find #"Request content is too short." (first errors))))))
 
 ;; Verify that XML is returned for ingest errros when the headers aren't set
 (deftest collection-ingest-with-errors-no-accept-header-test
@@ -181,7 +181,7 @@
           response (ingest/ingest-concept concept-with-empty-body
                                           {:raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"XML content is too short." (first errors))))))
+      (is (re-find #"Request content is too short." (first errors))))))
 
 ;; Verify that the accept header works with deletions
 (deftest delete-collection-with-accept-header-test
@@ -344,7 +344,7 @@
         {:keys [status errors]} (ingest/ingest-concept concept-with-empty-body)]
     (index/wait-until-indexed)
     (is (= status 400))
-    (is (re-find #"XML content is too short." (first errors)))))
+    (is (re-find #"Request content is too short." (first errors)))))
 
 ;; Verify old DeleteTime concept results in 400 error.
 (deftest old-delete-time-collection-ingest-test

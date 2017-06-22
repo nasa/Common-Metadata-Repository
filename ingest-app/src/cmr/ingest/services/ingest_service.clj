@@ -96,8 +96,8 @@
 
 (defn- concept-json->concept
   "Returns the concept for the given concept JSON string.
-   This is a temporary function and will be replaced by the UMM parse-metadata function once
-   UMM-Var and UMM-Service are fully supported in UMM-Spec."
+  This is a temporary function and will be replaced by the UMM parse-metadata function once
+  UMM-Var and UMM-Service are fully supported in UMM-Spec."
   [json-str]
   (util/map-keys->kebab-case
    (json/parse-string json-str true)))

@@ -42,7 +42,7 @@
   (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-service-content-type headers)
-  (let [metadata (string/trim (slurp body))]
+  (let [metadata (api-core/read-body! body)]
     (api-core/generate-ingest-response
      headers
      (ingest/create-service context metadata))))
@@ -53,7 +53,7 @@
   (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-service-content-type headers)
-  (let [metadata (string/trim (slurp body))]
+  (let [metadata (api-core/read-body! body)]
     (api-core/generate-ingest-response
      headers
      (ingest/update-service context service-key metadata))))
