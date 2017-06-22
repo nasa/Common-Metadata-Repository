@@ -35,7 +35,7 @@
 ;;; General Support/Utility Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- fix-ingest-concept-format
+(defn fix-ingest-concept-format
   "Fixes formats"
   [fmt]
   (if (or
@@ -94,19 +94,13 @@
           {:keys [revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))
 
-(defmulti concept-json->concept
-  "Converts the concept in JSON format to a standard Clojure data structure. It
-  is expected that this function will be used to parse a request's body."
-  type)
-
-(defmethod concept-json->concept java.io.ByteArrayInputStream
-  [data]
-  (concept-json->concept (slurp data)))
-
-(defmethod concept-json->concept java.lang.String
-  [data]
+(defn- concept-json->concept
+  "Returns the concept for the given concept JSON string.
+  This is a temporary function and will be replaced by the UMM parse-metadata function once
+  UMM-Var and UMM-Service are fully supported in UMM-Spec."
+  [json-str]
   (util/map-keys->kebab-case
-   (json/parse-string data true)))
+   (json/parse-string json-str true)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Service Functions

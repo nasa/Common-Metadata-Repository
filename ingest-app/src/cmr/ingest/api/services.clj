@@ -2,6 +2,7 @@
   "Service ingest functions in support of the ingest API."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.log :refer [debug info warn error]]
@@ -41,9 +42,10 @@
   (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-service-content-type headers)
-  (api-core/generate-ingest-response
-   headers
-   (ingest/create-service context body)))
+  (let [metadata (api-core/read-body! body)]
+    (api-core/generate-ingest-response
+     headers
+     (ingest/create-service context metadata))))
 
 (defn update-service
   "Processes a request to update a service."
@@ -51,6 +53,7 @@
   (verify-service-modification-permission context :update)
   (common-enabled/validate-write-enabled context "ingest")
   (validate-service-content-type headers)
-  (api-core/generate-ingest-response
-   headers
-   (ingest/update-service context service-key body)))
+  (let [metadata (api-core/read-body! body)]
+    (api-core/generate-ingest-response
+     headers
+     (ingest/update-service context service-key metadata))))
