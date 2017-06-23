@@ -1,20 +1,21 @@
 (ns cmr.virtual-product.services.virtual-product-service
   "Handles ingest events by filtering them to only events that matter for the virtual products and
   applies equivalent updates to virtual products."
-  (:require [cmr.transmit.metadata-db :as mdb]
-            [cmr.transmit.ingest :as ingest]
-            [cmr.message-queue.services.queue :as queue]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.umm.umm-core :as umm]
-            [cmr.umm.umm-granule :as umm-g]
-            [cmr.common.mime-types :as mime-types]
-            [cmr.common.concepts :as concepts]
-            [cmr.common.services.errors :as errors]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.message-queue.config :as queue-config]
-            [cmr.common.util :as u :refer [defn-timed]]
-            [cmr.virtual-product.config :as config]
-            [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
+  (:require
+   [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mime-types]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u :refer [defn-timed]]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.ingest :as ingest]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.umm.umm-core :as umm]
+   [cmr.umm.umm-granule :as umm-g]
+   [cmr.virtual-product.config :as config]
+   [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
 
 (def ^:private num-retries-delete-not-found
   "Number of retries for not found error during deletion of source granule.
@@ -42,7 +43,7 @@
   (let [queue-broker (get-in context [:system :queue-broker])
         queue-name (config/virtual-product-queue-name)]
     (dotimes [n (config/queue-listener-count)]
-      (queue/subscribe queue-broker queue-name #(handle-ingest-event context %)))))
+      (queue-protocol/subscribe queue-broker queue-name #(handle-ingest-event context %)))))
 
 (def source-provider-id-entry-titles
   "A set of the provider id entry titles for the source collections."
@@ -251,4 +252,3 @@
         (let [annotated-delete-event (annotate-granule-delete-event context annotated-event)]
           (when (virtual-granule-event? annotated-delete-event)
             (apply-source-granule-delete-event context annotated-delete-event)))))))
-

@@ -2,7 +2,7 @@
  (:require
   [cmr.ingest.config :as config]
   [cmr.ingest.services.bulk-update-service :as bulk-update]
-  [cmr.message-queue.services.queue :as queue]))
+  [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
 (defmulti handle-provider-event
   "Handle the various actions that can be requested for a provider via the provider-queue"
@@ -35,6 +35,6 @@
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
     (dotimes [n (config/ingest-queue-listener-count)]
-      (queue/subscribe queue-broker
-                       (config/ingest-queue-name)
-                       #(handle-provider-event context %)))))
+      (queue-protocol/subscribe queue-broker
+                                (config/ingest-queue-name)
+                                #(handle-provider-event context %)))))

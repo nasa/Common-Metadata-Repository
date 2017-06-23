@@ -18,6 +18,7 @@
    [cmr.common.services.health-helper :as hh]
    [cmr.common.util :as u]
    [cmr.message-queue.config :as config]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue])
   (:import
    (cmr.message_queue.test ExitException)
@@ -172,7 +173,7 @@
        redrive-policy (str "{\"maxReceiveCount\":\"5\", \"deadLetterTargetArn\": \"" dlq-arn "\"}")
        ;; create the primary queue
        queue-url (.getQueueUrl (.createQueue sqs-client q-name))
-       q-attrs (HashMap. {"RedrivePolicy" redrive-policy 
+       q-attrs (HashMap. {"RedrivePolicy" redrive-policy
                           "VisibilityTimeout" (queue-visibility-timeout q-name)})
        set-queue-attrs-request (doto (SetQueueAttributesRequest.)
                                      (.setAttributes q-attrs)
@@ -294,7 +295,7 @@
     this)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  queue/Queue
+  queue-protocol/Queue
 
   (publish-to-queue
     [this queue-name msg]
@@ -346,7 +347,7 @@
     [this]
     ;; try to get a list of queues for the first topic (exchange) to test the connection to SNS/SQS
     (try
-      (queue/get-queues-bound-to-exchange this (first exchanges))
+      (queue-protocol/get-queues-bound-to-exchange this (first exchanges))
       {:ok? true}
       (catch Throwable e
         {:ok? false :msg (.getMessage e)}))))
