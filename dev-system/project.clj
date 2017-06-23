@@ -63,11 +63,11 @@
                (println (slurp "resources/text/banner.txt"))
                (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-             "-Dclojure.compiler.direct-linking=true"
-             ;; Enable logging in jetty.
-             "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
-             "-Dorg.eclipse.jetty.LEVEL=INFO"
-             "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
+             "-Dclojure.compiler.direct-linking=true"]
+             ;; Uncomment to enable logging in jetty.
+             ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
+             ; "-Dorg.eclipse.jetty.LEVEL=INFO"
+             ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
   :profiles {
     :dev-dependencies {:dependencies [[ring-mock "0.1.5"]
                                       [org.clojure/tools.namespace "0.2.11"]
