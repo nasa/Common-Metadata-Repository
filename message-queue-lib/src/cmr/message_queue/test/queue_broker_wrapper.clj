@@ -5,13 +5,15 @@
   every message sent to the message queue. It has the ability to wait until each one of these
   messages has been processed. For this to work we have to use the same queue broker wrapper
   instance on the sender and receiver. This means they both need to be in the same JVM instance."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.message-queue.services.queue :as queue]
-            [cmr.message-queue.config :as iconfig]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [clojure.set :as set]
-            [cmr.common.util :as util]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.util :as util]
+   [cmr.message-queue.config :as iconfig]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+   [cmr.message-queue.services.queue :as queue]))
 
 (def ^:const ^:private valid-action-types
   "A set of the valid action types for a message queue:
@@ -19,7 +21,6 @@
   :process - Message has been processed."
   #{:enqueue
     :process})
-
 
 (defn- append-to-message-queue-history
   "Create a message queue history map and append it to the queue history given.
@@ -117,7 +118,7 @@
     (update-message-queue-history broker queue-name :enqueue tagged-msg :initial)
 
     ;; Mark the enqueue as failed if we are timing things out or it fails
-    (if (or @timeout?-atom (not (queue/publish-to-queue queue-broker queue-name tagged-msg)))
+    (if (or @timeout?-atom (not (queue-protocol/publish-to-queue queue-broker queue-name tagged-msg)))
       (do
         (update-message-queue-history broker queue-name :enqueue tagged-msg :failure)
         false)
@@ -127,7 +128,7 @@
   "Publishes a message to the exchange and captures the actions with the queue history of the
   exchanges associated queues."
   [broker exchange-name msg]
-  (let [queues (queue/get-queues-bound-to-exchange (:queue-broker broker) exchange-name)
+  (let [queues (queue-protocol/get-queues-bound-to-exchange (:queue-broker broker) exchange-name)
         results (for [queue-name queues]
                   (publish-to-queue broker queue-name msg))]
     (every? identity results)))
@@ -230,7 +231,7 @@
     (update-in this [:queue-broker] #(lifecycle/stop % system)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  queue/Queue
+  queue-protocol/Queue
 
   (publish-to-queue
     [this queue-name msg]
@@ -243,14 +244,14 @@
   (subscribe
     [this queue-name handler]
     ;; Wrap the handler with another function to allow counting retries etc.
-    (queue/subscribe queue-broker queue-name (handler-wrapper this queue-name handler)))
+    (queue-protocol/subscribe queue-broker queue-name (handler-wrapper this queue-name handler)))
 
   (reset
     [this]
     (reset! resetting?-atom true)
     (try
       (wait-for-terminal-states this)
-      (queue/reset queue-broker)
+      (queue-protocol/reset queue-broker)
       (reset! id-sequence-atom 0)
       (reset! message-queue-history-atom {})
       (finally
@@ -258,7 +259,7 @@
 
   (health
     [this]
-    (queue/health queue-broker)))
+    (queue-protocol/health queue-broker)))
 
 (record-pretty-printer/enable-record-pretty-printing BrokerWrapper)
 

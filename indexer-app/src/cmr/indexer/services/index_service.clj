@@ -27,6 +27,7 @@
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
     [cmr.message-queue.config :as qcfg]
     [cmr.message-queue.services.queue :as queue]
+    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
     [cmr.transmit.cubby :as cubby]
     [cmr.transmit.echo.rest :as rest]
     [cmr.transmit.index-set :as tis]
@@ -526,7 +527,7 @@
    :index-set tis/get-index-set-health
    :message-queue (fn [context]
                     (when-let [qb (get-in context [:system :queue-broker])]
-                      (queue/health qb)))})
+                      (queue-protocol/health qb)))})
 
 (defn health
   "Returns the health state of the app."

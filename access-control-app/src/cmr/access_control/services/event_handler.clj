@@ -3,13 +3,13 @@
   (:require
     [cmr.access-control.config :as config]
     [cmr.access-control.data.access-control-index :as index]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.message-queue.services.queue :as queue]
-    [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm-spec.acl-matchers :as acl-matchers]
     [cmr.access-control.services.acl-service :as acl-service]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
     [cmr.transmit.config :as transmit-config]
-    [cmr.common.concepts :as concepts]))
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
 (defmulti handle-provider-event
   "Handle the various messages that are posted to the provider queue.
@@ -107,9 +107,9 @@
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
     (dotimes [n (config/index-queue-listener-count)]
-      (queue/subscribe queue-broker
+      (queue-protocol/subscribe queue-broker
                        (config/provider-queue-name)
                        #(handle-provider-event context %))
-      (queue/subscribe queue-broker
+      (queue-protocol/subscribe queue-broker
                        (config/index-queue-name)
                        #(handle-indexing-event context %)))))

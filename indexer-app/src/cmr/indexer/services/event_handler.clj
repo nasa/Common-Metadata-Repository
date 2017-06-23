@@ -1,13 +1,14 @@
 (ns cmr.indexer.services.event-handler
   "Provides functions for subscribing to and handling events."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.indexer.config :as config]
-            [cmr.indexer.services.index-service :as indexer]
-            [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-            [cmr.message-queue.services.queue :as queue]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cc]))
+  (:require
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.indexer.config :as config]
+   [cmr.indexer.services.index-service :as indexer]
+   [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.concepts :as cc]))
 
 ;; Isolating provider events from other ingest events to prevent them from ever being processed
 ;; by the normal ingest handlers as that can lead to a swamped ingest queue. These handlers
@@ -79,14 +80,14 @@
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
     (dotimes [n (config/provider-queue-listener-count)]
-      (queue/subscribe queue-broker
-                       (config/provider-queue-name)
-                       #(handle-provider-event context %)))
+      (queue-protocol/subscribe queue-broker
+                                (config/provider-queue-name)
+                                #(handle-provider-event context %)))
     (dotimes [n (config/index-queue-listener-count)]
-      (queue/subscribe queue-broker
-                       (config/index-queue-name)
-                       #(handle-ingest-event context false %)))
+      (queue-protocol/subscribe queue-broker
+                                (config/index-queue-name)
+                                #(handle-ingest-event context false %)))
     (dotimes [n (config/all-revisions-index-queue-listener-count)]
-      (queue/subscribe queue-broker
-                       (config/all-revisions-index-queue-name)
-                       #(handle-ingest-event context true %)))))
+      (queue-protocol/subscribe queue-broker
+                                (config/all-revisions-index-queue-name)
+                                #(handle-ingest-event context true %)))))

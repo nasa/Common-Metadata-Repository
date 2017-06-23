@@ -1,8 +1,9 @@
 (ns cmr.message-queue.test.queue.memory-queue
-  (:require [clojure.test :refer :all]
-            [cmr.message-queue.queue.memory-queue :as mq]
-            [cmr.message-queue.services.queue :as q]
-            [cmr.common.lifecycle :as l]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.lifecycle :as l]
+   [cmr.message-queue.queue.memory-queue :as mq]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
 (defmacro is-wait
   "Works like is but will repeatedly run the test code until it passes or times out."
@@ -22,9 +23,9 @@
 
 (defn success-handler
   "A handler that doesn't do anything"
-  [& args]
+  [& args])
   ;; do nothing
-  )
+
 
 (defn retry-handler
   "A handler that forces a retry"
@@ -41,7 +42,7 @@
          message-capturing-handler (fn [msg]
                                      (swap! msgs-received conj msg)
                                      (resp-fn))]
-     (q/subscribe qb queue-name message-capturing-handler)
+     (queue-protocol/subscribe qb queue-name message-capturing-handler)
      msgs-received)))
 
 (deftest shutdown-test
@@ -56,8 +57,8 @@
 
     (testing "shutdown with subscribers"
       (let [qb (make-qb)]
-        (q/subscribe qb "a" success-handler)
-        (q/subscribe qb "a" success-handler)
+        (queue-protocol/subscribe qb "a" success-handler)
+        (queue-protocol/subscribe qb "a" success-handler)
         (l/stop qb nil)))))
 
 (deftest queue-success-test
@@ -67,7 +68,7 @@
       (let [msgs-received (add-message-capturing-handler qb "a")
             messages [{:id 1} {:id 2} {:id 3}]]
         (doseq [msg messages]
-          (is (q/publish-to-queue qb "a" msg)))
+          (is (queue-protocol/publish-to-queue qb "a" msg)))
         (is-wait (= messages @msgs-received)))
       (finally
         (l/stop qb nil)))))
@@ -77,7 +78,7 @@
                       {:queues ["a"]}) nil)]
     (try
       (let [msgs-received (add-message-capturing-handler qb "a" retry-handler)]
-        (is (q/publish-to-queue qb "a" {:id 1}))
+        (is (queue-protocol/publish-to-queue qb "a" {:id 1}))
         (is-wait (= [{:id 1}
                      {:id 1 :retry-count 1}
                      {:id 1 :retry-count 2}
@@ -94,10 +95,10 @@
     (try
       (let [messages [{:id 1} {:id 2} {:id 3}]]
         (doseq [msg messages]
-          (is (q/publish-to-queue qb "a" msg)))
-        (q/reset qb)
+          (is (queue-protocol/publish-to-queue qb "a" msg)))
+        (queue-protocol/reset qb)
         (let [msgs-received (add-message-capturing-handler qb "a")]
-          (is (q/publish-to-queue qb "a" {:id 4}))
+          (is (queue-protocol/publish-to-queue qb "a" {:id 4}))
           (is-wait (= [{:id 4}] @msgs-received))))
       (finally
         (l/stop qb nil)))))
@@ -112,9 +113,8 @@
             b-msgs-received (add-message-capturing-handler qb "b")
             messages [{:id 1} {:id 2} {:id 3}]]
         (doseq [msg messages]
-          (is (q/publish-to-exchange qb "e" msg)))
+          (is (queue-protocol/publish-to-exchange qb "e" msg)))
         (is-wait (= messages @a-msgs-received))
         (is-wait (= messages @b-msgs-received)))
       (finally
         (l/stop qb nil)))))
-
