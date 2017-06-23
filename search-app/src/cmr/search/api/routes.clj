@@ -252,11 +252,9 @@
                           (dissoc :has-granules-created-at)
                           lp/process-legacy-psa)]
 
-    (info (format "Found %d collections. Were they distinct? - %s"
-                  (count collection-ids)
-                  (distinct? collection-ids)))
-
     (if (empty? collection-ids)
+      ;; collections-with-new-granules-search already has an empty response object,
+      ;; as well as time-took, which is why it's being passed to search-response here
       (search-response ctx collections-with-new-granules-search)
       (find-concepts-by-parameters ctx path-w-extension search-params headers body))))
 
