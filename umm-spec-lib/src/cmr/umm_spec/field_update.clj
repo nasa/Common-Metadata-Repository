@@ -3,6 +3,7 @@
  (:require
   [cmr.common.mime-types :as mt]
   [cmr.common.util :as util]
+  [cmr.umm-spec.date-util :as date-util]
   [cmr.umm-spec.umm-spec-core :as spec-core]))
 
 (defn field-update-functions
@@ -72,5 +73,6 @@
         update-format (or update-format (:format concept))
         umm (spec-core/parse-metadata
              context concept-type format metadata {:sanitize? (= :umm-json (mt/format-key update-format))})
-        umm (apply-update update-type umm update-field update-value find-value)]
+        umm (apply-update update-type umm update-field update-value find-value)
+        umm (date-util/update-metadata-dates umm "UPDATE")]
     (spec-core/generate-metadata context umm update-format)))

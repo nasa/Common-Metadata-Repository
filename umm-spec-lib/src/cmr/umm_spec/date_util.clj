@@ -4,7 +4,7 @@
    [clj-time.format :as f]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.time-keeper :as tk]
+   [cmr.common.time-keeper :as time-keeper]
    [cmr.common.xml.parse :refer :all]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
@@ -25,7 +25,7 @@
 (defn with-current
   "Returns x if not nil, or else the current-date-time placeholder value."
   ([x]
-   (or x (tk/now))))
+   (or x (time-keeper/now))))
 
 (defn without-default
   "Returns x if it is not the default date value string."
@@ -74,6 +74,13 @@
       (f/unparse (f/formatters :date-time) parsed-date)
       date)
     date))
+
+(defn update-metadata-dates
+  "Update the Date to current date, for a given Type: date-type, in MetadataDates of a umm record"
+  [umm date-type]
+  (let [new-metadata-dates (concat (remove #(= date-type (:Type %)) (:MetadataDates umm)) 
+                                   [{:Date (time-keeper/now) :Type date-type}])]
+    (assoc umm :MetadataDates new-metadata-dates)))
 
 (defn- data-date-getter
   [date-type]
