@@ -81,5 +81,5 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient"]
+            "check-deps" ["with-profile" "lint" "ancient" "all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]})
