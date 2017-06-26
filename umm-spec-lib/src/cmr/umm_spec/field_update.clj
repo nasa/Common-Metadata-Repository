@@ -2,8 +2,8 @@
  "Functions to apply an update of a particular type to a field-translation"
  (:require
   [cmr.common.mime-types :as mt]
-  [cmr.common.time-keeper :as time-keeper]
   [cmr.common.util :as util]
+  [cmr.umm-spec.date-util :as date-util]
   [cmr.umm-spec.umm-spec-core :as spec-core]))
 
 (defn field-update-functions
@@ -73,11 +73,6 @@
         update-format (or update-format (:format concept))
         umm (spec-core/parse-metadata
              context concept-type format metadata {:sanitize? (= :umm-json (mt/format-key update-format))})
-        metadata-dates (:MetadataDates umm)
-        metadata-dates-without-update (remove #(= "UPDATE" (:Type %)) metadata-dates)
-        ;;not sure if the MetadataDates/UPDATE values should be preserved or not.
-        ;;new-metadata-dates (concat metadata-dates [{:Date (time-keeper/now) :Type "UPDATE"}])
-        new-metadata-dates (concat metadata-dates-without-update [{:Date (time-keeper/now) :Type "UPDATE"}])
         umm (apply-update update-type umm update-field update-value find-value)
-        umm (assoc umm :MetadataDates new-metadata-dates)]
+        umm (date-util/update-metadata-dates umm "UPDATE")]
     (spec-core/generate-metadata context umm update-format)))
