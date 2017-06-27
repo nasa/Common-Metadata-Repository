@@ -18,8 +18,8 @@
    :cmr-only true
    :small false})
 
-(def ^:private ^:const PROVIDER_ID_MAX_LENGTH 10)
-(def ^:private ^:const PROVIDER_SHORT_NAME_MAX_LENGTH 128)
+(def ^:const PROVIDER_ID_MAX_LENGTH 10)
+(def ^:const PROVIDER_SHORT_NAME_MAX_LENGTH 128)
 
 (defn- provider-id-length-validation
   "Validates the provider id isn't too long."
