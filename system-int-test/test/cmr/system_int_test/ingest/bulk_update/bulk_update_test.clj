@@ -106,9 +106,9 @@
                                (:status-message %)))
                       (:collection-statuses collection-response))))))
 
-    (testing "Data center find and replace"
+    (testing "Data center find and update"
       (let [bulk-update-body {:concept-ids concept-ids
-                              :update-type "FIND_AND_REPLACE"
+                              :update-type "FIND_AND_UPDATE"
                               :update-field "DATA_CENTERS"
                               :find-value {:ShortName "NSID"}
                               :update-value {:ShortName "NSIDC"
