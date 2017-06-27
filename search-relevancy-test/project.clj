@@ -3,7 +3,8 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-relevancy-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
