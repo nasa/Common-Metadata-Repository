@@ -165,7 +165,21 @@ _Note the absence of provider-id for tag, tag association, humanizer and variabl
 
 ### Setting up the database
 
-There are two ways database operations can be done. It can happen through leiningen commands for local development or using the built uberjar.
+There are two ways database operations can be done. It can happen through
+leiningen commands for local development or using the built uberjar.
+
+These commands run against the CMR database and as such, you will need
+Oracle installed or to be running an Oracle VM in order to perform migration
+tasks. Furthermore, the associated environment variables will need to be
+set. As mentioned in the top-level CMR `README` in the "Testing CMR" section,
+the required environemnt variables and their values can be provided to you by
+a CMR core dev.
+
+The CMR projects that currently support migrations are:
+
+* `ingest-app`
+* `bootstrap-app`
+* `metadata-db-app`
 
 #### leiningen commands
 
@@ -191,6 +205,16 @@ completely.
 lein drop-user
 ```
 
+#### CMR-wide
+
+The Oracle setup script in `dev-system/support` demonstrates how the above
+`lein` commands are used to create database users and run migrations for
+the ingest, boostrap, and metadata-db apps.
+
+Note that, depending upon how up-to-date your local `.jar` files are, you
+may first need to run `lein install-with-content!` in the top-level CMR
+directory first.
+
 #### java commands through uberjar
 
 1. Create the user
@@ -212,6 +236,7 @@ You can provider additional arguments to migrate the database to a given version
 ```
 CMR_DB_URL=thin:@localhost:1521:orcl CMR_METADATA_DB_PASSWORD=****** java -cp target/cmr-metadata-db-app-0.1.0-SNAPSHOT-standalone.jar cmr.db drop-user
 ```
+
 
 ## General Workflow
 
