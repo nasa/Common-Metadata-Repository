@@ -213,7 +213,12 @@
 
 (defn reset
   "Resets the development environment, taking optional keyword arguments for
-  various run modes (see the docstring for `set-modes!` for more details).
+  various run modes, e.g.:
+  ```
+  (reset :db :external)
+  ```
+  See the docstring for `set-modes!` for more details.
+
   Environment resetting includes the reloading of any changed namespaces and
   the restarting the CMR services.
 
