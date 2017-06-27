@@ -2,6 +2,7 @@
   "Adds `provider_id` column to variables table."
   (:require
    [clojure.java.jdbc :as j]
+   [cmr.metadata-db.services.provider-validation :as provider-validation]
    [config.mdb-migrate-helper :as h]))
 
 (defn up
@@ -12,10 +13,10 @@
   ;; don't care about what's in the database right now, and the new field
   ;; can't be null, so:
   (h/sql "TRUNCATE TABLE METADATA_DB.cmr_variables")
-  (h/sql (str "ALTER TABLE METADATA_DB.cmr_variables "
-              "ADD provider_id VARCHAR(255) NOT NULL "
-              "ADD CONSTRAINT variables_p_uniq UNIQUE (provider_id)"))
-  (h/sql "CREATE INDEX variables_p_vn ON METADATA_DB.cmr_variables (provider_id, variable_name)"))
+  (h/sql "TRUNCATE TABLE METADATA_DB.cmr_variable_associations")
+  (h/sql (format (str "ALTER TABLE METADATA_DB.cmr_variables "
+                      "ADD provider_id VARCHAR(%s) NOT NULL")
+                 provider-validation/PROVIDER_ID_MAX_LENGTH)))
 
 (defn down
   "Migrates the database down from version 58 to 57."
