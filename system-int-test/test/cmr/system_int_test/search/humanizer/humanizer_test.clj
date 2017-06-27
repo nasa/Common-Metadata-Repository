@@ -12,7 +12,6 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.config :as transmit-config]
-   [cmr.system-int-test.utils.url-helper :as url-helper]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
