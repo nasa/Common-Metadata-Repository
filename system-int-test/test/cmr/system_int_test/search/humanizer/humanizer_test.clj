@@ -1,12 +1,19 @@
 (ns cmr.system-int-test.search.humanizer.humanizer-test
   "This tests the CMR Search API's humanizers capabilities"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.humanizer-util :as hu]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.access-control.test.util :as u]))
+  (:require
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.access-control.test.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.humanizer-util :as hu]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.system-int-test.utils.url-helper :as url-helper]
+   [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -18,7 +25,7 @@
 (defn string-of-length
   "Creates a string of the specified length"
   [n]
-  (str/join (repeat n "x")))
+  (string/join (repeat n "x")))
 
 (deftest update-humanizers-no-permission-test
   (testing "Create without token"
@@ -128,3 +135,68 @@
                                :body humanizers}]
 
       (is (= expected-humanizers (hu/get-humanizers))))))
+
+(deftest humanizer-report-test
+  (testing "Humanizer report saved successfully"
+    (let [humanizers (hu/make-humanizers)
+          ;; Ingest humanizers
+          _ (hu/update-humanizers transmit-config/mock-echo-system-token humanizers)
+          returned-humanizers (:body (hu/get-humanizers))
+          ;; sanity check
+          _ (is (= humanizers returned-humanizers))
+          ;; Ingest collections that will use those humanizers
+          coll1 (d/ingest-umm-spec-collection
+                  "PROV1"
+                  (assoc exp-conv/example-collection-record
+                         :ScienceKeywords [{:Category "earth science"
+                                             :Topic "Bioosphere"
+                                             :Term "Term1"}]
+                         :concept-id "C1-PROV1")
+                  {:format :umm-json
+                   :accept-format :json})
+
+          _ (index/wait-until-indexed)
+          ;; Humanizers use the cached collection metadata - clear to make sure we have the latest
+          _ (search/refresh-collection-metadata-cache)
+          expected-report1 (str "provider,concept_id,short_name,version,original_value,"
+                                "humanized_value\n"
+                                "PROV1,C1-PROV1,Short,V5,Bioosphere,Biosphere\n")
+          report1 (search/get-humanizers-report)]
+      (is (= expected-report1 report1))
+
+      (testing "Humanizer report can be force regenerated"
+        (let [humanizers (conj (hu/make-humanizers)
+                               {:source_value "Term2"
+                                :replacement_value "Best Term Ever"
+                                :field "science_keyword"
+                                :type "alias"
+                                :reportable true
+                                :order 0})
+              _ (hu/update-humanizers transmit-config/mock-echo-system-token humanizers)
+              returned-humanizers (:body (hu/get-humanizers))
+              ;; sanity check
+              _ (is (= humanizers returned-humanizers))
+              coll2 (d/ingest-umm-spec-collection
+                      "PROV1"
+                      (assoc exp-conv/example-collection-record
+                             :ShortName "NewSN"
+                             :EntryTitle "New Entry title"
+                             :ScienceKeywords [{:Category "earth science"
+                                                 :Topic "Bioosphere"
+                                                 :Term "Term2"}]
+
+                             :concept-id "C2-PROV1")
+                      {:format :umm-json
+                       :accept-format :json})
+
+              _ (index/wait-until-indexed)
+              _ (search/refresh-collection-metadata-cache)
+              expected-report3 (str "provider,concept_id,short_name,version,original_value,"
+                                    "humanized_value\n"
+                                    "PROV1,C1-PROV1,Short,V5,Bioosphere,Biosphere\n"
+                                    "PROV1,C2-PROV1,NewSN,V5,Bioosphere,Biosphere\n"
+                                    "PROV1,C2-PROV1,NewSN,V5,Term2,Best Term Ever\n")
+              report2 (search/get-humanizers-report)
+              report3 (search/get-humanizers-report {:regenerate true})]
+          (is (= report1 report2))
+          (is (= expected-report3 report3)))))))
