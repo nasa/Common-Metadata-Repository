@@ -650,16 +650,24 @@
          :results (json/decode body)}
         response))))
 
+(defn get-humanizers-report-raw
+  "Returns the humanizers report."
+  ([]
+   (get-humanizers-report-raw {}))
+  ([params]
+   (client/get (url/humanizers-report-url) {:connection-manager (s/conn-mgr)
+                                            :query-params params
+                                            :throw-exceptions false})))
+
 (defn get-humanizers-report
   "Returns the humanizers report."
   ([]
    (get-humanizers-report {}))
   ([params]
-   (let [response (client/get (url/humanizers-report-url) {:connection-manager (s/conn-mgr)
-                                                           :query-params params})]
-    (if (= 200 (:status response))
-      (:body response)
-      response))))
+   (let [response (get-humanizers-report-raw params)]
+     (if (= 200 (:status response))
+       (:body response)
+       response))))
 
 (def now-n
   "The N value for the current time. Uses N values for date times as described in

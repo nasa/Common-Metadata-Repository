@@ -39,6 +39,9 @@
   "Handles a request to get a humanizers report"
   [context params]
   (let [regenerate? (= "true" (util/safe-lowercase (:regenerate params)))]
+    ;; Only admins can force the humanizer report to be regenerated
+    (when regenerate?
+      (acl/verify-ingest-management-permission context :update))
     {:status 200
      :headers {cr/CONTENT_TYPE_HEADER mt/csv}
      :body (hrs/humanizers-report-csv context regenerate?)}))
