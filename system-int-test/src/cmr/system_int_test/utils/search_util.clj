@@ -50,7 +50,7 @@
      (is (= 200 (:status response)))))
 
 (defn refresh-collection-metadata-cache
-  "Triggers a full refresh of the collection granule aggregate cache in the indexer."
+  "Triggers a full refresh of the collection metadata cache in the search application."
   []
   (let [response (client/post
                   (url/refresh-collection-metadata-cache-url)
@@ -651,14 +651,18 @@
         response))))
 
 (defn get-humanizers-report
-  []
-  (let [response (client/get (url/humanizers-report-url ) {:connection-manager (s/conn-mgr)})]
-   (if (= 200 (:status response))
-     (:body response)
-     response)))
+  "Returns the humanizers report."
+  ([]
+   (get-humanizers-report {}))
+  ([params]
+   (let [response (client/get (url/humanizers-report-url) {:connection-manager (s/conn-mgr)
+                                                           :query-params params})]
+    (if (= 200 (:status response))
+      (:body response)
+      response))))
 
 (def now-n
-  "The N value for the current time. Uses N values for date times as describd in
+  "The N value for the current time. Uses N values for date times as described in
   cmr.common.test.time-util."
   204)
 

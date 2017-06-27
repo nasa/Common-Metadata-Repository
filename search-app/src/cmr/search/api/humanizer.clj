@@ -6,6 +6,7 @@
    [cmr.common-app.api.routes :as cr]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
    [cmr.search.services.humanizers.humanizer-json-schema-validation :as hv]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.humanizers.humanizer-service :as humanizer-service]
@@ -36,10 +37,11 @@
 
 (defn- humanizers-report
   "Handles a request to get a humanizers report"
-  [context]
-  {:status 200
-   :headers {cr/CONTENT_TYPE_HEADER mt/csv}
-   :body (hrs/humanizers-report-csv context)})
+  [context params]
+  (let [regenerate? (= "true" (util/safe-lowercase (:regenerate params)))]
+    {:status 200
+     :headers {cr/CONTENT_TYPE_HEADER mt/csv}
+     :body (hrs/humanizers-report-csv context regenerate?)}))
 
 (def humanizers-routes
   "Routes for humanizer endpoints"
@@ -59,5 +61,5 @@
 
     ;; retrieve the humanizers report
     (GET "/report"
-         {context :request-context}
-         (humanizers-report context))))
+         {context :request-context params :params}
+         (humanizers-report context params))))

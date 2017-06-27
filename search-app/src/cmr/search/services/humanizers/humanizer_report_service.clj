@@ -12,7 +12,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.common.util :as u]
+   [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
@@ -73,8 +73,8 @@
   (let [{:keys [provider-id concept-id ShortName Version]} collection]
     (for [paths (vals h/humanizer-field->umm-paths)
           path paths
-          parents (u/get-in-all collection (drop-last path))
-          :let [parents (u/seqify parents)]
+          parents (util/get-in-all collection (drop-last path))
+          :let [parents (util/seqify parents)]
           parent parents
           :let [field (last path)
                 humanized-value (get parent (h/humanizer-key field))]
@@ -86,26 +86,27 @@
 (defn generate-humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
-  (let [[t1 collection-batches] (u/time-execution
+  (let [[t1 collection-batches] (util/time-execution
                                   (get-all-collections context))
          string-writer (StringWriter.)
          idx-atom (atom 0)]
-    (info "get-all-collections:" t1
-           "processing " (count collection-batches)
-           " batches of size" (humanizer-report-collection-batch-size))
+    (info (format "get-all-collections: %d ms. Processing %d batches of size %d"
+                  t1
+                  (count collection-batches)
+                  (humanizer-report-collection-batch-size)))
     (csv/write-csv string-writer [CSV_HEADER])
     (let [humanizers (hs/get-humanizers context)
           [t4 csv-string]
-          (u/time-execution
+          (util/time-execution
             (doseq [batch collection-batches]
               (let [[t2 humanized-rows]
-                    (u/time-execution
+                    (util/time-execution
                       (doall
                         (pmap (fn [coll]
                                 (-> (h/umm-collection->umm-collection+humanizers coll humanizers)
                                     humanized-collection->reported-rows))
                               batch)))
-                    [t3 rows] (u/time-execution
+                    [t3 rows] (util/time-execution
                                 (apply concat humanized-rows))]
                 (csv/write-csv string-writer rows)
                 (info "Batch " (swap! idx-atom inc) " Size " (count batch)
@@ -127,15 +128,6 @@
         (warn (.getMessage e) msg/returning-empty-report)
         (throw e)))))
 
-(defconfig report-cache-consistent-timeout-seconds
-  "The number of seconds between when the report cache should check with cubby
-  for data consistency.
-
-  Note this is only a 'cache sync' check; it does not cause a report
-  regeneration."
-  {:default (* 60 15) ; every 15 minutes
-   :type Long})
-
 (defn create-report-cache
   "This function creates the composite cache that is used for caching the
   humanizer report. With the given composition we get the following features:
@@ -143,7 +135,7 @@
     an ElasticSearch backend);
   * A fast access in-memory cache that sits on top of cubby, providing
     quick local results after the first call to cubby; this cache is kept
-    consistent across all instancs of CRM, so no matter which host the LB
+    consistent across all instancs of CMR, so no matter which host the LB
     serves, all the content is the same;
   * A single-threaded cache that circumvents potential race conditions
     between HTTP requests for a report and Quartz cluster jobs that save
@@ -155,9 +147,20 @@
   []
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
-    (consistent-cache/create-consistent-cache
-     {:hash-timeout-seconds (report-cache-consistent-timeout-seconds)})
+    (consistent-cache/create-consistent-cache)
     (cubby-cache/create-cubby-cache))))
+
+(defn- create-and-save-humanizer-report
+  "Helper function to create the humanizer report, save it to the cache, and return the content."
+  [context]
+  (info "Generating humanizer report.")
+  (let [[report-generation-time humanizers-report] (util/time-execution
+                                                    (safe-generate-humanizers-report-csv context))]
+    (info (format "Humanizer report generated in %d ms." report-generation-time))
+    (cache/set-value (cache/context->cache context report-cache-key)
+                     csv-report-cache-key
+                     humanizers-report)
+    humanizers-report))
 
 (defn humanizers-report-csv
   "Returns a report of the humanizers currently used in collections as a CSV.
@@ -166,20 +169,19 @@
   newly cached data.
 
   This is the function that is called by the web service."
-  [context]
-  (cache/get-value (cache/context->cache context report-cache-key)
-                   csv-report-cache-key
-                   ;; If there is a cache miss, generate the report and then
-                   ;; return its value
-                   #(safe-generate-humanizers-report-csv context)))
+  [context regenerate?]
+  (if regenerate?
+    (create-and-save-humanizer-report context)
+    (cache/get-value (cache/context->cache context report-cache-key)
+                     csv-report-cache-key
+                     ;; If there is a cache miss, generate the report and then
+                     ;; return its value
+                     #(safe-generate-humanizers-report-csv context))))
 
 ;; A job for generating the humanizers report
 (defjob HumanizerReportGeneratorJob
-  [ctx system]
-  (info "Running scheduled job for generating the humanizer report ...")
-  (let [context {:system system}]
-    (cache/reset (cache/context->cache context report-cache-key))
-    (humanizers-report-csv context)))
+  [_ctx system]
+  (create-and-save-humanizer-report {:system system}))
 
 (def humanizer-report-generator-job
   "The job definition used by the system job scheduler."
