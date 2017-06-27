@@ -503,8 +503,8 @@ The following update types are supported:
 
   * Add to existing - the update value is added to the existing list. An update value is required.
   * Clear all and replace - clear the list and replace with the update value.
-  * Find and update - replace any instance in the list that matches the find value with the update value.
-  * Find and replace - merge update value into any instance in the list that matches the find value.
+  * Find and replace - replace any instance in the list that matches the find value with the update value.
+  * Find and update - merge update value into any instance in the list that matches the find value.
   * Find and remove - remove any instance from the list that matches the find value.
 
 Update types that include a find will match on the fields supplied. For example, for a science keyword update with a find value of {"Category": "EARTH SCIENCES"}, any science keyword with a category of "EARTH SCIENCES" will be considered a match regardless of the values of the science keyword topic, term, etc.
