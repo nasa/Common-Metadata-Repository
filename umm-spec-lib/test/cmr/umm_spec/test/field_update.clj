@@ -208,7 +208,7 @@
        :find-and-replace
        {:Subregion1 "EASTERN ASIA"}
        {:Subregion1 "WESTERN ASIA"}
-       {:LocationKeywords [{:Subregion1 "WESTERN ASIA"}]})))
+       {:LocationKeywords [{:Subregion1 "EASTERN ASIA"}]})))
 
 (deftest platform-instrument-name-updates
  (testing "Platform name updates"
@@ -259,7 +259,8 @@
         {:ShortName "A340-600"
          :LongName "Airbus A340-600"}
         {:ShortName "Platform 1"}
-        {:Platforms [{:ShortName "Airbus A340-600""}]}))
+        {:Platforms [{:ShortName "A340-600"
+                      :LongName "Airbus A340-600"}]}))
 
   (testing "Instrument updates"
     (let [umm {:Platforms [{:ShortName "Platform 1"
