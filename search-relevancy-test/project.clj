@@ -4,7 +4,11 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
+                 [camel-snake-kebab "0.4.0"]
+                 [clj-http "2.0.0"]
+
+                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
