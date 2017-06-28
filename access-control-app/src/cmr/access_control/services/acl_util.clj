@@ -6,6 +6,7 @@
     [clojure.string :as str]
     [cmr.access-control.data.access-control-index :as index]
     [cmr.access-control.data.acls :as acls]
+    [cmr.access-control.config :as config]
     [cmr.common.log :refer [info debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
@@ -16,10 +17,6 @@
     [cmr.transmit.metadata-db2 :as mdb]
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.common-app.services.search.group-query-conditions :as gc]))
-
-(def collection-batch-size
-  "Batch size used for searching collections when syncing entry-titles and concept-ids"
-  100)
 
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
@@ -117,11 +114,17 @@
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
           colls-from-entry-titles (when (seq entry-titles)
-                                    (for [batch (mdb1/find-in-batches context :collection collection-batch-size {:provider-id provider-id :entry-title entry-titles})
+                                    (for [batch (mdb1/find-in-batches context
+                                                                      :collection
+                                                                      (config/sync-entry-titles-concept-ids-collection-batch-size)
+                                                                      {:provider-id provider-id :entry-title entry-titles})
                                           collection batch]
                                       collection))
           colls-from-concept-ids (when (seq concept-ids)
-                                   (for [batch (mdb1/find-in-batches context :collection collection-batch-size {:provider-id provider-id :concept-id concept-ids})
+                                   (for [batch (mdb1/find-in-batches context
+                                                                     :collection
+                                                                     (config/sync-entry-titles-concept-ids-collection-batch-size)
+                                                                     {:provider-id provider-id :concept-id concept-ids})
                                          collection batch]
                                      collection))
           collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))

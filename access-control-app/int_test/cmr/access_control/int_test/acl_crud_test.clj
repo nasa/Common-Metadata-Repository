@@ -8,6 +8,7 @@
     [cmr.access-control.test.util :as u]
     [cmr.common.util :as util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as e]
+    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.transmit.access-control :as ac]
     [cmr.transmit.config :as transmit-config]
     [cmr.transmit.metadata-db2 :as mdb]))
@@ -1020,6 +1021,7 @@
         (is (= ["Permission to delete ACL is denied"] (:errors body)))))))
 
 (deftest entry-titles-concept-ids-sync
+  (dev-sys-util/eval-in-dev-sys '(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 1))
   (let [token (e/login-guest (u/conn-context))
         make-catalog-item (fn [name coll-id]
                             (-> catalog-item-acl
@@ -1140,4 +1142,6 @@
       (is (= expected-collection-identifier2
              (actual->set
               (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
-                      [:catalog_item_identity :collection_identifier])))))))
+                      [:catalog_item_identity :collection_identifier]))))))
+  
+  (dev-sys-util/eval-in-dev-sys '(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 100)))
