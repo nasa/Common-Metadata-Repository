@@ -3,8 +3,10 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.common-app.test.side-api :as side]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.ingest.config :as ingest-config]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -74,8 +76,23 @@
                                          :Topic "HUMAN DIMENSIONS"
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
+       (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
        ;; Kick off bulk update
-       (ingest/bulk-update-collections "PROV1" bulk-update-body)
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+         (is (= 400 (:status response)))
+         (is (= ["Bulk update is disabled."] (:errors response))))
+       ;; Wait for queueing/indexing to catch up
+       (index/wait-until-indexed)
+       (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+         (is (= 404 (:status collection-response)))
+         (is (= ["Bulk update task with task id [1] could not be found."]
+                (:errors collection-response))))
+
+       (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
+       ;; Kick off bulk update
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+         (is (= 200 (:status response)))
+         (is (= 1 (:task-id response))))
        ;; Wait for queueing/indexing to catch up
        (index/wait-until-indexed)
        (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
