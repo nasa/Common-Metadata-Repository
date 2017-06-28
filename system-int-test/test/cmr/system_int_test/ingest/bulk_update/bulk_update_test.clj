@@ -34,7 +34,7 @@
                   :ContactPersons [{:Roles ["Data Center Contact"]
                                     :LastName "Smith"}]}]})
 
-(def update-replace-keywords-umm
+(def find-replace-keywords-umm
   {:ScienceKeywords [{:Category "EARTH SCIENCE"
                       :Topic "ATMOSPHERE"
                       :Term "AIR QUALITY"
@@ -147,7 +147,7 @@
                      (:DataCenters (:umm concept))))))))))
 
 (deftest bulk-update-replace-test
-  (let [concept-ids (ingest-collection-in-each-format replace-keywords-umm)
+  (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :update-type "FIND_AND_REPLACE"
