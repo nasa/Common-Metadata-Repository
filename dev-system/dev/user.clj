@@ -213,7 +213,12 @@
 
 (defn reset
   "Resets the development environment, taking optional keyword arguments for
-  various run modes (see the docstring for `set-modes!` for more details).
+  various run modes, e.g.:
+  ```
+  (reset :db :external)
+  ```
+  See the docstring for `set-modes!` for more details.
+
   Environment resetting includes the reloading of any changed namespaces and
   the restarting the CMR services.
 
@@ -245,7 +250,32 @@
   "Runs the suites defined by the ltest runner (unit and integration), first
   setting the log level to `:fatal` to keep the terminal output cleaner. To
   run with the usual error messages to STDOUT, simply use `ltest/run-suites`
-  directly."
+  directly.
+
+  To run just a single suite:
+  ```
+  (ltest/run-unit-tests)
+  ```
+  or
+  ```
+  (ltest/run-integration-tests)
+  ```
+
+  Furthermore, to run a test namespace (or collection of namespaces) using
+  this runner:
+  ```
+  (ltest/run-tests ['cmr.system-int-test.health-test])
+  ```
+
+  You can also run a single test function using this runner by passing a test
+  function var:
+  ```
+  (ltest/run-test #'cmr.system-int-test.health-test/index-set-health-test)
+  ```
+
+  Note that none of the `(ltest/*)` functions silence logging; only the
+  `run-suites` function defined in this `user` namespace provides that
+  convenience."
   ([]
     (let [orig-log-level @settings/logging-level]
       (set-logging-level! :fatal)
