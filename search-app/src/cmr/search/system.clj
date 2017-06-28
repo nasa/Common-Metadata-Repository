@@ -125,6 +125,8 @@
              :public-conf (public-conf)
              collection-renderer/system-key (collection-renderer/create-collection-renderer)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
+             ;; Note that some of these jobs only need to run on one node, but we are currently
+             ;; running all jobs on all nodes
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")

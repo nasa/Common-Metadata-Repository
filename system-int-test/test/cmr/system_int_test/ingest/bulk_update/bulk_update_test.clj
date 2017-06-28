@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as util :refer [are3]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as e]
@@ -12,7 +13,9 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       (search/freeze-resume-time-fixture)]))
 
 (def collection-formats
   "Formats to test bulk update"
@@ -76,6 +79,9 @@
                                  first)]]
         (is (= 2
                (:revision-id (:meta concept))))
+        (is (= "2017-01-01T00:00:00Z" 
+               (:revision-date (:meta concept))))
+        (some #(= {:Date "2017-01-01T00:00:00Z" :Type "UPDATE"} %) (:MetadataDates (:umm concept)))
         (is (= "application/vnd.nasa.cmr.umm+json"
                (:format (:meta concept))))
         (is (= (:ScienceKeywords (:umm concept))
