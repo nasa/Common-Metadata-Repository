@@ -6,6 +6,7 @@
     [clojure.string :as str]
     [cmr.access-control.data.access-control-index :as index]
     [cmr.access-control.data.acls :as acls]
+    [cmr.access-control.config :as config]
     [cmr.common.log :refer [info debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
@@ -113,9 +114,19 @@
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
           colls-from-entry-titles (when (seq entry-titles)
-                                    (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-titles} :collection))
+                                    (for [batch (mdb1/find-in-batches context
+                                                                      :collection
+                                                                      (config/sync-entry-titles-concept-ids-collection-batch-size)
+                                                                      {:provider-id provider-id :entry-title entry-titles})
+                                          collection batch]
+                                      collection))
           colls-from-concept-ids (when (seq concept-ids)
-                                   (mdb1/find-concepts context {:provider-id provider-id :concept-id concept-ids} :collection))
+                                   (for [batch (mdb1/find-in-batches context
+                                                                     :collection
+                                                                     (config/sync-entry-titles-concept-ids-collection-batch-size)
+                                                                     {:provider-id provider-id :concept-id concept-ids})
+                                         collection batch]
+                                     collection))
           collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))
           concept-ids (map :concept-id collections)
           entry-titles (map #(get-in % [:extra-fields :entry-title]) collections)

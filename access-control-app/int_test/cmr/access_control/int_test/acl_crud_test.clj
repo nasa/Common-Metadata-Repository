@@ -1136,7 +1136,6 @@
                                                                "coll3 entry title"
                                                                "coll4 entry title"]})
 
-
                      {:token token})
       (is (= expected-collection-identifier2
              (actual->set
