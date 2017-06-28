@@ -20,7 +20,7 @@
   [provider-id request]
   (if-not (ingest-config/bulk-update-enabled)
     (srvc-errors/throw-service-error
-        :bad-request (format "Bulk update is disabled." provider-id))
+        :bad-request "Bulk update is disabled.")
     (let [{:keys [body headers request-context]} request
           content (api-core/read-body! body)]
       (api-core/verify-provider-exists request-context provider-id)
