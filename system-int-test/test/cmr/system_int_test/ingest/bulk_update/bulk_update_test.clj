@@ -34,6 +34,17 @@
                   :ContactPersons [{:Roles ["Data Center Contact"]
                                     :LastName "Smith"}]}]})
 
+(def update-replace-keywords-umm
+  {:ScienceKeywords [{:Category "EARTH SCIENCE"
+                      :Topic "ATMOSPHERE"
+                      :Term "AIR QUALITY"
+                      :VariableLevel1 "CARBON MONOXIDE"}
+                     {:Category "EARTH SCIENCE"
+                      :Topic "ATMOSPHERE"
+                      :Term "CLOUDS"
+                      :VariableLevel1 "CLOUD MICROPHYSICS"
+                      :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]})
+
 (defn- generate-concept-id
   [index provider]
   (format "C120000000%s-%s" index provider))
@@ -69,8 +80,8 @@
 
        ;; Check that each concept was updated
        (doseq [concept-id concept-ids
-               :let [concept (-> (search/find-concepts-umm-json
-                                   :collection {:concept-id concept-id})
+               :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                {:concept-id concept-id})
                                  :results
                                  :items
                                  first)]]
@@ -120,8 +131,8 @@
 
         ;; Check that each concept was updated
         (doseq [concept-id concept-ids
-                :let [concept (-> (search/find-concepts-umm-json
-                                    :collection {:concept-id concept-id})
+                :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                 {:concept-id concept-id})
                                   :results
                                   :items
                                   first)]]
@@ -134,3 +145,40 @@
                   :Roles ["PROCESSOR"]}]
                 (map #(select-keys % [:Roles :ShortName])
                      (:DataCenters (:umm concept))))))))))
+
+(deftest bulk-update-replace-test
+  (let [concept-ids (ingest-collection-in-each-format replace-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :update-type "FIND_AND_REPLACE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :find-value {:Topic "ATMOSPHERE"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "EMISSIONS"}}]
+       (ingest/bulk-update-collections "PROV1" bulk-update-body)
+       (index/wait-until-indexed)
+       (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+         (is (= "COMPLETE" (:task-status collection-response))))
+
+       ;; Check that each concept was updated
+       (doseq [concept-id concept-ids
+               :let [concept (-> (search/find-concepts-umm-json :collection
+                                                                {:concept-id concept-id})
+                                 :results
+                                 :items
+                                 first)]]
+        (is (= 2
+               (:revision-id (:meta concept))))
+        (is (= "application/vnd.nasa.cmr.umm+json"
+               (:format (:meta concept))))
+        (is (= (:ScienceKeywords (:umm concept))
+               [{:Category "EARTH SCIENCE"
+                 :Topic "ATMOSPHERE"
+                 :Term "AIR QUALITY"
+                 :VariableLevel1 "EMISSIONS"}
+                {:Category "EARTH SCIENCE"
+                 :Topic "ATMOSPHERE"
+                 :Term "AIR QUALITY"
+                 :VariableLevel1 "EMISSIONS"}])))))
