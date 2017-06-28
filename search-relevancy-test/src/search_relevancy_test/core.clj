@@ -123,7 +123,10 @@
   "Read the anomaly test CSV and perform each test"
   []
   (doseq [test (read-anomaly-test-csv)]
-    (println (format "Performing test %s for anomaly %s" (:test test) (:anomaly test)))
+    (println (format "Performing test %s for anomaly %s: %s"
+                     (:test test)
+                     (:anomaly test)
+                     (:description test)))
     (perform-search-test test)))
 
 (defn relevancy-test
