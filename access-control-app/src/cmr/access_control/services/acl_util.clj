@@ -113,9 +113,13 @@
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
           colls-from-entry-titles (when (seq entry-titles)
-                                    (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-titles} :collection))
+                                    (for [batch (mdb1/find-in-batches context :collection 100 {:provider-id provider-id :entry-title entry-titles})
+                                          collection batch]
+                                      collection))
           colls-from-concept-ids (when (seq concept-ids)
-                                   (mdb1/find-concepts context {:provider-id provider-id :concept-id concept-ids} :collection))
+                                   (for [batch (mdb1/find-in-batches context :collection 100 {:provider-id provider-id :concept-id concept-ids})
+                                         collection batch]
+                                     collection))
           collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))
           concept-ids (map :concept-id collections)
           entry-titles (map #(get-in % [:extra-fields :entry-title]) collections)
