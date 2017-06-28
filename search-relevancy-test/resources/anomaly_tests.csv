@@ -1,2 +1,3 @@
-Anomaly ,Test,Search ,Concept-ids
+Anomaly,Test,Search,Concept-ids
+1,1,?keyword=snow%2A+cover%2A+modis%2A,"C92711294-NSIDC_ECS,C203234497-LAADS"
 12,1,?keyword=SMAP%20freeze%2Fthaw,"C1000001282-NSIDC_ECS,C1344054559-NSIDC_ECS"

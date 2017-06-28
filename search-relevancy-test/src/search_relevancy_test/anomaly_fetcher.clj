@@ -41,13 +41,11 @@
                 :let [meta (:meta item)]]
             [(:concept-id meta) (:format meta)]))))
 
-(defn- download-collection
-  "Downloads a single concept and saves it to the appropriate test-files directory based on
-  native format."
+(defn- download-concept-metadata
+  "Returns the metadata for the provided concept-id in its native format."
   [concept-id]
   (let [url (format "%s/concepts/%s" (source-url) concept-id)
         response (client/get url {:query-params {:concept-id concept-id}})]
-                                  ; :headers {:cmr-pretty true}})]
     (:body response)))
 
 (def collections-dir
@@ -66,7 +64,7 @@
             full-path (format "%s/%s/%s" collections-dir directory filename)]
         (if (.exists (io/as-file full-path))
           (info "Skipping already downloaded concept" concept-id)
-          (let [collection-metadata (download-collection concept-id)]
+          (let [collection-metadata (download-concept-metadata concept-id)]
             (info "Saving" filename "to" directory)
             (spit full-path collection-metadata)))))))
 
@@ -75,4 +73,4 @@
  (download-and-save-all-collections)
  (formats-for-collections ["C1200196931-SCIOPS" "C1000000803-DEV08"]) ;; SIT
  (formats-for-collections ["C1000001282-NSIDC_ECS" "C1344054559-NSIDC_ECS"]) ;; Prod
- (download-collection "C1200196931-SCIOPS"))
+ (download-concept-metadata "C1200196931-SCIOPS"))
