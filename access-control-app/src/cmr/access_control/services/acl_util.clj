@@ -105,6 +105,20 @@
                     identity-type-condition)]
     (get-acls-by-condition context condition)))
 
+(defn get-collections-chunked
+  "Searches for collections in chunks."
+  [context values keyword provider-id]
+  (let [chunk-size (config/sync-entry-titles-concept-ids-collection-batch-size)
+        chunked-values (partition chunk-size chunk-size nil values)]
+    (apply merge
+      (map #(mdb1/find-concepts context
+                                {:exclude-metadata true
+                                 :latest true
+                                 keyword %
+                                 :provider-id provider-id}
+                                :collection)
+           chunked-values))))
+
 (defn sync-entry-titles-concept-ids
   "If the given ACL is a catalog item acl with a collection identifier that includes concept-ids or
    entry-titles, return the ACL such that both are unioned with each other."
@@ -114,19 +128,9 @@
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
           colls-from-entry-titles (when (seq entry-titles)
-                                    (for [batch (mdb1/find-in-batches context
-                                                                      :collection
-                                                                      (config/sync-entry-titles-concept-ids-collection-batch-size)
-                                                                      {:provider-id provider-id :entry-title entry-titles})
-                                          collection batch]
-                                      collection))
+                                    (get-collections-chunked context entry-titles :entry-title provider-id))
           colls-from-concept-ids (when (seq concept-ids)
-                                   (for [batch (mdb1/find-in-batches context
-                                                                     :collection
-                                                                     (config/sync-entry-titles-concept-ids-collection-batch-size)
-                                                                     {:provider-id provider-id :concept-id concept-ids})
-                                         collection batch]
-                                     collection))
+                                   (get-collections-chunked context concept-ids :concept-id provider-id))
           collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))
           concept-ids (map :concept-id collections)
           entry-titles (map #(get-in % [:extra-fields :entry-title]) collections)
