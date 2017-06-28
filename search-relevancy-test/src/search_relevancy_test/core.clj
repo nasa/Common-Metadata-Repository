@@ -14,7 +14,7 @@
   "http://localhost:3003/collections")
 
 (def test-collection-formats
- [:iso-smap :echo10 :dif10])
+ [:iso-smap :echo10 :dif10 :dif9])
 
 (defn- provider-guids
   "Return a list of guid/provider pairs given a list of provider strings"

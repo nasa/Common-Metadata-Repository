@@ -2,4 +2,6 @@ Anomaly,Test,Search,Concept-ids,Description
 1,1,?keyword=snow%2A+cover%2A+modis%2A,"C92711294-NSIDC_ECS,C203234497-LAADS","Snow cover should come before clouds when searching for snow cover"
 2,1,?keyword=snow%2A+cover%2A+modis%2A,"C1000001167-NSIDC_ECS,C92711294-NSIDC_ECS","V006 dataset should come before version 005"
 3,1,?keyword=SMAP*,"C1384837661-NSIDC_ECS,C1371623525-PODAAC","Soil moisture products should come before salinity products when searching for SMAP"
+4,1,?keyword=turbulent*+fluxes*,"C1237113442-GES_DISC,C1237113465-GES_DISC","Ancillary products should be below data products (can't reproduce locally)"
+5,1,?keyword=Ozone,"C1239966794-GES_DISC,C1237114193-GES_DISC","OMI products should be above TOMS products because OMI is a later generation."
 12,1,?keyword=SMAP%20freeze%2Fthaw,"C1000001282-NSIDC_ECS,C1344054559-NSIDC_ECS","SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw"

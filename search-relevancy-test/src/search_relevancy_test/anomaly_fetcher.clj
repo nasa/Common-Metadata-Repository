@@ -34,7 +34,8 @@
   "Returns a map of concept-id to the metadata format for that collection."
   [concept-ids]
   (let [url (str (source-url) "/collections.umm-json")
-        response (client/get url {:query-params {:concept-id concept-ids}})
+        response (client/get url {:query-params {:concept-id concept-ids
+                                                 :page-size 2000}})
         items (:items (json/parse-string (:body response) true))]
     (into {}
           (for [item items
@@ -71,6 +72,7 @@
 
 (comment
  (download-and-save-all-collections)
+ (find-collection-ids-to-download)
  (formats-for-collections ["C1200196931-SCIOPS" "C1000000803-DEV08"]) ;; SIT
- (formats-for-collections ["C1000001282-NSIDC_ECS" "C1344054559-NSIDC_ECS"]) ;; Prod
- (download-concept-metadata "C1200196931-SCIOPS"))
+ (formats-for-collections ["C1237114193-GES_DISC"]) ;; Prod
+ (download-concept-metadata "C1237114193-GES_DISC"))
