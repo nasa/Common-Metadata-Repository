@@ -60,8 +60,8 @@
                            :VariableLevel1 "var 1" :VariableLevel2 "var 2"
                            :VariableLevel3 "var 3" :DetailedVariable "detailed"}]}
 
-       "Find and replace"
-       :find-and-replace
+       "Find and update"
+       :find-and-update
        {:Category "EARTH SCIENCE SERVICES"
         :Topic "DATA ANALYSIS AND VISUALIZATION"
         :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
@@ -75,6 +75,31 @@
                            :VariableLevel2 "var 2",
                            :VariableLevel3 "var 3",
                            :DetailedVariable "detailed"}]}
+
+       "Find and update, not found"
+       :find-and-update
+       {:Category "EARTH SCIENCE SERVICES"
+        :Topic "DATA ANALYSIS AND VISUALIZATION"
+        :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+       {:Category "EARTH SCIENCE SERVICES"
+        :Topic "Topic"}
+       {:EntryTitle "Test"
+        :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
+                          {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
+                           :VariableLevel1 "var 1" :VariableLevel2 "var 2"
+                           :VariableLevel3 "var 3" :DetailedVariable "detailed"}]}
+
+       "Find and replace"
+       :find-and-replace
+       {:Category "EARTH SCIENCE SERVICES"
+        :Topic "DATA ANALYSIS AND VISUALIZATION"
+        :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+       {:Category "EARTH SCIENCE SERVICES"}
+       {:EntryTitle "Test"
+        :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
+                          {:Category "EARTH SCIENCE SERVICES"
+                           :Topic "DATA ANALYSIS AND VISUALIZATION"
+                           :Term "GEOGRAPHIC INFORMATION SYSTEMS"}]}
 
        "Find and replace, not found"
        :find-and-replace
@@ -123,6 +148,14 @@
        {:Category "EARTH SCIENCE SERVICES"}
        {:EntryTitle "Test"}
 
+       "Find and update"
+       :find-and-update
+       {:Category "EARTH SCIENCE SERVICES"
+        :Topic "DATA ANALYSIS AND VISUALIZATION"
+        :Term "GEOGRAPHIC INFORMATION SYSTEMS"}
+       {:Category "EARTH SCIENCE SERVICES"}
+       {:EntryTitle "Test"}
+
        "Find and replace"
        :find-and-replace
        {:Category "EARTH SCIENCE SERVICES"
@@ -162,16 +195,20 @@
        {:LocationKeywords [{:Category "CONTINENT"
                             :Type "EUROPE"}]}
 
-       "Find and replace"
-       :find-and-replace
+       "Find and update"
+       :find-and-update
        {:Subregion1 "EASTERN ASIA"}
        {:Subregion1 "WESTERN ASIA"}
        {:LocationKeywords [{:Category "CONTINENT"
                             :Type "ASIA"
                             :Subregion1 "EASTERN ASIA"
                             :Subregion2 "MIDDLE EAST"
-                            :Subregion3 "GAZA STRIP"}]})))
-
+                            :Subregion3 "GAZA STRIP"}]}
+       "Find and replace"
+       :find-and-replace
+       {:Subregion1 "EASTERN ASIA"}
+       {:Subregion1 "WESTERN ASIA"}
+       {:LocationKeywords [{:Subregion1 "EASTERN ASIA"}]})))
 
 (deftest platform-instrument-name-updates
  (testing "Platform name updates"
@@ -186,8 +223,8 @@
         (is (= result
                (field-update/apply-update update-type umm [:Platforms] update-value find-value)))
 
-        "Find and replace short name"
-        :find-and-replace
+        "Find and update short name"
+        :find-and-update
         {:ShortName "A340-600"}
         {:ShortName "Platform 1"}
         {:Platforms [{:ShortName "A340-600"
@@ -198,8 +235,8 @@
                                      :Technique "Two cans and a string"
                                      :NumberOfInstruments 0}]}]}
 
-        "Find and replace long and short names"
-        :find-and-replace
+        "Find and update long and short names"
+        :find-and-update
         {:ShortName "A340-600"
          :LongName "Airbus A340-600"}
         {:ShortName "Platform 1"}
@@ -209,7 +246,22 @@
                       :Instruments [{:ShortName "An Instrument"
                                      :LongName "The Full Name of An Instrument v123.4"
                                      :Technique "Two cans and a string"
-                                     :NumberOfInstruments 0}]}]}))
+                                     :NumberOfInstruments 0}]}]}
+
+        "Find and replace short name"
+        :find-and-replace
+        {:ShortName "A340-600"}
+        {:ShortName "Platform 1"}
+        {:Platforms [{:ShortName "A340-600"}]}
+
+        "Find and replace long and short names"
+        :find-and-replace
+        {:ShortName "A340-600"
+         :LongName "Airbus A340-600"}
+        {:ShortName "Platform 1"}
+        {:Platforms [{:ShortName "A340-600"
+                      :LongName "Airbus A340-600"}]}))
+
   (testing "Instrument updates"
     (let [umm {:Platforms [{:ShortName "Platform 1"
                             :LongName "Example Platform Long Name 1"
@@ -263,8 +315,8 @@
                       :Type "Aircraft"
                       :Instruments [{:ShortName "Inst X"}]}]}
 
-        "Find and replace - multiple instances"
-        :find-and-replace
+        "Find and update - multiple instances"
+        :find-and-update
         {:ShortName "Inst X"}
         {:ShortName "Inst 1"}
         {:Platforms [{:ShortName "Platform 1"
@@ -282,8 +334,8 @@
                                     {:ShortName "Inst 3"
                                      :LongName "Instrument 3"}]}]}
 
-        "Find and replace - multiple instances"
-        :find-and-replace
+        "Find and update - multiple instances"
+        :find-and-update
         {:ShortName "Inst X"}
         {:ShortName "Inst 2"}
         {:Platforms [{:ShortName "Platform 1"
@@ -301,17 +353,52 @@
                                     {:ShortName "Inst 3"
                                      :LongName "Instrument 3"}]}]})
 
-       "Find and remove"
-       :find-and-remove
-       nil
-       {:ShortName "Inst 1"}
-       {:Platforms [{:ShortName "Platform 1"
-                     :LongName "Example Platform Long Name 1"
-                     :Type "Aircraft"
-                     :Instruments [{:ShortName "Inst 1"
-                                    :LongName "Instrument 1"}]}
-                    {:ShortName "Platform 2"
-                     :LongName "Example Platform Long Name 2"
-                     :Type "Aircraft"
-                     :Instruments [{:ShortName "Inst 1"
-                                    :LongName "Instrument 1"}]}]}))))
+      "Find and replace - multiple instances"
+      :find-and-replace
+      {:ShortName "Inst X"}
+      {:ShortName "Inst 1"}
+      {:Platforms [{:ShortName "Platform 1"
+                    :LongName "Example Platform Long Name 1"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "Inst 1"}
+                                  {:ShortName "Inst 2"
+                                   :LongName "Instrument 2"}]}
+                   {:ShortName "Platform 2"
+                    :LongName "Example Platform Long Name 2"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "Inst 1"}
+                                  {:ShortName "Inst 3"
+                                   :LongName "Instrument 3"}]}]}
+
+      "Find and replace - multiple instances"
+      :find-and-replace
+      {:ShortName "Inst X"}
+      {:ShortName "Inst 2"}
+      {:Platforms [{:ShortName "Platform 1"
+                    :LongName "Example Platform Long Name 1"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "Inst 1"
+                                   :LongName "Instrument 1"}
+                                  {:ShortName "Inst 2"}]}
+                   {:ShortName "Platform 2"
+                    :LongName "Example Platform Long Name 2"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "Inst 1"
+                                   :LongName "Instrument 1"}
+                                  {:ShortName "Inst 3"
+                                   :LongName "Instrument 3"}]}]}
+
+      "Find and remove"
+      :find-and-remove
+      nil
+      {:ShortName "Inst 1"}
+      {:Platforms [{:ShortName "Platform 1"
+                    :LongName "Example Platform Long Name 1"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "Inst 1"
+                                   :LongName "Instrument 1"}]}
+                   {:ShortName "Platform 2"
+                    :LongName "Example Platform Long Name 2"
+                    :Type "Aircraft"
+                    :Instruments [{:ShortName "Inst 1"
+                                   :LongName "Instrument 1"}]}]}))))

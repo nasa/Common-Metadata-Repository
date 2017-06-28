@@ -97,7 +97,7 @@
              :update-field "SCIENCE_KEYWORDS"
              :update-type "REPLACE"}
             400
-            ["/update-type instance value (\"REPLACE\") not found in enum (possible values: [\"ADD_TO_EXISTING\",\"CLEAR_FIELD\",\"CLEAR_ALL_AND_REPLACE\",\"FIND_AND_REMOVE\",\"FIND_AND_REPLACE\"])"]
+            ["/update-type instance value (\"REPLACE\") not found in enum (possible values: [\"ADD_TO_EXISTING\",\"CLEAR_FIELD\",\"CLEAR_ALL_AND_REPLACE\",\"FIND_AND_REMOVE\",\"FIND_AND_REPLACE\",\"FIND_AND_UPDATE\"])"]
 
             "Missing update value"
             {:concept-ids ["C1", "C2", "C3"]

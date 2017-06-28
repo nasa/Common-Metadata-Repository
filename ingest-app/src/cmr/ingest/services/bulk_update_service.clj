@@ -47,7 +47,8 @@
                                    [(format "An update value must be supplied when the update is of type %s"
                                             update-type)]))
     (when (and (or (= "FIND_AND_REPLACE" update-type)
-                   (= "FIND_AND_REMOVE" update-type))
+                   (= "FIND_AND_REMOVE" update-type)
+                   (= "FIND_AND_UPDATE" update-type))
                (nil? find-value))
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"
