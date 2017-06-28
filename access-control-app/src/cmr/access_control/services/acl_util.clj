@@ -17,6 +17,10 @@
     [cmr.transmit.metadata-db :as mdb1]
     [cmr.common-app.services.search.group-query-conditions :as gc]))
 
+(def collection-batch-size
+  "Batch size used for searching collections when syncing entry-titles and concept-ids"
+  100)
+
 (def acl-provider-id
   "The provider ID for all ACLs. Since ACLs are not owned by individual
   providers, they fall under the CMR system provider ID."
@@ -113,11 +117,11 @@
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
           colls-from-entry-titles (when (seq entry-titles)
-                                    (for [batch (mdb1/find-in-batches context :collection 100 {:provider-id provider-id :entry-title entry-titles})
+                                    (for [batch (mdb1/find-in-batches context :collection collection-batch-size {:provider-id provider-id :entry-title entry-titles})
                                           collection batch]
                                       collection))
           colls-from-concept-ids (when (seq concept-ids)
-                                   (for [batch (mdb1/find-in-batches context :collection 100 {:provider-id provider-id :concept-id concept-ids})
+                                   (for [batch (mdb1/find-in-batches context :collection collection-batch-size {:provider-id provider-id :concept-id concept-ids})
                                          collection batch]
                                      collection))
           collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))
