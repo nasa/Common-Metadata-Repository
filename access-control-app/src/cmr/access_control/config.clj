@@ -28,6 +28,11 @@
   {:default 5
    :type Long})
 
+(defconfig sync-entry-titles-concept-ids-collection-batch-size
+  "Batch size used for searching collections when syncing entry-titles and concept-ids"
+  {:default 100
+   :type Long})
+
 (defn queue-config
   "Returns the queue configuration for the application."
   []
