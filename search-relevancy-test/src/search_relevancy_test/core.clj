@@ -72,17 +72,27 @@
   analyze the results to determine if the concept ids came back in the correct
   position. Print a message if not."
   [test-concept-ids result-ids]
-  (doseq [index (range (count test-concept-ids))
-          :let [concept-id (nth test-concept-ids index)
-                result-position (.indexOf result-ids concept-id)]]
-    (if (= -1 result-position)
-      (println (format "Concept %s was not found in the result set" concept-id))
-      (when (not= index result-position)
-        (println (format (str "Concept %s should be in position %s, but is in "
-                              "position %s")
-                         concept-id
-                         index
-                         result-position))))))
+  (let [atom-fail-count (atom 0)]
+    (doseq [index (range (count test-concept-ids))
+            :let [concept-id (nth test-concept-ids index)
+                  result-position (.indexOf result-ids concept-id)]]
+      (if (= -1 result-position)
+        (do
+          (println (format "Concept %s was not found in the result set" concept-id))
+          (swap! atom-fail-count inc))
+        (when (not= index result-position)
+          (do
+            (println (format (str "Concept %s should be in position %s, but is in "
+                                  "position %s")
+                             concept-id
+                             index
+                             result-position))
+            (swap! atom-fail-count inc)))))
+    (if (= 0 @atom-fail-count)
+      (println "Test passed")
+      (println (format "Test failed with %s fails out of %s"
+                       @atom-fail-count
+                       (count test-concept-ids))))))
 
 (defn- perform-search-test
   "Perform the anomaly test. Perform the search and compare the order of the
@@ -114,8 +124,7 @@
   []
   (doseq [test (read-anomaly-test-csv)]
     (println (format "Performing test %s for anomaly %s" (:test test) (:anomaly test)))
-    (perform-search-test test)
-    (println "Test complete")))
+    (perform-search-test test)))
 
 (defn relevancy-test
   "Reset the system, ingest all of the test data, and perform the searches from
