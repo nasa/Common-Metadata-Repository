@@ -1,0 +1,810 @@
+<Collection>
+            <ShortName>ECHIDNA_1045</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2011-11-17T00:00:00Z</InsertTime>
+            <LastUpdate>2011-11-17T00:00:00Z</LastUpdate>
+            <LongName>ECHIDNA LIDAR Campaigns: Forest Canopy Imagery and Field Data, U.S.A., 2007-2009</LongName>
+            <DataSetId>ECHIDNA LIDAR Campaigns: Forest Canopy Imagery and Field Data, U.S.A., 2007-2009</DataSetId>
+            <Description>This data set contains forest canopy scan data from the Echidna Validation Instrument (EVI) and field measurements data from three campaigns conducted in the United States: 2007 New England Campaign; 2008 Sierra National Forest Campaign; and 2009 New England Campaign. The New England field sites were located in Harvard Forest (Massachusetts), Howland Research Forest (Maine), and the Bartlett Experimental Forest (New Hampshire).The objective of the research was to evaluate the ability of the EVI ground-based, scanning near-infrared lidar to retrieve stem diameter, stem count density, stand height, leaf area index, foliage profile, foliage area volume density, and other useful forest structural parameters rapidly and accurately.The EVI scan data are Andrieu Transpose (AT) Projection images in ENVI *.img and *.hdr file pairs. There are 28 images from the 2007 New England Campaign, 30 images from the 2008 Sierra National Forest Campaign, and 54 images from the 2009 New England Campaign. There are range-weighted mean preview image files (.jpg format) for each AT Projection image.Manual measurements of tree structural properties were made during each campaign at EVI scan locations. The field measurements are provided in one file for each campaign (.csv format). Parameters include species identification, DBH, tree height, crown base, etc. organized by field plot. There is also a data file (.csv format) which compares EVI derived measurements to the field measured data (DBH, stem density, basal area, biomass, and LAI) from the 2007 New England Campaign.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1045</DOI>
+                <Authority>ORNL DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2011-11-17T00:00:00Z</RevisionDate>
+            <ProcessingCenter>ORNL_DAAC</ProcessingCenter>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Strahler, A.H., C. Schaaf, C. Woodcock, D. Jupp, D. Culvenor, G. Newnham, R.O. Dubayah, T. Yao, F. Zhao, and X. Yang. 2010. ECHIDNA LIDAR Campaigns: Forest Canopy Imagery and Field Data, U.S.A., 2007-2009. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1045</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2007-08-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2009-08-05T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOSYSTEMS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>TERRESTRIAL ECOSYSTEMS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>FORESTS</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>BIOMASS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CANOPY CHARACTERISTICS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CROWN</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>FOREST COMPOSITION/VEGETATION STRUCTURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LEAF CHARACTERISTICS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LEAF CHARACTERISTICS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>LEAF AREA INDEX (LAI)</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VEGETATION COVER</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>NOT APPLICABLE</ShortName>
+                    <LongName> </LongName>
+                    <Type>NOT APPLICABLE</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>NOT APPLICABLE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>NOT APPLICABLE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>NACP</ShortName>
+                    <LongName>North American Carbon Program</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1045</URL>
+                    <URLDescription>ORNL DAAC Landing Page URL for this Collection</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/NACP/guides/ECHIDNA.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1045</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot01CP_Scan63_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot01NE_Scan65_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot01NW_Scan61_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot01SE_Scan67_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot01SW_Scan69_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot02CP_Scan55_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot02NE_Scan59_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot02NW_Scan51_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot02SE_Scan57_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Bart_Plot02SW_Scan53_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot01CP_Scan21_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot01NE_Scan19_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot01NW_Scan15_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot01SE_Scan75_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot01SW_Scan17_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot02CP_Scan23_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot02NE_Scan73_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot02NW_Scan25_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot02SE_Scan71_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_Harv_Plot02SW_Scan27_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot01CP_Scan35_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot01NE_Scan33_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot01NW_Scan31_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot01SE_Scan37_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot01SW_Scan39_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot02CP_Scan43_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot02NN_Scan49_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2007_How_Plot02SS_Scan41_ND015_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site023_Centre_Scan57_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site023_LLcorner_Scan62_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site023_LRcorner_Scan61_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site023_ULcorner_Scan59_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site023_URcorner_Scan60_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site168_Centre_Scan31_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site168_LLcorner_Scan34_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site168_LRcorner_Scan35_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site168_ULcorner_Scan33_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site168_URcorner_Scan36_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site301_Centre_Scan24_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site301_LLcorner_Scan27_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site301_LRcorner_Scan30_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site301_ULcorner_Scan26_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site301_URcorner_Scan23_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site305_Centre_Scan17_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site305_LLcorner_Scan21_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site305_LRcorner_Scan22_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site305_ULcorner_Scan18_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site305_URcorner_Scan20_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site338_Centre_Scan37_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site338_LLcorner_Scan42_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site338_LRcorner_Scan41_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site338_ULcorner_Scan39_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site338_URcorner_Scan40_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site406_Centre_Scan49_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site406_LLcorner_Scan56_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site406_LRcorner_Scan55_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site406_ULcorner_Scan53_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site406_URcorner_Scan54_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site801_Centre_Scan45_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site801_LLcorner_Scan47_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site801_LRcorner_Scan48_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site801_ULcorner_Scan44_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site801_URcorner_Scan43_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site99_Centre_Scan11_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site99_LLcorner_Scan09_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site99_LRcorner_Scan05_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site99_ULcorner_Scan13_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2008_Site99_URcorner_Scan02_ND015_AT_project_Mean_range2.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_01_Centre_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_02_NW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_03_NE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_04_SE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_05_S_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_06_W_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_07_N_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_08_E_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_38M_Scan_09_SW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_01_E_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_02_SE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_03_NE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_04_N_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_05_Centre_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_06_S_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_07_SW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_08_W_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_BF_NACP_Scan_09_NW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_01_Centre_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_02_NE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_03_SE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_04_S_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_05_SW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_06_W_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_07_NW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_08_N_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_HH_Scan_09_E_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_01_N_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_02_NE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_03_E_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_04_SE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_05_S_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_06_SW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_07_Centre_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_08_W_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HF_PH3_Scan_09_NW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_01_S_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_02_SW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_03_W_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_04_NW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_05_N_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_06_NE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_07_E_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_08_Centre_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW7_Scan_09_SE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_01a_NW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_02_N_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_03_NE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_04_Centre_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_05_E_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_06_W_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_07_SW_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_08_S_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/2009_HOW8_Scan_09_SE_AT_project_Mean_range.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/nacp/echidna//comp/ECHIDNA.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-119.25</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>45.21</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-68.72</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>36.96</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>
