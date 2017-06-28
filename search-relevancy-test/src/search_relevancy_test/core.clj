@@ -103,7 +103,7 @@
             repeat)
     (rest csv-data)))
 
-(defn- read-anomaly-test-csv
+(defn read-anomaly-test-csv
   "Read the anomaly test CSV and convert data to clojure map"
   []
   (->> (csv/read-csv (io/reader (io/resource "anomaly_tests.csv")))
