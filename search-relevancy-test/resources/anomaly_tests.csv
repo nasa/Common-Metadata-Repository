@@ -1,16 +1,21 @@
-Anomaly,Test,Search,Concept-ids,Description,
-1,1,?keyword=snow%2A+cover%2A+modis%2A,"C92711294-NSIDC_ECS,C203234497-LAADS",Snow cover should come before clouds when searching for snow cover,
-2,1,?keyword=snow%2A+cover%2A+modis%2A,"C1000001167-NSIDC_ECS,C92711294-NSIDC_ECS",V006 dataset should come before version 005,
-3,1,?keyword=SMAP*,"C1384837661-NSIDC_ECS,C1371623525-PODAAC",Soil moisture products should come before salinity products when searching for SMAP,
-4,1,?keyword=turbulent*+fluxes*,"C1237113442-GES_DISC,C1237113465-GES_DISC",Ancillary products should be below data products (can't reproduce locally),
-5,1,?keyword=Ozone,"C1239966794-GES_DISC,C1237114193-GES_DISC",OMI products should be above TOMS products because OMI is a later generation.,
-6,1,?keyword=leaf*+area*+index*,"C179130805-ORNL_DAAC,C179003662-ORNL_DAAC",Collections with Leaf area index in the titles should show up before others when searching for leaf area index,
-9,1,?keyword=ABoVE*,"C1000000540-ORNL_DAAC,C179003673-ORNL_DAAC",ABoVE project collections should be ahead of collections with above in the description,
-10,1,?keyword=npp*,"C1000000300-ORNL_DAAC,C1243477128-GES_DISC",NPP should return ecology results first,
-11,1,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1371623525-PODAAC",SMAP soil moisture searches should return L2-L4 SMAP above salinity products,
-11,2,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1214473171-ASF",SMAP soil moisture searches should return L2-L4 SMAP above L1 products,
-11,3,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1000000620-NSIDC_ECS",SMAP soil moisture searches should return L2-L4 SMAP above SMAPVEX products,
-12,1,?keyword=SMAP%20freeze%2Fthaw,"C1000001282-NSIDC_ECS,C1344054559-NSIDC_ECS",SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw,
+Anomaly,Test,Search,Concept-ids,Description
+1,1,?keyword=snow%2A+cover%2A+modis%2A,"C92711294-NSIDC_ECS,C203234497-LAADS","Snow cover should come before clouds when searching for snow cover"
+2,1,?keyword=snow%2A+cover%2A+modis%2A,"C1000001167-NSIDC_ECS,C92711294-NSIDC_ECS","V006 dataset should come before version 005"
+3,1,?keyword=SMAP*,"C1384837661-NSIDC_ECS,C1371623525-PODAAC","Soil moisture products should come before salinity products when searching for SMAP"
+4,1,?keyword=turbulent*+fluxes*,"C1237113442-GES_DISC,C1237113465-GES_DISC","Ancillary products should be below data products (can't reproduce locally)"
+5,1,?keyword=Ozone,"C1239966794-GES_DISC,C1237114193-GES_DISC","OMI products should be above TOMS products because OMI is a later generation."
+6,1,?keyword=leaf*+area*+index*,"C179130805-ORNL_DAAC,C179003662-ORNL_DAAC","Collections with Leaf area index in the titles should show up before others when searching for leaf area index"
+9,1,?keyword=ABoVE*,"C1000000540-ORNL_DAAC,C179003673-ORNL_DAAC","ABoVE project collections should be ahead of collections with above in the description"
+10,1,?keyword=npp*,"C1000000300-ORNL_DAAC,C1243477128-GES_DISC","NPP should return ecology results first"
+11,1,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1371623525-PODAAC","SMAP soil moisture searches should return L2-L4 SMAP above salinity products"
+11,2,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1214473171-ASF","SMAP soil moisture searches should return L2-L4 SMAP above L1 products"
+11,3,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1000000620-NSIDC_ECS","SMAP soil moisture searches should return L2-L4 SMAP above SMAPVEX products"
+12,1,?keyword=SMAP%20freeze%2Fthaw,"C1000001282-NSIDC_ECS,C1344054559-NSIDC_ECS","SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw"
+14,1,?keyword=glacier*,"C1386246230-NSIDCV0,C1000001040-NSIDC_ECS","World glacier inventory should be a top 3 collection when searching for glacier"
+14,2,?keyword=glacier*,"C1386250255-NSIDCV0,C1000001040-NSIDC_ECS","GLIMS should be a top 3 collection when searching for glacier"
+15,1,?keyword=snow*+cover*,"C1386246980-NSIDCV0,C1386246263-NSIDCV0,C1386246258-NSIDCV0","Northern Hemisphere EASE-Grid 2.0 Version 4 should be ranked high because temporal coverage is very long and community usage is high."
+15,2,?keyword=snow*+cover*,"C1000001181-NSIDC_ECS,C1386246263-NSIDCV0,C1386246258-NSIDCV0","MODIS/Terra Snow Cover 5-Min L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high."
+15,3,?keyword=snow*+cover*,"C1000001167-NSIDC_ECS,C1386246263-NSIDCV0,C1386246258-NSIDCV0","NOTE: Found an L3 slightly different - MODIS/Terra Snow Cover Daily L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high."
 20,1,?keyword=sea%20ice%20extent,"C184437554-NSIDC_ECS,C1386250236-NSIDCV0,C1386246980-NSIDCV0,C115003861-NSIDC_ECS",Sea ice extent,
 26,1,?keyword=ASDC%20MEaSUREs,,"C1000001301-LARC_ASDC,C1000000041-LARC",Collections from ASDC data center above other data centers
 32,1,?keyword=L3%20MODIS%20SST%20DAYTIME,"C1293299526-PODAAC,C1282713278-PODAAC",,

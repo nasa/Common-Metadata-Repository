@@ -19,7 +19,7 @@
    "application/dif+xml" "dif9"
    "application/dif10+xml" "dif10"
    "application/iso:smap+xml" "iso-smap"
-   "application/iso-19115+xml" "iso-19115"})
+   "application/iso19115+xml" "iso19115"})
 
 (defn- find-collection-ids-to-download
   "Returns a list of concepts that need to be downloaded. Uses the anomaly tests CSV file."
@@ -74,5 +74,5 @@
  (download-and-save-all-collections)
  (find-collection-ids-to-download)
  (formats-for-collections ["C1200196931-SCIOPS" "C1000000803-DEV08"]) ;; SIT
- (formats-for-collections ["C1237114193-GES_DISC"]) ;; Prod
+ (formats-for-collections ["C1386246230-NSIDCV0"]) ;; Prod
  (download-concept-metadata "C1237114193-GES_DISC"))

@@ -18,7 +18,7 @@
   "http://localhost:3003/community-usage-metrics")
 
 (def test-collection-formats
- [:iso-smap :echo10 :dif10 :dif9])
+ [:iso-smap :echo10 :dif10 :dif9 :iso19115])
 
 (defn- provider-guids
   "Return a list of guid/provider pairs given a list of provider strings"
