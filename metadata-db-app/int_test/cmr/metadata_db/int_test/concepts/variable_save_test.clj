@@ -13,22 +13,14 @@
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
 
 (defmethod c-spec/gen-concept :variable
-  [_ _ uniq-num attributes]
-  (util/variable-concept uniq-num attributes))
+  [_ provider-id uniq-num attributes]
+  (util/variable-concept provider-id uniq-num attributes))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-variable-test
-  (c-spec/general-save-concept-test :variable ["CMR"]))
+  (c-spec/general-save-concept-test :variable ["REG_PROV"]))
 
-(deftest save-variable-specific-test
-  (testing "saving new variables"
-    (are3 [variable exp-status exp-errors]
-          (let [{:keys [status errors]} (util/save-concept variable)]
-            (is (= exp-status status))
-            (is (= (set exp-errors) (set errors))))
-
-          "failure when using non system-level provider"
-          (assoc (util/variable-concept 2) :provider-id "REG_PROV")
-          422
-          ["Variable could not be associated with provider [REG_PROV]. Variables are system level entities."])))
+(deftest save-variable-with-missing-required-parameters-test
+  (c-spec/save-test-with-missing-required-parameters
+    :variable ["REG_PROV"] [:concept-type :provider-id :native-id :extra-fields]))
