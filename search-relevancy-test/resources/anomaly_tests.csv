@@ -5,5 +5,11 @@ Anomaly,Test,Search,Concept-ids,Description
 4,1,?keyword=turbulent*+fluxes*,"C1237113442-GES_DISC,C1237113465-GES_DISC","Ancillary products should be below data products (can't reproduce locally)"
 5,1,?keyword=Ozone,"C1239966794-GES_DISC,C1237114193-GES_DISC","OMI products should be above TOMS products because OMI is a later generation."
 6,1,?keyword=leaf*+area*+index*,"C179130805-ORNL_DAAC,C179003662-ORNL_DAAC","Collections with Leaf area index in the titles should show up before others when searching for leaf area index"
+9,1,?keyword=ABoVE*,"C1000000540-ORNL_DAAC,C179003673-ORNL_DAAC","ABoVE project collections should be ahead of collections with above in the description"
+10,1,?keyword=npp*,"C1000000300-ORNL_DAAC,C1243477128-GES_DISC","NPP should return ecology results first"
+11,1,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1371623525-PODAAC","SMAP soil moisture searches should return L2-L4 SMAP above salinity products"
+11,2,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1214473171-ASF","SMAP soil moisture searches should return L2-L4 SMAP above L1 products"
+11,3,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1000000620-NSIDC_ECS","SMAP soil moisture searches should return L2-L4 SMAP above SMAPVEX products"
+12,1,?keyword=SMAP%20freeze%2Fthaw,"C1000001282-NSIDC_ECS,C1344054559-NSIDC_ECS","SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw"
 32,1,?keyword=L3%20MODIS%20SST%20DAYTIME,"C1293299526-PODAAC,C1282713278-PODAAC",
 33,1,?keyword=L3U%20VIIRS%20SST,"C1332404870-PODAAC,C1332331108-PODAAC",
