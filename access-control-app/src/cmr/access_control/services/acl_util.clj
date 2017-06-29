@@ -107,17 +107,16 @@
 
 (defn get-collections-chunked
   "Searches for collections in chunks."
-  [context values keyword provider-id]
+  [context values field provider-id]
   (let [chunk-size (config/sync-entry-titles-concept-ids-collection-batch-size)
         chunked-values (partition chunk-size chunk-size nil values)]
-    (apply merge
-      (map #(mdb1/find-concepts context
-                                {:exclude-metadata true
-                                 :latest true
-                                 keyword %
-                                 :provider-id provider-id}
-                                :collection)
-           chunked-values))))
+    (mapcat #(mdb1/find-concepts context
+                              {:exclude-metadata true
+                               :latest true
+                               field %
+                               :provider-id provider-id}
+                              :collection)
+            chunked-values)))
 
 (defn sync-entry-titles-concept-ids
   "If the given ACL is a catalog item acl with a collection identifier that includes concept-ids or
