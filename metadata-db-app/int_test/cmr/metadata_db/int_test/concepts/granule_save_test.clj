@@ -1,19 +1,19 @@
 (ns cmr.metadata-db.int-test.concepts.granule-save-test
   "Contains integration tests for saving granules. Tests saves with various configurations including
   checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
-            [clj-time.local :as l]
-            [cmr.common.log :refer (info)]
-            [cmr.common-app.test.side-api :as side]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec])
+  (:require
+   [clojure.test :refer :all]
+   [clj-http.client :as client]
+   [clj-time.core :as t]
+   [clj-time.format :as f]
+   [clj-time.local :as l]
+   [cmr.common.log :refer (info)]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.concept-constraints :as cc]
+   [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec])
   (:import java.io.FileNotFoundException))
-
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -49,10 +49,6 @@
       (util/verify-concept-was-saved gran1)
       (util/verify-concept-was-saved gran2)
       (is (not= gran1-concept-id gran2-concept-id)))))
-
-(deftest missing-required-parameters
-  (c-spec/save-test-with-missing-required-parameters
-    :granule ["REG_PROV" "SMAL_PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
 (deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
