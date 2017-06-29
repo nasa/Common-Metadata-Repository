@@ -19,7 +19,7 @@
    "application/dif+xml" "dif9"
    "application/dif10+xml" "dif10"
    "application/iso:smap+xml" "iso-smap"
-   "application/iso19115+xml" "iso-19115"})
+   "application/iso19115+xml" "iso19115"})
 
 (defn- find-collection-ids-to-download
   "Returns a list of concepts that need to be downloaded. Uses the anomaly tests CSV file."
