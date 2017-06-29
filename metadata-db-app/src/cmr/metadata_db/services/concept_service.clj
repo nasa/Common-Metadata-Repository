@@ -61,7 +61,7 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :service :variable :variable-association})
+  #{:tag :tag-association :humanizer :service :variable-association})
 
 ;;; utility methods
 
@@ -78,7 +78,6 @@
                       :tag-association (msg/tag-associations-only-system-level provider-id)
                       :humanizer (msg/humanizers-only-system-level provider-id)
                       :service (msg/services-only-system-level provider-id)
-                      :variable (msg/variables-only-system-level provider-id)
                       :variable-association (msg/variable-associations-only-system-level
                                              provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))

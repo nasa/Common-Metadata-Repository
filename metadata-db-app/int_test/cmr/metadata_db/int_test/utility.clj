@@ -299,9 +299,9 @@
 
 (defn variable-concept
   "Creates a variabe concept"
-  ([uniq-num]
-   (variable-concept uniq-num {}))
-  ([uniq-num attributes]
+  ([provider-id uniq-num]
+   (variable-concept provider-id uniq-num {}))
+  ([provider-id uniq-num attributes]
    (let [native-id (str "var-native" uniq-num)
          extra-fields (merge {:variable-name (str "var" uniq-num)
                               :measurement (str "measurement" uniq-num)}
@@ -311,8 +311,7 @@
                             :native-id native-id
                             :extra-fields extra-fields}
                            (dissoc attributes :extra-fields))]
-     ;; no provider-id should be specified for variables
-     (dissoc (concept nil :variable uniq-num attributes) :provider-id))))
+     (concept provider-id :variable uniq-num attributes))))
 
 (defn variable-association-concept
   "Creates a variable association concept"
