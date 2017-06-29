@@ -81,8 +81,19 @@
 
   Examples:
   ```
-  => (set-mode! :db :external)
+  => (set-modes! :db :external)
+  ```
+  ```
   => (set-modes! :elastic :in-memory :echo :external)
+  ```
+
+  Note that you can also pass these parameters to the `reset` function, which
+  will call `set-modes!` as shown above. Examples:
+  ```
+  => (reset :db :external)
+  ```
+  ```
+  => (reset :elastic :in-memory :echo :external)
   ```"
   ;; Note that the keys are listed below as a means of self-documentation; they
   ;; are not actually used individually, but rather as a whole with the
@@ -150,7 +161,15 @@
 
   If a run mode for a particular component is not passed, its value is taken
   from what is already in the `run-modes` global data structure. If no mode has
-  been set, the default from initialization will be used."
+  been set, the default from initialization will be used.
+
+  Examples:
+  ```
+  => (start :db :external)
+  ```
+  ```
+  => (start :elastic :in-memory :echo :external)
+  ```"
   ;; Note that even through the named args are not used, they are provided as
   ;; a means of self-documentation.
   [& {:keys [_elastic _echo _db _messaging] :as new-modes}]
@@ -215,8 +234,12 @@
   "Resets the development environment, taking optional keyword arguments for
   various run modes, e.g.:
   ```
-  (reset :db :external)
+  => (reset :db :external)
   ```
+  ```
+  => (reset :elastic :in-memory :echo :external)
+  ```
+
   See the docstring for `set-modes!` for more details.
 
   Environment resetting includes the reloading of any changed namespaces and
