@@ -445,17 +445,19 @@
 
 (defn find-concepts
   "Make a get to retrieve concepts by parameters for a specific concept type"
-  [concept-type params]
-  (let [response (client/get (str (concepts-url) "search/" (inf/plural (name concept-type)))
-                             {:query-params params
-                              :accept :json
-                              :throw-exceptions false
-                              :connection-manager (conn-mgr)})
-        status (:status response)]
-    (if (= status 200)
-      {:status status
-       :concepts (parse-concepts response)}
-      (assoc (parse-errors response) :status status))))
+  ([concept-type]
+   (find-concepts concept-type {}))
+  ([concept-type params]
+   (let [response (client/get (str (concepts-url) "search/" (inf/plural (name concept-type)))
+                              {:query-params params
+                               :accept :json
+                               :throw-exceptions false
+                               :connection-manager (conn-mgr)})
+         status (:status response)]
+     (if (= status 200)
+       {:status status
+        :concepts (parse-concepts response)}
+       (assoc (parse-errors response) :status status)))))
 
 (defn find-latest-concepts
   "Make a get to retrieve the latest revision of concepts by parameters for a specific concept type"
@@ -607,8 +609,7 @@
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (-> concept
-         (assoc :concept-id concept-id
-                 :revision-id revision-id)))))
+         (assoc :concept-id concept-id :revision-id revision-id)))))
 
 (defn create-and-save-tag
   "Creates, saves, and returns a tag concept with its data from metadata-db"
@@ -690,12 +691,12 @@
 
 (defn create-and-save-variable
   "Creates, saves, and returns a variable concept with its data from metadata-db"
-  ([uniq-num]
-   (create-and-save-variable uniq-num 1))
-  ([uniq-num num-revisions]
-   (create-and-save-variable uniq-num num-revisions {}))
-  ([uniq-num num-revisions attributes]
-   (let [concept (variable-concept uniq-num attributes)
+  ([provider-id uniq-num]
+   (create-and-save-variable provider-id uniq-num 1))
+  ([provider-id uniq-num num-revisions]
+   (create-and-save-variable provider-id uniq-num num-revisions {}))
+  ([provider-id uniq-num num-revisions attributes]
+   (let [concept (variable-concept provider-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
