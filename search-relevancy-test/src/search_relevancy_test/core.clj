@@ -8,10 +8,14 @@
   [clojure.string :as string]
   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
   [cmr.system-int-test.utils.index-util :as index]
-  [cmr.system-int-test.utils.ingest-util :as ingest-util]))
+  [cmr.system-int-test.utils.ingest-util :as ingest-util]
+  [cmr.transmit.config :as transmit-config]))
 
 (def base-search-path
   "http://localhost:3003/collections")
+
+(def community-usage-path
+  "http://localhost:3003/community-usage-metrics")
 
 (def test-collection-formats
  [:iso-smap :echo10 :dif10 :dif9])
@@ -34,7 +38,8 @@
 (defn- test-files-for-format
   "Returns a set of test collection files in the given format."
   [metadata-format]
-  (seq (.listFiles (io/file (io/resource (str "test_files/" (name metadata-format)))))))
+  (when-let [file (io/file (io/resource (str "test_files/" (name metadata-format))))]
+    (seq (.listFiles file))))
 
 (defn- test-files
   "Loops through test files for each format and extracts the file name, provider id,
@@ -129,12 +134,23 @@
                      (:description test)))
     (perform-search-test test)))
 
+(defn- ingest-community-usage-metrics
+  "Ingest community usage metrics from the csv file"
+  []
+  (client/put
+    community-usage-path
+    {:throw-exceptions false
+     :body (slurp (io/resource "community_usage_metrics.csv"))
+     :content-type "text/csv"
+     :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
 (defn relevancy-test
   "Reset the system, ingest all of the test data, and perform the searches from
   the anomaly testing CSV"
   []
   (let [test-files (test-files)]
     (create-providers test-files)
+    (ingest-community-usage-metrics) ;; Needs to happen before ingest
     (ingest-test-files test-files)
     (perform-tests)))
 

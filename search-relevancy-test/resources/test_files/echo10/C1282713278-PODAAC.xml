@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>MODIS_AQUA_L3_SST_MID-IR_DAILY_4KM_NIGHTTIME</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2010-04-07T00:18:25.000Z</InsertTime>
+    <LastUpdate>2016-05-19T14:35:35.000Z</LastUpdate>
+    <LongName>MODIS Aqua Level 3 SST MID-IR Daily 4km Nighttime</LongName>
+    <DataSetId>PODAAC-MODSA-M1D4N</DataSetId>
+    <Description>The Moderate-resolution Imaging Spectroradiometer (MODIS) is a scientific instrument (radiometer) on board the NASA Terra and Aqua satellite platforms, launched in 1999 and 2002 respectively to study global dynamics of the Earths atmosphere, land, ice and oceans. MODIS captures data in 36 spectral bands ranging in wavelength from 0.4 um to 14.4 um and at varying spatial resolutions (2 bands at 250 m, 5 bands at 500 m and 29 bands at 1 km), providing complete global coverage of the Earth every 1 to 2 days. Both Terra and Aqua platforms are in sun synchronous, near polar (98 degree) orbits at 705 km altitude but with a descending local equatorial crossing time of 10:30am in the case of Terra and a 1:30pm  ascending  crossing time for Aqua.   MODIS Aqua Global Level 3 Mapped mid-Infrared SST products consists of sea surface temperature (SST) data derived from the 3 and 4 mid-IR bands (MODIS channels 20,21,22 and 23).  Daily, weekly (8 day), monthly and annual MODIS SST products are available at both 4.63 and 9.26 km spatial resolution and for both daytime and nighttime passes.  This particular dataset is the MODIS Aqua, mid-IR SST level 3, 4km, daily, nighttime product.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-07-11T21:47:35.408Z</RevisionDate>
+    <ProcessingCenter>OBPG</ProcessingCenter>
+    <ProcessingLevelId>3</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>HDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2002-07-04T00:00:00.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>(818) 393-7165</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>podaac@podaac.jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>User</FirstName>
+                    <MiddleName>null</MiddleName>
+                    <LastName>Services</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Temperature</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Sea Surface Temperature</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>None</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>AQUA</ShortName>
+            <LongName>Earth Observing System, AQUA</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>MODIS</ShortName>
+                    <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/modis/retired/L3/aqua/4um/4km/daily/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/modis/retired/L3/aqua/4um/4km/daily</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-MODSA-M1D4N</URL>
+            <Description>(Search Granule)</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/modis/L3/docs/modis_sst.html</URL>
+            <Description>describes all the level 3 MODIS data</Description>
+            <Type>data set guide</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>
