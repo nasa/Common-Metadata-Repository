@@ -179,13 +179,13 @@
             [coll1 coll2-2 coll5-2] {:provider-id "REG_PROV" :latest true}
 
             "small provider with tombstones - provider-id"
-            [coll3 coll6-2] {:provider-id "SMAL_PROV1"  :latest true}
+            [coll3 coll6-2] {:provider-id "SMAL_PROV1" :latest true}
 
             "small provider - provider-id"
-            [coll4-3] {:provider-id "SMAL_PROV2"  :latest true}
+            [coll4-3] {:provider-id "SMAL_PROV2" :latest true}
 
             "regular provider - provider-id, entry-title"
-            [coll1] {:provider-id "REG_PROV" :entry-title "et1"  :latest true}
+            [coll1] {:provider-id "REG_PROV" :entry-title "et1" :latest true}
 
             "small provider - provider-id, entry-title"
             [coll3] {:provider-id "SMAL_PROV1" :entry-title "et3" :latest true}
@@ -372,7 +372,7 @@
             [(dissoc tag1 :metadata) (dissoc tag2 :metadata)] {:exclude-metadata true}))
 
     (testing "find all revisions"
-      (let [num-of-tags (-> (util/find-concepts :tag {})
+      (let [num-of-tags (-> (util/find-concepts :tag)
                             :concepts
                             count)]
         (is (= 5 num-of-tags))))))
@@ -492,8 +492,8 @@
               5 {})))))
 
 (deftest find-variables
-  (let [variable1 (util/create-and-save-variable 1 3)
-        variable2 (util/create-and-save-variable 2 2)]
+  (let [variable1 (util/create-and-save-variable "REG_PROV" 1 3)
+        variable2 (util/create-and-save-variable "REG_PROV" 2 2)]
     (testing "find latest revsions"
       (are3 [variables params]
         (= (set variables)
@@ -503,23 +503,21 @@
 
         "with metadata"
         [variable1 variable2]
-        {}
+        {:provider-id "REG_PROV"}
+
+        "find none - bad provider-id"
+        []
+        {:provider-id "PROV_NONE"}
 
         "exclude metadata"
         [(dissoc variable1 :metadata) (dissoc variable2 :metadata)]
-        {:exclude-metadata true}))
-
+        {:provider-id "REG_PROV" :exclude-metadata true}))
     (testing "find all revisions"
-      (let [num-of-variables (-> (util/find-concepts :variable {})
+      (let [num-of-variables (-> :variable
+                                 (util/find-concepts {:provider-id "REG_PROV"})
                                  :concepts
                                  count)]
         (is (= 5 num-of-variables))))))
-
-(deftest find-variables-with-invalid-parameters
-  (testing "extra parameters"
-    (is (= {:status 400
-            :errors ["Finding concept type [variable] with parameters [provider-id] is not supported."]}
-           (util/find-concepts :variable {:provider-id "REG_PROV"})))))
 
 (deftest find-variable-associations
   (let [coll1 (save-collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
@@ -530,7 +528,7 @@
                                                             :entry-title "et2"
                                                             :version-id "v1"
                                                             :short-name "s2"}})
-        associated-variable (util/create-and-save-variable 1)
+        associated-variable (util/create-and-save-variable "REG_PROV" 1)
         var-association1 (util/create-and-save-variable-association coll1 associated-variable 1 3)
         var-association2 (util/create-and-save-variable-association coll2 associated-variable 2 2)]
     (testing "find latest revisions"
