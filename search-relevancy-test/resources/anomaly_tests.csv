@@ -11,5 +11,10 @@ Anomaly,Test,Search,Concept-ids,Description
 11,2,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1214473171-ASF","SMAP soil moisture searches should return L2-L4 SMAP above L1 products"
 11,3,?keyword=SMAP*+soil*+moisture*,"C1000001282-NSIDC_ECS,C1000000620-NSIDC_ECS","SMAP soil moisture searches should return L2-L4 SMAP above SMAPVEX products"
 12,1,?keyword=SMAP%20freeze%2Fthaw,"C1000001282-NSIDC_ECS,C1344054559-NSIDC_ECS","SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw"
+14,1,?keyword=glacier*,"C1386246230-NSIDCV0,C1000001040-NSIDC_ECS","World glacier inventory should be a top 3 collection when searching for glacier"
+14,2,?keyword=glacier*,"C1386250255-NSIDCV0,C1000001040-NSIDC_ECS","GLIMS should be a top 3 collection when searching for glacier"
+15,1,?keyword=snow*+cover*,"C1386246980-NSIDCV0,C1386246263-NSIDCV0,C1386246258-NSIDCV0","Northern Hemisphere EASE-Grid 2.0 Version 4 should be ranked high because temporal coverage is very long and community usage is high."
+15,2,?keyword=snow*+cover*,"C1000001181-NSIDC_ECS,C1386246263-NSIDCV0,C1386246258-NSIDCV0","MODIS/Terra Snow Cover 5-Min L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high."
+15,3,?keyword=snow*+cover*,"C1000001167-NSIDC_ECS,C1386246263-NSIDCV0,C1386246258-NSIDCV0","NOTE: Found an L3 slightly different - MODIS/Terra Snow Cover Daily L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high."
 32,1,?keyword=L3%20MODIS%20SST%20DAYTIME,"C1293299526-PODAAC,C1282713278-PODAAC",
 33,1,?keyword=L3U%20VIIRS%20SST,"C1332404870-PODAAC,C1332331108-PODAAC",
