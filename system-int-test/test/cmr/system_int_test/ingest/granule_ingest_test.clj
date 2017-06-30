@@ -78,6 +78,10 @@
 ;; Verify that granule indexing is not being changed too quickly.
 ;; Changes being made to Granule indexed fields should be implemented across two
 ;; sprints to allow time for re-indexing of granules and to avoid breaking the search-app.
+;;
+;; Changes need to be made to start indexing the new field in one sprint,
+;; and the search application changes should be made in the following sprint.
+;;
 ;; In order to make this test pass, all that should need to be done is to update
 ;; the resource being slurped in the `let` below.
 (deftest granule-ingest-change-cadence-test
