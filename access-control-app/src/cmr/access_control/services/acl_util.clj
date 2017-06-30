@@ -6,6 +6,7 @@
     [clojure.string :as str]
     [cmr.access-control.data.access-control-index :as index]
     [cmr.access-control.data.acls :as acls]
+    [cmr.access-control.config :as config]
     [cmr.common.log :refer [info debug]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
@@ -104,6 +105,19 @@
                     identity-type-condition)]
     (get-acls-by-condition context condition)))
 
+(defn get-collections-chunked
+  "Searches for collections in chunks."
+  [context values field provider-id]
+  (let [chunk-size (config/sync-entry-titles-concept-ids-collection-batch-size)
+        chunked-values (partition chunk-size chunk-size nil values)]
+    (mapcat #(mdb1/find-concepts context
+                              {:exclude-metadata true
+                               :latest true
+                               field %
+                               :provider-id provider-id}
+                              :collection)
+            chunked-values)))
+
 (defn sync-entry-titles-concept-ids
   "If the given ACL is a catalog item acl with a collection identifier that includes concept-ids or
    entry-titles, return the ACL such that both are unioned with each other."
@@ -113,9 +127,9 @@
           concept-ids (:concept-ids collection-identifier)
           provider-id (get-in acl [:catalog-item-identity :provider-id])
           colls-from-entry-titles (when (seq entry-titles)
-                                    (mdb1/find-concepts context {:provider-id provider-id :entry-title entry-titles} :collection))
+                                    (get-collections-chunked context entry-titles :entry-title provider-id))
           colls-from-concept-ids (when (seq concept-ids)
-                                   (mdb1/find-concepts context {:provider-id provider-id :concept-id concept-ids} :collection))
+                                   (get-collections-chunked context concept-ids :concept-id provider-id))
           collections (distinct (concat colls-from-entry-titles colls-from-concept-ids))
           concept-ids (map :concept-id collections)
           entry-titles (map #(get-in % [:extra-fields :entry-title]) collections)
