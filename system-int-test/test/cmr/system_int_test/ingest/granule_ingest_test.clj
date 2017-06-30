@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.java.shell :only [sh]]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
@@ -80,15 +79,14 @@
 ;; Changes being made to Granule indexed fields should be implemented across two
 ;; sprints to allow time for re-indexing of granules and to avoid breaking the search-app.
 ;; In order to make this test pass, all that should need to be done is to update
-;; the resource being slurped in the `let` below. 
+;; the resource being slurped in the `let` below.
 (deftest granule-ingest-change-cadence-test
   (let [allowed-granule-index-fields (-> "index_set_granule_mapping.clj"
                                          io/resource
                                          slurp
                                          edn/read-string)
-        actual-granule-index-fields (index-set/granule-mapping :granule)]
+        actual-granule-index-fields (:properties (index-set/granule-mapping :granule))]
     (is (= allowed-granule-index-fields actual-granule-index-fields))))
-
 
 ;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test
