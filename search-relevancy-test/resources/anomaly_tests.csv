@@ -16,7 +16,7 @@ Anomaly,Test,Search,Concept-ids,Description
 15,1,?keyword=snow*+cover*,"C1386246980-NSIDCV0,C1386246263-NSIDCV0,C1386246258-NSIDCV0","Northern Hemisphere EASE-Grid 2.0 Version 4 should be ranked high because temporal coverage is very long and community usage is high."
 15,2,?keyword=snow*+cover*,"C1000001181-NSIDC_ECS,C1386246263-NSIDCV0,C1386246258-NSIDCV0","MODIS/Terra Snow Cover 5-Min L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high."
 15,3,?keyword=snow*+cover*,"C1000001167-NSIDC_ECS,C1386246263-NSIDCV0,C1386246258-NSIDCV0","NOTE: Found an L3 slightly different - MODIS/Terra Snow Cover Daily L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high."
-20,1,?keyword=sea%20ice%20extent,"C184437554-NSIDC_ECS,C1386250236-NSIDCV0,C1386246980-NSIDCV0,C115003861-NSIDC_ECS",Sea ice extent,
-26,1,?keyword=ASDC%20MEaSUREs,,"C1000001301-LARC_ASDC,C1000000041-LARC",Collections from ASDC data center above other data centers
-32,1,?keyword=L3%20MODIS%20SST%20DAYTIME,"C1293299526-PODAAC,C1282713278-PODAAC",,
-33,1,?keyword=L3U%20VIIRS%20SST,"C1332404870-PODAAC,C1332331108-PODAAC",,
+20,1,?keyword=sea%20ice%20extent,"C184437554-NSIDC_ECS,C1386250236-NSIDCV0,C1386246980-NSIDCV0,C115003861-NSIDC_ECS",Sea ice extent
+26,1,?keyword=ASDC%20MEaSUREs,"C1000001301-LARC_ASDC,C1000000041-LARC",Collections from ASDC data center above other data centers
+32,1,?keyword=L3%20MODIS%20SST%20DAYTIME,"C1293299526-PODAAC,C1282713278-PODAAC",
+33,1,?keyword=L3U%20VIIRS%20SST,"C1332404870-PODAAC,C1332331108-PODAAC",
