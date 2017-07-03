@@ -11,6 +11,7 @@
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.5.1"]
+                 [potemkin "0.4.3"]
                  [ring/ring-core "1.5.0"]
                  [ring/ring-json "0.4.0"]
                  [clj-http "2.0.0"]
