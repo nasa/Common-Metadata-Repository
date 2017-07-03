@@ -327,9 +327,10 @@
 
 (defn- fetch-variable-concept
   "Fetches the latest version of a variable concept variable variable-key."
-  [context variable-key]
+  [context provider-id native-id]
   (if-let [concept (mdb/find-latest-concept context
-                                            {:native-id variable-key
+                                            {:provider-id provider-id
+                                             :native-id native-id
                                              :latest true}
                                              :variable)]
     (if (:deleted concept)
@@ -341,39 +342,11 @@
      :not-found
      (msg/variable-does-not-exist variable-key))))
 
-(defn-timed create-variable
-  "Creates the variable, saving it as a revision in metadata db. Returns the
-  concept id and revision id of the saved variable."
-  [context variable-json-str]
-  (let [user-id (context-util/context->user-id
-                 context
-                 msg/token-required-for-variable-modification)
-        variable (as-> variable-json-str data
-                       (concept-json->concept data)
-                       (assoc data :originator-id user-id)
-                       (assoc data :native-id (string/lower-case (:name data))))]
-    ;; Check if the variable already exists
-    (if-let [concept-id (mdb2/get-concept-id context
-                                             :variable
-                                             "CMR"
-                                             (:native-id variable)
-                                             false)]
-      ;; The variable exists. Check if its latest revision is a tombstone
-      (let [concept (mdb2/get-latest-concept context concept-id false)]
-        (if (:deleted concept)
-          (overwrite-variable-tombstone context concept variable user-id)
-          (errors/throw-service-error
-           :conflict
-           (msg/variable-already-exists variable concept-id))))
-      ;; The variable doesn't exist
-      (mdb2/save-concept context
-                         (variable->new-concept variable)))))
-
 (defn update-variable
   "Updates an existing variable with the given concept id."
-  [context variable-key variable-json-str]
-  (let [updated-variable (concept-json->concept variable-json-str)
-        existing-concept (fetch-variable-concept context variable-key)
+  [context provider-id native-id metadata]
+  (let [updated-variable (concept-json->concept metadata)
+        existing-concept (fetch-variable-concept provider-id native-idkey)
         existing-variable (edn/read-string (:metadata existing-concept))]
     (validate-update-variable existing-variable updated-variable)
     (mdb/save-concept
@@ -393,8 +366,8 @@
 
 (defn delete-variable
   "Deletes a tag with the given concept id"
-  [context variable-key]
-  (let [existing-concept (fetch-variable-concept context variable-key)]
+  [context provider-id native-id]
+  (let [existing-concept (fetch-variable-concept context provider-id native-id)]
     (mdb/save-concept
       context
       (-> existing-concept
