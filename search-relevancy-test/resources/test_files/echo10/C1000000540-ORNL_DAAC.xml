@@ -1,0 +1,219 @@
+<Collection>
+            <ShortName>ReSALT_ALT_GPR_1265</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2015-09-25T00:00:00Z</InsertTime>
+            <LastUpdate>2015-09-25T00:00:00Z</LastUpdate>
+            <LongName>Pre-ABoVE: Ground-penetrating Radar Measurements of ALT on the Alaska North Slope</LongName>
+            <DataSetId>Pre-ABoVE: Ground-penetrating Radar Measurements of ALT on the Alaska North Slope</DataSetId>
+            <Description>This data set includes estimates of permafrost Active Layer Thickness (ALT; cm), and calculated uncertainties, derived using a ground-penetrating radar (GPR) system in the field in August 2014 near Toolik Lake and Happy Valley on the North Slope of Alaska. GPR measurements were taken along 10 transects of varying length (approx. 1 to 7 km). Traditional ALT estimates from mechanical probing every 100 to 500 m along each transect are also included. These data are suitable for future studies of how ALT varies over relatively large geological features, such as hills and valleys, wetland areas, and drained lake basins.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1265</DOI>
+                <Authority>ORNL DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2015-09-25T00:00:00Z</RevisionDate>
+            <ProcessingCenter>ORNL_DAAC</ProcessingCenter>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Chen, A., A. Parsekian, K. Schaefer, E. Jafarov, S.K. Panda, L. Liu, T. Zhang, and H.A. Zebker. 2015. Pre-ABoVE: Ground-penetrating Radar Measurements of ALT on the Alaska North Slope. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1265</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2014-08-10T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2014-08-15T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CLIMATE INDICATORS</TopicKeyword>
+                    <TermKeyword>TERRESTRIAL HYDROSPHERE INDICATORS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST MELT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CRYOSPHERE</TopicKeyword>
+                    <TermKeyword>FROZEN GROUND</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ACTIVE LAYER</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CRYOSPHERE</TopicKeyword>
+                    <TermKeyword>FROZEN GROUND</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CRYOSPHERE</TopicKeyword>
+                    <TermKeyword>SNOW/ICE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>FROZEN GROUND</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ACTIVE LAYER</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>FROZEN GROUND</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+                    <TermKeyword>SNOW/ICE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PERMAFROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>FIELD INVESTIGATION</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>GPR</ShortName>
+                            <LongName>Ground Penetrating Radar</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>GPR</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>GPS</ShortName>
+                            <LongName>Global Positioning System</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>GPS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>SOIL DEPTH PROBE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>SOIL DEPTH PROBE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>ABoVE</ShortName>
+                    <LongName>Arctic-Boreal Vulnerability Experiment</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/above/ReSALT_ALT_GPR/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1265</URL>
+                    <URLDescription>ORNL DAAC Landing Page URL for this Collection</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/ABOVE/guides/ReSALT_ALT_GPR.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1265</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/ReSALT_ALT_GPR/comp/Raw_GPR_Data.zip</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/ReSALT_ALT_GPR/comp/Raw_GPR_data_documentation.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/ReSALT_ALT_GPR/comp/ReSALT_ALT_GPR.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/above/ReSALT_ALT_GPR/comp/ReSALT_ALT_GPR_Fig1.png</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-149.50</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>69.15</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-148.70</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>68.40</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

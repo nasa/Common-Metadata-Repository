@@ -1,0 +1,159 @@
+<Collection>
+            <ShortName>LBA_CDO2_ATMOSPHERE_ISOTOPES_1011</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2011-05-12T00:00:00Z</InsertTime>
+            <LastUpdate>2011-05-12T00:00:00Z</LastUpdate>
+            <LongName>LBA-ECO CD-02 Carbon and Oxygen Isotopes in Atmospheric CO2 in the Amazon: 1999-2004</LongName>
+            <DataSetId>LBA-ECO CD-02 Carbon and Oxygen Isotopes in Atmospheric CO2 in the Amazon: 1999-2004</DataSetId>
+            <Description>This data set reports carbon and oxygen stable isotope ratios of atmospheric carbon dioxide (CO2) collected at several forest and pasture sites and in the free troposphere over Amazonia. There are three comma-delimited ASCII files with this data set.Atmospheric CO2 concentrations and isotope signatures were measured at ten different forest and pasture canopy sites across the states of Amazonas, Para, and Rondonia within the Brazilian Amazon between March 1999 and March 2004. Both daytime and nighttime profile samples were collected.Samples of CO2 in the troposphere were collected during aircraft flights over the Amazon/Tapajos Rivers, FLONA Tapajos, and pasture/agriculture areas during five days in May 2003 (wet season). Samples were analyzed for carbon and oxygen isotopes of atmospheric CO2. Flights ranged from low altitudes to above the diurnal tropospheric boundary layer.Measurements of carbon and oxygen stable isotope ratios of atmospheric carbon dioxide (CO2) are a powerful indicator of large-scale CO2 exchange on land across multiple spatial scales. Stable carbon isotope composition of leaf tissue and CO2 released by respiration (delta r) can be used as an estimate of changes in ecosystem isotopic discrimination that occur in response to seasonal and interannual changes in environmental conditions, and land-use change (forest-pasture conversion). Understanding of carbon dioxide stable isotope composition can play a central role in influencing our understanding of the extent to which terrestrial ecosystems are carbon sinks.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1011</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2011-05-12T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Ehleringer, J.R., L.A. Martinelli, C. Cook, T.F. Domingues, L. Flanagan, J.A. Berry, and J.P.H.B. Ometto. 2011. LBA-ECO CD-02 Carbon and Oxygen Isotopes in Atmospheric CO2 in the Amazon: 1999-2004. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1011</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1999-03-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2004-03-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>CARBON DIOXIDE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>BIOGEOCHEMICAL CYCLES</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>LABORATORY</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MASS SPECTROMETERS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>MASS SPECTROMETERS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>FIELD INVESTIGATION</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>CO2 ANALYZERS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>CO2 ANALYZERS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>LBA-ECO</ShortName>
+                    <LongName>Large Scale Biosphere-Atmosphere Experiment - Ecology</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/lba/carbon_dynamics/CD02_Atmosphere_CO2_Isotopes//</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1011</URL>
+                    <URLDescription>ORNL DAAC Landing Page URL for this Collection</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/LBA/guides/CD02_Atmosphere_CO2_Isotopes.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1011</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/lba/carbon_dynamics/CD02_Atmosphere_CO2_Isotopes//comp/CD02_Atmosphere_CO2_Isotopes.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-62.36</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>1.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>54.58</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-10.76</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

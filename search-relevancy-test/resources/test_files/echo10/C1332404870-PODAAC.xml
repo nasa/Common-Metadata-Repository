@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>VIIRS_NPP-OSPO-L3U-v2.4</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2015-04-24T22:31:19.453Z</InsertTime>
+    <LastUpdate>2015-04-24T22:31:19.453Z</LastUpdate>
+    <LongName>GHRSST v2 Level 3U Global Skin Sea Surface Temperature from the Visible Infrared Imaging Radiometer Suite (VIIRS) on the Suomi NPP satellite created by the NOAA Advanced Clear-Sky Processor for Ocean (ACSPO)</LongName>
+    <DataSetId>PODAAC-GHVRS-3UO24</DataSetId>
+    <Description>The ACSPO VIIRS L3U (Level 3 Uncollated) product is a gridded version of the ACSPO VIIRS L2P product available here http://podaac.jpl.nasa.gov/dataset/VIIRS_NPP-OSPO-L2P-v2.4. Data files are 10min granules in netcdf4 format compliant with the GHRSST Data Specification version 2 (GDS2). There are 144 granules per 24hr interval, with a total data volume of 1GB/day. Fill values are reported at all invalid pixels, including pixels at &gt;5 km inland.  For each valid water pixel (defined as ocean, sea, lake or river, and up to 5 km inland), the following layers are reported: SSTs, ACSPO clear-sky mask (ACSM; provided in each grid as part of l2p_flags, which also includes day/night, land, ice, twilight, and glint flags), NCEP wind speed, and ACSPO SST minus reference (Canadian Met Centre 0.2deg L4 SST; available at http://podaac.jpl.nasa.gov/dataset/CMC0.2deg-CMC-L4-GLOB-v2.0). Only L2P SSTs with QL=5 were gridded, so all valid SSTs are recommended for the users. Per GDS2 specifications, two additional Sensor-Specific Error Statistics layers (SSES bias and standard deviation) are reported in each pixel with valid SST. The ACSPO VIIRS L3U product is monitored and validated against in situ data (Xu and Ignatov, 2014) in SQUAM (Dash et al, 2010).</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-10-06T13:37:47.261Z</RevisionDate>
+    <ProcessingCenter>Joint Polar Satellite System (JPSS)</ProcessingCenter>
+    <ProcessingLevelId>3</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2015-05-19T13:50:00.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Center for Satellite Applications and Research</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>301-683-3379</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>Alex.Ignatov@noaa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Alexander</FirstName>
+                    <MiddleName>none</MiddleName>
+                    <LastName>Ignatov</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Temperature</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Sea Surface Temperature</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Skin Sea Surface Temperature</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>Suomi NPP</ShortName>
+            <LongName>Suomi Suomi National Polar-orbiting Partnership</LongName>
+            <Type>spacecraft</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>VIIRS</ShortName>
+                    <LongName>Visible Infrared Imaging Radiometer Suite</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>VIIRS</ShortName>
+                            <LongName>Visible Infrared Imaging Radiometer Suite</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>http://data.nodc.noaa.gov/cgi-bin/nph-dods/ghrsst/GDS2/L3U/VIIRS_NPP/OSPO/v2.4/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://ftp.nodc.noaa.gov/pub/data.nodc/ghrsst/GDS2/L3U/VIIRS_NPP/OSPO/v2.4</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L3U/VIIRS_NPP/OSPO/v2.4/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/ghrsst/data/GDS2/L3U/VIIRS_NPP/OSPO/v2.4</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/R/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/OceanTemperature/ghrsst/docs/GDS20r5.pdf</URL>
+            <Description>Documentation on the GDS version 2 format specification</Description>
+            <Type>PORTAL_DOC_USERS_GUIDE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://onlinelibrary.wiley.com/doi/10.1002/2013JD020637/abstract</URL>
+            <Description>Petrenko, B., A. Ignatov, Y. Kihai, J. Stroup, P. Dash, 2014: Evaluation and Selection of SST Regression Algorithms for JPSS VIIRS. JGR, 119, 4580-4599, doi: 10.1002/2013JD020637</Description>
+            <Type>PORTAL_DOC_JOURNAL_REFERENCES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.star.nesdis.noaa.gov/sod/sst/iquam/</URL>
+            <Description>Xu, F.</Description>
+            <Type>PORTAL_DOC_JOURNAL_REFERENCES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/matlab/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/OceanTemperature/ghrsst/sw/IDL/</URL>
+            <Description>Read software</Description>
+            <Type>EXTRACT_NETCDF4</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.star.nesdis.noaa.gov/sod/sst/squam/</URL>
+            <Description>Dash, P., A. Ignatov, Y. Kihai</Description>
+            <Type>PORTAL_DOC_JOURNAL_REFERENCES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/python/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://ftp.star.nesdis.noaa.gov/pub/sod/osb/aignatov/ACSPO/</URL>
+            <Description>Samples, Interface Control Document describing file contents, background ppt and other info</Description>
+            <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/idl/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac.jpl.nasa.gov/forum/viewtopic.php?f=7&amp;t=298</URL>
+            <Description></Description>
+            <Type>PORTAL_DOC_FAQS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://journals.ametsoc.org/doi/abs/10.1175/2010JTECHA1413.1</URL>
+            <Description>Petrenko, B., A. Ignatov, Y. Kihai, and A. Heidinger, 2010: Clear-Sky Mask for ACSPO. JTech, 27, 1609-1623</Description>
+            <Type>PORTAL_DOC_JOURNAL_REFERENCES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://ghrsst.jpl.nasa.gov</URL>
+            <Description>Portal to the GHRSST Global Data Assembly Center and data access</Description>
+            <Type>Get Data</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHVRS-3UO24</URL>
+            <Description>(Search Granule)</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.star.nesdis.noaa.gov/sod/sst/micros/</URL>
+            <Description>Liang, X.</Description>
+            <Type>PORTAL_DOC_JOURNAL_REFERENCES</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>
