@@ -54,7 +54,7 @@
 
 (defmethod get-table-name :default
   [provider concept-type]
-  ;; Dont' remove the next line - needed to prevent SQL injection
+  ;; Don't remove the next line - needed to prevent SQL injection
   (pv/validate-provider provider)
   (let [{:keys [provider-id small]} provider
         db-provider-id (if small pv/small-provider-id provider-id)]

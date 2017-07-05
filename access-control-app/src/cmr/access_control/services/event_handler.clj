@@ -3,13 +3,13 @@
   (:require
     [cmr.access-control.config :as config]
     [cmr.access-control.data.access-control-index :as index]
-    [cmr.common.log :refer (debug info warn error)]
-    [cmr.message-queue.services.queue :as queue]
-    [cmr.transmit.metadata-db2 :as mdb]
-    [cmr.umm-spec.acl-matchers :as acl-matchers]
     [cmr.access-control.services.acl-service :as acl-service]
+    [cmr.common.concepts :as concepts]
+    [cmr.common.log :refer (debug info warn error)]
+    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
     [cmr.transmit.config :as transmit-config]
-    [cmr.common.concepts :as concepts]))
+    [cmr.transmit.metadata-db2 :as mdb]
+    [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
 (defmulti handle-provider-event
   "Handle the various messages that are posted to the provider queue.
@@ -81,36 +81,35 @@
   [context {:keys [concept-id revision-id]}]
   (let [concept-map (mdb/get-concept context concept-id revision-id)
         collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)]
-    (doseq [key-path [:entry-titles :concept-ids]
-            acl-concept (acl-service/get-all-acl-concepts context)
+    (doseq [acl-concept (acl-service/get-all-acl-concepts context)
             :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                   catalog-item-id (:catalog-item-identity parsed-acl)
-                  value (if (= key-path :entry-titles)
-                          (:EntryTitle collection-concept)
-                          (:concept-id collection-concept))
-                  acl-values (get (:collection-identifier catalog-item-id) key-path)]
+                  concept-ids (get (:collection-identifier catalog-item-id) :concept-ids)]
             :when (and (= (:provider-id collection-concept) (:provider-id catalog-item-id))
-                       (some #{value} acl-values))]
-      (if (= 1 (count acl-values))
+                       (some #{concept-id} concept-ids))]
+      (if (= 1 (count concept-ids))
         ;; The ACL only references the collection being deleted, and therefore the ACL should be deleted.
         ;; With the addition of concept-ids, this assumes entry-titles and concept-ids are in sync.
         (acl-service/delete-acl (transmit-config/with-echo-system-token context)
                                 (:concept-id acl-concept))
         ;; Otherwise the ACL references other collections, and will be updated
-        (let [new-acl (update-in parsed-acl
-                                 [:catalog-item-identity :collection-identifier key-path]
-                                 #(remove #{value} %))]
+        (let [new-acl (-> parsed-acl
+                          (assoc-in [:catalog-item-identity :collection-identifier :concept-ids]
+                                    (remove #(= % concept-id) concept-ids))
+                          (update-in [:catalog-item-identity :collection-identifier]
+                                     dissoc :entry-titles))]
           (acl-service/update-acl (transmit-config/with-echo-system-token context)
                                   (:concept-id acl-concept) new-acl))))))
+
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
     (dotimes [n (config/index-queue-listener-count)]
-      (queue/subscribe queue-broker
+      (queue-protocol/subscribe queue-broker
                        (config/provider-queue-name)
                        #(handle-provider-event context %))
-      (queue/subscribe queue-broker
+      (queue-protocol/subscribe queue-broker
                        (config/index-queue-name)
                        #(handle-indexing-event context %)))))

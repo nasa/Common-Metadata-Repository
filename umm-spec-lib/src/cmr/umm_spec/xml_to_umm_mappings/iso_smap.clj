@@ -10,7 +10,7 @@
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]

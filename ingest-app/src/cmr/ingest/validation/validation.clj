@@ -22,7 +22,8 @@
 (def ^:private
   valid-concept-mime-types
   {:collection #{mt/echo10 mt/iso-smap mt/iso19115 mt/dif mt/dif10 mt/umm-json}
-   :granule    #{mt/echo10 mt/iso-smap}})
+   :granule #{mt/echo10 mt/iso-smap}
+   :variable #{mt/umm-json}})
 
 
 (defn- validate-format
@@ -42,7 +43,7 @@
   "Validates the metadata length is not unreasonable."
   [concept]
   (when (<= (count (:metadata concept)) 4)
-    (errors/throw-service-error :bad-request "XML content is too short.")))
+    (errors/throw-service-error :bad-request "Request content is too short.")))
 
 (defn validate-concept-request
   "Validates the initial request to ingest a concept."

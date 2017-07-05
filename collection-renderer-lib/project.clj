@@ -14,7 +14,7 @@
    the hardcoded commit id during dev integration with cmr_metadata_preview project.
    The hardcoded commit id should be updated when MMT releases a new version of the gem."
   (or (System/getenv "CMR_METADATA_PREVIEW_COMMIT")
-      "2c39580"))
+      "0211841"))
 
 (def gem-install-path
   "The directory within this library where Ruby gems are installed."
@@ -67,7 +67,7 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient"]
+            "check-deps" ["with-profile" "lint" "ancient" "all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

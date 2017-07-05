@@ -1,10 +1,11 @@
 (ns cmr.metadata-db.data.ingest-events
   "Allows broadcast of ingest events via the message queue"
-  (:require [cmr.metadata-db.config :as config]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cc]
-            [cmr.message-queue.services.queue :as queue]))
+  (:require
+   [cmr.common.concepts :as cc]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.message-queue.services.queue :as queue]
+   [cmr.metadata-db.config :as config]))
 
 (defn publish-event
   "Put an ingest event on the message queue."

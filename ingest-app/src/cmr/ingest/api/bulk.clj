@@ -7,8 +7,9 @@
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer :all] 
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
    [cmr.ingest.services.ingest-service :as ingest]))
@@ -17,15 +18,18 @@
   "Bulk update collections. Validate provider exists, check ACLs, and validate
   POST body. Writes rows to tables and returns task id"
   [provider-id request]
-  (let [{:keys [body headers request-context]} request
-        body (string/trim (slurp body))]
-    (api-core/verify-provider-exists request-context provider-id)
-    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id body)]
-      (api-core/generate-ingest-response
-        headers
-        {:status 200
-         :task-id task-id}))))
+  (if-not (ingest-config/bulk-update-enabled)
+    (srvc-errors/throw-service-error
+        :bad-request "Bulk update is disabled.")
+    (let [{:keys [body headers request-context]} request
+          content (api-core/read-body! body)]
+      (api-core/verify-provider-exists request-context provider-id)
+      (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+      (let [task-id (bulk-update/validate-and-save-bulk-update request-context provider-id content)]
+        (api-core/generate-ingest-response
+          headers
+          {:status 200
+           :task-id task-id})))))
 
 (defn- generate-xml-status-list
  "Generate XML for a status list with the format

@@ -1,23 +1,25 @@
 (ns cmr.message-queue.queue.rabbit-mq
   "Implements index-queue functionality using rabbit mq"
   (:gen-class)
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.mime-types :as mt]
-            [cmr.message-queue.config :as config]
-            [cmr.common.services.errors :as errors]
-            [cmr.message-queue.services.queue :as queue]
-            [langohr.core :as rmq]
-            [langohr.channel :as lch]
-            [langohr.queue :as lq]
-            [langohr.consumers :as lc]
-            [langohr.confirm :as lcf]
-            [langohr.basic :as lb]
-            [langohr.exchange :as le]
-            [clj-http.client :as client]
-            [cheshire.core :as json]
-            [cmr.common.services.health-helper :as hh]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  (:require
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.message-queue.config :as config]
+   [cmr.common.services.errors :as errors]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+   [cmr.message-queue.services.queue :as queue]
+   [langohr.core :as rmq]
+   [langohr.channel :as lch]
+   [langohr.queue :as lq]
+   [langohr.consumers :as lc]
+   [langohr.confirm :as lcf]
+   [langohr.basic :as lb]
+   [langohr.exchange :as le]
+   [clj-http.client :as client]
+   [cheshire.core :as json]
+   [cmr.common.services.health-helper :as hh]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import java.io.IOException))
 
 (defmacro with-channel
@@ -67,7 +69,7 @@
                       (inc retry-count)
                       wait-q
                       ttl))
-        (queue/publish-to-queue queue-broker wait-q msg)
+        (queue-protocol/publish-to-queue queue-broker wait-q msg)
         (lb/ack ch delivery-tag)))))
 
 (defn- message-handler
@@ -263,7 +265,7 @@
     (assoc this :conn nil))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  queue/Queue
+  queue-protocol/Queue
 
   (publish-to-queue
     [this queue-name msg]

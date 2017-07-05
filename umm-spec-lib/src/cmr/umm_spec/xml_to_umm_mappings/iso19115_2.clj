@@ -17,7 +17,7 @@
    [cmr.umm-spec.util :as su :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]

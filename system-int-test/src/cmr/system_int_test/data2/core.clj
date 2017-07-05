@@ -106,7 +106,7 @@
              :metadata (when-not (:deleted collection)
                          (umm-spec/generate-metadata
                           context
-                          (dissoc collection :provider-id)
+                          (dissoc collection :provider-id :concept-id)
                           format-key))
              :format format}
             (when (:concept-id collection)

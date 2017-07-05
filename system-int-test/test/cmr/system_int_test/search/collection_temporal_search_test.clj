@@ -145,12 +145,11 @@
       [coll7] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-06T00:00:00Z"
                            "options[temporal][limit_to_granules]" true}
 
-      ;; coll7 is returned in the following two tests because of CMR-4220. Once CMR-4284 is fixed, remove it.
-      "coll7 is returned when searching with a temporal range that's within the gap of the collection's temporal ranges"
-      [coll7] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-04T00:00:00Z"}
+      "coll7 is not returned when searching with a temporal range that's within the gap of the collection's temporal ranges"
+      [] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-04T00:00:00Z"}
 
-      "coll7 is returned when searching with a temporal range that's within the gap of the collection's temporal ranges limit-to-granules case"
-      [coll7] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-04T00:00:00Z"
+      "coll7 is not returned when searching with a temporal range that's within the gap of the collection's temporal ranges limit-to-granules case"
+      [] {"temporal[]" "1997-05-03T00:00:00Z,1997-05-04T00:00:00Z"
                            "options[temporal][limit_to_granules]" true})))
 
 (deftest search-by-temporal-limit-to-granules-updates-are-handled-by-partial-refresh
@@ -298,9 +297,8 @@
         "search by temporal_end"
         [coll1 coll2 coll3 coll4 coll6 coll7 coll9 coll10 coll11 coll12 coll13 coll14] {"temporal[]" "/2010-12-12T12:00:00Z"}
 
-        ;; coll14 is returned in the following one test because of CMR-4220. Once CMR-4284 is fixed, remove it.
         "search by temporal_range that falls into the gap of the collection temporal ranges"
-        [coll14] {"temporal[]" "1960-05-03T00:00:00Z, 1960-05-04T00:00:00Z"}
+        [] {"temporal[]" "1960-05-03T00:00:00Z, 1960-05-04T00:00:00Z"}
  
         "search by temporal_range that intersects with the collection temporal ranges"
         [coll14] {"temporal[]" "1960-05-03T00:00:00Z, 1960-05-06T00:00:00Z"}

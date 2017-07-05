@@ -91,8 +91,12 @@
                          "has-granules-created-at=2014-01-01T10:00:00Z")
             range-references (search/find-concepts-with-param-string
                                "collection"
-                               "has-granules-created-at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")]
-        (d/refs-match? [regular-collection] range-references)))
+                               "has-granules-created-at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")
+            none-found (client/get (str "http://localhost:3003/collections"
+                                        "?has-granules-created-at=2017-02-01T10:00:00Z,2016-02-01T10:00:00Z"))]
+        (d/refs-match? [regular-collection] range-references)
+        (and (= (:body none-found) "")
+             (= (get (:headers none-found) "CMR-Hits") 0))))
     (testing "Granule search by created-at"
       (let [references (search/find-concepts-with-param-string
                          "granule"

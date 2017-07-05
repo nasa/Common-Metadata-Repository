@@ -10,13 +10,13 @@ See also the [API Documentation](api.html).
 
 ### <a name="routes"></a> Routes
 
-The CMR Ingest Site defines the following application routes, relative to the base CMR Search URL. These resources at the URLs are generated dynamically using page templates (cached).
+The CMR Ingest Site defines the following application routes, relative to the base CMR Ingest URL. These resources at the URLs are generated dynamically using page templates (cached).
 
 | Path  | Description                |
 | ----- | -------------------------- |
 | /     | The CMR Ingest "home" page |
 
-Note that in production, the base CMR Search URL is `/ingest`, while in development it is `/`.
+Note that in production, the base CMR Ingest URL is `/ingest`, while in development it is `/`.
 
 ### <a name="static-assets-and-content"></a> Static Assets and Content
 

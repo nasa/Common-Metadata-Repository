@@ -10,6 +10,7 @@
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.transmit.access-control :as ac]
     [cmr.transmit.config :as transmit-config]
+    ; [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.transmit.metadata-db2 :as mdb]))
 
 (use-fixtures :each
@@ -1018,3 +1019,128 @@
                                    (u/conn-context) acl-concept-id {:token token :raw? true})]
         (is (= 401 status))
         (is (= ["Permission to delete ACL is denied"] (:errors body)))))))
+
+(deftest entry-titles-concept-ids-sync
+  ; (dev-sys-util/eval-in-dev-sys `(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 3))
+  (let [token (e/login-guest (u/conn-context))
+        make-catalog-item (fn [name coll-id]
+                            (-> catalog-item-acl
+                                (assoc-in [:catalog_item_identity :name] name)
+                                (assoc-in [:catalog_item_identity :collection_identifier] coll-id)))
+        actual->set (fn [coll-id]
+                      (-> coll-id
+                          (update :entry_titles set)
+                          (update :concept_ids set)))
+        coll1 (u/save-collection {:entry-title "coll1 entry title"
+                                  :short-name "coll1"
+                                  :native-id "coll1"
+                                  :provider-id "PROV1"})
+
+        coll2 (u/save-collection {:entry-title "coll2 entry title"
+                                  :short-name "coll2"
+                                  :native-id "coll2"
+                                  :provider-id "PROV1"})
+
+        coll3 (u/save-collection {:entry-title "coll3 entry title"
+                                  :short-name "coll3"
+                                  :native-id "coll3"
+                                  :provider-id "PROV1"})
+
+        coll4 (u/save-collection {:entry-title "coll4 entry title"
+                                  :short-name "coll4"
+                                  :native-id "coll4"
+                                  :provider-id "PROV1"})
+
+        acl1 (ac/create-acl (u/conn-context)
+                            (make-catalog-item "acl1" {:entry_titles ["coll1 entry title"
+                                                                      "coll2 entry title"
+                                                                      "coll3 entry title"]})
+                            {:token token})
+
+        acl2 (ac/create-acl (u/conn-context)
+                            (make-catalog-item "acl2" {:concept_ids [coll1 coll2 coll3]})
+                            {:token token})
+
+        acl3 (ac/create-acl (u/conn-context)
+                            (make-catalog-item "acl3" {:concept_ids [coll1 coll2 coll3]
+                                                       :entry_titles ["coll1 entry title"
+                                                                      "coll2 entry title"
+                                                                      "coll3 entry title"]})
+                            {:token token})
+
+        acl4 (ac/create-acl (u/conn-context)
+                            (make-catalog-item "acl4" {:concept_ids [coll1 coll2]
+                                                       :entry_titles ["coll2 entry title"
+                                                                      "coll3 entry title"]})
+                            {:token token})
+        expected-collection-identifier {:concept_ids #{coll1 coll2 coll3}
+                                        :entry_titles #{"coll1 entry title"
+                                                        "coll2 entry title"
+                                                        "coll3 entry title"}}
+        expected-collection-identifier2 {:concept_ids #{coll4 coll3 coll2 coll1}
+                                         :entry_titles #{"coll1 entry title"
+                                                         "coll2 entry title"
+                                                         "coll3 entry title"
+                                                         "coll4 entry title"}}]
+    (testing "create acls"
+      (are3 [concept-id]
+        (is (= expected-collection-identifier
+               (actual->set
+                (get-in (ac/get-acl (u/conn-context) concept-id {:token token})
+                        [:catalog_item_identity :collection_identifier]))))
+
+        "Only entry-titles"
+        (:concept_id acl1)
+
+        "Only concept-ids"
+        (:concept_id acl2)
+
+        "Equal entry-titles and concept-ids"
+        (:concept_id acl3)
+
+        "Disjoint entry-titles and concept-ids"
+        (:concept_id acl4)))
+
+    (testing "update acls add collection via concept-ids"
+      (ac/update-acl (u/conn-context)
+                     (:concept_id acl4)
+                     (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3 coll4]
+                                                :entry_titles ["coll1 entry title"
+                                                               "coll2 entry title"
+                                                               "coll3 entry title"]})
+
+                     {:token token})
+      (is (= expected-collection-identifier2
+             (actual->set
+              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+                      [:catalog_item_identity :collection_identifier])))))
+
+    (testing "update acls remove collection"
+      (ac/update-acl (u/conn-context)
+                     (:concept_id acl4)
+                     (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3]
+                                                :entry_titles ["coll1 entry title"
+                                                               "coll2 entry title"
+                                                               "coll3 entry title"]})
+
+                     {:token token})
+      (is (= expected-collection-identifier
+             (actual->set
+              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+                      [:catalog_item_identity :collection_identifier])))))
+
+    (testing "update acls via entry-titles"
+      (ac/update-acl (u/conn-context)
+                     (:concept_id acl4)
+                     (make-catalog-item "acl4" {:concept_ids [coll1 coll2 coll3]
+                                                :entry_titles ["coll1 entry title"
+                                                               "coll2 entry title"
+                                                               "coll3 entry title"
+                                                               "coll4 entry title"]})
+
+                     {:token token})
+      (is (= expected-collection-identifier2
+             (actual->set
+              (get-in (ac/get-acl (u/conn-context) (:concept_id acl4) {:token token})
+                      [:catalog_item_identity :collection_identifier])))))))
+  ; (dev-sys-util/eval-in-dev-sys `(cmr.access-control.config/set-sync-entry-titles-concept-ids-collection-batch-size! 100)))

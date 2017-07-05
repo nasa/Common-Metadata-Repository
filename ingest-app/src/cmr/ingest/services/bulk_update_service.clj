@@ -5,6 +5,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as time-keeper]
    [cmr.common.validations.json-schema :as js]
    [cmr.ingest.config :as config]
    [cmr.ingest.data.bulk-update :as data-bulk-update]
@@ -46,7 +47,8 @@
                                    [(format "An update value must be supplied when the update is of type %s"
                                             update-type)]))
     (when (and (or (= "FIND_AND_REPLACE" update-type)
-                   (= "FIND_AND_REMOVE" update-type))
+                   (= "FIND_AND_REMOVE" update-type)
+                   (= "FIND_AND_UPDATE" update-type))
                (nil? find-value))
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"
@@ -93,8 +95,8 @@
                                                       [update-field] update-value find-value
                                                       update-format))
         (assoc :format update-format)
-        (update :revision-id inc))))
-
+        (update :revision-id inc)
+        (assoc :revision-date (time-keeper/now)))))
 
 (defn- validate-and-save-collection
   "Put concept through ingest validation. Attempt save to

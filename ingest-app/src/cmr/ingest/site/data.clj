@@ -12,14 +12,24 @@
   (:require
    [cmr.common-app.site.data :as common-data]))
 
+(def data-partners-guide
+  "Data for data partner's guide. Ingest includes a link to the Data Partner's Guide instead
+  of the Client Partner's guide."
+  {:partner-url "https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide"
+   :partner-text "Data Partner's Guide"})
+
 (defn base-page
   "Data that all app pages have in common."
   [context]
-  (assoc (common-data/base-page context) :app-title "CMR Ingest"))
+  (merge (common-data/base-page context)
+         data-partners-guide
+         {:app-title "CMR Ingest"}))
 
 (defn base-static
   "Data that all static pages have in common.
 
   Note that static pages don't have any context."
   []
-  (assoc (common-data/base-static) :app-title "CMR Ingest"))
+  (merge (common-data/base-static)
+         data-partners-guide
+         {:app-title "CMR Ingest"}))

@@ -2,6 +2,7 @@
   "Variable ingest functions in support of the ingest API."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.log :refer [debug info warn error]]
@@ -9,7 +10,8 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
-   [cmr.ingest.services.ingest-service :as ingest]))
+   [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.ingest.validation.validation :as v]))
 
 (defn- verify-variable-modification-permission
   "Verifies the current user has been granted permission to modify variables in
@@ -23,10 +25,14 @@
       :unauthorized
       (format "You do not have permission to %s a variable." (name permission-type)))))
 
-(defn- validate-variable-content-type
-  "Validates that content type sent with a variable is JSON"
-  [headers]
-  (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
+(defn- validate-variable-metadata
+  "Validate variable metadata, throws error if the metadata is not a valid against the
+   UMM variable JSON schema."
+  [content-type headers metadata]
+  (let [concept (api-core/metadata->concept :variable metadata content-type headers)
+        concept (update-in concept [:format] ingest/fix-ingest-concept-format)]
+    (v/validate-concept-request concept)
+    (v/validate-concept-metadata concept)))
 
 (defn create-variable
   "Processes a create variable request.
@@ -37,23 +43,27 @@
              permission in the system for any ingest; only 'update' is
              allowed for ingest operations. The mock ACL system (rightly)
              inherits this limitation from the real system."
-  [context headers body]
-  (verify-variable-modification-permission context :update)
-  (common-enabled/validate-write-enabled context "ingest")
-  (validate-variable-content-type headers)
-  (api-core/generate-ingest-response
-   headers
-   (ingest/create-variable context body)))
+  [request]
+  (let [{:keys [body content-type headers request-context]} request
+        metadata (api-core/read-body! body)]
+    (verify-variable-modification-permission request-context :update)
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (validate-variable-metadata content-type headers metadata)
+    (api-core/generate-ingest-response
+     headers
+     (ingest/create-variable request-context metadata))))
 
 (defn update-variable
   "Processes a request to update a variable."
-  [context headers body variable-key]
-  (verify-variable-modification-permission context :update)
-  (common-enabled/validate-write-enabled context "ingest")
-  (validate-variable-content-type headers)
-  (api-core/generate-ingest-response
-   headers
-   (ingest/update-variable context variable-key body)))
+  [variable-key request]
+  (let [{:keys [body content-type headers request-context]} request
+        metadata (api-core/read-body! body)]
+    (verify-variable-modification-permission request-context :update)
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (validate-variable-metadata content-type headers metadata)
+    (api-core/generate-ingest-response
+     headers
+     (ingest/update-variable request-context variable-key metadata))))
 
 (defn delete-variable
   "Deletes the variable with the given variable-key."

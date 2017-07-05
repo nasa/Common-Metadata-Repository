@@ -2,11 +2,13 @@
   "CMR granule ingest integration tests"
   (:require
    [cheshire.core :as json]
+   [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as u :refer [are3]]
+   [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.system :as indexer-system]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -73,6 +75,23 @@
                       (:concept-id coll1) (:concept-id coll2))]
              errors)))))
 
+;; Verify that granule indexing is not being changed too quickly.
+;; Changes being made to Granule indexed fields should be implemented across two
+;; sprints to allow time for re-indexing of granules and to avoid breaking the search-app.
+;;
+;; Changes need to be made to start indexing the new field in one sprint,
+;; and the search application changes should be made in the following sprint.
+;;
+;; In order to make this test pass, all that should need to be done is to update
+;; the resource being slurped in the `let` below.
+(deftest granule-ingest-change-cadence-test
+  (let [allowed-granule-index-fields (-> "index_set_granule_mapping.clj"
+                                         io/resource
+                                         slurp
+                                         edn/read-string)
+        actual-granule-index-fields (:properties (index-set/granule-mapping :granule))]
+    (is (= allowed-granule-index-fields actual-granule-index-fields))))
+
 ;; Verify a new granule is ingested successfully.
 (deftest granule-ingest-test
   (testing "ingest of a new granule"
@@ -123,7 +142,7 @@
         {:keys [status errors]} (ingest/ingest-concept granule-with-empty-body)]
     (index/wait-until-indexed)
     (is (= 400 status))
-    (is (re-find #"XML content is too short." (first errors)))))
+    (is (re-find #"Request content is too short." (first errors)))))
 
 ;; Verify that the accept header works
 (deftest granule-ingest-accept-header-response-test

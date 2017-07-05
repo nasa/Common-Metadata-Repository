@@ -16,9 +16,10 @@
   so that it will be easier to convert into elastic json"
   [temporal]
   (let [{:keys [start-date end-date exclusive? limit-to-granules]} temporal
-        [start-date-field end-date-field] (if limit-to-granules
-                                            [:granule-start-date :granule-end-date]
-                                            [:start-date :end-date])
+        [start-date-field end-date-field] 
+          (if limit-to-granules
+            [:limit-to-granules-temporals.start-date :limit-to-granules-temporals.end-date]
+            [:temporals.start-date :temporals.end-date])
         conditions (if end-date
                      [(cqm/map->DateRangeCondition {:field start-date-field
                                                     :end-date end-date
@@ -30,10 +31,13 @@
                      [(gc/or-conds [(cqm/map->MissingCondition {:field end-date-field})
                                     (cqm/map->DateRangeCondition {:field end-date-field
                                                                   :start-date start-date
-                                                                  :exclusive? exclusive?})])])]
-    (gc/and-conds (concat
-                    [(cqm/map->ExistCondition {:field start-date-field})]
-                    conditions)))) 
+                                                                  :exclusive? exclusive?})])])
+         and-conditions (gc/and-conds (concat
+                                        [(cqm/map->ExistCondition {:field start-date-field})]
+                                        conditions))]
+     (if limit-to-granules
+       (cqm/nested-condition :limit-to-granules-temporals and-conditions) 
+       (cqm/nested-condition :temporals and-conditions))))
 
 (defn current-end-date
   "Returns the current end datetime for a given year and attributes of a periodic temporal condition"

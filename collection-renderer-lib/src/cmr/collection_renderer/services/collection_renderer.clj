@@ -5,6 +5,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [cmr.common.lifecycle :as l]
+   [cmr.common.log :refer [info]]
    [cmr.umm-spec.migration.version-migration :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.versioning :as umm-version])
@@ -30,12 +31,17 @@
   "gems/cmr_metadata_preview-0.0.1/.umm-version")
 
 (defn- create-jruby-runtime
-  "Creates and initializes a JRuby runtime."
+  "Creates and initializes a JRuby runtime. We do this as a future to speed up REPL start time
+  by more than one minute. Worst case is the first request to retrieve HTML after the search app
+  starts takes one minute, but in practice NGAP usually takes around one minute from the time an app
+  is started to put it in the load balancer, so this is not an operational concern."
   []
-  (let [jruby (.. (ScriptEngineManager.)
-                  (getEngineByName "jruby"))]
-    (.eval jruby (io/reader bootstrap-rb))
-    jruby))
+  (future
+    (let [jruby (.. (ScriptEngineManager.)
+                    (getEngineByName "jruby"))]
+      (.eval jruby (io/reader bootstrap-rb))
+      (info "JRuby runtime ready for collection renderer.")
+      jruby)))
 
 (defn- get-preview-gem-umm-version
   "Get the UMM schema version that is defined in preview gem."
@@ -51,7 +57,7 @@
 
  (defn eval-jruby
    [s]
-   (.eval jruby (java.io.StringReader. s)))
+   (.eval (deref jruby) (java.io.StringReader. s)))
 
  (eval-jruby "javascript_include_tag '/search/javascripts/application'  ")
  (eval-jruby "stylesheet_link_tag \"/search/stylesheets/application\", media: 'all' "))
@@ -67,6 +73,7 @@
    (-> this
        (assoc :jruby-runtime (create-jruby-runtime))
        (assoc :preview-gem-umm-version (get-preview-gem-umm-version))))
+
 
   (stop
    [this _system]
@@ -88,7 +95,7 @@
 
 (defn- context->jruby-runtime
   [context]
-  (get-in context [:system system-key :jruby-runtime]))
+  (deref (get-in context [:system system-key :jruby-runtime])))
 
 (defn- context->relative-root-url
   [context]

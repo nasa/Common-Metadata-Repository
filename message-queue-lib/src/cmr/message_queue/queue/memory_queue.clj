@@ -1,14 +1,16 @@
 (ns cmr.message-queue.queue.memory-queue
   "Defines an in memory implementation of the Queue protocol. It uses core.async for message passing."
-  (:require [clojure.core.async :as a]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.message-queue.config :as config]
-            [cmr.common.util :as u]
-            [cmr.common.services.errors :as errors]
-            [cheshire.core :as json]
-            [cmr.message-queue.services.queue :as queue]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.core.async :as a]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.message-queue.config :as config]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+   [cmr.message-queue.services.queue :as queue]))
 
 (def CHANNEL_BUFFER_SIZE
   "The number of messages that can be placed on a channel before the caller will block."
@@ -25,7 +27,7 @@
             msg (assoc msg :retry-count new-retry-count)]
         (info "Message" (pr-str msg) "re-queued with response:" (pr-str (:message resp)))
         (info (format "Retrying with retry-count =%d" new-retry-count))
-        (queue/publish-to-queue queue-broker queue-name msg)))))
+        (queue-protocol/publish-to-queue queue-broker queue-name msg)))))
 
 (defn- create-async-handler
   "Creates a go block that will asynchronously pull messages off the queue, pass them to the handler,
@@ -94,7 +96,7 @@
 
     this)
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  queue/Queue
+  queue-protocol/Queue
 
   (publish-to-queue
     [this queue-name msg]
@@ -109,7 +111,7 @@
 
   (publish-to-exchange
     [this exchange-name msg]
-    (every? #(queue/publish-to-queue this % msg)
+    (every? #(queue-protocol/publish-to-queue this % msg)
             (exchanges-to-queue-sets exchange-name)))
 
   (subscribe
