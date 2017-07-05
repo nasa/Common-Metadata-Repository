@@ -72,6 +72,25 @@
                               {:Type "Minimum Aircraft Altitude"
                                :Value "0"}]}})
 
+(def expected-mixed-data-vertical-coverage
+  [{:Minimum_Altitude "0",
+    :Maximum_Altitude "100"}
+   {:Minimum_Altitude "50", 
+    :Maximum_Altitude "70"}])
+
+(def mixed-data-vertical-coverage
+   {:SpatialExtent
+    {:VerticalSpatialDomains [{:Type "Minimum Altitude"
+                               :Value "0"}
+                              {:Type "Maximum Altitude"
+                               :Value "100"}
+                              {:Type "Some type"
+                               :Value "Some value"}
+                              {:Type "Minimum Altitude"
+                               :Value "50"}
+                              {:Type "Maximum Altitude"
+                               :Value "70"}]}})
+
 (deftest test-dif9-double-vertical-extent
 
   (testing "Full Double Vertical Coverage test"
@@ -84,4 +103,8 @@
 
   (testing "Bad Data Vertical Coverage test"
     (is (= expected-bad-data-vertical-coverage
-           (spatial/create-vertical-domain-vector-maps bad-data-vertical-coverage)))))
+           (spatial/create-vertical-domain-vector-maps bad-data-vertical-coverage))))
+
+  (testing "Mixed Data Vertical Coverage test"
+    (is (= expected-mixed-data-vertical-coverage
+           (spatial/create-vertical-domain-vector-maps mixed-data-vertical-coverage)))))

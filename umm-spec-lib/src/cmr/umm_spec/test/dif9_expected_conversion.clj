@@ -63,6 +63,11 @@
         platforms))))
 
 (defn- expected-dif-vertical-domains
+  "This function first gets the vertical domains from the passed in UMM spatial extent.
+   The vertical extent consists of a vector of maps that contains two keys :Type and :Value and their values.
+   Once the funtion has the vertical domains it checks each map to see if the key of :Type has a correct
+   value. If it does then it keeps the map otherwise it removes the map from the vector. The function passes back
+   the fixed list of maps."
   [spatial]
   (let [vertical-domains (:VerticalSpatialDomains spatial)]
     (remove #(nil? (spatial/create-elevation-key (:Type %))) vertical-domains)))
