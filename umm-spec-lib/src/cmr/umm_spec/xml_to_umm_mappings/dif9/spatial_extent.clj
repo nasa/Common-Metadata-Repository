@@ -3,14 +3,15 @@
   (:require
    [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]))
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.util :refer [default-granule-spatial-representation]]))
 
 ;; Bounding Box Parsing
 ;; This is the DIF 9 bounding box parsing map
-(def bounding-box-map {:NorthBoundingCoordinate "Northernmost_Latitude"
-                        :SouthBoundingCoordinate "Southernmost_Latitude"
-                        :WestBoundingCoordinate "Westernmost_Longitude"
-                        :EastBoundingCoordinate "Easternmost_Longitude"})
+(def bounding-box-parsing-map {:NorthBoundingCoordinate "Northernmost_Latitude"
+                               :SouthBoundingCoordinate "Southernmost_Latitude"
+                               :WestBoundingCoordinate "Westernmost_Longitude"
+                               :EastBoundingCoordinate "Easternmost_Longitude"})
 
 (defn- build-bounding-rectangle
   "This function uses recursion to peice together all of the horizontal domain coordinates into
@@ -35,8 +36,8 @@
                (if (nil? result)
                  (assoc {} bounding-key value)
                  (assoc result bounding-key value))]
-          (build-bounding-rectangle spatial-coverage (drop 1 bounding-box-map) new-result))
-        (build-bounding-rectangle spatial-coverage (drop 1 bounding-box-map) result)))))
+          (recur spatial-coverage (drop 1 bounding-box-map) new-result))
+        (recur spatial-coverage (drop 1 bounding-box-map) result)))))
 
 (defn- create-bounding-rectangles
   "This function returns a sequence of bounding rectangle maps that do not contain nils.
@@ -50,7 +51,7 @@
 (defn- parse-horizontal-domain
   "Create the horizontal spatial domain part of the spatial extent."
   [doc]
-  (when-let [brs (seq (create-bounding-rectangles doc bounding-box-map))]
+  (when-let [brs (seq (create-bounding-rectangles doc bounding-box-parsing-map))]
     {:HorizontalSpatialDomain
      {:Geometry {:CoordinateSystem "CARTESIAN" ;; DIF9 doesn't have CoordinateSystem, default to CARTESIAN
                  :BoundingRectangles brs}}}))
@@ -82,8 +83,8 @@
         result)
       (if-let [obj (create-vertical-domain-obj spatial-coverage elevation-type)]
         (let [new-result (conj result obj)]
-          (build-vertical-domains spatial-coverage (drop 1 elevation-list) new-result))
-        (build-vertical-domains spatial-coverage (drop 1 elevation-list) result)))
+          (recur spatial-coverage (drop 1 elevation-list) new-result))
+        (recur spatial-coverage (drop 1 elevation-list) result)))
     result))
 
 (defn- create-vertical-domains
@@ -105,7 +106,7 @@
   [doc sanitize?]
   {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
                                      (when sanitize?
-                                       "NO_SPATIAL"))})
+                                       default-granule-spatial-representation))})
 
 (defn- merge-spatial-extent
   "Parse and merge the horizontal and vertical domains. Return a partial map of Spatial Extent"
@@ -121,7 +122,6 @@
 (defn parse-spatial-extent
   "Parse the spatial extent from the passed in document. Return the spatial extent record."
   [doc sanitize?]
-  (def doc doc)
   (into {}
      [(parse-granule-representation doc sanitize?)
       (merge-spatial-extent doc)]))
