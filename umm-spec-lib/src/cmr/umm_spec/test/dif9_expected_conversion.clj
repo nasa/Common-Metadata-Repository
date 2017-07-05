@@ -14,6 +14,7 @@
   [cmr.umm-spec.test.location-keywords-helper :as lkt]
   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+  [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
   [cmr.umm-spec.util :as su]))
 
 (defn- single-date->range
@@ -61,13 +62,19 @@
                                       :Instruments instruments}))
         platforms))))
 
+(defn- expected-dif-vertical-domains
+  [spatial]
+  (let [vertical-domains (:VerticalSpatialDomains spatial)]
+    (remove #(nil? (spatial/create-elevation-key (:Type %))) vertical-domains)))
+
 (defn- expected-dif-spatial-extent
   "Returns the expected DIF parsed spatial extent for the given spatial extent."
   [spatial]
-  (let [spatial (-> spatial
+  (let [vertical-domains (expected-dif-vertical-domains spatial)
+        spatial (-> spatial
                     (assoc :SpatialCoverageType "HORIZONTAL"
                            :OrbitParameters nil
-                           :VerticalSpatialDomains nil)
+                           :VerticalSpatialDomains vertical-domains)
                     (update-in [:HorizontalSpatialDomain] assoc
                                :ZoneIdentifier nil)
                     (update-in [:HorizontalSpatialDomain :Geometry] assoc
