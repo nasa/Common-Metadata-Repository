@@ -1,5 +1,5 @@
 
-<DIF 
+<DIF
     xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
     xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -10,7 +10,7 @@
       <Dataset_Creator>Rothacher, Markus</Dataset_Creator>
       <Dataset_Title>GPS ground tracking data, Rinex formatted, 10 sec sample rate</Dataset_Title>
       <Dataset_Series_Name>CHAMP Orbit and Gravity Field Products</Dataset_Series_Name>
-      <Dataset_Release_Date>2001 - 2010 </Dataset_Release_Date>
+      <Dataset_Release_Date>2010-1-1</Dataset_Release_Date>
       <Dataset_Release_Place>Potsdam, Germany</Dataset_Release_Place>
       <Dataset_Publisher>GeoForschungsZentrum Potsdam</Dataset_Publisher>
       <Version>0.0</Version>

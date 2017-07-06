@@ -261,4 +261,5 @@
         (update :ScienceKeywords expected-science-keywords)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
+        (assoc :CollectionCitations nil)
         (update :CollectionProgress su/with-default)))

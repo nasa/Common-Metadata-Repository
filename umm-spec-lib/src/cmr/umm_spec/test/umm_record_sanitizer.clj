@@ -161,7 +161,8 @@
       (sanitize-umm-record-contacts :ContactGroups)
       (sanitize-umm-record-related-url :CollectionCitations)
       (sanitize-umm-record-related-url :PublicationReferences)
-      (update-in-each [:PublicationReferences] sanitize-online-resource)))
+      (update-in-each [:PublicationReferences] sanitize-online-resource)
+      (update-in-each [:CollectionCitations] sanitize-online-resource)))
 
 (defn- sanitize-umm-number-of-instruments
   "Sanitize all the instruments with the :NumberOfInstruments for its child instruments"
