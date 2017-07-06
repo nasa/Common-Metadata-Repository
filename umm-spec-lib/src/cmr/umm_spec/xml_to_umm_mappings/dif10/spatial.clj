@@ -3,11 +3,14 @@
   (:require [clojure.set :as set]
             [cmr.common.xml.simple-xpath :refer [select text]]
             [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as utx]
             [cmr.umm-spec.util :as u]))
 
 (def dif10-spatial-type->umm-spatial-type
-  (set/map-invert utx/umm-spatial-type->dif10-spatial-type))
+  {"Horizontal" "HORIZONTAL"
+   "Vertical" "VERTICAL"
+   "Orbit" "ORBITAL"
+   "HorizontalVertical" "HORIZONTAL_VERTICAL"
+   "Horizon&amp;Vert" "HORIZONTAL_VERTICAL"})
 
 (defn- parse-point
   [el]

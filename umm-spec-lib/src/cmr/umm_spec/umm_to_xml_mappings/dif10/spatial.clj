@@ -6,7 +6,9 @@
 (def umm-spatial-type->dif10-spatial-type
   {"HORIZONTAL" "Horizontal"
    "VERTICAL" "Vertical"
-   "ORBITAL" "Orbit"})
+   "ORBITAL" "Orbit"
+   "HORIZONTAL_VERTICAL" "HorizontalVertical"
+   "ORBITAL_VERTICAL" "HorizontalVertical"})
 
 (defn- point-contents
   "Returns the inner lon/lat elements for a DIF Point element from a UMM PointType record."

@@ -92,8 +92,12 @@
          (assoc related-url :FileSize nil :MimeType nil))))
 
 (defn- expected-dif10-spatial-extent
+  "For SpatialCoverageType DIF 10 doesn't have an ORBITAL_VERTICAL value so it gets
+   translated into HORIZONTAL_VERTICAL"
   [spatial-extent]
-  (-> spatial-extent
+  (-> (if (= (:SpatialCoverageType spatial-extent) "ORBITAL_VERTICAL")
+        (assoc spatial-extent :SpatialCoverageType "HORIZONTAL_VERTICAL")
+        spatial-extent)
       (update-in [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] conversion-util/fix-echo10-dif10-polygon)
       conversion-util/prune-empty-maps))
