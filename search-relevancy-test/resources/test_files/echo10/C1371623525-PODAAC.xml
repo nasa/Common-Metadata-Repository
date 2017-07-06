@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>SMAP_JPL_L2B_SSS_CAP_V3</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2017-02-14T02:25:13.556Z</InsertTime>
+    <LastUpdate>2017-02-14T02:25:13.556Z</LastUpdate>
+    <LongName>JPL SMAP Level 2B CAP Sea Surface Salinity V3.0 Validated Dataset</LongName>
+    <DataSetId>PODAAC-SMP30-2TOCS</DataSetId>
+    <Description>This is the PI-produced JPL SMAP-SSS, level 2B CAP, validated sea surface salinity orbital/swath product from the NASA Soil Moisture Active Passive (SMAP) observatory.  It is based on the Combined Active-Passive (CAP) retrieval algorithm developed at JPL originally in the context of Aquarius/SAC-D and now extended to SMAP.  The JPL SMAP-SSS L2C CAP product includes data for a range of parameters: derived SMAP sea surface salinity (SSS) and wind speed/direction data, brightness temperatures for each radiometer polarization, ancillary reference surface salinity, wind and wave height data, quality flags, and navigation data. Each data file covers one 98-minute orbit (15 files per day).  Data begins on April 1,2015 and is ongoing, with a 3 day latency in processing and availability. Observations are global in extent and provided at a 0.25 degree x 0.25 degree grid with an approximate spatial resolution of 40 km. 
+
+The SMAP satellite is in a near-polar orbit at an inclination of 98 degrees and an altitude of 685 km. It has an ascending node time of 6 pm and is sun-synchronous. With its 1000km swath, SMAP achieves global coverage in approximately 3 days, but has an exact orbit repeat cycle of 8 days.  On board Instruments include a highly sensitive L-band radiometer operating at 1.41GHz and an L-band 1.26GHz radar sensor providing complementary active and passive sensing capabilities.  Malfunction of the SMAP scatterometer on 7 July, 2015, has necessitated the use of collocated wind speed for the surface roughness correction required for the surface salinity retrieval.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2017-02-21T15:41:20.065Z</RevisionDate>
+    <ProcessingCenter>Jet Propulsion Laboratory (JPL) Climate Oceans and Solid Earth group</ProcessingCenter>
+    <ProcessingLevelId>2B</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>HDF5</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2015-04-01T00:43:12.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>(818) 393-7165</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>podaac@podaac.jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>User</FirstName>
+                    <MiddleName>null</MiddleName>
+                    <LastName>Services</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Salinity/Density</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Salinity</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Salinity</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>SMAP</ShortName>
+            <LongName>NASA Soil Moisture Active Passive (SMAP)</LongName>
+            <Type>null</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SMAP_RADIOMETER</ShortName>
+                    <LongName>SMAP L-Band Radiometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SMAP_RADIOMETER</ShortName>
+                            <LongName>SMAP L-Band Radiometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/smap/L2/JPL/V3/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/L2/JPL/V3</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/sw/matlab/</URL>
+            <Description>MATLAB Reader and calling routines</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/smap</URL>
+            <Description>SMAP-SSS Project and Instrument Overview</Description>
+            <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/sw/idl/</URL>
+            <Description>IDL Reader and calling routines</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/docs/JPL-CAP_V3/</URL>
+            <Description>ATBD, Validation Analysis, Product Specifications, etc</Description>
+            <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/sw/r/</URL>
+            <Description>R Reader and calling routines</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/docs/JPL-CAP_V3/JPL_SMAP-SSS-UsersGuide.pdf</URL>
+            <Description>JPL CAP SMAP-SSS V3.0 Technical Guide (ATBD, Validation Analysis, Product Format Specification)</Description>
+            <Type>PORTAL_DOC_USERS_GUIDE</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

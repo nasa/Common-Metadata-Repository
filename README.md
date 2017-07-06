@@ -242,6 +242,9 @@ applications, as well as several libraries and support applications.
   - Provides a public search API for concepts in the CMR
   - Main method: cmr.search.runner
 
+- search-relevancy-test
+  - Tests to measure and report the effectiveness of CMR's search relevancy algorithm
+
 - system-int-test
   - Black-box, system-level tests to ensure functionality of the CMR
 
