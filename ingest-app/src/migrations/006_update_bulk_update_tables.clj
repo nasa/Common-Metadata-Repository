@@ -21,7 +21,7 @@
                                   CONCEPT_ID VARCHAR(255) NOT NULL,
                                   STATUS VARCHAR(20),
                                   STATUS_MESSAGE  VARCHAR(500),
-                                  ACTION_TAKEN VARCHAR2(1) DEFAULT 'F' NOT NULL)")
+                                  ACTION_TAKEN INTEGER DEFAULT 0 NOT NULL)")
     (j/db-do-commands trans-conn "INSERT INTO CMR_INGEST.bulk_update_task_status_new(
                                   TASK_ID, PROVIDER_ID, REQUEST_JSON_BODY, STATUS, STATUS_MESSAGE)
                                   SELECT to_char(TASK_ID), PROVIDER_ID, REQUEST_JSON_BODY, STATUS, STATUS_MESSAGE
