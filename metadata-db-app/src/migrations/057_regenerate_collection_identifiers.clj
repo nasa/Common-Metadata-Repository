@@ -18,7 +18,7 @@
       (for [entry-title entry-titles
             :let [result (j/query (config/db) [(format "select distinct concept_id from metadata_db.%s where entry_title = ?" t)
                                                entry-title])]]
-          (:concept_id (first result))))))
+        (:concept_id (first result))))))
 
 (defn- get-entry-titles
   "For a given provider and concept-ids in collection-identifier, returns list of collection entry-titles"
@@ -30,12 +30,12 @@
       (for [concept-id concept-ids
             :let [result (j/query (config/db) [(format "select distinct entry_title from metadata_db.%s where concept_id = ?" t)
                                                concept-id])]]
-          (get-in (first result) [:extra_fields :entry_title])))))
+        (:entry_titles (first result))))))
 
 (defn up
-  "Migrates the database up to version 54."
+  "Migrates the database up to version 57."
   []
-  (println "migrations.054-add-coll-ids-catalog-acls up...")
+  (println "migrations.057-regenerate-collection-identifiers up...")
   (doseq [result (h/query "select * from cmr_acls where acl_identity like 'catalog-item%'")]
     (println result)
     (let [{:keys [id metadata deleted]} result
@@ -67,6 +67,6 @@
       (j/update! (config/db) "cmr_acls" result ["id = ?" id]))))
 
 (defn down
-  "Migrates the database down from version 54."
+  "Migrates the database down from version 57."
   []
-  (println "migrations.054-add-coll-ids-catalog-acls down..."))
+  (println "migrations.057-regenerate-collection-identifiers down..."))
