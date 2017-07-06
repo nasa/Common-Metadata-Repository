@@ -321,7 +321,9 @@
                            :IssueIdentification "Issue Identification"
                            :DataPresentationForm "Data Presentation Form"
                            :OtherCitationDetails "Other Citation Details"
-                           :OnlineResource {:Linkage "http://www.foo.com"}}]}))
+                           :OnlineResource {:Linkage "http://www.foo.com"
+                                            :Name "Data Set Citation"
+                                            :Description "Data Set Citation"}}]}))
 
 (defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
