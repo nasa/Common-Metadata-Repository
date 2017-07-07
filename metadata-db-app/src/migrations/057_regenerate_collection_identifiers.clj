@@ -30,7 +30,7 @@
       (for [concept-id concept-ids
             :let [result (j/query (config/db) [(format "select distinct entry_title from metadata_db.%s where concept_id = ?" t)
                                                concept-id])]]
-        (:entry_titles (first result))))))
+        (:entry_title (first result))))))
 
 (defn up
   "Migrates the database up to version 57."
