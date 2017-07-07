@@ -16,9 +16,10 @@
                        providers/dbresult->provider)
           t (h/get-provider-collection-tablename provider)]
       (for [entry-title entry-titles
-            :let [result (j/query (config/db) [(format "select distinct concept_id from metadata_db.%s where entry_title = ?" t)
+            :let [result (j/query (config/db) [(format "select distinct concept_id, entry_title from metadata_db.%s where entry_title = ?" t)
                                                entry-title])]]
-        (:concept_id (first result))))))
+        {:concept_id (:concept_id (first result))
+         :entry_title (:entry_title (first result))}))))
 
 (defn- get-entry-titles
   "For a given provider and concept-ids in collection-identifier, returns list of collection entry-titles"
@@ -28,9 +29,10 @@
                        providers/dbresult->provider)
           t (h/get-provider-collection-tablename provider)]
       (for [concept-id concept-ids
-            :let [result (j/query (config/db) [(format "select distinct entry_title from metadata_db.%s where concept_id = ?" t)
+            :let [result (j/query (config/db) [(format "select distinct concept_id entry_title from metadata_db.%s where concept_id = ?" t)
                                                concept-id])]]
-        (:entry_title (first result))))))
+        {:concept_id (:concept_id (first result))
+         :entry_title (:entry_title (first result))}))))
 
 (defn up
   "Migrates the database up to version 57."
@@ -44,21 +46,19 @@
                        (util/gzip-blob->string)
                        (edn/read-string))
           {{:keys [collection-identifier collection-applicable granule-applicable provider-id]} :catalog-item-identity} metadata
-          concept-ids (if (or collection-applicable granule-applicable)
-                        (get-concept-ids provider-id collection-identifier)
-                        nil)
-          entry-titles (if (or collection-applicable granule-applicable)
-                        (get-entry-titles provider-id collection-identifier)
-                        nil)
+          collections-by-entry-titles (if (or collection-applicable granule-applicable)
+                                        (get-concept-ids provider-id collection-identifier)
+                                        nil)
+          collections-by-concept-ids (if (or collection-applicable granule-applicable)
+                                       (get-entry-titles provider-id collection-identifier)
+                                       nil)
+          collections (distinct (concat collections-by-entry-titles collections-by-concept-ids))
           metadata (if deleted
                      metadata
-                     (if (seq concept-ids)
-                       (assoc-in metadata [:catalog-item-identity :collection-identifier :concept-ids] concept-ids)
-                       metadata))
-          metadata (if deleted
-                     metadata
-                     (if (seq entry-titles)
-                       (assoc-in metadata [:catalog-item-identity :collection-identifier :entry-titles] entry-titles)
+                     (if (seq collections)
+                       (-> metadata
+                           (assoc-in [:catalog-item-identity :collection-identifier :concept-ids] (map :concept_id collections))
+                           (assoc-in [:catalog-item-identity :collection-identifier :entry-titles] (map :entry_titles collections)))
                        metadata))
           metadata (-> metadata
                        pr-str
