@@ -224,7 +224,7 @@
     (product-levels (str/replace product-level-id #"Level " ""))))
 
 (defn generate-dataset-citation
-  "Returns the dif9 Data_Set_Citations from UMM-C."
+  "Returns the dif10 Data_Set_Citations from UMM-C."
   [c]
   (let [doi (get-in c [:DOI :DOI])
         version (:Version c)]
@@ -234,8 +234,7 @@
        (when (seq doi)
          [:Persistent_Identifier
           [:Type "DOI"]
-          [:Identifier doi]])
-       [:Online_Resource u/not-provided]]
+          [:Identifier doi]])]
       (for [collection-citation (:CollectionCitations c)]
         [:Dataset_Citation
          [:Dataset_Creator (:Creator collection-citation)]

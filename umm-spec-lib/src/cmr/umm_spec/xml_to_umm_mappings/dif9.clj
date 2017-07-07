@@ -102,7 +102,7 @@
        :IssueIdentification (value-of data-set-citation "Issue_Identification")
        :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
        :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
-       :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") (when sanitize? su/not-provided))
+       :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
                         :Name "Data Set Citation"
                         :Description "Data Set Citation"}})))
 

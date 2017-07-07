@@ -44,8 +44,7 @@
   (if (empty? (:CollectionCitations c))
     [:Data_Set_Citation
      [:Version (:Version c)]
-     [:Dataset_DOI (get-in c [:DOI :DOI])]
-     [:Online_Resource u/not-provided]]
+     [:Dataset_DOI (get-in c [:DOI :DOI])]]
     (for [collection-citation (:CollectionCitations c)]
       [:Data_Set_Citation
        [:Dataset_Creator (:Creator collection-citation)]
