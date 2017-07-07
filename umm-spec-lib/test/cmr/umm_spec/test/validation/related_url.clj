@@ -373,5 +373,3 @@
     (coll/map->UMM-C {:RelatedUrls [(merge
                                      url-type
                                      {:URL "https://www.foo.com"})]})))))
-(comment
- (collection-related-urls-validation))
