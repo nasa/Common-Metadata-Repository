@@ -17,7 +17,8 @@
           t (h/get-provider-collection-tablename provider)]
       (for [entry-title entry-titles
             :let [result (j/query (config/db) [(format "select distinct concept_id, entry_title from metadata_db.%s where entry_title = ?" t)
-                                               entry-title])]]
+                                               entry-title])]
+            :when (not (nil? entry-title))]        
         {:concept_id (:concept_id (first result))
          :entry_title (:entry_title (first result))}))))
 
@@ -30,7 +31,8 @@
           t (h/get-provider-collection-tablename provider)]
       (for [concept-id concept-ids
             :let [result (j/query (config/db) [(format "select distinct concept_id entry_title from metadata_db.%s where concept_id = ?" t)
-                                               concept-id])]]
+                                               concept-id])]
+            :when (not (nil? concept-id))]
         {:concept_id (:concept_id (first result))
          :entry_title (:entry_title (first result))}))))
 
