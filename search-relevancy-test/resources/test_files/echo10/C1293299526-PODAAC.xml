@@ -1,0 +1,132 @@
+<Collection>
+  <ShortName>MODIS_AQUA_L3_SST_THERMAL_8DAY_4KM_DAYTIME</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2010-04-02T10:47:56.000Z</InsertTime>
+  <LastUpdate>2011-01-21T17:10:13.000Z</LastUpdate>
+  <LongName>MODIS Aqua Level 3 Thermal IR 8 Day 4km Daytime</LongName>
+  <DataSetId>PODAAC-MODSA-T8D4D</DataSetId>
+  <Description>SST is derived from the MODIS IR channels using two channels in either the thermal IR (11-12 um) or channels in the mid-IR region (3.8-4.1 um). The approach is similar to the multi-channel sea surface temperature (MCSST) or the non-linear SST (NLSST) methods used to generate AVHRR-based SST.
+
+The MODIS data are available in a variety of spatial resolutions and temporal periods. The Level 3 mapped products are global gridded data sets with all points filled even over land.</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2014-08-07T14:51:39.149Z</RevisionDate>
+  <ProcessingCenter>OBPG</ProcessingCenter>
+  <ProcessingLevelId>3</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>HDF</DataFormat>
+  <SpatialKeywords>
+    <Keyword>Global</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2002-07-04T00:00:00.000Z</BeginningDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number>(818) 393-7165</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>podaac@podaac.jpl.nasa.gov</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>User</FirstName>
+          <MiddleName>null</MiddleName>
+          <LastName>Services</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>OCEAN TEMPERATURE</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>SEA SURFACE TEMPERATURE</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>AQUA</ShortName>
+      <LongName>Earth Observing System, AQUA</LongName>
+      <Type>SPACECRAFT</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>MODIS</ShortName>
+          <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>MODIS</ShortName>
+              <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/modis/L3/aqua/11um/4km/8day/</URL>
+      <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/modis/L3/aqua/11um/4km/8day</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/modis/L3/docs/modis_sst.html</URL>
+      <Description>describes all the level 3 MODIS data</Description>
+      <Type>data set guide</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://thredds.jpl.nasa.gov/thredds/catalog/ncml_aggregation/OceanTemperature/modis/aqua/11um/4km/catalog.html?dataset=ncml_aggregation/OceanTemperature/modis/aqua/11um/4km/aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_4KM_DAYTIME.ncml</URL>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-MODSA-T8D4D&amp;apidoc</URL>
+      <Description>(Search Granule)</Description>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

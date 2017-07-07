@@ -14,17 +14,9 @@
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
+    [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]
     [cmr.umm-spec.util :as su]
     [cmr.umm-spec.url :as url]))
-
-(defn- parse-mbrs
-  "Returns a seq of bounding rectangle maps in the given DIF XML doc."
-  [doc]
-  (for [el (select doc "/DIF/Spatial_Coverage")]
-    {:NorthBoundingCoordinate (value-of el "Northernmost_Latitude")
-     :SouthBoundingCoordinate (value-of el "Southernmost_Latitude")
-     :WestBoundingCoordinate (value-of el "Westernmost_Longitude")
-     :EastBoundingCoordinate (value-of el "Easternmost_Longitude")}))
 
 (defn- parse-instruments
   "Returns the parsed instruments for the given xml doc."
@@ -130,14 +122,7 @@
      :Platforms (parse-platforms doc sanitize?)
      :TemporalExtents (parse-temporal-extents doc sanitize?)
      :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
-     :SpatialExtent (merge {:GranuleSpatialRepresentation (or (value-of doc "/DIF/Extended_Metadata/Metadata[Name='GranuleSpatialRepresentation']/Value")
-                                                              (when sanitize?
-                                                                "NO_SPATIAL"))}
-                           (when-let [brs (seq (parse-mbrs doc))]
-                             {:SpatialCoverageType "HORIZONTAL"
-                              :HorizontalSpatialDomain
-                              {:Geometry {:CoordinateSystem "CARTESIAN" ;; DIF9 doesn't have CoordinateSystem, default to CARTESIAN
-                                          :BoundingRectangles brs}}}))
+     :SpatialExtent (spatial/parse-spatial-extent doc sanitize?)
      :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                       {:DistributionMedia (value-of distribution "Distribution_Media")
                        :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))

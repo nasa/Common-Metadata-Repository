@@ -23,7 +23,8 @@
    :cmr-orbits-lib "0.1.0-SNAPSHOT"
    :cmr-mock-echo-app "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
-   :cmr-common-app-lib "0.1.0-SNAPSHOT"})
+   :cmr-common-app-lib "0.1.0-SNAPSHOT"
+   :cmr-search-relevancy-test "0.1.0-SNAPSHOT"})
 
 (def project-dependencies
   "A list of other projects as maven dependencies"
@@ -63,11 +64,11 @@
                (println (slurp "resources/text/banner.txt"))
                (println (slurp "resources/text/loading.txt")))}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-             "-Dclojure.compiler.direct-linking=true"
-             ;; Enable logging in jetty.
-             "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
-             "-Dorg.eclipse.jetty.LEVEL=INFO"
-             "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
+             "-Dclojure.compiler.direct-linking=true"]
+             ;; Uncomment to enable logging in jetty.
+             ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
+             ; "-Dorg.eclipse.jetty.LEVEL=INFO"
+             ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
   :profiles {
     :dev-dependencies {:dependencies [[ring-mock "0.1.5"]
                                       [org.clojure/tools.namespace "0.2.11"]
@@ -135,7 +136,7 @@
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "yagni" ["with-profile" "lint" "yagni"]
-            "check-deps" ["with-profile" "lint" "ancient"]
+            "check-deps" ["with-profile" "lint" "ancient" "all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

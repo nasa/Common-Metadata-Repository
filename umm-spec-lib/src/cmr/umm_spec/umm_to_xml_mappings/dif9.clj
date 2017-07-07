@@ -4,12 +4,14 @@
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
     [clojure.set :as set]
+    [clojure.string :as string]
     [cmr.common.util :as common-util]
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.date-util :as date]
     [cmr.umm-spec.dif-util :as dif-util]
     [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
     [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
+    [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
     [cmr.umm-spec.util :as u]))
 
 (def dif9-xml-namespaces
@@ -102,6 +104,12 @@
        [:Northernmost_Latitude (:NorthBoundingCoordinate mbr)]
        [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
        [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
+    (for [vert (spatial/create-vertical-domain-vector-maps c)]
+      [:Spatial_Coverage
+       [:Minimum_Altitude (:Minimum_Altitude vert)]
+       [:Maximum_Altitude (:Maximum_Altitude vert)]
+       [:Minimum_Depth (:Minimum_Depth vert)]
+       [:Maximum_Depth (:Maximum_Depth vert)]])
     (let [location-keywords (:LocationKeywords c)]
       (for [lk location-keywords]
         [:Location

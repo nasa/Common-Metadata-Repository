@@ -19,7 +19,7 @@
     [cmr.ingest.services.helper :as h]
     [cmr.ingest.services.messages :as msg]
     [cmr.ingest.validation.validation :as v]
-    [cmr.message-queue.services.queue :as queue]
+    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
     [cmr.oracle.connection :as conn]
     [cmr.transmit.cubby :as cubby]
     [cmr.transmit.echo.rest :as rest]
@@ -48,7 +48,7 @@
   "Resets the queue broker"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (queue/reset queue-broker))
+    (queue-protocol/reset queue-broker))
   (bulk-update/reset-db context)
   (cache/reset-caches context))
 
@@ -59,7 +59,7 @@
    :metadata-db mdb2/get-metadata-db-health
    :indexer indexer/get-indexer-health
    :cubby cubby/get-cubby-health
-   :message-queue #(queue/health (get-in % [:system :queue-broker]))})
+   :message-queue #(queue-protocol/health (get-in % [:system :queue-broker]))})
 
 (defn health
   "Returns the health state of the app."

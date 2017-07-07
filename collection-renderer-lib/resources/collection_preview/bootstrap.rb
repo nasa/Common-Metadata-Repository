@@ -28,7 +28,7 @@ include CmrMetadataPreview::OptionsHelper
 include CmrMetadataPreview::CmrMetadataPreviewHelper
 
 
-## Thesee need to work but they don't need to return real URLs.
+## These need to work but they don't need to return real URLs.
 def url_for(options)
   "http://example.com"
 end

@@ -485,7 +485,7 @@ Example output:
 
 The bulk update API is used perform the same collection update to multiple concepts in one call. Bulk update is currently for collections only, granules are not supported.
 
-Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format.
+Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format. In the UMM-JSON metadata, the Metadata Date of type "UPDATE" will be set to the current date. Please note that when we apply bulk update on a collection, regardless if there are actual changes, a new revision is created. 
 
 Updated collections are validated through ingest validation and the updates will not be saved if the updated collection is not valid UMM or fails business rule validation. The error will be recorded in the individual collection status, which can be queried via the status endpoint. Collection validation warnings will not prevent saving the updated collection and the warnings will be recorded in the individual collection status.
 
@@ -504,6 +504,7 @@ The following update types are supported:
   * Add to existing - the update value is added to the existing list. An update value is required.
   * Clear all and replace - clear the list and replace with the update value.
   * Find and replace - replace any instance in the list that matches the find value with the update value.
+  * Find and update - merge update value into any instance in the list that matches the find value.
   * Find and remove - remove any instance from the list that matches the find value.
 
 Update types that include a find will match on the fields supplied. For example, for a science keyword update with a find value of {"Category": "EARTH SCIENCES"}, any science keyword with a category of "EARTH SCIENCES" will be considered a match regardless of the values of the science keyword topic, term, etc.
@@ -519,10 +520,10 @@ Bulk update can be initiated by sending an HTTP POST request to `%CMR-ENDPOINT%/
 The POST request takes the following parameters:
 
   * Concept-ids (required) - a list of concept ids to update
-  * Update type (required) - choose from the enumeration: ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE, FIND_AND_REMOVE
+  * Update type (required) - choose from the enumeration: ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE, FIND_AND_REMOVE, FIND_AND_UPDATE
   * Update field (required) - choose from the enumeration: SCIENCE_KEYWORDS, LOCATION_KEYWORDS, DATA_CENTERS, PLATFORMS, INSTRUMENTS
-  * Update value (required when update type is ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE) - UMM-JSON representation of the update to make
-  * Find value (required when update type is FIND_AND_REPLACE or FIND_AND_REMOVE) - UMM-JSON representation of the data to find
+  * Update value (required when update type is ADD_TO_EXISTING, CLEAR_ALL_AND_REPLACE, FIND_AND_REPLACE, FIND_AND_UPDATE) - UMM-JSON representation of the update to make
+  * Find value (required when update type is FIND_AND_REPLACE, FIND_AND_UPDATE or  FIND_AND_REMOVE) - UMM-JSON representation of the data to find
 
 The return value includes a status code indicating that the bulk update was successfully initiated, any errors if not successful, and on success a task-id that can be used for querying the bulk update status. The bulk update will be run asynchronously and the status of the overall bulk update task as well as the status of individual collection updates can be queried using the task id.
 
