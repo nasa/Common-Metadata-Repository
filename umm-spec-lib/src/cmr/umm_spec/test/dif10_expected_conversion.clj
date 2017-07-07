@@ -266,7 +266,7 @@
   [collection-citations version]
   (if (empty? collection-citations)
     [{:Version version
-      :OnlineResource {:Linkage su/not-provided
+      :OnlineResource {:Linkage su/not-provided-url
                        :Name "Dataset Citation"
                        :Description "Dataset Citation"}}]
     (for [collection-citation collection-citations
@@ -274,7 +274,7 @@
       (-> collection-citation
           (assoc-in [:OnlineResource :Name] "Dataset Citation")
           (assoc-in [:OnlineResource :Description] "Dataset Citation")
-          (assoc-in [:OnlineResource :Linkage] (or linkage su/not-provided))
+          (assoc-in [:OnlineResource :Linkage] (or linkage su/not-provided-url))
           (update :OnlineResource dissoc :Function :ApplicationProfile :Protocol)
           (assoc :Version version)))))
 
