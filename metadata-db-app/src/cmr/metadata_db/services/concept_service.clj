@@ -28,6 +28,7 @@
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
    [cmr.metadata-db.data.oracle.concepts.humanizer]
+   [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
    [cmr.metadata-db.data.oracle.concepts.tag]
    [cmr.metadata-db.data.oracle.concepts.variable-association]
