@@ -69,7 +69,7 @@
                                      "WEB MAP FOR TIME SERIES"
                                      "WEB MAP SERVICE (WMS)"
                                      "WORKFLOW (SERVICE CHAIN)"]}
-   "VisualizationURL" {"GET RELATED VISUALIZATION" ["GIBS" "GIOVANNI"]}
+   "VisualizationURL" {"GET RELATED VISUALIZATION" ["GIBS" "GIOVANNI" "MAP"]}
    "CollectionURL" {"DATA SET LANDING PAGE" []
                     "DOI" []
                     "EXTENDED METADATA" []
