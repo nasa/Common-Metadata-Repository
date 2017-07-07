@@ -23,7 +23,11 @@
                                     {:URL "http://gce-lter.marsci.uga.edu/lter/asp/db/send_eml.asp?detail=full&missing=NaN&delimiter=\t&accession=FNG-GCEM-0401"
                                      :URLContentType "PublicationURL"
                                      :Type "VIEW RELATED INFORMATION"
-                                     :SubType "USER'S GUIDE"}]})))
+                                     :SubType "USER'S GUIDE"}
+                                    {:URL "http://www.google.com"
+                                     :URLContentType "VisualizationURL"
+                                     :Type "GET RELATED VISUALIZATION"
+                                     :SubType "MAP"}]})))
 
   (testing "Multiple invalid related urls"
     (h/assert-warnings-multiple-invalid
