@@ -3,7 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clojure.data :as data]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
@@ -75,6 +75,10 @@
   (str "/gmi:MI_Metadata/gmd:metadataExtensionInfo/gmd:MD_MetadataExtensionInformation"
        "/gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation"))
 
+(def collection-data-type-xpath
+  (str identifier-base-xpath "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+       "/gmd:code/gco:CharacterString"))
+
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
   those given"
@@ -97,7 +101,7 @@
                            ;; entire matching string is returned and if there is a group in the regular
                            ;; expression, the first group of the matching string is returned.
                            (if (string? match) match (second match))))]
-      (str/join matches))))
+      (string/join matches))))
 
 (defn- temporal-ends-at-present?
   [temporal-el]
@@ -143,7 +147,7 @@
   DataIdentification element"
   [md-data-id-el sanitize?]
   (if-let [value (char-string-value md-data-id-el "gmd:abstract")]
-    (let [[abstract version-description](str/split
+    (let [[abstract version-description](string/split
                                          value (re-pattern iso-util/version-description-separator))
           abstract (when (seq abstract) abstract)]
       [(su/truncate-with-default abstract su/ABSTRACT_MAX sanitize?) version-description])
@@ -234,6 +238,7 @@
       :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
       :TemporalExtents (or (seq (parse-temporal-extents doc extent-info md-data-id-el))
                            (when sanitize? su/not-provided-temporal-extents))
+      :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
       :ProcessingLevel {:Id
                         (su/with-default
                          (char-string-value
@@ -253,7 +258,7 @@
                                                         (char-string-value publication
                                                                            (str (format role-xpath name) xpath)))]
                                     :when (or (nil? (:Description online-resource))
-                                              (not (str/includes? (:Description online-resource) "PublicationURL")))]
+                                              (not (string/includes? (:Description online-resource) "PublicationURL")))]
                                {:Author (select-party "author" "/gmd:organisationName")
                                 :PublicationDate (date/sanitize-and-parse-date
                                                   (str (date-at publication
