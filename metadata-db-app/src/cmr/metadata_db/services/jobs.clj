@@ -1,9 +1,10 @@
 (ns cmr.metadata-db.services.jobs
-  (:require [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.jobs :refer [def-stateful-job]]
-            [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.services.provider-validation :as pv]))
+  (:require
+   [cmr.common.jobs :refer [def-stateful-job]] 
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.metadata-db.services.provider-service :as provider-service]
+   [cmr.metadata-db.services.provider-validation :as pv]))
 
 (def EXPIRED_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup expired granules"
@@ -11,6 +12,10 @@
 
 (def OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup old revisions of granules and collections"
+  (* 3600 6))
+
+(def BULK_UPDATE_STATUS_TABLE_CLEANUP_INTERVAL
+  "Number of seconds between job runs to clean up old status rows in the bulk update status tables"
   (* 3600 6))
 
 (defn expired-concept-cleanup
@@ -40,9 +45,22 @@
   [ctx system]
   (old-revision-concept-cleanup {:system system}))
 
+(defn bulkupdate-status-table-cleanup
+  "clean up the rows in the bulk-update-task-status table that are older than the 
+   configured age"
+  [context]
+  (println "=====================IN BULKUPDATE STATUS TABLE CLEANUP==================")
+  (concept-service/cleanup-old-bulkupdate-status context)) 
+
+(def-stateful-job BulkUpdateStatusTableCleanupJob
+  [ctx system]
+  (bulkupdate-status-table-cleanup {:system system}))
+
 (def jobs
   "A list of the jobs for metadata db"
   [{:job-type ExpiredConceptCleanupJob
     :interval EXPIRED_CONCEPT_CLEANUP_INTERVAL}
    {:job-type OldRevisionConceptCleanupJob
-    :interval OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL}])
+    :interval OLD_REVISIONS_CONCEPT_CLEANUP_INTERVAL}
+   {:job-type BulkUpdateStatusTableCleanupJob
+    :interval BULK_UPDATE_STATUS_TABLE_CLEANUP_INTERVAL}])
