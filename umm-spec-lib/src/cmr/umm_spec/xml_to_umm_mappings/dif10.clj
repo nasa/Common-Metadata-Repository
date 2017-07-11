@@ -129,6 +129,9 @@
       su/not-provided-temporal-extents)))
 
 (defn- remove-empty-collection-citations
+  "Because DOI is mapped to Dataset Citations, we need to make sure on a xml round trip
+   an empty CollectionCitation isn't left beind when the UMM starts with no CollectionCitations 
+   but does have a DOI"
   [collection-citations]
   (remove (fn [cc] (= {:OnlineResource {:Linkage "Not%20provided",
                                         :Name "Dataset Citation",
