@@ -6,7 +6,7 @@
   <Version_Description>Not provided</Version_Description>
   <Entry_Title>ACRIM III Level 2 Daily Mean Data V001</Entry_Title>
   <Dataset_Citation>
-    <!-- <Dataset_Release_Date>Not provided</Dataset_Release_Date> -->
+    <Dataset_Release_Date>Not provided</Dataset_Release_Date>
     <Online_Resource>http://eosweb.larc.nasa.gov/project/acrimIII/acrimIII_table</Online_Resource>
   </Dataset_Citation>
   <Personnel>
