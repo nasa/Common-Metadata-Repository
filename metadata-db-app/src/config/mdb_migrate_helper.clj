@@ -53,6 +53,12 @@
   []
   (distinct (map #(concept-tables/get-table-name % :collection) (get-regular-providers))))
 
+(defn get-regular-provider-granule-tablenames
+  "Gets a list of all the granule tablenames for regular providers. Primarily for enabling
+  migrations of existing regular provider tables."
+  []
+  (distinct (map #(concept-tables/get-table-name % :granule) (get-regular-providers))))
+
 (defn get-concept-tablenames
   "Returns a sequence of table names for the given concept types, or all concept types
   if none are specified, for all the existing providers."
@@ -73,11 +79,18 @@
      (into (when (contains? (set concept-types) :access-group) ["cmr_groups"]))
      (into (when (contains? (set concept-types) :tag) ["cmr_tags"]))))))
 
+(def dummy-provider-for-small-prov
+  "Any schema changes that need to be made to provider specific tables in the system need to happen
+  to the small_prov tables. In an environment which does not have any small providers we need to
+  have a dummy small provider to ensure the tables have their schema updated."
+  {:small true :cmr-only true :provider-id "DUMMY" :short-name "DUMMY"})
+
 (defn get-collection-tablenames
   "Gets a list of all the collection tablenames. Primarily for enabling migrations of existing
   provider tables."
   []
-  (distinct (map #(concept-tables/get-table-name % :collection) (p/get-providers (config/db)))))
+  (let [providers (conj (p/get-providers (config/db)) dummy-provider-for-small-prov)]
+    (distinct (map #(concept-tables/get-table-name % :collection) providers))))
 
 (defn get-provider-collection-tablename
   "For a given provider, returns table name"
@@ -88,7 +101,8 @@
   "Gets a list of all the granule tablenames. Primarily for enabling migrations of existing
   provider tables."
   []
-  (distinct (map #(concept-tables/get-table-name % :granule) (p/get-providers (config/db)))))
+  (let [providers (conj (p/get-providers (config/db)) dummy-provider-for-small-prov)]
+    (distinct (map #(concept-tables/get-table-name % :granule) providers))))
 
 (defn sequence-exists?
   "Returns true if the named sequence exists."

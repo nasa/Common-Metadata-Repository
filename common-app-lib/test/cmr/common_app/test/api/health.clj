@@ -10,8 +10,9 @@
   "Allow testing private get-app-health function"
   #'health/get-app-health)
 
-(def context-with-health-cache
+(defn- get-context-with-health-cache
   "Context for the test that includes a health cache"
+  []
   {:system {:caches {health/health-cache-key (lifecycle/start (health/create-health-cache) nil)}}})
 
 (defn- healthy-fn
@@ -30,7 +31,8 @@
         unhealthy-response {:status 503
                             :body (json/generate-string
                                    {:test-resource {:ok? false
-                                                    :problem "Resource is not responding."}})}]
+                                                    :problem "Resource is not responding."}})}
+        context-with-health-cache (get-context-with-health-cache)]
     (is (= healthy-response
            (select-keys (get-app-health context-with-health-cache healthy-fn) [:status :body])))
     (testing "health response is cached so even though the unhealthy-fn is passed in it is not used"
@@ -38,13 +40,13 @@
              (select-keys (get-app-health context-with-health-cache unhealthy-fn)
                           [:status :body])))
       ;; Wait 2 seconds and the cache has not expired, so it still returns healthy
-      (Thread/sleep 2000)
+      (Thread/sleep 2001)
       (is (= healthy-response
              (select-keys (get-app-health context-with-health-cache unhealthy-fn)
                           [:status :body]))))
 
     ;; Wait another 3 seconds for a total of 5 and the cache has expired
-    (Thread/sleep 3000)
+    (Thread/sleep 3001)
     (testing "After the cache TTL has expired, the health function will be called"
       (is (= unhealthy-response
              (select-keys (get-app-health context-with-health-cache unhealthy-fn)
