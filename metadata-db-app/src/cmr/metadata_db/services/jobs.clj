@@ -49,7 +49,6 @@
   "clean up the rows in the bulk-update-task-status table that are older than the 
    configured age"
   [context]
-  (println "=====================IN BULKUPDATE STATUS TABLE CLEANUP==================")
   (concept-service/cleanup-old-bulkupdate-status context)) 
 
 (def-stateful-job BulkUpdateStatusTableCleanupJob
