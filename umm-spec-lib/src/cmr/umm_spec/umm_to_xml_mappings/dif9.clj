@@ -38,6 +38,29 @@
   [platforms]
   (generate-short-name-long-name-elements :Source_Name platforms))
 
+(defn generate-dataset-citation
+  "Returns the dif9 Data_Set_Citations from UMM-C."
+  [c]
+  (if (empty? (:CollectionCitations c))
+    [:Data_Set_Citation
+     [:Version (:Version c)]
+     [:Dataset_DOI (get-in c [:DOI :DOI])]]
+    (for [collection-citation (:CollectionCitations c)]
+      [:Data_Set_Citation
+       [:Dataset_Creator (:Creator collection-citation)]
+       [:Dataset_Editor (:Editor collection-citation)]
+       [:Dataset_Title (:Title collection-citation)]
+       [:Dataset_Series_Name (:SeriesName collection-citation)]
+       [:Dataset_Release_Date (:ReleaseDate collection-citation)]
+       [:Dataset_Release_Place (:ReleasePlace collection-citation)]
+       [:Dataset_Publisher (:Publisher collection-citation)]
+       [:Version (:Version c)]
+       [:Issue_Identification (:IssueIdentification collection-citation)]
+       [:Data_Presentation_Form (:DataPresentationForm collection-citation)]
+       [:Other_Citation_Details (:OtherCitationDetails collection-citation)]
+       [:Dataset_DOI (get-in c [:DOI :DOI])]
+       [:Online_Resource (get-in collection-citation [:OnlineResource :Linkage])]])))
+
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
   [c]
@@ -49,9 +72,7 @@
                  (:ShortName c)
                  (str (:ShortName c) "_" (:Version c)))]
     [:Entry_Title (:EntryTitle c)]
-    [:Data_Set_Citation
-     [:Version (:Version c)]
-     [:Dataset_DOI (get-in c [:DOI :DOI])]]
+    (generate-dataset-citation c)
     (contact/generate-personnel c)
     (if-let [sks (:ScienceKeywords c)]
       (for [sk sks]

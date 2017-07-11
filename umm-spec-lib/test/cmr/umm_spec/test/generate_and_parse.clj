@@ -97,7 +97,6 @@
                                        :Type "CREATE"}
                                       {:Date (t/date-time 2013)
                                        :Type "UPDATE"}]))]]
-
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))

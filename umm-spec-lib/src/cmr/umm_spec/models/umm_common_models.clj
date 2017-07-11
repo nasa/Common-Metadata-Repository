@@ -277,13 +277,22 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ResourceCitationType)
 
-;; This element describes the digital object identifier.
+;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The
+;; values should start with the directory indicator which in ESDIS' case is 10. If the DOI was
+;; registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not
+;; stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for
+;; creating the DOI is described in the Authority element. For ESDIS records the value of
+;; http://dx.doi.org/ should be used.
 (defrecord DoiType
   [
-   ;; The authority who created the DOI.
+   ;; The DOI organization that is responsible for creating the DOI is described in the Authority
+   ;; element. For ESDIS records the value of http://dx.doi.org/ should be used.
    Authority
 
-   ;; The Digitial Object Identifier.
+   ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
+   ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
+   ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
+   ;; not stored here; it should be stored as a RelatedURL.
    DOI
   ])
 (record-pretty-printer/enable-record-pretty-printing DoiType)
