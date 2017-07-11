@@ -113,11 +113,7 @@
        [:collection :dif10]    (umm-to-dif10/umm-c-to-dif10-xml umm)
        [:collection :iso19115] (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm)
        [:collection :iso-smap] (umm-to-iso-smap/umm-c-to-iso-smap-xml umm)
-       [:variable :umm-json]   (umm-json/umm->json (vm/migrate-umm context
-                                                                   concept-type
-                                                                   source-version
-                                                                   (umm-json-version fmt)
-                                                                   umm))))))
+       [:variable :umm-json]   (umm-json/umm->json umm)))))
 
 (defn parse-collection-temporal
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."

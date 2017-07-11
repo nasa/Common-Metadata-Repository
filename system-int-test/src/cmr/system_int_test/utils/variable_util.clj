@@ -24,15 +24,14 @@
 
 (defn setup-update-acl
   "Set up the ACLs for UMM-Var update permissions and return the ids+token"
-  [context]
+  [context provider-id]
   (let [user-name "umm-var-user42"
         group-name "umm-var-guid42"
         update-group-id (echo-util/get-or-create-group context group-name)
         update-token (echo-util/login context user-name [update-group-id])
         token-context (assoc context :token update-token)
-        update-grant-id (echo-util/grant-group-admin token-context
-                                                     update-group-id
-                                                     :update)]
+        update-grant-id (echo-util/grant-group-provider-admin
+                         token-context update-group-id provider-id :update)]
     {:user-name user-name
      :group-name group-name
      :group-id update-group-id

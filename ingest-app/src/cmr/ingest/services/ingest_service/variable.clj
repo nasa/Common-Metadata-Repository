@@ -4,11 +4,20 @@
    [cmr.common.api.context :as context-util]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :refer [defn-timed]]
    [cmr.common.validations.core :as cv]
    [cmr.ingest.services.ingest-service.util :as util]
    [cmr.ingest.services.messages :as msg]
    [cmr.transmit.metadata-db :as mdb]
-   [cmr.transmit.metadata-db2 :as mdb2]))
+   [cmr.transmit.metadata-db2 :as mdb2]
+   [cmr.umm-spec.umm-spec-core :as spec]))
+
+(defn add-extra-fields-for-variable
+  "Returns collection concept with fields necessary for ingest into metadata db
+  under :extra-fields."
+  [context concept variable]
+  (assoc concept :extra-fields {:variable-name (:Name variable)
+                                :measurement (:LongName variable)}))
 
 (def ^:private update-variable-validations
   "Service level validations when updating a variable."
@@ -29,20 +38,21 @@
   deleted."
   [context concept variable user-id]
   (mdb2/save-concept context
-                    (-> concept
-                        (assoc :metadata (pr-str variable)
-                               :deleted false
-                               :user-id user-id)
-                        (dissoc :revision-date)
-                        (update-in [:revision-id] inc))))
+                     (-> concept
+                         (assoc :metadata (pr-str variable)
+                                :deleted false
+                                :user-id user-id)
+                         (dissoc :revision-date)
+                         (update-in [:revision-id] inc))))
 
 (defn- variable->new-concept
   "Converts a variable into a new concept that can be persisted in metadata
   db."
-  [variable]
+  [variable provider-id native-id]
   {:concept-type :variable
-   :native-id (:native-id variable)
-   :metadata (pr-str variable)
+   :provider-id provider-id
+   :native-id native-id
+   :metadata (pr-str (:metadata variable))
    :user-id (:originator-id variable)
    ;; The first version of a variable should always be revision id 1. We
    ;; always specify a revision id when saving variables to help avoid
@@ -69,11 +79,26 @@
      :not-found
      (msg/variable-does-not-exist native-id))))
 
+(defn-timed save-variable
+  "Store a variable concept in mdb and indexer. Return name, long-name, concept-id, and
+  revision-id."
+  [context concept]
+  (let [metadata (:metadata concept)
+        variable (spec/parse-metadata context :variable (:format concept) metadata)
+        concept (add-extra-fields-for-variable context concept variable)
+        {:keys [concept-id revision-id]} (mdb2/save-concept context
+                                          (assoc concept :provider-id (:provider-id concept)
+                                                         :native-id (:native-id concept)))]
+      {:name (:name concept)
+       :long-name (:long-name concept)
+       :concept-id concept-id
+       :revision-id revision-id}))
+
 (defn update-variable
-  "Updates an existing variable with the given concept id."
+  "Creates a new variable or updates an existing variable with the given concept id."
   [context provider-id native-id metadata]
   (let [updated-variable (util/concept-json->concept metadata)
-        existing-concept (fetch-variable-concept provider-id native-id)
+        existing-concept (fetch-variable-concept context provider-id native-id)
         existing-variable (edn/read-string (:metadata existing-concept))]
     (validate-update-variable existing-variable updated-variable)
     (mdb/save-concept

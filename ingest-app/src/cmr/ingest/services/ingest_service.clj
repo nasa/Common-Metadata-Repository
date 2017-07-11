@@ -35,5 +35,6 @@
    ;; Public variable functions
    delete-variable
    overwrite-variable-tombstone
+   save-variable
    update-variable
    validate-update-variable])
