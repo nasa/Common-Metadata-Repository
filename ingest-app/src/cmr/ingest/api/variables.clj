@@ -13,32 +13,21 @@
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]))
 
-(defn- validate-variable-metadata
-  "Validate variable metadata, throws error if the metadata is not a valid against the
-   UMM variable JSON schema."
-  [content-type headers metadata]
-  (let [concept (api-core/metadata->concept :variable metadata content-type headers)
-        concept (update-in concept [:format] ingest/fix-ingest-concept-format)]
-    (v/validate-concept-request concept)
-    (v/validate-concept-metadata concept)))
-
 (defn ingest-variable
   "Processes a request to create or update a variable."
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request
-        metadata (api-core/read-body! body)]
+        concept (api-core/body->concept!
+                 :variable provider-id native-id body content-type headers)]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission
      request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
-    (validate-variable-metadata content-type headers metadata)
-    (api-core/generate-ingest-response
-     headers
-     (ingest/update-variable
-      request-context
-      provider-id
-      native-id
-      metadata))))
+    ;; XXX Once the variable schema solidifies, we'll need to add validation
+    ;; here, before the save that happens in the threading macro.
+    (->> (api-core/set-user-id concept request-context headers)
+         (ingest/save-variable request-context)
+         (api-core/generate-ingest-response headers))))
 
 (defn delete-variable
   "Deletes the variable with the given variable-key."

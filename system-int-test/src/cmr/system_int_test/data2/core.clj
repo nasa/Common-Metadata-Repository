@@ -6,7 +6,7 @@
    [clj-time.core :as t]
    [clj-time.format :as f]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.concepts :as concepts]
    [cmr.common.mime-types :as mime-types]
@@ -24,7 +24,7 @@
   [item]
   (let [entry-title (some #(get item %) [:entry-title :EntryTitle])]
     ;; If the item contains an entry title it will be trimmed.
-    (or (some-> entry-title str/trim)
+    (or (some-> entry-title string/trim)
         (some #(get item %) [:granule-ur :native-id :LongName]))))
 
 (def context (lkt/setup-context-for-test))
@@ -95,7 +95,8 @@
        response))))
 
 (defn umm-c-collection->concept
-  "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
+  "Returns a concept map from a UMM collection or tombstone. Default provider-id
+  to PROV1 if not present."
   ([collection]
    (umm-c-collection->concept collection :echo10))
   ([collection format-key]
@@ -161,23 +162,24 @@
        response))))
 
 (defn umm-var->concept
-  "Returns a concept map from a UMM item or tombstone."
-  ([variable]
-   (umm-var->concept variable :json))
-  ([variable format-key]
+  "Returns a concept map from a UMM variable item or tombstone."
+  ([item]
+   (umm-var->concept item :umm-json))
+  ([item format-key]
    (let [format (mime-types/format->mime-type format-key)]
      (merge {:concept-type :variable
-             :native-id (or (:native-id variable) (item->native-id variable))
-             :metadata (when-not (:deleted variable)
+             :provider-id (or (:provider-id item) "PROV1")
+             :native-id (or (:native-id item) (:Name item))
+             :metadata (when-not (:deleted item)
                          (umm-spec/generate-metadata
                           context
-                          variable
+                          (dissoc item :provider-id :concept-id)
                           format-key))
              :format format}
-            (when (:concept-id variable)
-              {:concept-id (:concept-id variable)})
-            (when (:revision-id variable)
-              {:revision-id (:revision-id variable)})))))
+            (when (:concept-id item)
+              {:concept-id (:concept-id item)})
+            (when (:revision-id item)
+              {:revision-id (:revision-id item)})))))
 
 (defn remove-ingest-associated-keys
   "Removes the keys associated into the item from the ingest function."
@@ -318,8 +320,8 @@
   (update-in item [:metadata]
              (fn [metadata]
                (-> metadata
-                   (str/replace (re-pattern "(id=)\"[a-z0-9-]*\"") "$1\"\"")
-                   (str/replace (re-pattern "(xlink:href=)\"#[a-z0-9-]*\"") "$1\"\"")))))
+                   (string/replace (re-pattern "(id=)\"[a-z0-9-]*\"") "$1\"\"")
+                   (string/replace (re-pattern "(xlink:href=)\"#[a-z0-9-]*\"") "$1\"\"")))))
 
 (defn- iso-mends-metadata-results-match?
   "Returns true if the iso-mends metadata results match the expected items"
