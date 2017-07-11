@@ -147,7 +147,9 @@
         :Editor (value-of data-set-citation "Dataset_Editor")
         :Title  (value-of data-set-citation "Dataset_Title")
         :SeriesName (value-of data-set-citation "Dataset_Series_Name")
-        :ReleaseDate (when (date/valid-date? release-date)
+        :ReleaseDate (if sanitize?
+                       (when (date/valid-date? release-date)
+                         release-date)
                        release-date)
         :ReleasePlace (value-of data-set-citation "Dataset_Release_Place")
         :Publisher (value-of data-set-citation "Dataset_Publisher")
