@@ -11,7 +11,7 @@
 
 (use-fixtures :each (ingest-util/reset-fixture))
 
-;; CMR-4327
+;; CMR-4335 - services
 #_(deftest create-service-ingest-test
     (testing "ingest a new service"
       (let [;; Groups

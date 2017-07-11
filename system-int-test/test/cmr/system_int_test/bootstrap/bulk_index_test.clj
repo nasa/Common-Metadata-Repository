@@ -153,7 +153,7 @@
         exp-items (set (map #(dissoc % :status) expected))]
     (is (= exp-items search-items))))
 
-;; CMR-4327
+;; CMR-4336 - ACLs commented out throughout the test
 (deftest index-system-concepts-test
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
@@ -186,9 +186,9 @@
      (index/wait-until-indexed)
 
      ;; ACLs
-    ;  (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-    ;        items (:items response)]
-    ;    (search-results-match? items [acl1 acl2]))
+     ;  (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+     ;        items (:items response)]
+     ;    (search-results-match? items [acl1 acl2]))
 
      ;; Groups
      (let [response (ac/search-for-groups (u/conn-context) {})

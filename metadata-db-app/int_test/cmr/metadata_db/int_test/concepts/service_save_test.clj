@@ -19,7 +19,7 @@
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; CMR-4327
+;; CMR-4335 - services
 ;; This seems to fail because we keep creating new revisions of the same concept over and over.
 ; (deftest save-service-test
 ;   (c-spec/general-save-concept-test :service ["CMR"]))

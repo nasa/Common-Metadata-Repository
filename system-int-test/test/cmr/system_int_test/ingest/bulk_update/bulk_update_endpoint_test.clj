@@ -184,7 +184,7 @@
         (is (= ["You do not have permission to perform that action."]
                errors))))))
 
-;; CMR-4327
+;; CMR-4334 - bulk update
 #_(deftest bulk-update-task-status-endpoint-validation
     (testing "Invalid provider"
       (let [token (grant-permissions-create-token)

@@ -18,7 +18,7 @@
   [index provider]
   (format "C120000000%s-%s" index provider))
 
-;; CMR-4327
+;; CMR-4334 - bulk update
 #_(deftest bulk-update-success
     (let [concept-ids (for [x (range 3)]
                         (:concept-id (ingest/ingest-concept
@@ -88,7 +88,7 @@
            "JSON" :json
            "XML" :xml)))))
 
-;; CMR-4327
+;; CMR-4334 - bulk update
 #_(deftest bulk-update-invalid-concept-id
     (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111"]
                             :update-type "ADD_TO_EXISTING"
