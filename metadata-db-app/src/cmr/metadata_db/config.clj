@@ -6,11 +6,6 @@
    [cmr.oracle.connection :as conn]
    [cmr.message-queue.config :as rmq-conf]))
 
-(defconfig bulkupdate-cleanup-minimum-age
-  "The minimum age(in days) of the rows in bulk-update-task-status table that can be cleaned up" 
-  {:default 90 
-   :type Long})
-
 (defconfig metadata-db-username
   "The database username"
   {:default "METADATA_DB"})

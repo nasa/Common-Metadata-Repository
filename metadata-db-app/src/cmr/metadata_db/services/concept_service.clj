@@ -2,7 +2,6 @@
   "Sevices to support the business logic of the metadata db."
   (:require
    [clj-time.core :as t]
-   [clojure.java.jdbc :as jdbc]
    [clojure.set :as set]
    [clojure.string]
    [cmr.common.concepts :as cu]
@@ -672,14 +671,3 @@
          concept-type
          tombstone-cut-off-date
          concept-truncation-batch-size))))
-
-(defn cleanup-old-bulkupdate-status
-  "Delete rows in the bulk-update-task-status table that are older than the configured age"
-  [context]
-  (let [db (util/context->db context)
-        statement (str "delete from CMR_INGEST.bulk_update_task_status "
-                       "where created_at < (current_timestamp - INTERVAL '" 
-                       (config/bulkupdate-cleanup-minimum-age)
-                       "' DAY)")]
-    (jdbc/db-do-prepared db statement))) 
-  

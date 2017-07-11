@@ -7,6 +7,7 @@
     [cmr.common.log :refer (debug info warn error)]
     [cmr.ingest.data.ingest-events :as ingest-events]
     [cmr.ingest.data.provider-acl-hash :as pah]
+    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.transmit.echo.acls :as echo-acls]
     [cmr.transmit.metadata-db :as mdb]))
@@ -134,6 +135,11 @@
   {:default 3600
    :type Long})
 
+(defconfig bulk-update-status-table-cleanup-interval
+  "Number of seconds between cleanup of the old status rows."
+  {:default 86400 
+   :type Long})
+
 (defn trigger-full-refresh-collection-granule-aggregation-cache
   "Triggers a refresh of the collection granule aggregation cache in the Indexer."
   [context]
@@ -162,6 +168,15 @@
   (trigger-full-refresh-collection-granule-aggregation-cache
    {:system system}))
 
+(defn bulk-update-status-table-cleanup
+  "clean up the rows in the bulk-update-task-status table that are older than the configured age"
+  [context]
+  (bulk-update-service/cleanup-old-bulk-update-status context))
+
+(def-stateful-job BulkUpdateStatusTableCleanup
+  [_ system]
+  (bulk-update-status-table-cleanup {:system system}))
+
 (defn jobs
   "A list of jobs for ingest"
   []
@@ -173,6 +188,9 @@
 
    {:job-type RefreshHumanizerAliasCache
     :interval (refresh-humanizer-alias-cache-interval)}
+
+   {:job-type BulkUpdateStatusTableCleanup
+    :interval (bulk-update-status-table-cleanup-interval)}
 
    {:job-type TriggerPartialRefreshCollectionGranuleAggregationCacheJob
     :interval (partial-refresh-collection-granule-aggregation-cache-interval)}
