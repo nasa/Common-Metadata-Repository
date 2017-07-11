@@ -265,6 +265,17 @@
                  (dissoc :URLContentType :Type :Subtype :Relation :FileSize :MimeType :GetData)
                  expected-related-url-get-service)))))))
 
+(defn- expected-collection-citations
+  "Adds OnlineResource Name and Description to CollectionCitations"
+  [collection-citations]
+  (for [collection-citation collection-citations
+        :let [linkage (get-in collection-citation [:OnlineResource :Linkage])]]
+    (-> collection-citation
+        (assoc-in [:OnlineResource :Name] "Dataset Citation")
+        (assoc-in [:OnlineResource :Description] "Dataset Citation")
+        (assoc-in [:OnlineResource :Linkage] (or linkage su/not-provided-url))
+        (update :OnlineResource dissoc :Function :ApplicationProfile :Protocol))))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -295,5 +306,6 @@
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :DataLanguage conversion-util/dif-expected-data-language)
       (update :CollectionProgress su/with-default)
+      (update-in [:CollectionCitations] expected-collection-citations)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
       js/parse-umm-c))

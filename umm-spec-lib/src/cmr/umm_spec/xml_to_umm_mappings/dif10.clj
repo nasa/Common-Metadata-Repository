@@ -11,7 +11,7 @@
     [cmr.umm-spec.dif-util :as dif-util]
     [cmr.umm-spec.json-schema :as js]
     [cmr.umm-spec.url :as url]
-    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
+    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
@@ -29,7 +29,7 @@
   [doc sanitize?]
   (for [proj (select doc "/DIF/Project")]
     {:ShortName (value-of proj "Short_Name")
-     :LongName (u/truncate (value-of proj "Long_Name") u/PROJECT_LONGNAME_MAX sanitize?)
+     :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)
      :Campaigns (values-at proj "Campaign")
      :StartDate (date-at proj "Start_Date")
      :EndDate (date-at proj "End_Date")}))
@@ -38,7 +38,7 @@
   [doc sanitize?]
   (if sanitize?
     ;; We shouldn't remove not provided during parsing
-    (when-not (= u/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
+    (when-not (= su/not-provided (value-of doc "/DIF/Project[1]/Short_Name"))
       (parse-projects-impl doc sanitize?))
     (parse-projects-impl doc sanitize?)))
 
@@ -61,7 +61,7 @@
   [platform-el sanitize?]
   (if sanitize?
     ;; We shouldn't remove not provided during parsing
-    (when-not (= u/not-provided (value-of platform-el "Instrument[1]/Short_Name"))
+    (when-not (= su/not-provided (value-of platform-el "Instrument[1]/Short_Name"))
       (parse-instruments-impl platform-el))
     (parse-instruments-impl platform-el)))
 
@@ -78,7 +78,7 @@
                   :let [date-value (-> md-dates-el
                                        (value-of tag)
                                        date/without-default
-                                       (date/use-default-when-not-provided u/not-provided)
+                                       (date/use-default-when-not-provided su/not-provided)
                                        ;; Since the DIF 10 date elements are actually just a string
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually
@@ -126,7 +126,43 @@
            (seq (remove nil? (map #(parse-temporal-extent % sanitize?) (select doc "/DIF/Temporal_Coverage"))))]
     temporal-extents
     (when sanitize?
-      u/not-provided-temporal-extents)))
+      su/not-provided-temporal-extents)))
+
+(defn- remove-empty-collection-citations
+  "Because DOI is mapped to Dataset Citations, we need to make sure on a xml round trip
+   an empty CollectionCitation isn't left beind when the UMM starts with no CollectionCitations 
+   but does have a DOI"
+  [collection-citations]
+  (remove (fn [cc] (= {:OnlineResource {:Linkage "Not%20provided",
+                                        :Name "Dataset Citation",
+                                        :Description "Dataset Citation"}}
+                      (util/remove-nil-keys cc)))
+          collection-citations))
+
+(defn- parse-collection-citation
+  "Parse the Collection Citation from XML Data Set Citation"
+  [doc sanitize?]
+  (let [data-set-citations (seq (select doc "/DIF/Dataset_Citation"))]
+    (remove-empty-collection-citations
+     (for [data-set-citation data-set-citations
+           :let [release-date (date/sanitize-and-parse-date (value-of data-set-citation "Dataset_Release_Date") sanitize?)]]
+       {:Creator (value-of data-set-citation "Dataset_Creator")
+        :Editor (value-of data-set-citation "Dataset_Editor")
+        :Title  (value-of data-set-citation "Dataset_Title")
+        :SeriesName (value-of data-set-citation "Dataset_Series_Name")
+        :ReleaseDate (if sanitize?
+                       (when (date/valid-date? release-date)
+                         release-date)
+                       release-date)
+        :ReleasePlace (value-of data-set-citation "Dataset_Release_Place")
+        :Publisher (value-of data-set-citation "Dataset_Publisher")
+        :Version (value-of data-set-citation "Version")
+        :IssueIdentification (value-of data-set-citation "Issue_Identification")
+        :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
+        :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
+        :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
+                         :Name "Dataset Citation"
+                         :Description "Dataset Citation"}}))))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
@@ -138,15 +174,16 @@
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
    :VersionDescription (value-of doc "/DIF/Version_Description")
-   :Abstract (u/truncate-with-default (value-of doc "/DIF/Summary/Abstract") u/ABSTRACT_MAX sanitize?)
+   :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
-   :Purpose (u/truncate (value-of doc "/DIF/Summary/Purpose") u/PURPOSE_MAX sanitize?)
+   :CollectionCitations (parse-collection-citation doc sanitize?)
+   :Purpose (su/truncate (value-of doc "/DIF/Summary/Purpose") su/PURPOSE_MAX sanitize?)
    :DataLanguage (dif-util/dif-language->umm-language (value-of doc "/DIF/Dataset_Language"))
    :DataDates (parse-data-dates doc)
    :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (dif-util/parse-iso-topic-categories doc)
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
-   :CollectionProgress (u/with-default (value-of doc "/DIF/Dataset_Progress") sanitize?)
+   :CollectionProgress (su/with-default (value-of doc "/DIF/Dataset_Progress") sanitize?)
    :LocationKeywords (for [lk (select doc "/DIF/Location")]
                        {:Category (value-of lk "Location_Category")
                         :Type (value-of lk "Location_Type")
@@ -156,9 +193,9 @@
                         :DetailedLocation (value-of lk "Detailed_Location")})
    :Projects (parse-projects doc sanitize?)
    :DirectoryNames (dif-util/parse-idn-node doc)
-   :Quality (u/truncate (value-of doc "/DIF/Quality") u/QUALITY_MAX sanitize?)
+   :Quality (su/truncate (value-of doc "/DIF/Quality") su/QUALITY_MAX sanitize?)
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
-   :UseConstraints (u/truncate (value-of doc "/DIF/Use_Constraints") u/USECONSTRAINTS_MAX sanitize?)
+   :UseConstraints (su/truncate (value-of doc "/DIF/Use_Constraints") su/USECONSTRAINTS_MAX sanitize?)
    :Platforms (for [platform (select doc "/DIF/Platform")]
                 {:ShortName (value-of platform "Short_Name")
                  :LongName (value-of platform "Long_Name")
@@ -171,10 +208,10 @@
    :TilingIdentificationSystems (spatial/parse-tiling doc)
    :Distributions (for [dist (select doc "/DIF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
-                     :Sizes (u/parse-data-sizes (value-of dist "Distribution_Size"))
+                     :Sizes (su/parse-data-sizes (value-of dist "Distribution_Size"))
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
-   :ProcessingLevel {:Id (u/with-default (value-of doc "/DIF/Product_Level_Id") sanitize?)}
+   :ProcessingLevel {:Id (su/with-default (value-of doc "/DIF/Product_Level_Id") sanitize?)}
    :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc sanitize?)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
@@ -192,7 +229,7 @@
                                            :Publication_Place
                                            :Publisher
                                            :Pages
-                                           [:ISBN (u/format-isbn (value-of pub-ref "ISBN"))]
+                                           [:ISBN (su/format-isbn (value-of pub-ref "ISBN"))]
                                            (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
                                              [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
                                            [:OnlineResource (dif-util/parse-publication-reference-online-resouce pub-ref sanitize?)]

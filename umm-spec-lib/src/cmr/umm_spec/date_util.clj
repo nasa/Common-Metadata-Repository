@@ -2,6 +2,7 @@
   "Useful UMM date values and functions."
   (:require
    [clj-time.format :as f]
+   [clj-time.core :as t-core]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as p]
    [cmr.common.time-keeper :as time-keeper]
@@ -75,10 +76,20 @@
       date)
     date))
 
+(defn valid-date?
+  "When date is valid, return true, otherwise return nil"
+  [date]
+  (let [date (f/parse date)]
+    (try
+      (t-core/equal? date
+                     date)
+      (catch
+        Exception e nil))))
+
 (defn update-metadata-dates
   "Update the Date to current date, for a given Type: date-type, in MetadataDates of a umm record"
   [umm date-type]
-  (let [new-metadata-dates (concat (remove #(= date-type (:Type %)) (:MetadataDates umm)) 
+  (let [new-metadata-dates (concat (remove #(= date-type (:Type %)) (:MetadataDates umm))
                                    [{:Date (time-keeper/now) :Type date-type}])]
     (assoc umm :MetadataDates new-metadata-dates)))
 

@@ -388,5 +388,6 @@
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
+      (assoc :CollectionCitations nil)
       (update :CollectionProgress su/with-default)
       js/parse-umm-c))
