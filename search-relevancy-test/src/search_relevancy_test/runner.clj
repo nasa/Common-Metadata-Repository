@@ -52,14 +52,16 @@
 (defn- perform-tests
   "Read the anomaly test CSV and perform each test"
   []
-  (doseq [tests-by-anomaly (sort string-key-to-int-sort
+  (for [tests-by-anomaly (sort string-key-to-int-sort
                                  (group-by :anomaly (core/read-anomaly-test-csv)))
           :let [test-count (count (val tests-by-anomaly))]]
-    (println (format "Anomaly %s %s"
-                     (key tests-by-anomaly)
-                     (if (> test-count 1) (format "(%s tests)" test-count) "")))
-    (doseq [individual-test (val tests-by-anomaly)]
-      (perform-search-test individual-test))))
+    (do
+      (println (format "Anomaly %s %s"
+                       (key tests-by-anomaly)
+                       (if (> test-count 1) (format "(%s tests)" test-count) "")))
+      (doall
+        (for [individual-test (val tests-by-anomaly)]
+          (perform-search-test individual-test))))))
 
 (defn relevancy-test
   "Reset the system, ingest all of the test data, and perform the searches from
@@ -72,7 +74,7 @@
     (ingest/ingest-community-usage-metrics) ;; Needs to happen before ingest
     (ingest/ingest-test-files test-files)
     (println "Running tests")
-    (perform-tests)))
+    (reporter/print-result-summary (doall (perform-tests)))))
 
 (defn -main
   "Runs search relevancy tasks."
