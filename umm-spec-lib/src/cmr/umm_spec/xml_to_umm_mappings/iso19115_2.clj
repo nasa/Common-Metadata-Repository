@@ -147,8 +147,8 @@
   DataIdentification element"
   [md-data-id-el sanitize?]
   (if-let [value (char-string-value md-data-id-el "gmd:abstract")]
-    (let [[abstract version-description](string/split
-                                         value (re-pattern iso-util/version-description-separator))
+    (let [[abstract version-description] (string/split
+                                          value (re-pattern iso-util/version-description-separator))
           abstract (when (seq abstract) abstract)]
       [(su/truncate-with-default abstract su/ABSTRACT_MAX sanitize?) version-description])
     [(su/with-default nil sanitize?)]))
