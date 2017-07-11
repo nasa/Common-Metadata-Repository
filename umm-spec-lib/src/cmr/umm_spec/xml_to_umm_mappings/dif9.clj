@@ -90,12 +90,14 @@
   "Parse the Collection Citation from XML Data Set Citation"
   [doc sanitize?]
   (let [data-set-citations (seq (select doc "/DIF/Data_Set_Citation"))]
-    (for [data-set-citation data-set-citations]
+    (for [data-set-citation data-set-citations
+          :let [release-date (date/sanitize-and-parse-date (value-of data-set-citation "Dataset_Release_Date") sanitize?)]]
       {:Creator (value-of data-set-citation "Dataset_Creator")
        :Editor (value-of data-set-citation "Dataset_Editor")
        :Title  (value-of data-set-citation "Dataset_Title")
        :SeriesName (value-of data-set-citation "Dataset_Series_Name")
-       :ReleaseDate (date/sanitize-and-parse-date (value-of data-set-citation "Dataset_Release_Date") sanitize?)
+       :ReleaseDate (when (date/valid-date? release-date)
+                      release-date)
        :ReleasePlace (value-of data-set-citation "Dataset_Release_Place")
        :Publisher (value-of data-set-citation "Dataset_Publisher")
        :Version (value-of data-set-citation "Version")

@@ -128,25 +128,36 @@
     (when sanitize?
       su/not-provided-temporal-extents)))
 
+(defn- remove-empty-collection-citations
+  [collection-citations]
+  (remove (fn [cc] (= {:OnlineResource {:Linkage "Not%20provided",
+                                        :Name "Dataset Citation",
+                                        :Description "Dataset Citation"}}
+                      (util/remove-nil-keys cc)))
+          collection-citations))
+
 (defn- parse-collection-citation
   "Parse the Collection Citation from XML Data Set Citation"
   [doc sanitize?]
   (let [data-set-citations (seq (select doc "/DIF/Dataset_Citation"))]
-    (for [data-set-citation data-set-citations]
-      {:Creator (value-of data-set-citation "Dataset_Creator")
-       :Editor (value-of data-set-citation "Dataset_Editor")
-       :Title  (value-of data-set-citation "Dataset_Title")
-       :SeriesName (value-of data-set-citation "Dataset_Series_Name")
-       :ReleaseDate (value-of data-set-citation "Dataset_Release_Date")
-       :ReleasePlace (date/sanitize-and-parse-date (value-of data-set-citation "Dataset_Release_Place") sanitize?)
-       :Publisher (value-of data-set-citation "Dataset_Publisher")
-       :Version (value-of data-set-citation "Version")
-       :IssueIdentification (value-of data-set-citation "Issue_Identification")
-       :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
-       :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
-       :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
-                        :Name "Dataset Citation"
-                        :Description "Dataset Citation"}})))
+    (remove-empty-collection-citations
+     (for [data-set-citation data-set-citations
+           :let [release-date (date/sanitize-and-parse-date (value-of data-set-citation "Dataset_Release_Date") sanitize?)]]
+       {:Creator (value-of data-set-citation "Dataset_Creator")
+        :Editor (value-of data-set-citation "Dataset_Editor")
+        :Title  (value-of data-set-citation "Dataset_Title")
+        :SeriesName (value-of data-set-citation "Dataset_Series_Name")
+        :ReleaseDate (when (date/valid-date? release-date)
+                       release-date)
+        :ReleasePlace (value-of data-set-citation "Dataset_Release_Place")
+        :Publisher (value-of data-set-citation "Dataset_Publisher")
+        :Version (value-of data-set-citation "Version")
+        :IssueIdentification (value-of data-set-citation "Issue_Identification")
+        :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
+        :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
+        :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
+                         :Name "Dataset Citation"
+                         :Description "Dataset Citation"}}))))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."

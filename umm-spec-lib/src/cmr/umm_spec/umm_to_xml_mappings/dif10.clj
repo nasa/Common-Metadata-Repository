@@ -226,15 +226,13 @@
 (defn generate-dataset-citation
   "Returns the dif10 Data_Set_Citations from UMM-C."
   [c]
-  (let [doi (get-in c [:DOI :DOI])
-        version (:Version c)]
+  (let [doi (get-in c [:DOI :DOI])]
     (if (empty? (:CollectionCitations c))
-      [:Dataset_Citation
-       [:Version version]
-       (when (seq doi)
+      (when (seq doi)
+        [:Dataset_Citation
          [:Persistent_Identifier
           [:Type "DOI"]
-          [:Identifier doi]])]
+          [:Identifier doi]]])
       (for [collection-citation (:CollectionCitations c)]
         [:Dataset_Citation
          [:Dataset_Creator (:Creator collection-citation)]
@@ -244,7 +242,7 @@
          [:Dataset_Release_Date (:ReleaseDate collection-citation)]
          [:Dataset_Release_Place (:ReleasePlace collection-citation)]
          [:Dataset_Publisher (:Publisher collection-citation)]
-         [:Version version]
+         [:Version (:Version collection-citation)]
          [:Issue_Identification (:IssueIdentification collection-citation)]
          [:Data_Presentation_Form (:DataPresentationForm collection-citation)]
          [:Other_Citation_Details (:OtherCitationDetails collection-citation)]
