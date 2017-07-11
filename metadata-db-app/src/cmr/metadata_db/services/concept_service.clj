@@ -21,8 +21,7 @@
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.search-service :as search]
-   [cmr.metadata-db.services.util :as util]
-   [cmr.oracle.sql-utils :as sql-utils])
+   [cmr.metadata-db.services.util :as util])
   ;; Required to get code loaded
   (:require
    [cmr.metadata-db.data.oracle.concepts.acl]
