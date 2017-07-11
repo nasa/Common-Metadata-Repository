@@ -65,7 +65,7 @@
     (:concept-id (ingest/ingest-concept
                   (assoc collection :concept-id (generate-concept-id x "PROV1"))))))
 
-;; CMR-4327
+;; CMR-4334 - bulk update
 #_(deftest bulk-update-science-keywords
     ;; Ingest a collection in each format with science keywords to update
     (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
@@ -122,7 +122,7 @@
                    :Term "ENVIRONMENTAL IMPACTS"
                    :Topic "HUMAN DIMENSIONS"}])))))
 
-;; CMR-4327
+;; CMR-4334 - bulk update
 #_(deftest data-center-bulk-update
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)
           _ (index/wait-until-indexed)]
@@ -171,7 +171,7 @@
                   (map #(select-keys % [:Roles :ShortName])
                        (:DataCenters (:umm concept))))))))))
 
-;; CMR-4327
+;; CMR-4334 - bulk update
 #_(deftest bulk-update-replace-test
     (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
           _ (index/wait-until-indexed)

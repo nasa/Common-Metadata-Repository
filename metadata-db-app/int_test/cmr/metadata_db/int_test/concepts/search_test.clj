@@ -424,7 +424,7 @@
            (util/find-concepts :tag-association {:provider-id "REG_PROV"})))))
 
 ;; Failing in external Oracle
-;; CMR-4327
+;; CMR-4335 - services
 #_(deftest find-services
     (let [serv1 (util/create-and-save-service 1 3)
           serv2 (util/create-and-save-service 2 2)]
