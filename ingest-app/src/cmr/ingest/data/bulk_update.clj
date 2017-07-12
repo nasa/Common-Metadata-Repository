@@ -6,6 +6,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [defn-timed] :as util]
+   [cmr.ingest.config :as config]
    [cmr.oracle.connection]
    [cmr.oracle.sql-utils :as su]))
 
@@ -172,6 +173,16 @@
   "Clear bulk update db"
   [context]
   (reset-bulk-update (context->db context)))
+
+(defn cleanup-old-bulk-update-status
+  "Delete rows in the bulk-update-task-status table that are older than the configured age"
+  [context]
+  (let [db (context->db context)
+        statement (str "delete from CMR_INGEST.bulk_update_task_status "
+                       "where created_at < (current_timestamp - INTERVAL '"
+                       (config/bulk-update-cleanup-minimum-age)
+                       "' DAY)")]
+    (j/db-do-prepared db statement)))
 
 (comment
   (reset-bulk-update (context->db context))

@@ -372,7 +372,6 @@
       (update :TemporalExtents expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update :DataDates expected-iso19115-data-dates)
-      (assoc :CollectionDataType nil)
       (update :DataLanguage #(or % "eng"))
       (update :ProcessingLevel su/convert-empty-record-to-nil)
       (update :Distributions expected-iso-19115-2-distributions)
@@ -388,5 +387,6 @@
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
+      (assoc :CollectionCitations nil)
       (update :CollectionProgress su/with-default)
       js/parse-umm-c))

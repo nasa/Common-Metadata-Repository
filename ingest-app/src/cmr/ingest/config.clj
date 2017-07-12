@@ -5,6 +5,11 @@
             [cmr.oracle.connection :as conn]
             [cmr.message-queue.config :as rmq-conf]))
 
+(defconfig bulk-update-cleanup-minimum-age
+  "The minimum age(in days) of the rows in bulk-update-task-status table that can be cleaned up"
+  {:default 90
+   :type Long})
+
 (defconfig bulk-update-enabled 
   "Flag for whether or not bulk update is enabled."
   {:default true :type Boolean})

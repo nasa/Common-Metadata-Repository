@@ -309,7 +309,21 @@
                                     :GroupName "NSIDC_IceBridge"}]}
                   {:Roles ["PROCESSOR"]
                    :ShortName "Processing Center"
-                   :LongName "processor.processor"}]}))
+                   :LongName "processor.processor"}]
+    :CollectionCitations [{:Creator "Bob"
+                           :Editor "Larry"
+                           :Title "This is a title"
+                           :SeriesName "Series Name"
+                           :ReleaseDate (t/date-time 2000)
+                           :ReleasePlace "Release Place"
+                           :Publisher "Moe"
+                           :Version "1"
+                           :IssueIdentification "Issue Identification"
+                           :DataPresentationForm "Data Presentation Form"
+                           :OtherCitationDetails "Other Citation Details"
+                           :OnlineResource {:Linkage "http://www.foo.com"
+                                            :Name "Data Set Citation"
+                                            :Description "Data Set Citation"}}]}))
 
 (defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -353,7 +367,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataLanguage :SpatialInformation})
+  #{:MetadataLanguage :SpatialInformation})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

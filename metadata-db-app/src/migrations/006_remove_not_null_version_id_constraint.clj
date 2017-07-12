@@ -7,7 +7,7 @@
   "Migrates the database up to version 6."
   []
   (println "migrations.006-remove-not-null-version-id-constraint up...")
-  (doseq [coll-table (h/get-collection-tablenames)]
+  (doseq [coll-table (h/get-regular-provider-collection-tablenames)]
     (try
       (h/sql (format "alter table %s modify (VERSION_ID null)" coll-table))
       (catch java.sql.BatchUpdateException e
@@ -20,6 +20,5 @@
   "Migrates the database down from version 6."
   []
   (println "migrations.006-remove-not-null-version-id-constraint down...")
-  (doseq [coll-table (h/get-collection-tablenames)]
+  (doseq [coll-table (h/get-regular-provider-collection-tablenames)]
     (h/sql (format "alter table %s modify (VERSION_ID not null)" coll-table))))
-

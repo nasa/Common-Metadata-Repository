@@ -1500,7 +1500,7 @@
     },
     "SpatialCoverageTypeEnum": {
       "type": "string",
-      "enum": ["HORIZONTAL", "VERTICAL", "ORBITAL"]
+      "enum": ["HORIZONTAL", "VERTICAL", "ORBITAL", "HORIZONTAL_VERTICAL", "ORBITAL_VERTICAL"]
     },
     "CoordinateSystemEnum": {
       "type": "string",
