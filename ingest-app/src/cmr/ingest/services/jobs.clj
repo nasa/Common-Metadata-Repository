@@ -5,9 +5,9 @@
     [cmr.common.config :as cfg :refer [defconfig]]
     [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
     [cmr.common.log :refer (debug info warn error)]
+    [cmr.ingest.data.bulk-update :as bulk-update]
     [cmr.ingest.data.ingest-events :as ingest-events]
     [cmr.ingest.data.provider-acl-hash :as pah]
-    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
     [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
     [cmr.transmit.echo.acls :as echo-acls]
     [cmr.transmit.metadata-db :as mdb]))
@@ -137,7 +137,7 @@
 
 (defconfig bulk-update-status-table-cleanup-interval
   "Number of seconds between cleanup of the old status rows."
-  {:default 86400 
+  {:default 86400 ;;24 hours 
    :type Long})
 
 (defn trigger-full-refresh-collection-granule-aggregation-cache
@@ -169,9 +169,9 @@
    {:system system}))
 
 (defn bulk-update-status-table-cleanup
-  "clean up the rows in the bulk-update-task-status table that are older than the configured age"
+  "Clean up the rows in the bulk-update-task-status table that are older than the configured age"
   [context]
-  (bulk-update-service/cleanup-old-bulk-update-status context))
+  (bulk-update/cleanup-old-bulk-update-status context))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]

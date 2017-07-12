@@ -3,7 +3,6 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.java.jdbc :as jdbc]
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
@@ -163,13 +162,3 @@
           (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status concept-id-message)
           (data-bulk-update/update-bulk-update-task-collection-status context task-id concept-id failed-status message)))))
   (process-bulk-update-complete context provider-id task-id))
-
-(defn cleanup-old-bulk-update-status
-  "Delete rows in the bulk-update-task-status table that are older than the configured age"
-  [context]
-  (let [db (get-in context [:system :db]) 
-        statement (str "delete from CMR_INGEST.bulk_update_task_status "
-                       "where created_at < (current_timestamp - INTERVAL '"
-                       (config/bulk-update-cleanup-minimum-age)
-                       "' DAY)")]
-    (jdbc/db-do-prepared db statement)))
