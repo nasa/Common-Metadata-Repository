@@ -184,8 +184,9 @@
         (is (= ["You do not have permission to perform that action."]
                errors))))))
 
-;; CMR-4334 - bulk update
-#_(deftest bulk-update-task-status-endpoint-validation
+(deftest bulk-update-task-status-endpoint-validation
+  ;; CMR-4334 - bulk update failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     (testing "Invalid provider"
       (let [token (grant-permissions-create-token)
             response (ingest/bulk-update-task-status "PROV-X" "1" {:token token})
@@ -217,4 +218,4 @@
             {:keys [status errors]} response]
         (is (= 404 status))
         (is (= ["Bulk update task with task id [12] could not be found."]
-               errors)))))
+               errors))))))

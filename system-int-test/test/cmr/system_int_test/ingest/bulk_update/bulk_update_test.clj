@@ -65,8 +65,9 @@
     (:concept-id (ingest/ingest-concept
                   (assoc collection :concept-id (generate-concept-id x "PROV1"))))))
 
-;; CMR-4334 - bulk update
-#_(deftest bulk-update-science-keywords
+(deftest bulk-update-science-keywords
+  ;; CMR-4334 - bulk update failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     ;; Ingest a collection in each format with science keywords to update
     (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
           _ (index/wait-until-indexed)
@@ -120,10 +121,11 @@
                   {:VariableLevel1 "HEAVY METALS CONCENTRATION"
                    :Category "EARTH SCIENCE"
                    :Term "ENVIRONMENTAL IMPACTS"
-                   :Topic "HUMAN DIMENSIONS"}])))))
+                   :Topic "HUMAN DIMENSIONS"}]))))))
 
-;; CMR-4334 - bulk update
-#_(deftest data-center-bulk-update
+(deftest data-center-bulk-update
+  ;; CMR-4334 - bulk update failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)
           _ (index/wait-until-indexed)]
       (testing "Invalid data center update"
@@ -169,10 +171,11 @@
                    {:ShortName "LPDAAC"
                     :Roles ["PROCESSOR"]}]
                   (map #(select-keys % [:Roles :ShortName])
-                       (:DataCenters (:umm concept))))))))))
+                       (:DataCenters (:umm concept)))))))))))
 
-;; CMR-4334 - bulk update
-#_(deftest bulk-update-replace-test
+(deftest bulk-update-replace-test
+  ;; CMR-4334 - bulk update failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
           _ (index/wait-until-indexed)
           bulk-update-body {:concept-ids concept-ids
@@ -207,4 +210,4 @@
                   {:Category "EARTH SCIENCE"
                    :Topic "ATMOSPHERE"
                    :Term "AIR QUALITY"
-                   :VariableLevel1 "EMISSIONS"}])))))
+                   :VariableLevel1 "EMISSIONS"}]))))))
