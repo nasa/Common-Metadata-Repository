@@ -10,6 +10,7 @@
    [search-relevancy-test.core :as core]
    [search-relevancy-test.ingest :as ingest]
    [search-relevancy-test.reporter :as reporter]
+   [search-relevancy-test.result-logger :as result-logger]
    [clojure.set :as set]))
 
 (def tasks
@@ -66,7 +67,7 @@
 (defn relevancy-test
   "Reset the system, ingest all of the test data, and perform the searches from
   the anomaly testing CSV"
-  []
+  [args]
   (let [test-files (core/test-files)]
     (println "Creating providers")
     (ingest/create-providers test-files)
@@ -74,16 +75,19 @@
     (ingest/ingest-community-usage-metrics) ;; Needs to happen before ingest
     (ingest/ingest-test-files test-files)
     (println "Running tests")
-    (reporter/print-result-summary (doall (perform-tests)))))
+    (let [test-results (flatten (doall (perform-tests)))]
+      (reporter/print-result-summary test-results)
+      (println "Logging test results")
+      (result-logger/log-test-run test-results args))))
 
 (defn -main
   "Runs search relevancy tasks."
   [task-name & args]
   (case task-name
         "download-collections" (anomaly-fetcher/download-and-save-all-collections)
-        "relevancy-tests" (relevancy-test)
+        "relevancy-tests" (relevancy-test args)
         usage)
   (shutdown-agents))
 
 (comment
- (relevancy-test))
+ (relevancy-test nil))
