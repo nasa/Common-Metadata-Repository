@@ -24,16 +24,17 @@
  "Calculate the discounted cumulative gain for the results.
  The formula for DCG is: for each position i (starting at 1), calculate:
  (position relevancy / log2(i + 1))
+ https://en.wikipedia.org/wiki/Discounted_cumulative_gain
  'position relevancy' is how relevant the result was, so higher is better. When
  the position comes back lower is better so take the inverse of the position to use
- in the calculations"
+ in the calculations."
  [result-positional-order]
  (apply +
         (map-indexed (fn [index result-position]
-                       (if (> result-position 0)
-                         ;; Inverse of positio = relevancy for that position
+                       (if (pos? result-position)
+                         ;; Inverse of position = relevancy for that position
                          (/ (- (inc (count result-positional-order)) result-position)
-                            ;; 1-index the index and the add 1, take log base 2 of that
+                            ;; 1-index the index and then add 1, take log base 2 of that
                             (/ (Math/log (+ 2 index)) (Math/log 2)))
                          0))
                      result-positional-order)))
@@ -44,23 +45,25 @@
   [result-positional-order num-test-concept-ids]
   (let [test-dcg (result-discounted-cumulative-gain result-positional-order)
         ideal-dcg (result-discounted-cumulative-gain (range 1 (inc num-test-concept-ids)))]
-    (/ test-dcg ideal-dcg)))
+    (if (pos? ideal-dcg)
+      (/ test-dcg ideal-dcg)
+      0)))
 
 (defn- reciprocal-rank
   "Return reciprocal rank for the item that is supposed to be in position 1.
-  Calculated by 1 / actual position"
+  Calculated by 1 / actual position. "
   [result-positional-order]
   (let [idx (inc (.indexOf result-positional-order 1))]
-    (when (> idx 0)
-      (/ 1 idx))))
+    (if (pos? idx)
+      (/ 1 idx)
+      0)))
 
 (defn analyze-search-results
   "Given the list of result concept ids in order and the order from the test,
   analyze the results to determine if the concept ids came back in the correct
   position. Print a message if not."
   [anomaly-test test-concept-ids result-ids]
-  (let [atom-fail-count (atom 0)
-        description (format "...............Test %s: %s"
+  (let [description (format "...............Test %s: %s"
                             (:test anomaly-test)
                             (:description anomaly-test))
         items-in-positional-order (positional-order test-concept-ids result-ids)
@@ -95,7 +98,9 @@
 (defn- average
   "Return the average of results, given results is a collection of numbers"
   [results]
-  (/ (apply + results) (count results)))
+  (if (pos? (count results))
+    (/ (apply + results) (count results))
+    0))
 
 (defn generate-result-summary
   "Calculate fields for the result summary"

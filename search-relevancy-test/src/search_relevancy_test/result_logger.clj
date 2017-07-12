@@ -36,18 +36,23 @@
    :reciprocal-rank (:mean-reciprocal-rank result-summary)
    :result-description (:result-description result-summary)})
 
+(defn- compare-run
+  "Compare the result to the given run. If they have the same anomaly # and
+  test #, they match. Return true if they match and the discounted-cumulative-gain
+  and reciprocal-rank are different"
+  [result run]
+  (and (= (:anomaly run) (:anomaly result)
+          (= (:test run) (:test result))
+          (or (not= (:discounted-cumulative-gain run)
+                    (:discounted-cumulative-gain result))
+              (not= (:reciprocal-rank run)
+                    (:reciprocal-rank result))))))
+
 (defn- changed-from-last-run
   "Determine if for the test and anomaly the result has changed from the last run.
   If so, return a string with differences from the last run. If not, return nil."
   [result last-run]
-  (when-let [last-run-result (some #(when (and (= (:anomaly %) (:anomaly result))
-                                               (= (:test %) (:test result))
-                                               (or (not= (:discounted-cumulative-gain %)
-                                                         (:discounted-cumulative-gain result))
-                                                   (not= (:reciprocal-rank %)
-                                                         (:reciprocal-rank result))))
-                                       %)
-                                   last-run)]
+  (when-let [last-run-result (some #(when compare-run %) last-run)]
     (format "YES (DCG %s, RR: %s, Position: %s)"
             (:discounted-cumulative-gain last-run-result)
             (:reciprocal-rank last-run-result)
@@ -101,7 +106,7 @@
 
 (defn log-test-run
   "Log the test run to CSV. If we have a run description in the arguments, write
-  to the test run history CSV. either way log the local run."
+  to the test run history CSV. Either way log the local run."
   [results args]
   (if-let [run-description (get-run-description args)]
     (do
