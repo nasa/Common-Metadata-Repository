@@ -624,3 +624,4 @@ curl -i -H "Echo-Token: XXXX" -H "Cmr-Pretty:true" %CMR-ENDPOINT%/providers/PROV
     </collection-statuses>
 </result>
 ```
+Bulk update status and results are available for 90 days.
