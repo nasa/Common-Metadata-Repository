@@ -11,8 +11,9 @@
 
 (use-fixtures :each (ingest-util/reset-fixture))
 
-;; CMR-4335 - services
-#_(deftest create-service-ingest-test
+(deftest create-service-ingest-test
+  ;; CMR-4335 - services failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     (testing "ingest a new service"
       (let [;; Groups
             update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
@@ -36,9 +37,11 @@
           (service-util/assert-service-saved service-data
                                              "umm-var-user1"
                                              concept-id
-                                             revision-id)))))
+                                             revision-id))))))
 
-#_(deftest create-service-ingest-permissions-test
+(deftest create-service-ingest-permissions-test
+  ;; CMR-4335 - services failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     (testing "ingest create service permissions"
       (let [;; Groups
             guest-group-id (e/get-or-create-group
@@ -96,4 +99,4 @@
             "Guest user denied"
             guest-token 401
             "No token provided"
-            nil 401)))))
+            nil 401))))))

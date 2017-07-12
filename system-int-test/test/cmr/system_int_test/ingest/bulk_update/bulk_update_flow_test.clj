@@ -18,8 +18,9 @@
   [index provider]
   (format "C120000000%s-%s" index provider))
 
-;; CMR-4334 - bulk update
-#_(deftest bulk-update-success
+(deftest bulk-update-success
+  ;; CMR-4334 - bulk update failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     (let [concept-ids (for [x (range 3)]
                         (:concept-id (ingest/ingest-concept
                                        (assoc
@@ -86,10 +87,11 @@
                                             :concept-id "C1200000002-PROV1"}]}
                     response)))
            "JSON" :json
-           "XML" :xml)))))
+           "XML" :xml))))))
 
-;; CMR-4334 - bulk update
-#_(deftest bulk-update-invalid-concept-id
+(deftest bulk-update-invalid-concept-id
+  ;; CMR-4334 - bulk update failures when using Oracle as the backend
+  (s/only-with-in-memory-database
     (let [bulk-update-body {:concept-ids ["C1200000100-PROV1" "C111"]
                             :update-type "ADD_TO_EXISTING"
                             :update-field "SCIENCE_KEYWORDS"
@@ -111,4 +113,4 @@
                                     {:status-message "Concept-id [C111] is not valid.",
                                      :status "FAILED",
                                      :concept-id "C111"}]}
-             status-response))))
+             status-response)))))
