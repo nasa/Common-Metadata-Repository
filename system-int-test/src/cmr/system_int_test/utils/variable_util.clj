@@ -7,6 +7,7 @@
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-variable :as data-umm-v]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
@@ -14,6 +15,11 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.variable :as transmit-variable]))
+
+(def schema-version "1.9")
+(def content-type "application/vnd.nasa.cmr.umm+json")
+(def default-opts {:accept-format :json
+                   :content-type content-type})
 
 (defn grant-all-variable-fixture
   "A test fixture that grants all users the ability to create and modify
@@ -38,6 +44,28 @@
      :grant-id update-grant-id
      :token update-token}))
 
+(defn make-variable-concept
+  ([]
+    (make-variable-concept {}))
+  ([metadata-attrs]
+    (make-variable-concept metadata-attrs {}))
+  ([metadata-attrs attrs]
+    (-> metadata-attrs
+        (data-umm-v/variable-concept)
+        (assoc :format (mt/with-version content-type schema-version))
+        (merge attrs))))
+
+(defn ingest-variable
+  "A convenience function for ingesting a variable during tests."
+  ([]
+    (ingest-variable (make-variable-concept)))
+  ([variable-concept]
+    (ingest-variable variable-concept default-opts))
+  ([variable-concept opts]
+    (ingest-util/ingest-concept variable-concept opts)))
+
+;; XXX This can be removed once variable associations have been updated to use the new
+;; cmr.system-int-test.data2.umm-spec-variable namespace.
 (def sample-variable
   {:Name "A-name"
    :LongName "A long UMM-Var name"
@@ -54,6 +82,8 @@
                        :Topic "sk-B"
                        :Term "sk-C"}]})
 
+;; XXX This can be removed once variable associations have been updated to use the new
+;; cmr.system-int-test.data2.umm-spec-variable namespace.
 (defn make-variable
   "Makes a valid variable based on the given input"
   ([]
@@ -67,6 +97,8 @@
      :LongName (str "Long UMM-Var name " index)}
     attrs)))
 
+;; XXX This can be removed once variable associations have been updated to use the new
+;; cmr.system-int-test.data2.umm-spec-variable namespace.
 (defn create-variable
   "Creates a variable."
   ([token variable]
@@ -79,11 +111,15 @@
      (ingest-util/parse-map-response
       (transmit-variable/create-variable (s/context) variable options)))))
 
+;; XXX This can be removed once variable associations have been updated to use the new
+;; cmr.system-int-test.data2.umm-spec-variable namespace.
 (defn create-variable-with-attrs
   "Helper function to create a variable with the given variable attributes"
   [token attrs]
   (create-variable token (make-variable attrs)))
 
+;; XXX This can be removed once variable associations have been updated to use the new
+;; cmr.system-int-test.data2.umm-spec-variable namespace.
 (defn update-variable
   "Updates a variable."
   ([token variable]
@@ -98,6 +134,8 @@
      (ingest-util/parse-map-response
       (transmit-variable/update-variable (s/context) variable-name variable options)))))
 
+;; XXX This can be removed once variable associations have been updated to use the new
+;; cmr.system-int-test.data2.umm-spec-variable namespace.
 (defn delete-variable
   "Deletes a variable"
   ([token variable-name]
