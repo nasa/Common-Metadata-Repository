@@ -215,45 +215,30 @@
     (index/wait-until-indexed)
     (is (= 201 status))))
 
-; (deftest delete-variable-ingest-test
-;   (testing "Variable ingest:"
-;     (let [acl-data (variable-util/setup-update-acl (s/context) "PROV1")
-;           {:keys [user-name group-name group-id token grant-id]} acl-data
-;           variable-data (variable-util/make-variable)
-;           new-long-name "A new long name"
-;           _ (variable-util/create-variable token variable-data)
-;           response (variable-util/delete-variable
-;                     token
-;                     (string/lower-case (:Name variable-data)))
-;           {:keys [status concept-id revision-id]} response
-;           fetched (mdb/get-concept concept-id revision-id)]
-;       (testing "delete a variable"
-;         (is (= 200 status))
-;         (is (= 2 revision-id))
-;         (is (:deleted fetched))
-;         (is (= (string/lower-case (:Name variable-data))
-;                (:native-id fetched)))
-;         (variable-util/assert-variable-deleted variable-data
-;                                                user-name
-;                                                concept-id
-;                                                revision-id))
-;       (testing "attempt to update a deleted variable"
-;         (let [response (variable-util/update-variable
-;                         token
-;                         (string/lower-case (:Name variable-data))
-;                         (assoc variable-data :LongName new-long-name))
-;               {:keys [status errors]} response]
-;           (is (= 404 status))
-;           (is (= (format "Variable with variable-name '%s' was deleted."
-;                          (string/lower-case (:Name variable-data)))
-;                  (first errors)))))
-;       (testing "create a variable over a variable's tombstone"
-;         (let [response (variable-util/create-variable
-;                         token
-;                         variable-data)
-;               {:keys [status concept-id revision-id]} response]
-;           (is (= 200 status))
-;           (is (= 3 revision-id)))))))
+(deftest delete-variable-ingest-test
+  (testing "Variable ingest:"
+    (let [acl-data (variable-util/setup-update-acl (s/context) "PROV1")
+          {:keys [user-name group-name group-id token grant-id]} acl-data
+          concept (make-variable-concept)
+          _ (ingest-variable concept {:token token})
+          _ (index/wait-until-indexed)
+          response (ingest/delete-concept concept
+                    {:token token})
+          {:keys [status concept-id revision-id errors]} response
+          _ (println "errors:" errors)
+          fetched (mdb/get-concept concept-id revision-id)]
+      (testing "delete a variable"
+        (is (= 200 status))
+        (is (= 2 revision-id))
+        (is (:deleted fetched))
+        (is (= (:native-id concept)
+               (:native-id fetched)))
+        (is (:deleted fetched)))
+      (testing "create a variable over a variable's tombstone"
+        (let [response (ingest-variable (make-variable-concept) {:token token})
+              {:keys [status concept-id revision-id]} response]
+          (is (= 200 status))
+          (is (= 3 revision-id)))))))
 
 ; (deftest variable-ingest-permissions-test
 ;   (testing "Variable ingest permissions:"
