@@ -74,7 +74,8 @@
     (assoc result :changed-from-last-run (changed-from-last-run result last-run))))
 
 (defn write-test-run-to-csv
-  "Write the run results to the given CSV file."
+  "Write the run results to the given CSV file. Compare this run with the results
+  from the last run."
   [csv-file-name results run-description]
   (let [result-summary-row (result-summary->csv-row
                             (reporter/generate-result-summary results))
