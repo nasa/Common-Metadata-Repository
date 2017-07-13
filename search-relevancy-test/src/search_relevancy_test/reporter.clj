@@ -25,9 +25,8 @@
  The formula for DCG is: for each position i (starting at 1), calculate:
  (position relevancy / log2(i + 1))
  https://en.wikipedia.org/wiki/Discounted_cumulative_gain
- 'position relevancy' is how relevant the result was, so higher is better. When
- the position comes back lower is better so take the inverse of the position to use
- in the calculations."
+ 'position relevancy' is calculated using the inverse of the position because
+ the lower the position the result came back at, the more relevant the result was."
  [result-positional-order]
  (apply +
         (map-indexed (fn [index result-position]

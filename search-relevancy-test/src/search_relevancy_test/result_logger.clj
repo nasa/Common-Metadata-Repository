@@ -39,14 +39,14 @@
 (defn- compare-run
   "Compare the result to the given run. If they have the same anomaly # and
   test #, they match. Return true if they match and the discounted-cumulative-gain
-  and reciprocal-rank are different"
+  or reciprocal-rank are different"
   [result run]
-  (and (= (:anomaly run) (:anomaly result)
-          (= (:test run) (:test result))
-          (or (not= (:discounted-cumulative-gain run)
-                    (:discounted-cumulative-gain result))
-              (not= (:reciprocal-rank run)
-                    (:reciprocal-rank result))))))
+  (and (= (:anomaly run) (:anomaly result))
+       (= (:test run) (:test result))
+       (or (not= (:discounted-cumulative-gain run)
+                 (:discounted-cumulative-gain result))
+           (not= (:reciprocal-rank run)
+                 (:reciprocal-rank result)))))
 
 (defn- changed-from-last-run
   "Determine if for the test and anomaly the result has changed from the last run.
