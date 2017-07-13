@@ -21,6 +21,10 @@
 (def default-opts {:accept-format :json
                    :content-type content-type})
 
+(defn token-opts
+  [token]
+  (merge default-opts {:token token}))
+
 (defn grant-all-variable-fixture
   "A test fixture that grants all users the ability to create and modify
   variables."
@@ -30,19 +34,19 @@
 
 (defn setup-update-acl
   "Set up the ACLs for UMM-Var update permissions and return the ids+token"
-  [context provider-id]
-  (let [user-name "umm-var-user42"
-        group-name "umm-var-guid42"
-        update-group-id (echo-util/get-or-create-group context group-name)
-        update-token (echo-util/login context user-name [update-group-id])
-        token-context (assoc context :token update-token)
-        update-grant-id (echo-util/grant-group-provider-admin
-                         token-context update-group-id provider-id :update)]
-    {:user-name user-name
-     :group-name group-name
-     :group-id update-group-id
-     :grant-id update-grant-id
-     :token update-token}))
+  ([context provider-id]
+   (setup-update-acl context provider-id "umm-var-user42" "umm-var-guid42"))
+  ([context provider-id user-name group-name]
+   (let [update-group-id (echo-util/get-or-create-group context group-name)
+         update-token (echo-util/login context user-name [update-group-id])
+         token-context (assoc context :token update-token)
+         update-grant-id (echo-util/grant-group-provider-admin
+                          token-context update-group-id provider-id :update)]
+     {:user-name user-name
+      :group-name group-name
+      :group-id update-group-id
+      :grant-id update-grant-id
+      :token update-token})))
 
 (defn make-variable-concept
   ([]
@@ -52,6 +56,11 @@
   ([metadata-attrs attrs]
     (-> metadata-attrs
         (data-umm-v/variable-concept)
+        (assoc :format (mt/with-version content-type schema-version))
+        (merge attrs)))
+  ([metadata-attrs attrs index]
+    (-> metadata-attrs
+        (data-umm-v/variable-concept {} index)
         (assoc :format (mt/with-version content-type schema-version))
         (merge attrs))))
 
