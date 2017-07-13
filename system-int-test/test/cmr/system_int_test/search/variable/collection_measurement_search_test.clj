@@ -18,31 +18,36 @@
                 vu/grant-all-variable-fixture]))
 
 (deftest collection-variable-measurement-search-test
-  (let [token (e/login (s/context) "user1")
+  (let [{token :token} (vu/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")
         [coll1 coll2 coll3 coll4 coll5] (for [n (range 1 6)]
                                           (d/ingest-umm-spec-collection
                                            "PROV1"
-                                           (data-umm-c/collection n {})))]
+                                           (data-umm-c/collection n {})
+                                           {:token token}))]
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
     ;; create variables
-    (vu/create-variable-with-attrs token
-                                   {:Name "Variable1"
-                                    :LongName "Measurement1"})
-    (vu/create-variable-with-attrs token
-                                   {:Name "Variable2"
-                                    :LongName "Measurement2"})
-    (vu/create-variable-with-attrs token
-                                   {:Name "SomeVariable"
-                                    :LongName "Measurement2"})
+    (vu/ingest-variable
+     (vu/make-variable-concept {:Name "Variable1"
+                                :LongName "Measurement1"})
+     (vu/token-opts token))
+    (vu/ingest-variable
+     (vu/make-variable-concept {:Name "Variable2"
+                                :LongName "Measurement2"})
+     (vu/token-opts token))
+    (vu/ingest-variable
+     (vu/make-variable-concept {:Name "Variable3"
+                                :LongName "Measurement3"})
+     (vu/token-opts token))
     ;; create variable associations
     ;; variable1 is associated with coll1 and coll2
-    ;; variable2 is associated with coll2 and coll3
-    ;; somevariable is associated with coll4
     (vu/associate-by-concept-ids token "variable1" [{:concept-id (:concept-id coll1)}
                                                     {:concept-id (:concept-id coll2)}])
+    ;; variable2 is associated with coll2 and coll3
     (vu/associate-by-concept-ids token "variable2" [{:concept-id (:concept-id coll2)}
                                                     {:concept-id (:concept-id coll3)}])
+    ;; somevariable is associated with coll4
     (vu/associate-by-concept-ids token "somevariable" [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
 
