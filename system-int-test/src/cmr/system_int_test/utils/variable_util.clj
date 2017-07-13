@@ -17,6 +17,7 @@
    [cmr.transmit.variable :as transmit-variable]))
 
 (def schema-version "1.9")
+(def unique-index (atom 0))
 (def content-type "application/vnd.nasa.cmr.umm+json")
 (def default-opts {:accept-format :json
                    :content-type content-type})
@@ -60,9 +61,16 @@
         (merge attrs)))
   ([metadata-attrs attrs index]
     (-> metadata-attrs
-        (data-umm-v/variable-concept {} index)
+        (data-umm-v/variable-concept :umm-json index)
         (assoc :format (mt/with-version content-type schema-version))
         (merge attrs))))
+
+(defn make-unique-variable-concept
+  ([]
+    (make-unique-variable-concept {} {}))
+  ([metadata-attrs attrs]
+    (swap! unique-index inc)
+    (make-variable-concept metadata-attrs attrs @unique-index)))
 
 (defn ingest-variable
   "A convenience function for ingesting a variable during tests."
