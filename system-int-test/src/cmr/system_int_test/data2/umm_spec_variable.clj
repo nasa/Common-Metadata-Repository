@@ -39,11 +39,10 @@
    (umm-v/map->UMM-Var (merge sample-umm-var attribs)))
   ([index attribs]
    (umm-v/map->UMM-Var
-    (merge
-     sample-umm-var
-     {:Name (str "Name " index)
-      :LongName (str "Long UMM-Var name" index)}
-     attribs))))
+    (merge sample-umm-var
+           {:Name (str "Name " index)
+            :LongName (str "Long UMM-Var name" index)}
+           attribs))))
 
 (defn variable-concept
   "Returns the variable for ingest with the given attributes"
@@ -52,5 +51,11 @@
   ([attribs concept-format]
    (let [{:keys [provider-id native-id]} attribs]
      (-> (variable attribs)
+         (assoc :provider-id provider-id :native-id native-id)
+         (d/umm-var->concept concept-format))))
+  ([attribs concept-format index]
+    (let [{:keys [provider-id native-id]} attribs]
+     (-> index
+         (variable attribs)
          (assoc :provider-id provider-id :native-id native-id)
          (d/umm-var->concept concept-format)))))
