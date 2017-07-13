@@ -24,6 +24,12 @@ This task will download the metadata files for every concept-id included in the 
 
 This task will ingest all of the locally saved metadata files into a local CMR. In order to use this task you must have the CMR dev-system running locally. It will execute every test case listed in the anomaly_tests.csv file and print out a report.
 
+The report will also be logged to local_test_runs.csv to allow a comparison between runs for the local user and a historical record during debugging.
+
+If an optional argument -log-run-description is specified with a run description (i.e. "Increase entry title boost") the log will aslo be written to test_run_history.csv, which should be committed to the repository.
+
+Usage: `lein run relevancy-tests -log-run-description "Base Run"`
+
 ## License
 
 Copyright © 2017 NASA
