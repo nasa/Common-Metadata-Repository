@@ -65,7 +65,8 @@
      (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
 
 (deftest all-facets-v2-test
-  (let [token (e/login (s/context) "user1")
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")
         coll1 (fu/make-coll 1 "PROV1"
                             (fu/science-keywords sk1 sk2)
                             (fu/projects "proj1" "PROJ2")
@@ -80,12 +81,14 @@
                             {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})]
     (index/wait-until-indexed)
     ;; create variables
-    (variable-util/create-variable-with-attrs token
-                                              {:Name "Variable1"
-                                               :LongName "Measurement1"})
-    (variable-util/create-variable-with-attrs token
-                                              {:Name "Variable2"
-                                               :LongName "Measurement2"})
+    (variable-util/ingest-variable
+     (variable-util/make-variable-concept {:Name "Variable1"
+                                           :LongName "Measurement1"})
+     (variable-util/token-opts token))
+    (variable-util/ingest-variable
+     (variable-util/make-variable-concept {:Name "Variable2"
+                                           :LongName "Measurement2"})
+     (variable-util/token-opts token))
     ;; create variable associations
     (variable-util/associate-by-concept-ids token
                                             "variable1"
@@ -642,7 +645,8 @@
        false))))
 
 (deftest variables-facets-v2-test
-  (let [token (e/login (s/context) "user1")
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")
         coll1 (d/ingest "PROV1" (dc/collection
                                  {:entry-title "coll1"
                                   :short-name "S1"
@@ -666,15 +670,18 @@
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
     ;; create variables
-    (variable-util/create-variable-with-attrs token
-                                              {:Name "Variable1"
-                                               :LongName "Measurement1"})
-    (variable-util/create-variable-with-attrs token
-                                              {:Name "Variable2"
-                                               :LongName "Measurement2"})
-    (variable-util/create-variable-with-attrs token
-                                              {:Name "SomeVariable"
-                                               :LongName "Measurement2"})
+    (variable-util/ingest-variable
+     (variable-util/make-variable-concept {:Name "Variable1"
+                                           :LongName "Measurement1"})
+     (variable-util/token-opts token))
+    (variable-util/ingest-variable
+     (variable-util/make-variable-concept {:Name "Variable2"
+                                           :LongName "Measurement2"})
+     (variable-util/token-opts token))
+    (variable-util/ingest-variable
+     (variable-util/make-variable-concept {:Name "SomeVariable"
+                                           :LongName "Measurement2"})
+     (variable-util/token-opts token))
     ;; create variable associations
     ;; variable1 is associated with coll1 and coll2
     ;; variable2 is associated with coll2 and coll3
