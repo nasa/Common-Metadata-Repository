@@ -20,7 +20,7 @@
             (if-let [values (get extent k)]
               (concat result (map #(assoc extent k [%])
                                   values))
-              (concat result [extent])))
+              (conj (vec result) extent)))
           []
           temporal-extents))
 
