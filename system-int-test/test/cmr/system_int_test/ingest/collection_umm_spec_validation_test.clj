@@ -61,22 +61,12 @@
     (testing "schema validation errors returned"
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
       (let [response (d/ingest-umm-spec-collection
-                               (data-umm-c/collection-missing-properties {:AdditionalAttributes
-                                               [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                                (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                               {:allow-failure? true})]
                        "PROV1"
                        (data-umm-c/collection-missing-properties
                          {:AdditionalAttributes
                           [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true})]
-                      "PROV1"
-                      (data-umm-c/collection-missing-properties
-                        {:AdditionalAttributes
-                         [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                          (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                      {:allow-failure? true})]
         (is (= {:status 422
                 :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
@@ -85,29 +75,15 @@
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
       (assert-valid {:AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                                             (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
-      (assert-valid {:AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
-      (assert-valid {:AdditionalAttributes [(data-umm-cmn/additional-attribute
-                                             {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                            (data-umm-cmn/additional-attribute
-                                             {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
 
   (testing "UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
     (testing "schema validation errors returned when Cmr-Validate-Umm-C header is true"
       (let [response (d/ingest-umm-spec-collection
-                                                       [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                                        (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                               {:allow-failure? true :validate-umm-c true})]
                        "PROV1"
                        (data-umm-c/collection-missing-properties
                          {:AdditionalAttributes
                            [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
                             (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                      "PROV1"
-                      (data-umm-cmn/collection-missing-properties
-                       {:AdditionalAttributes
-                        [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                         (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true :validate-umm-c true})]
         (is (= {:status 422
                 :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
