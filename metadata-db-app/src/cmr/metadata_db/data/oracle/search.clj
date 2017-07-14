@@ -31,7 +31,7 @@
    :service (into common-columns [:service_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
-   :variable (into common-columns [:variable_name :measurement :user_id])
+   :variable (into common-columns [:provider_id :variable_name :measurement :user_id])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
                                 :variable_name :user_id])})
@@ -95,7 +95,8 @@
   "Retrieve concept maps from the given table, handling small providers separately from
   normal providers."
   (fn [db table concept-type providers params]
-    (:small (first providers))))
+    (or (:small (first providers))
+        (= :variable concept-type))))
 
 ;; Execute a query against the small providers table
 (defmethod find-concepts-in-table true
