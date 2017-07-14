@@ -15,9 +15,7 @@
 (use-fixtures
  :each
  (join-fixtures
-  [(ingest/reset-fixture {"provguid1" "PROV1"
-                          "provguid2" "PROV2"
-                          "provguid3" "PROV3"}
+  [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
                          {:grant-all-search? false})
    vu/grant-all-variable-fixture]))
 
@@ -30,24 +28,19 @@
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
-  (let [{token :token} (vu/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")
-        [c1-p1 c2-p1 c3-p1 c4-p1
+  (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
          c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
                                     (:concept-id (d/ingest p (dc/collection
                                                               {:short-name (str "S" n)
                                                                :version-id (str "V" n)
-                                                               :entry-title (str "ET" n)}
-                                                              {:token token}))))
+                                                               :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        token (e/login (s/context) "user1")
         variable-name "variable1"
-        variable (vu/make-variable-concept {:Name variable-name})
-        {:keys [concept-id] :as response} (vu/ingest-variable
-                                           variable
-                                           (vu/token-opts token))]
+        {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name variable-name})]
     (index/wait-until-indexed)
 
     (testing "Associate variable with collections by concept-ids"
@@ -114,12 +107,8 @@
 (deftest associate-variable-failure-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [variable-name "variable1"
-        variable (vu/make-variable-concept {:Name variable-name})
-        {token :token} (vu/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")
-        {:keys [concept-id revision-id]} (vu/create-variable token variable)
-        ;; The stored updated variable would have user1 in the originator id
-        variable (assoc variable :originator-id "user1")
+        token (e/login (s/context) "user1")
+        {:keys [concept-id revision-id]} (vu/ingest-variable-with-attrs {:Name variable-name})
         coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
     (testing "Associate variable using query sent with invalid content type"
       (are [associate-variable-fn request-json]
@@ -185,13 +174,9 @@
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
         all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
         variable-name "variable1"
-        variable (vu/make-variable-concept {:Name variable-name})
-        {token :token} (vu/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")
+        token (e/login (s/context) "user1")
         prov3-token (e/login (s/context) "prov3-user" [group1-concept-id])
-        {:keys [concept-id]} (vu/ingest-variable
-                              variable
-                              (vu/token-opts token))
+        {:keys [concept-id]} (vu/ingest-variable-with-attrs {:Name variable-name})
         assert-variable-associated (partial vu/assert-variable-associated-with-query
                                             prov3-token {:variable-name "variable1"})]
     (index/wait-until-indexed)
@@ -241,14 +226,8 @@
 (deftest dissociate-variable-failure-test
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
   (let [variable-name "variable1"
-        variable (vu/make-variable-concept {:Name variable-name})
-        {token :token} (vu/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")
-        {:keys [concept-id revision-id]} (vu/ingest-variable
-                                          variable
-                                          (vu/token-opts token))
-        ;; The stored updated variable would have user1 in the originator id
-        variable (assoc variable :originator-id "user1")
+        token (e/login (s/context) "user1")
+        {:keys [concept-id revision-id]} (vu/ingest-variable-with-attrs {:Name variable-name})
         coll-concept-id (:concept-id (d/ingest "PROV1" (dc/collection)))]
 
     (testing "Dissociate variable using query sent with invalid content type"
@@ -297,12 +276,11 @@
     (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"}))
           coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"}))
           coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"}))
-          {token :token} (vu/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")
+          token (e/login (s/context) "user1")
           variable-name "variable1"
           assert-variable-associated (partial vu/assert-variable-associated-with-query
                                               token {:variable-name "variable1"})]
-      (vu/create-variable token (vu/make-variable {:Name variable-name}))
+      (vu/ingest-variable-with-attrs {:Name variable-name})
       (index/wait-until-indexed)
       (vu/associate-by-concept-ids token variable-name [{:concept-id (:concept-id coll1)}
                                                         {:concept-id (:concept-id coll2)
@@ -390,10 +368,9 @@
   (let [[coll1 coll2 coll3] (for [n (range 1 4)]
                               (d/ingest "PROV1" (dc/collection)))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
-        {token :token} (vu/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")]
-    (vu/create-variable token (vu/make-variable {:Name "variable1"}))
-    (vu/create-variable token (vu/make-variable {:Name "variable2"}))
+        token (e/login (s/context) "user1")]
+    (vu/ingest-variable-with-attrs {:Name "variable1"})
+    (vu/ingest-variable-with-attrs {:Name "variable2"})
     (index/wait-until-indexed)
 
     ;; associate variable1 to coll1, variable2 to coll2
