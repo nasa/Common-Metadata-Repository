@@ -59,11 +59,13 @@
   (testing "UMM-C JSON-Schema validation through config settings"
     (testing "schema validation errors returned"
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! true))
-      (let [response (d/ingest-umm-spec-collection "PROV1"
-                               (data-umm-c/collection-missing-properties {:AdditionalAttributes
-                                               [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                                (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                               {:allow-failure? true})]
+      (let [response (d/ingest-umm-spec-collection
+                       "PROV1"
+                       (data-umm-c/collection-missing-properties
+                         {:AdditionalAttributes
+                          [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
+                           (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
+                       {:allow-failure? true})]
         (is (= {:status 422
                 :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
@@ -71,14 +73,17 @@
     (testing "schema validation errors not returned"
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
       (assert-valid {:AdditionalAttributes [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                                   (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
+                                            (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
 
   (testing "UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
     (testing "schema validation errors returned when Cmr-Validate-Umm-C header is true"
-      (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection-missing-properties {:AdditionalAttributes
-                                                       [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                                        (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
-                               {:allow-failure? true :validate-umm-c true})]
+      (let [response (d/ingest-umm-spec-collection
+                       "PROV1"
+                       (data-umm-c/collection-missing-properties
+                         {:AdditionalAttributes
+                           [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
+                            (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
+                       {:allow-failure? true :validate-umm-c true})]
         (is (= {:status 422
                 :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
                (select-keys response [:status :errors])))))
@@ -102,11 +107,11 @@
   (testing "UMM-SPEC validation through Cmr-Validation-Umm-C header"
     (let [coll-attr {:ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "1"})
                      :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
-                                                             :Topic "Cool"
-                                                             :Term "Mild"})]
+                                                                    :Topic "Cool"
+                                                                    :Term "Mild"})]
                      :SpatialExtent (data-umm-c/spatial {:gsr "CARTESIAN"})
                      :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                     :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] 
+                     :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"]
                                                             :ShortName "Larc"})]
                      :Platforms [{:ShortName "plat"
                                   :LongName "plat"
@@ -137,10 +142,31 @@
       ["AdditionalAttributes"]
       ["Additional Attributes must be unique. This contains duplicates named [bool]."]))
 
+  (testing "Additional Attribute parameter range validation"
+    (assert-invalid
+      {:AdditionalAttributes
+       [(data-umm-c/additional-attribute {:Name "int"
+                                          :DataType "INT"
+                                          :ParameterRangeBegin 100
+                                          :ParameterRangeEnd 0})]}
+      ["AdditionalAttributes" 0]
+      ["Parameter Range Begin [100] cannot be greater than Parameter Range End [0]."]))
+
+  (testing "Additional Attribute parameter range value validation"
+    (assert-invalid
+      {:AdditionalAttributes
+       [(data-umm-c/additional-attribute {:Name "float"
+                                          :DataType "FLOAT"
+                                          :ParameterRangeBegin 0.0
+                                          :ParameterRangeEnd 10.0
+                                          :Value 12.0})]}
+      ["AdditionalAttributes" 0]
+      ["Value [12.0] cannot be greater than Parameter Range End [10.0]."]))
+
   (testing "Nested Path Validation"
     (assert-invalid
       {:Platforms [(data-umm-c/platform {:Instruments [(data-umm-c/instrument {:ShortName "I1"})
-                                               (data-umm-c/instrument {:ShortName "I1"})]})]}
+                                                       (data-umm-c/instrument {:ShortName "I1"})]})]}
       ["Platforms" 0 "Instruments"]
       ["Instruments must be unique. This contains duplicates named [I1]."]))
 
