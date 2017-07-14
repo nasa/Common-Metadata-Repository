@@ -160,6 +160,20 @@
                                     </gmd:description>
                                 </gmd:MD_Identifier>
                             </gmd:identifier>
+                            <!-- CollectionDataType -->
+                            <gmd:identifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                        <gco:CharacterString>SCIENCE_QUALITY</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                        <gco:CharacterString>gov.nasa.esdis.umm.collectiondatatype</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                        <gco:CharacterString>Collection Data Type</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmd:identifier>
                             <gmd:citedResponsibleParty>
                                 <gmd:CI_ResponsibleParty>
                                     <gmd:organisationName>
