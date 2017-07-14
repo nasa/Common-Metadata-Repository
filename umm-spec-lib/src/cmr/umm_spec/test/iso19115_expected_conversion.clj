@@ -14,6 +14,7 @@
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.related-url :as ru-gen]
     [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+    [cmr.umm-spec.test.iso-shared :as iso-shared]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
@@ -21,18 +22,6 @@
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
     [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
-
-(defn split-temporals
-  "Returns a seq of temporal extents with a new extent for each value under key
-  k (e.g. :RangeDateTimes) in each source temporal extent."
-  [k temporal-extents]
-  (reduce (fn [result extent]
-            (if-let [values (get extent k)]
-              (concat result (map #(assoc extent k [%])
-                                  values))
-              (concat result [extent])))
-          []
-          temporal-extents))
 
 (defn- propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
@@ -42,28 +31,6 @@
   (let [v (get (first coll) k)]
     (for [x coll]
       (assoc x k v))))
-
-(defn- sort-by-date-type-iso
-  "Returns temporal extent records to match the order in which they are generated in ISO XML."
-  [extents]
-  (let [ranges (filter :RangeDateTimes extents)
-        singles (filter :SingleDateTimes extents)]
-    (seq (concat ranges singles))))
-
-(defn- fixup-iso-ends-at-present
-  "Updates temporal extents to be true only when they have both :EndsAtPresentFlag = true AND values
-  in RangeDateTimes, otherwise nil."
-  [temporal-extents]
-  (for [extent temporal-extents]
-    (let [ends-at-present (:EndsAtPresentFlag extent)
-          rdts (seq (:RangeDateTimes extent))]
-      (-> extent
-          (update-in-each [:RangeDateTimes]
-                          update-in [:EndingDateTime] (fn [x]
-                                                        (when-not ends-at-present
-                                                          x)))
-          (assoc :EndsAtPresentFlag
-                 (boolean (and rdts ends-at-present)))))))
 
 (defn- fixup-comma-encoded-values
   [temporal-extents]
@@ -78,10 +45,10 @@
        (propagate-first :PrecisionOfSeconds)
        (propagate-first :TemporalRangeType)
        fixup-comma-encoded-values
-       fixup-iso-ends-at-present
-       (split-temporals :RangeDateTimes)
-       (split-temporals :SingleDateTimes)
-       sort-by-date-type-iso
+       iso-shared/fixup-iso-ends-at-present
+       (iso-shared/split-temporals :RangeDateTimes)
+       (iso-shared/split-temporals :SingleDateTimes)
+       iso-shared/sort-by-date-type-iso
        (#(or (seq %) su/not-provided-temporal-extents))))
 
 (defn- expected-online-resource
@@ -173,15 +140,6 @@
   [mas]
   (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
     (seq (concat other-types input-types))))
-
-(defn- expected-iso-topic-categories
-  "Update ISOTopicCategories values to a default value if it's not one of the specified values."
-  [categories]
-  (->> categories
-       (map iso-topic-categories/umm->xml-iso-topic-category-map)
-       (map iso-topic-categories/xml->umm-iso-topic-category-map)
-       (remove nil?)
-       seq))
 
 (defn- normalize-bounding-rectangle
   [{:keys [WestBoundingCoordinate NorthBoundingCoordinate
@@ -370,7 +328,6 @@
       fix-bounding-rectangles
       (update :SpatialExtent update-iso-spatial)
       (update :TemporalExtents expected-iso-19115-2-temporal)
-      ;; The following platform instrument properties are not supported in ISO 19115-2
       (update :DataDates expected-iso19115-data-dates)
       (update :DataLanguage #(or % "eng"))
       (update :ProcessingLevel su/convert-empty-record-to-nil)
@@ -379,7 +336,7 @@
       (update :RelatedUrls expected-collection-related-urls)
       (update :AdditionalAttributes expected-iso19115-additional-attributes)
       (update :MetadataAssociations group-metadata-assocations)
-      (update :ISOTopicCategories expected-iso-topic-categories)
+      (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
       (assoc :ContactPersons (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll)))

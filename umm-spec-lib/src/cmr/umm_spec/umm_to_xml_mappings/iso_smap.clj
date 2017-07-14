@@ -121,7 +121,13 @@
                                            :codeListValue ""} "authority"]]]]]])
                  [:gmd:code [:gco:CharacterString (:DOI doi)]]
                  [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-                 [:gmd:description [:gco:CharacterString "DOI"]]]])]]
+                 [:gmd:description [:gco:CharacterString "DOI"]]]])
+            (when-let [collection-data-type (:CollectionDataType c)]
+             [:gmd:identifier
+              [:gmd:MD_Identifier
+               [:gmd:code [:gco:CharacterString collection-data-type]]
+               [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
+               [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])]]
           [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
           [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
           [:gmd:status (generate-collection-progress c)]

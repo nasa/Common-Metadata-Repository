@@ -67,6 +67,12 @@
 (def base-xpath
   "/gmd:DS_Series/gmd:seriesMetadata")
 
+(def collection-data-type-xpath
+  (str citation-base-xpath
+       "/gmd:identifier/gmd:MD_Identifier"
+       "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+       "/gmd:code/gco:CharacterString"))
+
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
@@ -137,6 +143,7 @@
        :LocationKeywords (kws/parse-location-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el sanitize?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
+       :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
        ;; Required by UMM-C
        :ProcessingLevel (when sanitize? {:Id u/not-provided})
        :RelatedUrls (dru/parse-related-urls doc sanitize?)

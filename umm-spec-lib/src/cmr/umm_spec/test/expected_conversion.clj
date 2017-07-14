@@ -353,15 +353,7 @@
 
 (defmethod umm->expected-convert :iso-smap
   [umm-coll _]
-  (let [original-brs (get-in umm-coll conversion-util/bounding-rectangles-path)
-        original-cps (get umm-coll :ContactPersons)
-        original-dcs (get umm-coll :DataCenters)
-        umm-coll (umm->expected-convert umm-coll :iso19115)
-        ;;add back the original platform info taken away from the iso19115 convert.
-        umm-coll (assoc-in umm-coll conversion-util/bounding-rectangles-path original-brs)
-        umm-coll (assoc umm-coll :ContactPersons original-cps)
-        umm-coll (assoc umm-coll :DataCenters original-dcs)]
-   (iso-smap/umm-expected-conversion-iso-smap umm-coll original-brs)))
+  (iso-smap/umm-expected-conversion-iso-smap umm-coll))
 
 ;;; Unimplemented Fields
 
