@@ -23,7 +23,8 @@
          :Description (or Description "Generated")
          :DataType DataType
          :ParameterRangeBegin (aa/gen-value DataType ParameterRangeBegin)
-         :ParameterRangeEnd (aa/gen-value DataType ParameterRangeEnd)})
+         :ParameterRangeEnd (aa/gen-value DataType ParameterRangeEnd)
+         :Value Value})
       (umm-cmn/map->AdditionalAttributeType
         {:Name Name
          :Group Group
