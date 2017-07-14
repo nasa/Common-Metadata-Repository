@@ -55,12 +55,12 @@
   ([metadata-attrs]
     (make-variable-concept metadata-attrs {}))
   ([metadata-attrs attrs]
-    (-> metadata-attrs
+    (-> (merge {:provider-id "PROV1"} metadata-attrs)
         (data-umm-v/variable-concept)
         (assoc :format (mt/with-version content-type schema-version))
         (merge attrs)))
   ([metadata-attrs attrs index]
-    (-> metadata-attrs
+    (-> (merge {:provider-id "PROV1"} metadata-attrs)
         (data-umm-v/variable-concept :umm-json index)
         (assoc :format (mt/with-version content-type schema-version))
         (merge attrs))))
@@ -80,6 +80,11 @@
     (ingest-variable variable-concept default-opts))
   ([variable-concept opts]
     (ingest-util/ingest-concept variable-concept opts)))
+
+(defn ingest-variable-with-attrs
+  "Helper function to ingest a variable with the given variable attributes"
+  [attrs]
+  (ingest-variable (make-variable-concept attrs)))
 
 ;; XXX This can be removed once variable associations have been updated to use the new
 ;; cmr.system-int-test.data2.umm-spec-variable namespace.

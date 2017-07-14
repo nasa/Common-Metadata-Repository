@@ -25,4 +25,4 @@
                                  {} tm/dif-concept [:echo10 :dif10 :iso19115] true))
               expected {:echo10 (:metadata (tm/concept-in-format :echo10))
                         :iso19115 (expected-conversion/ignore-ids (:metadata tm/iso19115-concept))}]
-           (is (= expected actual))))))) 
+           (is (= expected actual)))))))
