@@ -252,20 +252,18 @@
    This function returns the def record and not just a map so that
    it can be compared to the actual round trip translation."
   []
-  (for [x (range 0 1)]
-    (map->RangeDateTimeType {:BeginningDateTime du/parsed-default-date})))
+  [(map->RangeDateTimeType {:BeginningDateTime du/parsed-default-date})])
 
 (defn- not-provided-temporal-extents
   "Returns a default temporal extent type def record and not a map so that
    it can be compared to the actual round trip translation."
   []
-  (for [x (range 0 1)]
-    (map->TemporalExtentType {:TemporalRangeType nil
-                              :PrecisionOfSeconds nil
-                              :EndsAtPresentFlag nil
-                              :RangeDateTimes (not-provided-begin-date)
-                              :SingleDateTimes nil
-                              :PeriodicDateTimes nil})))
+  [(map->TemporalExtentType {:TemporalRangeType nil
+                             :PrecisionOfSeconds nil
+                             :EndsAtPresentFlag nil
+                             :RangeDateTimes (not-provided-begin-date)
+                             :SingleDateTimes nil
+                             :PeriodicDateTimes nil})])
 
 (defn- expected-temporal
   "Changes the temporal extent to the expected outcome of a ISO SMAP translation."
