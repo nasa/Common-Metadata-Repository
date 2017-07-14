@@ -3,20 +3,21 @@
   (:require
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
-    [cmr.common.xml.simple-xpath :refer [select]]
+    [cmr.common.util :as common-util]
     [cmr.common.xml.parse :refer :all]
-    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]
+    [cmr.common.xml.simple-xpath :refer [select]]
     [cmr.umm-spec.date-util :as date]
     [cmr.umm-spec.dif-util :as dif-util]
     [cmr.umm-spec.json-schema :as js]
     [cmr.umm-spec.models.umm-common-models :as cmn]
+    [cmr.umm-spec.url :as url]
+    [cmr.umm-spec.util :as su]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]
-    [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.url :as url]))
+    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (defn- parse-instruments
   "Returns the parsed instruments for the given xml doc."
@@ -85,11 +86,36 @@
                        :EndingDateTime (parse-dif-end-date (value-of temporal "Stop_Date"))})}]
   (when sanitize? su/not-provided-temporal-extents)))
 
+(defn- parse-collection-citation
+  "Parse the Collection Citation from XML Data Set Citation"
+  [doc sanitize?]
+  (let [data-set-citations (seq (select doc "/DIF/Data_Set_Citation"))]
+    (for [data-set-citation data-set-citations
+          :let [release-date (date/sanitize-and-parse-date (value-of data-set-citation "Dataset_Release_Date") sanitize?)]]
+      {:Creator (value-of data-set-citation "Dataset_Creator")
+       :Editor (value-of data-set-citation "Dataset_Editor")
+       :Title  (value-of data-set-citation "Dataset_Title")
+       :SeriesName (value-of data-set-citation "Dataset_Series_Name")
+       :ReleaseDate (if sanitize?
+                      (when (date/valid-date? release-date)
+                        release-date)
+                      release-date)
+       :ReleasePlace (value-of data-set-citation "Dataset_Release_Place")
+       :Publisher (value-of data-set-citation "Dataset_Publisher")
+       :Version (value-of data-set-citation "Version")
+       :IssueIdentification (value-of data-set-citation "Issue_Identification")
+       :DataPresentationForm (value-of data-set-citation "Data_Presentation_Form")
+       :OtherCitationDetails (value-of data-set-citation "Other_Citation_Details")
+       :OnlineResource {:Linkage (or (value-of data-set-citation "Online_Resource") su/not-provided-url)
+                        :Name "Data Set Citation"
+                        :Description "Data Set Citation"}})))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc {:keys [sanitize?]}]
   (let [entry-id (value-of doc "/DIF/Entry_ID")
-        version-id (value-of doc "/DIF/Data_Set_Citation/Version")
+        version-id (first (remove nil? (for [dsc (select doc "DIF/Data_Set_Citation")]
+                                         (value-of dsc "Version"))))
         short-name (get-short-name entry-id version-id)]
     {:EntryTitle (value-of doc "/DIF/Entry_Title")
      :DOI (first (remove nil? (for [dsc (select doc "DIF/Data_Set_Citation")]
@@ -98,6 +124,7 @@
      :Version (or version-id (when sanitize? su/not-provided))
      :Abstract (su/truncate-with-default (value-of doc "/DIF/Summary/Abstract") su/ABSTRACT_MAX sanitize?)
      :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
+     :CollectionCitations (parse-collection-citation doc sanitize?)
      :Purpose (su/truncate (value-of doc "/DIF/Summary/Purpose") su/PURPOSE_MAX sanitize?)
      :DataLanguage (dif-util/dif-language->umm-language (value-of doc "/DIF/Data_Set_Language"))
      :MetadataDates (parse-metadata-dates doc)
@@ -132,9 +159,9 @@
      ;; Need to double check which implementation is correct.
      :ProcessingLevel {:Id
                        (su/with-default
-                         (value-of doc
-                                   "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
-                         sanitize?)
+                        (value-of doc
+                                  "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
+                        sanitize?)
 
                        :ProcessingLevelDescription
                        (value-of doc "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")}

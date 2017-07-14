@@ -13,7 +13,8 @@
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.url-helper :as url]))
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.transmit.config :as transmit-config]))
 
 (defn bulk-index-after-date-time
   "Call the bootstrap app to bulk index concepts with revision dates later than the given datetime."
@@ -233,3 +234,10 @@
       (f)
       (finally
         (db-fixture-tear-down provider-id-cmr-only-map)))))
+
+(defn clear-caches
+  "Clears caches in the bootstrap application"
+  []
+  (client/post (url/bootstrap-clear-cache-url)
+               {:connection-manager (s/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))

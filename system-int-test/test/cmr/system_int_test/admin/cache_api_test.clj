@@ -121,7 +121,8 @@
          "token-user-id"
          "write-enabled"
          "xsl-transformer-templates"])
-      (s/only-with-real-database
+      ;; CMR-4337 - bootstrap
+      #_(s/only-with-real-database
        (testing "list caches for bootstrap"
          (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
            (is (= ["token-imp" "kms" "health"] response))))))
@@ -215,12 +216,13 @@
         (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
         (url/search-read-caches-url) "xsl-transformer-templates" []
         (url/search-read-caches-url) "token-user-id" ["ABC-1" "ABC-2"])
-      (s/only-with-real-database
-       (testing "list cache keys for bootstrap"
-         (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
-           (is (every? (set response)
-                       [["ABC-1" "read"]
-                        ["ABC-2" "read"]]))))))
+      ;; CMR-4337 bootstrap
+      #_(s/only-with-real-database
+         (testing "list cache keys for bootstrap"
+           (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
+             (is (every? (set response)
+                         [["ABC-1" "read"]
+                          ["ABC-2" "read"]]))))))
 
 
     (testing "normal user cannot retrieve cache values"

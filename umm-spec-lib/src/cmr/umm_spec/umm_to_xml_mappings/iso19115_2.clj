@@ -234,7 +234,6 @@
           [:gmd:otherConstraints
             [:gco:CharacterString (str "Restriction Flag:" value)]])])]))
 
-
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -290,7 +289,13 @@
                                          :codeListValue ""} "authority"]]]]]])
                [:gmd:code [:gco:CharacterString (:DOI doi)]]
                [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.doi"]]
-               [:gmd:description [:gco:CharacterString "DOI"]]]])]]
+               [:gmd:description [:gco:CharacterString "DOI"]]]])
+           (when-let [collection-data-type (:CollectionDataType c)]
+             [:gmd:identifier
+              [:gmd:MD_Identifier
+               [:gmd:code [:gco:CharacterString collection-data-type]]
+               [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
+               [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])]]
          [:gmd:abstract (char-string (if (or abstract version-description)
                                        (str abstract iso/version-description-separator version-description)
                                        su/not-provided))]

@@ -10,6 +10,7 @@
    [search-relevancy-test.core :as core]
    [search-relevancy-test.ingest :as ingest]
    [search-relevancy-test.reporter :as reporter]
+   [search-relevancy-test.result-logger :as result-logger]
    [clojure.set :as set]))
 
 (def tasks
@@ -52,19 +53,21 @@
 (defn- perform-tests
   "Read the anomaly test CSV and perform each test"
   []
-  (doseq [tests-by-anomaly (sort string-key-to-int-sort
+  (for [tests-by-anomaly (sort string-key-to-int-sort
                                  (group-by :anomaly (core/read-anomaly-test-csv)))
           :let [test-count (count (val tests-by-anomaly))]]
-    (println (format "Anomaly %s %s"
-                     (key tests-by-anomaly)
-                     (if (> test-count 1) (format "(%s tests)" test-count) "")))
-    (doseq [individual-test (val tests-by-anomaly)]
-      (perform-search-test individual-test))))
+    (do
+      (println (format "Anomaly %s %s"
+                       (key tests-by-anomaly)
+                       (if (> test-count 1) (format "(%s tests)" test-count) "")))
+      (doall
+        (for [individual-test (val tests-by-anomaly)]
+          (perform-search-test individual-test))))))
 
 (defn relevancy-test
   "Reset the system, ingest all of the test data, and perform the searches from
   the anomaly testing CSV"
-  []
+  [args]
   (let [test-files (core/test-files)]
     (println "Creating providers")
     (ingest/create-providers test-files)
@@ -72,16 +75,19 @@
     (ingest/ingest-community-usage-metrics) ;; Needs to happen before ingest
     (ingest/ingest-test-files test-files)
     (println "Running tests")
-    (perform-tests)))
+    (let [test-results (flatten (doall (perform-tests)))]
+      (reporter/print-result-summary test-results)
+      (println "Logging test results")
+      (result-logger/log-test-run test-results args))))
 
 (defn -main
   "Runs search relevancy tasks."
   [task-name & args]
   (case task-name
         "download-collections" (anomaly-fetcher/download-and-save-all-collections)
-        "relevancy-tests" (relevancy-test)
+        "relevancy-tests" (relevancy-test args)
         usage)
   (shutdown-agents))
 
 (comment
- (relevancy-test))
+ (relevancy-test nil))

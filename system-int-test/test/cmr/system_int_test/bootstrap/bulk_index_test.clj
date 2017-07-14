@@ -153,23 +153,25 @@
         exp-items (set (map #(dissoc % :status) expected))]
     (is (= exp-items search-items))))
 
+;; CMR-4336 - ACLs commented out throughout the test
 (deftest index-system-concepts-test
   (s/only-with-real-database
    ;; Disable message publishing so items are not indexed as part of the initial save.
    (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
-   (let [acl1 (save-acl 1
-                        {:extra-fields {:acl-identity "system:token"
-                                        :target-provider-id "PROV1"}}
-                        "TOKEN")
-         acl2 (save-acl 2
-                        {:extra-fields {:acl-identity "system:group"
-                                        :target-provider-id "PROV1"}}
-                        "GROUP")
-         acl3 (save-acl 3
-                        {:extra-fields {:acl-identity "system:user"
-                                        :target-provider-id "PROV1"}}
-                        "USER")
-         _ (delete-concept acl3)
+   (let [
+        ;  acl1 (save-acl 1
+        ;                 {:extra-fields {:acl-identity "system:token"
+        ;                                 :target-provider-id "PROV1"}}
+        ;                 "TOKEN")
+        ;  acl2 (save-acl 2
+        ;                 {:extra-fields {:acl-identity "system:group"
+        ;                                 :target-provider-id "PROV1"}}
+        ;                 "GROUP")
+        ;  acl3 (save-acl 3
+        ;                 {:extra-fields {:acl-identity "system:user"
+        ;                                 :target-provider-id "PROV1"}}
+        ;                 "USER")
+        ;  _ (delete-concept acl3)
          group1 (save-group 1 {})
          group2 (save-group 2 {})
          group3 (save-group 3 {})
@@ -184,9 +186,9 @@
      (index/wait-until-indexed)
 
      ;; ACLs
-     (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-           items (:items response)]
-       (search-results-match? items [acl1 acl2]))
+     ;  (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+     ;        items (:items response)]
+     ;    (search-results-match? items [acl1 acl2]))
 
      ;; Groups
      (let [response (ac/search-for-groups (u/conn-context) {})
@@ -219,14 +221,14 @@
           gran2 (save-granule 2 coll2 {})
           tag1 (save-tag 1)
           tag2 (save-tag 2 {})
-          acl1 (save-acl 1
-                         {:extra-fields {:acl-identity "system:token"
-                                         :target-provider-id "PROV1"}}
-                         "TOKEN")
-          acl2 (save-acl 2
-                         {:extra-fields {:acl-identity "system:group"
-                                         :target-provider-id "PROV1"}}
-                         "GROUP")
+          ; acl1 (save-acl 1
+          ;                {:extra-fields {:acl-identity "system:token"
+          ;                                :target-provider-id "PROV1"}}
+          ;                "TOKEN")
+          ; acl2 (save-acl 2
+          ;                {:extra-fields {:acl-identity "system:group"
+          ;                                :target-provider-id "PROV1"}}
+          ;                "GROUP")
           group1 (save-group 1)
           group2 (save-group 2 {})]
 
@@ -291,14 +293,14 @@
           gran5 (save-granule 5 coll3)
           tag1 (save-tag 1)
           tag2 (save-tag 2 {})
-          acl1 (save-acl 1
-                         {:extra-fields {:acl-identity "system:token"
-                                         :target-provider-id "PROV1"}}
-                         "TOKEN")
-          acl2 (save-acl 2
-                         {:extra-fields {:acl-identity "system:group"
-                                         :target-provider-id "PROV1"}}
-                         "GROUP")
+          ; acl1 (save-acl 1
+          ;                {:extra-fields {:acl-identity "system:token"
+          ;                                :target-provider-id "PROV1"}}
+          ;                "TOKEN")
+          ; acl2 (save-acl 2
+          ;                {:extra-fields {:acl-identity "system:group"
+          ;                                :target-provider-id "PROV1"}}
+          ;                "GROUP")
           group1 (save-group 1)
           group2 (save-group 2 {})]
 
@@ -350,16 +352,16 @@
           gran2 (save-granule 2 coll2 {:revision-date "3016-01-01T10:00:00Z"})
           tag1 (save-tag 1)
           tag2 (save-tag 2 {:revision-date "3016-01-01T10:00:00Z"})
-          acl1 (save-acl 1
-                         {:revision-date "2000-01-01T09:59:40Z"
-                          :extra-fields {:acl-identity "system:token"
-                                         :target-provider-id "PROV1"}}
-                         "TOKEN")
-          acl2 (save-acl 2
-                         {:revision-date "3016-01-01T09:59:41Z"
-                          :extra-fields {:acl-identity "system:group"
-                                         :target-provider-id "PROV1"}}
-                         "GROUP")
+          ; acl1 (save-acl 1
+          ;                {:revision-date "2000-01-01T09:59:40Z"
+          ;                 :extra-fields {:acl-identity "system:token"
+          ;                                :target-provider-id "PROV1"}}
+          ;                "TOKEN")
+          ; acl2 (save-acl 2
+          ;                {:revision-date "3016-01-01T09:59:41Z"
+          ;                 :extra-fields {:acl-identity "system:group"
+          ;                                :target-provider-id "PROV1"}}
+          ;                "GROUP")
           group1 (save-group 1)
           group2 (save-group 2 {:revision-date "3016-01-01T10:00:00Z"})]
 
@@ -377,9 +379,9 @@
           :granule [gran2])
 
         ;; ACLs
-        (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-              items (:items response)]
-          (search-results-match? items [acl2]))
+        ; (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+        ;       items (:items response)]
+        ;   (search-results-match? items [acl2]))
 
         ;; Groups
         (let [response (ac/search-for-groups (u/conn-context) {})

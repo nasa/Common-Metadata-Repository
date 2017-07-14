@@ -8,7 +8,7 @@
   "Migrates the database up to version 10."
   []
   (println "migrations.010-add-new-granule-indexes up...")
-  (doseq [t (h/get-granule-tablenames)]
+  (doseq [t (h/get-regular-provider-granule-tablenames)]
     (h/sql (format "create index %s_pdcr on %s (parent_collection_id, deleted, concept_id, revision_id)"
                    t t))))
 
@@ -16,6 +16,5 @@
   "Migrates the database down from version 10."
   []
   (println "migrations.010-add-new-granule-indexes down.")
-  (doseq [t (h/get-granule-tablenames)]
+  (doseq [t (h/get-regular-provider-granule-tablenames)]
     (h/sql (format "drop index %s_pdcr" t))))
-

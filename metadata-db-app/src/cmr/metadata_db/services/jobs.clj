@@ -1,9 +1,10 @@
 (ns cmr.metadata-db.services.jobs
-  (:require [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.jobs :refer [def-stateful-job]]
-            [cmr.metadata-db.services.concept-service :as concept-service]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.services.provider-validation :as pv]))
+  (:require
+   [cmr.common.jobs :refer [def-stateful-job]] 
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.metadata-db.services.concept-service :as concept-service]
+   [cmr.metadata-db.services.provider-service :as provider-service]
+   [cmr.metadata-db.services.provider-validation :as pv]))
 
 (def EXPIRED_CONCEPT_CLEANUP_INTERVAL
   "The number of seconds between jobs run to cleanup expired granules"

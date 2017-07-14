@@ -12,13 +12,12 @@
   "Migrates the database up to version 8."
   []
   (println "migrations.008-remove-unsupported-iso-data up...")
-  (doseq [t (h/get-collection-tablenames)]
+  (doseq [t (h/get-regular-provider-collection-tablenames)]
     (h/sql (format "delete from %s where format in ('ISO', 'GRACE_ISO', 'ISO-GRACE')" t)))
-  (doseq [t (h/get-granule-tablenames)]
+  (doseq [t (h/get-regular-provider-granule-tablenames)]
     (h/sql (format "delete from %s where format in ('ISO', 'GRACE_ISO', 'ISO-GRACE')" t))))
 
 (defn down
   "Migrates the database down from version 8."
   []
   (println "migrations.008-remove-unsupported-iso-data down. Does nothing."))
-

@@ -284,6 +284,7 @@
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
+      (assoc :CollectionCitations nil)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)

@@ -223,6 +223,35 @@
   (when product-level-id
     (product-levels (str/replace product-level-id #"Level " ""))))
 
+(defn generate-dataset-citation
+  "Returns the dif10 Data_Set_Citations from UMM-C."
+  [c]
+  (let [doi (get-in c [:DOI :DOI])]
+    (if (empty? (:CollectionCitations c))
+      (when (seq doi)
+        [:Dataset_Citation
+         [:Persistent_Identifier
+          [:Type "DOI"]
+          [:Identifier doi]]])
+      (for [collection-citation (:CollectionCitations c)]
+        [:Dataset_Citation
+         [:Dataset_Creator (:Creator collection-citation)]
+         [:Dataset_Editor (:Editor collection-citation)]
+         [:Dataset_Title (:Title collection-citation)]
+         [:Dataset_Series_Name (:SeriesName collection-citation)]
+         [:Dataset_Release_Date (:ReleaseDate collection-citation)]
+         [:Dataset_Release_Place (:ReleasePlace collection-citation)]
+         [:Dataset_Publisher (:Publisher collection-citation)]
+         [:Version (:Version collection-citation)]
+         [:Issue_Identification (:IssueIdentification collection-citation)]
+         [:Data_Presentation_Form (:DataPresentationForm collection-citation)]
+         [:Other_Citation_Details (:OtherCitationDetails collection-citation)]
+         (when (seq doi)
+           [:Persistent_Identifier
+            [:Type "DOI"]
+            [:Identifier doi]])
+         [:Online_Resource (get-in collection-citation [:OnlineResource :Linkage])]]))))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -234,13 +263,8 @@
      [:Version (:Version c)]]
     [:Version_Description (:VersionDescription c)]
     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
-    (when-let [doi (get-in c [:DOI :DOI])]
-      [:Dataset_Citation
-        [:Persistent_Identifier
-          [:Type "DOI"]
-          [:Identifier doi]]])
+    (generate-dataset-citation c)
     (contact/generate-collection-personnel c)
-
     (if-let [sks (:ScienceKeywords c)]
       ;; From UMM keywords
       (for [sk sks]
