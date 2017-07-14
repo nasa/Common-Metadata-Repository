@@ -65,8 +65,7 @@
      (get-in (search/find-concepts-json :collection query-params) [:results :facets]))))
 
 (deftest all-facets-v2-test
-  (let [{token :token} (variable-util/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")
+  (let [token (e/login (s/context) "user1")
         coll1 (fu/make-coll 1 "PROV1"
                             (fu/science-keywords sk1 sk2)
                             (fu/projects "proj1" "PROJ2")
@@ -81,21 +80,17 @@
                             {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})]
     (index/wait-until-indexed)
     ;; create variables
-    (variable-util/ingest-variable
-     (variable-util/make-variable-concept {:Name "Variable1"
-                                           :LongName "Measurement1"})
-     (variable-util/token-opts token))
-    (variable-util/ingest-variable
-     (variable-util/make-variable-concept {:Name "Variable2"
-                                           :LongName "Measurement2"})
-     (variable-util/token-opts token))
+    (variable-util/ingest-variable-with-attrs {:Name "Variable1"
+                                               :LongName "Measurement1"})
+    (variable-util/ingest-variable-with-attrs {:Name "Variable2"
+                                               :LongName "Measurement2"})
     ;; create variable associations
     (variable-util/associate-by-concept-ids token
-                                            "variable1"
+                                            "Variable1"
                                             [{:concept-id (:concept-id coll1)}
                                              {:concept-id (:concept-id coll2)}])
     (variable-util/associate-by-concept-ids token
-                                            "variable2"
+                                            "Variable2"
                                             [{:concept-id (:concept-id coll2)}]))
   (index/wait-until-indexed)
   (testing "No fields applied for facets"
@@ -645,8 +640,7 @@
        false))))
 
 (deftest variables-facets-v2-test
-  (let [{token :token} (variable-util/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")
+  (let [token (e/login (s/context) "user1")
         coll1 (d/ingest "PROV1" (dc/collection
                                  {:entry-title "coll1"
                                   :short-name "S1"
@@ -666,36 +660,29 @@
                                  {:entry-title "coll4"
                                   :short-name "S4"
                                   :version-id "V4"}))]
-
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
     ;; create variables
-    (variable-util/ingest-variable
-     (variable-util/make-variable-concept {:Name "Variable1"
-                                           :LongName "Measurement1"})
-     (variable-util/token-opts token))
-    (variable-util/ingest-variable
-     (variable-util/make-variable-concept {:Name "Variable2"
-                                           :LongName "Measurement2"})
-     (variable-util/token-opts token))
-    (variable-util/ingest-variable
-     (variable-util/make-variable-concept {:Name "SomeVariable"
-                                           :LongName "Measurement2"})
-     (variable-util/token-opts token))
+    (variable-util/ingest-variable-with-attrs {:Name "Variable1"
+                                               :LongName "Measurement1"})
+    (variable-util/ingest-variable-with-attrs {:Name "Variable2"
+                                               :LongName "Measurement2"})
+    (variable-util/ingest-variable-with-attrs {:Name "SomeVariable"
+                                               :LongName "Measurement2"})
     ;; create variable associations
-    ;; variable1 is associated with coll1 and coll2
-    ;; variable2 is associated with coll2 and coll3
-    ;; somevariable is associated with coll4
+    ;; Variable1 is associated with coll1 and coll2
+    ;; Variable2 is associated with coll2 and coll3
+    ;; SomeVariable is associated with coll4
     (variable-util/associate-by-concept-ids token
-                                            "variable1"
+                                            "Variable1"
                                             [{:concept-id (:concept-id coll1)}
                                              {:concept-id (:concept-id coll2)}])
     (variable-util/associate-by-concept-ids token
-                                            "variable2"
+                                            "Variable2"
                                             [{:concept-id (:concept-id coll2)}
                                              {:concept-id (:concept-id coll3)}])
     (variable-util/associate-by-concept-ids token
-                                            "somevariable"
+                                            "SomeVariable"
                                             [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
 
