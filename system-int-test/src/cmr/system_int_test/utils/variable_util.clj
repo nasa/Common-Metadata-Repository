@@ -86,87 +86,6 @@
   [attrs]
   (ingest-variable (make-variable-concept attrs)))
 
-;; XXX This can be removed once variable associations have been updated to use the new
-;; cmr.system-int-test.data2.umm-spec-variable namespace.
-(def sample-variable
-  {:Name "A-name"
-   :LongName "A long UMM-Var name"
-   :Units "m"
-   :DataType "float32"
-   :DimensionsName "H2OFunc"
-   :Dimensions "11"
-   :ValidRange {}
-   :Scale "1.0"
-   :Offset "0.0"
-   :FillValue "-9999.0"
-   :VariableType "SCIENCE_VARIABLE"
-   :ScienceKeywords [{:Category "sk-A"
-                       :Topic "sk-B"
-                       :Term "sk-C"}]})
-
-;; XXX This can be removed once variable associations have been updated to use the new
-;; cmr.system-int-test.data2.umm-spec-variable namespace.
-(defn make-variable
-  "Makes a valid variable based on the given input"
-  ([]
-   (make-variable nil))
-  ([attrs]
-   (merge sample-variable attrs))
-  ([index attrs]
-   (merge
-    sample-variable
-    {:Name (str "Name" index)
-     :LongName (str "Long UMM-Var name " index)}
-    attrs)))
-
-;; XXX This can be removed once variable associations have been updated to use the new
-;; cmr.system-int-test.data2.umm-spec-variable namespace.
-(defn create-variable
-  "Creates a variable."
-  ([token variable]
-   (create-variable token variable nil))
-  ([token variable options]
-   (let [options (merge {:raw? true
-                         :token token
-                         :http-options {:content-type "application/vnd.nasa.cmr.umm+json"}}
-                        options)]
-     (ingest-util/parse-map-response
-      (transmit-variable/create-variable (s/context) variable options)))))
-
-;; XXX This can be removed once variable associations have been updated to use the new
-;; cmr.system-int-test.data2.umm-spec-variable namespace.
-(defn create-variable-with-attrs
-  "Helper function to create a variable with the given variable attributes"
-  [token attrs]
-  (create-variable token (make-variable attrs)))
-
-;; XXX This can be removed once variable associations have been updated to use the new
-;; cmr.system-int-test.data2.umm-spec-variable namespace.
-(defn update-variable
-  "Updates a variable."
-  ([token variable]
-   (update-variable token (:variable-name variable) variable nil))
-  ([token variable-name variable]
-   (update-variable token variable-name variable nil))
-  ([token variable-name variable options]
-   (let [options (merge {:raw? true
-                         :token token
-                         :http-options {:content-type "application/vnd.nasa.cmr.umm+json"}}
-                        options)]
-     (ingest-util/parse-map-response
-      (transmit-variable/update-variable (s/context) variable-name variable options)))))
-
-;; XXX This can be removed once variable associations have been updated to use the new
-;; cmr.system-int-test.data2.umm-spec-variable namespace.
-(defn delete-variable
-  "Deletes a variable"
-  ([token variable-name]
-   (delete-variable token variable-name nil))
-  ([token variable-name options]
-   (let [options (merge {:raw? true :token token} options)]
-     (ingest-util/parse-map-response
-      (transmit-variable/delete-variable (s/context) variable-name options)))))
-
 (defn- associate-variable
   "Associate a variable with collections by the JSON condition.
   Valid association types are :query and :concept-ids."
@@ -213,30 +132,6 @@
    (dissociate-by-concept-ids token variable-name coll-concept-ids nil))
   ([token variable-name coll-concept-ids options]
    (dissociate-variable :concept-ids token variable-name coll-concept-ids options)))
-
-(defn save-variable
-  "A helper function for creating or updating variables for search tests.
-   If the variable does not have a :concept-id it saves it. If the variable has a :concept-id,
-   it updates the variable. Returns the saved variable along with :concept-id,
-   :revision-id, :errors, and :status"
-  ([token variable]
-   (let [variable-to-save (select-keys variable [:variable-name :description :revision-date])
-         response (if-let [concept-id (:concept-id variable)]
-                    (update-variable token (:variable-name variable) variable-to-save)
-                    (create-variable token variable-to-save))
-         variable (into variable
-                        (select-keys response [:status :errors :concept-id :revision-id]))]
-     (if (= (:revision-id variable) 1)
-       ;; Get the originator id for the variable
-       (assoc variable :originator-id (tokens/get-user-id (s/context) token))
-       variable)))
-  ([token variable associated-collections]
-   (let [saved-variable (save-variable token variable)
-         ;; Associate the variable with the collections using a query by concept id
-         condition {:or (map #(hash-map :concept_id (:concept-id %)) associated-collections)}
-         response (associate-by-query token (:variable-name saved-variable) condition)]
-     (assert (= 200 (:status response)) (pr-str condition))
-     (assoc saved-variable :revision-id (:revision-id response)))))
 
 (defn expected-concept
   "Create an expected concept given a service, its concept-id, a revision-id,
