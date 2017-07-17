@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.provider-ingest-permissions-test
   "Verifies the correct provider ingest permissions are enforced"
   (:require
+    [clojure.string :as string]
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
     [cmr.mock-echo.client.echo-util :as echo-util]
@@ -249,7 +250,10 @@
           (let [response (ingest/delete-concept
                           concept
                           (merge variable-util/default-opts {:token token}))]
-            (is (= expected (:status response))))
+            (is (= expected (:status response)))
+            (is (string/includes?
+                 "You do not have permission to perform that action."
+                 (first (:errors response)))))
           "no token provided"
           nil 401
           "guest user denied"
