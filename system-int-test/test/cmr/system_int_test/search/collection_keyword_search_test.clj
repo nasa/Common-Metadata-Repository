@@ -6,6 +6,7 @@
     [cmr.search.data.keywords-to-elastic :as k2e]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
@@ -28,88 +29,88 @@
         processing-level-boost (k2e/get-boost nil :processing-level-id)
         science-keywords-boost (k2e/get-boost nil :science-keywords)
         data-center-boost (k2e/get-boost nil :data-center)
-        psa1 (data-umm-c/additional-attribute {:Name "alpha" :DataType "STRING" :Value "ab"})
-        psa2 (data-umm-c/additional-attribute {:Name "bravo" :DataType "STRING" :Value "bf"})
-        psa3 (data-umm-c/additional-attribute {:Name "charlie" :DataType "STRING" :Value "foo"})
-        psa4 (data-umm-c/additional-attribute {:Name "case" :DataType "STRING" :Value "up"})
-        psa5 (data-umm-c/additional-attribute {:Name "novalue" :DataType "STRING" :Description "description"})
-        p1 (data-umm-c/platform
+        psa1 (data-umm-cmn/additional-attribute {:Name "alpha" :DataType "STRING" :Value "ab"})
+        psa2 (data-umm-cmn/additional-attribute {:Name "bravo" :DataType "STRING" :Value "bf"})
+        psa3 (data-umm-cmn/additional-attribute {:Name "charlie" :DataType "STRING" :Value "foo"})
+        psa4 (data-umm-cmn/additional-attribute {:Name "case" :DataType "STRING" :Value "up"})
+        psa5 (data-umm-cmn/additional-attribute {:Name "novalue" :DataType "STRING" :Description "description"})
+        p1 (data-umm-cmn/platform
             {:ShortName "platform_SnB"
              :LongName "platform_Ln B"
              :Instruments
-             [(data-umm-c/instrument {:ShortName "isnA" :LongName "ilnA" :Technique "itechniqueA"
-                                      :ComposedOf [(data-umm-c/instrument {:ShortName "ssnA" :LongName "slnA"})
-                                                   (data-umm-c/instrument {:ShortName "ssnD" :LongName "slnD"
-                                                                           :Technique "techniqueD"})]})]})
-        p2 (data-umm-c/platform
+             [(data-umm-cmn/instrument {:ShortName "isnA" :LongName "ilnA" :Technique "itechniqueA"
+                                        :ComposedOf [(data-umm-cmn/instrument {:ShortName "ssnA" :LongName "slnA"})
+                                                     (data-umm-cmn/instrument {:ShortName "ssnD" :LongName "slnD"
+                                                                               :Technique "techniqueD"})]})]})
+        p2 (data-umm-cmn/platform
             {:ShortName "platform_SnA spoonA"
              :LongName "platform_LnA"
-             :Characteristics 
-               [(data-umm-c/characteristic {:Name "char1" :Description "char1desc" :Value "pv1"})
-                (data-umm-c/characteristic {:Name "char2" :Description "char2desc" :Value "pv2"})]
+             :Characteristics
+               [(data-umm-cmn/characteristic {:Name "char1" :Description "char1desc" :Value "pv1"})
+                (data-umm-cmn/characteristic {:Name "char2" :Description "char2desc" :Value "pv2"})]
              :Instruments
-               [(data-umm-c/instrument 
+               [(data-umm-cmn/instrument
                 {:ShortName "isnB" :LongName "ilnB" :Technique "itechniqueB"
-                 :Characteristics 
-                   [(data-umm-c/characteristic {:Name "ichar1" :Description "ichar1desc" :Value "iv1"})
-                    (data-umm-c/characteristic {:Name "ichar2" :Description "ichar2desc" :Value "iv2"})]
-                 :ComposedOf [(data-umm-c/instrument 
+                 :Characteristics
+                   [(data-umm-cmn/characteristic {:Name "ichar1" :Description "ichar1desc" :Value "iv1"})
+                    (data-umm-cmn/characteristic {:Name "ichar2" :Description "ichar2desc" :Value "iv2"})]
+                 :ComposedOf [(data-umm-cmn/instrument
                                 {:ShortName "ssnB" :LongName "slnB"
                                  :Characteristics
-                                   [(data-umm-c/characteristic {:Name "sc1" :Description "sd1" :Value "sv1"})
-                                    (data-umm-c/characteristic {:Name "sc2" :Description "sd2" :Value "sv2"})]
+                                   [(data-umm-cmn/characteristic {:Name "sc1" :Description "sd1" :Value "sv1"})
+                                    (data-umm-cmn/characteristic {:Name "sc2" :Description "sd2" :Value "sv2"})]
                                  :Technique "techniqueB"})
-                               (data-umm-c/instrument {:ShortName "ssnC" :LongName "slnC"
+                               (data-umm-cmn/instrument {:ShortName "ssnC" :LongName "slnC"
                                                        :Technique "techniqueC"})]})]})
-        p3 (data-umm-c/platform {:ShortName "spoonA"})
-        p4 (data-umm-c/platform {:ShortName "SMAP"
-                                 :Instruments [(data-umm-c/instrument {:ShortName "SMAP L-BAND RADIOMETER"})]})
-        p5 (data-umm-c/platform {:ShortName "fo&nA"})
-        p6 (data-umm-c/platform {:ShortName "spo~nA"})
-        p7 (data-umm-c/platform {:ShortName "platform7"
-                                 :Instruments [(data-umm-c/instrument {:ShortName "INST7"})]})
-        pboost (data-umm-c/platform {:ShortName "boost"})
-        pr1 (data-umm-c/projects "project-short-name")
-        pr2 (data-umm-c/projects "Proj-2")
-        sk1 (data-umm-c/science-keyword {:Category "Cat1"
+        p3 (data-umm-cmn/platform {:ShortName "spoonA"})
+        p4 (data-umm-cmn/platform {:ShortName "SMAP"
+                                 :Instruments [(data-umm-cmn/instrument {:ShortName "SMAP L-BAND RADIOMETER"})]})
+        p5 (data-umm-cmn/platform {:ShortName "fo&nA"})
+        p6 (data-umm-cmn/platform {:ShortName "spo~nA"})
+        p7 (data-umm-cmn/platform {:ShortName "platform7"
+                                 :Instruments [(data-umm-cmn/instrument {:ShortName "INST7"})]})
+        pboost (data-umm-cmn/platform {:ShortName "boost"})
+        pr1 (data-umm-cmn/projects "project-short-name")
+        pr2 (data-umm-cmn/projects "Proj-2")
+        sk1 (data-umm-cmn/science-keyword {:Category "Cat1"
                                  :Topic "Topic1"
                                  :Term "Term1"
                                  :VariableLevel1 "Level1-1"
                                  :VariableLevel2 "Level1-2"
                                  :VariableLevel3 "Level1-3"
                                  :DetailedVariable "SUPER DETAILED!"})
-        sk2 (data-umm-c/science-keyword {:Category "Hurricane"
+        sk2 (data-umm-cmn/science-keyword {:Category "Hurricane"
                                  :Topic "Laser spoonA"
                                  :Term "Extreme"
                                  :VariableLevel1 "Level2-1"
                                  :VariableLevel2 "Level2-2"
                                  :VariableLevel3 "Level2-3"})
-        sk3 (data-umm-c/science-keyword {:Category "Cat2"
+        sk3 (data-umm-cmn/science-keyword {:Category "Cat2"
                                  :Topic "Topic1"
                                  :Term "Term1"
                                  :VariableLevel1 "Level3-1"
                                  :VariableLevel2 "Level3-2"
                                  :VariableLevel3 "Level3-3"
                                  :DetailedVariable "S@PER"})
-        skboost (data-umm-c/science-keyword {:Category "boost"
+        skboost (data-umm-cmn/science-keyword {:Category "boost"
                                      :Topic "boost"
                                      :Term "boost"
                                      :VariableLevel1 "boost"
                                      :VariableLevel2 "boost"
                                      :VariableLevel3 "boost"
                                      :DetailedVariable "boost"})
-        personnel1 (data-umm-c/contact-person "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
-        personnel2 (data-umm-c/contact-person "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
-        personnel3 (data-umm-c/contact-person "Otto" "Octavious" "otto.octavious@noaa.gov")
-        tdcs1 (data-umm-c/tiling-identification-system "XYZ")
-        tdcs2 (data-umm-c/tiling-identification-system "twoduniq")
-        org (data-umm-c/data-center {:Roles ["ARCHIVER"] 
+        personnel1 (data-umm-cmn/contact-person "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
+        personnel2 (data-umm-cmn/contact-person "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
+        personnel3 (data-umm-cmn/contact-person "Otto" "Octavious" "otto.octavious@noaa.gov")
+        tdcs1 (data-umm-cmn/tiling-identification-system "XYZ")
+        tdcs2 (data-umm-cmn/tiling-identification-system "twoduniq")
+        org (data-umm-cmn/data-center {:Roles ["ARCHIVER"]
                                      :ShortName "Some&Place"})
-        url1 (data-umm-c/related-url {:URL "http://cmr.earthdata.nasa.gov"
+        url1 (data-umm-cmn/related-url {:URL "http://cmr.earthdata.nasa.gov"
                                       :Description "Earthdata"})
-        url2 (data-umm-c/related-url {:URL "http://nsidc.org/"
+        url2 (data-umm-cmn/related-url {:URL "http://nsidc.org/"
                                       :Description "Home page of National Snow and Ice Data Center"})
-        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1" :ShortName "S1" 
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll1" :ShortName "S1"
                                                                             :VersionDescription "VersionDescription"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll2" :ShortName "ABC!XYZ" :Version "V001"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll3" :ShortName "S3" :CollectionDataType "OTHER"}))
@@ -132,9 +133,9 @@
                                                                              :ScienceKeywords [sk3]}))
         coll11 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll11" :ShortName "S11" :Platforms [p2 p3 p5 p6]
                                                                              :AdditionalAttributes [psa5]}))
-        coll12 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll12" :ShortName "S12" 
+        coll12 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll12" :ShortName "S12"
                                                                              :AdditionalAttributes [psa1 psa2 psa3 psa4]}))
-        coll13 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll13" :ShortName "S13" 
+        coll13 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll13" :ShortName "S13"
                                                                              :TilingIdentificationSystems [tdcs1 tdcs2]}))
         coll14 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll14" :ShortName "spoonA laser"}))
         coll15 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll15" :ShortName "S15" :ProcessingLevel {:Id  "plid1"}
@@ -145,19 +146,19 @@
         coll18 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll18" :ShortName "SNFoobar"}))
         coll20 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects pr1 :EntryTitle "Mixed" :ShortName "S20"}))
         coll21 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll21" :ShortName "Laser"}))
-        coll22 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll22" :CollectionDataType "NEAR_REAL_TIME" 
+        coll22 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll22" :CollectionDataType "NEAR_REAL_TIME"
                                                                              :ShortName "Mixed"}))
         coll23 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll23" :ShortName "\"Quoted\" collection"}))
         coll24 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll24" :ShortName "coll24" :Platforms [p4]}))
         ;; Adding personnel here to test keyword search using DataCenter contacts
-        coll25 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll25" :ShortName "S25" 
+        coll25 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll25" :ShortName "S25"
                                                                              :RelatedUrls [url1 url2] :ContactPersons [personnel3]}))
         coll-boost (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "boost"
                                                                                  :ShortName "boost"
                                                                                  :Platforms [pboost]
                                                                                  :ScienceKeywords [skboost]}))
 
-        coll26 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26" :ShortName "S26" 
+        coll26 (d/ingest-umm-spec-collection "PROV4" (data-umm-c/collection {:EntryTitle "coll26" :ShortName "S26"
                                                                              :ContactPersons [personnel1]}) {:format :dif10})
         coll27 (d/ingest-umm-spec-collection "PROV5" (data-umm-c/collection {:EntryTitle "coll27" :ShortName "S27" :ContactPersons [personnel2]}) {:format :dif10})]
 
@@ -269,7 +270,7 @@
         "char1desc" [coll11]
         "char2desc" [coll11]
         "char1desc char2desc" [coll11]
-        ;; - characteristic value 
+        ;; - characteristic value
         "pv1" [coll11]
         "pv2" [coll11]
         "pv1 pv2" [coll11]
@@ -297,7 +298,7 @@
         ;; characteristics value
         "iv1" [coll11]
         "iv2" [coll11]
-        "iv1 iv2" [coll11]   
+        "iv1 iv2" [coll11]
 
         ;; Sensors
         ;; - short name
@@ -800,8 +801,8 @@
                                   :Version "6"}))
         coll9 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                  {:EntryTitle "MODIS Aerosol Other",
-                                  :Projects [(data-umm-c/project "MODIS" "ignored")]
-                                  :Platforms [(data-umm-c/platform {:ShortName "MODIS"})]
+                                  :Projects [(data-umm-cmn/project "MODIS" "ignored")]
+                                  :Platforms [(data-umm-cmn/platform {:ShortName "MODIS"})]
                                   :ShortName "Other",
                                   :Version "1"}))]
     (index/wait-until-indexed)

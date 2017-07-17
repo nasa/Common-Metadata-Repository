@@ -1,10 +1,11 @@
 (ns cmr.system-int-test.search.coll-archive-ctr-search-test
   "Search CMR Collections by Data Centers."
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -14,39 +15,39 @@
 (deftest search-colls-by-archive-center-names
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:DataCenters []}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:DataCenters [(data-umm-c/data-center 
-                                                                                              {:Roles ["PROCESSOR"] 
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:DataCenters [(data-umm-cmn/data-center
+                                                                                              {:Roles ["PROCESSOR"]
                                                                                                :ShortName "Larc"})]}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:DataCenters [(data-umm-c/data-center 
-                                                                                              {:Roles ["ARCHIVER"] 
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:DataCenters [(data-umm-cmn/data-center
+                                                                                              {:Roles ["ARCHIVER"]
                                                                                                :ShortName "Larc"})]}))
 
-        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 5 {:DataCenters [(data-umm-c/data-center 
-                                                                                              {:Roles ["ARCHIVER"] 
+        coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 5 {:DataCenters [(data-umm-cmn/data-center
+                                                                                              {:Roles ["ARCHIVER"]
                                                                                                :ShortName "SEDAC AC"})
-                                                                (data-umm-c/data-center {:Roles ["PROCESSOR"] 
+                                                                (data-umm-cmn/data-center {:Roles ["PROCESSOR"]
                                                                                          :ShortName "SEDAC PC"})]}))
-        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 6 {:DataCenters [(data-umm-c/data-center 
-                                                                                              {:Roles ["ARCHIVER"] 
+        coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 6 {:DataCenters [(data-umm-cmn/data-center
+                                                                                              {:Roles ["ARCHIVER"]
                                                                                                :ShortName "Larc"})]}))
-        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 7 {:DataCenters [(data-umm-c/data-center 
-                                                                                              {:Roles ["ARCHIVER"] 
+        coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 7 {:DataCenters [(data-umm-cmn/data-center
+                                                                                              {:Roles ["ARCHIVER"]
                                                                                                :ShortName "Sedac AC"})
-                                                                (data-umm-c/data-center {:Roles ["PROCESSOR"] 
+                                                                (data-umm-cmn/data-center {:Roles ["PROCESSOR"]
                                                                                          :ShortName "Sedac"})]}))
         ;; KMS collections, but with different case for the short-names
         kms-coll1 (d/ingest-umm-spec-collection "PROV1"
                             (data-umm-c/collection 8
-                              {:DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] 
+                              {:DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
                                                                       :ShortName "Ucar/ncar/eoL/ceoPdm"})]}))
         kms-coll2 (d/ingest-umm-spec-collection "PROV1"
                             (data-umm-c/collection 9
-                              {:DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] 
+                              {:DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
                                                                       :ShortName "Doi/uSGs/Cmg/wHSc"})]}))
         ;; DIF collections support distribution-center data centers
         dif-coll1 (d/ingest-umm-spec-collection "PROV1"
                             (data-umm-c/collection 10
-                              {:DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"] 
+                              {:DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                                       :ShortName "Dist center"})]})
                             {:format :dif})]
 

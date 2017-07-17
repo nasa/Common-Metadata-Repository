@@ -6,6 +6,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+            [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common-app.services.search.messages :as cmsg]
@@ -37,8 +38,11 @@
 (deftest granule-identifier-revision-date-sorting-test
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
         make-gran (fn [granule-ur producer-gran-id]
-                    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:granule-ur granule-ur
-                                                        :producer-gran-id producer-gran-id})))
+                    (d/ingest "PROV1"
+                              (dg/granule-with-umm-spec-collection coll
+                               (:concept-id coll)
+                               {:granule-ur granule-ur
+                                :producer-gran-id producer-gran-id})))
         g1 (make-gran "gur10" nil)
         g2 (make-gran "gur20" "pg50")
         g3 (make-gran "gur30" "pg40")
@@ -64,7 +68,7 @@
 
 (deftest granule-campaign-sorting-test
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
-                         {:Projects (data-umm-c/projects "c10" "c20" "c30" "c40" "c50" "c41" "c51")}))
+                         {:Projects (data-umm-cmn/projects "c10" "c20" "c30" "c40" "c50" "c41" "c51")}))
         make-gran (fn [& campaigns]
                     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll (:concept-id coll) {:project-refs campaigns})))
         g1 (make-gran "c10" "c41")
@@ -140,7 +144,7 @@
 
 (deftest temporal-sorting-test
   (let [make-coll (fn [n provider begin end]
-                    (d/ingest-umm-spec-collection provider (data-umm-c/collection n {:TemporalExtents [(data-umm-c/temporal-extent {
+                    (d/ingest-umm-spec-collection provider (data-umm-c/collection n {:TemporalExtents [(data-umm-cmn/temporal-extent {
                                                 :beginning-date-time (d/make-datetime begin)
                                                 :ending-date-time (d/make-datetime end)
                                                 :ends-at-present? true})]})))
@@ -185,7 +189,7 @@
 
 (deftest granule-platform-sorting-test
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms
-                               (map #(data-umm-c/platform {:ShortName %})
+                               (map #(data-umm-cmn/platform {:ShortName %})
                                     ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))
         make-gran (fn [& platforms]
                     (d/ingest "PROV1"
@@ -207,9 +211,9 @@
 
 (deftest granule-instrument-sorting-test
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms
-                               [(data-umm-c/platform
+                               [(data-umm-cmn/platform
                                   {:ShortName "platform"
-                                   :Instruments (map #(data-umm-c/instrument {:ShortName %})
+                                   :Instruments (map #(data-umm-cmn/instrument {:ShortName %})
                                                      ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]}))
         make-gran (fn [& instruments]
                     (d/ingest "PROV1"
@@ -237,11 +241,11 @@
 (deftest granule-sensor-sorting-test
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                  {:Platforms
-                  [(data-umm-c/platform
+                  [(data-umm-cmn/platform
                      {:ShortName "platform"
-                      :Instruments [(data-umm-c/instrument
+                      :Instruments [(data-umm-cmn/instrument
                                       {:ShortName "instrument"
-                                       :ComposedOf (map #(data-umm-c/instrument {:ShortName %})
+                                       :ComposedOf (map #(data-umm-cmn/instrument {:ShortName %})
                                                      ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]})]}))
         make-gran (fn [& sensors]
                     (d/ingest "PROV1"

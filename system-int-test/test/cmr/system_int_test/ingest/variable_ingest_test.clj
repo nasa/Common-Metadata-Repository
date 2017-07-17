@@ -13,11 +13,11 @@
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.system-int-test.utils.variable-util :as variable-util]))
 
-(use-fixtures :each (ingest-util/reset-fixture))
+(use-fixtures :each (ingest-util/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest create-variable-ingest-test
   (testing "Variable ingest:"
-    (let [acl-data (variable-util/setup-update-acl (s/context))
+    (let [acl-data (variable-util/setup-update-acl (s/context) "provguid1")
           {:keys [user-name group-name group-id token grant-id]} acl-data
           variable-data (variable-util/make-variable)
           response (variable-util/create-variable token variable-data)
@@ -55,7 +55,7 @@
 
 (deftest update-variable-ingest-test
   (testing "Variable ingest:"
-    (let [acl-data (variable-util/setup-update-acl (s/context))
+    (let [acl-data (variable-util/setup-update-acl (s/context) "provguid1")
           {:keys [user-name group-name group-id token grant-id]} acl-data
           variable-data (variable-util/make-variable)
           new-long-name "A new long name"
@@ -85,7 +85,7 @@
 
 (deftest delete-variable-ingest-test
   (testing "Variable ingest:"
-    (let [acl-data (variable-util/setup-update-acl (s/context))
+    (let [acl-data (variable-util/setup-update-acl (s/context) "provguid1")
           {:keys [user-name group-name group-id token grant-id]} acl-data
           variable-data (variable-util/make-variable)
           new-long-name "A new long name"
@@ -152,7 +152,7 @@
            update-group-name :group-name
            update-token :token
            update-grant-id :grant-id
-           update-group-id :group-id} (variable-util/setup-update-acl (s/context))
+           update-group-id :group-id} (variable-util/setup-update-acl (s/context) "provguid1")
           variable-data (variable-util/make-variable)]
       (testing "acl setup and grants for different users"
         (is (e/not-permitted? guest-token
@@ -225,8 +225,8 @@
    this function and update the invalid-variable-metadata-ingest-test to use
    ingest-util/ingest-concept function instead."
   [token metadata]
-   (let [params {:method :post
-                 :url (url/ingest-create-variable-url)
+   (let [params {:method :put
+                 :url (url/ingest-url "PROV1" :variable (:native-id metadata))
                  :body  metadata
                  :content-type "application/vnd.nasa.cmr.umm+json"
                  :headers {"Echo-Token" token}
@@ -236,7 +236,7 @@
      (ingest-util/parse-ingest-response (client/request params) {})))
 
 (deftest invalid-variable-metadata-ingest-test
-  (let [acl-data (variable-util/setup-update-acl (s/context))
+  (let [acl-data (variable-util/setup-update-acl (s/context) "provguid1")
         {:keys [user-name group-name group-id token grant-id]} acl-data]
     (testing "empty request body"
       (let [{:keys [status errors]} (ingest-variable token "")]

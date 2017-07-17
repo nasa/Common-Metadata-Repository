@@ -8,6 +8,7 @@
     [cmr.ingest.config :as icfg]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (defn assert-valid
@@ -65,7 +66,7 @@
 (deftest field-exceeding-maxlength-warnings
   (testing "Multiple warnings returned for the fields exceeding maxlength allowed"
     (let [collection (data-umm-c/collection-missing-properties-dif10
-                       {:Platforms [(data-umm-c/platform {:ShortName (apply str (repeat 81 "x"))})]
+                       {:Platforms [(data-umm-cmn/platform {:ShortName (apply str (repeat 81 "x"))})]
                         :Purpose (apply str (repeat 12000 "y"))
                         :ProcessingLevel {:Id "1"}
                         :CollectionProgress :complete})
