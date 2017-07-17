@@ -6,14 +6,17 @@
     [cmr.ingest.services.messages :as msg]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (defn assert-invalid
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors nil))
   ([coll-attributes field-path errors options]
-   (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection coll-attributes)
-                            (merge {:allow-failure? true} options))]
+   (let [response (d/ingest-umm-spec-collection
+                   "PROV1"
+                   (data-umm-c/collection coll-attributes)
+                   (merge {:allow-failure? true} options))]
      (is (= {:status 422
              :errors [{:path field-path
                        :errors errors}]}
@@ -46,10 +49,10 @@
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
   (testing "Keyword validation using validation endpoint"
     (let [concept (data-umm-c/collection-concept
-                   {:Platforms [(data-umm-c/platform {:ShortName "foo"
-                                                      :LongName "Airbus A340-600"
-                                                      :Type "Aircraft"})]
-                    :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"] :ShortName "SomeCenter"})]})
+                   {:Platforms [(data-umm-cmn/platform {:ShortName "foo"
+                                                        :LongName "Airbus A340-600"
+                                                        :Type "Aircraft"})]
+                    :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"] :ShortName "SomeCenter"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
@@ -63,7 +66,7 @@
   (testing "Project keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords
-            {:Projects [(assoc (data-umm-c/project short-name "") :LongName long-name)]}
+            {:Projects [(assoc (data-umm-cmn/project short-name "") :LongName long-name)]}
             ["Projects" 0]
             [(format (str "Project short name [%s] and long name [%s]"
                           " was not a valid keyword combination.")
@@ -86,7 +89,7 @@
 
     (are2 [short-name long-name]
           (assert-valid-keywords
-            {:Projects [(assoc (data-umm-c/project short-name "") :LongName long-name)]})
+            {:Projects [(assoc (data-umm-cmn/project short-name "") :LongName long-name)]})
           "Exact match"
           "EUDASM" "European Digital Archive of Soil Maps"
 
@@ -99,7 +102,7 @@
   (testing "Platform keyword validation"
     (are2 [short-name long-name type]
           (assert-invalid-keywords
-            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name :Type type})]}
+            {:Platforms [(data-umm-cmn/platform {:ShortName short-name :LongName long-name :Type type})]}
             ["Platforms" 0]
             [(format (str "Platform short name [%s], long name [%s], and type [%s]"
                           " was not a valid keyword combination.")
@@ -122,7 +125,7 @@
 
     (are2 [short-name long-name type]
           (assert-valid-keywords
-            {:Platforms [(data-umm-c/platform {:ShortName short-name :LongName long-name :Type type})]})
+            {:Platforms [(data-umm-cmn/platform {:ShortName short-name :LongName long-name :Type type})]})
           "Exact match"
           "A340-600" "Airbus A340-600" "Aircraft"
 
@@ -131,7 +134,7 @@
 
   (testing "DataCenter keyword validation"
     (are3 [attribs]
-          (let [dc (data-umm-c/data-center attribs)]
+          (let [dc (data-umm-cmn/data-center attribs)]
             (assert-invalid-keywords
               {:DataCenters [dc]}
               ["DataCenters" 0]
@@ -153,7 +156,7 @@
            :LongName "Hydrogeophysics Group, Aarhus University "})
 
     (are3 [attribs]
-          (let [dc (data-umm-c/data-center attribs)]
+          (let [dc (data-umm-cmn/data-center attribs)]
             (assert-valid-keywords {:DataCenters [dc]}))
 
           "Valid Case Sensitive"
@@ -213,12 +216,12 @@
     (are2 [short-name long-name]
           (assert-invalid-keywords
             {:Platforms
-             [(data-umm-c/platform
+             [(data-umm-cmn/platform
                 {:ShortName "A340-600"
                  :LongName "Airbus A340-600"
                  :Type "Aircraft"
-                 :Instruments [(data-umm-c/instrument {:ShortName short-name
-                                                       :LongName long-name})]})]}
+                 :Instruments [(data-umm-cmn/instrument {:ShortName short-name
+                                                         :LongName long-name})]})]}
             ["Platforms" 0 "Instruments" 0]
             [(format (str "Instrument short name [%s] and long name [%s]"
                           " was not a valid keyword combination.")
@@ -238,12 +241,12 @@
     (are2 [short-name long-name]
           (assert-valid-keywords
             {:Platforms
-             [(data-umm-c/platform
+             [(data-umm-cmn/platform
                 {:ShortName "A340-600"
                  :LongName "Airbus A340-600"
                  :Type "Aircraft"
-                 :Instruments [(data-umm-c/instrument {:ShortName short-name
-                                                       :LongName long-name})]})]})
+                 :Instruments [(data-umm-cmn/instrument {:ShortName short-name
+                                                         :LongName long-name})]})]})
           "Exact match"
           "ATM" "Airborne Topographic Mapper"
 
@@ -255,7 +258,7 @@
 
   (testing "Science Keyword validation"
     (are [attribs]
-         (let [sk (data-umm-c/science-keyword attribs)]
+         (let [sk (data-umm-cmn/science-keyword attribs)]
            (assert-invalid-keywords
              {:ScienceKeywords [sk]}
              ["ScienceKeywords" 0]
@@ -297,7 +300,7 @@
           :Term "GEOGRAPHIC INFORMATION SYSTEMS"})
 
     (are [attribs]
-         (assert-valid-keywords {:ScienceKeywords [(data-umm-c/science-keyword attribs)]})
+         (assert-valid-keywords {:ScienceKeywords [(data-umm-cmn/science-keyword attribs)]})
 
          {:Category "EARTH SCIENCE SERVICES"
           :Topic "DATA ANALYSIS AND VISUALIZATION"

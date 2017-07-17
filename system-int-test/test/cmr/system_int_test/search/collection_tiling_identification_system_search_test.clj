@@ -4,6 +4,7 @@
    [clojure.test :refer :all]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
@@ -11,11 +12,11 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-tiling-identification-system-name
-  (let [tiling1 (data-umm-c/tiling-identification-system "one CALIPSO")
-        tiling2 (data-umm-c/tiling-identification-system "two CALIPSO")
-        tiling3 (data-umm-c/tiling-identification-system "three CALIPSO")
-        tiling4 (data-umm-c/tiling-identification-system "three Bravo")
-        tiling5 (data-umm-c/tiling-identification-system "four Bravo")
+  (let [tiling1 (data-umm-cmn/tiling-identification-system "one CALIPSO")
+        tiling2 (data-umm-cmn/tiling-identification-system "two CALIPSO")
+        tiling3 (data-umm-cmn/tiling-identification-system "three CALIPSO")
+        tiling4 (data-umm-cmn/tiling-identification-system "three Bravo")
+        tiling5 (data-umm-cmn/tiling-identification-system "four Bravo")
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:TilingIdentificationSystems [tiling1]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:TilingIdentificationSystems [tiling2]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:TilingIdentificationSystems [tiling3]}))

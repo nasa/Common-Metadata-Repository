@@ -26,7 +26,7 @@
   "Returns the variable concept and variable association for the given variable association."
   [context variable-association]
   (let [{:keys [variable-name]} variable-association
-        native-id (string/lower-case variable-name)
+        native-id variable-name
         variable-concept (mdb/find-latest-concept
                           context
                           {:native-id native-id

@@ -10,7 +10,8 @@
     [cmr.metadata-db.services.search-service :as mdb-ss]
     [cmr.search.services.association-validation :as assoc-validation]
     [cmr.search.services.messages.association-messages :as assoc-msg]
-    [cmr.transmit.metadata-db :as mdb]))
+    [cmr.transmit.metadata-db :as mdb]
+    [cmr.umm-spec.umm-spec-core :as spec]))
 
 (def ^:private native-id-separator-character
   "This is the separator character used when creating the native id for a variable."
@@ -136,7 +137,10 @@
   associated_item: {concept_id: C6-PROV1}}]."
   [context variable-concept variable-associations operation]
   (let [variable-name (get-in variable-concept [:extra-fields :variable-name])
-        existing-variable (edn/read-string (:metadata variable-concept))
+        existing-variable (spec/parse-metadata context
+                                               :variable
+                                               (:format variable-concept)
+                                               (:metadata variable-concept))
         {:keys [originator-id]} existing-variable
         mdb-context (assoc context :system
                            (get-in context [:system :embedded-systems :metadata-db]))

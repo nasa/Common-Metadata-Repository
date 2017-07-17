@@ -96,12 +96,12 @@
   "Variables cannot be modified without a valid user token.")
 
 (defn variable-deleted
-  [variable-name]
-  (format "Variable with variable-name '%s' was deleted." variable-name))
+  [native-id]
+  (format "Variable with native-id '%s' was deleted." native-id))
 
 (defn variable-does-not-exist
-  [variable-name]
-  (format "Variable could not be found with variable-name '%s'" variable-name))
+  [native-id]
+  (format "Variable could not be found with native-id '%s'" native-id))
 
 (defn variable-already-exists
   [variable concept-id]

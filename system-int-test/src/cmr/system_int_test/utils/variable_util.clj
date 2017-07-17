@@ -7,6 +7,7 @@
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-variable :as data-umm-v]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
@@ -14,6 +15,16 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.variable :as transmit-variable]))
+
+(def schema-version "1.9")
+(def unique-index (atom 0))
+(def content-type "application/vnd.nasa.cmr.umm+json")
+(def default-opts {:accept-format :json
+                   :content-type content-type})
+
+(defn token-opts
+  [token]
+  (merge default-opts {:token token}))
 
 (defn grant-all-variable-fixture
   "A test fixture that grants all users the ability to create and modify
@@ -24,89 +35,56 @@
 
 (defn setup-update-acl
   "Set up the ACLs for UMM-Var update permissions and return the ids+token"
-  [context]
-  (let [user-name "umm-var-user42"
-        group-name "umm-var-guid42"
-        update-group-id (echo-util/get-or-create-group context group-name)
-        update-token (echo-util/login context user-name [update-group-id])
-        token-context (assoc context :token update-token)
-        update-grant-id (echo-util/grant-group-admin token-context
-                                                     update-group-id
-                                                     :update)]
-    {:user-name user-name
-     :group-name group-name
-     :group-id update-group-id
-     :grant-id update-grant-id
-     :token update-token}))
+  ([context provider-id]
+   (setup-update-acl context provider-id "umm-var-user42" "umm-var-guid42"))
+  ([context provider-id user-name group-name]
+   (let [update-group-id (echo-util/get-or-create-group context group-name)
+         update-token (echo-util/login context user-name [update-group-id])
+         token-context (assoc context :token update-token)
+         update-grant-id (echo-util/grant-group-provider-admin
+                          token-context update-group-id provider-id :update)]
+     {:user-name user-name
+      :group-name group-name
+      :group-id update-group-id
+      :grant-id update-grant-id
+      :token update-token})))
 
-(def sample-variable
-  {:Name "A-name"
-   :LongName "A long UMM-Var name"
-   :Units "m"
-   :DataType "float32"
-   :DimensionsName "H2OFunc"
-   :Dimensions "11"
-   :ValidRange {}
-   :Scale "1.0"
-   :Offset "0.0"
-   :FillValue "-9999.0"
-   :VariableType "SCIENCE_VARIABLE"
-   :ScienceKeywords [{:Category "sk-A"
-                       :Topic "sk-B"
-                       :Term "sk-C"}]})
-
-(defn make-variable
-  "Makes a valid variable based on the given input"
+(defn make-variable-concept
   ([]
-   (make-variable nil))
-  ([attrs]
-   (merge sample-variable attrs))
-  ([index attrs]
-   (merge
-    sample-variable
-    {:Name (str "Name" index)
-     :LongName (str "Long UMM-Var name " index)}
-    attrs)))
+    (make-variable-concept {}))
+  ([metadata-attrs]
+    (make-variable-concept metadata-attrs {}))
+  ([metadata-attrs attrs]
+    (-> (merge {:provider-id "PROV1"} metadata-attrs)
+        (data-umm-v/variable-concept)
+        (assoc :format (mt/with-version content-type schema-version))
+        (merge attrs)))
+  ([metadata-attrs attrs index]
+    (-> (merge {:provider-id "PROV1"} metadata-attrs)
+        (data-umm-v/variable-concept :umm-json index)
+        (assoc :format (mt/with-version content-type schema-version))
+        (merge attrs))))
 
-(defn create-variable
-  "Creates a variable."
-  ([token variable]
-   (create-variable token variable nil))
-  ([token variable options]
-   (let [options (merge {:raw? true
-                         :token token
-                         :http-options {:content-type "application/vnd.nasa.cmr.umm+json"}}
-                        options)]
-     (ingest-util/parse-map-response
-      (transmit-variable/create-variable (s/context) variable options)))))
+(defn make-unique-variable-concept
+  ([]
+    (make-unique-variable-concept {} {}))
+  ([metadata-attrs attrs]
+    (swap! unique-index inc)
+    (make-variable-concept metadata-attrs attrs @unique-index)))
 
-(defn create-variable-with-attrs
-  "Helper function to create a variable with the given variable attributes"
-  [token attrs]
-  (create-variable token (make-variable attrs)))
+(defn ingest-variable
+  "A convenience function for ingesting a variable during tests."
+  ([]
+    (ingest-variable (make-variable-concept)))
+  ([variable-concept]
+    (ingest-variable variable-concept default-opts))
+  ([variable-concept opts]
+    (ingest-util/ingest-concept variable-concept opts)))
 
-(defn update-variable
-  "Updates a variable."
-  ([token variable]
-   (update-variable token (:variable-name variable) variable nil))
-  ([token variable-name variable]
-   (update-variable token variable-name variable nil))
-  ([token variable-name variable options]
-   (let [options (merge {:raw? true
-                         :token token
-                         :http-options {:content-type "application/vnd.nasa.cmr.umm+json"}}
-                        options)]
-     (ingest-util/parse-map-response
-      (transmit-variable/update-variable (s/context) variable-name variable options)))))
-
-(defn delete-variable
-  "Deletes a variable"
-  ([token variable-name]
-   (delete-variable token variable-name nil))
-  ([token variable-name options]
-   (let [options (merge {:raw? true :token token} options)]
-     (ingest-util/parse-map-response
-      (transmit-variable/delete-variable (s/context) variable-name options)))))
+(defn ingest-variable-with-attrs
+  "Helper function to ingest a variable with the given variable attributes"
+  [attrs]
+  (ingest-variable (make-variable-concept attrs)))
 
 (defn- associate-variable
   "Associate a variable with collections by the JSON condition.
@@ -154,30 +132,6 @@
    (dissociate-by-concept-ids token variable-name coll-concept-ids nil))
   ([token variable-name coll-concept-ids options]
    (dissociate-variable :concept-ids token variable-name coll-concept-ids options)))
-
-(defn save-variable
-  "A helper function for creating or updating variables for search tests.
-   If the variable does not have a :concept-id it saves it. If the variable has a :concept-id,
-   it updates the variable. Returns the saved variable along with :concept-id,
-   :revision-id, :errors, and :status"
-  ([token variable]
-   (let [variable-to-save (select-keys variable [:variable-name :description :revision-date])
-         response (if-let [concept-id (:concept-id variable)]
-                    (update-variable token (:variable-name variable) variable-to-save)
-                    (create-variable token variable-to-save))
-         variable (into variable
-                        (select-keys response [:status :errors :concept-id :revision-id]))]
-     (if (= (:revision-id variable) 1)
-       ;; Get the originator id for the variable
-       (assoc variable :originator-id (tokens/get-user-id (s/context) token))
-       variable)))
-  ([token variable associated-collections]
-   (let [saved-variable (save-variable token variable)
-         ;; Associate the variable with the collections using a query by concept id
-         condition {:or (map #(hash-map :concept_id (:concept-id %)) associated-collections)}
-         response (associate-by-query token (:variable-name saved-variable) condition)]
-     (assert (= 200 (:status response)) (pr-str condition))
-     (assoc saved-variable :revision-id (:revision-id response)))))
 
 (defn expected-concept
   "Create an expected concept given a service, its concept-id, a revision-id,

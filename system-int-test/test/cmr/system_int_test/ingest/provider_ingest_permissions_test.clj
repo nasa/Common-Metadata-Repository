@@ -2,13 +2,15 @@
   "Verifies the correct provider ingest permissions are enforced"
   (:require
     [clojure.test :refer :all]
-    [cmr.mock-echo.client.echo-util :as e]
+    [cmr.common.util :refer [are3]]
+    [cmr.mock-echo.client.echo-util :as echo-util]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]))
+    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+    [cmr.system-int-test.utils.variable-util :as variable-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false
@@ -22,79 +24,79 @@
     (not= status 401)))
 
 (deftest ingest-provider-management-permissions-test
-  (let [prov-admin-read-group-concept-id (e/get-or-create-group
+  (let [prov-admin-read-group-concept-id (echo-util/get-or-create-group
                                           (s/context) "prov-admin-read-group")
-        prov-admin-update-group-concept-id (e/get-or-create-group
+        prov-admin-update-group-concept-id (echo-util/get-or-create-group
                                             (s/context)
                                             "prov-admin-update-group")
-        prov-admin-read-update-group-concept-id (e/get-or-create-group
+        prov-admin-read-update-group-concept-id (echo-util/get-or-create-group
                                                  (s/context)
                                                  "prov-admin-read-update-group")
-        prov-admin-update-delete-group-concept-id (e/get-or-create-group
+        prov-admin-update-delete-group-concept-id (echo-util/get-or-create-group
                                                    (s/context)
                                                    "prov-admin-update-delete-group")
-        prov-admin-read-update-delete-group-concept-id (e/get-or-create-group
+        prov-admin-read-update-delete-group-concept-id (echo-util/get-or-create-group
                                                         (s/context)
                                                         "prov-admin-read-update-delete-group")
-        another-prov-admin-group-concept-id (e/get-or-create-group
+        another-prov-admin-group-concept-id (echo-util/get-or-create-group
                                              (s/context) "another-prov-admin-group")
-        ingest-super-admin-group-concept-id (e/get-or-create-group
+        ingest-super-admin-group-concept-id (echo-util/get-or-create-group
                                              (s/context) "ingest-super-admin-group")
-        plain-group-concept-id2 (e/get-or-create-group (s/context) "plain-group-2")
-        plain-group-concept-id3 (e/get-or-create-group (s/context) "plain-group-3")
-        guest-token (e/login-guest (s/context))
-        user-token (e/login
+        plain-group-concept-id2 (echo-util/get-or-create-group (s/context) "plain-group-2")
+        plain-group-concept-id3 (echo-util/get-or-create-group (s/context) "plain-group-3")
+        guest-token (echo-util/login-guest (s/context))
+        user-token (echo-util/login
                     (s/context)
                     "user1"
                     [plain-group-concept-id2 plain-group-concept-id3])
-        provider-admin-read-token (e/login
+        provider-admin-read-token (echo-util/login
                                    (s/context)
                                    "prov-admin-read"
                                    [prov-admin-read-group-concept-id
                                     plain-group-concept-id3])
-        provider-admin-update-token (e/login
+        provider-admin-update-token (echo-util/login
                                      (s/context)
                                      "prov-admin-update"
                                      [prov-admin-update-group-concept-id
                                       plain-group-concept-id3])
-        provider-admin-read-update-token (e/login
+        provider-admin-read-update-token (echo-util/login
                                           (s/context) "prov-admin-read-update"
                                           [prov-admin-read-update-group-concept-id
                                            plain-group-concept-id3])
-        provider-admin-update-delete-token (e/login
+        provider-admin-update-delete-token (echo-util/login
                                             (s/context) "prov-admin-update-delete"
                                             [prov-admin-update-delete-group-concept-id
                                              plain-group-concept-id3])
-        another-prov-admin-token (e/login
+        another-prov-admin-token (echo-util/login
                                   (s/context)
                                   "another-prov-admin"
                                   [another-prov-admin-group-concept-id
                                    plain-group-concept-id3])
-        super-admin-token (e/login
+        super-admin-token (echo-util/login
                            (s/context)
                            "super-admin"
                            [ingest-super-admin-group-concept-id])
         non-existant-token "not-exist"
 
         ;; Grant provider admin permission
-        _ (e/grant-group-provider-admin
+        _ (echo-util/grant-group-provider-admin
            (s/context) prov-admin-read-group-concept-id "PROV1" :read)
-        _ (e/grant-group-provider-admin
+        _ (echo-util/grant-group-provider-admin
            (s/context) prov-admin-update-group-concept-id "PROV1" :update)
-        _ (e/grant-group-provider-admin
+        _ (echo-util/grant-group-provider-admin
            (s/context)
            prov-admin-read-update-group-concept-id
            "PROV1"
            :read
            :update)
-        _ (e/grant-group-provider-admin
+        _ (echo-util/grant-group-provider-admin
            (s/context)
            prov-admin-update-delete-group-concept-id
            "PROV1"
            :delete
            :update)
         ;; Grant provider admin permission but for a different provider
-        _ (e/grant-group-provider-admin
+        _ (echo-util/grant-group-provider-admin
            (s/context)
            another-prov-admin-group-concept-id
            "PROV2"
@@ -102,7 +104,7 @@
            :update
            :delete)
         ;; Grant system admin permission - but not provider admin
-        _ (e/grant-group-admin
+        _ (echo-util/grant-group-admin
            (s/context)
            ingest-super-admin-group-concept-id
            :read
@@ -196,3 +198,69 @@
            super-admin-token
            another-prov-admin-token
            provider-admin-read-token))))
+
+(deftest variable-ingest-permissions-test
+  (testing "Variable ingest permissions:"
+    (let [;; Groups
+          guest-group-id (echo-util/get-or-create-group
+                          (s/context) "umm-var-guid1")
+          reg-user-group-id (echo-util/get-or-create-group
+                             (s/context) "umm-var-guid2")
+          ;; Tokens
+          guest-token (echo-util/login
+                       (s/context) "umm-var-user1" [guest-group-id])
+          reg-user-token (echo-util/login
+                          (s/context) "umm-var-user2" [reg-user-group-id])
+          ;; Grants
+          guest-grant-id (echo-util/grant
+                          (assoc (s/context) :token guest-token)
+                          [{:permissions [:read]
+                            :user_type :guest}]
+                          :system_identity
+                          {:target nil})
+          reg-user-grant-id (echo-util/grant
+                             (assoc (s/context) :token reg-user-token)
+                             [{:permissions [:read]
+                               :user_type :registered}]
+                             :system_identity
+                             {:target nil})
+          {update-user-name :user-name
+           update-group-name :group-name
+           update-token :token
+           update-grant-id :grant-id
+           update-group-id :group-id} (variable-util/setup-update-acl
+                                       (s/context) "PROV1")
+          concept (variable-util/make-variable-concept)]
+      (testing "disallowed create responses:"
+        (are3 [token expected]
+          (let [response (variable-util/ingest-variable
+                          concept
+                          (merge variable-util/default-opts
+                                 {:token token}))]
+            (is (= expected (:status response))))
+          "no token provided"
+          nil 401
+          "guest user denied"
+          guest-token 401
+          "regular user denied"
+          reg-user-token 401))
+       (testing "disallowed delete responses:"
+        (are3 [token expected]
+          (let [response (ingest/delete-concept
+                          concept
+                          (merge variable-util/default-opts {:token token}))]
+            (is (= expected (:status response))))
+          "no token provided"
+          nil 401
+          "guest user denied"
+          guest-token 401
+          "regular user denied"
+          reg-user-token 401))
+      (testing "allowed responses:"
+        (let [create-response (variable-util/ingest-variable
+                               concept {:token update-token})
+              delete-response (ingest/delete-concept concept {:token update-token})]
+          (testing "create variable status"
+            (is (= 201 (:status create-response))))
+          (testing "update variable status"
+            (is (= 200 (:status delete-response)))))))))

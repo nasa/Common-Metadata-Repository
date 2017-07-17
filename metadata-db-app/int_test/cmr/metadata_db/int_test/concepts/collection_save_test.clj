@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.int-test.concepts.collection-save-test
   "Contains integration tests for saving collections. Tests saves with various configurations including
   checking for proper error handling."
-  (:require 
+  (:require
    [clj-time.format :as time-format]
    [clojure.test :refer :all]
    [cmr.common.date-time-parser :as common-parser]
@@ -10,7 +10,6 @@
    [cmr.metadata-db.int-test.utility :as util]
    [cmr.metadata-db.services.concept-constraints :as cc]
    [cmr.metadata-db.services.messages :as msg]))
-
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -49,7 +48,7 @@
          (not-any? nil? created-ats))))
 
 (deftest save-collection-created-at-test
-  (testing "Save collection multiple times gets same created-at" 
+  (testing "Save collection multiple times gets same created-at"
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
       (let [initial-collection (util/collection-concept provider-id 2)
             ;; Save a collection, then wait for a small period of time before saving it
@@ -67,16 +66,16 @@
             {tombstone-revision-id :revision-id} (util/save-concept {:deleted true :concept-id concept-id})
             _ (Thread/sleep 10)
             {final-revision-id :revision-id} (util/save-concept initial-collection)
-            [initial-revision 
-             second-revision 
-             tombstone 
+            [initial-revision
+             second-revision
+             tombstone
              final-revision] (mapv #(:concept (util/get-concept-by-id-and-revision concept-id %))
-                                   [initial-revision-id 
-                                    second-revision-id 
-                                    tombstone-revision-id 
+                                   [initial-revision-id
+                                    second-revision-id
+                                    tombstone-revision-id
                                     final-revision-id])]
         (is (created-at-same? initial-revision second-revision tombstone final-revision))))))
-               
+
 (deftest save-collection-post-commit-constraint-violations
   (testing "duplicate entry titles"
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]

@@ -2,255 +2,258 @@
   "CMR variable ingest integration tests."
   (:require
    [clj-http.client :as client]
+   [clj-time.core :as t]
    [clojure.edn :as edn]
+   [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.access-control.test.util :as ac]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
    [cmr.common.util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.ingest.config :as config]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
+   [cmr.system-int-test.data2.umm-spec-variable :as data-umm-v]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.ingest-util :as ingest-util]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.system-int-test.utils.variable-util :as variable-util]))
+   [cmr.system-int-test.utils.variable-util :as variable-util]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.test.expected-conversion :as exc]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
-(use-fixtures :each (ingest-util/reset-fixture))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
+                                          {:grant-all-ingest? false}))
 
-(deftest create-variable-ingest-test
-  (testing "Variable ingest:"
-    (let [acl-data (variable-util/setup-update-acl (s/context))
-          {:keys [user-name group-name group-id token grant-id]} acl-data
-          variable-data (variable-util/make-variable)
-          response (variable-util/create-variable token variable-data)
-          {:keys [status concept-id revision-id]} response
-          fetched (mdb/get-concept concept-id revision-id)
-          metadata (edn/read-string (:metadata fetched))]
-      (testing "create a new variable"
-        ;; Sanity check on tokens; we've had issues with ACLs, so the following is
-        ;; handy when first testing ingest. More complete ACL testing is done
-        ;; below as well as in other sys-int test namespaces (e.g., associations).
-        (is (e/permitted? token
-                          grant-id
-                          group-id
-                          (ingest-util/get-ingest-update-acls token)))
-        (is (= 201 status))
-        (is (= 1 revision-id))
+(deftest variable-ingest-test
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")]
+    (testing "ingest of a new variable concept"
+      (let [concept (variable-util/make-variable-concept)
+            {:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                               concept
+                                               (variable-util/token-opts token))]
+        (index/wait-until-indexed)
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= user-name (:user-id fetched)))
-        (is (= user-name (:originator-id metadata)))
-        (is (= (string/lower-case (:Name variable-data)) (:native-id fetched)))
-        (is (= (:LongName variable-data) (:long-name metadata)))
-        (variable-util/assert-variable-saved variable-data
-                                             user-name
-                                             concept-id
-                                             revision-id))
-      (testing "attempt to create a new variable when it already exists"
-        (let [response (variable-util/create-variable token variable-data)
-              {:keys [status errors]} response]
-          (is (= 409 status))
-          (is (= (format (str "A variable with native-id '%s' already "
-                              "exists with concept id '%s'.")
-                         (:native-id fetched)
-                         concept-id)
-                 (first errors))))))))
+        (is (= 1 revision-id))))
+    (testing "ingest of a variable concept with a revision id"
+      (let [concept (variable-util/make-variable-concept {} {:revision-id 5})
+            {:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                              concept
+                                              (variable-util/token-opts token))]
+        (index/wait-until-indexed)
+        (is (= 5 revision-id))
+        (is (mdb/concept-exists-in-mdb? concept-id 5))))))
 
-(deftest update-variable-ingest-test
-  (testing "Variable ingest:"
-    (let [acl-data (variable-util/setup-update-acl (s/context))
-          {:keys [user-name group-name group-id token grant-id]} acl-data
-          variable-data (variable-util/make-variable)
-          new-long-name "A new long name"
-          _ (variable-util/create-variable token variable-data)
-          response (variable-util/update-variable
-                    token
-                    (string/lower-case (:Name variable-data))
-                    (assoc variable-data :LongName new-long-name))
-          {:keys [status concept-id revision-id]} response
-          fetched (mdb/get-concept concept-id revision-id)
-          metadata (edn/read-string (:metadata fetched))]
-      (testing "update an existing variable"
-        (is (= 200 status))
-        (is (= 2 revision-id))
+;; Verify that user-id is saved from User-Id or token header
+(deftest variable-ingest-token-vs-user-id-test
+  (testing "user id from token"
+    (let [{token :token} (variable-util/setup-update-acl
+                          (s/context) "PROV1" "user1" "update-group")
+          concept (variable-util/make-variable-concept)
+          opts (merge variable-util/default-opts {:token token})
+          {:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                            concept opts)]
+      (index/wait-until-indexed)
+      (ingest/assert-user-id concept-id revision-id "user1")))
+  (testing (str "both user-id and token in the header results in the revision "
+                "getting user id from user-id header")
+    (variable-util/setup-update-acl (s/context) "PROV1" "user4" "update-group")
+    (let [{token :token} (variable-util/setup-update-acl
+                          (s/context) "PROV1" "user5" "update-group")
+          concept (variable-util/make-variable-concept)
+          opts (merge variable-util/default-opts {:user-id "user4"
+                                                  :token token})
+          {:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                            concept opts)]
+      (index/wait-until-indexed)
+      (ingest/assert-user-id concept-id revision-id "user4")))
+  (testing "neither user-id nor token in the header"
+    (let [concept (variable-util/make-variable-concept)
+          opts variable-util/default-opts
+          {status :status} (variable-util/ingest-variable concept opts)]
+      (is (= 401 status)))))
+
+(deftest update-concept-with-new-user-from-token
+  (util/are3 [ingest-header1 expected-user-id1
+              ingest-header2 expected-user-id2
+              ingest-header3 expected-user-id3]
+    (let [concept (variable-util/make-variable-concept)
+          {:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                            concept
+                                            (merge variable-util/default-opts
+                                                   ingest-header1))]
+      (ingest/ingest-concept concept (merge variable-util/default-opts
+                                            ingest-header2))
+      (ingest/ingest-concept concept (merge variable-util/default-opts
+                                            ingest-header3))
+      (index/wait-until-indexed)
+      (ingest/assert-user-id concept-id revision-id expected-user-id1)
+      (ingest/assert-user-id concept-id (inc revision-id) expected-user-id2)
+      (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3))
+    "user id from token"
+    (variable-util/setup-update-acl
+      (s/context) "PROV1" "user1" "update-group") "user1"
+    (variable-util/setup-update-acl
+      (s/context) "PROV1" "user2" "update-group") "user2"
+    (variable-util/setup-update-acl
+      (s/context) "PROV1" "user3" "update-group") "user3"))
+
+;; XXX write `update-concept-with-new-user-from-user-id`
+    ; "user id from user-id header"
+    ; {:user-id "user1"} "user1"
+    ; {:user-id "user2"} "user2"
+    ; {:user-id "user3"} "user3"
+    ; {:user-id nil} nil))
+
+;; Variable with concept-id ingest and update scenarios.
+(deftest variable-w-concept-id-ingest-test
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")
+        supplied-concept-id "V1000-PROV1"
+        concept (variable-util/make-variable-concept
+                 {}
+                 {:concept-id supplied-concept-id
+                  :native-id "Atlantic-1"})]
+    (testing "ingest of a new variable concept with concept-id present"
+      (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                               concept
+                                               (variable-util/token-opts token))]
+        (index/wait-until-indexed)
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-        (is (= (string/lower-case (:Name variable-data)) (:native-id fetched)))
-        (is (= new-long-name (:long-name metadata))))
-      (testing "attempt to update a variable that doesn't exist"
-        (let [response (variable-util/update-variable
-                        token
-                        "i-don't-exist"
-                        (assoc variable-data :LongName new-long-name))
-              {:keys [status errors]} response]
-          (is (= 404 status))
-          (is (= "Variable could not be found with variable-name 'i-don't-exist'"
-                 (first errors))))))))
+        (is (= [supplied-concept-id 1] [concept-id revision-id]))))
+
+    (testing "Update the concept with the concept-id"
+      (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                              concept
+                                              (variable-util/token-opts token))]
+        (index/wait-until-indexed)
+        (is (= [supplied-concept-id 2] [concept-id revision-id]))))
+
+    (testing "update the concept without the concept-id"
+      (let [{:keys [concept-id revision-id]} (variable-util/ingest-variable
+                                              (dissoc concept :concept-id)
+                                              (variable-util/token-opts token))]
+        (index/wait-until-indexed)
+        (is (= [supplied-concept-id 3] [concept-id revision-id]))))
+
+    (testing "update concept with a different concept-id is invalid"
+      (let [{:keys [status errors]} (variable-util/ingest-variable
+                                     (assoc concept :concept-id "V1111-PROV1")
+                                     (variable-util/token-opts token))]
+        (index/wait-until-indexed)
+        (is (= [409 [(str "A concept with concept-id [V1000-PROV1] and "
+                          "native-id [Atlantic-1] already exists for "
+                          "concept-type [:variable] provider-id [PROV1]. "
+                          "The given concept-id [V1111-PROV1] and native-id "
+                          "[Atlantic-1] would conflict with that one.")]]
+               [status errors]))))))
+
+;; Verify that the accept header works
+(deftest variable-ingest-accept-header-response-test
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")]
+    (testing "json response"
+      (let [response (variable-util/ingest-variable
+                      (variable-util/make-variable-concept)
+                      (merge (variable-util/token-opts token)
+                             {:raw? true}))]
+        (is (= 1
+               (:revision-id (ingest/parse-ingest-body :json response))))))
+    (testing "xml response"
+      (let [response (variable-util/ingest-variable
+                      (variable-util/make-variable-concept)
+                      (merge (variable-util/token-opts token)
+                             {:accept-format :xml
+                              :raw? true}))]
+        (is (= 2
+               (:revision-id (ingest/parse-ingest-body :xml response))))))))
+
+;; Verify that the accept header works with returned errors
+(deftest variable-ingest-with-errors-accept-header-test
+  (let [{token :token} (variable-util/setup-update-acl
+                        (s/context) "PROV1" "user1" "update-group")]
+    (testing "json response"
+      (let [concept-no-metadata (assoc (variable-util/make-variable-concept)
+                                       :metadata "")
+            response (variable-util/ingest-variable
+                      concept-no-metadata
+                      (merge (variable-util/token-opts token)
+                             {:raw? true}))
+            {:keys [errors]} (ingest/parse-ingest-body :json response)]
+        (is (re-find #"Request content is too short." (first errors)))))
+    (testing "xml response"
+      (let [concept-no-metadata (assoc (variable-util/make-variable-concept)
+                                       :metadata "")
+            response (variable-util/ingest-variable
+                      concept-no-metadata
+                      (merge (variable-util/token-opts token)
+                             {:accept-format :xml
+                              :raw? true}))
+            {:keys [errors]} (ingest/parse-ingest-body :xml response)]
+        (is (re-find #"Request content is too short." (first errors)))))))
+
+;; Ingest same concept N times and verify same concept-id is returned and
+;; revision id is 1 greater on each subsequent ingest
+(deftest repeat-same-variable-ingest-test
+  (testing "ingest same concept n times ..."
+    (let [{token :token} (variable-util/setup-update-acl
+                          (s/context) "PROV1" "user1" "update-group")
+          ingester #(variable-util/ingest-variable
+                     (variable-util/make-variable-concept)
+                     (variable-util/token-opts token))
+          n 4
+          created-concepts (take n (repeatedly n ingester))]
+      (index/wait-until-indexed)
+      (is (apply = (map :concept-id created-concepts)))
+      (is (= (range 1 (inc n)) (map :revision-id created-concepts))))))
+
+;; Verify ingest is successful for request with content type that has parameters
+(deftest content-type-with-parameter-ingest-test
+  (let [{token :token} (variable-util/setup-update-acl
+                          (s/context) "PROV1" "user1" "update-group")
+        concept (assoc (variable-util/make-variable-concept)
+                       :format (str (mt/with-version
+                                      variable-util/content-type
+                                      variable-util/schema-version)
+                                    "; charset=utf-8"))
+        {:keys [status]} (ingest/ingest-concept
+                          concept
+                          (variable-util/token-opts token))]
+    (index/wait-until-indexed)
+    (is (= 201 status))))
 
 (deftest delete-variable-ingest-test
   (testing "Variable ingest:"
-    (let [acl-data (variable-util/setup-update-acl (s/context))
+    (let [acl-data (variable-util/setup-update-acl (s/context) "PROV1")
           {:keys [user-name group-name group-id token grant-id]} acl-data
-          variable-data (variable-util/make-variable)
-          new-long-name "A new long name"
-          _ (variable-util/create-variable token variable-data)
-          response (variable-util/delete-variable
-                    token
-                    (string/lower-case (:Name variable-data)))
-          {:keys [status concept-id revision-id]} response
+          concept (variable-util/make-variable-concept)
+          _ (variable-util/ingest-variable concept {:token token})
+          _ (index/wait-until-indexed)
+          response (ingest/delete-concept concept {:token token})
+          {:keys [status concept-id revision-id errors]} response
           fetched (mdb/get-concept concept-id revision-id)]
       (testing "delete a variable"
         (is (= 200 status))
         (is (= 2 revision-id))
         (is (:deleted fetched))
-        (is (= (string/lower-case (:Name variable-data))
+        (is (= (:native-id concept)
                (:native-id fetched)))
-        (variable-util/assert-variable-deleted variable-data
-                                               user-name
-                                               concept-id
-                                               revision-id))
-      (testing "attempt to update a deleted variable"
-        (let [response (variable-util/update-variable
-                        token
-                        (string/lower-case (:Name variable-data))
-                        (assoc variable-data :LongName new-long-name))
-              {:keys [status errors]} response]
-          (is (= 404 status))
-          (is (= (format "Variable with variable-name '%s' was deleted."
-                         (string/lower-case (:Name variable-data)))
-                 (first errors)))))
+        (is (:deleted fetched)))
       (testing "create a variable over a variable's tombstone"
-        (let [response (variable-util/create-variable
-                        token
-                        variable-data)
+        (let [response (variable-util/ingest-variable
+                        (variable-util/make-variable-concept) {:token token})
               {:keys [status concept-id revision-id]} response]
           (is (= 200 status))
           (is (= 3 revision-id)))))))
-
-(deftest variable-ingest-permissions-test
-  (testing "Variable ingest permissions:"
-    (let [;; Groups
-          guest-group-id (e/get-or-create-group
-                          (s/context) "umm-var-guid1")
-          reg-user-group-id (e/get-or-create-group
-                             (s/context) "umm-var-guid2")
-          ;; Tokens
-          guest-token (e/login
-                       (s/context) "umm-var-user1" [guest-group-id])
-          reg-user-token (e/login
-                          (s/context) "umm-var-user2" [reg-user-group-id])
-          ;; Grants
-          guest-grant-id (e/grant
-                          (assoc (s/context) :token guest-token)
-                          [{:permissions [:read]
-                            :user_type :guest}]
-                          :system_identity
-                          {:target nil})
-          reg-user-grant-id (e/grant
-                             (assoc (s/context) :token reg-user-token)
-                             [{:permissions [:read]
-                               :user_type :registered}]
-                             :system_identity
-                             {:target nil})
-          {update-user-name :user-name
-           update-group-name :group-name
-           update-token :token
-           update-grant-id :grant-id
-           update-group-id :group-id} (variable-util/setup-update-acl (s/context))
-          variable-data (variable-util/make-variable)]
-      (testing "acl setup and grants for different users"
-        (is (e/not-permitted? guest-token
-                              guest-grant-id
-                              guest-group-id
-                              (ingest-util/get-ingest-update-acls guest-token)))
-        (is (e/not-permitted? reg-user-token
-                              reg-user-grant-id
-                              reg-user-group-id
-                              (ingest-util/get-ingest-update-acls reg-user-token)))
-        (is (e/permitted? update-token
-                          update-grant-id
-                          update-group-id
-                          (ingest-util/get-ingest-update-acls update-token))))
-      (testing "disallowed create responses:"
-        (are3 [token expected]
-          (let [response (variable-util/create-variable token variable-data)]
-            (is (= expected (:status response))))
-          "no token provided"
-          nil 401
-          "guest user denied"
-          guest-token 401
-          "regular user denied"
-          reg-user-token 401))
-      (testing "disallowed update responses:"
-        (are3 [token expected]
-          (let [update-response (variable-util/update-variable
-                                 token
-                                 (string/lower-case (:Name variable-data))
-                                 variable-data)]
-            (is (= expected (:status update-response))))
-          "no token provided"
-          nil 401
-          "guest user denied"
-          guest-token 401
-          "regular user denied"
-          reg-user-token 401))
-       (testing "disallowed delete responses:"
-        (are3 [token expected]
-          (let [update-response (variable-util/delete-variable
-                                 token
-                                 (string/lower-case (:Name variable-data)))]
-            (is (= expected (:status update-response))))
-          "no token provided"
-          nil 401
-          "guest user denied"
-          guest-token 401
-          "regular user denied"
-          reg-user-token 401))
-      (testing "allowed responses:"
-        (let [create-response (variable-util/create-variable update-token
-                                                             variable-data)
-              update-response (variable-util/update-variable
-                               update-token
-                               (string/lower-case (:Name variable-data))
-                               variable-data)
-              delete-response (variable-util/delete-variable
-                               update-token
-                               (string/lower-case (:Name variable-data)))]
-          (testing "create variable status"
-            (is (= 201 (:status create-response))))
-          (testing "update variable status"
-            (is (= 200 (:status update-response))))
-          (testing "update variable status"
-            (is (= 200 (:status delete-response)))))))))
-
-(defn- ingest-variable
-  "This is a temporary function created to ingest a variable with the specified metadata.
-   Once we move the variable's CRUD API onto provider routes in CMR-4239, we should remove
-   this function and update the invalid-variable-metadata-ingest-test to use
-   ingest-util/ingest-concept function instead."
-  [token metadata]
-   (let [params {:method :post
-                 :url (url/ingest-create-variable-url)
-                 :body  metadata
-                 :content-type "application/vnd.nasa.cmr.umm+json"
-                 :headers {"Echo-Token" token}
-                 :accept :xml
-                 :throw-exceptions false
-                 :connection-manager (s/conn-mgr)}]
-     (ingest-util/parse-ingest-response (client/request params) {})))
-
-(deftest invalid-variable-metadata-ingest-test
-  (let [acl-data (variable-util/setup-update-acl (s/context))
-        {:keys [user-name group-name group-id token grant-id]} acl-data]
-    (testing "empty request body"
-      (let [{:keys [status errors]} (ingest-variable token "")]
-        (is (= status 400))
-        (is (re-find #"Request content is too short." (first errors)))))
-
-    (testing "invalid JSON request body"
-      (let [{:keys [status errors]} (ingest-variable token "This is not a valid JSON string")]
-        (is (= status 400))
-        (is (re-find #"Invalid JSON: Unrecognized token 'This'" (first errors)))))
-
-    (testing "invalid JSON against the UMM-Var schema"
-      (let [invalid-variable-json "{\"variableName\": \"Latitude\", \"longName\": \"Latitude\"}"
-            {:keys [status errors]} (ingest-variable token invalid-variable-json)]
-        (is (= status 400))
-        (is (= "object instance has properties which are not allowed by the schema: [\"longName\",\"variableName\"]"
-               (first errors)))))))

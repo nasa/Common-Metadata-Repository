@@ -1,10 +1,11 @@
 (ns cmr.system-int-test.search.collection-platform-instrument-sensor-search-test
   "Integration test for CMR collection search by platform, instrument and sensor short-names"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -12,16 +13,16 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-platform
-  (let [p1 (data-umm-c/platform {:ShortName "platform_Sn A"})
-        p2 (data-umm-c/platform {:ShortName "platform_Sn B"})
-        p3 (data-umm-c/platform {:ShortName "platform_SnA"})
-        p4 (data-umm-c/platform {:ShortName "platform_Snx"})
-        p5 (data-umm-c/platform {:ShortName "PLATFORM_X"})
-        p6 (data-umm-c/platform {:ShortName "platform_x"})
+  (let [p1 (data-umm-cmn/platform {:ShortName "platform_Sn A"})
+        p2 (data-umm-cmn/platform {:ShortName "platform_Sn B"})
+        p3 (data-umm-cmn/platform {:ShortName "platform_SnA"})
+        p4 (data-umm-cmn/platform {:ShortName "platform_Snx"})
+        p5 (data-umm-cmn/platform {:ShortName "PLATFORM_X"})
+        p6 (data-umm-cmn/platform {:ShortName "platform_x"})
 
         ;; Platforms to verify the ability to search by KMS platform subfields
-        p7 (data-umm-c/platform {:ShortName "DMSP 5B/F3"})
-        p8 (data-umm-c/platform {:ShortName "diaDEM-1d"})
+        p7 (data-umm-cmn/platform {:ShortName "DMSP 5B/F3"})
+        p8 (data-umm-cmn/platform {:ShortName "diaDEM-1d"})
 
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1 p7]
                                                         :EntryTitle "E1"
@@ -42,7 +43,7 @@
         coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p4]
                                                         :EntryTitle "E5"
                                                         :ShortName "S5"
-							:Version "V5"}))
+                                                        :Version "V5"}))
         coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Platforms [p5]
                                                         :EntryTitle "E6"
                                                         :ShortName "S6"
@@ -79,7 +80,7 @@
 
               "search with one platform case2"
               [coll6 coll7] "platform_x" {}
- 
+
               "search with non existing platform return nothing"
               [] "BLAH" {}
 
@@ -101,7 +102,7 @@
               "search with platform containing pattern case2"
               [coll4 coll5] ["platform_Sn?"] {:pattern true}
 
-              "search for collections with both platform1 and platform2" 
+              "search for collections with both platform1 and platform2"
               [coll2] ["platform_Sn B" "platform_Sn A"] {:and true})))
 
 
@@ -176,24 +177,24 @@
            [coll1 coll9] {:platform {:any "7ed12e98*" :pattern true}}))))
 
 (deftest search-by-instrument
-  (let [i1 (data-umm-c/instrument {:ShortName "instrument_Sn A"})
-        i2 (data-umm-c/instrument {:ShortName "instrument_Sn B"})
-        i3 (data-umm-c/instrument {:ShortName "instrument_SnA"})
-        i4 (data-umm-c/instrument {:ShortName "instrument_Snx"})
-        i5 (data-umm-c/instrument {:ShortName "InstruMENT_X"})
-        i6 (data-umm-c/instrument {:ShortName "instrument_x"})
+  (let [i1 (data-umm-cmn/instrument {:ShortName "instrument_Sn A"})
+        i2 (data-umm-cmn/instrument {:ShortName "instrument_Sn B"})
+        i3 (data-umm-cmn/instrument {:ShortName "instrument_SnA"})
+        i4 (data-umm-cmn/instrument {:ShortName "instrument_Snx"})
+        i5 (data-umm-cmn/instrument {:ShortName "InstruMENT_X"})
+        i6 (data-umm-cmn/instrument {:ShortName "instrument_x"})
 
         ;; Instruments to verify the ability to search by KMS instrument subfields
-        i7 (data-umm-c/instrument {:ShortName "atm"})
-        i8 (data-umm-c/instrument {:ShortName "LVIS"})
+        i7 (data-umm-cmn/instrument {:ShortName "atm"})
+        i8 (data-umm-cmn/instrument {:ShortName "LVIS"})
 
-        p1 (data-umm-c/platform {:ShortName "platform_1" :Instruments [i1 i7]})
-        p2 (data-umm-c/platform {:ShortName "platform_2" :Instruments [i2 i8]})
-        p3 (data-umm-c/platform {:ShortName "platform_3" :Instruments [i3]})
-        p4 (data-umm-c/platform {:ShortName "platform_4" :Instruments [i4]})
-        p5 (data-umm-c/platform {:ShortName "platform_5" :Instruments [i1 i2]})
-        p6 (data-umm-c/platform {:ShortName "platform_6" :Instruments [i5]})
-        p7 (data-umm-c/platform {:ShortName "platform_7" :Instruments [i6]})
+        p1 (data-umm-cmn/platform {:ShortName "platform_1" :Instruments [i1 i7]})
+        p2 (data-umm-cmn/platform {:ShortName "platform_2" :Instruments [i2 i8]})
+        p3 (data-umm-cmn/platform {:ShortName "platform_3" :Instruments [i3]})
+        p4 (data-umm-cmn/platform {:ShortName "platform_4" :Instruments [i4]})
+        p5 (data-umm-cmn/platform {:ShortName "platform_5" :Instruments [i1 i2]})
+        p6 (data-umm-cmn/platform {:ShortName "platform_6" :Instruments [i5]})
+        p7 (data-umm-cmn/platform {:ShortName "platform_7" :Instruments [i6]})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1]
                                                         :EntryTitle "E1"
                                                         :ShortName "S1"
@@ -265,13 +266,13 @@
               "search for collections with either instrument1 or instrument2 case2"
               [coll1 coll2 coll4 coll6] ["instrument_SnA" "instrument_Sn A"] {}
 
-              "search with one instrument with ingore-case being true" 
+              "search with one instrument with ingore-case being true"
               [coll7 coll8] ["instrument_x"] {:ignore-case true}
 
               "search with one instruement with ignore-case being false"
               [coll8] ["instrument_x"] {:ignore-case false}
 
-              "search with instrument containing pattern case1"  
+              "search with instrument containing pattern case1"
               [coll1 coll2 coll3 coll6] ["instrument_Sn *"] {:pattern true}
 
               "search with instrument containing pattern case2"
@@ -334,7 +335,7 @@
            "Search collections by instrument using JSON query test14"
            [coll1 coll2 coll3 coll10] {:instrument {:category "EARTH REMOTE SENSING INSTRUMENTS"
                                                     :ignore_case true}}
-           "Search collections by instrument using JSON query test15"          
+           "Search collections by instrument using JSON query test15"
            [coll1 coll2 coll3 coll10] {:instrument {:class "Active Remote Sensing"}}
            "Search collections by instrument using JSON query test16"
            [coll1 coll2 coll3 coll10] {:instrument {:type "Altimeters"}}
@@ -359,28 +360,28 @@
 
 (deftest search-by-sensor-short-names
   (let [;; child instrument
-        s1 (data-umm-c/instrument {:ShortName "sensor_Sn A"})
-        s2 (data-umm-c/instrument {:ShortName "sensor_Sn B"})
-        s3 (data-umm-c/instrument {:ShortName "sensor_SnA"})
-        s4 (data-umm-c/instrument {:ShortName "sensor_Snx"})
-        s5 (data-umm-c/instrument {:ShortName "sensor_x"})
-        s6 (data-umm-c/instrument {:ShortName "SenSOR_X"})
+        s1 (data-umm-cmn/instrument {:ShortName "sensor_Sn A"})
+        s2 (data-umm-cmn/instrument {:ShortName "sensor_Sn B"})
+        s3 (data-umm-cmn/instrument {:ShortName "sensor_SnA"})
+        s4 (data-umm-cmn/instrument {:ShortName "sensor_Snx"})
+        s5 (data-umm-cmn/instrument {:ShortName "sensor_x"})
+        s6 (data-umm-cmn/instrument {:ShortName "SenSOR_X"})
         ;; instrument
-        i1 (data-umm-c/instrument {:ShortName "instrument_1" :ComposedOf [s1]})
-        i2 (data-umm-c/instrument {:ShortName "instrument_2" :ComposedOf [s2]})
-        i3 (data-umm-c/instrument {:ShortName "instrument_3" :ComposedOf [s3]})
-        i4 (data-umm-c/instrument {:ShortName "instrument_4" :ComposedOf [s4]})
-        i5 (data-umm-c/instrument {:ShortName "instrument_5" :ComposedOf [s1 s2]})
-        i6 (data-umm-c/instrument {:ShortName "instrument_6" :ComposedOf [s5]})
-        i7 (data-umm-c/instrument {:ShortName "instrument_7" :ComposedOf [s6]})
-        p1 (data-umm-c/platform {:ShortName "platform_1" :Instruments [i1]})
-        p2 (data-umm-c/platform {:ShortName "platform_2" :Instruments [i2]})
-        p3 (data-umm-c/platform {:ShortName "platform_3" :Instruments [i3]})
-        p4 (data-umm-c/platform {:ShortName "platform_4" :Instruments [i4]})
-        p5 (data-umm-c/platform {:ShortName "platform_5" :Instruments [i5]})
-        p6 (data-umm-c/platform {:ShortName "platform_6" :Instruments [i1 i2]})
-        p7 (data-umm-c/platform {:ShortName "platform_7" :Instruments [i6]})
-        p8 (data-umm-c/platform {:ShortName "platform_8" :Instruments [i7]})
+        i1 (data-umm-cmn/instrument {:ShortName "instrument_1" :ComposedOf [s1]})
+        i2 (data-umm-cmn/instrument {:ShortName "instrument_2" :ComposedOf [s2]})
+        i3 (data-umm-cmn/instrument {:ShortName "instrument_3" :ComposedOf [s3]})
+        i4 (data-umm-cmn/instrument {:ShortName "instrument_4" :ComposedOf [s4]})
+        i5 (data-umm-cmn/instrument {:ShortName "instrument_5" :ComposedOf [s1 s2]})
+        i6 (data-umm-cmn/instrument {:ShortName "instrument_6" :ComposedOf [s5]})
+        i7 (data-umm-cmn/instrument {:ShortName "instrument_7" :ComposedOf [s6]})
+        p1 (data-umm-cmn/platform {:ShortName "platform_1" :Instruments [i1]})
+        p2 (data-umm-cmn/platform {:ShortName "platform_2" :Instruments [i2]})
+        p3 (data-umm-cmn/platform {:ShortName "platform_3" :Instruments [i3]})
+        p4 (data-umm-cmn/platform {:ShortName "platform_4" :Instruments [i4]})
+        p5 (data-umm-cmn/platform {:ShortName "platform_5" :Instruments [i5]})
+        p6 (data-umm-cmn/platform {:ShortName "platform_6" :Instruments [i1 i2]})
+        p7 (data-umm-cmn/platform {:ShortName "platform_7" :Instruments [i6]})
+        p8 (data-umm-cmn/platform {:ShortName "platform_8" :Instruments [i7]})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Platforms [p1]
                                                         :EntryTitle "E1"
                                                         :ShortName "S1"

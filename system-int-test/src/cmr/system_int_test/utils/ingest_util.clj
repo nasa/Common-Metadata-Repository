@@ -18,6 +18,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]
@@ -26,6 +27,12 @@
    [cmr.umm.echo10.granule :as g])
   (:import
    [java.lang.NumberFormatException]))
+
+(defn assert-user-id
+  "Assert concept with the given concept-id and revision-id in metadata db has
+  user id equal to expected-user-id"
+  [concept-id revision-id expected-user-id]
+  (is (= expected-user-id (:user-id (mdb/get-concept concept-id revision-id)))))
 
 (defn disable-ingest-writes
   "Use the enable/disable endpoint on ingest to disable writes."
@@ -477,7 +484,8 @@
     (let [xml-elem (x/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
-        {:task-id (cx/long-at-path xml-elem [:task-id])}))
+        {:task-id (cx/string-at-path xml-elem [:task-id])
+         :status (:status response)}))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
@@ -525,7 +533,7 @@
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
-                      {:task-id (cx/long-at-path task [:task-id])
+                      {:task-id (cx/string-at-path task [:task-id])
                        :status (cx/string-at-path task [:status])
                        :status-message (cx/string-at-path task [:status-message])
                        :request-json-body (cx/string-at-path task [:request-json-body])}))}))
