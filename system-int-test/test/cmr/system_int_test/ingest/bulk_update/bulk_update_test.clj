@@ -66,38 +66,35 @@
                   (assoc collection :concept-id (generate-concept-id x "PROV1"))))))
 
 (deftest bulk-update-science-keywords
-  ;; CMR-4334 - bulk update failures when using Oracle as the backend
-  (s/only-with-in-memory-database
-    ;; Ingest a collection in each format with science keywords to update
-    (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
-          _ (index/wait-until-indexed)
-          bulk-update-body {:concept-ids concept-ids
-                            :update-type "ADD_TO_EXISTING"
-                            :update-field "SCIENCE_KEYWORDS"
-                            :update-value {:Category "EARTH SCIENCE"
-                                           :Topic "HUMAN DIMENSIONS"
-                                           :Term "ENVIRONMENTAL IMPACTS"
-                                           :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
-         (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
-         ;; Kick off bulk update
-         (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-           (is (= 400 (:status response)))
-           (is (= ["Bulk update is disabled."] (:errors response))))
-         ;; Wait for queueing/indexing to catch up
-         (index/wait-until-indexed)
-         (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
-           (is (= 404 (:status collection-response)))
-           (is (= ["Bulk update task with task id [1] could not be found."]
-                  (:errors collection-response))))
+  ;; Ingest a collection in each format with science keywords to update
+  (let [concept-ids (ingest-collection-in-each-format science-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :update-type "ADD_TO_EXISTING"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "HUMAN DIMENSIONS"
+                                         :Term "ENVIRONMENTAL IMPACTS"
+                                         :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
+       (side/eval-form `(ingest-config/set-bulk-update-enabled! false))
+       ;; Kick off bulk update
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+         (is (= 400 (:status response)))
+         (is (= ["Bulk update is disabled."] (:errors response))))
+       ;; Wait for queueing/indexing to catch up
+       (index/wait-until-indexed)
+       (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+         (is (= 404 (:status collection-response)))
+         (is (= ["Bulk update task with task id [1] could not be found."]
+                (:errors collection-response))))
 
-         (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
-         ;; Kick off bulk update
-         (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
-           (is (= 200 (:status response)))
-           (is (= 1 (:task-id response))))
+       (side/eval-form `(ingest-config/set-bulk-update-enabled! true))
+       ;; Kick off bulk update
+       (let [response (ingest/bulk-update-collections "PROV1" bulk-update-body)]
+         (is (= 200 (:status response)))
          ;; Wait for queueing/indexing to catch up
          (index/wait-until-indexed)
-         (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+         (let [collection-response (ingest/bulk-update-task-status "PROV1" (:task-id response))]
            (is (= "COMPLETE" (:task-status collection-response))))
 
          ;; Check that each concept was updated
@@ -124,18 +121,16 @@
                    :Topic "HUMAN DIMENSIONS"}]))))))
 
 (deftest data-center-bulk-update
-  ;; CMR-4334 - bulk update failures when using Oracle as the backend
-  (s/only-with-in-memory-database
     (let [concept-ids (ingest-collection-in-each-format data-centers-umm)
           _ (index/wait-until-indexed)]
       (testing "Invalid data center update"
         (let [bulk-update-body {:concept-ids concept-ids
                                 :update-type "ADD_TO_EXISTING"
                                 :update-field "DATA_CENTERS"
-                                :update-value {:ShortName "LARC"}}]
-          (ingest/bulk-update-collections "PROV1" bulk-update-body)
+                                :update-value {:ShortName "LARC"}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
           (index/wait-until-indexed)
-          (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response)))
             ;; These error messages all being the same are contingent on the
             ;; bulk update saving umm-json. If that changes these have to change.
@@ -150,10 +145,10 @@
                                 :update-field "DATA_CENTERS"
                                 :find-value {:ShortName "NSID"}
                                 :update-value {:ShortName "NSIDC"
-                                               :Roles ["ORIGINATOR"]}}]
-          (ingest/bulk-update-collections "PROV1" bulk-update-body)
+                                               :Roles ["ORIGINATOR"]}}
+              task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
           (index/wait-until-indexed)
-          (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
+          (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
             (is (= "COMPLETE" (:task-status collection-response))))
 
           ;; Check that each concept was updated
@@ -171,43 +166,41 @@
                    {:ShortName "LPDAAC"
                     :Roles ["PROCESSOR"]}]
                   (map #(select-keys % [:Roles :ShortName])
-                       (:DataCenters (:umm concept)))))))))))
+                       (:DataCenters (:umm concept))))))))))
 
 (deftest bulk-update-replace-test
-  ;; CMR-4334 - bulk update failures when using Oracle as the backend
-  (s/only-with-in-memory-database
-    (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
-          _ (index/wait-until-indexed)
-          bulk-update-body {:concept-ids concept-ids
-                            :update-type "FIND_AND_REPLACE"
-                            :update-field "SCIENCE_KEYWORDS"
-                            :find-value {:Topic "ATMOSPHERE"}
-                            :update-value {:Category "EARTH SCIENCE"
-                                           :Topic "ATMOSPHERE"
-                                           :Term "AIR QUALITY"
-                                           :VariableLevel1 "EMISSIONS"}}]
-         (ingest/bulk-update-collections "PROV1" bulk-update-body)
-         (index/wait-until-indexed)
-         (let [collection-response (ingest/bulk-update-task-status "PROV1" 1)]
-           (is (= "COMPLETE" (:task-status collection-response))))
+  (let [concept-ids (ingest-collection-in-each-format find-replace-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :update-type "FIND_AND_REPLACE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :find-value {:Topic "ATMOSPHERE"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "EMISSIONS"}}
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= "COMPLETE" (:task-status collection-response))))
 
-         ;; Check that each concept was updated
-         (doseq [concept-id concept-ids
-                 :let [concept (-> (search/find-concepts-umm-json :collection
-                                                                  {:concept-id concept-id})
-                                   :results
-                                   :items
-                                   first)]]
-          (is (= 2
-                 (:revision-id (:meta concept))))
-          (is (= "application/vnd.nasa.cmr.umm+json"
-                 (:format (:meta concept))))
-          (is (= (:ScienceKeywords (:umm concept))
-                 [{:Category "EARTH SCIENCE"
-                   :Topic "ATMOSPHERE"
-                   :Term "AIR QUALITY"
-                   :VariableLevel1 "EMISSIONS"}
-                  {:Category "EARTH SCIENCE"
-                   :Topic "ATMOSPHERE"
-                   :Term "AIR QUALITY"
-                   :VariableLevel1 "EMISSIONS"}]))))))
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+       (is (= 2
+              (:revision-id (:meta concept))))
+       (is (= "application/vnd.nasa.cmr.umm+json"
+              (:format (:meta concept))))
+       (is (= (:ScienceKeywords (:umm concept))
+              [{:Category "EARTH SCIENCE"
+                :Topic "ATMOSPHERE"
+                :Term "AIR QUALITY"
+                :VariableLevel1 "EMISSIONS"}
+               {:Category "EARTH SCIENCE"
+                :Topic "ATMOSPHERE"
+                :Term "AIR QUALITY"
+                :VariableLevel1 "EMISSIONS"}])))))

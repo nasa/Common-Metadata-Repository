@@ -47,12 +47,12 @@
   (get-bulk-update-task-status
     [db task-id]
     ;; Returns a status for the particular task
-    (-> db
-        (su/find-one (su/select [:status :status-message :request-json-body]
-                                (su/from "bulk_update_task_status")
-                                (su/where `(= :task-id ~task-id))))
-        util/map-keys->kebab-case
-        (update :request-json-body util/gzip-blob->string)))
+    (some-> db
+            (su/find-one (su/select [:status :status-message :request-json-body]
+                                    (su/from "bulk_update_task_status")
+                                    (su/where `(= :task-id ~task-id))))
+            util/map-keys->kebab-case
+            (update :request-json-body util/gzip-blob->string)))
 
   (get-bulk-update-task-collection-status
     [db task-id]

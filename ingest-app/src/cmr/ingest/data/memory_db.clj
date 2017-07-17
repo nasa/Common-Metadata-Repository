@@ -58,7 +58,7 @@
   (create-and-save-bulk-update-status
     [this provider-id json-body concept-ids]
     (swap! task-id-atom inc)
-    (let [task-id @task-id-atom]
+    (let [task-id (str @task-id-atom)]
      (swap! task-status-atom conj {:task-id task-id
                                    :provider-id provider-id
                                    :request-json-body json-body
