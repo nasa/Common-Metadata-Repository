@@ -201,7 +201,7 @@
       [:gmd:associationType
        [:gmd:DS_AssociationTypeCode
         {:codeList (str (:ngdc iso/code-lists) "#DS_AssociationTypeCode")
-         :codeListValue "Input Collection"} "Input Collection"]]]]))
+         :codeListValue "crossReference"} "crossReference"]]]]))
 
 (defn extent-description-string
   "Returns the ISO extent description string (a \"key=value,key=value\" string) for the given UMM-C
