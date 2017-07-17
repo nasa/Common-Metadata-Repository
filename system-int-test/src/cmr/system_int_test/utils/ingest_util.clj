@@ -18,6 +18,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]
@@ -26,6 +27,12 @@
    [cmr.umm.echo10.granule :as g])
   (:import
    [java.lang.NumberFormatException]))
+
+(defn assert-user-id
+  "Assert concept with the given concept-id and revision-id in metadata db has
+  user id equal to expected-user-id"
+  [concept-id revision-id expected-user-id]
+  (is (= expected-user-id (:user-id (mdb/get-concept concept-id revision-id)))))
 
 (defn disable-ingest-writes
   "Use the enable/disable endpoint on ingest to disable writes."

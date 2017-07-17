@@ -1,10 +1,11 @@
 (ns cmr.system-int-test.search.granule-campaign-search-test
   "Integration test for CMR granule temporal search"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -12,7 +13,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-campaign
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects (data-umm-c/projects "ABC" "XYZ" "PDQ" "RST")}))
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ABC" "XYZ" "PDQ" "RST")}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                                    :project-refs ["ABC"]}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2"
