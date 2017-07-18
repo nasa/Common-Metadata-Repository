@@ -29,7 +29,7 @@
                                    {:concept-type :tag-association :tag-key tag-key})))
 
 (defn cascade-tag-delete-to-tag-associations
-  "Save tombstones for all the tag associations for the given tag"
+  "Save tombstones for all the tag associations for the given tag."
   [db tag-concept-tombstone]
   (let [{:keys [concept-id revision-id]} tag-concept-tombstone
         ;; We need to pull pack the saved concept (tombstone) so we can get the transaction-id.
