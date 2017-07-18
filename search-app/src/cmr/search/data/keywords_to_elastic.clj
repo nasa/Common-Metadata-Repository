@@ -143,8 +143,11 @@
                  (if include-defaults?
                    (merge default-boosts specified-boosts)
                    specified-boosts)
-                 default-boosts)]
-    (get boosts field default-boost)))
+                 default-boosts)
+        boost (get boosts field default-boost)]
+    (if (string? boost)
+      (Double/parseDouble boost)
+      boost)))
 
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"

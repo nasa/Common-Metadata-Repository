@@ -49,3 +49,11 @@
   "Read the anomaly test CSV and convert data to clojure map"
   []
   (read-csv "anomaly_tests.csv"))
+
+(defn get-argument-value
+  "Get the value of the argument or nil if the argument does not exist"
+  [args arg-name]
+  (when args
+    (let [arg-index (.indexOf args arg-name)]
+      (when (> arg-index -1)
+        (nth args (inc arg-index))))))
