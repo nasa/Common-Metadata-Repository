@@ -10,6 +10,7 @@
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
+   [cmr.metadata-db.data.oracle.concepts.variable :as variable]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
    [cmr.metadata-db.services.provider-validation :as pv]))
@@ -32,6 +33,22 @@
                                            (update :revision-id inc)))
                               tag-associations)]
           ;; publish tag-association delete events
+          (doseq [tombstone tombstones]
+            (ingest-events/publish-event
+              (:context db)
+              (ingest-events/concept-delete-event tombstone)))
+          (concat concepts tombstones))
+
+        ;; CMR-2520 Remove this case when asynchronous cascaded deletes are implemented.
+        (and (= :variable (:concept-type concept))
+             (:deleted concept))
+        (let [variable-associations (variable/get-associations-for-variable-tombstone
+                                     db concept)
+              tombstones (map (fn [ta] (-> ta
+                                           (assoc :metadata "" :deleted true)
+                                           (update :revision-id inc)))
+                              variable-associations)]
+          ;; publish variable-association delete events
           (doseq [tombstone tombstones]
             (ingest-events/publish-event
               (:context db)
