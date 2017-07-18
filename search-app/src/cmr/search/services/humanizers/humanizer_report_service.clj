@@ -64,7 +64,7 @@
    (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
      (if (seq rfms)
        rfms
-       (errors/internal-error! "Collection cache is not populated after refresh.")))) 
+       (warn "Collection cache is not populated after refresh.")))) 
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
