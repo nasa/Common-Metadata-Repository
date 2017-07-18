@@ -62,9 +62,9 @@
    [context]
    (metadata-cache/refresh-cache context)
    (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-     (if (nil? (seq rfms))
-       (errors/internal-error! "Collection cache is not populated after refresh.") 
-       rfms))) 
+     (if (seq rfms)
+       rfms
+       (errors/internal-error! "Collection cache is not populated after refresh.")))) 
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
@@ -73,9 +73,9 @@
   ;; Currently not throwing an exception if the cache is empty. May want to
   ;; change in the future to throw an exception.
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)
-        rfms (if (nil? (seq rfms))
-               (refresh-and-get-collections-from-cache context)   
-               rfms)] 
+        rfms (if (seq rfms)
+               rfms
+               (refresh-and-get-collections-from-cache context))]   
     (map
      #(rfms->umm-collections context %)
      (partition-all (humanizer-report-collection-batch-size) rfms))))
