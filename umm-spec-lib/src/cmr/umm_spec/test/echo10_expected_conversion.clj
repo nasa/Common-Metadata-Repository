@@ -249,6 +249,15 @@
       (seq periodic-date-times)
       [(cmn/map->TemporalExtentType (assoc temporal-extent :PeriodicDateTimes periodic-date-times))])))
 
+(defn- expected-collection-citations
+  "Returns expected CollectionCitations, should only include there first CollectionCitation with
+   a OtherCitationDetails value"
+  [collection-citations]
+  (when-not (empty? collection-citations)
+    (when-let [other-citation-details (first (map :OtherCitationDetails collection-citations))]
+      [(cmn/map->ResourceCitationType
+        {:OtherCitationDetails other-citation-details})])))
+
 (defn umm-expected-conversion-echo10
   [umm-coll]
   (-> umm-coll
@@ -284,7 +293,7 @@
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      (assoc :CollectionCitations nil)
+      (update :CollectionCitations expected-collection-citations)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
