@@ -12,6 +12,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
@@ -56,13 +57,25 @@
   [context rfms]
   (map #(rfm->umm-collection context %) rfms))
 
+(defn- refresh-and-get-collections-from-cache
+   "Force the collection cache to be populated and then get all the collections from it."
+   [context]
+   (let [_ (metadata-cache/refresh-collections-metadata-cache-job)
+         rfms (metadata-cache/all-cached-revision-format-maps context)]
+     (if (nil? (seq rfms))
+       (errors/internal-error! "Collection cache is not populated after refresh.") 
+       rfms))) 
+
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
   humanizer-report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
   [context]
   ;; Currently not throwing an exception if the cache is empty. May want to
   ;; change in the future to throw an exception.
-  (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
+  (let [rfms (metadata-cache/all-cached-revision-format-maps context)
+        rfms (if (nil? (seq rfms))
+               (refresh-and-get-collections-from-cache context)   
+               rfms)] 
     (map
      #(rfms->umm-collections context %)
      (partition-all (humanizer-report-collection-batch-size) rfms))))
