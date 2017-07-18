@@ -195,12 +195,8 @@
               (:revision-id (:meta concept))))
        (is (= "application/vnd.nasa.cmr.umm+json"
               (:format (:meta concept))))
-       (is (= (:ScienceKeywords (:umm concept))
-              [{:Category "EARTH SCIENCE"
+       (is (= [{:Category "EARTH SCIENCE"
                 :Topic "ATMOSPHERE"
                 :Term "AIR QUALITY"
-                :VariableLevel1 "EMISSIONS"}
-               {:Category "EARTH SCIENCE"
-                :Topic "ATMOSPHERE"
-                :Term "AIR QUALITY"
-                :VariableLevel1 "EMISSIONS"}])))))
+                :VariableLevel1 "EMISSIONS"}]
+              (:ScienceKeywords (:umm concept)))))))
