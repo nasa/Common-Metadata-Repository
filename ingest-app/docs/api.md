@@ -16,6 +16,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/granules/\<native-id>
     * [PUT - Create or update a granule.](#create-update-granule)
     * [DELETE - Delete a granule.](#delete-granule)
+  * /providers/\<provider-id>/variables/\<native-id>
+    * [PUT - Create or update a variable.](#create-update-variable)
+    * [DELETE - Delete a variable.](#delete-variable)
   * /translate/collection
     * [POST - Translate collection metadata.](#translate-collection)
 
@@ -390,6 +393,77 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 ```
 
 
+### <a name="create-update-variable"></a> Create / Update a Variable
+
+Variable metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33 -d \
+"{\"ValidRange\":{},
+  \"Dimensions\":\"11\",
+  \"Scale\":\"1.0\",
+  \"Offset\":\"0.0\",
+  \"FillValue\":\"-9999.0\",
+  \"Units\":\"m\",
+  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+                        \"Topic\":\"sk-B\",
+                        \"Term\":\"sk-C\"}],
+  \"Name\":\"A-name\",
+  \"VariableType\":\"SCIENCE_VARIABLE\",
+  \"LongName\":\"A long UMM-Var name\",
+  \"DimensionsName\":\"H2OFunc\",
+  \"DataType\":\"float32\"}"
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>V1200000012-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"V1200000012-PROV1","revision-id":1}
+```
+
+### <a name="delete-variable"></a> Delete a Variable
+
+Variable metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+
+```
+curl -i -X DELETE \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>V1200000012-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"V1200000012-PROV1","revision-id":2}
+```
+
+
 ## <a name="translate-collection"></a> Translate Collection Metadata
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
@@ -485,7 +559,7 @@ Example output:
 
 The bulk update API is used perform the same collection update to multiple concepts in one call. Bulk update is currently for collections only, granules are not supported.
 
-Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format. In the UMM-JSON metadata, the Metadata Date of type "UPDATE" will be set to the current date. Please note that when we apply bulk update on a collection, regardless if there are actual changes, a new revision is created. 
+Bulk update is initiated through an ingest POST endpoint with the concept ids to update, the update type, the update field, and update information. The metadata is converted to the latest version of UMM, if not the native format, updated according to the parameters, and saved as the latest version of UMM-JSON, **making the native format of the collection now UMM-JSON**. Previous revisions of the collection are retained in the original native format. In the UMM-JSON metadata, the Metadata Date of type "UPDATE" will be set to the current date. Please note that when we apply bulk update on a collection, regardless if there are actual changes, a new revision is created.
 
 Updated collections are validated through ingest validation and the updates will not be saved if the updated collection is not valid UMM or fails business rule validation. The error will be recorded in the individual collection status, which can be queried via the status endpoint. Collection validation warnings will not prevent saving the updated collection and the warnings will be recorded in the individual collection status.
 

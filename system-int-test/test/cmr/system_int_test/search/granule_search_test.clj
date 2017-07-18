@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.granule-search-test
   "Integration test for CMR granule search"
-  (:require 
+  (:require
     [clojure.string :as s]
     [clojure.test :refer :all]
     [cmr.common-app.services.search.messages :as cmsg]
@@ -47,7 +47,7 @@
 
       "search by non-existent native id."
       [] {:native-id "NON_EXISTENT"}
-      
+
       "search by existing native id."
       [gran1] {:native-id "Granule1"}
 

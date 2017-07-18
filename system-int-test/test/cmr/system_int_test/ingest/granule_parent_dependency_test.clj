@@ -12,6 +12,7 @@
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.system-int-test.utils.humanizer-util :as hu]
     [cmr.system-int-test.utils.index-util :as index]
@@ -44,9 +45,9 @@
 ;; This test demonstrates how granule's platform references the collection's platform and its aliases
 ;; The platform aliases defined in the humanizer: "AM-1" is the alias for "Terra"
 (deftest granule-match-parent-collection-platform-alias-test
-  (let [psa1 (data-umm-c/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
+  (let [psa1 (data-umm-cmn/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
         gpsa (dg/psa "a-float" [7.0])
-        projects (data-umm-c/projects "proj")
+        projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
         two-d-cs {:TilingIdentificationSystemName "BRAVO"
@@ -61,14 +62,14 @@
                       :start-coordinate-2 300
                       :end-coordinate-2 328})
 
-        i1 (data-umm-c/instrument {:ShortName "instrumentA"})
+        i1 (data-umm-cmn/instrument {:ShortName "instrumentA"})
         ir1 (dg/instrument-ref {:short-name "instrumentA"})
-        i2 (data-umm-c/instrument {:ShortName "instrumentB"})
+        i2 (data-umm-cmn/instrument {:ShortName "instrumentB"})
         ir2 (dg/instrument-ref {:short-name "instrumentB"})
 
-        c-p1 (data-umm-c/platform {:ShortName "Terra" :Instruments [i1]})
-        c-p2 (data-umm-c/platform {:ShortName "Foo"})
-        c-p3 (data-umm-c/platform {:ShortName "AM-1" :Instruments [i2]})
+        c-p1 (data-umm-cmn/platform {:ShortName "Terra" :Instruments [i1]})
+        c-p2 (data-umm-cmn/platform {:ShortName "Foo"})
+        c-p3 (data-umm-cmn/platform {:ShortName "AM-1" :Instruments [i2]})
 
         g-pr1 (dg/platform-ref {:short-name "Terra"})
         g-pr2 (dg/platform-ref {:short-name "Terra" :instrument-refs [ir1]})
@@ -84,16 +85,16 @@
                     :Version "version"
                     :AdditionalAttributes [psa1]
                     :Platforms [c-p1 c-p2]
-                    :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                    :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                            :ShortName "Larc"})]
-                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                    :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                    :Topic "Cool"
                                                                    :Term "Mild"})]
                     :Projects projects
-                    :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                    :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                     :TilingIdentificationSystems [two-d-cs]
-                    :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                    :TemporalExtents [(data-umm-c/temporal-extent
+                    :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                         :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
 
@@ -102,16 +103,16 @@
                     :Version "version"
                     :AdditionalAttributes [psa1]
                     :Platforms[c-p1 c-p3]
-                    :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                    :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                            :ShortName "Larc"})]
-                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                    :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                    :Topic "Cool"
                                                                    :Term "Mild"})]
                     :Projects projects
-                    :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                    :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                     :TilingIdentificationSystems [two-d-cs]
-                    :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                    :TemporalExtents [(data-umm-c/temporal-extent
+                    :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                         :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
 
@@ -246,13 +247,13 @@
 ;; This test demonstrates how granule's tile references the collection's tile and its aliases.
 ;; The tile aliases defined in the humanizer: "SOURCE_TILE" is the alias for "REPLACEMENT_TILE"
 (deftest granule-match-parent-collection-tile-alias-test
-  (let [psa1 (data-umm-c/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
+  (let [psa1 (data-umm-cmn/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
         gpsa (dg/psa "a-float" [7.0])
-        i1 (data-umm-c/instrument {:ShortName "instrument-Sn A"})
+        i1 (data-umm-cmn/instrument {:ShortName "instrument-Sn A"})
         ir1 (dg/instrument-ref {:short-name "instrument-Sn A"})
-        p1 (data-umm-c/platform {:ShortName "platform-Sn A" :Instruments [i1]})
+        p1 (data-umm-cmn/platform {:ShortName "platform-Sn A" :Instruments [i1]})
         pr1 (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [ir1]})
-        projects (data-umm-c/projects "proj")
+        projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
         c-two-d-cs-A {:TilingIdentificationSystemName "SOURCE_TILE"
@@ -282,16 +283,16 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms [p1]
-                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                     :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                             :ShortName "Larc"})]
-                     :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                     :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs-A]
-                     :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                     :TemporalExtents [(data-umm-c/temporal-extent
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
         coll-data-B {:EntryTitle "short_name_B_version"
@@ -299,16 +300,16 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms [p1]
-                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                     :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                             :ShortName "Larc"})]
-                     :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                     :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs-B]
-                     :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                     :TemporalExtents [(data-umm-c/temporal-extent
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
         gran-data-A {:platform-refs [pr1]
@@ -363,24 +364,24 @@
 ;; "replacement_value": "GPS Receivers"
 ;; Note: this one also covers tile reference successful cases.
 (deftest granule-match-parent-collection-instrument-alias-test
-  (let [psa1 (data-umm-c/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
+  (let [psa1 (data-umm-cmn/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
         gpsa (dg/psa "a-float" [7.0])
-        projects (data-umm-c/projects "proj")
+        projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
 
-        sA (data-umm-c/instrument {:ShortName "GPS"})
+        sA (data-umm-cmn/instrument {:ShortName "GPS"})
         srA (dg/sensor-ref {:short-name "GPS"})
-        iA (data-umm-c/instrument {:ShortName "GPS" :ComposedOf [sA]})
+        iA (data-umm-cmn/instrument {:ShortName "GPS" :ComposedOf [sA]})
         irA (dg/instrument-ref {:short-name "GPS" :sensor-refs [srA]})
-        pA (data-umm-c/platform {:ShortName "platform-Sn A" :Instruments [iA]})
+        pA (data-umm-cmn/platform {:ShortName "platform-Sn A" :Instruments [iA]})
         prA (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [irA]})
 
-        sB (data-umm-c/instrument {:ShortName "GPS RECEIVERS"})
+        sB (data-umm-cmn/instrument {:ShortName "GPS RECEIVERS"})
         srB (dg/sensor-ref {:short-name "GPS RECEIVERS"})
-        iB (data-umm-c/instrument {:ShortName "GPS RECEIVERS" :ComposedOf [sB]})
+        iB (data-umm-cmn/instrument {:ShortName "GPS RECEIVERS" :ComposedOf [sB]})
         irB (dg/instrument-ref {:short-name "GPS RECEIVERS" :sensor-refs [srB]})
-        pB (data-umm-c/platform {:ShortName "platform-Sn A" :Instruments [iB]})
+        pB (data-umm-cmn/platform {:ShortName "platform-Sn A" :Instruments [iB]})
         prB (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [irB]})
 
         c-two-d-cs {:TilingIdentificationSystemName "REPLACEMENT_TILE"
@@ -405,16 +406,16 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms [pA]
-                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                     :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                             :ShortName "Larc"})]
-                     :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                     :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs]
-                     :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                     :TemporalExtents [(data-umm-c/temporal-extent
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
         coll-data-B {:EntryTitle "short_name_B_version"
@@ -422,16 +423,16 @@
                      :Version "version"
                      :AdditionalAttributes [psa1]
                      :Platforms [pB]
-                     :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                     :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                             :ShortName "Larc"})]
-                     :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                     :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                     :Topic "Cool"
                                                                     :Term "Mild"})]
                      :Projects projects
-                     :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                     :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                      :TilingIdentificationSystems [c-two-d-cs]
-                     :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                     :TemporalExtents [(data-umm-c/temporal-extent
+                     :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                         {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                          :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
         gran-data-A {:platform-refs [prA]
@@ -480,13 +481,13 @@
 ;; This tests demonstrates limitations of various collection formats because they do not support
 ;; fields referenced by a child granule.
 (deftest granule-match-parent-collection-test
-  (let [psa1 (data-umm-c/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
+  (let [psa1 (data-umm-cmn/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
         gpsa (dg/psa "a-float" [7.0])
-        i1 (data-umm-c/instrument {:ShortName "instrument-Sn A"})
+        i1 (data-umm-cmn/instrument {:ShortName "instrument-Sn A"})
         ir1 (dg/instrument-ref {:short-name "instrument-Sn A"})
-        p1 (data-umm-c/platform {:ShortName "platform-Sn A" :Instruments [i1]})
+        p1 (data-umm-cmn/platform {:ShortName "platform-Sn A" :Instruments [i1]})
         pr1 (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [ir1]})
-        projects (data-umm-c/projects "proj")
+        projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
         two-d-cs {:TilingIdentificationSystemName "BRAVO"
@@ -505,16 +506,16 @@
                    :Version "version"
                    :AdditionalAttributes [psa1]
                    :Platforms [p1]
-                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                   :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                           :ShortName "Larc"})]
-                   :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                   :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                   :Topic "Cool"
                                                                   :Term "Mild"})]
                    :Projects projects
-                   :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                   :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                    :TilingIdentificationSystems [two-d-cs]
-                   :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                   :TemporalExtents [(data-umm-c/temporal-extent
+                   :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
                                       {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                        :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
         gran-data {:platform-refs [pr1]
@@ -574,13 +575,13 @@
 ;; collections in formats that don't support some things referenced by child granules, but we
 ;; do not.
 (deftest collection-format-change-test
-  (let [psa1 (data-umm-c/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
+  (let [psa1 (data-umm-cmn/additional-attribute {:Name "a-float" :DataType "FLOAT" :ParameterRangeBegin 1.0 :ParameterRangeEnd 10.0})
         gpsa (dg/psa "a-float" [7.0])
-        i1 (data-umm-c/instrument {:ShortName "instrument-Sn A"})
+        i1 (data-umm-cmn/instrument {:ShortName "instrument-Sn A"})
         ir1 (dg/instrument-ref {:short-name "instrument-Sn A"})
-        p1 (data-umm-c/platform {:ShortName "platform-Sn A" :Instruments [i1]})
+        p1 (data-umm-cmn/platform {:ShortName "platform-Sn A" :Instruments [i1]})
         pr1 (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [ir1]})
-        projects (data-umm-c/projects "proj")
+        projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
         two-d-cs {:TilingIdentificationSystemName "BRAVO"
@@ -599,16 +600,16 @@
                    :Version "version"
                    :AdditionalAttributes [psa1]
                    :Platforms [p1]
-                   :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                   :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                           :ShortName "Larc"})]
-                   :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                   :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                   :Topic "Cool"
                                                                   :Term "Mild"})]
                    :Projects projects
-                   :SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
+                   :SpatialExtent (data-umm-cmn/spatial {:gsr "GEODETIC"})
                    :TilingIdentificationSystems [two-d-cs]
-                   :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
-                   :TemporalExtents [(data-umm-c/temporal-extent
+                   :RelatedUrls [(data-umm-cmn/related-url {:Type "type" :URL "http://www.foo.com"})]
+                   :TemporalExtents [(data-umm-cmn/temporal-extent
                                       {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                        :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
         gran-data {:platform-refs [pr1]
@@ -670,13 +671,13 @@
   (let [coll-data1 {:EntryTitle "short_name1_version"
                     :ShortName "short_name1"
                     :Version "version"
-                    :DataCenters [(data-umm-c/data-center {:Roles ["DISTRIBUTOR"]
+                    :DataCenters [(data-umm-cmn/data-center {:Roles ["DISTRIBUTOR"]
                                                            :ShortName "Larc"})]
-                    :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
+                    :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
                                                                    :Topic "Cool"
                                                                    :Term "Mild"})]
-                    :SpatialExtent (data-umm-c/spatial {:gsr "NO_SPATIAL"})
-                    :TemporalExtents [(data-umm-c/temporal-extent
+                    :SpatialExtent (data-umm-cmn/spatial {:gsr "NO_SPATIAL"})
+                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                         :ending-date-time "1967-12-12T07:00:00.000-05:00"})]}
 

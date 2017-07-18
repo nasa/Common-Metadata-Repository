@@ -1,10 +1,11 @@
 (ns cmr.system-int-test.search.concept-search-with-post-test
   "Integration tests for searching concepts through POST request"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -74,8 +75,8 @@
                                                   :granule-ur "Granule2"}))))))
 
 (deftest search-with-post-legacy-style-range
-  (let [psa1 (data-umm-c/additional-attribute {:Name "alpha" :DataType "STRING"})
-        psa2 (data-umm-c/additional-attribute {:Name "bravo" :DataType "STRING"})
+  (let [psa1 (data-umm-cmn/additional-attribute {:Name "alpha" :DataType "STRING"})
+        psa2 (data-umm-cmn/additional-attribute {:Name "bravo" :DataType "STRING"})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:AdditionalAttributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
                                                                                      (dg/psa "bravo" ["cd" "bf"])]}))

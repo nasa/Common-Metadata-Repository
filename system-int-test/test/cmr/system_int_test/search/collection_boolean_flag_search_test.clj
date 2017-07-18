@@ -4,6 +4,7 @@
    [clojure.test :refer :all]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
@@ -11,12 +12,12 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-collection-by-downloadable
-  (let [ru1 (data-umm-c/related-url {:URLContentType "DistributionURL"
-                                     :Type "GET DATA"})
-        ru2 (data-umm-c/related-url {:URLContentType "VisualizationURL"
-                                     :Type "GET RELATED VISUALIZATION"})
-        ru3 (data-umm-c/related-url {:URLContentType "PublicationURL"
-                                     :Type "VIEW RELATED INFORMATION"})
+  (let [ru1 (data-umm-cmn/related-url {:URLContentType "DistributionURL"
+                                       :Type "GET DATA"})
+        ru2 (data-umm-cmn/related-url {:URLContentType "VisualizationURL"
+                                       :Type "GET RELATED VISUALIZATION"})
+        ru3 (data-umm-cmn/related-url {:URLContentType "PublicationURL"
+                                       :Type "VIEW RELATED INFORMATION"})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:RelatedUrls [ru1]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:RelatedUrls [ru2]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:RelatedUrls [ru3]}))

@@ -27,8 +27,8 @@
   (concat
     (for [ma (select elem non-source-ma-xpath)
           :let [assoc-type (value-of ma "gmd:associationType/gmd:DS_AssociationTypeCode")]
-          ;; Input Collection type is used by publications
-          :when (not= "Input Collection" assoc-type)]
+          ;; crossReference type is used by publications
+          :when (not= "crossReference" assoc-type)]
       {:EntryId (iso/char-string-value
                   ma (str citation-prefix "/gmd:title"))
        :Version (iso/char-string-value

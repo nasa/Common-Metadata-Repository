@@ -39,6 +39,21 @@
                   :ContactPersons [{:Roles ["Data Center Contact"]
                                     :LastName "Smith"}]}]})
 
+(def find-update-keywords-umm
+  {:ScienceKeywords [{:Category "EARTH SCIENCE"
+                      :Topic "ATMOSPHERE"
+                      :Term "AIR QUALITY"
+                      :VariableLevel1 "CARBON MONOXIDE"}
+                     {:Category "EARTH SCIENCE"
+                      :Topic "ATMOSPHERE"
+                      :Term "AIR QUALITY"
+                      :VariableLevel1 "CARBON MONOXIDE"}
+                     {:Category "EARTH SCIENCE"
+                      :Topic "ATMOSPHERE"
+                      :Term "CLOUDS"
+                      :VariableLevel1 "CLOUD MICROPHYSICS"
+                      :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]})
+
 (def find-replace-keywords-umm
   {:ScienceKeywords [{:Category "EARTH SCIENCE"
                       :Topic "ATMOSPHERE"
@@ -195,12 +210,46 @@
               (:revision-id (:meta concept))))
        (is (= "application/vnd.nasa.cmr.umm+json"
               (:format (:meta concept))))
-       (is (= (:ScienceKeywords (:umm concept))
-              [{:Category "EARTH SCIENCE"
+       (is (= [{:Category "EARTH SCIENCE"
                 :Topic "ATMOSPHERE"
                 :Term "AIR QUALITY"
+                :VariableLevel1 "EMISSIONS"}]
+              (:ScienceKeywords (:umm concept)))))))
+
+(deftest bulk-update-update-test
+  (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :update-type "FIND_AND_UPDATE"
+                          :update-field "SCIENCE_KEYWORDS"
+                          :find-value {:Topic "ATMOSPHERE"}
+                          :update-value {:Category "EARTH SCIENCE"
+                                         :Topic "ATMOSPHERE"
+                                         :Term "AIR QUALITY"
+                                         :VariableLevel1 "EMISSIONS"}}
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        (is (= "COMPLETE" (:task-status collection-response))))
+
+      ;; Check that each concept was updated
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+       (is (= 2
+              (:revision-id (:meta concept))))
+       (is (= "application/vnd.nasa.cmr.umm+json"
+              (:format (:meta concept))))
+       (is (= [{:Category "EARTH SCIENCE",
+                :Topic "ATMOSPHERE",
+                :Term "AIR QUALITY",
                 :VariableLevel1 "EMISSIONS"}
-               {:Category "EARTH SCIENCE"
-                :Topic "ATMOSPHERE"
-                :Term "AIR QUALITY"
-                :VariableLevel1 "EMISSIONS"}])))))
+               {:Category "EARTH SCIENCE",
+                :Topic "ATMOSPHERE",
+                :Term "AIR QUALITY",
+                :VariableLevel1 "EMISSIONS",
+                :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]
+              (:ScienceKeywords (:umm concept)))))))

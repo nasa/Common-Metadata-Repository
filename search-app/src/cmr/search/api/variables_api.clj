@@ -76,9 +76,9 @@
         ;; Associate a variable with a list of collections
         (POST "/" {:keys [request-context headers body]}
           (associate-variable-to-collections
-           request-context headers (slurp body) (string/lower-case variable-name)))
+           request-context headers (slurp body) variable-name))
 
         ;; Dissociate a variable from a list of collections
         (DELETE "/" {:keys [request-context headers body]}
           (dissociate-variable-to-collections
-           request-context headers (slurp body) (string/lower-case variable-name)))))))
+           request-context headers (slurp body) variable-name))))))

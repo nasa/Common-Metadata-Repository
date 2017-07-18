@@ -10,6 +10,7 @@
     [cmr.spatial.polygon :as poly]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
@@ -63,8 +64,8 @@
                        "PROV1"
                        (data-umm-c/collection-missing-properties
                          {:AdditionalAttributes
-                          [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                           (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
+                          [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
+                           (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true})]
         (is (= {:status 422
                 :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
@@ -72,8 +73,8 @@
 
     (testing "schema validation errors not returned"
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
-      (assert-valid {:AdditionalAttributes [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                                            (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
+      (assert-valid {:AdditionalAttributes [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
+                                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})))
 
   (testing "UMM-C JSON-Schema validation through Cmr-Validate-Umm-C header"
     (testing "schema validation errors returned when Cmr-Validate-Umm-C header is true"
@@ -81,8 +82,8 @@
                        "PROV1"
                        (data-umm-c/collection-missing-properties
                          {:AdditionalAttributes
-                           [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                            (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
+                           [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
+                            (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]})
                        {:allow-failure? true :validate-umm-c true})]
         (is (= {:status 422
                 :errors ["object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"]}
@@ -90,8 +91,8 @@
 
     (testing "schema validation error returns is controlled by config setting when Cmr-Validate-Umm-C header is NOT true"
       (let [coll-attr {:AdditionalAttributes
-                       [(data-umm-c/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
-                        (data-umm-c/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]}]
+                       [(data-umm-cmn/additional-attribute {:Name "bool1" :DataType "BOOLEAN" :Value true})
+                        (data-umm-cmn/additional-attribute {:Name "bool2" :DataType "BOOLEAN" :Value true})]}]
         (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
         (are3 [coll-attributes options]
               (assert-valid coll-attributes options)
@@ -106,9 +107,9 @@
 
   (testing "UMM-SPEC validation through Cmr-Validation-Umm-C header"
     (let [coll-attr {:ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "1"})
-                     :ScienceKeywords [(data-umm-c/science-keyword {:Category "upcase"
-                                                                    :Topic "Cool"
-                                                                    :Term "Mild"})]
+                     :ScienceKeywords [(data-umm-cmn/science-keyword {:Category "upcase"
+                                                                      :Topic "Cool"
+                                                                      :Term "Mild"})]
                      :SpatialExtent (data-umm-c/spatial {:gsr "CARTESIAN"})
                      :RelatedUrls [(data-umm-c/related-url {:Type "type" :URL "http://www.foo.com"})]
                      :DataCenters [(data-umm-c/data-center {:Roles ["ARCHIVER"]
@@ -117,13 +118,13 @@
                                   :LongName "plat"
                                   :Type "Aircraft"
                                   :Instruments [{:ShortName "inst"}]}]
-                     :TemporalExtents [(data-umm-c/temporal-extent
+                     :TemporalExtents [(data-umm-cmn/temporal-extent
                                          {:beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                           :ending-date-time "1967-12-12T07:00:00.000-05:00"})]
                      :CollectionProgress :complete
                      :AdditionalAttributes
-                     [(data-umm-c/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})
-                      (data-umm-c/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})]}]
+                     [(data-umm-cmn/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})
+                      (data-umm-cmn/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})]}]
       (side/eval-form `(icfg/set-return-umm-json-validation-errors! false))
       (are3 [coll-attributes field-path error options]
             (assert-invalid coll-attributes field-path error options)
@@ -137,15 +138,15 @@
   (testing "Additional Attribute validation"
     (assert-invalid
       {:AdditionalAttributes
-       [(data-umm-c/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})
-        (data-umm-c/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})]}
+       [(data-umm-cmn/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})
+        (data-umm-cmn/additional-attribute {:Name "bool" :DataType "BOOLEAN" :Value true})]}
       ["AdditionalAttributes"]
       ["Additional Attributes must be unique. This contains duplicates named [bool]."]))
 
   (testing "Additional Attribute parameter range validation"
     (assert-invalid
       {:AdditionalAttributes
-       [(data-umm-c/additional-attribute {:Name "int"
+       [(data-umm-cmn/additional-attribute {:Name "int"
                                           :DataType "INT"
                                           :ParameterRangeBegin 100
                                           :ParameterRangeEnd 0})]}
@@ -155,7 +156,7 @@
   (testing "Additional Attribute parameter range value validation"
     (assert-invalid
       {:AdditionalAttributes
-       [(data-umm-c/additional-attribute {:Name "float"
+       [(data-umm-cmn/additional-attribute {:Name "float"
                                           :DataType "FLOAT"
                                           :ParameterRangeBegin 0.0
                                           :ParameterRangeEnd 10.0
@@ -292,3 +293,4 @@
           "DIF9 with no version - has warnings, but passes ingest"
           :dif (assoc (data-umm-c/collection-missing-properties-dif {}) :Version nil)
           "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"Platforms\",\"ProcessingLevel\",\"SpatialExtent\",\"TemporalExtents\",\"Version\"])")))
+

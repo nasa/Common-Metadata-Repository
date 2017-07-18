@@ -10,6 +10,7 @@
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
@@ -60,18 +61,18 @@
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1
                                          {:ShortName "A"
                                           :Version "V1"
-                                          :Platforms [(data-umm-c/platform
+                                          :Platforms [(data-umm-cmn/platform
                                                        {:ShortName "TERRA"
                                                         :Instruments
-                                                        [(data-umm-c/instrument {:ShortName "GPS RECEIVERS"})]})]}))
+                                                        [(data-umm-cmn/instrument {:ShortName "GPS RECEIVERS"})]})]}))
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2
                                          {:ShortName "B"
                                           :Version "V2"
-                                          :Platforms [(data-umm-c/platform {:ShortName "AM-1"})]}))
+                                          :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}))
   (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
                                          {:ShortName "C"
                                           :Version "V3"
-                                          :Projects (data-umm-c/projects "USGS_SOFIA")
+                                          :Projects (data-umm-cmn/projects "USGS_SOFIA")
                                           :ScienceKeywords [{:Category "Bioosphere"
                                                              :Topic "Topic1"
                                                              :Term "Term1"}
@@ -101,7 +102,7 @@
      (data-umm-c/collection n
       {:ShortName "B"
        :Version n
-       :Platforms [(data-umm-c/platform {:ShortName "AM-1"})]})))
+       :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
   (index/wait-until-indexed)
   ;; Refresh the metadata cache
   (search/refresh-collection-metadata-cache)
@@ -113,9 +114,9 @@
         (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra"))))))
 
 (deftest search-by-platform-humanized
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-c/platform {:ShortName "TERRA"})]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [(data-umm-c/platform {:ShortName "AM-1"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [(data-umm-c/platform {:ShortName "Aqua"})]}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [(data-umm-cmn/platform {:ShortName "Aqua"})]}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized platform"
       (is (d/refs-match? [coll1 coll2]
@@ -128,13 +129,13 @@
                          (search/find-refs :collection {:platform-h "Terra"}))))))
 
 (deftest search-by-instrument-humanized
-  (let [i1 (data-umm-c/instrument {:ShortName "GPS RECEIVERS"})
-        i2 (data-umm-c/instrument {:ShortName "GPS"})
-        i3 (data-umm-c/instrument {:ShortName "LIDAR"})
+  (let [i1 (data-umm-cmn/instrument {:ShortName "GPS RECEIVERS"})
+        i2 (data-umm-cmn/instrument {:ShortName "GPS"})
+        i3 (data-umm-cmn/instrument {:ShortName "LIDAR"})
 
-        p1 (data-umm-c/platform {:ShortName "platform_1" :Instruments [i1]})
-        p2 (data-umm-c/platform {:ShortName "platform_2" :Instruments [i2]})
-        p3 (data-umm-c/platform {:ShortName "platform_3" :Instruments [i3]})
+        p1 (data-umm-cmn/platform {:ShortName "platform_1" :Instruments [i1]})
+        p2 (data-umm-cmn/platform {:ShortName "platform_2" :Instruments [i2]})
+        p3 (data-umm-cmn/platform {:ShortName "platform_3" :Instruments [i3]})
 
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [p1]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [p2]}))
@@ -145,9 +146,9 @@
                          (search/find-refs :collection {:instrument-h "GPS Receivers"}))))))
 
 (deftest search-by-project-humanized
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Projects (data-umm-c/projects "USGS SOFIA")}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Projects (data-umm-c/projects "USGS_SOFIA")}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Projects (data-umm-c/projects "OPENDAP")}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Projects (data-umm-cmn/projects "USGS SOFIA")}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Projects (data-umm-cmn/projects "USGS_SOFIA")}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Projects (data-umm-cmn/projects "OPENDAP")}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized project"
       (is (d/refs-match? [coll1 coll2]
@@ -155,15 +156,15 @@
 
 (deftest search-by-data-center-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1
-                                                     {:DataCenters [(data-umm-c/data-center
-                                                                     {:Roles ["ARCHIVER"] 
+                                                     {:DataCenters [(data-umm-cmn/data-center
+                                                                     {:Roles ["ARCHIVER"]
                                                                       :ShortName "NSIDC"})]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2
-                                                     {:DataCenters [(data-umm-c/data-center
-                                                                     {:Roles ["ARCHIVER"] 
+                                                     {:DataCenters [(data-umm-cmn/data-center
+                                                                     {:Roles ["ARCHIVER"]
                                                                       :ShortName "NASA/NSIDC_DAAC"})]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
-                                                     {:DataCenters [(data-umm-c/data-center
+                                                     {:DataCenters [(data-umm-cmn/data-center
                                                                      {:Roles ["ARCHIVER"]
                                                                       :ShortName "ASF"})]}))]
     (index/wait-until-indexed)
@@ -181,19 +182,19 @@
                          (search/find-refs :collection {:processing-level-id-h "1T"}))))))
 
 (deftest search-by-science-keywords-humanized
-  (let [sk1 (data-umm-c/science-keyword {:Category "bioosphere"
+  (let [sk1 (data-umm-cmn/science-keyword {:Category "bioosphere"
                                          :Topic "topic1"
                                          :Term "term1"})
-        sk2 (data-umm-c/science-keyword {:Category "category1"
+        sk2 (data-umm-cmn/science-keyword {:Category "category1"
                                          :Topic "bioosphere"
                                          :Term "term1"})
-        sk3 (data-umm-c/science-keyword {:Category "biosphere"
+        sk3 (data-umm-cmn/science-keyword {:Category "biosphere"
                                          :Topic "topic1"
                                          :Term "term1"})
-        sk4 (data-umm-c/science-keyword {:Category "category1"
+        sk4 (data-umm-cmn/science-keyword {:Category "category1"
                                          :Topic "biosphere"
                                          :Term "term1"})
-        sk5 (data-umm-c/science-keyword {:Category "category1"
+        sk5 (data-umm-cmn/science-keyword {:Category "category1"
                                          :Topic "topic1"
                                          :Term "term1"})
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ScienceKeywords [sk1]}))

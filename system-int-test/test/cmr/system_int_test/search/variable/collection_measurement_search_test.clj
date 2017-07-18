@@ -22,28 +22,26 @@
         [coll1 coll2 coll3 coll4 coll5] (for [n (range 1 6)]
                                           (d/ingest-umm-spec-collection
                                            "PROV1"
-                                           (data-umm-c/collection n {})))]
+                                           (data-umm-c/collection n {})
+                                           {:token token}))]
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
     ;; create variables
-    (vu/create-variable-with-attrs token
-                                   {:Name "Variable1"
+    (vu/ingest-variable-with-attrs {:Name "Variable1"
                                     :LongName "Measurement1"})
-    (vu/create-variable-with-attrs token
-                                   {:Name "Variable2"
+    (vu/ingest-variable-with-attrs {:Name "Variable2"
                                     :LongName "Measurement2"})
-    (vu/create-variable-with-attrs token
-                                   {:Name "SomeVariable"
+    (vu/ingest-variable-with-attrs {:Name "SomeVariable"
                                     :LongName "Measurement2"})
     ;; create variable associations
-    ;; variable1 is associated with coll1 and coll2
-    ;; variable2 is associated with coll2 and coll3
-    ;; somevariable is associated with coll4
-    (vu/associate-by-concept-ids token "variable1" [{:concept-id (:concept-id coll1)}
+    ;; Variable1 is associated with coll1 and coll2
+    (vu/associate-by-concept-ids token "Variable1" [{:concept-id (:concept-id coll1)}
                                                     {:concept-id (:concept-id coll2)}])
-    (vu/associate-by-concept-ids token "variable2" [{:concept-id (:concept-id coll2)}
+    ;; Variable2 is associated with coll2 and coll3
+    (vu/associate-by-concept-ids token "Variable2" [{:concept-id (:concept-id coll2)}
                                                     {:concept-id (:concept-id coll3)}])
-    (vu/associate-by-concept-ids token "somevariable" [{:concept-id (:concept-id coll4)}])
+    ;; SomeVariable is associated with coll4
+    (vu/associate-by-concept-ids token "SomeVariable" [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
 
     (testing "search collections by variables"

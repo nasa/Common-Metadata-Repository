@@ -66,6 +66,8 @@
     "transportation"
     "utilitiesCommunication"})
 
+(def processing-level-code-space-string "gov.nasa.esdis.umm.processinglevelid")
+
 (defn- generate-projects-keywords
   "Returns the content generator instructions for descriptive keywords of the given projects."
   [projects]
@@ -201,7 +203,7 @@
       [:gmd:associationType
        [:gmd:DS_AssociationTypeCode
         {:codeList (str (:ngdc iso/code-lists) "#DS_AssociationTypeCode")
-         :codeListValue "Input Collection"} "Input Collection"]]]]))
+         :codeListValue "crossReference"} "crossReference"]]]]))
 
 (defn extent-description-string
   "Returns the ISO extent description string (a \"key=value,key=value\" string) for the given UMM-C
@@ -361,6 +363,7 @@
          [:gmd:processingLevel
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
+           [:gmd:codeSpace (char-string processing-level-code-space-string)]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
        (sdru/generate-service-related-url (:RelatedUrls c))
        (aa/generate-content-info-additional-attributes additional-attributes)
@@ -371,6 +374,7 @@
          [:gmd:processingLevelCode
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
+           [:gmd:codeSpace (char-string processing-level-code-space-string)]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
        (let [related-url-distributions (sdru/generate-distributions c)
              data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
