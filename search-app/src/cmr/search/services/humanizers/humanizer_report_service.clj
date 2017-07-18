@@ -60,8 +60,8 @@
 (defn- refresh-and-get-collections-from-cache
    "Force the collection cache to be populated and then get all the collections from it."
    [context]
-   (let [_ (metadata-cache/refresh-collections-metadata-cache-job)
-         rfms (metadata-cache/all-cached-revision-format-maps context)]
+   (metadata-cache/refresh-cache context)
+   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
      (if (nil? (seq rfms))
        (errors/internal-error! "Collection cache is not populated after refresh.") 
        rfms))) 
