@@ -238,6 +238,12 @@
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (search-response ctx results)))
 
+(defn- get-bucket-values-from-aggregation
+  "Return a collection of values from aggregation buckets"
+  [aggregation-search-results aggregation-name]
+  (let [buckets (get-in aggregation-search-results [:aggregations aggregation-name :buckets])]
+    (map :key buckets)))
+
 (defn- find-granule-parent-collections
   "Invokes query service to find collections based on data found in a granule search,
    then executes a search for collections with the found concept-ids. Supports CMR Harvesting."
@@ -246,7 +252,7 @@
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
         collections-with-new-granules-search (query-svc/get-collections-from-new-granules ctx params)
-        collection-ids (distinct (map :collection-concept-id (:items collections-with-new-granules-search)))
+        collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
         search-params (-> params
                           (assoc :echo-collection-id collection-ids)
                           (dissoc :has-granules-created-at)
@@ -255,7 +261,7 @@
     (if (empty? collection-ids)
       ;; collections-with-new-granules-search already has an empty response object,
       ;; as well as time-took, which is why it's being passed to search-response here
-      (search-response ctx collections-with-new-granules-search)
+      (search-response ctx (dissoc collections-with-new-granules-search :aggregations))
       (find-concepts-by-parameters ctx path-w-extension search-params headers body))))
 
 (defn- granule-parent-collection-query?

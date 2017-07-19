@@ -272,11 +272,13 @@
   (when-let [[start-date end-date] (mapv time-format/parse
                                          (string/split (:has-granules-created-at params) #","))]
     (let [query (qm/query {:concept-type :granule
-                           :condition (qm/date-range-condition
-                                       :created-at start-date end-date)
-                           :page-size :unlimited
+                           :page-size 0
                            :result-format :query-specified
-                           :result-fields [:collection-concept-id]})]
+                           :condition (qm/date-range-condition
+                                        :created-at start-date end-date)
+                           :result-fields []
+                           :aggregations {:collections
+                                          {:terms {:field :collection-concept-id}}}})]
       (qe/execute-query context query))))
 
 (defn get-collections-by-providers
