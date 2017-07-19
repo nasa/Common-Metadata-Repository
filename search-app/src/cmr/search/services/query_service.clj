@@ -278,7 +278,8 @@
                                         :created-at start-date end-date)
                            :result-fields []
                            :aggregations {:collections
-                                          {:terms {:field :collection-concept-id}}}})]
+                                          {:terms {:size 50000
+                                                   :field :collection-concept-id}}}})]
       (qe/execute-query context query))))
 
 (defn get-collections-by-providers
