@@ -203,6 +203,18 @@
 
 (deftest humanizer-report-permissions
   (testing "Anyone can request the humanizer report"
+    ;; ingest a collection and refresh cache to avoid the wait and retry in the get-all-collections code.
+    (d/ingest-umm-spec-collection
+       "PROV1"
+       (assoc exp-conv/example-collection-record
+              :ScienceKeywords [{:Category "earth science"
+                                 :Topic "Bioosphere"
+                                 :Term "Term1"}]
+              :concept-id "C1-PROV1")
+        {:format :umm-json
+         :accept-format :json})
+    (index/wait-until-indexed)
+    (search/refresh-collection-metadata-cache)
     (is (= 200 (:status (search/get-humanizers-report-raw)))))
   (testing "Guests cannot force the humanizer report to be regenerated"
     (is (= 401 (:status (search/get-humanizers-report-raw {:regenerate true})))))
@@ -212,5 +224,17 @@
       (e/grant-group-admin (s/context) admin-group-id :update)
       ;; Need to clear the ACL cache to get the latest ACLs from mock-echo
       (search/clear-caches)
+      ;; ingest a collection and refresh cache to avoid the wait and retry in the get-all-collections code.
+      (d/ingest-umm-spec-collection
+       "PROV1"
+       (assoc exp-conv/example-collection-record
+              :ScienceKeywords [{:Category "earth science"
+                                 :Topic "Bioosphere"
+                                 :Term "Term1"}]
+              :concept-id "C1-PROV1")
+        {:format :umm-json
+         :accept-format :json})
+    (index/wait-until-indexed)
+    (search/refresh-collection-metadata-cache)
       (is (= 200 (:status (search/get-humanizers-report-raw {:regenerate true
                                                              :token admin-user-token})))))))
