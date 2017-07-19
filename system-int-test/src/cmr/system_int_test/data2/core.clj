@@ -173,7 +173,7 @@
              :metadata (when-not (:deleted item)
                          (umm-spec/generate-metadata
                           context
-                          (dissoc item :provider-id :concept-id)
+                          (dissoc item :provider-id :concept-id :native-id)
                           format-key))
              :format format}
             (when (:concept-id item)

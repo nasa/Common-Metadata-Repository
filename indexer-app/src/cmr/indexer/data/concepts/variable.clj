@@ -40,9 +40,9 @@
 (defn- variable-concept->elastic-doc
   "Converts the augmented variable concept into the portion going in the collection elastic document."
   [variable-concept]
-  (let [{:keys [variable-association]} variable-concept
-        measurement (get-in variable-concept [:extra-fields :measurement])
-        {:keys [variable-name originator-id data]} variable-association]
+  (let [{:keys [variable-association extra-fields]} variable-concept
+        {:keys [variable-name measurement]} extra-fields
+        {:keys [originator-id data]} variable-association]
     {:measurement measurement
      :measurement.lowercase (string/lower-case measurement)
      :variable variable-name
