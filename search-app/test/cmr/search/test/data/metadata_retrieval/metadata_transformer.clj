@@ -1,15 +1,11 @@
 (ns cmr.search.test.data.metadata-retrieval.metadata-transformer
   (require
    [clojure.test :refer :all]
-   [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
-   [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
-   [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]
-   [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+   [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]))
 
-(use-fixtures :each tk/freeze-resume-time-fixture)
-
-(def original-transform-strategy mt/transform-strategy)
+(def original-transform-strategy metadata-transformer/transform-strategy)
 
 (deftest transform-to-multiple-formats-test
   (testing "Skipping exceptions if failed"
@@ -18,11 +14,10 @@
                                    (if (= (swap! num-calls inc) 2)
                                      :weird-transform-strategy
                                      (apply original-transform-strategy args)))]
-      (with-bindings {#'mt/transform-strategy bad-transform-strategy}
-        (let [actual (util/map-values expected-conversion/ignore-ids
-                                (mt/transform-to-multiple-formats
-                                 ;; The second transform fails so dif10 is excluded in the output
-                                 {} tm/dif-concept [:echo10 :dif10 :iso19115] true))
-              expected {:echo10 (:metadata (tm/concept-in-format :echo10))
-                        :iso19115 (expected-conversion/ignore-ids (:metadata tm/iso19115-concept))}]
-           (is (= expected actual)))))))
+      (with-bindings {#'metadata-transformer/transform-strategy bad-transform-strategy}
+        (let [actual (metadata-transformer/transform-to-multiple-formats
+                      ;; The second transform fails so dif10 is excluded in the output
+                      {} tm/dif-concept [:echo10 :dif10 :iso19115] true)
+              actual-formats (set (keys actual))]
+          ;; We only check the generated formats, not the actual metadata generated for simplicity reasons
+          (is (= #{:echo10 :iso19115} actual-formats)))))))
