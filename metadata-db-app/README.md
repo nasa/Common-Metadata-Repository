@@ -115,11 +115,11 @@ The tag association metadata can have "value": "string to be indexed" or "data":
 
   {
   "concept-type": "variable",
-  "native-id": "totcldh2ostderr",
+  "native-id": "MyNumberOneVariable",
   "metadata": "{ :name \"totCldH2OStdErr\", :long-name \"totCldH2OStdErrMeasurement\", :units \"\", :data-type \"float\", :dimensions-name [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], :dimensions [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], :valid-range null, :scale \"1.0\", :offset \"0.0\", :fill-value \"-9999.0 \", :variable-type \"\", :science-keywords [] :originator-id \"user1\"}",
   "user-id": "user1",
   "deleted": false,
-  "format": "application/edn",
+  "format": "application/vnd.nasa.cmr.umm+json;version=1.9",
   "extra-fields": {
     "variable-name": "totCldH2OStdErr",
     "measurement": "totCldH2OStdErrMeasurement"

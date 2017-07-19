@@ -136,7 +136,7 @@
   {errors: [Collection [C6-PROV1] does not exist or is not visible.],
   associated_item: {concept_id: C6-PROV1}}]."
   [context variable-concept variable-associations operation]
-  (let [variable-name (get-in variable-concept [:extra-fields :variable-name])
+  (let [variable-name (:native-id variable-concept)
         existing-variable (spec/parse-metadata context
                                                :variable
                                                (:format variable-concept)

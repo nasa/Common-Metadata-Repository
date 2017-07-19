@@ -27,21 +27,24 @@
     ;; index the collections so that they can be found during variable association
     (index/wait-until-indexed)
     ;; create variables
-    (vu/ingest-variable-with-attrs {:Name "Variable1"
+    (vu/ingest-variable-with-attrs {:native-id "var1"
+                                    :Name "Variable1"
                                     :LongName "Measurement1"})
-    (vu/ingest-variable-with-attrs {:Name "Variable2"
+    (vu/ingest-variable-with-attrs {:native-id "var2"
+                                    :Name "Variable2"
                                     :LongName "Measurement2"})
-    (vu/ingest-variable-with-attrs {:Name "SomeVariable"
+    (vu/ingest-variable-with-attrs {:native-id "var3"
+                                    :Name "SomeVariable"
                                     :LongName "Measurement2"})
     ;; create variable associations
     ;; Variable1 is associated with coll1 and coll2
-    (vu/associate-by-concept-ids token "Variable1" [{:concept-id (:concept-id coll1)}
-                                                    {:concept-id (:concept-id coll2)}])
+    (vu/associate-by-concept-ids token "var1" [{:concept-id (:concept-id coll1)}
+                                               {:concept-id (:concept-id coll2)}])
     ;; Variable2 is associated with coll2 and coll3
-    (vu/associate-by-concept-ids token "Variable2" [{:concept-id (:concept-id coll2)}
-                                                    {:concept-id (:concept-id coll3)}])
+    (vu/associate-by-concept-ids token "var2" [{:concept-id (:concept-id coll2)}
+                                               {:concept-id (:concept-id coll3)}])
     ;; SomeVariable is associated with coll4
-    (vu/associate-by-concept-ids token "SomeVariable" [{:concept-id (:concept-id coll4)}])
+    (vu/associate-by-concept-ids token "var3" [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
 
     (testing "search collections by variables"
