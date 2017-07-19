@@ -1320,13 +1320,18 @@
                 </gmd:EX_Extent>
             </gmd:extent>
             <gmd:processingLevel>
-                <gmd:MD_Identifier>
-                    <gmd:code>
-                        <gco:CharacterString>2</gco:CharacterString>
-                    </gmd:code>
-                    <gmd:description gco:nilReason="missing"/>
-                </gmd:MD_Identifier>
-            </gmd:processingLevel>
+              <gmd:MD_Identifier>
+                <gmd:code>
+                  <gco:CharacterString>3</gco:CharacterString>
+                </gmd:code>
+                <gmd:codeSpace>
+                  <gco:CharacterString>gov.nasa.esdis.umm.processinglevelid</gco:CharacterString>
+                </gmd:codeSpace>
+                <gmd:description>
+                  <gco:CharacterString>Variables mapped on uniform space-time grid scales, usually with some completeness and consistency.</gco:CharacterString>
+                </gmd:description>
+              </gmd:MD_Identifier>
+          </gmd:processingLevel>
         </gmd:MD_DataIdentification>
     </gmd:identificationInfo>
     <gmd:identificationInfo>
@@ -1963,7 +1968,7 @@
                                     <eos:reference>
                                         <eos:EOS_AdditionalAttributeDescription>
                                             <eos:type>
-                                                
+
                                                 <eos:EOS_AdditionalAttributeTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AdditionalAttributeTypeCode" codeListValue="platformInformation">platformInformation</eos:EOS_AdditionalAttributeTypeCode>
                                             </eos:type>
                                             <eos:name>
