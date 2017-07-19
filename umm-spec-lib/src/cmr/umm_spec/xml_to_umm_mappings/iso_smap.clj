@@ -145,6 +145,13 @@
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
        ;; Required by UMM-C
-       :ProcessingLevel (when sanitize? {:Id u/not-provided})
+       :ProcessingLevel {:Id
+                         (u/with-default
+                          (char-string-value
+                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                          sanitize?)
+                         :ProcessingLevelDescription
+                         (char-string-value
+                          data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
        :RelatedUrls (dru/parse-related-urls doc sanitize?)
        :Projects (project/parse-projects doc projects-xpath sanitize?)}))))

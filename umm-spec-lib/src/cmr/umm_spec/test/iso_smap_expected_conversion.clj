@@ -298,7 +298,7 @@
         (assoc :SpatialKeywords nil)
         (assoc :TemporalKeywords nil)
         (assoc :AdditionalAttributes nil)
-        (assoc :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id su/not-provided}))
+        (update :ProcessingLevel su/convert-empty-record-to-nil)
         (assoc :Distributions nil)
         (assoc :PublicationReferences nil)
         (assoc :AncillaryKeywords nil)

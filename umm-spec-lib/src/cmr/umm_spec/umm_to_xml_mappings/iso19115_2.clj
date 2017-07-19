@@ -12,6 +12,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
@@ -65,8 +66,6 @@
     "structure"
     "transportation"
     "utilitiesCommunication"})
-
-(def processing-level-code-space-string "gov.nasa.esdis.umm.processinglevelid")
 
 (defn- generate-projects-keywords
   "Returns the content generator instructions for descriptive keywords of the given projects."
@@ -363,10 +362,7 @@
                   [:gml:timePosition date]]]]])]]
           (when processing-level
             [:gmd:processingLevel
-             [:gmd:MD_Identifier
-               [:gmd:code (char-string (:Id processing-level))]
-               [:gmd:codeSpace (char-string processing-level-code-space-string)]
-               [:gmd:description (char-string (:ProcessingLevelDescription processing-level))]]])]]
+             (proc-level/generate-iso-processing-level processing-level)])]]
       (sdru/generate-service-related-url (:RelatedUrls c))
       (aa/generate-content-info-additional-attributes additional-attributes)
       [:gmd:contentInfo
@@ -375,10 +371,7 @@
         [:gmd:contentType ""]
         (when processing-level
           [:gmd:processingLevelCode
-           [:gmd:MD_Identifier
-             [:gmd:code (char-string (:Id processing-level))]
-             [:gmd:codeSpace (char-string processing-level-code-space-string)]
-             [:gmd:description (char-string (:ProcessingLevelDescription processing-level))]]])]]
+           (proc-level/generate-iso-processing-level processing-level)])]]
       (let [related-url-distributions (sdru/generate-distributions c)
             data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
         (when (or related-url-distributions data-center-distributors)
