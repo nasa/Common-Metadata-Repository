@@ -10,9 +10,8 @@
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.jobs :refer [defjob default-job-start-delay]]
    [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
@@ -41,6 +40,19 @@
   "The size of the batches to use to process collections for the humanizer report"
   {:default 500 :type Long})
 
+(defconfig humanizer-report-generator-job-delay
+  "Number of seconds humanizer-report-generator-job needs to wait after collection cache
+   refresh job starts..
+   We want to add the delay so that the collection cache can be populated first.
+   Splunk shows the average time taken for collection cache to be refreshed is around 
+   300 seconds"
+  {:default 400 :type Long})
+
+(defconfig humanizer-report-generator-job-wait
+  "Number of mili-seconds humanizer-generator-job waits for the collection cache 
+   to be populated in the event when the delay is not long enough."
+  {:default 60000 :type Long}) ;; one minute
+
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM-spec record."
   [context revision-format-map]
@@ -57,14 +69,19 @@
   [context rfms]
   (map #(rfm->umm-collection context %) rfms))
 
-(defn- refresh-and-get-collections-from-cache
-   "Force the collection cache to be populated and then get all the collections from it."
-   [context]
-   (metadata-cache/refresh-cache context)
-   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-     (if (seq rfms)
-       rfms
-       (warn "Collection cache is not populated after refresh.")))) 
+(defn- wait-and-retry-for-collection-cache
+  "Wait configurable number of seconds before retrying to get all the collections
+   from collection cache. If collections are still not present, throw warning."
+  [context]
+  (info (format "Collection cache is not populated after %d seconds of delay" 
+                (humanizer-report-generator-job-delay)))
+  (Thread/sleep (humanizer-report-generator-job-wait)) 
+  (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
+    (if (seq rfms)
+      rfms
+      (warn (format "Collection cache is not populated after %d seconds of delay and %d seconds of wait."
+                    (humanizer-report-generator-job-delay)
+                    (humanizer-report-generator-job-wait))))))
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
@@ -75,7 +92,7 @@
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)
         rfms (if (seq rfms)
                rfms
-               (refresh-and-get-collections-from-cache context))]   
+               (wait-and-retry-for-collection-cache context))]
     (map
      #(rfms->umm-collections context %)
      (partition-all (humanizer-report-collection-batch-size) rfms))))
@@ -200,4 +217,4 @@
   "The job definition used by the system job scheduler."
   {:job-type HumanizerReportGeneratorJob
    :interval (* 60 60 24) ; every 24 hours
-   :start-delay 0})
+   :start-delay (+ (default-job-start-delay) (humanizer-report-generator-job-delay))})

@@ -156,8 +156,7 @@
 
           _ (index/wait-until-indexed)
           ;; Humanizers use the cached collection metadata - clear to make sure we have the latest
-          ;; CMR-4307 refreshes the cache automatically when the cache is empty.
-          ;;_ (search/refresh-collection-metadata-cache)
+          _ (search/refresh-collection-metadata-cache)
           expected-report1 (str "provider,concept_id,short_name,version,original_value,"
                                 "humanized_value\n"
                                 "PROV1,C1-PROV1,Short,V5,Bioosphere,Biosphere\n")
