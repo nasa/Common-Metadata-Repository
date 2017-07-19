@@ -49,7 +49,7 @@
   {:default 400 :type Long})
 
 (defconfig humanizer-report-generator-job-wait
-  "Number of mili-seconds humanizer-generator-job waits for the collection cache 
+  "Number of milli-seconds humanizer-generator-job waits for the collection cache 
    to be populated in the event when the delay is not long enough."
   {:default 60000 :type Long}) ;; one minute
 
@@ -79,7 +79,7 @@
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
     (if (seq rfms)
       rfms
-      (warn (format "Collection cache is not populated after %d seconds of delay and %d seconds of wait."
+      (warn (format "Collection cache is not populated after %d seconds of delay and %d milli-seconds of wait."
                     (humanizer-report-generator-job-delay)
                     (humanizer-report-generator-job-wait))))))
 
