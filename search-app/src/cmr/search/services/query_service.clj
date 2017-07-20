@@ -78,6 +78,12 @@
     cmr.search.validators.temporal
     cmr.search.validators.validation))
 
+(def query-aggregation-size
+  "Page size for query aggregations. This should be large enough
+  to contain all collections to allow searching for collections
+  from granules."
+  50000)
+
 (defn- sanitize-aql-params
   "When content-type is not set for aql searches, the aql will get mistakenly parsed into params.
   This function removes it, santizes the params and returns the end result."
@@ -272,11 +278,14 @@
   (when-let [[start-date end-date] (mapv time-format/parse
                                          (string/split (:has-granules-created-at params) #","))]
     (let [query (qm/query {:concept-type :granule
-                           :condition (qm/date-range-condition
-                                       :created-at start-date end-date)
-                           :page-size :unlimited
+                           :page-size 0
                            :result-format :query-specified
-                           :result-fields [:collection-concept-id]})]
+                           :condition (qm/date-range-condition
+                                        :created-at start-date end-date)
+                           :result-fields []
+                           :aggregations {:collections
+                                          {:terms {:size query-aggregation-size
+                                                   :field :collection-concept-id}}}})]
       (qe/execute-query context query))))
 
 (defn get-collections-by-providers
