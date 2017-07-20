@@ -105,7 +105,7 @@
     (testing "Using unsupported or incorrect parameters in conjunction with multi-part-query-params"
       (are [params]
         (let [{:keys [status errors]} (search/find-concepts-with-param-string
-                                        "granule" params)]
+                                        "collection" params)]
           (= [400 [(format "Parameter [%s] was not recognized."
                            (first (string/split params #"=")))]]
              [status errors]))

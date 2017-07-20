@@ -78,6 +78,12 @@
     cmr.search.validators.temporal
     cmr.search.validators.validation))
 
+(def query-aggregation-size
+  "Page size for query aggregations. This should be large enough
+  to contain all collections to allow searching for collections
+  from granules."
+  50000)
+
 (defn- sanitize-aql-params
   "When content-type is not set for aql searches, the aql will get mistakenly parsed into params.
   This function removes it, santizes the params and returns the end result."
@@ -278,7 +284,7 @@
                                         :created-at start-date end-date)
                            :result-fields []
                            :aggregations {:collections
-                                          {:terms {:size 50000
+                                          {:terms {:size query-aggregation-size
                                                    :field :collection-concept-id}}}})]
       (qe/execute-query context query))))
 
