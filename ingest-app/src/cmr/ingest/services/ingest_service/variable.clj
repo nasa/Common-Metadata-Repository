@@ -45,23 +45,6 @@
                          (dissoc :revision-date)
                          (update-in [:revision-id] inc))))
 
-(defn- variable->new-concept
-  "Converts a variable into a new concept that can be persisted in metadata
-  db."
-  [variable provider-id native-id]
-  {:concept-type :variable
-   :provider-id provider-id
-   :native-id native-id
-   :metadata (pr-str (:metadata variable))
-   :user-id (:originator-id variable)
-   ;; The first version of a variable should always be revision id 1. We
-   ;; always specify a revision id when saving variables to help avoid
-   ;; conflicts
-   :revision-id 1
-   :format mt/edn
-   :extra-fields {:variable-name (:name variable)
-                  :measurement (:long-name variable)}})
-
 (defn- fetch-variable-concept
   "Fetches the latest version of a variable concept variable."
   [context provider-id native-id]
@@ -93,28 +76,6 @@
        :long-name (:long-name concept)
        :concept-id concept-id
        :revision-id revision-id}))
-
-(defn update-variable
-  "Creates a new variable or updates an existing variable with the given concept id."
-  [context provider-id native-id metadata]
-  (let [updated-variable (util/concept-json->concept metadata)
-        existing-concept (fetch-variable-concept context provider-id native-id)
-        existing-variable (edn/read-string (:metadata existing-concept))]
-    (validate-update-variable existing-variable updated-variable)
-    (mdb/save-concept
-      context
-      (-> existing-concept
-          ;; The updated variable won't change the originator of the existing
-          ;; variable
-          (assoc :metadata (-> updated-variable
-                               (assoc :originator-id
-                                      (:originator-id existing-variable))
-                               (pr-str))
-                 :user-id (context-util/context->user-id
-                           context
-                           msg/token-required-for-variable-modification))
-          (dissoc :revision-date :transaction-id)
-          (update-in [:revision-id] inc)))))
 
 (defn delete-variable
   "Deletes a tag with the given concept id"
