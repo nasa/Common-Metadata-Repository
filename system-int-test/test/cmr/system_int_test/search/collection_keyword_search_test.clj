@@ -479,8 +479,10 @@
        {:keyword "INST7" :instrument "INST7"} instrument-boost)
 
     (testing "Specified boosts on fields"
-      (are3 [params scores] (is (= (map #(/ % 2.0) scores)
-                                   (map :score (:refs (search/find-refs :collection params)))))
+      ;; Format to 5 decimal places to account for very slight differences
+      (are3 [params scores] (is (= (map #(format "%.5f" (/ % 2.0)) scores)
+                                   (map #(format "%.5f" (:score %))
+                                        (:refs (search/find-refs :collection params)))))
         "short-name"
         {:keyword "SNFoobar" :boosts {:short-name 2.0}} [2.0]
 

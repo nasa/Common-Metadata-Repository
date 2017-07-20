@@ -18,12 +18,17 @@
 (defn- get-last-run
   "Read the CSV file and get the data from the last run, if exists"
   [csv-file]
-  (when-let [last-run (->> (core/read-csv local-test-run-csv)
+  (when-let [last-run (->> (core/read-csv csv-file)
                            (map #(assoc % :date (time-format/parse (:date %))))
                            (group-by :date)
                            sort
                            last)]
-    (val last-run)))
+    (->> last-run
+         val
+         (group-by :run-description)
+         sort
+         last
+         val)))
 
 (defn- result-summary->csv-row
   "Create the CSV row data from the result summary"
@@ -52,7 +57,7 @@
   "Determine if for the test and anomaly the result has changed from the last run.
   If so, return a string with differences from the last run. If not, return nil."
   [result last-run]
-  (when-let [last-run-result (some #(when compare-run %) last-run)]
+  (when-let [last-run-result (some #(when (compare-run result %) %) last-run)]
     (format "YES (DCG %s, RR: %s, Position: %s)"
             (:discounted-cumulative-gain last-run-result)
             (:reciprocal-rank last-run-result)
@@ -96,20 +101,15 @@
      (with-open [csv-file (io/writer (io/resource csv-file-name) :append true)]
        (csv/write-csv csv-file rows))))
 
-(defn- get-run-description
-  "Get the run description from the arguments, if one exists."
-  [args]
-  (when args
-    (let [arg-index (.indexOf args "-log-run-description")]
-      (when (> arg-index -1)
-        (nth args (inc arg-index))))))
-
 (defn log-test-run
   "Log the test run to CSV. If we have a run description in the arguments, write
   to the test run history CSV. Either way log the local run."
   [results args]
-  (if-let [run-description (get-run-description args)]
-    (do
-      (write-test-run-to-csv test-run-history-csv results run-description)
-      (write-test-run-to-csv local-test-run-csv results run-description))
-    (write-test-run-to-csv local-test-run-csv results nil)))
+  (let [run-description (core/get-argument-value args "-log-run-description")
+        log-history (core/get-argument-value args "-log-history")
+        log-history (if (some? log-history)
+                      (Boolean/parseBoolean log-history)
+                      true)]
+    (when log-history
+      (write-test-run-to-csv test-run-history-csv results run-description))
+    (write-test-run-to-csv local-test-run-csv results run-description)))

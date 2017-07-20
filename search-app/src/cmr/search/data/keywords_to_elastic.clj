@@ -58,7 +58,7 @@
    :spatial-keyword 1.1
    :temporal-keyword 1.1
    :version-id 1.0
-   :entry-title 1.0
+   :entry-title 1.3
    :provider 1.0
    :two-d-coord-name 1.0
    :processing-level-id 1.0
@@ -143,8 +143,11 @@
                  (if include-defaults?
                    (merge default-boosts specified-boosts)
                    specified-boosts)
-                 default-boosts)]
-    (get boosts field default-boost)))
+                 default-boosts)
+        boost (get boosts field default-boost)]
+    (if (string? boost)
+      (Double/parseDouble boost)
+      boost)))
 
 (defn keywords->boosted-elastic-filters
   "Create filters with boosting for the function score query used with keyword search"
