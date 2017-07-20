@@ -75,13 +75,13 @@
   (map #(rfm->umm-collection context %) rfms))
 
 (defn- wait-and-retry-for-collection-cache
-  "Wait configurable number of milli seconds before retrying configurable number of times
+  "Wait configurable number of seconds before retrying configurable number of times
    to get all the collections from collection cache."
   [count context]
   (when (< count (retry-count))
-    (info (format (str "Humanizer report generator job is sleeping for %d milli-seconds"
+    (info (format (str "Humanizer report generator job is sleeping for %d seconds"
                        "before retrying to see if the collection cache is populated.")
-                  (humanizer-report-generator-job-wait)))
+                  (/ (humanizer-report-generator-job-wait) 1000)))
     (Thread/sleep (humanizer-report-generator-job-wait))
     (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
       (if (seq rfms)
