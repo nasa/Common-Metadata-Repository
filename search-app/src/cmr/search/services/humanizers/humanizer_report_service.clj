@@ -53,7 +53,7 @@
    to be populated in the event when the delay is not long enough."
   {:default 60000 :type Long}) ;; one minute
 
-(defconfig humanizer-report-generator-job-retry-number
+(defconfig retry-count
   "Number of times humanizer-report-generator-job retries to get the collections
    from collection cache."
   {:default 20 :type Long})
@@ -76,24 +76,17 @@
 
 (defn- wait-and-retry-for-collection-cache
   "Wait configurable number of milli seconds before retrying configurable number of times
-   to get all the collections from collection cache. If collections are still not present, throw warning."
-  [context]
-  (info (format "Collection cache is not populated after %d seconds of delay" 
-                (humanizer-report-generator-job-delay)))
-  ;; sleep, retry 19 times, then sleep and retry one last time.
-  (Thread/sleep (humanizer-report-generator-job-wait))
-  (let [a (atom (- (humanizer-report-generator-job-retry-number) 1))]
-    (while (and (pos? @a) (not (seq (metadata-cache/all-cached-revision-format-maps context))))
-      (info (format "Humanizer report generator job is sleeping for %d milli-seconds before retry"
-                    (humanizer-report-generator-job-wait))) 
-      (Thread/sleep (humanizer-report-generator-job-wait))
-      (swap! a dec)))
-  (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-    (if (seq rfms)
-      rfms
-      (warn (format "Collection cache is not populated after %d seconds of delay and %d times of retry."
-                    (humanizer-report-generator-job-delay)
-                    (humanizer-report-generator-job-retry-number))))))
+   to get all the collections from collection cache."
+  [count context]
+  (when (< count (retry-count))
+    (info (format (str "Humanizer report generator job is sleeping for %d milli-seconds"
+                       "before retrying to see if the collection cache is populated.")
+                  (humanizer-report-generator-job-wait)))
+    (Thread/sleep (humanizer-report-generator-job-wait))
+    (let [rfms (metadata-cache/all-cached-revision-format-maps context)]
+      (if (seq rfms)
+        rfms
+        (recur (inc count) context)))))
 
 (defn- get-all-collections
   "Retrieves all collections from the Metadata cache, partitions them into batches of size
@@ -104,10 +97,17 @@
   (let [rfms (metadata-cache/all-cached-revision-format-maps context)
         rfms (if (seq rfms)
                rfms
-               (wait-and-retry-for-collection-cache context))]
-    (map
-     #(rfms->umm-collections context %)
-     (partition-all (humanizer-report-collection-batch-size) rfms))))
+               (do
+                 (info (format "Collection cache is not populated after %d seconds of delay"
+                               (humanizer-report-generator-job-delay))) 
+                 (wait-and-retry-for-collection-cache 0 context)))]
+    (if (seq rfms)
+      (map
+        #(rfms->umm-collections context %)
+        (partition-all (humanizer-report-collection-batch-size) rfms))
+      (warn (format "Collection cache is not populated after %d seconds of delay and %d times of retry."
+                    (humanizer-report-generator-job-delay)
+                    (retry-count))))))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
