@@ -19,10 +19,6 @@
   [context concept]
   (edn/read-string (:metadata concept)))
 
-(defmethod parse-concept :variable
-  [context concept]
-  (edn/read-string (:metadata concept)))
-
 (defmethod parse-concept :variable-association
   [context concept]
   (edn/read-string (:metadata concept)))
