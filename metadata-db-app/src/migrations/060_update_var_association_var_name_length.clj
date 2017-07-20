@@ -16,4 +16,5 @@
   "Migrates the database down from version 60."
   []
   (println "migrations.060-update-var-association-var-name-length down...")
+  (h/sql "update METADATA_DB.cmr_variable_associations set variable_name = SUBSTR(variable_name, 0, 80)")
   (h/sql "alter table METADATA_DB.cmr_variable_associations modify variable_name VARCHAR(80)"))
