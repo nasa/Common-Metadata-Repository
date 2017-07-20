@@ -207,13 +207,13 @@
           (sdru/generate-publication-related-urls c)
           [:gmd:language (char-string "eng")]]]
         (sdru/generate-service-related-url (:RelatedUrls c))
-        [:gmd:contentInfo
-         [:gmd:MD_ImageDescription
-          [:gmd:attributeDescription ""]
-          [:gmd:contentType ""]
-          (when processing-level
-            [:gmd:processingLevelCode
-             (proc-level/generate-iso-processing-level processing-level)])]]
+        (when processing-level
+         [:gmd:contentInfo
+          [:gmd:MD_ImageDescription
+           [:gmd:attributeDescription ""]
+           [:gmd:contentType ""]
+           [:gmd:processingLevelCode
+             (proc-level/generate-iso-processing-level processing-level)]]])
         (let [related-url-distributions (sdru/generate-distributions c)]
          (when related-url-distributions
           [:gmd:distributionInfo

@@ -365,13 +365,13 @@
              (proc-level/generate-iso-processing-level processing-level)])]]
       (sdru/generate-service-related-url (:RelatedUrls c))
       (aa/generate-content-info-additional-attributes additional-attributes)
-      [:gmd:contentInfo
-       [:gmd:MD_ImageDescription
-        [:gmd:attributeDescription ""]
-        [:gmd:contentType ""]
-        (when processing-level
-          [:gmd:processingLevelCode
-           (proc-level/generate-iso-processing-level processing-level)])]]
+      (when processing-level
+       [:gmd:contentInfo
+        [:gmd:MD_ImageDescription
+         [:gmd:attributeDescription ""]
+         [:gmd:contentType ""]
+         [:gmd:processingLevelCode
+           (proc-level/generate-iso-processing-level processing-level)]]])
       (let [related-url-distributions (sdru/generate-distributions c)
             data-center-distributors (data-contact/generate-distributors (:DataCenters c))]
         (when (or related-url-distributions data-center-distributors)
