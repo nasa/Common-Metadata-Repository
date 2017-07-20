@@ -15,47 +15,59 @@
    [cmr.metadata-db.data.providers :as providers]
    [cmr.metadata-db.services.provider-validation :as pv]))
 
-(defn after-save
-  "Handler for save calls. It will be passed the list of concepts and the concept that was just
-  saved. It should manipulate anything required and return the new list of concepts."
+(defmulti after-save
+  "Handler for save calls. It will be passed the list of concepts and the
+  concept that was just saved. Implementing mehods should manipulate anything
+  required and return the new list of concepts."
+  (fn [db concepts concept]
+    (:concept-type concept)))
+
+(defmethod after-save :collection
   [db concepts concept]
-  (cond (and (= :collection (:concept-type concept))
-             (:deleted concept))
-        (filter #(not= (:concept-id concept) (get-in % [:extra-fields :parent-collection-id]))
-                concepts)
+  (if-not (:deleted concept)
+    concepts
+    (filter #(not= (:concept-id concept)
+                   (get-in % [:extra-fields :parent-collection-id]))
+            concepts)))
 
-        ;; CMR-2520 Remove this case when asynchronous cascaded deletes are implemented.
-        (and (= :tag (:concept-type concept))
-             (:deleted concept))
-        (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
-              tombstones (map (fn [ta] (-> ta
-                                           (assoc :metadata "" :deleted true)
-                                           (update :revision-id inc)))
-                              tag-associations)]
-          ;; publish tag-association delete events
-          (doseq [tombstone tombstones]
-            (ingest-events/publish-event
-              (:context db)
-              (ingest-events/concept-delete-event tombstone)))
-          (concat concepts tombstones))
+;; CMR-2520 Readdress this case when asynchronous cascaded deletes are implemented.
+(defmethod after-save :tag
+  [db concepts concept]
+  (if-not (:deleted concept)
+    concepts
+    (let [tag-associations (tag/get-tag-associations-for-tag-tombstone db concept)
+          tombstones (map (fn [ta] (-> ta
+                                       (assoc :metadata "" :deleted true)
+                                       (update :revision-id inc)))
+                          tag-associations)]
+      ;; publish tag-association delete events
+      (doseq [tombstone tombstones]
+        (ingest-events/publish-event
+          (:context db)
+          (ingest-events/concept-delete-event tombstone)))
+      (concat concepts tombstones))))
 
-        ;; CMR-2520 Remove this case when asynchronous cascaded deletes are implemented.
-        (and (= :variable (:concept-type concept))
-             (:deleted concept))
-        (let [variable-associations (variable/get-associations-for-variable-tombstone
-                                     db concept)
-              tombstones (map (fn [ta] (-> ta
-                                           (assoc :metadata "" :deleted true)
-                                           (update :revision-id inc)))
-                              variable-associations)]
-          ;; publish variable-association delete events
-          (doseq [tombstone tombstones]
-            (ingest-events/publish-event
-              (:context db)
-              (ingest-events/concept-delete-event tombstone)))
-          (concat concepts tombstones))
+;; CMR-2520 Readdress this case when asynchronous cascaded deletes are implemented.
+(defmethod after-save :variable
+  [db concepts concept]
+  (if-not (:deleted concept)
+    concepts
+    (let [variable-associations (variable/get-associations-for-variable-tombstone
+                                 db concept)
+          tombstones (map (fn [ta] (-> ta
+                                       (assoc :metadata "" :deleted true)
+                                       (update :revision-id inc)))
+                          variable-associations)]
+      ;; publish variable-association delete events
+      (doseq [tombstone tombstones]
+        (ingest-events/publish-event
+          (:context db)
+          (ingest-events/concept-delete-event tombstone)))
+      (concat concepts tombstones))))
 
-        :else concepts))
+(defmethod after-save :default
+  [db concepts concept]
+  concepts)
 
 (defn- concept->tuple
   "Converts a concept into a concept id revision id tuple"
