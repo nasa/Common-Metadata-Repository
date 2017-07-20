@@ -122,6 +122,14 @@
         [:CollectionType (or (:Type ma) spec-util/not-provided)]
         [:CollectionUse (:Description ma)]])]))
 
+(defn generate-collection-citations
+  "Finds first OtherCitationDetails value in CollectionCitations and uses it to
+   generate a CitationForExternalPublication xml entry"
+  [c]
+  (when-let [collection-citations (:CollectionCitations c)]
+    (when-let [citation (first (map :OtherCitationDetails collection-citations))]
+      [:CitationForExternalPublication citation])))
+
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
@@ -137,10 +145,10 @@
      [:Description (if-let [abstract (:Abstract c)]
                      (util/trunc abstract 12000)
                      spec-util/not-provided)]
-   (when-let [doi (:DOI c)]
-     [:DOI
-      [:DOI (:DOI doi)]
-      [:Authority (:Authority doi)]])
+     (when-let [doi (:DOI c)]
+       [:DOI
+        [:DOI (:DOI doi)]
+        [:Authority (:Authority doi)]])
      [:CollectionDataType (:CollectionDataType c)]
      [:Orderable "false"]
      [:Visible "true"]
@@ -152,6 +160,7 @@
      [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
      (dc/generate-archive-centers c)
      [:VersionDescription (:VersionDescription c)]
+     (generate-collection-citations c)
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
