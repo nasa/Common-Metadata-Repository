@@ -107,10 +107,9 @@
   [results args]
   (let [run-description (core/get-argument-value args "-log-run-description")
         log-history (core/get-argument-value args "-log-history")
-        _ (def args args)
         log-history (if (some? log-history)
                       (Boolean/parseBoolean log-history)
                       true)]
-    (if log-history
+    (when log-history
       (write-test-run-to-csv test-run-history-csv results run-description))
     (write-test-run-to-csv local-test-run-csv results run-description)))

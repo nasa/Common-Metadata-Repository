@@ -18,6 +18,9 @@
   "How much to increment the boost for each test"
   0.1)
 
+(def result-separator
+  "***********************************************")
+
 (defn- create-search-params
   "Create additional search params to configure the field and boost in the s
   search request"
@@ -39,7 +42,7 @@
   reference it later"
   [field boost]
   (let [params (create-search-params field boost)] ; append to search request
-    (println "***********************************************")
+    (println result-separator)
     (println (format "Running boost test with %s at %.2f" field boost))
     (-> (relevancy-test/run-anomaly-tests (create-test-args field boost)
                                           params)
@@ -61,7 +64,7 @@
                  (> (:average-dcg test-results)
                     (:average-dcg @best-run)))
          (reset! best-run test-results)))
-     (println "****************************************************************")
+     (println result-separator)
      (println (format "Boosts tests complete. Best run with %s at %.2f. DCG: %.3f"
                       field
                       (get @best-run (csk/->kebab-case-keyword field))
