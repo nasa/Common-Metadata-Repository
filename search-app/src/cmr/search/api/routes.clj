@@ -115,7 +115,7 @@
    a granule search.
 
   This could be generalized to support parameters that require multiple queries"
-  #{:has-granules-created-at})
+  #{:has_granules_created_at})
 
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
@@ -255,7 +255,7 @@
         collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
         search-params (-> params
                           (assoc :echo-collection-id collection-ids)
-                          (dissoc :has-granules-created-at)
+                          (dissoc :has_granules_created_at)
                           lp/process-legacy-psa)]
 
     (if (empty? collection-ids)
