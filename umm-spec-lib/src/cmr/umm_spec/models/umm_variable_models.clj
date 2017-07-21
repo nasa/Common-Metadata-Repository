@@ -9,8 +9,9 @@
    ;; '0, 377'.
    ValidRange
 
-   ;; The values of the dimensions of the variable represented in the data field. For example,
-   ;; '1200, 1200'. This is sourced from the granule header. See the dimensions section.
+   ;; The service information of a variable.
+   Service
+
    Dimensions
 
    ;; Scale factor which has been applied to the cell value. For example, '0.002'
@@ -19,24 +20,27 @@
    ;; The physical value corresponding to a cell value of zero. For example, '0.49'.
    Offset
 
-   ;; The tagging information of a variable.
-   Tagging
+   ;; The set information of a variable.
+   Set
 
    ;; The fill value of the variable in the data file. It is generally a value which falls outside
-   ;; the valid range. For example, if the valid range is '0, 360', the fill value may be '377'.
+   ;; the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'.
    FillValue
 
    ;; The units associated with a variable.
    Units
 
-   ;; Description of the fill value of the variable in the data file.
-   FillValueDescription
+   ;; The definition of the variable.
+   Definition
+
+   ;; The measurement information of a variable.
+   Measurements
 
    ;; The characteristics of a variable. The elements of this section apply to a Variable.
    Characteristics
 
-   ;; Controlled Science Keywords describing the collection. The controlled vocabulary for Science
-   ;; Keywords is maintained in the Keyword Management System (KMS).
+   ;; Controlled Science Keywords describing the measurements/variables. The controlled vocabulary
+   ;; for Science Keywords is maintained in the Keyword Management System (KMS).
    ScienceKeywords
 
    ;; The name of a variable.
@@ -48,17 +52,47 @@
    ;; The descriptive name for the variable.
    LongName
 
-   ;; The names of the dimensions of the variable represented in the data field. For example, '1200,
-   ;; 1200'. This is sourced from the granule header. See the dimensions section.
-   DimensionsName
-
-   ;; The service information of a variable.
-   ServiceType
-
    ;; Specify data type of a variable. These types can be either: uint8, uint16, etc.
    DataType
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Var)
+
+;; The elements of this section apply to the fill value of a variable.
+(defrecord FillValueType
+  [
+   ;; The fill value of the variable in the data file.
+   Value
+
+   ;; Type of the fill value of the variable in the data file.
+   Type
+
+   ;; Description of the fill value of the variable in the data file.
+   Description
+  ])
+(record-pretty-printer/enable-record-pretty-printing FillValueType)
+
+;; Valid range data value of a variable: minimum and maximum values. For example. '-100, 5000'.
+(defrecord ValidRangeType
+  [
+   ;; Minimum data value of a variable.
+   Min
+
+   ;; Maximum data value of a variable.
+   Max
+  ])
+(record-pretty-printer/enable-record-pretty-printing ValidRangeType)
+
+;; The elements of this section apply to a measurement.
+(defrecord MeasurementsType
+  [
+   ;; This element allows authors to provide community sourced words or phrases to further describe
+   ;; the variable data.
+   MeasurementName
+
+   ;; This element allows authors to identify the source of the measurements.
+   MeasurementSource
+  ])
+(record-pretty-printer/enable-record-pretty-printing MeasurementsType)
 
 ;; The elements of this section apply to a variable.
 (defrecord CharacteristicsType
@@ -77,6 +111,9 @@
    ;; header. See the variables section.
    Structure
 
+   ;; The measurement conditions of the variable.
+   MeasurementConditions
+
    ;; A variable’s coordinates. These are used to describe how the variable is represented with
    ;; respect to the Earth geoid.
    Coordinates
@@ -87,6 +124,9 @@
    ;; The name of the mapping projection standard for the variable. For example: Mercator. This is
    ;; sourced from the granule header. See the global attributes section.
    GridMapping
+
+   ;; The reporting conditions of the variable.
+   ReportingConditions
 
    ;; The computed byte size units for the variable, per the data field. For example B, KB, MB, GB.
    SizeUnits
@@ -100,20 +140,41 @@
 (record-pretty-printer/enable-record-pretty-printing CharacteristicsType)
 
 ;; The elements of this section apply to a variable.
-(defrecord TaggingType
+(defrecord SetType
   [
-   ;; This element allows authors to provide words or phrases to further describe the data. These
-   ;; tags can be searched on in much the same way as science keywords but are sourced from a list
-   ;; specific to the science disipline of the variable
-   Tags
+   ;; This element enables specification of set name. The variable may grouped within a set. The set
+   ;; is defined by the name, type, size and index. For example, some variables exist in pairs or
+   ;; sets of three or more.
+   Name
 
-   ;; This element allows authors to identify the source of the tags.
-   TagsSource
+   ;; This element enables specification of set type. The variable may grouped within a set. The set
+   ;; is defined by the name, type, size and index. For example, some variables exist in pairs or
+   ;; sets of three or more.
+   Type
+
+   ;; This element specifies the size of the set.
+   Size
+
+   ;; This element specifies the index value within the set for this variable, i.e. 1,2,3.
+   Index
   ])
-(record-pretty-printer/enable-record-pretty-printing TaggingType)
+(record-pretty-printer/enable-record-pretty-printing SetType)
 
 ;; The elements of this section apply to a variable.
-(defrecord ServiceTypeType
+(defrecord DimensionsType
+  [
+   ;; The names of the dimensions of the variable represented in the data field. For example, 'XDim,
+   ;; YDim'.
+   Name
+
+   ;; The values of the dimensions of the variable represented in the data field. For example,
+   ;; '1200, 1200'.
+   Size
+  ])
+(record-pretty-printer/enable-record-pretty-printing DimensionsType)
+
+;; The elements of this section apply to a variable.
+(defrecord ServiceType
   [
    ;; This element enables specification of service type. The variable may not yet be available via
    ;; a service. If so, which protocol standard? For example, 'WMS', 'WCS' etc.
@@ -127,16 +188,4 @@
    ;; service.
    Subsettable
   ])
-(record-pretty-printer/enable-record-pretty-printing ServiceTypeType)
-
-;; Valid range data value of a variable: minimum and maximum values. For example. '7500, -1', or '0,
-;; 377'.
-(defrecord ValidRangeType
-  [
-   ;; Maximum data value of a variable.
-   Max
-
-   ;; Minimum data value of a variable.
-   Min
-  ])
-(record-pretty-printer/enable-record-pretty-printing ValidRangeType)
+(record-pretty-printer/enable-record-pretty-printing ServiceType)
