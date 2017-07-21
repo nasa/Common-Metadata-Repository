@@ -163,8 +163,7 @@
   (let [cache (deref (:cache-atom (c/context->cache context cache-key)))
         maps (for [concept-id (sort (keys cache))]
                (get cache concept-id))]
-     (when (seq maps)
-       maps))) 
+    (seq maps)))
 
 (defconfig refresh-collection-metadata-cache-interval
   "The number of seconds between refreshes of the collection metadata cache"
