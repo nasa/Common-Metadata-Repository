@@ -17,14 +17,14 @@
 (def sample-umm-var
   {:Name "A-name"
    :LongName "A long UMM-Var name"
+   :Definition "Defines the variable"
    :Units "m"
    :DataType "float32"
-   :DimensionsName "H2OFunc"
-   :Dimensions "11"
-   :ValidRange {}
-   :Scale "1.0"
-   :Offset "0.0"
-   :FillValue "-9999.0"
+   :Dimensions [(umm-v/map->DimensionsType {:Name "Solution_3_Land" :Size 3})]
+   :Set [(umm-v/map->SetType {:Name "Data_Fields" :Type "Science" :Size 2 :Index 2})]
+   :Scale 1.0
+   :Offset 0.0
+   :FillValue [(umm-v/map->FillValueType {:Value -9999.0, :Type "Science"})]
    :VariableType "SCIENCE_VARIABLE"
    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
                       {:Category "sk-A"

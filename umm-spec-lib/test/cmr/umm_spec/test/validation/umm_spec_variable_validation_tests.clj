@@ -11,17 +11,17 @@
 (deftest umm-variable-creation
   (is (= [:Characteristics
           :DataType
+          :Definition
           :Dimensions
-          :DimensionsName
           :FillValue
-          :FillValueDescription
           :LongName
+          :Measurements
           :Name
           :Offset
           :Scale
           :ScienceKeywords
-          :ServiceType
-          :Tagging
+          :Service
+          :Set
           :Units
           :ValidRange
           :VariableType]

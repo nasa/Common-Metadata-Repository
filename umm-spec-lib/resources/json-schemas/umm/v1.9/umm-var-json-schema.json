@@ -9,81 +9,87 @@
         "StandardName": {
           "description": "The CF-compliant 'Standard Name' for the variable.",
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
           "maxLength": 80
         },
         "Reference": {
           "description": "Provides a link to variable's reference documentation.",
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
           "maxLength": 500
         },
         "Coordinates": {
           "description": "A variable’s coordinates. These are used to describe how the variable is represented with respect to the Earth geoid.",
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
           "maxLength": 80
         },
         "GridMapping": {
           "description": "The name of the mapping projection standard for the variable. For example: Mercator. This is sourced from the granule header. See the global attributes section.",
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
           "maxLength": 80
         },
         "Size": {
           "description": "The computed byte size for the variable, per the data field. Typically, this is the X dimension times the Y dimension times the number of bytes in the data type (8, 16, 32, etc.). For example, 1200 x 1200 x 16 = 23,040,000.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "type": "number"
         },
         "SizeUnits": {
           "description": "The computed byte size units for the variable, per the data field. For example B, KB, MB, GB.",
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
           "maxLength": 80
         },
         "Bounds": {
           "description": "Describes the spatial bounds of a variable. Western Longitude, Northern Latitude and Eastern Longitude, Southern Latitude - often specified in decimal degrees. For example, 'UpperLeftPointMtrs = -180.0, 89.5; LowerRightMtrs = 177.5, -89.5.'",
           "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "minLength": 0,
+          "maxLength": 160
         },
         "ChunkSize": {
           "description": "Describes the chunk size of a variable. For example, '100'.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "type": "number"
         },
         "Structure": {
           "description": "This is a string containing the structure of the variable. This is sourced from the granule header. See the variables section. ",
           "type": "string",
-          "minLength": 1,
+          "minLength": 0,
+          "maxLength": 4000
+        },
+        "MeasurementConditions": {
+          "description": "The measurement conditions of the variable.",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4000
+        },
+        "ReportingConditions": {
+          "description": "The reporting conditions of the variable. ",
+          "type": "string",
+          "minLength": 0,
           "maxLength": 4000
         }
       }
-   },
-   "TaggingType": {
+    },
+    "MeasurementsType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The elements of this section apply to a variable.",
+      "description": "The elements of this section apply to a measurement.",
       "properties": {
-        "Tags": {
-          "description": "This element allows authors to provide words or phrases to further describe the data. These tags can be searched on in much the same way as science keywords but are sourced from a list specific to the science disipline of the variable",
-          "type": "array",
-          "items": {
-            "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
-          },
-          "minItems": 1
-        },
-        "TagsSource": {
-          "description": "This element allows authors to identify the source of the tags.",
+        "MeasurementName": {
+          "description": "This element allows authors to provide community sourced words or phrases to further describe the variable data.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 20
+          "maxLength": 320
+        },
+        "MeasurementSource": {
+          "description": "This element allows authors to identify the source of the measurements.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
         }
       }
     },
-    "ServiceTypeType": {
+    "ServiceType": {
       "type": "object",
       "additionalProperties": false,
       "description": "The elements of this section apply to a variable.",
@@ -98,39 +104,104 @@
         },
         "Visualizable": {
           "description": "A flag to indicate whether this variable is able to be visualized within the context of a service.",
-          "type": "string",
-          "enum": ["TRUE", "FALSE"]   
+          "type": "boolean"
         },
         "Subsettable": {
           "description": "A flag to indicate whether this variable is able to be subsetted within the context of a service.",
-          "type": "string",
-          "enum": ["TRUE", "FALSE"]   
+          "type": "boolean"
         }
       }
+    },
+    "FillValueType": {
+        "description": "The fill value, fill value type and fill value description  of the variable in the data file. The fill value is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'.",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section apply to the fill value of a variable.",
+      "properties": {
+        "Value": {
+          "description": "The fill value of the variable in the data file.",
+          "type": "number"
+        },
+        "Type": {
+          "description": "Type of the fill value of the variable in the data file.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "Description": {
+          "description": "Description of the fill value of the variable in the data file.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      },
+      "required": ["Value", "Type"]
+    },
+    "SetType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section apply to a variable.",
+      "properties": {
+        "Name": {
+            "description": "This element enables specification of set name. The variable may grouped within a set. The set is defined by the name, type, size and index. For example, some variables exist in pairs or sets of three or more.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Type": {
+          "description": "This element enables specification of set type. The variable may grouped within a set. The set is defined by the name, type, size and index. For example, some variables exist in pairs or sets of three or more.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Size": {
+          "description": "This element specifies the size of the set.",
+          "type": "number"
+        },
+        "Index": {
+          "description": "This element specifies the index value within the set for this variable, i.e. 1,2,3.",
+          "type": "number"
+        }
+      },
+      "required": ["Name", "Type", "Size", "Index"]
     },
     "ValidRangeType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Valid range data value of a variable: minimum and maximum values. For example. '7500, -1', or '0, 377'.",
+      "description": "Valid range data value of a variable: minimum and maximum values. For example. '-100, 5000'.",
       "properties": {
-        "Max": {
-          "description": "Maximum data value of a variable.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 20
-        },
         "Min": {
           "description": "Minimum data value of a variable.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 20
+          "type": "number"
+        },
+        "Max": {
+          "description": "Maximum data value of a variable.",
+          "type": "number"
         }
       }
     },
     "DataTypeEnum": {
       "description": "This element is used to identify the data type of the variable.",
       "type": "string",
-      "enum": ["byte", "float32", "double", "uchar", "uchar8", "int8", "int16", "int32", "uint8", "uint16", "unit32", "OTHER"]
+      "enum": ["byte", "float", "float32", "double", "uchar", "uchar8", "short", "long", "int8", "int16", "int32", "uint8", "uint16", "unit32", "OTHER"]
+    },
+    "DimensionsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section apply to a variable.",
+      "properties": {
+        "Name": {
+          "description": "The names of the dimensions of the variable represented in the data field. For example, 'XDim, YDim'.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Size": {
+          "description": "The values of the dimensions of the variable represented in the data field. For example, '1200, 1200'.",
+          "type": "number"
+        }
+      },
+      "required": ["Name", "Size"]
     },
     "VariableTypeEnum": {
       "description": "This element is used to identify the variable as a Science Variable or as a Quality Variable or as an Ancillary Variable. If a variable does not contain this field, it will be assumed to be a science variable.",
@@ -151,61 +222,58 @@
         "description": "The name of a variable.",
         "type": "string",
         "minLength": 1,
-        "maxLength": 20
+        "maxLength": 80
       },
       "LongName": {
         "description": "The descriptive name for the variable.",
         "$ref": "umm-cmn-json-schema.json#/definitions/LongNameType"
       },
+      "Definition": {
+        "description": "The definition of the variable.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
       "Units": {
         "description": "The units associated with a variable.",
         "type": "string",
-        "minLength": 1,
+        "minLength": 0,
         "maxLength": 20
       },
       "DataType": {
         "description": "Specify data type of a variable. These types can be either: uint8, uint16, etc.",
         "$ref": "#/definitions/DataTypeEnum"
       },
-      "DimensionsName": {
-        "description": "The names of the dimensions of the variable represented in the data field. For example, '1200, 1200'. This is sourced from the granule header. See the dimensions section.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 80
-      },
       "Dimensions": {
-        "description": "The values of the dimensions of the variable represented in the data field. For example, '1200, 1200'. This is sourced from the granule header. See the dimensions section.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 80
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/DimensionsType"
+        },
+        "minItems": 1
       },
       "ValidRange": {
         "description": "Valid range data value of a variable: minimum and maximum values. For example. '7500, -1', or '0, 377'.",
-        "$ref": "#/definitions/ValidRangeType"
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ValidRangeType"
+        },
+        "minItems": 0
       },
       "Scale": {
         "description": "Scale factor which has been applied to the cell value. For example, '0.002'",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 20
+        "type": "number"
       },
       "Offset": {
         "description": "The physical value corresponding to a cell value of zero. For example, '0.49'.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 20
+        "type": "number"
       },
       "FillValue": {
-        "description": "The fill value of the variable in the data file. It is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '377'.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 20
-      },
-      "FillValueDescription": {
-        "description": "Description of the  fill value of the variable in the data file.",
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 80
+        "description": "The fill value of the variable in the data file. It is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/FillValueType"
+        },
+        "minItems": 0
       },
       "VariableType": {
         "description": "Specify basic type of a variable. These types can be either: Science, Ancillary, Quality etc.",
@@ -213,50 +281,50 @@
       },
       "Characteristics": {
         "description": "The characteristics of a variable.  The elements of this section apply to a Variable.",
-        "type": "array",
-        "items": {
-          "$ref": "#/definitions/CharacteristicsType"
-        },
-        "minItems": 0
+        "$ref": "#/definitions/CharacteristicsType"
       },
-      "Tagging": {
-        "description": "The tagging information of a variable.",
+      "Measurements": {
+        "description": "The measurement information of a variable.",
         "type": "array",
         "items": {
-          "$ref": "#/definitions/TaggingType"
+          "$ref": "#/definitions/MeasurementsType"
         },
         "minItems": 0
       },
       "ScienceKeywords": {
-        "description": "Controlled Science Keywords describing the collection.  The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
+        "description": "Controlled Science Keywords describing the measurements/variables.  The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
         "type": "array",
         "items": {
             "$ref": "umm-cmn-json-schema.json#/definitions/ScienceKeywordType"
         },
       "minItems": 1
       },
-      "ServiceType": {
+      "Service": {
         "description": "The service information of a variable.",
         "type": "array",
         "items": {
-          "$ref": "#/definitions/ServiceTypeType"
+          "$ref": "#/definitions/ServiceType"
         },
         "minItems": 0
+      },
+      "Set": {
+        "description": "The set information of a variable.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/SetType"
+        },
+        "minItems": 1
       }
     },
     "required": [
       "Name",
       "LongName",
-      "Units",
+      "Definition",
       "DataType",
-      "DimensionsName",
       "Dimensions",
-      "ValidRange", 
+      "Set",
       "Scale",
       "Offset",
-      "FillValue",
-      "VariableType",
       "ScienceKeywords"
     ]
 }
-
