@@ -90,7 +90,7 @@
                                "collection"
                                "has_granules_created_at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")
             none-found (client/get (str "http://localhost:3003/collections"
-                                        "?has_granules_created_at=2017-02-01T10:00:00Z,2016-02-01T10:00:00Z"))]
+                                        "?has-granules-created-at=2017-02-01T10:00:00Z,2016-02-01T10:00:00Z"))]
         (d/refs-match? [regular-collection] range-references)
         (and (= (:body none-found) "")
              (= (get (:headers none-found) "CMR-Hits") 0))))
