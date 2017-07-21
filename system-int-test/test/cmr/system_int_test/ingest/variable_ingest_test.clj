@@ -236,7 +236,8 @@
 
 (deftest delete-variable-ingest-test
   (testing "Variable ingest:"
-    (let [{token :token} (variable-util/setup-update-acl (s/context) "PROV1")
+    (let [acl-data (variable-util/setup-update-acl (s/context) "PROV1")
+          {:keys [user-name group-name group-id token grant-id]} acl-data
           concept (variable-util/make-variable-concept)
           _ (variable-util/ingest-variable concept {:token token})
           _ (index/wait-until-indexed)
