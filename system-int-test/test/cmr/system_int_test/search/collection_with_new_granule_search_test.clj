@@ -86,12 +86,9 @@
 
     (index/wait-until-indexed)
     (testing "Old and deleted collections should not be found."
-      (let [references (search/find-concepts-with-param-string
-                         "collection"
-                         "has-granules-created-at=2014-01-01T10:00:00Z")
-            range-references (search/find-concepts-with-param-string
+      (let [range-references (search/find-concepts-with-param-string
                                "collection"
-                               "has-granules-created-at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")
+                               "has_granules_created_at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")
             none-found (client/get (str "http://localhost:3003/collections"
                                         "?has-granules-created-at=2017-02-01T10:00:00Z,2016-02-01T10:00:00Z"))]
         (d/refs-match? [regular-collection] range-references)
@@ -109,4 +106,4 @@
           (= [400 [(format "Parameter [%s] was not recognized."
                            (first (string/split params #"=")))]]
              [status errors]))
-        "birthday=2011-01-01T00:00:00Z&has-granules-created-at=2014-01-01T10:00:00Z"))))
+        "birthday=2011-01-01T00:00:00Z&has_granules_created_at=2014-01-01T10:00:00Z"))))

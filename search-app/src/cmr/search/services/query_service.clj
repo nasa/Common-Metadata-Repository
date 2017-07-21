@@ -276,7 +276,8 @@
    Supports CMR Harvesting."
   [context params]
   (when-let [[start-date end-date] (mapv time-format/parse
-                                         (string/split (:has-granules-created-at params) #","))]
+                                         (string/split (or (:has_granules_created_at params)
+                                                           (:has-granules-created-at params)) #","))]
     (let [query (qm/query {:concept-type :granule
                            :page-size 0
                            :result-format :query-specified
