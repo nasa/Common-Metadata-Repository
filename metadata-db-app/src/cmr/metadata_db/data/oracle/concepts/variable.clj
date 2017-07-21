@@ -2,7 +2,6 @@
   "Implements multi-method variations for variables"
   (:require
    [cmr.metadata-db.data.concepts :as concepts]
-   [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts :as c]))
 
 (defmethod c/db-result->concept-map :variable
@@ -14,9 +13,9 @@
           (assoc-in [:extra-fields :variable-name] (:variable_name result))
           (assoc-in [:extra-fields :measurement] (:measurement result))))
 
-;; Only "CMR" provider is supported now which is not considered a 'small' provider.
-;; If we ever associate real providers with variables then we will need to add support
-;; for small providers as well.
+;; Only "CMR" provider is supported now which is not considered a 'small'
+;; provider. If we ever associate real providers with variables then we will
+;; need to add support for small providers as well.
 (defmethod c/concept->insert-args [:variable false]
   [concept _]
   (let [{{:keys [variable-name measurement]} :extra-fields
@@ -26,46 +25,20 @@
     [(concat cols ["provider_id" "user_id" "variable_name" "measurement"])
      (concat values [provider-id user-id variable-name measurement])]))
 
-(defn get-associations-for-variable-tombstone
-  "Returns the latest revisions of the variable associations for the given variable."
-  [db variable-tombstone]
-  (concepts/find-latest-concepts db
-                                 {:provider-id "CMR"}
-                                 {:concept-type :variable-association
-                                  ;; :variable name below refers to the table column
-                                  ;; named VARIABLE_NAME that holds the native-id
-                                  ;; value ... this comment will need to be updated
-                                  ;; once we move to using variable concept id.
-                                  :variable-name (:native-id variable-tombstone)}))
+(defmethod c/cascade-delete-associations :variable
+  [db provider tombstone]
+  (c/cascade-delete-concept-associations
+    db provider tombstone
+    {:concept-type :variable-association
+     ;; :variable name below refers to the table column
+     ;; named VARIABLE_NAME that holds the native-id
+     ;; value ... this comment will need to be updated
+     ;; once we move to using variable concept id.
+     :variable-name (:native-id tombstone)}))
 
-(defn cascade-delete-variable-associations
-  "Save tombstones for all the variable associations for the given variable."
-  [db provider variable-tombstone]
-  (let [{:keys [concept-id revision-id]} variable-tombstone
-        provider-id (:provider-id provider)
-        ;; We need to pull pack the saved concept (tombstone) so we can get the transaction-id.
-        saved-tombstone (concepts/get-concept
-                         db :variable {:provider-id provider-id :small false}
-                         concept-id revision-id)
-        transaction-id (:transaction-id saved-tombstone)
-        variable-associations (get-associations-for-variable-tombstone db variable-tombstone)
-        ;; Remove any associations newer than the variable tombstone.
-        variable-associations (filter #(< (:transaction-id %) transaction-id)
-                                      variable-associations)
-        tombstones (map (fn [concept] (-> concept
-                                          (assoc :deleted true :metadata "")
-                                          (update :revision-id inc)))
-                        variable-associations)]
-    (doseq [tombstone tombstones]
-      (concepts/save-concept db {:provider-id provider-id :small false} tombstone)
-      ;; publish tag-association delete event
-      (ingest-events/publish-event
-        (:context db)
-        (ingest-events/concept-delete-event tombstone)))))
-
-;; CMR-2520 Remove this and the related functions when implementing asynchronous cascade deletes
+;; CMR-2520 Readdress this case when asynchronous cascaded deletes are implemented.
 (defmethod c/after-save :variable
-  [db provider variable-tombstone]
-  (when (:deleted variable-tombstone)
+  [db provider tombstone]
+  (when (:deleted tombstone)
     ;; Cascade deletion to variable-associations
-    (cascade-delete-variable-associations db provider variable-tombstone)))
+    (c/cascade-delete-associations db provider tombstone)))

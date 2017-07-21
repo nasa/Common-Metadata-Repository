@@ -12,6 +12,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as concepts]
+   [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.services.provider-service :as provider-service]
@@ -589,3 +590,79 @@
                                           (truncate-highest rev-ids max-revisions))))
                  []
                  concept-id-rev-ids-map)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions for working with cascading deletes and associations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-tombstone-transaction
+  "Get the transaction for a given tombstone."
+  [db {:keys [concept-id revision-id]} provider-id concept-type]
+  (-> db
+      (concepts/get-concept concept-type
+                           {:provider-id provider-id :small false}
+                           concept-id
+                           revision-id)
+      :transaction-id))
+
+(defn get-tombstone-associations
+  "A convenience function for querying the database for tombstone
+  associations. By default, associations use the 'CMR' provider-id; if this
+  is not what you need, use the 3-arity function and pass the desired
+  provider."
+  ([db tombstone]
+   (get-tombstone-associations db tombstone {}))
+  ([db tombstone params]
+   (get-tombstone-associations db tombstone "CMR" params))
+  ([db tombstone provider-id params]
+   (concepts/find-latest-concepts db {:provider-id provider-id} params)))
+
+(defn only-newer-associations
+  "Filter out any associations older than the tombstone."
+  [db tombstone provider-id concept-type params]
+  (filter #(< (:transaction-id %)
+              (get-tombstone-transaction db tombstone provider-id concept-type))
+          (get-tombstone-associations db tombstone params)))
+
+(defn publish-delete-associations
+  "Publish events for concept associatiosn deletes. The in-memory database uses
+  this function without the provider-id to publish events only; it doesn't save
+  the concepts as well (the external database does)."
+  ([db tombstones]
+    (publish-delete-associations db tombstones nil))
+  ([db provider-id tombstones]
+   (doseq [tombstone tombstones]
+     (when provider-id
+       (concepts/save-concept db
+                              {:provider-id provider-id :small false}
+                              tombstone))
+     ;; publish association delete event
+     (ingest-events/publish-event
+       (:context db)
+       (ingest-events/concept-delete-event tombstone)))))
+
+(defn update-tombstone-associations
+  "A utility function for use when performing cascading deletes on concept
+  associations."
+  [associations]
+  (map #(-> %
+            (assoc :deleted true :metadata "")
+            (update :revision-id inc))
+        associations))
+
+(defn cascade-delete-concept-associations
+  "Save tombstones for all the associations of the given concept tombstone."
+  [db provider tombstone params]
+  (let [concept-type (:concept-type tombstone)
+        provider-id (or (:provider-id provider) "CMR")]
+    (->> params
+         (only-newer-associations db tombstone provider-id concept-type)
+         (update-tombstone-associations)
+         (publish-delete-associations db provider-id))))
+
+(defmulti cascade-delete-associations
+  "A wrapper for `cascade-delete-concept-associations` whose methods are
+  intended to be implemented for specific content types that need to pass
+  type-specific parameters to the wrapped function."
+  (fn [db provider tombstone]
+    (:concept-type tombstone)))
