@@ -815,6 +815,14 @@
                              :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                              :connection-manager (conn-mgr)})))
 
+(defn created-at-same?
+  "Returns true if the `created-at` for the given concept revisions are the same
+  and none of them are nil"
+  [& concepts]
+  (let [created-ats (map :created-at concepts)]
+    (and (apply = created-ats)
+         (not-any? nil? created-ats))))
+
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn reset-database-fixture

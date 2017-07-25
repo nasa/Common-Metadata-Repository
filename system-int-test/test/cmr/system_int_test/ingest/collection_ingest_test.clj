@@ -1,5 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-ingest-test
-  "CMR collection ingest integration tests"
+  "CMR collection ingest integration tests.
+
+  For collection permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clj-http.client :as client]
    [clj-time.core :as t]
