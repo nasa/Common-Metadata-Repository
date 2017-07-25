@@ -41,10 +41,10 @@
   ONE_MB)
 
 (def MAX_REQUEST_BODY_SIZE
- "The maximum size of a request to body. This is set to 500KB prevent large requests coming in
-  that cause out of memory exceptions. A large ISO document like AST_L1A can be 120K characters which
-  would take up about 240KB in Java. This value is set to 5 MB."
- (* 5 ONE_MB))
+ "The maximum request body size which the application will accept. This is set to prevent large,
+  invalid requests coming in that cause out of memory exceptions. Requests to save the humanizer
+  report in Cubby can be in the 5 to 10 MB range."
+ (* 50 ONE_MB))
 
 (defn- routes-fn-verify-size
   "Takes the passed in routes function and wraps it with another function that will verify request
