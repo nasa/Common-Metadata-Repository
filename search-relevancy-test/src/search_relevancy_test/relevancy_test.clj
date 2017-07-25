@@ -81,4 +81,5 @@
    (relevancy-test args nil))
   ([args search-params]
    (test-setup)
-   (run-anomaly-tests args search-params)))
+   (run-anomaly-tests args search-params)
+   nil)) ; Return nil so the return value is not printed to the REPL

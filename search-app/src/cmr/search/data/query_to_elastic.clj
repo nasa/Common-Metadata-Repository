@@ -262,7 +262,7 @@
 (defmethod q2e/concept-type->sort-key-map :collection
   [_]
   {:short-name :short-name.lowercase
-   :version-id :version-id.lowercase
+   :version-id :parsed-version-id.lowercase ; Use parsed for sorting
    :entry-title :entry-title.lowercase
    :entry-id :entry-id.lowercase
    :provider :provider-id.lowercase
@@ -321,7 +321,7 @@
   "This defines the sub sort fields for a latest revision collection search. Short name and version id
    are included for better relevancy with search results where all the other sort keys were identical."
   [{(q2e/query-field->elastic-field :short-name :collection) {:order "asc"}}
-   {(q2e/query-field->elastic-field :version-id :collection) {:order "desc"}}
+   {(q2e/query-field->elastic-field :parsed-version-id.lowercase :collection) {:order "desc"}}
    {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
