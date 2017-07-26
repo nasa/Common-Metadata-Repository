@@ -26,7 +26,8 @@
   ([coll-attributes]
    (assert-valid coll-attributes nil))
   ([coll-attributes options]
-   (let [collection (assoc (data-umm-c/collection coll-attributes) :native-id (:native-id coll-attributes))
+   (let [collection (assoc (data-umm-c/collection coll-attributes)
+                           :native-id (:native-id coll-attributes))
          provider-id (get coll-attributes :provider-id "PROV1")
          response (d/ingest-umm-spec-collection provider-id collection options)]
      (is (#{{:status 200} {:status 201}} (select-keys response [:status :errors]))))))
@@ -52,15 +53,16 @@
                    {:Platforms [(data-umm-cmn/platform {:ShortName "foo"
                                                         :LongName "Airbus A340-600"
                                                         :Type "Aircraft"})]
-                    :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"] :ShortName "SomeCenter"})]})
+                    :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
+                                                             :ShortName "SomeCenter"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
       (is (= {:status 422
               :errors [{:path ["Platforms" 0]
-                        :errors [(str "Platform short name [foo], long name [Airbus A340-600], and type [Aircraft] "
-                                      "was not a valid keyword combination.")]}
+                        :errors [(str "Platform short name [foo], long name [Airbus A340-600], "
+                                      "and type [Aircraft] was not a valid keyword combination.")]}
                        {:path ["DataCenters" 0]
-                        :errors [(str "Data center short name [SomeCenter] and long name [null] "
-                                      "was not a valid keyword combination.")]}]}
+                        :errors [(str "Data center short name [SomeCenter] was not a valid "
+                                      "keyword.")]}]}
              response))))
 
   (testing "Project keyword validation"
@@ -102,7 +104,9 @@
   (testing "Platform keyword validation"
     (are2 [short-name long-name type]
           (assert-invalid-keywords
-            {:Platforms [(data-umm-cmn/platform {:ShortName short-name :LongName long-name :Type type})]}
+            {:Platforms [(data-umm-cmn/platform {:ShortName short-name
+                                                 :LongName long-name
+                                                 :Type type})]}
             ["Platforms" 0]
             [(format (str "Platform short name [%s], long name [%s], and type [%s]"
                           " was not a valid keyword combination.")
@@ -125,7 +129,9 @@
 
     (are2 [short-name long-name type]
           (assert-valid-keywords
-            {:Platforms [(data-umm-cmn/platform {:ShortName short-name :LongName long-name :Type type})]})
+            {:Platforms [(data-umm-cmn/platform {:ShortName short-name
+                                                 :LongName long-name
+                                                 :Type type})]})
           "Exact match"
           "A340-600" "Airbus A340-600" "Aircraft"
 
@@ -133,27 +139,14 @@
           "a340-600" "aiRBus A340-600" "aIrCrAfT"))
 
   (testing "DataCenter keyword validation"
-    (are3 [attribs]
-          (let [dc (data-umm-cmn/data-center attribs)]
-            (assert-invalid-keywords
-              {:DataCenters [dc]}
-              ["DataCenters" 0]
-              [(msg/datacenter-not-matches-kms-keywords dc)]))
-
-          "Invalid short name"
-          {:Roles ["ARCHIVER"]
-           :ShortName "AARHUS-HYDRO-Invalid"
-           :LongName "Hydrogeophysics Group, Aarhus University "}
-
-          "Invalid long name"
-          {:Roles ["ARCHIVER"]
-           :ShortName "AARHUS-HYDRO"
-           :LongName "Hydrogeophysics Group, Aarhus University Invalid"}
-
-          "Invalid combination"
-          {:Roles ["ARCHIVER"]
-           :ShortName "OR-STATE/EOARC"
-           :LongName "Hydrogeophysics Group, Aarhus University "})
+    (testing "Invalid short name"
+      (let [dc (data-umm-cmn/data-center {:Roles ["ARCHIVER"]
+                                          :ShortName "AARHUS-HYDRO-Invalid"
+                                          :LongName "Hydrogeophysics Group, Aarhus University "})]
+        (assert-invalid-keywords
+          {:DataCenters [dc]}
+          ["DataCenters" 0]
+          [(msg/data-center-not-matches-kms-keywords dc)])))
 
     (are3 [attribs]
           (let [dc (data-umm-cmn/data-center attribs)]
@@ -167,7 +160,16 @@
           "Valid Case Insensitive"
           {:Roles ["ARCHIVER"]
            :ShortName "aArHUS-HYDRO"
-           :LongName "hYdrogeophysics Group, Aarhus University "}))
+           :LongName "hYdrogeophysics Group, Aarhus University "}
+
+          "Invalid long name is ok"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO"
+           :LongName "Hydrogeophysics Group, Aarhus University Invalid"}
+
+          "Nil long name is ok"
+          {:Roles ["ARCHIVER"]
+           :ShortName "AARHUS-HYDRO"}))
 
   (testing "DirectoryName keyword validation"
     (are3 [attribs]
@@ -175,7 +177,7 @@
             (assert-invalid-keywords
               {:DirectoryNames [dn]}
               ["DirectoryNames" 0]
-              [(msg/directoryname-not-matches-kms-keywords dn)]))
+              [(msg/directory-name-not-matches-kms-keywords dn)]))
 
           "Invalid short name"
           {:ShortName "SN Invalid"
