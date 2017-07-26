@@ -16,6 +16,9 @@
     "Leading 0's version"
     "006" "6"
 
+    "Leading and trailing 0's"
+    "010" "10"
+
     "String version"
     "Not provided" "Not provided"
 
