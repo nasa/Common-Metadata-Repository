@@ -903,3 +903,29 @@
          "||" [0]
          "48AND" [48]
          "OR" [49])))
+
+;; Test that the same collection short-name with different versions comes back
+;; in descending order by version, even if the versions are in different formats
+;; i.e. 001 vs 2
+(deftest version-sort
+  (let [coll-v1 (d/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection
+                           {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V001",
+                            :ShortName "MOD05_L2",
+                            :Version "001"}))
+        coll-v2 (d/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection
+                           {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V002",
+                            :ShortName "MOD05_L2",
+                            :Version "2"}))
+        coll-v3 (d/ingest-umm-spec-collection
+                  "PROV1"
+                  (data-umm-c/collection
+                           {:EntryTitle "MODIS/Terra Total Precipitable Water Aerosol 5-Min L2 Swath 1km and 5km V003",
+                            :ShortName "MOD05_L2",
+                            :Version "003"}))
+        _ (index/wait-until-indexed)
+        refs (search/find-refs :collection {:keyword "MOD05_L2"})]
+     (is (d/refs-match-order? [coll-v3 coll-v2 coll-v1] refs))))
