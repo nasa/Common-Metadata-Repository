@@ -3,7 +3,7 @@
   (:require
     [clojure.set :as set]
     [cmr.common.config :refer [defconfig]]
-    [cmr.common.log :as log :refer (warn)] 
+    [cmr.common.log :as log :refer (warn)]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.metadata-db.data.concepts :as c]
@@ -33,10 +33,7 @@
       (zero? num-concepts)
       (do
         (warn
-          (format "Unable to find saved concept for provider [%s] and %s [%s]"
-                  (:provider-id concept)
-                  (name field)
-                  field-value))
+          (msg/concept-not-found (:provider-id concept) (name field) field-value))
         nil)
       (> num-concepts 1)
       [(msg/duplicate-field-msg
@@ -44,8 +41,8 @@
          (remove #(= (:concept-id concept) (get % :concept-id)) concepts))])))
 
 (defn unique-field-constraint
-  "Returns a function which verifies that there is only one non-deleted concept for a provider
-  with the value for the given field."
+  "Returns a function which verifies that there is only one non-deleted concept
+  for a provider with the value for the given field."
   [field]
   (fn [db provider concept]
     (let [field-value (get-in concept [:extra-fields field])
@@ -94,22 +91,20 @@
             (let [{:keys [transaction-id revision-id]} tran-rev]
               (or (when (and (< revision-id this-revision-id)
                              (> transaction-id this-transaction-id))
-                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
-                                      "which is higher than revision [%d] with transaction-id [%d].")
-                                 revision-id
-                                 concept-id
-                                 transaction-id
-                                 this-revision-id
-                                 this-transaction-id)])
+                        [(msg/concept-higher-transaction-id
+                          revision-id
+                          concept-id
+                          transaction-id
+                          this-revision-id
+                          this-transaction-id)])
                   (when (and (> revision-id this-revision-id)
                              (< transaction-id this-transaction-id))
-                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
-                                      "which is lower than revision [%d] with transaction-id [%d]."
-                                     revision-id
-                                     concept-id
-                                     transaction-id
-                                     this-revision-id
-                                     this-transaction-id))]))))
+                        [(msg/concept-lower-transaction-id
+                          revision-id
+                          concept-id
+                          transaction-id
+                          this-revision-id
+                          this-transaction-id)]))))
           transaction-revisions)))
 
 ;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
@@ -124,9 +119,10 @@
    :acl [(unique-field-constraint :acl-identity)]})
 
 (defn perform-post-commit-constraint-checks
-  "Perform the post commit constraint checks aggregating any constraint violations. Returns nil if
-  there are no constraint violations. Otherwise it performs any necessary database cleanup using
-  the provided rollback-function and throws a :conflict error."
+  "Perform the post commit constraint checks aggregating any constraint
+  violations. Returns nil if there are no constraint violations. Otherwise it
+  performs any necessary database cleanup using the provided rollback-function
+  and throws a :conflict error."
   [db provider concept rollback-function]
   (let [constraints ((constraints-by-concept-type) (:concept-type concept))]
     (when-let [errors (seq (util/apply-validations constraints db provider concept))]
