@@ -22,6 +22,7 @@
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.concepts :as cc]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
@@ -282,11 +283,13 @@
                            :page-size 0
                            :result-format :query-specified
                            :condition (qm/date-range-condition
-                                        :created-at start-date end-date)
+                                        (q2e/query-field->elastic-field :created-at :granule)
+                                        start-date
+                                        end-date)
                            :result-fields []
                            :aggregations {:collections
                                           {:terms {:size query-aggregation-size
-                                                   :field :collection-concept-id}}}})]
+                                                   :field (q2e/query-field->elastic-field :collection-concept-id :granule)}}}})]
       (qe/execute-query context query))))
 
 (defn get-collections-by-providers
