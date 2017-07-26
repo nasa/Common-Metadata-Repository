@@ -50,8 +50,8 @@
       :else
       (errors/internal-error! (str "Unknown spatial representation [" coord-sys "]")))))
 
-(defn- apply-function-to-all-values-in-map 
-  "Applies function f to all the values in map m." 
+(defn- apply-function-to-all-values-in-map
+  "Applies function f to all the values in map m."
   [m f]
   (reduce-kv (fn [m k v] (assoc m k (f v))) {} m))
 
@@ -127,6 +127,16 @@
        (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
+(defn- parse-version-id
+  "Safely parse the version-id to an integer and then return as a string. This
+  is so that collections with the same short name and differently formatted
+  versions (i.e. 1 vs. 002) can be more accurately sorted. If the version
+  cannot be parsed to an integer, return the original version-id"
+  [version-id]
+  (try
+    (str (Integer/parseInt version-id))
+    (catch Exception _ version-id)))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -138,6 +148,7 @@
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
          related-urls :RelatedUrls temporal-extents :TemporalExtents} collection
+        parsed-version-id (parse-version-id version-id)
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
@@ -189,12 +200,12 @@
         archive-center-names (keep meaningful-short-name-fn archive-centers)
         data-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
                           (map str/trim (data-center/extract-data-center-names collection)))
-        ;; returns a list of {:start-date xxx :end-date yyy} 
+        ;; returns a list of {:start-date xxx :end-date yyy}
         temporal-extents (->> temporal-extents
-                              ;; converts temporal-extents into a list of many 
+                              ;; converts temporal-extents into a list of many
                               ;; {:BeginningDateTime xxx :EndingDateTime xxx}
                               (mapcat spec-time/temporal-ranges)
-                              (map #(set/rename-keys % {:BeginningDateTime :start-date 
+                              (map #(set/rename-keys % {:BeginningDateTime :start-date
                                                         :EndingDateTime :end-date}))
                               (map #(apply-function-to-all-values-in-map % index-util/date->elastic)))
         data-center-names (keep meaningful-short-name-fn data-centers)
@@ -217,7 +228,6 @@
                            ;; found even if the collection has been reindexed recently.
                            ;; otherwise, use granule-end-date
                            granule-end-date)]
-
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
@@ -239,6 +249,7 @@
             :short-name.lowercase (util/safe-lowercase short-name)
             :version-id version-id
             :version-id.lowercase (util/safe-lowercase version-id)
+            :parsed-version-id.lowercase (util/safe-lowercase parsed-version-id)
             :deleted (boolean deleted)
             :revision-date2 revision-date
             :access-value access-value
@@ -258,13 +269,13 @@
             :archive-centers archive-centers
             :data-centers data-centers
             :temporals temporal-extents
-            ;; added so that we can respect all collection temporal ranges in search 
+            ;; added so that we can respect all collection temporal ranges in search
             ;; when limit_to_granules is set and there are no granules for the collection.
-            :limit-to-granules-temporals 
+            :limit-to-granules-temporals
               (if granule-start-date
                 [{:start-date (index-util/date->elastic granule-start-date)
                   :end-date (index-util/date->elastic granule-end-date)}]
-                temporal-extents) 
+                temporal-extents)
             :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
                                    (:ScienceKeywords collection))
             :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)

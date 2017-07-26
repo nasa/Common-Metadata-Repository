@@ -109,7 +109,7 @@
         log-history (core/get-argument-value args "-log-history")
         log-history (if (some? log-history)
                       (Boolean/parseBoolean log-history)
-                      true)]
+                      false)]
     (when log-history
       (write-test-run-to-csv test-run-history-csv results run-description))
     (write-test-run-to-csv local-test-run-csv results run-description)))
