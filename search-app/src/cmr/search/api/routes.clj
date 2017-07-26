@@ -254,7 +254,8 @@
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
-        collections-with-new-granules-search (query-svc/get-collections-from-new-granules ctx params)
+        [query-time collections-with-new-granules-search] (util/time-execution
+                                                           (query-svc/get-collections-from-new-granules ctx params))
         collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
         search-params (-> params
                           (assoc :echo-collection-id collection-ids)
@@ -265,7 +266,9 @@
     (if (empty? collection-ids)
       ;; collections-with-new-granules-search already has an empty response object,
       ;; as well as time-took, which is why it's being passed to search-response here
-      (search-response ctx (dissoc collections-with-new-granules-search :aggregations))
+      (search-response ctx (-> collections-with-new-granules-search
+                               (assoc :took query-time)
+                               (dissoc :aggregations)))
       (find-concepts-by-parameters ctx path-w-extension search-params headers body))))
 
 (defn- granule-parent-collection-query?

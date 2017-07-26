@@ -42,7 +42,6 @@
         items (mapv #(elastic-result->query-result-item context query %) elastic-matches)]
     (results/map->Results
      {:aggregations (:aggregations elastic-results)
-      :took (:took elastic-results)
       :hits hits
       :items items
       :result-format (:result-format query)
