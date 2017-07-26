@@ -17,6 +17,17 @@ To do so, perform the following:
 4. Configure `profiles.clj` (see below)
 3. Run the local setup script: `dev-system/support/setup_local_dev.sh`
 
+## Running Tests
+
+There are several ways in which you can run tests with dev-system. The
+top-level CMR `README.md` offers some instructions on this point, including
+switching between `:in-memory` mode (the default) and `:external` (see the
+section "Testing CMR" in that README for more details).
+
+Furthermore, there is a second (and optional) test runner you can use for
+running suites, test namespaces, and individual test functions. See the
+docstring for `run-suites` in `dev/user.clj` for usage information.
+
 ## Setting up profiles.clj
 
 As noted above, you will need to create a `profiles.clj` in the `dev-system`
