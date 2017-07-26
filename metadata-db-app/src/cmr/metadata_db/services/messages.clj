@@ -26,7 +26,9 @@
     expected-id received-id concept-id))
 
 (defn concept-id-and-revision-id-conflict [concept-id revision-id]
-  (format "Conflict with existing concept-id [%s] and revision-id [%s]" concept-id revision-id))
+  (format "Conflict with existing concept-id [%s] and revision-id [%s]"
+          concept-id
+          revision-id))
 
 (defn missing-concept-type []
   "Concept must include concept-type.")
@@ -135,11 +137,12 @@
 (defn provider-with-short-name-exists [provider]
   (let [{:keys [provider-id short-name]} provider]
     (format "Provider with short name [%s] already exists. Its provider id is [%s]."
-            short-name provider-id)))
+            short-name
+            provider-id)))
 
 (defn granule-collection-cannot-change [old-concept-id new-concept-id]
   (format "Granule's parent collection cannot be changed, was [%s], now [%s]."
-          old-concept-id, new-concept-id))
+          old-concept-id new-concept-id))
 
 (defn field-too-long [value limit]
   (format "%%s [%s] exceeds %d characters" value limit))
@@ -175,3 +178,29 @@
   (format (str "Variable association could not be associated with provider [%s]. "
                "Variable associations are system level entities.")
           provider-id))
+
+(defn concept-not-found [provider-id field-name field-value]
+  (format "Unable to find saved concept for provider [%s] and %s [%s]"
+          provider-id
+          field-name
+          field-value))
+
+(defn concept-higher-transaction-id
+  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
+  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+               "which is higher than revision [%d] with transaction-id [%d].")
+          revision-id
+          concept-id
+          transaction-id
+          this-revision-id
+          this-transaction-id))
+
+(defn concept-lower-transaction-id
+  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
+  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+               "which is lower than revision [%d] with transaction-id [%d].")
+          revision-id
+          concept-id
+          transaction-id
+          this-revision-id
+          this-transaction-id))
