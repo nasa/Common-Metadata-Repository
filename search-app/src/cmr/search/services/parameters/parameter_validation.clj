@@ -64,6 +64,15 @@
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 
+(defmethod cpv/params-config :variable
+  [_]
+  (cpv/merge-params-config
+    cpv/basic-params-config
+    {:single-value #{:keyword}
+     :multiple-value #{:variable-name :measurement :provider :native-id}
+     :always-case-sensitive #{}
+     :disallow-pattern #{}}))
+
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
   {:collection #{:tag-key}
@@ -152,6 +161,13 @@
   [_]
   {:tag-key cpv/pattern-option
    :originator-id cpv/pattern-option})
+
+(defmethod cpv/valid-parameter-options :variable
+  [_]
+  {:variable-name cpv/string-param-options
+   :measurement cpv/string-param-options
+   :native-id cpv/string-param-options
+   :provider cpv/string-param-options})
 
 (defmethod cpv/valid-query-level-params :collection
   [_]
@@ -606,7 +622,8 @@
                point-validation
                line-validation
                collection-concept-id-validation])
-   :tag cpv/common-validations})
+   :tag cpv/common-validations
+   :variable cpv/common-validations})
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

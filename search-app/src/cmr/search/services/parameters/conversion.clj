@@ -67,7 +67,7 @@
    ;; Variable parameters
    :variable-name :string
    :measurement :string
-   :variables-h :variables})
+   :variables-h :variables-h})
 
 (defmethod common-params/param-mappings :granule
   [_]
@@ -109,6 +109,14 @@
   {:tag-key :string
    :originator-id :string})
 
+(defmethod common-params/param-mappings :variable
+  [_]
+  {:variable-name :string
+   :measurement :string
+   :provider :string
+   :native-id :string
+   :keyword :string})
+
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
   #{:concept-id :collection-concept-id})
@@ -145,7 +153,7 @@
                    (common-params/pattern-field? concept-type param options))]
     (tag-param->condition param value pattern?)))
 
-(defmethod common-params/parameter->condition :variables
+(defmethod common-params/parameter->condition :variables-h
   [_context concept-type param value options]
   (let [case-sensitive? (common-params/case-sensitive-field? concept-type param options)
         pattern? (common-params/pattern-field? concept-type param options)

@@ -44,12 +44,12 @@
   "Number of seconds humanizer-report-generator-job needs to wait after collection cache
    refresh job starts..
    We want to add the delay so that the collection cache can be populated first.
-   Splunk shows the average time taken for collection cache to be refreshed is around 
+   Splunk shows the average time taken for collection cache to be refreshed is around
    300 seconds"
-  {:default 400 :type Long})
+  {:default 4000 :type Long})
 
 (defconfig humanizer-report-generator-job-wait
-  "Number of milli-seconds humanizer-generator-job waits for the collection cache 
+  "Number of milli-seconds humanizer-generator-job waits for the collection cache
    to be populated in the event when the delay is not long enough."
   {:default 60000 :type Long}) ;; one minute
 
@@ -74,7 +74,7 @@
   [context rfms]
   (map #(rfm->umm-collection context %) rfms))
 
-(defn- get-cached-revision-format-maps-with-retry 
+(defn- get-cached-revision-format-maps-with-retry
   "Get all the collections from cache, if nothing is returned,
    Wait configurable number of seconds before retrying configurable number of times."
   [context]
@@ -85,7 +85,7 @@
         (info (format (str "Humanizer report generator job is sleeping for %d second(s)"
                            " before retrying to fetch from collection cache.")
                       (/ (humanizer-report-generator-job-wait) 1000)))
-        (Thread/sleep (humanizer-report-generator-job-wait)) 
+        (Thread/sleep (humanizer-report-generator-job-wait))
         (recur (dec retries))))))
 
 (defn- get-all-collections

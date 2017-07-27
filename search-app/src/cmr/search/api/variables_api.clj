@@ -60,8 +60,7 @@
 
 (defn search-for-variables
   [context params]
-  ;; placeholder for searching variables
-  )
+  (variable-api-response (variable-service/search-for-variables context params)))
 
 (def variable-api-routes
   (context "/variables" []
