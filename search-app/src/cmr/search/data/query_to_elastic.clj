@@ -47,13 +47,13 @@
   "When sorting by keyword score, set to true if we want to bin the keyword scores
   i.e. round to the nearest keyword-score-bin-size"
   {:type Boolean
-   :default true})
+   :default false})
 
 (defconfig keyword-score-bin-size
   "When sort-bin-keyword-scores is true, what should the keyword score should
   be rounded to the nearest keyword-score-bin-size"
   {:type Double
-   :default 0.2})
+   :default 0.1})
 
 (def keyword-score-bin-script
   "Groovy script used by elastic to bin the keyword score based on bin-size"

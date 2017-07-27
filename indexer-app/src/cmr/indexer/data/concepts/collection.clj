@@ -16,6 +16,7 @@
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
     [cmr.indexer.data.concepts.attribute :as attrib]
+    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
     [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
     [cmr.indexer.data.concepts.collection.data-center :as data-center]
     [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
@@ -127,16 +128,6 @@
        (map #(or (:group-guid %) (some-> % :user-type name)))
        distinct))
 
-(defn- parse-version-id
-  "Safely parse the version-id to an integer and then return as a string. This
-  is so that collections with the same short name and differently formatted
-  versions (i.e. 1 vs. 002) can be more accurately sorted. If the version
-  cannot be parsed to an integer, return the original version-id"
-  [version-id]
-  (try
-    (str (Integer/parseInt version-id))
-    (catch Exception _ version-id)))
-
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -148,7 +139,7 @@
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
          related-urls :RelatedUrls temporal-extents :TemporalExtents} collection
-        parsed-version-id (parse-version-id version-id)
+        parsed-version-id (collection-util/parse-version-id version-id)
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
@@ -341,7 +332,7 @@
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection)
            (humanizer/collection-humanizers-elastic context collection)
-           (metrics/collection-community-usage-score context collection))))
+           (metrics/collection-community-usage-score context collection parsed-version-id))))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."
