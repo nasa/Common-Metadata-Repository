@@ -1440,8 +1440,6 @@ Collections can be found by searching for associated variables. The following va
 
 * variable_name
   * supports `pattern`, `ignore_case` and option `and`
-* measurement
-  * supports `pattern`, `ignore_case` and option `and`
 
 Find collections matching variable name.
 
@@ -3124,10 +3122,10 @@ Access to variable and variable association is granted through the INGEST_MANAGE
 
 #### <a name="variable-association"></a> Variable Association
 
-A variable can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has a `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
+A variable identified by its native_id can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has a `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/native_id_of_the_variable/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
@@ -3172,10 +3170,10 @@ Status code 422 is returned when:
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
-A variable can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to variable association requests.
+A variable identified by its native_id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/native_id_of_the_variable/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
