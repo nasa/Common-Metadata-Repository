@@ -1,17 +1,18 @@
 (ns cmr.search.services.variable-service
   "Provides functions for associating and dissociating variables to collections"
   (:require
-    [clojure.edn :as edn]
-    [cmr.common.log :as log :refer (debug info warn error)]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.metadata-db.services.concept-service :as mdb-cs]
-    [cmr.metadata-db.services.search-service :as mdb-ss]
-    [cmr.search.services.association-validation :as assoc-validation]
-    [cmr.search.services.messages.association-messages :as assoc-msg]
-    [cmr.transmit.metadata-db :as mdb]
-    [cmr.umm-spec.umm-spec-core :as spec]))
+   [cheshire.core :as json]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.services.concept-service :as mdb-cs]
+   [cmr.metadata-db.services.search-service :as mdb-ss]
+   [cmr.search.services.association-validation :as assoc-validation]
+   [cmr.search.services.messages.association-messages :as assoc-msg]
+   [cmr.search.services.query-service :as query-service]
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.umm-spec.umm-spec-core :as spec]))
 
 (def ^:private native-id-separator-character
   "This is the separator character used when creating the native id for a variable."
@@ -210,3 +211,11 @@
   "Dissociates a variable from the given list of variable associations in json."
   [context variable-name variable-associations-json]
   (link-variable-to-collections context variable-name variable-associations-json :delete))
+
+(defn search-for-variables
+  "Returns the variable search result in JSON format."
+  [context params]
+  (let [results (:results (query-service/find-concepts-by-parameters
+                            context :variable (assoc params :result-format :json)))]
+    (-> (json/parse-string results true)
+        util/map-keys->snake_case)))

@@ -41,6 +41,8 @@
 ;;;
 ;;; Note: search functions return JSON responses
 
+(h/defsearcher search-for-variables :search variables-url)
+
 (defmulti variable-associations-url
   "Returns the url to associate a variable based on the association type.
   Valid association types are :query and :concept-ids."

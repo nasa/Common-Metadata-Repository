@@ -1,24 +1,25 @@
 (ns cmr.search.data.elastic-search-index
   "Implements the search index protocols for searching against Elasticsearch."
-  (:require [clojure.string :as s]
-            [clojurewerkz.elastisch.rest.document :as esd]
-            [clojurewerkz.elastisch.query :as q]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.jobs :refer [defjob]]
-            [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.transmit.index-set :as index-set]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            ;; Required to be available at runtime.
-            [cmr.search.data.query-to-elastic]
-            [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
-            [cmr.search.services.query-walkers.provider-id-extractor :as pex]
-            [cmr.common.services.errors :as e]
-            [cmr.common.concepts :as concepts]
-            [cmr.common-app.services.search.elastic-search-index :as common-esi]))
+  (:require
+   [clojure.string :as s]
+   [clojurewerkz.elastisch.query :as q]
+   [clojurewerkz.elastisch.rest.document :as esd]
+   [cmr.common-app.services.search.elastic-search-index :as common-esi]
+   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.services.errors :as e]
+   [cmr.common.util :as util]
+   ;; Required to be available at runtime.
+   [cmr.search.data.query-to-elastic]
+   [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
+   [cmr.search.services.query-walkers.provider-id-extractor :as pex]
+   [cmr.transmit.index-set :as index-set]))
 
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 1)
@@ -145,6 +146,11 @@
   [context _ query]
   {:index-name "1_tags"
    :type-name "tag"})
+
+(defmethod common-esi/concept-type->index-info :variable
+  [context _ query]
+  {:index-name "1_variables"
+   :type-name "variable"})
 
 (defn context->conn
   [context]

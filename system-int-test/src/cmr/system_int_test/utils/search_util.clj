@@ -158,6 +158,15 @@
     (get-search-failure-data
       (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
 
+(defn process-response
+  "Returns the response body with response status added."
+  [{:keys [status body]}]
+  (let [body (util/kebab-case-data body)]
+    (if (map? body)
+      (assoc body :status status)
+      {:status status
+       :body body})))
+
 (defn retrieve-concept
   "Returns the concept metadata through the search concept retrieval endpoint using the cmr
   concept-id and optionally revision-id."

@@ -858,11 +858,11 @@
     :else data))
 
 (defn kebab-case-data
-  "Returns the data with variables converted to kebab case.
+  "Returns the data with keys converted to kebab case.
 
   Alternatively, you can provide a function that takes the data as an argument,
   run before the mapping takes place. This is useful for tests when you want to
-  perform assertion checks upon the raw data, before transofmration."
+  perform assertion checks upon the raw data, before transformation."
   ([data]
     (cond
       (sequential? data) (map map-keys->kebab-case data)

@@ -156,6 +156,11 @@
   [_]
   [{:field :tag-key :order :asc}])
 
+(defmethod common-qm/default-sort-keys :variable
+  [_]
+  [{:field :variable-name :order :asc}
+   {:field :provider-id :order :asc}])
+
 (defmethod common-qm/default-sort-keys :collection
   [_]
   [{:field :entry-title :order :asc}

@@ -79,7 +79,10 @@
   ([variable-concept]
     (ingest-variable variable-concept default-opts))
   ([variable-concept opts]
-    (ingest-util/ingest-concept variable-concept opts)))
+    (let [result (ingest-util/ingest-concept variable-concept opts)
+          attrs (select-keys variable-concept
+                             [:provider-id :native-id])]
+      (merge result attrs))))
 
 (defn ingest-variable-with-attrs
   "Helper function to ingest a variable with the given variable attributes"
@@ -169,16 +172,8 @@
                (assoc :metadata "" :deleted true))
            (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
 
-(defn sort-expected-variables
-  "Sorts the variables using the expected default sort key."
-  [variables]
-  (sort-by identity
-           (fn [t1 t2]
-             (compare (:variable-name t1) (:variable-name t2)))
-           variables))
-
 (def variable-names-in-expected-response
-  [:concept-id :revision-id :variable-name :description :originator-id])
+  [:concept-id :revision-id :provider-id :native-id])
 
 (defn assert-variable-search
   "Verifies the variable search results"
@@ -186,13 +181,18 @@
    (assert-variable-search nil variables response))
   ([expected-hits variables response]
    (let [expected-items (->> variables
-                             sort-expected-variables
-                             (map #(select-keys % variable-names-in-expected-response)))
+                             (map #(select-keys % variable-names-in-expected-response))
+                             seq
+                             set)
          expected-response {:status 200
                             :hits (or expected-hits (:hits response))
                             :items expected-items}]
      (is (:took response))
-     (is (= expected-response (dissoc response :took))))))
+     (is (= expected-response
+            (-> response
+                (select-keys [:status :hits :items])
+                (util/update-in-each [:items] dissoc :variable-name :measurement)
+                (update :items set)))))))
 
 (defn- coll-variable-association->expected-variable-association
   "Returns the expected variable association for the given collection concept id to
@@ -253,3 +253,9 @@
                                {:all-revisions true})]
     (is (nil? (:errors refs)))
     (is (d/refs-match? expected-colls refs))))
+
+(defn search
+  "Searches for variables using the given parameters"
+  [params]
+  (search/process-response
+   (transmit-variable/search-for-variables (s/context) params {:raw? true})))

@@ -34,26 +34,18 @@
   [n]
   (str/join (repeat n "x")))
 
-(defn- process-response
-  [{:keys [status body]}]
-  (let [body (util/kebab-case-data body)]
-    (if (map? body)
-      (assoc body :status status)
-      {:status status
-       :body body})))
-
 (defn create-tag
   "Creates a tag."
   ([token tag]
    (create-tag token tag nil))
   ([token tag options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (tt/create-tag (s/context) tag options)))))
+     (search/process-response (tt/create-tag (s/context) tag options)))))
 
 (defn get-tag
   "Retrieves a tag by tag-key"
   [tag-key]
-  (process-response (tt/get-tag (s/context) tag-key {:raw? true})))
+  (search/process-response (tt/get-tag (s/context) tag-key {:raw? true})))
 
 (defn update-tag
   "Updates a tag."
@@ -63,7 +55,7 @@
    (update-tag token tag-key tag nil))
   ([token tag-key tag options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (tt/update-tag (s/context) tag-key tag options)))))
+     (search/process-response (tt/update-tag (s/context) tag-key tag options)))))
 
 (defn delete-tag
   "Deletes a tag"
@@ -71,7 +63,7 @@
    (delete-tag token tag-key nil))
   ([token tag-key options]
    (let [options (merge {:raw? true :token token} options)]
-     (process-response (tt/delete-tag (s/context) tag-key options)))))
+     (search/process-response (tt/delete-tag (s/context) tag-key options)))))
 
 (defn- associate-tag
   "Associate a tag with collections by the JSON condition.
@@ -80,7 +72,7 @@
   (let [options (merge {:raw? true :token token} options)
         response (tt/associate-tag association-type (s/context) tag-key condition options)]
     (index/wait-until-indexed)
-    (process-response response)))
+    (search/process-response response)))
 
 (defn associate-by-query
   "Associates a tag with collections found with a JSON query"
@@ -102,7 +94,7 @@
   (let [options (merge {:raw? true :token token} options)
         response (tt/dissociate-tag association-type (s/context) tag-key condition options)]
     (index/wait-until-indexed)
-    (process-response response)))
+    (search/process-response response)))
 
 (defn dissociate-by-query
   "Dissociates a tag with collections found with a JSON query"
@@ -146,7 +138,7 @@
 (defn search
   "Searches for tags using the given parameters"
   [params]
-  (process-response (tt/search-for-tags (s/context) params {:raw? true})))
+  (search/process-response (tt/search-for-tags (s/context) params {:raw? true})))
 
 (defn assert-tag-saved
   "Checks that a tag was persisted correctly in metadata db. The tag should already have originator

@@ -1,18 +1,19 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cs]
-            [cmr.transmit.metadata-db :as meta-db]
-            [cmr.transmit.index-set :as index-set]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.connection :as transmit-conn]
-            [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
-            [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg :refer [defconfig]]))
+  (:require
+   [cheshire.core :as cheshire]
+   [clj-http.client :as client]
+   [cmr.common.cache :as cache]
+   [cmr.common.concepts :as cs]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.connection :as transmit-conn]
+   [cmr.transmit.index-set :as index-set]
+   [cmr.transmit.metadata-db :as meta-db]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
@@ -37,6 +38,10 @@
   "Number of shards to use for the tags index."
   {:default 5 :type Long})
 
+(defconfig elastic-variable-index-num-shards
+  "Number of shards to use for the variables index."
+  {:default 5 :type Long})
+
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -59,6 +64,11 @@
                   {:number_of_shards (elastic-tag-index-num-shards)
                    :number_of_replicas 1,
                    :refresh_interval "1s"}})
+
+(def variable-setting {:index
+                       {:number_of_shards (elastic-variable-index-num-shards)
+                        :number_of_replicas 1,
+                        :refresh_interval "1s"}})
 
 (defnestedmapping attributes-field-mapping
   "Defines mappings for attributes."
@@ -575,6 +585,19 @@
    :description (m/not-indexed (m/stored m/string-field-mapping))
    :originator-id.lowercase (m/stored m/string-field-mapping)})
 
+(defmapping variable-mapping :variable
+  "Defines the elasticsearch mapping for storing variables."
+  {:_id  {:path "concept-id"}}
+  {:concept-id (m/stored m/string-field-mapping)
+   :native-id (m/stored m/string-field-mapping)
+   :native-id.lowercase m/string-field-mapping
+   :provider-id (m/stored m/string-field-mapping)
+   :provider-id.lowercase m/string-field-mapping
+   :variable-name (m/stored m/string-field-mapping)
+   :variable-name.lowercase m/string-field-mapping
+   :measurement (m/stored m/string-field-mapping)
+   :measurement.lowercase m/string-field-mapping})
+
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
            :number_of_replicas 1,
@@ -623,7 +646,11 @@
                :tag {:indexes
                      [{:name "tags"
                        :settings tag-setting}]
-                     :mapping tag-mapping}}})
+                     :mapping tag-mapping}
+               :variable {:indexes
+                          [{:name "variables"
+                            :settings variable-setting}]
+                          :mapping variable-mapping}}})
 
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
@@ -706,7 +733,8 @@
    (let [fetched-index-set (index-set/get-index-set context index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
       :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))
-      :tag (name (first (keys (get-in fetched-index-set [:index-set :tag :mapping]))))})))
+      :tag (name (first (keys (get-in fetched-index-set [:index-set :tag :mapping]))))
+      :variable (name (first (keys (get-in fetched-index-set [:index-set :variable :mapping]))))})))
 
 (def index-set-cache-key
   "The name of the cache used for caching index set related data."
@@ -773,6 +801,9 @@
 
        :tag
        [(get indexes (or target-index-key :tags))]
+
+       :variable
+       [(get indexes (or target-index-key :variables))]
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]

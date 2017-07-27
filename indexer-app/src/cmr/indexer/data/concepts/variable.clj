@@ -9,8 +9,8 @@
 
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
-  (let [{:keys [concept-id deleted]} concept
-        {:keys [variable-name description originator-id]} parsed-concept]
+  (let [{:keys [concept-id deleted provider-id native-id extra-fields]} concept
+        {:keys [variable-name measurement]} extra-fields]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
@@ -19,8 +19,12 @@
       {:concept-id concept-id
        :variable-name variable-name
        :variable-name.lowercase (string/lower-case variable-name)
-       :description description
-       :originator-id.lowercase  (util/safe-lowercase originator-id)})))
+       :measurement measurement
+       :measurement.lowercase (string/lower-case measurement)
+       :provider-id provider-id
+       :provider-id.lowercase (string/lower-case provider-id)
+       :native-id native-id
+       :native-id.lowercase (string/lower-case native-id)})))
 
 (defn- variable-association->variable-concept
   "Returns the variable concept and variable association for the given variable association."
