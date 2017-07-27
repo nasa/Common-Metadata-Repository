@@ -39,8 +39,8 @@
                                                          :Name "Variable2"
                                                          :LongName "Measurement2"})
         variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
-                                                         :Name "variable3"
-                                                         :LongName "Measurement3"})
+                                                         :Name "a subsitute for variable2"
+                                                         :LongName "variable1"})
         variable4 (variables/ingest-variable-with-attrs {:native-id "var4"
                                                          :Name "v.other"
                                                          :LongName "m.other"})
@@ -127,7 +127,45 @@
 
       "By multiple measurements with options"
       [variable1 variable4]
-      {:measurement ["measurement1" "*other"] "options[measurement][pattern]" true})))
+      {:measurement ["measurement1" "*other"] "options[measurement][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; keyword Param
+      "By keyword case insensitive - exact match"
+      [variable1]
+      {:keyword "Measurement1"}
+
+      "By keyword case insensitive, mixed case"
+      [variable1]
+      {:keyword "measuREment1"}
+
+      "By keyword match both variable_name and measurement"
+      [variable1 variable3]
+      {:keyword "variable1"}
+
+      "By keyword match tokenized variable_name and measurement"
+      [variable2 variable3]
+      {:keyword "variable2"}
+
+      "By keyword match explict string"
+      [variable3]
+      {:keyword "a subsitute for variable2"}
+
+      "By keyword match wildcard *"
+      [variable1 variable2]
+      {:keyword "meas*"}
+
+      "By keyword match wildcard *, also apply to tokenized string"
+      [variable1 variable2 variable3]
+      {:keyword "var*"}
+
+      "By keyword match wildcard ?, no match"
+      []
+      {:keyword "meas?"}
+
+      "By keyword match wildcard ?, match"
+      [variable1 variable2]
+      {:keyword "measurement?"})))
 
 (deftest deleted-variables-not-found-test
   (let [{token :token} (variables/setup-update-acl (s/context) "PROV1")

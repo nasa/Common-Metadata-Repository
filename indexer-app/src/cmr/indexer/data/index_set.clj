@@ -596,7 +596,8 @@
    :variable-name (-> m/string-field-mapping m/stored m/doc-values)
    :variable-name.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
-   :measurement.lowercase (m/doc-values m/string-field-mapping)})
+   :measurement.lowercase (m/doc-values m/string-field-mapping)
+   :keyword m/text-field-mapping})
 
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),

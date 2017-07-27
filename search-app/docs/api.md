@@ -3065,7 +3065,7 @@ Variable is some of the measurement variables that belongs to collections/granul
 
 Variable have the following fields:
 
-* variable_name (REQUIRED): free text specifying the key of the variable. Variable name cannot contain `/` character. Variable name is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case.
+* variable_name (REQUIRED): free text specifying the key of the variable. Variable name cannot contain `/` character.
 * measurement (REQUIRED): the measurement that the variable belongs to.
 
 #### <a name="searching-for-variables"></a> Searching for Variables
@@ -3092,6 +3092,8 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: pattern, ignore_case
 * measurement
   * options: pattern, ignore_case
+* keyword
+  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for keyword search: variable_name, measurement.
 
 ##### Variable Search Response
 
