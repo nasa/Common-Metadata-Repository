@@ -15,7 +15,9 @@
 (use-fixtures
  :each
  (join-fixtures
-  [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
+  [(ingest/reset-fixture {"provguid1" "PROV1"
+                          "provguid2" "PROV2"
+                          "provguid3" "PROV3"}
                          {:grant-all-search? false})
    vu/grant-all-variable-fixture]))
 

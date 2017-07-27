@@ -266,7 +266,8 @@
       (are [url cache cache-key value]
         (let [response (get-cache-value url cache cache-key admin-read-token)]
           (is (= (set value) (set response))))
-        (url/indexer-read-caches-url) "indexer-index-set-cache"
+        (url/indexer-read-caches-url)
+        "indexer-index-set-cache"
         "concept-mapping-types"
         {:collection "collection"
          :granule "granule"
