@@ -56,25 +56,40 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; variable-name Param
       "By variable-name case sensitive - exact match"
-      [variable1] {:variable-name "Variable1"}
+      [variable1]
+      {:variable-name "Variable1"}
 
       "By variable-name case sensitive, default ignore-case true"
-      [variable1] {:variable-name "variable1"}
+      [variable1]
+      {:variable-name "variable1"}
 
       "By variable-name ignore case false"
-      [] {:variable-name "variable1" "options[variable-name][ignore-case]" false}
+      []
+      {:variable-name "variable1" "options[variable-name][ignore-case]" false}
 
       "By variable-name ignore case true"
-      [variable1] {:variable-name "variable1" "options[variable-name][ignore-case]" true}
+      [variable1]
+      {:variable-name "variable1" "options[variable-name][ignore-case]" true}
 
       "By variable-name Pattern, default false"
-      [] {:variable-name "*other"}
+      []
+      {:variable-name "*other"}
 
       "By variable-name Pattern true"
-      [variable4] {:variable-name "*other" "options[variable-name][pattern]" true}
+      [variable4]
+      {:variable-name "*other" "options[variable-name][pattern]" true}
 
       "By variable-name Pattern false"
-      [] {:variable-name "*other" "options[variable-name][pattern]" false})))
+      []
+      {:variable-name "*other" "options[variable-name][pattern]" false}
+
+      "By multiple vairalbe-names"
+      [variable1 variable2]
+      {:variable-name ["Variable1" "variable2"]}
+
+      "By multiple vairalbe-names with options"
+      [variable1 variable4]
+      {:variable-name ["Variable1" "*other"] "options[variable-name][pattern]" true})))
 
 (deftest deleted-variables-not-found-test
   (let [{token :token} (variables/setup-update-acl (s/context) "PROV1")

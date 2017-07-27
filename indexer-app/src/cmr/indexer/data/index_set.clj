@@ -730,11 +730,16 @@
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
   ([context index-set-id]
-   (let [fetched-index-set (index-set/get-index-set context index-set-id)]
-     {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
-      :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))
-      :tag (name (first (keys (get-in fetched-index-set [:index-set :tag :mapping]))))
-      :variable (name (first (keys (get-in fetched-index-set [:index-set :variable :mapping]))))})))
+   (let [fetched-index-set (index-set/get-index-set context index-set-id)
+         get-concept-mapping-fn (fn [concept-type]
+                                  (-> (get-in fetched-index-set [:index-set concept-type :mapping])
+                                      keys
+                                      first
+                                      name))]
+     {:collection (get-concept-mapping-fn :collection)
+      :granule (get-concept-mapping-fn :granule)
+      :tag (get-concept-mapping-fn :tag)
+      :variable (get-concept-mapping-fn :variable)})))
 
 (def index-set-cache-key
   "The name of the cache used for caching index set related data."
