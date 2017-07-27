@@ -3065,7 +3065,7 @@ The following parameters are supported when searching for variables.
 
 ##### Variable Matching Parameters
 
-These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `variable_name[]=key1&variable_name[]=key2`.
+These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `variable_name[]=key1&variable_name[]=key2`. The values are ORed together.
 
 * variable_name
   * options: pattern, ignore_case
