@@ -590,13 +590,13 @@
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :native-id (-> m/string-field-mapping m/stored m/doc-values)
-   :native-id.lowercase (m/stored m/string-field-mapping)
+   :native-id.lowercase (m/doc-values m/string-field-mapping)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
-   :provider-id.lowercase (m/stored m/string-field-mapping)
+   :provider-id.lowercase (m/doc-values m/string-field-mapping)
    :variable-name (-> m/string-field-mapping m/stored m/doc-values)
-   :variable-name.lowercase (m/stored m/string-field-mapping)
+   :variable-name.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
-   :measurement.lowercase (m/stored m/string-field-mapping)})
+   :measurement.lowercase (m/doc-values m/string-field-mapping)})
 
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
