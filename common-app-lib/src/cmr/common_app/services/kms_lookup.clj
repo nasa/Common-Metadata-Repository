@@ -31,7 +31,7 @@
    :platforms [:category :short-name :long-name]
    :instruments [:short-name :long-name]
    :projects [:short-name :long-name]
-   :providers [:short-name :long-name]
+   :providers [:short-name]
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
    :concepts [:short-name]
    :iso-topic-categories [:short-name]})
