@@ -3074,7 +3074,7 @@ These parameters will match fields within a variable. They are case insensitive 
 
 ##### Variable Search Response
 
-The response is always returned in JSON and includes the following parts.
+The response is always returned in JSON and includes the following fields.
 
 * hits - How many total variables were found.
 * took - How long the search took in milliseconds

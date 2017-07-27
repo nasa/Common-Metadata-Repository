@@ -217,5 +217,6 @@
   [context params]
   (let [results (:results (query-service/find-concepts-by-parameters
                             context :variable (assoc params :result-format :json)))]
-    (-> (json/parse-string results true)
+    (-> results
+        (json/parse-string true)
         util/map-keys->snake_case)))

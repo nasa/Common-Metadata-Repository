@@ -2,7 +2,7 @@
   "This tests searching variables."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer [are2]]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
@@ -47,7 +47,7 @@
         all-variables [variable1 variable2 variable3 variable4]]
     (index/wait-until-indexed)
 
-    (are2 [expected-variables query]
+    (are3 [expected-variables query]
       (variables/assert-variable-search expected-variables (variables/search query))
 
       "Find all"
@@ -83,11 +83,11 @@
       []
       {:variable-name "*other" "options[variable-name][pattern]" false}
 
-      "By multiple vairalbe-names"
+      "By multiple variable-names"
       [variable1 variable2]
       {:variable-name ["Variable1" "variable2"]}
 
-      "By multiple vairalbe-names with options"
+      "By multiple variable-names with options"
       [variable1 variable4]
       {:variable-name ["Variable1" "*other"] "options[variable-name][pattern]" true})))
 

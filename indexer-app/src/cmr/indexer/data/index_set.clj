@@ -588,15 +588,15 @@
 (defmapping variable-mapping :variable
   "Defines the elasticsearch mapping for storing variables."
   {:_id  {:path "concept-id"}}
-  {:concept-id (m/stored m/string-field-mapping)
-   :native-id (m/stored m/string-field-mapping)
-   :native-id.lowercase m/string-field-mapping
-   :provider-id (m/stored m/string-field-mapping)
-   :provider-id.lowercase m/string-field-mapping
-   :variable-name (m/stored m/string-field-mapping)
-   :variable-name.lowercase m/string-field-mapping
-   :measurement (m/stored m/string-field-mapping)
-   :measurement.lowercase m/string-field-mapping})
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :native-id (-> m/string-field-mapping m/stored m/doc-values)
+   :native-id.lowercase (m/stored m/string-field-mapping)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :provider-id.lowercase (m/stored m/string-field-mapping)
+   :variable-name (-> m/string-field-mapping m/stored m/doc-values)
+   :variable-name.lowercase (m/stored m/string-field-mapping)
+   :measurement (-> m/string-field-mapping m/stored m/doc-values)
+   :measurement.lowercase (m/stored m/string-field-mapping)})
 
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
