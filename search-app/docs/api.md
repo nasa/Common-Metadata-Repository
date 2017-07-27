@@ -144,6 +144,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Dissociating a Tag from Collections by collection concept ids](#dissociating-collections-with-a-tag-by-concept-ids)
     * [Searching for Tags](#searching-for-tags)
   * [Variable](#variable)
+    * [Searching for Variables](#searching-for-variables)
     * [Variable Access Control](#variable-access-control)
     * [Variable association](#variable-association)
     * [Variable dissociation](#variable-dissociation)
@@ -3047,7 +3048,75 @@ Variable have the following fields:
 
 * variable_name (REQUIRED): free text specifying the key of the variable. Variable name cannot contain `/` character. Variable name is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case.
 * measurement (REQUIRED): the measurement that the variable belongs to.
-* originator_id (REQUIRED): the Earthdata Login ID of the person who created the variable.
+
+#### <a name="searching-for-variables"></a> Searching for Variables
+
+Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`.
+
+Variable search results are paged. See [Paging Details](#paging-details) for more information on how to page through variable search results.
+
+##### Variable Search Parameters
+
+The following parameters are supported when searching for variables.
+
+##### Standard Parameters:
+
+* page_size
+* page_num
+* pretty
+
+##### Variable Matching Parameters
+
+These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `variable_name[]=key1&variable_name[]=key2`.
+
+* variable_name
+  * options: pattern, ignore_case
+* measurement
+  * options: pattern, ignore_case
+
+##### Variable Search Response
+
+The response is always returned in JSON and includes the following parts.
+
+* hits - How many total variables were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of variables with the following fields
+  * concept_id
+  * revision_id
+  * provider_id
+  * native_id
+  * variable_name
+  * measurement
+
+##### Variable Search Example
+
+```
+curl -g -i "%CMR-ENDPOINT%/variables?pretty=true&variable_name=Var\\.*&options[variable_name][pattern]=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 292
+
+{
+  "hits" : 2,
+  "took" : 2,
+  "items" : [ {
+    "concept_id" : "V1200000007-PROV1",
+    "revision_id" : 3,
+    "provider_id" : "PROV1",
+    "native_id" : "var1",
+    "variable_name" : "Variable1",
+    "measurement" : "A long UMM-Var name"
+  }, {
+    "concept_id" : "V1200000008-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "var2",
+    "variable_name" : "Variable2",
+    "measurement" : "A long UMM-Var name"
+  } ]
+}
+```
 
 #### <a name="variable-access-control"></a> Variable Access Control
 

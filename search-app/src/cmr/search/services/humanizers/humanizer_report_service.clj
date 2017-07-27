@@ -46,7 +46,7 @@
    We want to add the delay so that the collection cache can be populated first.
    Splunk shows the average time taken for collection cache to be refreshed is around
    300 seconds"
-  {:default 4000 :type Long})
+  {:default 400 :type Long})
 
 (defconfig humanizer-report-generator-job-wait
   "Number of milli-seconds humanizer-generator-job waits for the collection cache
