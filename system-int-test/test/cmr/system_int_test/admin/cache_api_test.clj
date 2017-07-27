@@ -270,4 +270,5 @@
         "concept-mapping-types"
         {:collection "collection"
          :granule "granule"
-         :tag "tag"}))))
+         :tag "tag"
+         :variable "variable"}))))
