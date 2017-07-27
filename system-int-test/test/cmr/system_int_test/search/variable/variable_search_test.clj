@@ -43,7 +43,7 @@
                                                          :LongName "Measurement3"})
         variable4 (variables/ingest-variable-with-attrs {:native-id "var4"
                                                          :Name "v.other"
-                                                         :LongName "OtherMeasurement"})
+                                                         :LongName "m.other"})
         all-variables [variable1 variable2 variable3 variable4]]
     (index/wait-until-indexed)
 
@@ -89,7 +89,45 @@
 
       "By multiple variable-names with options"
       [variable1 variable4]
-      {:variable-name ["Variable1" "*other"] "options[variable-name][pattern]" true})))
+      {:variable-name ["Variable1" "*other"] "options[variable-name][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; measurement Param
+      "By measurement case sensitive - exact match"
+      [variable1]
+      {:measurement "Measurement1"}
+
+      "By measurement case sensitive, default ignore-case true"
+      [variable1]
+      {:measurement "measurement1"}
+
+      "By measurement ignore case false"
+      []
+      {:measurement "measurement1" "options[measurement][ignore-case]" false}
+
+      "By measurement ignore case true"
+      [variable1]
+      {:measurement "measurement1" "options[measurement][ignore-case]" true}
+
+      "By measurement Pattern, default false"
+      []
+      {:measurement "*other"}
+
+      "By measurement Pattern true"
+      [variable4]
+      {:measurement "*other" "options[measurement][pattern]" true}
+
+      "By measurement Pattern false"
+      []
+      {:measurement "*other" "options[measurement][pattern]" false}
+
+      "By multiple measurements"
+      [variable1 variable2]
+      {:measurement ["Measurement1" "measurement2"]}
+
+      "By multiple measurements with options"
+      [variable1 variable4]
+      {:measurement ["measurement1" "*other"] "options[measurement][pattern]" true})))
 
 (deftest deleted-variables-not-found-test
   (let [{token :token} (variables/setup-update-acl (s/context) "PROV1")
