@@ -1961,7 +1961,9 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections and granules. If no format is specified the native format of the metadata will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, and variables. If no format is specified the native format of the metadata will be returned.
+
+WARNING: Currently for variables, the only `Accept` header value you can pass is `*/*`. As such the format extension is not yet supported for variables.
 
 By concept id
 
@@ -1971,6 +1973,8 @@ By concept id and revision id
 
     curl -i "%CMR-ENDPOINT%/concepts/:concept-id/:revision-id"
 
+Examples:
+
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
     curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
@@ -1978,11 +1982,13 @@ By concept id and revision id
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
     curl -i "%CMR-ENDPOINT%/concepts/C100000-PROV1/1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1/2.echo10"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2"
 
 Note that attempting to retrieve a revision that is a tombstone is an error and will return a 400 status code.
 
-The following extensions and MIME types are supported by the
-`/concepts/` resource:
+The following extensions and MIME types are supported by the `/concepts/` resource for collection and granule concept types:
 
   * `html`      "text/html" (Collections only)
   * `json`      "application/json"
