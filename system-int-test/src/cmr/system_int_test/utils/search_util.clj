@@ -179,11 +179,12 @@
          url (url/retrieve-concept-url concept-type concept-id revision-id)
          url (if url-extension
                (str url "." url-extension)
-               url)]
-     (client/get url (merge {:accept (when-not url-extension format-mime-type)
-                             :throw-exceptions false
-                             :connection-manager (s/conn-mgr)}
-                            options)))))
+               url)
+         args (merge {:accept (when-not url-extension format-mime-type)
+                      :throw-exceptions false
+                      :connection-manager (s/conn-mgr)}
+                     options)]
+     (client/get url args))))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
