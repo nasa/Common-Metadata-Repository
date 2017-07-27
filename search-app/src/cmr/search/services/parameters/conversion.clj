@@ -115,7 +115,7 @@
    :measurement :string
    :provider :string
    :native-id :string
-   :keyword :string})
+   :keyword :keyword})
 
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
