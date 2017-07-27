@@ -251,6 +251,7 @@
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
+        ;; This query is being timed because its execution time is being niled out in empty search responses.
         [query-time collections-with-new-granules-search] (util/time-execution
                                                            (query-svc/get-collections-from-new-granules ctx params))
         collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
