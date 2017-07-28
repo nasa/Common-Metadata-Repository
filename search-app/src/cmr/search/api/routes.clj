@@ -107,7 +107,8 @@
               mt/echo10
               mt/iso19115
               mt/iso-smap}
-   :variable #{mt/any}})
+   :variable #{mt/any
+               mt/umm-json}})
 
 (def find-by-concept-id-concept-types
   #{:collection :granule :variable})
