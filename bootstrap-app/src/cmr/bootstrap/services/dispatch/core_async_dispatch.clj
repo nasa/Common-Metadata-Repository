@@ -1,5 +1,5 @@
-(ns cmr.bootstrap.services.bootstrap-service
-  "Provides methods to insert migration requets on the approriate channels."
+(ns cmr.bootstrap.services.dispatch.core-async-dispatch
+  "Provides methods to insert migration requets on the appropriate channels."
   (:require
     [clojure.core.async :as async :refer [go >!]]
     [cmr.bootstrap.config :as cfg]
@@ -14,25 +14,6 @@
     [cmr.indexer.data.index-set :as indexer-index-set]
     [cmr.indexer.system :as indexer-system]
     [cmr.transmit.index-set :as index-set]))
-
-(def request-type->dispatcher
-  "A map of request types to which dispatcher to use for asynchronous requests."
-  {:migrate-provider :core-async-dispatcher
-   :migrate-collection :core-async-dispatcher
-   :index-provider :core-async-dispatcher
-   :index-data-later-than-date-time :core-async-dispatcher
-   :index-collection :core-async-dispatcher
-   :index-system-concepts :core-async-dispatcher
-   :index-concepts-by-id :core-async-dispatcher
-   :delete-concepts-from-index-by-id :core-async-dispatcher
-   :bootstrap-virtual-products :core-async-dispatcher})
-
-(defn- get-dispatcher
-  "Returns the correct dispatcher to use based on the system configuration and the request."
-  [context synchronous request-type]
-  (if synchronous
-    (get-in context [:system :synchronous-dispatcher])
-    (get-in context [:system (request-type->dispatcher request-type)])))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -205,6 +186,8 @@
 
   ;; Remove all granules from small collections for this collection.
   (rebalance-util/delete-collection-granules-from-small-collections context concept-id))
+
+
 
 (defn rebalance-status
   "Returns a map of counts of granules in the collection in metadata db, the small collections index,

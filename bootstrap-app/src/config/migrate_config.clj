@@ -1,11 +1,12 @@
 (ns config.migrate-config
   "Provides the configuration for Drift migrations."
-  (:require [drift.builder :refer [incremental-migration-number-generator]]
-            [clojure.java.jdbc :as j]
-            [cmr.oracle.connection :as oracle]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.bootstrap.config :as bootstrap-config])
+  (:require
+   [clojure.java.jdbc :as j]
+   [cmr.bootstrap.config :as bootstrap-config]
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as oracle]
+   [drift.builder :as drift-builder])
   (import java.sql.SQLException))
 
 (def bootstrap-db-atom (atom nil))
@@ -15,7 +16,8 @@
   []
   (when-not @bootstrap-db-atom
     (reset! bootstrap-db-atom (lifecycle/start
-                                (oracle/create-db (bootstrap-config/db-spec "bootstrap-migrations")) nil)))
+                                (oracle/create-db (bootstrap-config/db-spec "bootstrap-migrations"))
+                                nil)))
   @bootstrap-db-atom)
 
 (defn- maybe-create-schema-table
@@ -44,10 +46,10 @@
   {:directory "src/cmr/bootstrap/migrations/"
    :ns-content "\n  (:require [clojure.java.jdbc :as j]\n            [config.migrate-config :as config])"
    :namespace-prefix "cmr.bootstrap.migrations"
-   :migration-number-generator incremental-migration-number-generator
+   :migration-number-generator drift-builder/incremental-migration-number-generator
    :init maybe-create-schema-table
    :current-version current-db-version
-   :update-version update-db-version })
+   :update-version update-db-version})
 
 (defn migrate-config []
   "Drift migrate configuration used by lein migrate.
