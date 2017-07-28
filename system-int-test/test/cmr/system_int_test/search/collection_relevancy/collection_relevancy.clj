@@ -95,8 +95,8 @@
 
      (are3 [size expected-collections]
        (do
-         ;(def bin-size size)
-         (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! size))
+         (def bin-size size) ; Setting the config will fail without this
+         (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! bin-size))
          (is (d/refs-match-order? expected-collections (search/find-refs :collection {:keyword "Usage"}))))
 
        "Bin size 0.1 - no affect"
