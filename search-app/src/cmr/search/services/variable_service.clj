@@ -62,8 +62,8 @@
   [variable-association]
   (let [{coll-concept-id :concept-id
          coll-revision-id :revision-id
-         variable-name :variable-name} variable-association
-        native-id (str variable-name native-id-separator-character coll-concept-id)]
+         variable-concept-id :variable-concept-id} variable-association
+        native-id (str variable-concept-id native-id-separator-character coll-concept-id)]
     (if coll-revision-id
       (str native-id native-id-separator-character coll-revision-id)
       native-id)))
@@ -71,7 +71,7 @@
 (defn- variable-association->concept-map
   "Returns the concept map for inserting into metadata-db for the given variable association."
   [variable-association]
-  (let [{:keys [variable-name originator-id native-id user-id data errors]
+  (let [{:keys [variable-concept-id originator-id native-id user-id data errors]
          coll-concept-id :concept-id
          coll-revision-id :revision-id} variable-association]
     {:concept-type :variable-association
@@ -80,12 +80,12 @@
      :format mt/edn
      :metadata (pr-str
                  (util/remove-nil-keys
-                   {:variable-name variable-name
+                   {:variable-concept-id variable-concept-id
                     :originator-id originator-id
                     :associated-concept-id coll-concept-id
                     :associated-revision-id coll-revision-id
                     :data data}))
-     :extra-fields {:variable-name variable-name
+     :extra-fields {:variable-concept-id variable-concept-id
                     :associated-concept-id coll-concept-id
                     :associated-revision-id coll-revision-id}}))
 
@@ -113,7 +113,8 @@
       (try
         (let [{:keys [concept-id revision-id message]} ;; only delete-variable-association could potentially return message
               (if (= :insert operation)
-                (save-concept-in-mdb mdb-context (variable-association->concept-map variable-association))
+                (save-concept-in-mdb
+                 mdb-context (variable-association->concept-map variable-association))
                 (delete-variable-association mdb-context native-id))]
           (if (some? message)
             (merge {:associated-item associated-item} message)
@@ -123,7 +124,7 @@
           (if (= :conflict (:type (ex-data e)))
             {:errors (format association-conflict-error-message
                         (if (= :insert operation) "associate" "dissociate")
-                        (:variable-name variable-association)
+                        (:variable-concept-id variable-association)
                         coll-concept-id
                         (if (= :insert operation) "association" "dissociation"))
              :associated-item associated-item}
@@ -137,7 +138,7 @@
   {errors: [Collection [C6-PROV1] does not exist or is not visible.],
   associated_item: {concept_id: C6-PROV1}}]."
   [context variable-concept variable-associations operation]
-  (let [variable-name (:native-id variable-concept)
+  (let [variable-concept-id (:concept-id variable-concept)
         existing-variable (spec/parse-metadata context
                                                :variable
                                                (:format variable-concept)
@@ -149,68 +150,70 @@
                                           (fn [association]
                                             (update-variable-association
                                              mdb-context
-                                             (merge association {:variable-name variable-name
-                                                                 :originator-id originator-id})
+                                             (merge association
+                                                    {:variable-concept-id variable-concept-id
+                                                     :originator-id originator-id})
                                              operation))
                                           variable-associations))]
     (info "update-variable-associations:" t1)
     result))
 
 (defn- validate-variable-associations
-  "Validates the variable association for the given variable name and variable associations based
-  on the operation type, which is either :insert or :delete. Returns the variable associations
+  "Validates the variable association for the given variable concept-id and variable associations
+  based on the operation type, which is either :insert or :delete. Returns the variable associations
   with errors found appended to them.
   If the provided variable associations fail the basic rules validation (e.g. empty variable
   associations, conflicts within the request), throws a service error."
-  [context operation-type variable-name variable-associations]
+  [context operation-type variable-concept-id variable-associations]
   (assoc-validation/validate-associations
-   context :variable variable-name variable-associations operation-type))
+   context :variable variable-concept-id variable-associations operation-type))
 
 (defn- fetch-variable-concept
-  "Fetches the latest version of a variable concept by variable-name"
-  [context variable-name]
+  "Fetches the latest version of a variable concept by variable-concept-id"
+  [context variable-concept-id]
   (if-let [concept (mdb/find-latest-concept context
-                                            {:native-id variable-name
+                                            {:concept-id variable-concept-id
                                              :latest true}
                                             :variable)]
     (if (:deleted concept)
       (errors/throw-service-error
        :not-found
-       (format "Variable with variable-name [%s] was deleted." variable-name))
+       (format "Variable with concept id [%s] was deleted." variable-concept-id))
       concept)
     (errors/throw-service-error
      :not-found
-     (format "Variable could not be found with variable-name [%s]" variable-name))))
+     (format "Variable could not be found with concept id [%s]" variable-concept-id))))
 
 (defn- link-variable-to-collections
   "Associate/Dissociate a variable to a list of collections in the variable associations json
    based on the given operation type. The ooperation type can be either :insert or :delete.
-   Throws service error if the variable with the given variable key is not found."
-  [context variable-name variable-associations-json operation-type]
-  (let [variable-concept (fetch-variable-concept context variable-name)
+   Throws service error if the variable with the given variable concept-id is not found."
+  [context variable-concept-id variable-associations-json operation-type]
+  (let [variable-concept (fetch-variable-concept context variable-concept-id)
         ;; Variable association will reuse the same json schema for tag associations.
-        ;; The only difference between variable association and tag association is variable
-        ;; association uses variable-name as the key and tag association uses tag-key as the key.
+        ;; The only difference between variable association and tag association is
+        ;; variable association uses variable-concept-id as the key and tag association
+        ;; uses tag-key as the key.
         variable-associations (assoc-validation/associations-json->associations
                                variable-associations-json)
 
         [validation-time variable-associations]
         (util/time-execution
          (validate-variable-associations
-          context operation-type variable-name variable-associations))]
+          context operation-type variable-concept-id variable-associations))]
 
     (debug "link-variable-to-collections validation-time:" validation-time)
     (update-variable-associations context variable-concept variable-associations operation-type)))
 
 (defn associate-variable-to-collections
   "Associates a variable to the given list of variable associations in json."
-  [context variable-name variable-associations-json]
-  (link-variable-to-collections context variable-name variable-associations-json :insert))
+  [context variable-concept-id variable-associations-json]
+  (link-variable-to-collections context variable-concept-id variable-associations-json :insert))
 
 (defn dissociate-variable-to-collections
   "Dissociates a variable from the given list of variable associations in json."
-  [context variable-name variable-associations-json]
-  (link-variable-to-collections context variable-name variable-associations-json :delete))
+  [context variable-concept-id variable-associations-json]
+  (link-variable-to-collections context variable-concept-id variable-associations-json :delete))
 
 (defn search-for-variables
   "Returns the variable search result in JSON format."

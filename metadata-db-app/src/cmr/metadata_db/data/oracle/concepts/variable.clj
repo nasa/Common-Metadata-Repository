@@ -32,11 +32,7 @@
   (concepts/find-latest-concepts db
                                  {:provider-id "CMR"}
                                  {:concept-type :variable-association
-                                  ;; :variable name below refers to the table column
-                                  ;; named VARIABLE_NAME that holds the native-id
-                                  ;; value ... this comment will need to be updated
-                                  ;; once we move to using variable concept id.
-                                  :variable-name (:native-id variable-tombstone)}))
+                                  :variable-concept-id (:concept-id variable-tombstone)}))
 
 (defn cascade-delete-variable-associations
   "Save tombstones for all the variable associations for the given variable."

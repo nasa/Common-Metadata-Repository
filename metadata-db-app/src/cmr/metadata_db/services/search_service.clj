@@ -26,7 +26,7 @@
    :humanizer #{:concept-id :native-id}
    :variable #{:concept-id :provider-id :native-id}
    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                           :variable-name}})
+                           :variable-concept-id}})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
