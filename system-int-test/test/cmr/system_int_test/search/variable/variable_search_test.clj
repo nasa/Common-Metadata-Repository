@@ -151,6 +151,10 @@
       [variable3]
       {:keyword "a subsitute for variable2"}
 
+      "By keyword match partial string"
+      [variable3]
+      {:keyword "subsitute variable2"}
+
       "By keyword match wildcard *"
       [variable1 variable2]
       {:keyword "meas*"}
@@ -165,7 +169,11 @@
 
       "By keyword match wildcard ?, match"
       [variable1 variable2]
-      {:keyword "measurement?"})))
+      {:keyword "measurement?"}
+
+      "By keyword multiple wildcards"
+      [variable3]
+      {:keyword "a* variable?"})))
 
 (deftest deleted-variables-not-found-test
   (let [{token :token} (variables/setup-update-acl (s/context) "PROV1")
