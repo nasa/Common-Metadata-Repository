@@ -1,12 +1,13 @@
 (ns cmr.db
   "Entry point for the db related operations. Defines a main method that accepts arguments."
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [drift.execute :as drift]
-            [cmr.oracle.user :as o]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.bootstrap.config :as bootstrap-config]
-            [config.migrate-config :as mc]
-            [cmr.oracle.sql-utils :as su])
+  (:require
+   [cmr.bootstrap.config :as bootstrap-config]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.sql-utils :as su])
+   [cmr.oracle.user :as o]
+   [config.migrate-config :as mc]
+   [drift.execute :as drift]
   (:gen-class))
 
 (defn create-user

@@ -41,7 +41,8 @@
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 
 (defn- migrate-provider
-  "Copy a single provider's data from catalog-rest to metadata db (including collections and granules)"
+  "Copy a single provider's data from catalog-rest to metadata db (including collections and
+  granules)."
   [context provider-id-map params]
   (let [provider-id (get provider-id-map "provider_id")
         synchronous (synchronous? params)]
@@ -57,7 +58,8 @@
         result (bs/index-provider context provider-id synchronous start-index)
         msg (if synchronous
               result
-              (str "Processing provider " provider-id " for bulk indexing from start index " start-index))]
+              (str "Processing provider " provider-id " for bulk indexing from start index "
+                   start-index))]
     {:status 202
      :body {:message msg}}))
 
@@ -126,7 +128,8 @@
         concept-type (keyword (get request-details-map "concept_type"))
         concept-ids (get request-details-map "concept_ids")
         synchronous (synchronous? params)
-        result (bs/delete-concepts-from-index-by-id context synchronous provider-id concept-type concept-ids)
+        result (bs/delete-concepts-from-index-by-id context synchronous provider-id concept-type
+                                                    concept-ids)
         msg (if synchronous
               (str "Processed " result "conccepts for bulk deletion from indexes.")
               (str "Processing concepts for bulk deletion from indexes."))]
@@ -204,20 +207,18 @@
         (DELETE "/concepts" {:keys [request-context body params]}
           (bulk-delete-concepts-from-index-by-id request-context body params)))
 
-
       (context "/rebalancing_collections/:concept-id" [concept-id]
+        ;; Start rebalancing
+        (POST "/start" {:keys [request-context params]}
+          (start-rebalance-collection request-context concept-id params))
 
-       ;; Start rebalancing
-       (POST "/start" {:keys [request-context params]}
-         (start-rebalance-collection request-context concept-id params))
+        ;; Get counts of rebalancing data
+        (GET "/status" {:keys [request-context]}
+          (rebalance-status request-context concept-id))
 
-       ;; Get counts of rebalancing data
-       (GET "/status" {:keys [request-context]}
-         (rebalance-status request-context concept-id))
-
-       ;; Complete reindexing
-       (POST "/finalize" {:keys [request-context]}
-         (finalize-rebalance-collection request-context concept-id)))
+        ;; Complete reindexing
+        (POST "/finalize" {:keys [request-context]}
+          (finalize-rebalance-collection request-context concept-id)))
 
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}

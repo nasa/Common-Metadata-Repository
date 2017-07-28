@@ -21,7 +21,6 @@
     [cmr.oracle.connection :as oc]
     [cmr.transmit.config :as transmit-config]))
 
-
 (def ^:private elastic-http-try-count->wait-before-retry-time
   "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount
   of time to wait before retrying an http request. Will stop retrying if the number of requests

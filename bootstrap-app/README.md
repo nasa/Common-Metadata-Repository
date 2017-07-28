@@ -88,28 +88,28 @@ HTTP/1.1 200 OK
 
 ### Bulk copy provider FIX_PROV1 and all it's collections and granules to the metadata db
 
-    curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_migration/providers
+    curl -i -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_migration/providers
 
 For the echo-reverb test fixture data, the following curl can be used to check metadata db
 to make sure the new data is available:
 
-    curl -v http://localhost:3001/concepts/G1000000033-FIX_PROV1
+    curl -i http://localhost:3001/concepts/G1000000033-FIX_PROV1
 
 This should return the granule including the echo-10 xml.
 
 ### Copy a single collection's granules
 
-    curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id": "C1000000073-FIX_PROV1"}' http://localhost:3006/bulk_migration/collections
+    curl -i -XPOST -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id": "C1000000073-FIX_PROV1"}' http://localhost:3006/bulk_migration/collections
 
 ### Bulk index a provider
 
-  	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_index/providers
+    curl -i -XPOST -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_index/providers
 
 NOTE from CMR-1908 that when reindexing a provider the collections are not reindexed in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections.
 
 ### Bulk index a single collection
 
-  	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id":"C123-FIX_PROV1"}' http://localhost:3006/bulk_index/collections
+    curl -i -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id":"C123-FIX_PROV1"}' http://localhost:3006/bulk_index/collections
 
 ### Bulk index concepts by concept-id - for indexing multiple specific items
 
@@ -118,17 +118,17 @@ NOTE from CMR-1908 that when reindexing a provider the collections are not reind
 
 ### Bulk index concepts newer than a given date-time
 
-    curl -v XPOST http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
+    curl -i -XPOST http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
 
 ### Bulk index all system concepts (tags/acls/access-groups)
 
-    curl -v XPOST http://localhost:3006/bulk_index/system_concepts
+    curl -i -XPOST http://localhost:3006/bulk_index/system_concepts
 
 ### Initialize Virtual Products
 
 Virtual collections contain granules derived from a source collection. Only granules specified in the source collections in the virtual product app configuration will be considered. Virtual granules will only be created in the configured destination virtual collections if they already exist. To initialize virtual granules from existing source granules, use the following command:
 
-    curl -v -XPOST http://localhost:3006/virtual_products?provider-id=PROV1&entry-title=et1
+    curl -i -XPOST http://localhost:3006/virtual_products?provider-id=PROV1&entry-title=et1
 
 Note that provider-id and entry-title are required.
 
@@ -138,17 +138,17 @@ This endpoint should only be using in an AWS environment where the Database Migr
 is being used to replicate changes from another database to this environment. This will index any
 concepts that have been replicated since the last replication run.
 
-    curl -v -XPOST http://localhost:3006/index_recently_replicated
+    curl -i -XPOST http://localhost:3006/index_recently_replicated
 
 ### Run database migration
 
 Migrate database to the latest schema version:
 
-    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3006/db-migrate
+    curl -i -XPOST -H "Echo-Token: XXXX" http://localhost:3006/db-migrate
 
 Migrate database to a specific schema version (e.g. 3):
 
-    curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3006/db-migrate?version=3
+    curl -i -XPOST -H "Echo-Token: XXXX" http://localhost:3006/db-migrate?version=3
 
 ### Check application health
 
@@ -290,4 +290,4 @@ Example un-healthy response body:
 
 ## License
 
-Copyright © 2014 NASA
+Copyright © 2014-2017 NASA

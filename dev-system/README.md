@@ -22,7 +22,7 @@ To do so, perform the following:
 As noted above, you will need to create a `profiles.clj` in the `dev-system`
 directory. This will provide configuration/authentication information required
 by CMR for a local, in-memory "deployment". You will need to contact a core
-CMR developmer for the appropriate values for each key in `profiles.clj`.
+CMR developer for the appropriate values for each key in `profiles.clj`.
 
 ## Security of `dev-system`
 
