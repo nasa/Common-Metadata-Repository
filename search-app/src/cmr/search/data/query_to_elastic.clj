@@ -128,6 +128,10 @@
   {:tag-key :tag-key.lowercase
    :originator-id :originator-id.lowercase})
 
+(defmethod q2e/concept-type->field-mappings :variable
+  [_]
+  {:provider :provider-id})
+
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
   {:project-sn2 :project-sn
@@ -293,6 +297,10 @@
 (defmethod q2e/concept-type->sort-key-map :tag
   [_]
   {:tag-key :tag-key.lowercase})
+
+(defmethod q2e/concept-type->sort-key-map :variable
+  [_]
+  {:variable-name :variable-name.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]

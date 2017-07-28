@@ -144,6 +144,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Dissociating a Tag from Collections by collection concept ids](#dissociating-collections-with-a-tag-by-concept-ids)
     * [Searching for Tags](#searching-for-tags)
   * [Variable](#variable)
+    * [Searching for Variables](#searching-for-variables)
     * [Variable Access Control](#variable-access-control)
     * [Variable association](#variable-association)
     * [Variable dissociation](#variable-dissociation)
@@ -1439,8 +1440,6 @@ Collections can be found by searching for associated variables. The following va
 
 * variable_name
   * supports `pattern`, `ignore_case` and option `and`
-* measurement
-  * supports `pattern`, `ignore_case` and option `and`
 
 Find collections matching variable name.
 
@@ -1962,7 +1961,9 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
 ### <a name="retrieving-concepts-by-concept-id-and-revision-id"></a> Retrieve concept with a given concept-id or concept-id & revision-id
 
-This allows retrieving the metadata for a single concept. This is only supported for collections and granules. If no format is specified the native format of the metadata will be returned.
+This allows retrieving the metadata for a single concept. This is only supported for collections, granules, and variables. If no format is specified the native format of the metadata will be returned.
+
+WARNING: Currently for variables, the only `Accept` header value you can pass is `*/*`. As such the format extension is not yet supported for variables.
 
 By concept id
 
@@ -1972,6 +1973,8 @@ By concept id and revision id
 
     curl -i "%CMR-ENDPOINT%/concepts/:concept-id/:revision-id"
 
+Examples:
+
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
     curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
@@ -1979,11 +1982,13 @@ By concept id and revision id
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
     curl -i "%CMR-ENDPOINT%/concepts/C100000-PROV1/1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1/2.echo10"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/1"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2"
 
 Note that attempting to retrieve a revision that is a tombstone is an error and will return a 400 status code.
 
-The following extensions and MIME types are supported by the
-`/concepts/` resource:
+The following extensions and MIME types are supported by the `/concepts/` resource for collection and granule concept types:
 
   * `html`      "text/html" (Collections only)
   * `json`      "application/json"
@@ -2719,7 +2724,7 @@ Content-Length: 48
 
 #### <a name="tag-association"></a> Tag Association
 
-A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. Here is a sample tag association request and its response:
+A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response that consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. Here is a sample tag association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
@@ -3047,7 +3052,75 @@ Variable have the following fields:
 
 * variable_name (REQUIRED): free text specifying the key of the variable. Variable name cannot contain `/` character. Variable name is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case.
 * measurement (REQUIRED): the measurement that the variable belongs to.
-* originator_id (REQUIRED): the Earthdata Login ID of the person who created the variable.
+
+#### <a name="searching-for-variables"></a> Searching for Variables
+
+Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`.
+
+Variable search results are paged. See [Paging Details](#paging-details) for more information on how to page through variable search results.
+
+##### Variable Search Parameters
+
+The following parameters are supported when searching for variables.
+
+##### Standard Parameters:
+
+* page_size
+* page_num
+* pretty
+
+##### Variable Matching Parameters
+
+These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `variable_name[]=key1&variable_name[]=key2`. The values are ORed together.
+
+* variable_name
+  * options: pattern, ignore_case
+* measurement
+  * options: pattern, ignore_case
+
+##### Variable Search Response
+
+The response is always returned in JSON and includes the following fields.
+
+* hits - How many total variables were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of variables with the following fields
+  * concept_id
+  * revision_id
+  * provider_id
+  * native_id
+  * variable_name
+  * measurement
+
+##### Variable Search Example
+
+```
+curl -g -i "%CMR-ENDPOINT%/variables?pretty=true&variable_name=Var\\.*&options[variable_name][pattern]=true"
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 292
+
+{
+  "hits" : 2,
+  "took" : 2,
+  "items" : [ {
+    "concept_id" : "V1200000007-PROV1",
+    "revision_id" : 3,
+    "provider_id" : "PROV1",
+    "native_id" : "var1",
+    "variable_name" : "Variable1",
+    "measurement" : "A long UMM-Var name"
+  }, {
+    "concept_id" : "V1200000008-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "var2",
+    "variable_name" : "Variable2",
+    "measurement" : "A long UMM-Var name"
+  } ]
+}
+```
 
 #### <a name="variable-access-control"></a> Variable Access Control
 
@@ -3055,10 +3128,10 @@ Access to variable and variable association is granted through the INGEST_MANAGE
 
 #### <a name="variable-association"></a> Variable Association
 
-A variable can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has a `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
+A variable identified by its native_id can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response that consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has an `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/native_id_of_the_variable/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
@@ -3103,10 +3176,10 @@ Status code 422 is returned when:
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
-A variable can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to variable association requests.
+A variable identified by its native_id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/totcldh2ostderr/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/native_id_of_the_variable/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'

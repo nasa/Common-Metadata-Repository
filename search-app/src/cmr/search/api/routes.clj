@@ -37,6 +37,7 @@
    [cmr.search.results-handlers.opendata-results-handler]
    [cmr.search.results-handlers.reference-results-handler]
    [cmr.search.results-handlers.tags-json-results-handler]
+   [cmr.search.results-handlers.variables-json-results-handler]
    [cmr.search.results-handlers.timeline-results-handler]
    [cmr.search.results-handlers.umm-json-results-handler]
 
@@ -87,7 +88,7 @@
 (def supported-concept-id-retrieval-mime-types
   {:collection #{mt/any
                  mt/html
-                 mt/xml ; allows retrieving native format
+                 mt/xml    ; allows retrieving native format
                  mt/native ; retrieve in native format
                  mt/atom
                  mt/json
@@ -99,16 +100,17 @@
                  mt/umm-json
                  mt/legacy-umm-json}
    :granule #{mt/any
-              mt/xml ; allows retrieving native format
+              mt/xml    ; allows retrieving native format
               mt/native ; retrieve in native format
               mt/atom
               mt/json
               mt/echo10
               mt/iso19115
-              mt/iso-smap}})
+              mt/iso-smap}
+   :variable #{mt/any}})
 
 (def find-by-concept-id-concept-types
-  #{:collection :granule})
+  #{:collection :granule :variable})
 
 (def granule-parent-collection-params
   "Parameters that signify the need to search collections with data taken from

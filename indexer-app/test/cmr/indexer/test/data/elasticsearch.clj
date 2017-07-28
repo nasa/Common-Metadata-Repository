@@ -26,12 +26,16 @@
     :tag {:indexes [{:name "tags",
                      :settings i/tag-setting}],
           :mapping i/tag-mapping},
+    :variable {:indexes [{:name "variables",
+                          :settings i/variable-setting}],
+               :mapping i/variable-mapping},
     :concepts {:collection {:collections "1_collections_v2",
                             :all-collection-revisions "1_all_collection_revisions"},
                :granule {:small_collections "1_small_collections",
                          :C274209-USGS_EROS "1_c274209_usgs_eros",
                          :C274211-USGS_EROS "1_c274211_usgs_eros"},
-               :tag {:tags "1_tags"}}}})
+               :tag {:tags "1_tags"}
+               :variable {:variables "1_variables"}}}})
 
 (def valid-item-resp
   "Response for an item that is successfullly indexed during bulk indexing."

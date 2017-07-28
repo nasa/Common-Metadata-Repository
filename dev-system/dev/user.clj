@@ -1,8 +1,8 @@
 (ns user
   (:require
    [alex-and-georges.debug-repl]
-   [clojure.main]
    [clojure.java.io :as io]
+   [clojure.main]
    [clojure.pprint :refer [pp pprint]]
    [clojure.repl :refer :all]
    [clojure.string :as string]
@@ -21,6 +21,7 @@
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
    [cmr.ingest.system :as ingest-system]
+   [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.search.system :as search-system]
    [cmr.system-int-test.system :as sit-sys]
    [cmr.transmit.config :as transmit-config]
@@ -177,6 +178,10 @@
   (config/reset-config-values)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
+
+  ;; Prevent humanizer report job from blocking calls to reset
+  (humanizer-report-service/set-retry-count! 0)
+  (humanizer-report-service/set-humanizer-report-generator-job-wait! 0)
 
   ;; uncomment this line to start gorilla repl.
   ;;(system/set-gorilla-repl-port! 8090)

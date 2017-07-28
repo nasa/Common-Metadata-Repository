@@ -1,17 +1,14 @@
 (ns cmr.system-int-test.search.tagging.tag-search-test
   "This tests associating tags with collections."
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.util :refer [are2]]
-            [cmr.common.mime-types :as mt]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.util :refer [are2]]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {})
                                     tags/grant-all-tag-fixture]))
@@ -146,4 +143,3 @@
     (testing "Retrieve concept by tag concept-id is invalid"
       (is (= [400 ["Retrieving concept by concept id is not supported for concept type [tag]."]]
              [status errors])))))
-

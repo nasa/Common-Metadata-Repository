@@ -64,7 +64,7 @@
    :access-group access-control-exchange-name
    :acl access-control-exchange-name
    :humanizer ingest-exchange-name
-   ; :variable ingest-exchange-name
+   :variable ingest-exchange-name
    :variable-association ingest-exchange-name})
 
 (defconfig deleted-collection-revision-exchange-name

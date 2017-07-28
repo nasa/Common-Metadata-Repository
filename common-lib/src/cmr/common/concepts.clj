@@ -7,21 +7,29 @@
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:collection :granule :tag :tag-association :variable :variable-association
-    :service :access-group :acl :humanizer})
+  #{:access-group
+    :acl
+    :collection
+    :granule
+    :humanizer
+    :service
+    :tag
+    :tag-association
+    :variable
+    :variable-association})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
-  {"C" :collection
+  {"ACL" :acl
+   "AG" :access-group
+   "C" :collection
    "G" :granule
+   "H" :humanizer
+   "S" :service
    "T" :tag
    "TA" :tag-association
    "V" :variable
-   "VA" :variable-association
-   "S" :service
-   "AG" :access-group
-   "ACL" :acl
-   "H" :humanizer})
+   "VA" :variable-association})
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
