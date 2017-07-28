@@ -290,6 +290,7 @@
                            :aggregations {:collections
                                           {:terms {:size query-aggregation-size
                                                    :field (q2e/query-field->elastic-field :collection-concept-id :granule)}}}})]
+      (info (format "Executing query for date range %s" (str start-date "," end-date)))
       (qe/execute-query context query))))
 
 (defn get-collections-by-providers

@@ -256,6 +256,7 @@
         params (process-params params path-w-extension headers mt/xml)
         [query-time collections-with-new-granules-search] (util/time-execution
                                                            (query-svc/get-collections-from-new-granules ctx params))
+        _ (info (format "Initial query finished in %s time" query-time))
         collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
         search-params (-> params
                           (assoc :echo-collection-id collection-ids)
@@ -263,6 +264,7 @@
                           (dissoc :has-granules-created-at)
                           lp/process-legacy-psa)]
 
+    (info (format "%s collections found" (count collection-ids)))
     (if (empty? collection-ids)
       ;; collections-with-new-granules-search already has an empty response object,
       ;; as well as time-took, which is why it's being passed to search-response here
