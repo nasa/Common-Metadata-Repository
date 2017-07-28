@@ -19,9 +19,11 @@
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.parameter-validation :as common-param-validations]
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.concepts :as cc]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
@@ -278,16 +280,26 @@
   (when-let [[start-date end-date] (mapv time-format/parse
                                          (string/split (or (:has_granules_created_at params)
                                                            (:has-granules-created-at params)) #","))]
-    (let [query (qm/query {:concept-type :granule
+    (let [errors (concat
+                  (common-param-validations/validate-date-time "start-date" start-date)
+                  (common-param-validations/validate-date-time "end-date" end-date))
+          query (qm/query {:concept-type :granule
                            :page-size 0
                            :result-format :query-specified
                            :condition (qm/date-range-condition
-                                        :created-at start-date end-date)
+                                        (q2e/query-field->elastic-field :created-at :granule)
+                                        start-date
+                                        end-date)
                            :result-fields []
                            :aggregations {:collections
                                           {:terms {:size query-aggregation-size
-                                                   :field :collection-concept-id}}}})]
-      (qe/execute-query context query))))
+                                                   :field (q2e/query-field->elastic-field :collection-concept-id :granule)}}}})]
+      (if (empty? errors)
+        (qe/execute-query context query)
+
+        (errors/throw-service-error
+          :bad-request
+          (str "[" (string/join ", " errors) "]"))))))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"

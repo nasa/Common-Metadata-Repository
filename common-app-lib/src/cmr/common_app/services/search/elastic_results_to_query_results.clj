@@ -42,8 +42,8 @@
         items (mapv #(elastic-result->query-result-item context query %) elastic-matches)]
     (results/map->Results
      {:aggregations (:aggregations elastic-results)
-      :hits hits 
-      :items items 
+      :hits hits
+      :items items
       :result-format (:result-format query)
       :scroll-id scroll-id})))
 
