@@ -117,3 +117,54 @@
                         no-var
                         no-rev)]
                errors))))))
+
+(deftest retrieve-variable-by-concept-id-umm-json-accept-header
+  (let [var1-name "variable1"
+        var1-name-new "variable1-new"
+        var1-v1 (variable/ingest-variable-with-attrs {:Name var1-name})
+        _ (index/wait-until-indexed)
+        var1-v2 (variable/ingest-variable-with-attrs
+                 {:Name var1-name-new
+                  :native-id (:native-id var1-v1)})
+        ;; tokens
+        guest-token (e/login-guest (s/context))
+        user1-token (e/login (s/context) "user1")
+
+        response (search/retrieve-concept
+                  (:concept-id var1-v1)
+                  nil
+                  {:accept mt/umm-json
+                   :headers {transmit-config/token-header user1-token}})
+        response-v1 (search/retrieve-concept
+                     (:concept-id var1-v1)
+                     1
+                     {:accept mt/umm-json
+                      :headers {transmit-config/token-header user1-token}})
+        response-v2 (search/retrieve-concept
+                     (:concept-id var1-v1)
+                     2
+                     {:accept mt/umm-json
+                      :headers {transmit-config/token-header user1-token}})]
+    (testing "retrieval by variable concept-id returns the latest revision."
+      (is (= var1-name-new
+             (:Name (json/parse-string (:body response) true)))))
+    (testing (str "retrieval by variable concept-id and revision-id returns "
+              "the specified variable")
+      (is (= var1-name
+             (:Name (json/parse-string (:body response-v1) true))))
+      (is (= var1-name-new
+             (:Name (json/parse-string (:body response-v2) true)))))
+    (testing "retrieval by variable concept-id and incorrect revision-id returns error"
+      (let [no-rev 10000
+            {:keys [status body]} (search/retrieve-concept
+                                     (:concept-id var1-v1)
+                                     no-rev
+                                     {:accept mt/umm-json
+                                      :headers {transmit-config/token-header user1-token}})
+            errors (:errors (json/parse-string body true))]
+        (is (= 404 status))
+        (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
+                             "does not exist.")
+                        (:concept-id var1-v1)
+                        no-rev)]
+               errors))))))
