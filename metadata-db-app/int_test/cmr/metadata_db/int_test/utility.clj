@@ -319,12 +319,12 @@
   (variable-association-concept assoc-concept variable uniq-num {}))
   ([assoc-concept variable uniq-num attributes]
   (let [{:keys [concept-id revision-id]} assoc-concept
-       variable-name (:native-id variable)
+       variable-concept-id (:concept-id variable)
        user-id (str "user" uniq-num)
-       native-id (string/join "/" [variable-name concept-id revision-id])
+       native-id (string/join "/" [variable-concept-id concept-id revision-id])
        extra-fields (merge {:associated-concept-id concept-id
                             :associated-revision-id revision-id
-                            :variable-name variable-name}
+                            :variable-concept-id variable-concept-id}
                            (:extra-fields attributes))
        attributes (merge {:user-id user-id
                           :format "application/edn"
