@@ -14,11 +14,12 @@
   collection short name as the key and a list of version/access-count combos as the data.
   The score is the access count that matches that collection and version. Otherwise no score is
   returned.
-  EMS metrics that have 'N/A' as the version are not used as part of the collection's metrics."
+  EMS metrics that have 'N/A' as the version are applied to every version of the collection"
   [context collection parsed-version-id]
   (let [metrics (metrics-fetcher/get-community-usage-metrics context)]
     (when (seq metrics)
-      (when-let [usage-entries (seq (filter #(= (util/parse-version-id (:version %))
-                                                parsed-version-id)
+      (when-let [usage-entries (seq (filter #(or (= (util/parse-version-id (:version %))
+                                                    parsed-version-id)
+                                                 (= not-provided-version (:version %)))
                                             (get metrics (:ShortName collection))))]
         {:usage-relevancy-score (apply + (map :access-count usage-entries))}))))

@@ -171,13 +171,14 @@
              (map :name results))))))
 
 ;; More complicated example/test with entries with version N/A - N/A version entries are
-;; not used as part of the access count
+;; applied to all collections that match the short name
 (def sample-csv-not-provided-versions
   (str "Product,Version,Hosts\n"
        "AMSR-L1A,3,10\n"
-       "AMSR-L1A,N/A,50\n" ;; Essentially access count of 0, since 'N/A' version
+       "AMSR-L1A,N/A,50\n"
        "AG_VIRTUAL,1,100\n"
-       "AG_MAPSS,2,30\n"))
+       "AG_MAPSS,2,30\n"
+       "MOD10A2,N/A,55\n"))
 
 (deftest community-usage-not-provided-versions
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
@@ -198,9 +199,13 @@
                                 (data-umm-c/collection {:ShortName "AG_MAPSS"
                                                         :EntryTitle "AG_MAPSS Relevancy"
                                                         :Version "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "MOD10A2"
+                                                        :EntryTitle "MOD10A2 Relevancy"
+                                                        :Version "005"}))
   (index/wait-until-indexed)
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-    (is (= ["AG_VIRTUAL Relevancy" "AG_MAPSS Relevancy" "AMSR-L1A V3 Relevancy" "AMSR-L1A V2 Relevancy"]
+    (is (= ["AG_VIRTUAL Relevancy" "AMSR-L1A V3 Relevancy" "MOD10A2 Relevancy" "AMSR-L1A V2 Relevancy" "AG_MAPSS Relevancy"]
            (map :name results)))))
 
 (deftest community-usage-version-formatting
