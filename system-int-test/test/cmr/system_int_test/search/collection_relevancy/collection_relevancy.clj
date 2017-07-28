@@ -83,4 +83,29 @@
        [coll2 coll1 coll3] {:keyword "Elevation"}
 
        "Keyword takes precedence over community usage"
-       [coll1 coll2 coll3] {:keyword "Usage"}))))
+       [coll1 coll2 coll3] {:keyword "Usage"}))
+
+   (testing "Keyword score binning"
+     ;; If the scores change here, this test will either fail or become useless and
+     ;; will have to be rewritten
+     (is (= [0.65 0.5 0.5]
+            (map :score (:refs (search/find-refs :collection {:keyword "Usage"})))))
+
+     (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! true))
+
+     (are3 [size expected-collections]
+       (do
+         ;(def bin-size size)
+         (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! size))
+         (is (d/refs-match-order? expected-collections (search/find-refs :collection {:keyword "Usage"}))))
+
+       "Bin size 0.1 - no affect"
+       0.1 [coll1 coll2 coll3]
+
+       "Bin size 0.2 - order by usage"
+       0.2 [coll2 coll1 coll3]
+
+       "Bin size 0.3 - same as 0.2"
+       0.3 [coll2 coll1 coll3])
+
+     (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! false)))))
