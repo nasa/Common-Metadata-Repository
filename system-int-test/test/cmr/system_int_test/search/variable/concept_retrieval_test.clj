@@ -13,33 +13,19 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.variable-util :as variable]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.system-int-test.utils.variable-util :as variable]))
 
 (use-fixtures
  :each
  (join-fixtures
-  [(ingest/reset-fixture {"provguid1" "PROV1"
-                          "provguid2" "PROV2"
-                          "provguid3" "PROV3"})
+  [(ingest/reset-fixture {"provguid1" "PROV1"})
    variable/grant-all-variable-fixture]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Helper constants and utility functions
+;; Helper utility functions
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def var1-name "variable1")
-(def var1-name-new "variable1-new")
-(def del-var-name "deleted-variable")
-(def user-name "user1")
-
-(defn- get-tokens
-  "A minimal utility function for tokens used by the tests."
-  []
-  [(e/login-guest (s/context))
-   (e/login (s/context) user-name)])
 
 (defn- get-var
   "Ingest a single var given a var-name."
@@ -61,13 +47,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest retrieve-variable-by-concept-id-any-accept-header
-  (let [var1-v1 (get-var var1-name)
+  (let [var1-name "variable1"
+        var1-name-new "variable1-new"
+        del-var-name "deleted-variable"
+        var1-v1 (get-var var1-name)
         del-var (get-var del-var-name)
         _ (index/wait-until-indexed)
-        del-concept (mdb/get-concept (:concept-id del-var))
-        ;; tokens
-        [guest-token user1-token] (get-tokens)]
-    (ingest/delete-concept del-concept (variable/token-opts user1-token))
+        del-concept (mdb/get-concept (:concept-id del-var))]
+    (ingest/delete-concept del-concept
+                           (variable/token-opts (e/login (s/context) "user1")))
     (index/wait-until-indexed)
     (testing "retrieval of a deleted variable results in a 404"
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
@@ -75,8 +63,7 @@
                                       (:concept-id del-var)
                                       nil
                                       {:accept mt/any
-                                       :throw-exceptions true
-                                       :headers {transmit-config/token-header user1-token}}))]
+                                       :throw-exceptions true}))]
         (is (= 404 status))
         (is (= [(format "Concept with concept-id [%s] could not be found."
                         (:concept-id del-var))]
@@ -88,20 +75,17 @@
                (inc (:revision-id var1-v1))
                (:revision-id var1-v2))))
       (let [response (search/retrieve-concept
-                     (:concept-id var1-v1)
-                     nil
-                     {:accept mt/any
-                      :headers {transmit-config/token-header user1-token}})
+                      (:concept-id var1-v1)
+                      nil
+                      {:accept mt/any})
             response-v1 (search/retrieve-concept
                          (:concept-id var1-v1)
                          1
-                         {:accept mt/any
-                          :headers {transmit-config/token-header user1-token}})
+                         {:accept mt/any})
             response-v2 (search/retrieve-concept
                          (:concept-id var1-v1)
                          2
-                         {:accept mt/any
-                          :headers {transmit-config/token-header user1-token}})]
+                         {:accept mt/any})]
           (testing "retrieval by variable concept-id returns the latest revision."
             (is (= var1-name-new
                    (:Name (json/parse-string (:body response) true)))))
@@ -118,8 +102,7 @@
                                       (:concept-id var1-v1)
                                       no-rev
                                       {:accept mt/any
-                                       :throw-exceptions true
-                                       :headers {transmit-config/token-header user1-token}}))]
+                                       :throw-exceptions true}))]
         (is (= 404 status))
         (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
                              "does not exist.")
@@ -134,8 +117,7 @@
                                       no-var
                                       no-rev
                                       {:accept mt/any
-                                       :throw-exceptions true
-                                       :headers {transmit-config/token-header user1-token}}))]
+                                       :throw-exceptions true}))]
         (is (= 404 status))
         (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
                              "does not exist.")
@@ -144,26 +126,23 @@
                errors))))))
 
 (deftest retrieve-variable-by-concept-id-umm-json-accept-header
-  (let [var1-v1 (get-var var1-name)
+  (let [var1-name "variable1"
+        var1-name-new "variable1-new"
+        var1-v1 (get-var var1-name)
         var1-v2 (get-updated-var var1-v1 {:Name var1-name-new})
-        ;; tokens
-        [guest-token user1-token] (get-tokens)
         ;; responses
         response (search/retrieve-concept
                   (:concept-id var1-v1)
                   nil
-                  {:accept mt/umm-json
-                   :headers {transmit-config/token-header user1-token}})
+                  {:accept mt/umm-json})
         response-v1 (search/retrieve-concept
                      (:concept-id var1-v1)
                      1
-                     {:accept mt/umm-json
-                      :headers {transmit-config/token-header user1-token}})
+                     {:accept mt/umm-json})
         response-v2 (search/retrieve-concept
                      (:concept-id var1-v1)
                      2
-                     {:accept mt/umm-json
-                      :headers {transmit-config/token-header user1-token}})]
+                     {:accept mt/umm-json})]
     (testing "retrieval by variable concept-id returns the latest revision."
       (is (= var1-name-new
              (:Name (json/parse-string (:body response) true)))))
@@ -178,8 +157,7 @@
             {:keys [status body]} (search/retrieve-concept
                                      (:concept-id var1-v1)
                                      no-rev
-                                     {:accept mt/umm-json
-                                      :headers {transmit-config/token-header user1-token}})
+                                     {:accept mt/umm-json})
             errors (:errors (json/parse-string body true))]
         (is (= 404 status))
         (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
@@ -194,8 +172,7 @@
                                       (:concept-id var1-v1)
                                       nil
                                       {:accept unsupported-mt
-                                       :throw-exceptions true
-                                       :headers {transmit-config/token-header user1-token}}))]
+                                       :throw-exceptions true}))]
         (is (= 400 status))
         (is (= [(format (str "The mime types specified in the accept header "
                              "[%s] are not supported.")

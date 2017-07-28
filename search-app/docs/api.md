@@ -1984,12 +1984,11 @@ File extension examples:
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1/2.echo10"
-    curl -i -H "Accept: version=1.9" \
-      "%CMR-ENDPOINT%/concepts/V100000-PROV1.umm-json"
-    curl -i -H "Accept: version=1.9" \
-      "%CMR-ENDPOINT%/concepts/V100000-PROV1/2.umm-json"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1.umm_json"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2.umm_json"
+    curl -i "%CMR-ENDPOINT%/concepts/V100000-PROV1/2.umm_json_v1_9"
 
-Content type examples:
+MIME-type examples:
 
     curl -i -H 'Accept: application/xml' \
         "%CMR-ENDPOINT%/concepts/G100000-PROV1"
@@ -2015,7 +2014,7 @@ The following extensions and MIME types are supported by the `/concepts/` resour
 
 The following extensions and MIME types are supported by the `/concepts/` resource for the variable concept type:
 
-  * `umm-json`     "application/vnd.nasa.cmr.umm+json;version=1.9"
+  * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.9"
 
 ### <a name="search-with-post"></a> Search with POST
 
