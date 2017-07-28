@@ -4,10 +4,10 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.oracle.config :as oracle-config]
-   [cmr.oracle.sql-utils :as su])
+   [cmr.oracle.sql-utils :as su]
    [cmr.oracle.user :as o]
    [config.migrate-config :as mc]
-   [drift.execute :as drift]
+   [drift.execute :as drift])
   (:gen-class))
 
 (defn create-user
