@@ -9,7 +9,8 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.data.query-to-elastic :as query-to-elastic]
-   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-common]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -29,22 +30,28 @@
 (deftest relevancy-temporal-ranges
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "Usage-30"
-                                                :version-id "2"
-                                                :entry-title "Elevation coll1"
-                                                :platforms [(dc/platform {:short-name "Usage"})]
-                                                :temporal (dc/temporal {:beginning-date-time "2003-08-01T00:00:00Z"
-                                                                        :ending-date-time "2005-10-01T00:00:00Z"})}))
-        coll2 (d/ingest "PROV1" (dc/collection {:short-name "Usage-100"
-                                                :version-id "1"
-                                                :entry-title "Elevation coll2"
-                                                :temporal (dc/temporal {:beginning-date-time "2001-08-01T00:00:00Z"
-                                                                        :ending-date-time "2010-10-01T00:00:00Z"})}))
-        coll3 (d/ingest "PROV1" (dc/collection {:short-name "Usage-10"
-                                                :version-id "3"
-                                                :entry-title "Elevation coll3"
-                                                :temporal (dc/temporal {:beginning-date-time "2002-10-15T12:00:00Z"
-                                                                        :ends-at-present? true})}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Usage-30"
+                                              :Version "2"
+                                              :EntryTitle "Elevation coll1"
+                                              :Platforms [(data-umm-c/platform {:ShortName "Usage"})]
+                                              :TemporalExtents [(data-common/temporal-extent {:beginning-date-time "2003-08-01T00:00:00Z"
+                                                                                              :ending-date-time "2005-10-01T00:00:00Z"})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Usage-100"
+                                              :Version "1"
+                                              :EntryTitle "Elevation coll2"
+                                              :TemporalExtents [(data-common/temporal-extent {:beginning-date-time "2001-08-01T00:00:00Z"
+                                                                                              :ending-date-time "2010-10-01T00:00:00Z"})]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Usage-10"
+                                              :Version "3"
+                                              :EntryTitle "Elevation coll3"
+                                              :TemporalExtents [(data-common/temporal-extent {:beginning-date-time "2002-10-15T12:00:00Z"
+                                                                                              :ends-at-present? true})]}))]
     (index/wait-until-indexed)
 
     (testing "Keyword and temporal"

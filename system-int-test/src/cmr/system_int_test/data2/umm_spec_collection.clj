@@ -9,7 +9,6 @@
     [cmr.umm-spec.additional-attribute :as aa]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-    [cmr.umm-spec.temporal :as umm-spec-temporal]
     [cmr.umm-spec.util :as u]))
 
 (defn location-keyword

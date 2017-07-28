@@ -130,7 +130,7 @@
   * :validate-umm-c  - true to enable the return of the UMM-C validation errors. Otherwise, the config values
   of return-umm-json-validation-errors and return-umm-spec-validation-errors will be used"
   ([provider-id item]
-   (ingest provider-id item nil))
+   (ingest-umm-spec-collection provider-id item nil))
   ([provider-id item options]
    (let [format-key (get options :format :echo10)
          response (ingest/ingest-concept

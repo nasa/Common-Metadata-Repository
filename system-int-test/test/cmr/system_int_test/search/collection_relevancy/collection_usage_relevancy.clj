@@ -10,7 +10,6 @@
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.data.query-to-elastic :as query-to-elastic]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
