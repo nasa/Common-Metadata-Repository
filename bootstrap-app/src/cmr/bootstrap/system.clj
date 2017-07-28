@@ -3,7 +3,6 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [clojure.core.async :refer [chan]]
    [cmr.access-control.system :as ac-system]
    [cmr.acl.core :as acl]
    [cmr.bootstrap.api.routes :as routes]
@@ -28,7 +27,9 @@
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.oracle.connection :as oracle]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.config :as transmit-config]
+   [cmr.bootstrap.services.dispatch.core-async-dispatch :as core-async-dispatch]
+   [cmr.bootstrap.services.dispatch.synchronous-dispatch :as synchronous-dispatch]))
 
 (defconfig db-batch-size
   "Batch size to use when batching database operations."
@@ -68,32 +69,8 @@
                                 :indexer indexer
                                 :access-control access-control}
              :db-batch-size (db-batch-size)
-
-             ;; Channel for requesting full provider migration - provider/collections/granules.
-             ;; Takes single provider-id strings.
-             :provider-db-channel (chan 10)
-             ;; Channel for requesting single collection/granules migration.
-             ;; Takes maps, e.g., {:collection-id collection-id :provider-id provider-id}
-             :collection-db-channel (chan 100)
-
-             ;; Channel for requesting full provider indexing - collections/granules
-             :provider-index-channel (chan 10)
-
-             ;; Channel for processing collections to index.
-             :collection-index-channel (chan 100)
-
-             ;; Channel for processing data newer than a given date-time.
-             :data-index-channel (chan 10)
-
-             ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
-             :system-concept-channel (chan 10)
-
-             ;; channel for processing bulk index requests by concept-id
-             :concept-id-channel (chan 10)
-
-             ;; Channel for bootstrapping virtual products
-             vp/channel-name (chan)
-
+             :core-async-dispatcher (core-async-dispatch/create-core-async-dispatcher)
+             :synchronous-dispatcher (synchronous-dispatch/->SynchronousDispatcher)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (bootstrap-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
@@ -121,7 +98,6 @@
     (vp/handle-virtual-product-requests started-system)
     (info "Bootstrap System started")
     started-system))
-
 
 (defn stop
   "Performs side effects to shut down the system and release its

@@ -30,13 +30,21 @@
   [params]
   (= "true" (when (:synchronous params) (str/lower-case (:synchronous params)))))
 
+(defn- get-dispatcher
+  "Returns the correct dispatcher to use based on the system configuration and the request."
+  [context params request-type]
+  (if (synchronous? params)
+    (get-in context [:system :synchronous-dispatcher])
+    (let [dispatcher-type (get bs/request-type->dispatcher request-type :core-async-dispatcher)]
+      (get-in context [:system dispatcher-type]))))
+
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
   [context provider-id-collection-map params]
-  (let [provider-id (get provider-id-collection-map "provider_id")
-        synchronous (synchronous? params)
+  (let [dispatcher (get-dispatcher context params :migrate-collection)
+        provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")]
-    (bs/migrate-collection context provider-id collection-id synchronous)
+    (bs/migrate-collection context dispatcher provider-id collection-id)
     {:status 202
      :body {:message (str "Processing collection " collection-id "for provider " provider-id)}}))
 
@@ -44,19 +52,19 @@
   "Copy a single provider's data from catalog-rest to metadata db (including collections and
   granules)."
   [context provider-id-map params]
-  (let [provider-id (get provider-id-map "provider_id")
-        synchronous (synchronous? params)]
-    (bs/migrate-provider context provider-id synchronous)
+  (let [dispatcher (get-dispatcher context params :migrate-provider)
+        provider-id (get provider-id-map "provider_id")]
+    (bs/migrate-provider context dispatcher provider-id)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
 (defn- bulk-index-provider
   "Index all the collections and granules for a given provider."
   [context provider-id-map params]
-  (let [provider-id (get provider-id-map "provider_id")
-        synchronous (synchronous? params)
+  (let [dispatcher (get-dispatcher context params :index-provider)
+        provider-id (get provider-id-map "provider_id")
         start-index (Long/parseLong (get params :start_index "0"))
-        result (bs/index-provider context provider-id synchronous start-index)
-        msg (if synchronous
+        result (bs/index-provider context dispatcher provider-id start-index)
+        msg (if
               result
               (str "Processing provider " provider-id " for bulk indexing from start index "
                    start-index))]
@@ -66,11 +74,11 @@
 (defn- bulk-index-data-later-than-date-time
   "Index all the data with a revision-date later than a given date-time."
   [context params]
-  (let [synchronous (synchronous? params)
+  (let [dispatcher (get-dispatcher context params :index-data-later-than-date-time)
         date-time (:date_time params)]
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
-      (let [result (bs/index-data-later-than-date-time context date-time-value synchronous)
-            msg (if synchronous
+      (let [result (bs/index-data-later-than-date-time context dispatcher date-time-value)
+            msg (if
                   (:message result)
                   (str "Processing data after " date-time " for bulk indexing"))]
         {:status 202
@@ -81,11 +89,11 @@
 (defn- bulk-index-collection
   "Index all the granules in a collection"
   [context provider-id-collection-map params]
-  (let [provider-id (get provider-id-collection-map "provider_id")
+  (let [dispatcher (get-dispatcher context params :index-collection)
+        provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
-        synchronous (synchronous? params)
-        result (bs/index-collection context provider-id collection-id synchronous)
-        msg (if synchronous
+        result (bs/index-collection context dispatcher provider-id collection-id)
+        msg (if
               result
               (str "Processing collection " collection-id " for bulk indexing."))]
     {:status 202
@@ -94,10 +102,10 @@
 (defn- bulk-index-system-concepts
   "Index all tags, acls, and access-groups."
   [context params]
-  (let [synchronous (synchronous? params)
+  (let [dispatcher (get-dispatcher context params :index-system-concepts)
         start-index (or (:start-index params) 0)
-        result (bs/index-system-concepts context synchronous start-index)
-        msg (if synchronous
+        result (bs/index-system-concepts context dispatcher start-index)
+        msg (if (synchronous? params)
               (str "Processed " result " system concepts for bulk indexing.")
               (str "Processing system concepts for bulk indexing."))]
     {:status 202
@@ -110,12 +118,12 @@
     concept_type - the concept type for all the concepts, e.g., \"granule\", \"collection\", etc.
     concept_ids  - a vector of concept ids."
   [context request-details-map params]
-  (let [provider-id (get request-details-map "provider_id")
+  (let [dispatcher (get-dispatcher context params :index-concepts-by-id)
+        provider-id (get request-details-map "provider_id")
         concept-type (keyword (get request-details-map "concept_type"))
         concept-ids (get request-details-map "concept_ids")
-        synchronous (synchronous? params)
-        result (bs/index-concepts-by-id context synchronous provider-id concept-type concept-ids)
-        msg (if synchronous
+        result (bs/index-concepts-by-id context dispatcher provider-id concept-type concept-ids)
+        msg (if (synchronous? params)
               (str "Processed " result " concepts for bulk indexing.")
               (str "Processing concepts for bulk indexing."))]
     {:status 202
@@ -124,45 +132,52 @@
 (defn bulk-delete-concepts-from-index-by-id
   "Delete concepts from the indexes by concept-id."
   [context request-details-map params]
-  (let [provider-id (get request-details-map "provider_id")
+  (let [dispatcher (get-dispatcher context params :delete-concepts-from-index-by-id)
+        provider-id (get request-details-map "provider_id")
         concept-type (keyword (get request-details-map "concept_type"))
         concept-ids (get request-details-map "concept_ids")
-        synchronous (synchronous? params)
-        result (bs/delete-concepts-from-index-by-id context synchronous provider-id concept-type
+        result (bs/delete-concepts-from-index-by-id context dispatcher provider-id concept-type
                                                     concept-ids)
-        msg (if synchronous
+        msg (if (synchronous? params)
               (str "Processed " result "conccepts for bulk deletion from indexes.")
               (str "Processing concepts for bulk deletion from indexes."))]
     {:status 202
      :body {:message msg}}))
 
+(defn- validate-virtual-products-request
+  "Throws an error if the virutal products request is invalid."
+  [provider-id entry-title]
+  (when-not (and provider-id entry-title)
+    (srv-errors/throw-service-error
+      :bad-request
+      "provider-id and entry-title are required parameters."))
+  (when-not (svm/source-to-virtual-product-mapping
+              [(svm/provider-alias->provider-id provider-id) entry-title])
+    (srv-errors/throw-service-error
+      :not-found
+      (format "No virtual product configuration found for provider [%s] and entry-title [%s]"
+              provider-id
+              entry-title))))
+
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
-  (let [{:keys [provider-id entry-title synchronous]} params]
-    (when-not (and provider-id entry-title)
-      (srv-errors/throw-service-error
-        :bad-request
-        "provider-id and entry-title are required parameters."))
-    (when-not (svm/source-to-virtual-product-mapping
-                [(svm/provider-alias->provider-id provider-id) entry-title])
-      (srv-errors/throw-service-error
-        :not-found
-        (format "No virtual product configuration found for provider [%s] and entry-title [%s]"
-                provider-id
-                entry-title)))
+  (let [dispatcher (get-dispatcher context params :bootstrap-virtual-products)
+        {:keys [provider-id entry-title]} params]
+    (validate-virtual-products-request provider-id entry-title)
     (info (format "Bootstrapping virtual products for provider [%s] entry-title [%s]"
                   provider-id
                   entry-title))
-    (bs/bootstrap-virtual-products context (= "true" synchronous) provider-id entry-title)
+    (bs/bootstrap-virtual-products context dispatcher provider-id entry-title)
     {:status 202 :body {:message "Bootstrapping virtual products."}}))
 
 (defn start-rebalance-collection
   "Kicks off rebalancing the granules in the collection into their own index."
   [context concept-id params]
-  (bs/start-rebalance-collection context concept-id (synchronous? params))
-  {:status 200
-   :body {:message (str "Rebalancing started for collection " concept-id)}})
+  (let [dispatcher (get-dispatcher context params :index-collection)]
+    (bs/start-rebalance-collection context dispatcher concept-id)
+    {:status 200
+     :body {:message (str "Rebalancing started for collection " concept-id)}}))
 
 (defn rebalance-status
   "Gets the status of rebalancing a collection."

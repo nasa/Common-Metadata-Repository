@@ -1,7 +1,7 @@
 (ns cmr.bootstrap.data.virtual-products
   "Contains functions for bootstrapping virtual products."
   (:require
-   [clojure.core.async :as async :refer [go >! go-loop <! <!!]]
+   [clojure.core.async :as async :refer [go go-loop >! <! <!!]]
    [clojure.string :as str]
    [cmr.bootstrap.data.util :as data]
    [cmr.bootstrap.embedded-system-helper :as helper]
@@ -117,11 +117,13 @@
                                     :native-id    virtual-granule-ur})]
     (if existing-virtual-granule
       (do
-        (info "Creating tombstone for" (:concept-id existing-virtual-granule) (:revision-id source-granule))
+        (info "Creating tombstone for" (:concept-id existing-virtual-granule)
+              (:revision-id source-granule))
         (data/create-tombstone-and-unindex-concept system
                                                    (:concept-id existing-virtual-granule)
                                                    (:revision-id source-granule)))
-      (info "Nothing to do, since no corresponding virtual granules exist for source granule" (:concept-id source-granule)))))
+      (info "Nothing to do, since no corresponding virtual granules exist for source granule"
+            (:concept-id source-granule)))))
 
 (defn- get-source-granule-batch-channel
   "Starts a process that will reads source granule batches and writes them to a channel. The channel
@@ -130,13 +132,15 @@
   [system provider-id entry-title]
   (let [batch-chan (async/chan (virtual-product-channel-size))]
     (go
-      (info "get-source-granule-batch-channel starting for provider [" provider-id "] entry-title [" entry-title "]")
+      (info (format "get-source-granule-batch-channel starting for provider [%s] entry-title [%s]"
+                    provider-id entry-title))
       (try
         (let [source-collection (get-collection system provider-id entry-title)]
           (if source-collection
             (doseq [source-granule-batch (get-source-granule-batches system source-collection)]
               (>! batch-chan [source-collection source-granule-batch]))
-            (warn "Ignoring non-existent collection for provider-id [" provider-id "] entry-title [" entry-title "]")))
+            (warn (format "Ignoring non-existent collection for provider-id [%s] entry-title [%s]"
+                          provider-id entry-title))))
         (finally
           (async/close! batch-chan)
           (info "get-source-granule-batch-channel completed"))))
@@ -213,11 +217,11 @@
   "Begin listening for requests on the specified channel in the
   bootstrap system."
   [system]
-  (let [c (get system channel-name)]
+  (let [channel (get-in system [:core-async-dispatcher :virtual-product-channel])]
     (info "Listening for virtual product bootstrapping messages.")
-    (go-loop [{:keys [provider-id entry-title]} (<! c)]
+    (go-loop [{:keys [provider-id entry-title]} (<! channel)]
              (try
                (bootstrap-virtual-products system provider-id entry-title)
                (catch Exception e
                  (error e "Failed to handle virtual product channel message.")))
-             (recur (<! c)))))
+             (recur (<! channel)))))

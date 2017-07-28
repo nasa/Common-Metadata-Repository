@@ -1,12 +1,13 @@
 (ns cmr.bootstrap.data.bulk-migration
   "Functions to support migration of data form catlog rest to metadata db."
-  (:require [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.jdbc :as j]
-            [cmr.oracle.sql-utils :as su :refer [select insert from where delete]]
-            [clojure.core.async :as ca :refer [thread alts!! <!!]]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.transmit.metadata-db :as transmit-mdb]
-            [cmr.bootstrap.data.migration-utils :as mu]))
+  (:require
+   [clojure.core.async :refer [thread alts!! <!!]]
+   [clojure.java.jdbc :as j]
+   [cmr.bootstrap.data.migration-utils :as mu]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.oracle.sql-utils :as su :refer [select insert from where delete]]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.metadata-db :as transmit-mdb]))
 
 ;; FIXME - Why not just use the metadata db code directly for creating the provider instead of using http?
 (defn system->metadata-db-url
@@ -171,19 +172,22 @@
   "Handle any requests for copying data from echo catalog rest to metadata db."
   [system]
   (info "Starting background task for monitoring bulk migration channels.")
-  (let [channels ((juxt :provider-db-channel :collection-db-channel) system)] ; add other channels as needed
+  (let [core-async-dispatcher (:core-async-dispatcher system)
+        provider-db-channel (:provider-db-channel core-async-dispatcher)
+        collection-db-channel (:collection-db-channel core-async-dispatcher)
+        channels [provider-db-channel collection-db-channel]]
     (dotimes [n 2]
       (thread (while true
                 (try ; catch any errors and log them, but don't let the thread die
                   (let [[v ch] (alts!! channels)]
                     (cond
                       ;; add other channels as needed
-                      (= (:provider-db-channel system) ch)
+                      (= provider-db-channel ch)
                       (do
                         (info "Processing provider" v)
                         (copy-provider system v))
 
-                      (= (:collection-db-channel system) ch)
+                      (= collection-db-channel ch)
                       (let [{:keys [provider-id collection-id]} v]
                         (info "Processing collection" collection-id "for provider" provider-id)
                         (copy-single-collection system provider-id collection-id))
@@ -205,4 +209,3 @@
   (delete-collection-granules-sql "FIX_PROV1" "C1000000073-FIX_PROV1")
   (mu/full-metadata-db-concept-table "FIX_PROV1" :collection)
   )
-
