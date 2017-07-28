@@ -53,8 +53,7 @@
   [this context provider-id entry-title]
   (virtual-products/bootstrap-virtual-products (:system context) provider-id entry-title))
 
-(defrecord SynchronousDispatcher
-  [system])
+(defrecord SynchronousDispatcher [])
 
 (def dispatch-behavior
   "Map of protocol definitions to the implementations of that protocol for the synchronous

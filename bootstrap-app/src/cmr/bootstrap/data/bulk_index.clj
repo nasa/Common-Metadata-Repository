@@ -4,7 +4,7 @@
     [cheshire.core :as json]
     [clj-http.client :as client]
     [clj-time.coerce :as time-coerce]
-    [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
+    [clojure.core.async :as ca :refer [<!!]]
     [clojure.java.jdbc :as j]
     [clojure.string :as str]
     [cmr.access-control.data.access-control-index :as access-control-index]
@@ -256,40 +256,41 @@
   when an item comes off the channel."
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
-  (let [channel (:data-index-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [date-time]} (<!! channel)]
-                     (index-data-later-than-date-time system date-time))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:provider-index-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [provider-id start-index]} (<!! channel)]
-                     (index-provider system provider-id start-index))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:collection-index-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
-                     (index-granules-for-collection system provider-id collection-id options))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:system-concept-channel system)]
-    (ca/thread (while true
-                 (try ; catch any errors and log them, but don't let the thread die
-                   (let [{:keys [start-index]} (<!! channel)]
-                     (index-system-concepts system start-index))
-                   (catch Throwable e
-                     (error e (.getMessage e)))))))
-  (let [channel (:concept-id-channel system)]
-    (ca/thread (while true
-                (try ; log errors but keep the thread alive)
-                  (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
-                    (if (= request :delete)
-                      (delete-concepts-by-id system provider-id concept-type concept-ids)
-                      (index-concepts-by-id system provider-id concept-type concept-ids)))
-                  (catch Throwable e
-                    (error e (.getMessage e))))))))
+  (let [core-async-dispatcher (:core-async-dispatcher system)]
+    (let [channel (:data-index-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [date-time]} (<!! channel)]
+                       (index-data-later-than-date-time system date-time))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:provider-index-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [provider-id start-index]} (<!! channel)]
+                       (index-provider system provider-id start-index))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:collection-index-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
+                       (index-granules-for-collection system provider-id collection-id options))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:system-concept-channel core-async-dispatcher)]
+      (ca/thread (while true
+                   (try ; catch any errors and log them, but don't let the thread die
+                     (let [{:keys [start-index]} (<!! channel)]
+                       (index-system-concepts system start-index))
+                     (catch Throwable e
+                       (error e (.getMessage e)))))))
+    (let [channel (:concept-id-channel core-async-dispatcher)]
+      (ca/thread (while true
+                  (try ; log errors but keep the thread alive)
+                    (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
+                      (if (= request :delete)
+                        (delete-concepts-by-id system provider-id concept-type concept-ids)
+                        (index-concepts-by-id system provider-id concept-type concept-ids)))
+                    (catch Throwable e
+                      (error e (.getMessage e)))))))))
