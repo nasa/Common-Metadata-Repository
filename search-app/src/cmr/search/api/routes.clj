@@ -254,10 +254,15 @@
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
+        _ (info (format "parameters %s" (println params)))
         [query-time collections-with-new-granules-search] (util/time-execution
                                                            (query-svc/get-collections-from-new-granules ctx params))
-        _ (info (format "Initial query finished in %s time" query-time))
+        _ (info (format "Initial query finished in %s time and this is what is in it %s"
+                        query-time
+                        (println collections-with-new-granules-search)))
+
         collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
+        _ (info (format "here are the collection-ids %s" (println collection-ids)))
         search-params (-> params
                           (assoc :echo-collection-id collection-ids)
                           (dissoc :has_granules_created_at)
