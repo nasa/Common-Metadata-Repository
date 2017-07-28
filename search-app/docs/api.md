@@ -3128,10 +3128,10 @@ Access to variable and variable association is granted through the INGEST_MANAGE
 
 #### <a name="variable-association"></a> Variable Association
 
-A variable identified by its native_id can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response that consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has an `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
+A variable identified by its concept id can be associated with collections through a list of collection concept revisions. The variable association request normally returns status code 200 with a response that consists of a list of individual variable association responses, one for each variable association attempted to create. Each individual variable association response has an `associated_item` field and either a `variable_association` field with the variable association concept id and revision id when the variable association succeeded or an `errors` field with detailed error message when the variable association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during variable association. Here is a sample variable association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/native_id_of_the_variable/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
@@ -3167,8 +3167,8 @@ Status code 400 is returned when:
 * request body is invalid json
 
 Status code 404 is returned when:
-* the variable with the given variable name does not exist
-* the variable with the given variable name has been deleted
+* the variable with the given concept id does not exist
+* the variable with the given concept id has been deleted
 
 Status code 422 is returned when:
 * request body is empty
@@ -3176,10 +3176,10 @@ Status code 422 is returned when:
 
 #### <a name="variable-dissociation"></a> Variable Dissociation
 
-A variable identified by its native_id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
+A variable identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to variable association requests.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/native_id_of_the_variable/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/variables/V1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
@@ -3200,7 +3200,7 @@ Content-Length: 168
   },
   {
     "warnings":[
-      "Variable [totcldh2ostderr] is not associated with collection [C1200000006-PROV1]."
+      "Variable [V1200000008-PROV1] is not associated with collection [C1200000006-PROV1]."
     ],
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
@@ -3224,8 +3224,8 @@ Status code 400 is returned when:
 * request body is invalid json
 
 Status code 404 is returned when:
-* the variable with the given variable name does not exist
-* the variable with the given variable name has been deleted
+* the variable with the given concept id does not exist
+* the variable with the given concept id has been deleted
 
 Status code 422 is returned when:
 * request body is empty
