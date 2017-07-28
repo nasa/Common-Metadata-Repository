@@ -30,7 +30,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest retrieve-variable-by-concept-id
+(deftest retrieve-variable-by-concept-id-any-accept-header
   (let [var1-name "variable1"
         var1-v1 (variable/ingest-variable-with-attrs {:Name var1-name})
         del-var (variable/ingest-variable-with-attrs {:Name "deleted-variable"})
@@ -53,14 +53,6 @@
         (is (= [(format "Concept with concept-id [%s] could not be found."
                         (:concept-id del-var))]
                errors))))
-    (testing "retrieval by variable concept-id returns the latest revision."
-      (let [response (search/retrieve-concept
-                       (:concept-id var1-v1)
-                       nil
-                       {:accept mt/any
-                        :headers {transmit-config/token-header user1-token}})]
-        (is (= var1-name
-               (:Name (json/parse-string (:body response) true))))))
     (let [var1-name-new "variable1-new"
           var1-v2 (variable/ingest-variable-with-attrs
                    {:Name var1-name-new
@@ -70,22 +62,30 @@
         (is (= 2
                (inc (:revision-id var1-v1))
                (:revision-id var1-v2))))
-      (testing (str "retrieval by variable concept-id and revision-id returns "
+      (let [response (search/retrieve-concept
+                     (:concept-id var1-v1)
+                     nil
+                     {:accept mt/any
+                      :headers {transmit-config/token-header user1-token}})
+            response-v1 (search/retrieve-concept
+                         (:concept-id var1-v1)
+                         1
+                         {:accept mt/any
+                          :headers {transmit-config/token-header user1-token}})
+            response-v2 (search/retrieve-concept
+                         (:concept-id var1-v1)
+                         2
+                         {:accept mt/any
+                          :headers {transmit-config/token-header user1-token}})]
+          (testing "retrieval by variable concept-id returns the latest revision."
+            (is (= var1-name-new
+                   (:Name (json/parse-string (:body response) true)))))
+          (testing (str "retrieval by variable concept-id and revision-id returns "
                     "the specified variable")
-        (let [response-v1 (search/retrieve-concept
-                           (:concept-id var1-v1)
-                           1
-                           {:accept mt/any
-                            :headers {transmit-config/token-header user1-token}})
-              response-v2 (search/retrieve-concept
-                           (:concept-id var1-v1)
-                           2
-                           {:accept mt/any
-                            :headers {transmit-config/token-header user1-token}})]
-          (is (= var1-name
-                 (:Name (json/parse-string (:body response-v1) true))))
-          (is (= var1-name-new
-                 (:Name (json/parse-string (:body response-v2) true)))))))
+            (is (= var1-name
+                   (:Name (json/parse-string (:body response-v1) true))))
+            (is (= var1-name-new
+                   (:Name (json/parse-string (:body response-v2) true)))))))
     (testing "retrieval by variable concept-id and incorrect revision-id returns error"
       (let [no-rev 10000
             {:keys [status errors]} (search/get-search-failure-xml-data
@@ -99,5 +99,21 @@
         (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
                              "does not exist.")
                         (:concept-id var1-v1)
+                        no-rev)]
+               errors))))
+    (testing "retrieval by non-existent variable and revision returns error"
+      (let [no-var "V404404404-PROV1"
+            no-rev 10000
+            {:keys [status errors]} (search/get-search-failure-xml-data
+                                     (search/retrieve-concept
+                                      no-var
+                                      no-rev
+                                      {:accept mt/any
+                                       :throw-exceptions true
+                                       :headers {transmit-config/token-header user1-token}}))]
+        (is (= 404 status))
+        (is (= [(format (str "Concept with concept-id [%s] and revision-id [%s] "
+                             "does not exist.")
+                        no-var
                         no-rev)]
                errors))))))
