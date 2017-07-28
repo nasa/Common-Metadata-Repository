@@ -26,19 +26,47 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; Helper constants and utility functions
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def var1-name "variable1")
+(def var1-name-new "variable1-new")
+(def del-var-name "deleted-variable")
+(def user-name "user1")
+
+(defn- get-tokens
+  "A minimal utility function for tokens used by the tests."
+  []
+  [(e/login-guest (s/context))
+   (e/login (s/context) user-name)])
+
+(defn- get-var
+  "Ingest a single var given a var-name."
+  [var-name]
+  (variable/ingest-variable-with-attrs {:Name var-name}))
+
+(defn- get-updated-var
+  "Update (re-ingest) an existing (old) variable with new data."
+  [old-var data]
+  (index/wait-until-indexed)
+  (variable/ingest-variable-with-attrs
+   (merge data
+          {:native-id (:native-id old-var)})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; Retrieve by concept-id - general test
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest retrieve-variable-by-concept-id-any-accept-header
-  (let [var1-name "variable1"
-        var1-v1 (variable/ingest-variable-with-attrs {:Name var1-name})
-        del-var (variable/ingest-variable-with-attrs {:Name "deleted-variable"})
+  (let [var1-v1 (get-var var1-name)
+        del-var (get-var del-var-name)
         _ (index/wait-until-indexed)
         del-concept (mdb/get-concept (:concept-id del-var))
         ;; tokens
-        guest-token (e/login-guest (s/context))
-        user1-token (e/login (s/context) "user1")]
+        [guest-token user1-token] (get-tokens)]
     (ingest/delete-concept del-concept (variable/token-opts user1-token))
     (index/wait-until-indexed)
     (testing "retrieval of a deleted variable results in a 404"
@@ -53,10 +81,7 @@
         (is (= [(format "Concept with concept-id [%s] could not be found."
                         (:concept-id del-var))]
                errors))))
-    (let [var1-name-new "variable1-new"
-          var1-v2 (variable/ingest-variable-with-attrs
-                   {:Name var1-name-new
-                    :native-id (:native-id var1-v1)})]
+    (let [var1-v2 (get-updated-var var1-v1 {:Name var1-name-new})]
       (testing (str "Sanity check that the test variable got updated and its "
                     "revision id was incremented.")
         (is (= 2
@@ -119,17 +144,11 @@
                errors))))))
 
 (deftest retrieve-variable-by-concept-id-umm-json-accept-header
-  (let [var1-name "variable1"
-        var1-name-new "variable1-new"
-        var1-v1 (variable/ingest-variable-with-attrs {:Name var1-name})
-        _ (index/wait-until-indexed)
-        var1-v2 (variable/ingest-variable-with-attrs
-                 {:Name var1-name-new
-                  :native-id (:native-id var1-v1)})
+  (let [var1-v1 (get-var var1-name)
+        var1-v2 (get-updated-var var1-v1 {:Name var1-name-new})
         ;; tokens
-        guest-token (e/login-guest (s/context))
-        user1-token (e/login (s/context) "user1")
-
+        [guest-token user1-token] (get-tokens)
+        ;; responses
         response (search/retrieve-concept
                   (:concept-id var1-v1)
                   nil
@@ -167,4 +186,18 @@
                              "does not exist.")
                         (:concept-id var1-v1)
                         no-rev)]
+               errors))))
+    (testing "unsupported content types return an error"
+      (let [unsupported-mt "unsupported/mime-type"
+            {:keys [status errors]} (search/get-search-failure-xml-data
+                                     (search/retrieve-concept
+                                      (:concept-id var1-v1)
+                                      nil
+                                      {:accept unsupported-mt
+                                       :throw-exceptions true
+                                       :headers {transmit-config/token-header user1-token}}))]
+        (is (= 400 status))
+        (is (= [(format (str "The mime types specified in the accept header "
+                             "[%s] are not supported.")
+                        unsupported-mt)]
                errors))))))
