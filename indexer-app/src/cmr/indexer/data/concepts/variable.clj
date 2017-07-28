@@ -29,11 +29,10 @@
 (defn- variable-association->variable-concept
   "Returns the variable concept and variable association for the given variable association."
   [context variable-association]
-  (let [{:keys [variable-name]} variable-association
-        native-id variable-name
+  (let [{:keys [variable-concept-id]} variable-association
         variable-concept (mdb/find-latest-concept
                           context
-                          {:native-id native-id
+                          {:concept-id variable-concept-id
                            :latest true}
                           :variable)]
     (when-not (:deleted variable-concept)
