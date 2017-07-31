@@ -171,7 +171,7 @@
   [context group-permissions object-identity-type object-identity]
   (let [cmr-acl (if (= object-identity-type :catalog_item_identity)
                   (util/map-keys->snake_case {:group_permissions group-permissions
-                                              object-identity-type (util/remove-nil-keys (merge {:name (str "NAME" (java.util.UUID/randomUUID))}
+                                              object-identity-type (util/remove-nil-keys (merge {:name (str (java.util.UUID/randomUUID))}
                                                                                                 object-identity))})
                   {:group_permissions group-permissions
                    object-identity-type object-identity})
