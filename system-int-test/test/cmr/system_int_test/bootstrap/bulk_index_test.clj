@@ -27,7 +27,6 @@
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"}) {:grant-all-access-control? false}]))
-                       ; tags/grant-all-tag-fixture]))
 
 (defn- save-collection
   "Saves a collection concept"
