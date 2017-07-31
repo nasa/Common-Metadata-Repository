@@ -100,19 +100,16 @@
 
      (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! true))
 
-     (are3 [size expected-collections]
-       (do
-         (def bin-size size) ; Setting the config will fail without this
-         (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! bin-size))
-         (is (d/refs-match-order? expected-collections (search/find-refs :collection {:keyword "Usage"}))))
+     (testing "bin size 0.1, same order"
+       (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.1))
+       (is (d/refs-match-order? [coll1 coll2 coll3] (search/find-refs :collection {:keyword "Usage"}))))
 
-       "Bin size 0.1 - no affect"
-       0.1 [coll1 coll2 coll3]
+     (testing "bin size 0.2, order by usage"
+       (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.2))
+       (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"}))))
 
-       "Bin size 0.2 - order by usage"
-       0.2 [coll2 coll1 coll3]
-
-       "Bin size 0.3 - same as 0.2"
-       0.3 [coll2 coll1 coll3])
+     (testing "bin size 0.3 - same as 0.2"
+       (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.3))
+       (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"}))))
 
      (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! false)))))
