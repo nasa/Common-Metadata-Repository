@@ -64,7 +64,7 @@
         provider-id (get provider-id-map "provider_id")
         start-index (Long/parseLong (get params :start_index "0"))
         result (bs/index-provider context dispatcher provider-id start-index)
-        msg (if
+        msg (if (synchronous? params)
               result
               (str "Processing provider " provider-id " for bulk indexing from start index "
                    start-index))]
@@ -78,7 +78,7 @@
         date-time (:date_time params)]
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
       (let [result (bs/index-data-later-than-date-time context dispatcher date-time-value)
-            msg (if
+            msg (if (synchronous? params)
                   (:message result)
                   (str "Processing data after " date-time " for bulk indexing"))]
         {:status 202
@@ -93,7 +93,7 @@
         provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
         result (bs/index-collection context dispatcher provider-id collection-id)
-        msg (if
+        msg (if (synchronous? params)
               result
               (str "Processing collection " collection-id " for bulk indexing."))]
     {:status 202
