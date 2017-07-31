@@ -5,9 +5,10 @@
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.validation.additional-attribute :as aa]
    [cmr.umm-spec.validation.platform :as p]
+   [cmr.umm-spec.validation.project :as project]
    [cmr.umm-spec.validation.related-url :as url]
    [cmr.umm-spec.validation.spatial :as s]
-   [cmr.umm.validation.validation-utils :as vu]))
+   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
 
 (defn- range-date-time-validation
   "Defines range-date-time validation"
@@ -54,7 +55,7 @@
   {:TemporalExtents (v/every temporal-extent-validation)
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
-   :Projects (vu/unique-by-name-validator :ShortName)
+   :Projects project/projects-validation
    :ScienceKeywords (v/every science-keyword-validations)
    :SpatialExtent s/spatial-extent-validation
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
