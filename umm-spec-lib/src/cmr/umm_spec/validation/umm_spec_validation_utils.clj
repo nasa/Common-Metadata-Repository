@@ -18,13 +18,13 @@
   "Validate that the date is in the past"
   [field-path value]
   (when (and value (not (date/is-past? value)))
-    {field-path ["Date must be in the past."]}))
+    {field-path ["Date should be in the past."]}))
 
 (defn date-in-future-validator
   "Validate that the date is in the future"
   [field-path value]
   (when (and value (not (date/is-future? value)))
-    {field-path ["Date must be in the future."]}))
+    {field-path ["Date should be in the future."]}))
 
 (defn escape-error-string
   "Escape any % in the string (for example those that occur in a URL) so that when the string is
