@@ -249,14 +249,12 @@
           "Granules"
           :granule [gran2])
 
-
-        ;; Commented out until ACLs and groups are supported in the index by concept-id API
         ; ;; ACLs
         (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
               items (:items response)]
           (search-results-match? items [acl2]))
 
-        ; ;; ;; Groups
+        ;; Groups
         (let [response (ac/search-for-groups (u/conn-context) {})
               ;; Need to filter out admin group created by fixture
               items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
