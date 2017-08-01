@@ -1,8 +1,10 @@
 (ns cmr.bootstrap.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.oracle.connection :as conn]))
+  (:require
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as conn]))
 
 (defconfig bootstrap-username
   "Defines the bootstrap database username."
@@ -27,3 +29,28 @@
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Message queue configuration
+
+(defconfig bootstrap-provider-exchange-name
+   "The bootstrap exchange to which provider bootstrap messages are published."
+   {:default "cmr-bootstrap-provider-exchange"})
+
+(defconfig bootstrap-provider-queue-name
+  "The queue containing bootstrap provider events."
+  {:default "cmr-bootstrap-provider-queue"})
+
+(defconfig bootstrap-provider-queue-listener-count
+  "Number of worker threads to use for the queue listener for the bootstrap provider queue"
+  {:default 1
+   :type Long})
+
+(defn queue-config
+  "Returns the queue configuration for the bootstrap application."
+  []
+  (assoc (queue-config/default-config)
+         :queues [(bootstrap-provider-queue-name)]
+         :exchanges [(bootstrap-provider-exchange-name)]
+         :queues-to-exchanges
+         {(bootstrap-provider-queue-name) [(bootstrap-provider-exchange-name)]}))

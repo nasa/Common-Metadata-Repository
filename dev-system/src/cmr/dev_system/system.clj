@@ -2,6 +2,7 @@
   (:require
    [cmr.access-control.config :as access-control-config]
    [cmr.access-control.system :as access-control-system]
+   [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.system :as bootstrap-system]
    [cmr.common-app.services.search.elastic-search-index :as es-search]
    [cmr.common.config :as config :refer [defconfig]]
@@ -162,6 +163,7 @@
       (rmq-conf/merge-configs (vp-config/queue-config))
       (rmq-conf/merge-configs (access-control-config/queue-config))
       (rmq-conf/merge-configs (ingest-config/queue-config))
+      (rmq-conf/merge-configs (bootstrap-config/queue-config))
       mem-queue/create-memory-queue-broker
       wrapper/create-queue-broker-wrapper))
 
@@ -214,6 +216,13 @@
   "Create an instance of the access control application."
   [queue-broker]
   (assoc (access-control-system/create-system) :queue-broker queue-broker))
+
+(defn create-bootstrap-app
+  "Create an instance of the indexer application."
+  [queue-broker]
+  (-> (bootstrap-system/create-system)
+      (assoc :queue-broker queue-broker)
+      (assoc-in [:message-queue-dispatcher :queue-broker] queue-broker)))
 
 (defmulti create-ingest-app
   "Create an instance of the ingest application."
@@ -309,7 +318,7 @@
               :access-control (create-access-control-app queue-broker)
               :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component queue-broker)
-              :bootstrap (when-not db-component (bootstrap-system/create-system))
+              :bootstrap (when-not db-component (create-bootstrap-app queue-broker))
               :indexer (create-indexer-app queue-broker)
               :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)

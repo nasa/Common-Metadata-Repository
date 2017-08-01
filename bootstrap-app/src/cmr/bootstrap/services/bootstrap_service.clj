@@ -16,7 +16,7 @@
   "A map of request types to which dispatcher to use for asynchronous requests."
   {:migrate-provider :core-async-dispatcher
    :migrate-collection :core-async-dispatcher
-   :index-provider :core-async-dispatcher
+   :index-provider :message-queue-dispatcher
    :index-data-later-than-date-time :core-async-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher

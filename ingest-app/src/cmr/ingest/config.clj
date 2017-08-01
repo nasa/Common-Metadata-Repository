@@ -1,16 +1,17 @@
 (ns cmr.ingest.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.oracle.config :as oracle-config]
-            [cmr.oracle.connection :as conn]
-            [cmr.message-queue.config :as rmq-conf]))
+  (:require
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.message-queue.config :as queue-config]
+   [cmr.oracle.config :as oracle-config]
+   [cmr.oracle.connection :as conn]))
 
 (defconfig bulk-update-cleanup-minimum-age
   "The minimum age(in days) of the rows in bulk-update-task-status table that can be cleaned up"
   {:default 90
    :type Long})
 
-(defconfig bulk-update-enabled 
+(defconfig bulk-update-enabled
   "Flag for whether or not bulk update is enabled."
   {:default true :type Boolean})
 
@@ -56,9 +57,9 @@
    :type Long})
 
 (defn queue-config
-  "Returns the rabbit mq configuration for the ingest application."
+  "Returns the queue configuration for the ingest application."
   []
-  (assoc (rmq-conf/default-config)
+  (assoc (queue-config/default-config)
          :queues [(ingest-queue-name)]
          :exchanges [(ingest-exchange-name) (provider-exchange-name)]
          :queues-to-exchanges
