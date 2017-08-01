@@ -653,8 +653,7 @@
          small (if (some? small) small (get options :small false))
          grant-all-search? (get options :grant-all-search? true)
          grant-all-ingest? (get options :grant-all-ingest? true)
-         grant-all-access-control (get options :grant-all-access-control? true)]
-
+         grant-all-access-control? (get options :grant-all-access-control? true)]
      (create-mdb-provider {:provider-id provider-id
                            :short-name short-name
                            :cmr-only cmr-only
@@ -673,13 +672,14 @@
      (when grant-all-ingest?
        (echo-util/grant-all-ingest (s/context) provider-id))
 
-     (when grant-all-access-control
+     (when grant-all-access-control?
        (echo-util/grant-system-group-permissions-to-all (s/context))
        (echo-util/grant-provider-group-permissions-to-all (s/context) provider-id)))))
 
 (def reset-fixture-default-options
   {:grant-all-search? true
-   :grant-all-ingest? true})
+   :grant-all-ingest? true
+   :grant-all-access-control? true})
 
 (defn setup-providers
   "Creates the given providers in CMR. Providers can be passed in
@@ -692,7 +692,7 @@
   ([providers]
    (setup-providers providers nil))
   ([providers options]
-   (let [{:keys [grant-all-search? grant-all-ingest?]}
+   (let [{:keys [grant-all-search? grant-all-ingest? grant-all-access-control?]}
          (merge reset-fixture-default-options options)
          providers (if (sequential? providers)
                        providers
@@ -703,7 +703,8 @@
         (create-provider
          provider-map
          {:grant-all-search? grant-all-search?
-          :grant-all-ingest? grant-all-ingest?})))))
+          :grant-all-ingest? grant-all-ingest?
+          :grant-all-access-control? grant-all-access-control?})))))
 
 (defn reset-fixture
   "Resets all the CMR systems then uses the `setup-providers` function to
