@@ -3,12 +3,12 @@
   (:require
     [clojure.test :refer :all]
     [cmr.common.util :as util :refer [are3]]
-    [cmr.indexer.data.concepts.collection :as collection-indexer]))
+    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]))
 
 (deftest parse-version-id
   (are3 [version-id parsed-version-id]
     (is (= parsed-version-id
-           (#'collection-indexer/parse-version-id version-id)))
+           (collection-util/parse-version-id version-id)))
 
     "Regular integer version"
     "15" "15"

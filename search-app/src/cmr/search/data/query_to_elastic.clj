@@ -1,6 +1,7 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
+   [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as str]
    [clojurewerkz.elastisch.query :as eq]
@@ -41,6 +42,22 @@
   temporal overlap calculations to be turned off if needed for performance."
   {:type Boolean
    :default true})
+
+(defconfig sort-bin-keyword-scores
+  "When sorting by keyword score, set to true if we want to bin the keyword scores
+  i.e. round to the nearest keyword-score-bin-size"
+  {:type Boolean
+   :default false})
+
+(defconfig keyword-score-bin-size
+  "When sort-bin-keyword-scores is true, what should the keyword score should
+  be rounded to the nearest keyword-score-bin-size"
+  {:type Double
+   :default 0.1})
+
+(def keyword-score-bin-script
+  "Groovy script used by elastic to bin the keyword score based on bin-size"
+  (slurp (io/resource "bin_keyword_score.groovy")))
 
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
@@ -343,7 +360,12 @@
     (seq
      (concat
        (when use-keyword-sort?
-         [{:_score {:order :desc}}])
+         (if (sort-bin-keyword-scores)
+           [{:_script {:params {:binSize (keyword-score-bin-size)}
+                       :script keyword-score-bin-script
+                       :type :number
+                       :order :desc}}]
+           [{:_score {:order :desc}}]))
        (when use-temporal-sort?
          [{:_script (temporal-to-elastic/temporal-overlap-sort-script query)}])
        ;; We only include this if one of the others is present

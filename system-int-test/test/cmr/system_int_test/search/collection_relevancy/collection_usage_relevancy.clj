@@ -9,13 +9,14 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.data.query-to-elastic :as query-to-elastic]
-   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -30,15 +31,18 @@
 (deftest community-usage-relevancy-scoring
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-usage-csv)
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
-                                    :entry-title "Relevancy 1"
-                                    :version-id "3"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL"
-                                    :entry-title "Relevancy 2"
-                                    :version-id "1"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
-                                    :entry-title "Relevancy 3"
-                                    :version-id "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "Relevancy 1"
+                                                        :Version "3"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_VIRTUAL"
+                                                        :EntryTitle "Relevancy 2"
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_MAPSS"
+                                                        :EntryTitle "Relevancy 3"
+                                                        :Version "2"}))
   (index/wait-until-indexed)
 
   (testing "Equal keyword relevancy, order by usage"
@@ -46,9 +50,10 @@
       (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
   (testing "Collection missing from metrics file"
-    (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
-                                      :entry-title "Relevancy 4"
-                                      :version-id "5"}))
+    (d/ingest-umm-spec-collection "PROV1"
+                                  (data-umm-c/collection {:ShortName "AG_MAPSS"
+                                                          :EntryTitle "Relevancy 4"
+                                                          :Version "5"}))
     (index/wait-until-indexed)
 
     (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
@@ -62,22 +67,26 @@
 (deftest keyword-relevancy-takes-precedence
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-usage-csv)
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
-                                    :entry-title "Relevancy 1"
-                                    :version-id "3"
-                                    :platforms [(dc/platform {:short-name "Relevancy"})]}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AST_05"
-                                    :entry-id "Relevancy"
-                                    :entry-title "AST_05"
-                                    :version-id "B"
-                                    :projects (dc/projects ["Relevancy"])
-                                    :platforms [(dc/platform {:short-name "Relevancy"})]}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL"
-                                    :entry-title "Relevancy 2"
-                                    :version-id "1"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
-                                    :entry-title "Relevancy 3"
-                                    :version-id "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "Relevancy 1"
+                                                        :Version "3"
+                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AST_05"
+                                                        :EntryId "Relevancy"
+                                                        :EntryTitle "AST_05"
+                                                        :Version "B"
+                                                        :Projects (data-umm-c/projects "Relevancy")
+                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_VIRTUAL"
+                                                        :EntryTitle "Relevancy 2"
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_MAPSS"
+                                                        :EntryTitle "Relevancy 3"
+                                                        :Version "2"}))
   (index/wait-until-indexed)
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
     (is (= ["AST_05" "Relevancy 1" "Relevancy 2" "Relevancy 3"] (map :name results))))
@@ -89,15 +98,18 @@
 
 (deftest ingest-metrics-after-collections
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
-                                    :entry-title "Relevancy 1"
-                                    :version-id "3"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL"
-                                    :entry-title "Relevancy 2"
-                                    :version-id "1"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
-                                    :entry-title "Relevancy 3"
-                                    :version-id "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "Relevancy 1"
+                                                        :Version "3"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_VIRTUAL"
+                                                        :EntryTitle "Relevancy 2"
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_MAPSS"
+                                                        :EntryTitle "Relevancy 3"
+                                                        :Version "2"}))
   (index/wait-until-indexed)
   (hu/ingest-community-usage-metrics sample-usage-csv)
 
@@ -108,15 +120,18 @@
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-usage-csv)
 
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
-                                    :entry-title "Relevancy 1"
-                                    :version-id "3"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL"
-                                    :entry-title "Relevancy 2"
-                                    :version-id "1"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
-                                    :entry-title "Relevancy 3"
-                                    :version-id "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "Relevancy 1"
+                                                        :Version "3"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_VIRTUAL"
+                                                        :EntryTitle "Relevancy 2"
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_MAPSS"
+                                                        :EntryTitle "Relevancy 3"
+                                                        :Version "2"}))
   (index/wait-until-indexed)
 
   ;; Ingest new community usage metrics and check that results change
@@ -132,16 +147,19 @@
 (deftest sort-by-community-usage
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-usage-csv)
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A" ;10
-                                    :entry-title "Relevancy 1"
-                                    :version-id "3"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL" ; 100
-                                    :entry-title "Relevancy 2"
-                                    :version-id "1"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS" ;30
-                                    :entry-title "Relevancy 3"
-                                    :version-id "2"
-                                    :platforms [(dc/platform {:short-name "Relevancy"})]}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A" ;10
+                                                        :EntryTitle "Relevancy 1"
+                                                        :Version "3"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_VIRTUAL" ; 100
+                                                        :EntryTitle "Relevancy 2"
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_MAPSS" ;30
+                                                        :EntryTitle "Relevancy 3"
+                                                        :Version "2"
+                                                        :Platforms [(data-umm-c/platform {:ShortName "Relevancy"})]}))
   (index/wait-until-indexed)
   (testing "Sort by usage ascending"
     (let [results (:refs (search/find-refs :collection {:sort-key "usage-score"}))]
@@ -153,30 +171,62 @@
              (map :name results))))))
 
 ;; More complicated example/test with entries with version N/A - N/A version entries are
-;; not used as part of the access count
+;; applied to all collections that match the short name
 (def sample-csv-not-provided-versions
   (str "Product,Version,Hosts\n"
        "AMSR-L1A,3,10\n"
-       "AMSR-L1A,N/A,50\n" ;; Essentially access count of 0, since 'N/A' version
+       "AMSR-L1A,N/A,50\n"
        "AG_VIRTUAL,1,100\n"
-       "AG_MAPSS,2,30\n"))
+       "AG_MAPSS,2,30\n"
+       "MOD10A2,N/A,55\n"))
 
 (deftest community-usage-not-provided-versions
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-csv-not-provided-versions)
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
-                                    :entry-title "AMSR-L1A V3 Relevancy"
-                                    :version-id "3"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AMSR-L1A"
-                                    :entry-title "AMSR-L1A V2 Relevancy"
-                                    :version-id "2"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_VIRTUAL"
-                                    :entry-title "AG_VIRTUAL Relevancy"
-                                    :version-id "1"}))
-  (d/ingest "PROV1" (dc/collection {:short-name "AG_MAPSS"
-                                    :entry-title "AG_MAPSS Relevancy"
-                                    :version-id "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "AMSR-L1A V3 Relevancy"
+                                                        :Version "3"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "AMSR-L1A V2 Relevancy"
+                                                        :Version "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_VIRTUAL"
+                                                        :EntryTitle "AG_VIRTUAL Relevancy"
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AG_MAPSS"
+                                                        :EntryTitle "AG_MAPSS Relevancy"
+                                                        :Version "2"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "MOD10A2"
+                                                        :EntryTitle "MOD10A2 Relevancy"
+                                                        :Version "005"}))
   (index/wait-until-indexed)
   (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
-    (is (= ["AG_VIRTUAL Relevancy" "AG_MAPSS Relevancy" "AMSR-L1A V3 Relevancy" "AMSR-L1A V2 Relevancy"]
+    (is (= ["AG_VIRTUAL Relevancy" "AMSR-L1A V3 Relevancy" "MOD10A2 Relevancy" "AMSR-L1A V2 Relevancy" "AG_MAPSS Relevancy"]
+           (map :name results)))))
+
+(deftest community-usage-version-formatting
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
+  (hu/ingest-community-usage-metrics (str "Product,Version,Hosts\n"
+                                          "AMSR-L1A,1,10\n"
+                                          "AMSR-L1A,3,100\n"
+                                          "AMSR-L1A,002,50\n"))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "AMSR-L1A 003"
+                                                        :Version "003"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "AMSR-L1A 1"
+                                                        :Version "1"}))
+  (d/ingest-umm-spec-collection "PROV1"
+                                (data-umm-c/collection {:ShortName "AMSR-L1A"
+                                                        :EntryTitle "AMSR-L1A 2"
+                                                        :Version "2"}))
+  (index/wait-until-indexed)
+  (let [results (:refs (search/find-refs :collection {:keyword "AMSR-L1A"}))]
+    (is (= ["AMSR-L1A 003" "AMSR-L1A 2" "AMSR-L1A 1"]
            (map :name results)))))
