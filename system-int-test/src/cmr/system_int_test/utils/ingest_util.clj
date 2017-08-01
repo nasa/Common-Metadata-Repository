@@ -678,7 +678,8 @@
 
 (def reset-fixture-default-options
   {:grant-all-search? true
-   :grant-all-ingest? true})
+   :grant-all-ingest? true
+   :grant-all-access-control? true})
 
 (defn setup-providers
   "Creates the given providers in CMR. Providers can be passed in
