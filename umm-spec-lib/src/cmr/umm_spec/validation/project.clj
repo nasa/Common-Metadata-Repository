@@ -16,6 +16,8 @@
 
 (def projects-validation
   [(vu/unique-by-name-validator :ShortName)
-   (v/every project-date-validation)
-   (v/every {:StartDate vu/date-in-past-validator
+   (v/every project-date-validation)])
+
+(def projects-warning-validation
+  [(v/every {:StartDate vu/date-in-past-validator
              :EndDate vu/date-in-past-validator})])

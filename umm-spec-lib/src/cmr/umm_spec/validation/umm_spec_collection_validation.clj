@@ -78,6 +78,7 @@
  "Defines validations for collections that we want to return as warnings and not
  as failures"
  {:RelatedUrls (v/every url/related-url-validations)
+  :Projects project/projects-warning-validation
   :TemporalExtents (v/every temporal-extent-warning-validation)
   :CollectionCitations (v/every {:OnlineResource {:Linkage url/url-validation}})
   :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})

@@ -94,7 +94,8 @@
                                 :StartDate (time/date-time 2014 1 1)
                                 :EndDate (time/date-time 2013 1 1)})]
     (testing "valid projects"
-      (h/assert-valid (coll/map->UMM-C {:Projects [c1 c2 c3]})))
+      (h/assert-valid (coll/map->UMM-C {:Projects [c1 c2 c3]}))
+      (h/assert-warnings-valid (coll/map->UMM-C {:Projects [c1 c2 c3]})))
 
     (testing "invalid projects"
       (testing "duplicate names"
@@ -105,7 +106,7 @@
             ["Projects must be unique. This contains duplicates named [C1, C2]."])))
       (testing "start and end date not in the past"
         (let [coll (coll/map->UMM-C {:Projects [c4]})]
-          (h/assert-multiple-invalid
+          (h/assert-warnings-multiple-invalid
             coll
             [{:path [:Projects 0 :StartDate]
               :errors ["Date should be in the past."]}
