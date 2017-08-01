@@ -4,18 +4,15 @@
    [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
+   [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
-   [cmr.indexer.data.concepts.collection.keyword :as k]
    [cmr.transmit.metadata-db :as mdb]))
 
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
   (let [{:keys [concept-id deleted provider-id native-id extra-fields]} concept
         {:keys [variable-name measurement]} extra-fields
-        keyword-text (->> [variable-name measurement]
-                          (mapcat k/prepare-keyword-field)
-                          set
-                          (string/join " "))]
+        keyword-text (keyword-util/field-values->keyword-text [variable-name measurement])]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
