@@ -17,13 +17,13 @@
 (defn date-in-past-validator
   "Validate that the date is in the past"
   [field-path value]
-  (when (and value (not (date/is-past? value)))
+  (when (and value (not (date/is-in-past? value)))
     {field-path ["Date should be in the past."]}))
 
 (defn date-in-future-validator
   "Validate that the date is in the future"
   [field-path value]
-  (when (and value (not (date/is-future? value)))
+  (when (and value (not (date/is-in-future? value)))
     {field-path ["Date should be in the future."]}))
 
 (defn escape-error-string

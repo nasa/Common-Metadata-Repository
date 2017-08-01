@@ -3,8 +3,8 @@
   (:require
    [clj-time.format :as f]
    [clojure.test :refer :all]
-   [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [are3]]
+   [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.umm-spec.date-util :as date]))
 
 (deftest sanitize-and-parse-dates
@@ -28,9 +28,9 @@
         "2003/08" false "2003/08"))
 
 (deftest date-in-past
-  (time-keeper/set-time-override! (f/parse "2016-09-27T13:34:03.000Z"))
+  (dev-system-util/freeze-time! "2016-09-27T13:34:03.000Z")
   (are3 [date expected-output]
-    (is (= expected-output (date/is-past? (f/parse date))))
+    (is (= expected-output (date/is-in-past? (f/parse date))))
 
     "Date in past"
     "2015-09-27T13:34:03.000Z" true
@@ -48,9 +48,9 @@
     nil nil))
 
 (deftest date-in-future
-  (time-keeper/set-time-override! (f/parse "2016-09-27T13:34:03.000Z"))
+  (dev-system-util/freeze-time! "2016-09-27T13:34:03.000Z")
   (are3 [date expected-output]
-    (is (= expected-output (date/is-future? (f/parse date))))
+    (is (= expected-output (date/is-in-future? (f/parse date))))
 
     "Date in past"
     "2015-09-27T13:34:03.000Z" false

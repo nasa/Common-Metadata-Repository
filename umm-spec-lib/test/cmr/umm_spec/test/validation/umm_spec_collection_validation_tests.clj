@@ -3,7 +3,7 @@
   (:require
    [clj-time.core :as time]
    [clojure.test :refer :all]
-   [cmr.common.time-keeper :as time-keeper]
+   [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.umm-spec.models.umm-collection-models :as coll]
    [cmr.umm-spec.models.umm-common-models :as c]
    [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))
@@ -58,7 +58,7 @@
            ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])))
 
     (testing "dates in past"
-      (time-keeper/set-time-override! (time/date-time 2017 8 1))
+      (dev-system-util/freeze-time! "2017-08-01T00:00:00.000Z")
       (testing "range date times"
         (let [r1 (h/range-date-time "2020-12-30T19:00:02Z" "2021-12-30T19:00:01Z")]
           (h/assert-warnings-multiple-invalid
@@ -79,7 +79,7 @@
             ["Date should be in the past."]))))))
 
 (deftest collection-projects-validation
-  (time-keeper/set-time-override! (time/date-time 2017 8 1))
+  (dev-system-util/freeze-time! "2017-08-01T00:00:00.000Z")
   (let [c1 (c/map->ProjectType {:ShortName "C1"
                                 :StartDate (time/date-time 2014 10 1)})
         c2 (c/map->ProjectType {:ShortName "C2"

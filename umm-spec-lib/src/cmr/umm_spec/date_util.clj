@@ -86,14 +86,14 @@
       (catch
         Exception e nil))))
 
-(defn is-past?
+(defn is-in-past?
   "Parse date and return true if date is in the past, false if not, nil if date
   is nil"
   [date]
   (when date
     (time-core/before? date (time-keeper/now))))
 
-(defn is-future?
+(defn is-in-future?
   "Parse date and return true if date is in the future, false if not, nil if date
   is nil"
   [date]

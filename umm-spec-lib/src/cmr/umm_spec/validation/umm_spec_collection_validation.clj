@@ -65,7 +65,7 @@
 (defn- temporal-end-date-in-past-validator
   "Validate that the end date in TemporalExtents is in the past"
   [field-path value]
-  (when (and value (not (date/is-past? value)))
+  (when (and value (not (date/is-in-past? value)))
     {field-path [(str "Ending date should be in the past. Either set ending date to a date "
                       "in the past or remove end date and set the ends at present flag to true.")]}))
 
