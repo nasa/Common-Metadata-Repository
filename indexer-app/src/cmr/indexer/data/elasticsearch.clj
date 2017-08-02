@@ -96,14 +96,14 @@
 
 (defn update-indexes
   "Updates the indexes to make sure they have the latest mappings"
-  [context]
+  [context params]
   (let [existing-index-set (index-set/get-index-set context idx-set/index-set-id)
         extra-granule-indexes (idx-set/index-set->extra-granule-indexes existing-index-set)
         ;; We use the extra granule indexes from the existing configured index set when determining
         ;; the expected index set.
         expected-index-set (idx-set/index-set extra-granule-indexes)]
-
-    (if (requires-update? existing-index-set expected-index-set)
+    (if (or (= "true" (:force params))
+         (requires-update? existing-index-set expected-index-set))
       (do
         (info "Updating the index set to " (pr-str expected-index-set))
         (idx-set/update context expected-index-set)

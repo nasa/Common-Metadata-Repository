@@ -127,6 +127,8 @@ Example un-healthy response body:
 
 ### Update the index set mappings
 
+By default, a comparison is run between the existing elasticsearch indexes and what is configured in index-set, and only apply the update when there is a difference between the two. User can override the default by passing in query parameter "force=true" and always update the index-set with the current configuration.
+
     curl -XPOST http://localhost:3004/update-indexes?token=XXXX
 
 ### Reindex collections in a provider
