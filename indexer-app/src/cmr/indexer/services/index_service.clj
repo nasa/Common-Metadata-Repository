@@ -513,9 +513,9 @@
 
 (defn update-indexes
   "Updates the index mappings and settings."
-  [context]
+  [context params]
   (cache/reset-caches context)
-  (es/update-indexes context)
+  (es/update-indexes context params)
   (cache/reset-caches context))
 
 (def health-check-fns
