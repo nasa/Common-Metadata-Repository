@@ -1,22 +1,28 @@
 (ns cmr.umm-spec.test.validation.umm-spec-collection-validation-tests
   "This has tests for UMM validations."
-  (:require [clojure.test :refer :all]
-            [cmr.umm-spec.models.umm-common-models :as c]
-            [cmr.umm-spec.models.umm-collection-models :as coll]
-            [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))
+  (:require
+   [clj-time.core :as time]
+   [clojure.test :refer :all]
+   [cmr.common.time-keeper :as time-keeper]
+   [cmr.umm-spec.models.umm-collection-models :as coll]
+   [cmr.umm-spec.models.umm-common-models :as c]
+   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))
 
 (deftest collection-temporal-validation
   (testing "valid temporal"
     (let [r1 (h/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:01Z")
           r2 (h/range-date-time "1999-12-30T19:00:00Z" nil)
-          r3 (h/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")]
+          r3 (h/range-date-time "1999-12-30T19:00:00Z" "1999-12-30T19:00:00Z")
+          s1 (c/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2014 12 1)]})]
       (h/assert-valid (h/coll-with-range-date-times [[r1]]))
       (h/assert-valid (h/coll-with-range-date-times [[r2]]))
       (h/assert-valid (h/coll-with-range-date-times [[r3]]))
       (h/assert-valid (h/coll-with-range-date-times [[r1] [r2]]))
       (h/assert-valid (h/coll-with-range-date-times [[r1 r2] [r3]]))
       (h/assert-valid (h/coll-with-range-date-times [[r1 r2 r3]]))
-      (h/assert-valid (h/coll-with-range-date-times [[r1]] true)))) ; EndsAtPresentFlag = true
+      (h/assert-valid (h/coll-with-range-date-times [[r1]] true)) ; EndsAtPresentFlag = true
+      (h/assert-warnings-valid (h/coll-with-range-date-times [[r1 r2] [r3]]))
+      (h/assert-warnings-valid (coll/map->UMM-C {:TemporalExtents [s1]}))))
 
   (testing "invalid temporal"
     (testing "single error"
@@ -49,14 +55,47 @@
            ["BeginningDateTime [1999-12-30T19:00:02.000Z] must be no later than EndingDateTime [1999-12-30T19:00:01.000Z]"]}
           {:path [:TemporalExtents 1 :RangeDateTimes 0],
            :errors
-           ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])))))
+           ["BeginningDateTime [2000-12-30T19:00:02.000Z] must be no later than EndingDateTime [2000-12-30T19:00:01.000Z]"]}])))
+
+    (testing "dates in past"
+      (time-keeper/set-time-override! (time/date-time 2017 8 1))
+      (testing "range date times"
+        (let [r1 (h/range-date-time "2020-12-30T19:00:02Z" "2021-12-30T19:00:01Z")]
+          (h/assert-warnings-multiple-invalid
+           (h/coll-with-range-date-times [[r1]])
+           [{:path [:TemporalExtents 0 :RangeDateTimes 0 :BeginningDateTime],
+             :errors
+             ["Date should be in the past."]}
+            {:path [:TemporalExtents 0 :RangeDateTimes 0 :EndingDateTime],
+             :errors
+             [(str "Ending date should be in the past. Either set ending date to a date "
+                   "in the past or remove end date and set the ends at present flag to true.")]}])))
+      (testing "single date time"
+        (let [c1 (c/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2014 12 1)
+                                                               (time/date-time 2020 12 30)]})]
+          (h/assert-warnings-invalid
+            (coll/map->UMM-C {:TemporalExtents [c1]})
+            [:TemporalExtents 0 :SingleDateTimes 1]
+            ["Date should be in the past."]))))))
 
 (deftest collection-projects-validation
-  (let [c1 (c/map->ProjectType {:ShortName "C1"})
-        c2 (c/map->ProjectType {:ShortName "C2"})
-        c3 (c/map->ProjectType {:ShortName "C3"})]
+  (time-keeper/set-time-override! (time/date-time 2017 8 1))
+  (let [c1 (c/map->ProjectType {:ShortName "C1"
+                                :StartDate (time/date-time 2014 10 1)})
+        c2 (c/map->ProjectType {:ShortName "C2"
+                                :EndDate (time/date-time 2013 4 26)})
+        c3 (c/map->ProjectType {:ShortName "C3"
+                                :StartDate (time/date-time 2013 12 1)
+                                :EndDate (time/date-time 2014 3 20)})
+        c4 (c/map->ProjectType {:ShortName "C4"
+                                :StartDate (time/date-time 2020 1 1)
+                                :EndDate (time/date-time 2021 1 1)})
+        c5 (c/map->ProjectType {:ShortName "C5"
+                                :StartDate (time/date-time 2014 1 1)
+                                :EndDate (time/date-time 2013 1 1)})]
     (testing "valid projects"
-      (h/assert-valid (coll/map->UMM-C {:Projects [c1 c2]})))
+      (h/assert-valid (coll/map->UMM-C {:Projects [c1 c2 c3]}))
+      (h/assert-warnings-valid (coll/map->UMM-C {:Projects [c1 c2 c3]})))
 
     (testing "invalid projects"
       (testing "duplicate names"
@@ -64,7 +103,21 @@
           (h/assert-invalid
             coll
             [:Projects]
-            ["Projects must be unique. This contains duplicates named [C1, C2]."]))))))
+            ["Projects must be unique. This contains duplicates named [C1, C2]."])))
+      (testing "start and end date not in the past"
+        (let [coll (coll/map->UMM-C {:Projects [c4]})]
+          (h/assert-warnings-multiple-invalid
+            coll
+            [{:path [:Projects 0 :StartDate]
+              :errors ["Date should be in the past."]}
+             {:path [:Projects 0 :EndDate]
+              :errors ["Date should be in the past."]}])))
+      (testing "start date after end date"
+        (let [coll (coll/map->UMM-C {:Projects [c5]})]
+          (h/assert-invalid
+            coll
+            [:Projects 0]
+            ["StartDate [2014-01-01T00:00:00.000Z] must be no later than EndDate [2013-01-01T00:00:00.000Z]"]))))))
 
 (deftest metadata-associations-validation
   (testing "valid metadata associations"

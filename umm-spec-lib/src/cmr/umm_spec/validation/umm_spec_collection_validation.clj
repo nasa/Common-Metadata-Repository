@@ -3,11 +3,13 @@
   (:require
    [clj-time.core :as t]
    [cmr.common.validations.core :as v]
+   [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.validation.additional-attribute :as aa]
    [cmr.umm-spec.validation.platform :as p]
+   [cmr.umm-spec.validation.project :as project]
    [cmr.umm-spec.validation.related-url :as url]
    [cmr.umm-spec.validation.spatial :as s]
-   [cmr.umm.validation.validation-utils :as vu]))
+   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
 
 (defn- range-date-time-validation
   "Defines range-date-time validation"
@@ -54,16 +56,30 @@
   {:TemporalExtents (v/every temporal-extent-validation)
    :Platforms p/platforms-validation
    :AdditionalAttributes aa/additional-attribute-validation
-   :Projects (vu/unique-by-name-validator :ShortName)
+   :Projects project/projects-validation
    :ScienceKeywords (v/every science-keyword-validations)
    :SpatialExtent s/spatial-extent-validation
    :MetadataAssociations (vu/unique-by-name-validator metadata-association-name)
    :TilingIdentificationSystems tiling-identification-system-validations})
 
+(defn- temporal-end-date-in-past-validator
+  "Validate that the end date in TemporalExtents is in the past"
+  [field-path value]
+  (when (and value (not (date/is-in-past? value)))
+    {field-path [(str "Ending date should be in the past. Either set ending date to a date "
+                      "in the past or remove end date and set the ends at present flag to true.")]}))
+
+(def temporal-extent-warning-validation
+  {:RangeDateTimes (v/every {:BeginningDateTime vu/date-in-past-validator
+                             :EndingDateTime temporal-end-date-in-past-validator})
+   :SingleDateTimes (v/every vu/date-in-past-validator)})
+
 (def collection-validation-warnings
  "Defines validations for collections that we want to return as warnings and not
  as failures"
  {:RelatedUrls (v/every url/related-url-validations)
+  :Projects project/projects-warning-validation
+  :TemporalExtents (v/every temporal-extent-warning-validation)
   :CollectionCitations (v/every {:OnlineResource {:Linkage url/url-validation}})
   :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})
   :DataCenters (v/every url/data-center-url-validation)
