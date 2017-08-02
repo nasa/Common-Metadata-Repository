@@ -247,6 +247,15 @@
   (let [buckets (get-in aggregation-search-results [:aggregations aggregation-name :buckets])]
     (map :key buckets)))
 
+(defn- empty-search-body
+  "Empty body from search results"
+  [query-time]
+  (format (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results>"
+               "<hits>0</hits>"
+               "<took>%s</took>"
+               "<references></references></results>")
+          query-time))
+
 (defn- find-granule-parent-collections
   "Invokes query service to find collections based on data found in a granule search,
    then executes a search for collections with the found concept-ids. Supports CMR Harvesting."
@@ -275,7 +284,9 @@
       ;; as well as time-took, which is why it's being passed to search-response here
       (search-response ctx (-> collections-with-new-granules-search
                                (assoc :took query-time)
-                               (dissoc :aggregations)))
+                               (dissoc :aggregations)
+                               (assoc :results [])))
+                               ; (assoc :results (empty-search-body query-time))))
       (find-concepts-by-parameters ctx path-w-extension search-params headers body))))
 
 (defn- granule-parent-collection-query?
