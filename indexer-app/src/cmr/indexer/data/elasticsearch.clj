@@ -103,7 +103,7 @@
         ;; the expected index set.
         expected-index-set (idx-set/index-set extra-granule-indexes)]
     (if (or (= "true" (:force params))
-         (requires-update? existing-index-set expected-index-set))
+            (requires-update? existing-index-set expected-index-set))
       (do
         (info "Updating the index set to " (pr-str expected-index-set))
         (idx-set/update context expected-index-set)
