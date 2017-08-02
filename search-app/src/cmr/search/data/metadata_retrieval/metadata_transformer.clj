@@ -118,7 +118,7 @@
 (defmethod transform-with-strategy :umm-spec
   [context concept _ target-formats]
   (let [{concept-mime-type :format, metadata :metadata} concept
-        ummc (umm-spec/parse-metadata context :collection concept-mime-type metadata)]
+        ummc (umm-spec/parse-metadata context (:concept-type concept) concept-mime-type metadata)]
     (reduce (fn [translated-map target-format]
               (assoc translated-map target-format
                      (umm-spec/generate-metadata context ummc target-format)))

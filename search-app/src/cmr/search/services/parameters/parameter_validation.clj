@@ -69,7 +69,7 @@
   (cpv/merge-params-config
     cpv/basic-params-config
     {:single-value #{:keyword}
-     :multiple-value #{:variable-name :measurement :provider :native-id}
+     :multiple-value #{:variable-name :measurement :provider :native-id :concept-id}
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
 

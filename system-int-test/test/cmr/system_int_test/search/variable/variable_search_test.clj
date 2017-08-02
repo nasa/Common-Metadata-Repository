@@ -24,12 +24,25 @@
 
   (testing "Unsupported options"
     (are [field option]
-         (= {:status 400
-             :errors [(format "Option [%s] is not supported for param [%s]" option (name field))]}
-            (variables/search {field "foo" (format "options[%s][%s]" (name field) option) true}))
-         ;; variable-key and originator-id do not support ignore case because they are always case insensitive
-         :variable_name "and"
-         :measurement "and")))
+      (= {:status 400
+          :errors [(format "Option [%s] is not supported for param [%s]" option (name field))]}
+         (variables/search {field "foo" (format "options[%s][%s]" (name field) option) true}))
+      :variable_name "and"
+      :measurement "and"))
+
+  (testing "Search with wildcards in concept_id param not supported."
+    (is (= {:errors
+            ["Concept-id [V*] is not valid."
+             "Option [pattern] is not supported for param [concept_id]"],
+            :status 400}
+           (variables/search {:concept-id "V*" "options[concept-id][pattern]" true}))))
+
+  (testing "Search with ignore_case in concept_id param not supported."
+    (is (= {:errors
+            ["Concept-id [V*] is not valid."
+             "Option [ignore_case] is not supported for param [concept_id]"],
+            :status 400}
+           (variables/search {:concept-id "V*" "options[concept-id][ignore-case]" true})))))
 
 (deftest search-for-variables-test
   (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
@@ -128,6 +141,16 @@
       "By multiple measurements with options"
       [variable1 variable4]
       {:measurement ["measurement1" "*other"] "options[measurement][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; concept-id Param
+      "By concept-id - single"
+      [variable1]
+      {:concept-id (:concept-id variable1)}
+
+      "By concept-id - multiple"
+      [variable1 variable2]
+      {:concept-id [(:concept-id variable1) (:concept-id variable2)]}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; keyword Param
