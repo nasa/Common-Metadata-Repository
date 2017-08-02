@@ -87,18 +87,18 @@
         Exception e nil))))
 
 (defn is-in-past?
-  "Parse date and return true if date is in the past, false if not, nil if date
-  is nil"
+  "Parse date and return true if date is in the past, false if not or date is nil"
   [date]
-  (when date
-    (time-core/before? date (time-keeper/now))))
+  (if date
+    (time-core/before? date (time-keeper/now))
+    false))
 
 (defn is-in-future?
-  "Parse date and return true if date is in the future, false if not, nil if date
-  is nil"
+  "Parse date and return true if date is in the future, false if not or date is nil"
   [date]
-  (when date
-    (time-core/after? date (time-keeper/now))))
+  (if date
+    (time-core/after? date (time-keeper/now))
+    false))
 
 (defn update-metadata-dates
   "Update the Date to current date, for a given Type: date-type, in MetadataDates of a umm record"

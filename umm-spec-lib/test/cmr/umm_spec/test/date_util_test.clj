@@ -45,7 +45,7 @@
     "2016-09-27T18:00:00.000Z" false
 
     "Nil date"
-    nil nil))
+    nil false))
 
 (deftest date-in-future
   (time-keeper/set-time-override! (f/parse "2016-09-27T13:34:03.000Z"))
@@ -65,4 +65,4 @@
     "2016-09-27T12:00:00.000Z" false
 
     "Nil date"
-    nil nil))
+    nil false))
