@@ -4,6 +4,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -196,7 +197,85 @@
 
       "By keyword multiple wildcards"
       [variable3]
-      {:keyword "a* variable?"})))
+      {:keyword "sub* variable?"})))
+
+(deftest search-variable-by-science-keywords-keyword-test
+  (let [sk1 (data-umm-cmn/science-keyword {:Category "Cat1"
+                                           :Topic "Topic1"
+                                           :Term "Term1"
+                                           :VariableLevel1 "Level1-1"
+                                           :VariableLevel2 "Level1-2"
+                                           :VariableLevel3 "Level1-3"
+                                           :DetailedVariable "SUPER DETAILED!"})
+        sk2 (data-umm-cmn/science-keyword {:Category "Hurricane"
+                                           :Topic "Laser spoonA"
+                                           :Term "Extreme"
+                                           :VariableLevel1 "Level2-1"
+                                           :VariableLevel2 "Level2-2"
+                                           :VariableLevel3 "Level2-3"})
+        sk3 (data-umm-cmn/science-keyword {:Category "Cat2"
+                                           :Topic "Topic1"
+                                           :Term "Term1"
+                                           :VariableLevel1 "Level3-1"
+                                           :VariableLevel2 "Level3-2"
+                                           :VariableLevel3 "Level3-3"
+                                           :DetailedVariable "S@PER"})
+        variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
+                                                         :Name "Variable1"
+                                                         :LongName "Measurement1"
+                                                         :ScienceKeywords [sk1 sk2]})
+        variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
+                                                         :Name "Variable2"
+                                                         :LongName "Measurement2"
+                                                         :ScienceKeywords [sk3]})
+        variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
+                                                         :Name "a subsitute for variable2"
+                                                         :LongName "variable1"})]
+    (index/wait-until-indexed)
+
+    (are3 [expected-variables keyword]
+      (variables/assert-variable-search expected-variables (variables/search {:keyword keyword}))
+
+      ;; Science keywords
+      "Category"
+      [variable1]
+      "Cat1"
+
+      "Topic"
+      [variable1 variable2]
+      "Topic1"
+
+      "Term"
+      [variable1 variable2]
+      "Term1"
+
+      "Variable level 1"
+      [variable1]
+      "Level2-1"
+
+      "Variable level 2"
+      [variable1]
+      "Level2-2"
+
+      "Variable level 3"
+      [variable1]
+      "Level2-3"
+
+      "Detailed variable"
+      [variable1]
+      "SUPER"
+
+      "Combination of keywords"
+      [variable1]
+      "Hurricane Laser"
+
+      "Combination of keywords - different order, case insensitive"
+      [variable1]
+      "laser hurricane"
+
+      "Wildcards"
+      [variable1 variable2]
+      "s?per term*")))
 
 (deftest deleted-variables-not-found-test
   (let [{token :token} (variables/setup-update-acl (s/context) "PROV1")
