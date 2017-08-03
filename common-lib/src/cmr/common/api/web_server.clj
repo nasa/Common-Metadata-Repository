@@ -1,13 +1,13 @@
 (ns cmr.common.api.web-server
   "Defines a web server component."
   (:require
+   [clojure.core.reducers :as reducers]
    [clojure.java.io :as io]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
-   [ring.adapter.jetty :as jetty]
-   [clojure.core.reducers :as reducers])
+   [ring.adapter.jetty :as jetty])
   (:import
    (java.io ByteArrayInputStream InputStream)
    (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
@@ -53,6 +53,38 @@
   we use a small amount of memory to perform the verification."
   512)
 
+(defn- read-into-buffer
+  "Reads from a stream into the provided byte-array buffer. Returns a map with details about the
+  read operation. The keys in the map are:
+  :at-end? - indicates whether the entire stream has been read.
+  :bytes-read - number of bytes read from the stream. If nothing was read return 0 rather than -1.
+  :buffer-full? - indicates whether the max-bytes-to-read were read."
+  [input-stream buffer offset max-bytes-to-read]
+  (let [bytes-read (.read input-stream buffer offset max-bytes-to-read)]
+    {:at-end? (= -1 bytes-read)
+     :bytes-read (max 0 bytes-read) ;; Java input stream read will return -1 when no bytes are read
+                                    ;; but we want to return the actual bytes read of 0.
+     :buffer-full? (= bytes-read max-bytes-to-read)}))
+
+(def request-body-too-large-response
+  "Response to return when the request body is larger than our allowed MAX_REQUEST_BODY_SIZE."
+  {:status 413
+   :content-type :text
+   :body "Request body exceeds maximum size"})
+
+(defn- byte-stream-from-buffers
+  "Reconstructs request body into a new input stream from all of the buffers used to validate the
+  request body size. This is required so that the request body can be read successfully from
+  within application routes code."
+  [buffers total-bytes]
+  (let [request-body-bytes (->> buffers
+                                persistent!
+                                (reducers/mapcat vec)
+                                reducers/foldcat
+                                (into [])
+                                byte-array)]
+    (ByteArrayInputStream. request-body-bytes 0 total-bytes)))
+
 (defn- routes-fn-verify-size
   "Takes the passed in routes function and wraps it with another function that will verify request
    sizes do not exceed the maximum size.
@@ -63,85 +95,36 @@
   (fn [request]
     (let [^InputStream body-input-stream (:body request)]
       (loop [total-bytes-read 0
-             bytes-read-for-this-buffer 0
+             bytes-read-for-current-buffer 0
              input-byte-arrays (transient [])
-             current-buffer (byte-array buffer-size)
-             counter 1]
-        ;; Read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
-        ;; we know the request is too large and can return an error
-        ; (println "Loop counter:" counter)
-        (let [
-              bytes-read (.read body-input-stream
-                                current-buffer
-                                bytes-read-for-this-buffer
-                                (- buffer-size bytes-read-for-this-buffer))
-              at-end? (= -1 bytes-read)
-              buffer-full? (= buffer-size (+ bytes-read bytes-read-for-this-buffer))
-              ; If bytes-read is -1, still want 0, so when adding it to total bytes it doesn't
-              ;; subtract
-              bytes-read (max 0 bytes-read)
-              buffer-full? (= buffer-size (+ bytes-read bytes-read-for-this-buffer))
-              ; _ (println "Bytes read: " bytes-read)
-              ; _ (println "Buffer full: " buffer-full?)
+             current-buffer (byte-array buffer-size)]
+        (let [{:keys [bytes-read at-end? buffer-full?]}
+              (read-into-buffer body-input-stream current-buffer bytes-read-for-current-buffer
+                                (- buffer-size bytes-read-for-current-buffer))
               input-byte-arrays (if (or at-end? buffer-full?)
                                   (conj! input-byte-arrays current-buffer)
                                   input-byte-arrays)
               current-buffer (if (and buffer-full? (not at-end?))
                                (byte-array buffer-size)
                                current-buffer)
-              bytes-read-for-this-buffer (if buffer-full?
-                                           0
-                                           (+ bytes-read-for-this-buffer bytes-read))]
+              bytes-read-for-current-buffer (if buffer-full?
+                                              0
+                                              (+ bytes-read-for-current-buffer bytes-read))
+              total-bytes-read (+ total-bytes-read bytes-read)]
 
           ;; If the entire request body has been read or if the amount of bytes read is
           ;; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
           ;; otherwise loop to continue reading the request body
-          (if (or at-end?
-                  (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
-            (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
-              {:status 413
-               :content-type :text
-               :body "Request body exceeds maximum size"}
-
-              (do
-                ;; Put the request body into a new input stream since the current has been read
-                (let [
-                      ; single-byte-array (byte-array (for [single-array (persistent! input-byte-arrays)
-                      ;                                     single-byte single-array]
-                      ;                                 single-byte))
-                      single-byte-array (->> input-byte-arrays
-                                             persistent!
-                                             (reducers/mapcat vec)
-                                             reducers/foldcat
-                                             (into [])
-                                             byte-array)]
-                                        ;  (byte-array (reducers/mapcat vec (persistent! input-byte-arrays))))]
-                      ; single-byte-array (byte-array (my-flatten (persistent! input-byte-arrays)))]
-                  ; (println "The byte array is:" (slurp (ByteArrayInputStream. single-byte-array 0 (+ total-bytes-read bytes-read))))
-                  ; (println "The byte array no max length:" (slurp (ByteArrayInputStream. single-byte-array)))
-                  ; (println "The byte array add buffer to length:" (slurp (ByteArrayInputStream. single-byte-array 0 (+ total-bytes-read bytes-read buffer-size))))
-                  (routes-fn (assoc request :body (ByteArrayInputStream.
-                                                   single-byte-array
-                                                   0
-                                                   (+ total-bytes-read bytes-read)))))))
-                                                  ;  (byte-array (mapcat seq input-byte-arrays))
-                                                  ;  0 ;; offset
-                                                  ;  (+ total-bytes-read bytes-read buffer-size)))))))
-            (recur (+ total-bytes-read bytes-read)
-                   bytes-read-for-this-buffer
+          (if (or at-end? (> total-bytes-read MAX_REQUEST_BODY_SIZE))
+            (if (> total-bytes-read MAX_REQUEST_BODY_SIZE)
+              request-body-too-large-response
+              ;; Reconstruct request body into a new input stream since the current has been read
+              (let [request-body (byte-stream-from-buffers input-byte-arrays total-bytes-read)]
+                (routes-fn (assoc request :body request-body))))
+            (recur total-bytes-read
+                   bytes-read-for-current-buffer
                    input-byte-arrays
-                   current-buffer
-                   (inc counter))))))))
-
-
-
-(comment
- (def the-arrays [[1 2 3] [4 5 6]])
- (->> the-arrays
-      (reducers/mapcat vec)
-      reducers/foldcat
-      (into [])))
-      ; byte-array)
+                   current-buffer)))))))
 
 (defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to
