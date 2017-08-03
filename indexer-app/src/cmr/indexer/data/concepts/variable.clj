@@ -15,8 +15,9 @@
         {:keys [variable-name measurement]} extra-fields
         science-keywords (mapcat science-keyword-util/science-keyword->keywords
                                  (:ScienceKeywords parsed-concept))
-        keyword-text (keyword-util/field-values->keyword-text
-                      (flatten (conj [variable-name measurement] science-keywords)))]
+        ;; keyword values that are used to index the keyword field
+        keyword-values (flatten (conj [variable-name measurement]
+                                      science-keywords))]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
@@ -31,7 +32,7 @@
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
-       :keyword keyword-text})))
+       :keyword (keyword-util/field-values->keyword-text keyword-values)})))
 
 (defn- variable-association->variable-concept
   "Returns the variable concept and variable association for the given variable association."
