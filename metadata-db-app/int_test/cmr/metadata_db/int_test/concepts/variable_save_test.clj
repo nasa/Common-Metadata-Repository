@@ -7,30 +7,36 @@
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]))
 
-(def provider-id "REG_PROV")
-
-;;; fixtures
+;;; fixtures & one-off utility functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-fixtures :each (util/reset-database-fixture
-                     {:provider-id provider-id :small false}))
+                     {:provider-id "PROV1" :small false}
+                     {:provider-id "PROV2" :small false}))
 
 (defmethod c-spec/gen-concept :variable
   [_ provider-id uniq-num attributes]
-  (util/variable-concept provider-id uniq-num attributes))
+  (util/variable-concept "PROV1" uniq-num attributes))
+
+(defn- get-revisions
+  [concept-id initial-revision-id second-revision-id tombstone-revision-id
+   final-revision-id]
+  (mapv #(:concept (util/get-concept-by-id-and-revision concept-id %))
+        [initial-revision-id second-revision-id tombstone-revision-id
+         final-revision-id]))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest save-variable-test
-  (c-spec/general-save-concept-test :variable [provider-id]))
+(deftest save-variable
+  (c-spec/general-save-concept-test :variable ["PROV1"]))
 
-(deftest save-variable-with-missing-required-parameters-test
+(deftest save-variable-with-missing-required-parameters
   (c-spec/save-test-with-missing-required-parameters
-    :variable [provider-id] [:concept-type :provider-id :native-id :extra-fields]))
+    :variable ["PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
-(deftest save-variable-created-at-test
+(deftest save-variable-created-at
   (testing "Save variable multiple times gets same created-at"
-    (let [initial-var (util/variable-concept provider-id 2)
+    (let [initial-var (util/variable-concept "PROV1" 2)
           ;; 1) Save a variable
           ;; 2) Then wait for a small period of time before saving it again
           ;; 3) Then wait again and save a tombstone.
@@ -50,15 +56,43 @@
                                                 concept-id)
           _ (Thread/sleep 100)
           {final-revision-id :revision-id} (util/save-concept initial-var)
-          [initial-revision
-           second-revision
-           tombstone
-           final-revision] (mapv #(:concept (util/get-concept-by-id-and-revision concept-id %))
-                                 [initial-revision-id
-                                  second-revision-id
-                                  tombstone-revision-id
-                                  final-revision-id])]
-      (is (util/created-at-same? initial-revision
-                                 second-revision
-                                 tombstone
-                                 final-revision)))))
+          revisions (get-revisions concept-id initial-revision-id
+                                   second-revision-id tombstone-revision-id
+                                   final-revision-id)]
+      (is (apply util/created-at-same? revisions)))))
+
+(deftest save-variable-with-conflicting-native-id
+  (testing "Save a variable"
+    (let [var1 (util/variable-concept "PROV1" 1)
+          {:keys [status revision-id concept-id]} (util/save-concept var1)]
+      (is (= status 201))
+      (is (= 1 revision-id))
+      (testing "and another with all the same data"
+        (let [var2 var1
+              {:keys [status revision-id]} (util/save-concept var1)]
+          (is (= 201 status))
+          (is (= 2 revision-id))))
+      (testing "and another with same data but different provider"
+        (let [var3 (util/variable-concept "PROV2" 1)
+              {:keys [status revision-id]} (util/save-concept var3)]
+          (is (= status 201))
+          (is (= 1 revision-id))))
+      (testing "and another the same data but with a different native-id"
+        (let [var4 (assoc var1 :native-id "var-native-different")
+              failed-concept (util/save-concept var4)
+              failed-revision-id 2
+              failed-concept-id "V1200000002-PROV1"]
+          (is (= 409 (:status failed-concept)))
+          (is (= [(format (str "Revision [%s] of concept [%s] has the same "
+                               "provider [%s] and variable name [%s] but "
+                               "different native id [%s] than the new concept "
+                               "[%s] with revision [%s] and native id [%s].")
+                          failed-revision-id
+                          concept-id
+                          (:provider-id var1)
+                          (get-in var1 [:extra-fields :variable-name])
+                          (:native-id var1)
+                          failed-concept-id
+                          revision-id
+                          (:native-id var4))]
+                  (:errors failed-concept))))))))
