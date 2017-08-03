@@ -204,3 +204,17 @@
           transaction-id
           this-revision-id
           this-transaction-id))
+
+(defn pvn-equality-failure
+  [new-concept old-concept]
+   (format (str "Revision [%d] of concept [%s] has the same provider [%s] "
+                "and variable name [%s] but different native id [%s] than "
+                "the new concept [%s] with revision [%d] and native id [%s].")
+           (:revision-id old-concept)
+           (:concept-id old-concept)
+           (:provider-id old-concept)
+           (get-in old-concept [:extra-fields :variable-name])
+           (:native-id old-concept)
+           (:concept-id new-concept)
+           (:revision-id new-concept)
+           (:native-id new-concept)))
