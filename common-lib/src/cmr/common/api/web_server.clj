@@ -6,7 +6,8 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
-   [ring.adapter.jetty :as jetty])
+   [ring.adapter.jetty :as jetty]
+   [clojure.core.reducers :as reducers])
   (:import
    (java.io ByteArrayInputStream InputStream)
    (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
@@ -46,6 +47,12 @@
   report in Cubby can be in the 5 to 10 MB range."
  (* 50 ONE_MB))
 
+(def buffer-size
+  "Number of bytes to allocate for the buffer used for verifying request body size is not too
+  large. We want to use a smaller buffer size than the max request body size so for small requests
+  we use a small amount of memory to perform the verification."
+  512)
+
 (defn- routes-fn-verify-size
   "Takes the passed in routes function and wraps it with another function that will verify request
    sizes do not exceed the maximum size.
@@ -55,35 +62,86 @@
   [routes-fn]
   (fn [request]
     (let [^InputStream body-input-stream (:body request)]
-      ;; Init byte array to size MAX_REQUEST_BODY_SIZE + 1
-      (let [buffer-size (inc MAX_REQUEST_BODY_SIZE)
-            input-byte-array (byte-array buffer-size)]
-        (loop [total-bytes-read 0]
-          ;; Read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
-          ;; we know the request is too large and can return an error
-          (let [bytes-read (.read body-input-stream
-                                  input-byte-array
-                                  total-bytes-read
-                                  (- buffer-size total-bytes-read))
-                at-end? (= -1 bytes-read)
-                ; If bytes-read is -1, still want 0, so when adding it to total bytes doesn't subtract
-                bytes-read (max 0 bytes-read)]
+      (loop [total-bytes-read 0
+             bytes-read-for-this-buffer 0
+             input-byte-arrays (transient [])
+             current-buffer (byte-array buffer-size)
+             counter 1]
+        ;; Read bytes into the byte array up to length MAX_REQUEST_BODY_SIZE + 1. If more is read,
+        ;; we know the request is too large and can return an error
+        ; (println "Loop counter:" counter)
+        (let [
+              bytes-read (.read body-input-stream
+                                current-buffer
+                                bytes-read-for-this-buffer
+                                (- buffer-size bytes-read-for-this-buffer))
+              at-end? (= -1 bytes-read)
+              buffer-full? (= buffer-size (+ bytes-read bytes-read-for-this-buffer))
+              ; If bytes-read is -1, still want 0, so when adding it to total bytes it doesn't
+              ;; subtract
+              bytes-read (max 0 bytes-read)
+              buffer-full? (= buffer-size (+ bytes-read bytes-read-for-this-buffer))
+              ; _ (println "Bytes read: " bytes-read)
+              ; _ (println "Buffer full: " buffer-full?)
+              input-byte-arrays (if (or at-end? buffer-full?)
+                                  (conj! input-byte-arrays current-buffer)
+                                  input-byte-arrays)
+              current-buffer (if (and buffer-full? (not at-end?))
+                               (byte-array buffer-size)
+                               current-buffer)
+              bytes-read-for-this-buffer (if buffer-full?
+                                           0
+                                           (+ bytes-read-for-this-buffer bytes-read))]
 
-            ;; If the entire request body has been read or if the amount of bytes read is
-            ;; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
-            ;; otherwise loop to continue reading the request body
-            (if (or at-end?
-                    (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
-              (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
-                {:status 413
-                 :content-type :text
-                 :body "Request body exceeds maximum size"}
-                ;; Put the request body into a new input stream since the current has been read from
-                (routes-fn (assoc request :body (ByteArrayInputStream.
-                                                 input-byte-array
-                                                 0 ;; offset
-                                                 (+ total-bytes-read bytes-read)))))
-              (recur (+ total-bytes-read bytes-read)))))))))
+          ;; If the entire request body has been read or if the amount of bytes read is
+          ;; greater than MAX_REQUEST_BODY_SIZE, process based on num bytes read
+          ;; otherwise loop to continue reading the request body
+          (if (or at-end?
+                  (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE))
+            (if (> (+ total-bytes-read bytes-read) MAX_REQUEST_BODY_SIZE)
+              {:status 413
+               :content-type :text
+               :body "Request body exceeds maximum size"}
+
+              (do
+                ;; Put the request body into a new input stream since the current has been read
+                (let [
+                      ; single-byte-array (byte-array (for [single-array (persistent! input-byte-arrays)
+                      ;                                     single-byte single-array]
+                      ;                                 single-byte))
+                      single-byte-array (->> input-byte-arrays
+                                             persistent!
+                                             (reducers/mapcat vec)
+                                             reducers/foldcat
+                                             (into [])
+                                             byte-array)]
+                                        ;  (byte-array (reducers/mapcat vec (persistent! input-byte-arrays))))]
+                      ; single-byte-array (byte-array (my-flatten (persistent! input-byte-arrays)))]
+                  ; (println "The byte array is:" (slurp (ByteArrayInputStream. single-byte-array 0 (+ total-bytes-read bytes-read))))
+                  ; (println "The byte array no max length:" (slurp (ByteArrayInputStream. single-byte-array)))
+                  ; (println "The byte array add buffer to length:" (slurp (ByteArrayInputStream. single-byte-array 0 (+ total-bytes-read bytes-read buffer-size))))
+                  (routes-fn (assoc request :body (ByteArrayInputStream.
+                                                   single-byte-array
+                                                   0
+                                                   (+ total-bytes-read bytes-read)))))))
+                                                  ;  (byte-array (mapcat seq input-byte-arrays))
+                                                  ;  0 ;; offset
+                                                  ;  (+ total-bytes-read bytes-read buffer-size)))))))
+            (recur (+ total-bytes-read bytes-read)
+                   bytes-read-for-this-buffer
+                   input-byte-arrays
+                   current-buffer
+                   (inc counter))))))))
+
+
+
+(comment
+ (def the-arrays [[1 2 3] [4 5 6]])
+ (->> the-arrays
+      (reducers/mapcat vec)
+      reducers/foldcat
+      (into [])))
+      ; byte-array)
 
 (defn create-access-log-handler
   "Setup access logging for each application. Access log entries will go to stdout similar to

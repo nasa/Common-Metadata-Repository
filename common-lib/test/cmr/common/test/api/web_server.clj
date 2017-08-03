@@ -114,3 +114,24 @@
    (with-progress-reporting
     (bench
      (test-fn {:body (java.io.ByteArrayInputStream. small-bytes)})))))
+
+
+(comment
+ (require '[criterium.core :refer [with-progress-reporting bench quick-bench]])
+
+ (def test-fn
+   (#'s/routes-fn-verify-size (constantly nil)))
+
+ ; Large example
+ (time (let [lots-of-bytes (.getBytes (str/join (repeat (dec s/MAX_REQUEST_BODY_SIZE) "0")))]
+         (test-fn {:body (java.io.ByteArrayInputStream. lots-of-bytes)})))
+
+
+ (time (let [small-bytes (.getBytes (str/join (repeat (* 5000 1024) "0")))]
+         (test-fn {:body (java.io.ByteArrayInputStream. small-bytes)})))
+
+ (time (do (str/join (repeat s/ONE_MB "0")) nil))
+
+ ; Small example
+ (time (let [small-bytes (.getBytes (str/join (repeat 10 "0")))]
+         (test-fn {:body (java.io.ByteArrayInputStream. small-bytes)}))))
