@@ -75,7 +75,7 @@
 (defn- byte-stream-from-buffers
   "Reconstructs request body into a new input stream from all of the buffers used to validate the
   request body size. This is required so that the request body can be read successfully from
-  within application routes code."
+  within application routes code. This code is performance sensitive."
   [buffers total-bytes]
   (let [request-body-bytes (->> buffers
                                 persistent!
@@ -85,28 +85,36 @@
                                 byte-array)]
     (ByteArrayInputStream. request-body-bytes 0 total-bytes)))
 
-(defn- routes-fn-verify-size
+(defn- wrap-request-body-size-validation
   "Takes the passed in routes function and wraps it with another function that will verify request
-   sizes do not exceed the maximum size.
-   Before calling routes-fn function, check to make sure the request body size is not too large (greater
-   than MAX_REQUEST_BODY_SIZE). If the body size is too large, throw an error, otherwise call the
-   routes-fn function"
-  [routes-fn]
+  sizes do not exceed the maximum size. Before calling handler function, check to make sure the
+  request body size is not too large (greater than MAX_REQUEST_BODY_SIZE). If the body size is too
+  large, throw an error, otherwise call the handler function.
+
+  Note that we perform this on every single request - as such this code is performance sensitive.
+  Any change made to this function needs to be benchmarked. See comment block in
+  cmr.common.test.api.web-server for benchmarks to run before and after a change."
+  [handler]
   (fn [request]
     (let [^InputStream body-input-stream (:body request)]
       (loop [total-bytes-read 0
              bytes-read-for-current-buffer 0
-             input-byte-arrays (transient [])
+             all-buffers (transient [])
              current-buffer (byte-array buffer-size)]
         (let [{:keys [bytes-read at-end? buffer-full?]}
               (read-into-buffer body-input-stream current-buffer bytes-read-for-current-buffer
                                 (- buffer-size bytes-read-for-current-buffer))
-              input-byte-arrays (if (or at-end? buffer-full?)
-                                  (conj! input-byte-arrays current-buffer)
-                                  input-byte-arrays)
+              ;; Put the current buffer into a vector of all buffers if we've finished reading
+              ;; the stream or the current buffer is full
+              all-buffers (if (or at-end? buffer-full?)
+                            (conj! all-buffers current-buffer)
+                            all-buffers)
+              ;; Allocate a new buffer if the current one is full and we have more to read
               current-buffer (if (and buffer-full? (not at-end?))
                                (byte-array buffer-size)
                                current-buffer)
+              ;; Track the number of bytes read in the current buffer so that we know when it is
+              ;; full. If creating a new buffer reset the bytes read back to 0.
               bytes-read-for-current-buffer (if buffer-full?
                                               0
                                               (+ bytes-read-for-current-buffer bytes-read))
@@ -119,11 +127,11 @@
             (if (> total-bytes-read MAX_REQUEST_BODY_SIZE)
               request-body-too-large-response
               ;; Reconstruct request body into a new input stream since the current has been read
-              (let [request-body (byte-stream-from-buffers input-byte-arrays total-bytes-read)]
-                (routes-fn (assoc request :body request-body))))
+              (let [request-body (byte-stream-from-buffers all-buffers total-bytes-read)]
+                (handler (assoc request :body request-body))))
             (recur total-bytes-read
                    bytes-read-for-current-buffer
-                   input-byte-arrays
+                   all-buffers
                    current-buffer)))))))
 
 (defn create-access-log-handler
@@ -171,7 +179,7 @@
     [this system]
     (try
       (let [{:keys [port routes-fn use-compression?]} this
-            routes (routes-fn-verify-size (routes-fn system))
+            routes (wrap-request-body-size-validation (routes-fn system))
             ^Server server (jetty/run-jetty
                              routes
                              {:port port
