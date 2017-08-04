@@ -10,9 +10,7 @@
    [cmr.bootstrap.data.bulk-index :as bi]
    [cmr.bootstrap.data.bulk-migration :as bm]
    [cmr.bootstrap.data.virtual-products :as vp]
-   [cmr.bootstrap.services.dispatch.core-async-dispatch :as core-async-dispatch]
-   [cmr.bootstrap.services.dispatch.message-queue-dispatch :as message-queue-dispatch]
-   [cmr.bootstrap.services.dispatch.synchronous-dispatch :as synchronous-dispatch]
+   [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -72,9 +70,9 @@
                                 :indexer indexer
                                 :access-control access-control}
              :db-batch-size (db-batch-size)
-             :core-async-dispatcher (core-async-dispatch/create-core-async-dispatcher)
-             :synchronous-dispatcher (synchronous-dispatch/->SynchronousDispatcher)
-             :message-queue-dispatcher (message-queue-dispatch/->MessageQueueDispatcher)
+             :core-async-dispatcher (dispatch/create-backend :async)
+             :synchronous-dispatcher (dispatch/create-backend :sync)
+             :message-queue-dispatcher (dispatch/create-backend :message-queue)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (bootstrap-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
@@ -104,7 +102,7 @@
     (bi/handle-bulk-index-requests started-system)
     (vp/handle-virtual-product-requests started-system)
     (when (:queue-broker this)
-      (message-queue-dispatch/subscribe-to-events {:system started-system}))
+      (dispatch/subscribe-to-events {:system started-system}))
     (info "Bootstrap system started")
     started-system))
 
