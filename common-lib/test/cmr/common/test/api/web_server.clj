@@ -100,17 +100,17 @@
  (require '[criterium.core :refer [with-progress-reporting bench quick-bench]])
 
  (def test-fn
-   (#'s/routes-fn-verify-size (constantly nil)))
+   (#'s/wrap-request-body-size-validation (constantly nil)))
 
  ; Large example
  (let [lots-of-bytes (.getBytes (str/join (repeat (dec s/MAX_REQUEST_BODY_SIZE) "0")))]
    (with-progress-reporting
-    (bench
+    (quick-bench
      (test-fn {:body (java.io.ByteArrayInputStream. lots-of-bytes)}))))
 
 
  ; Small example
  (let [small-bytes (.getBytes (str/join (repeat 10 "0")))]
    (with-progress-reporting
-    (bench
+    (quick-bench
      (test-fn {:body (java.io.ByteArrayInputStream. small-bytes)})))))
