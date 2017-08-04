@@ -241,21 +241,6 @@
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (search-response ctx results)))
 
-(defn- get-bucket-values-from-aggregation
-  "Return a collection of values from aggregation buckets"
-  [aggregation-search-results aggregation-name]
-  (let [buckets (get-in aggregation-search-results [:aggregations aggregation-name :buckets])]
-    (map :key buckets)))
-
-(defn- empty-search-body
-  "Empty body from search results"
-  [query-time]
-  (format (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results>"
-               "<hits>0</hits>"
-               "<took>%s</took>"
-               "<references></references></results>")
-          query-time))
-
 (defn- find-granule-parent-collections
   "Invokes query service to find collections based on data found in a granule search,
    then executes a search for collections with the found concept-ids. Supports CMR Harvesting."
@@ -263,31 +248,16 @@
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         ctx (assoc ctx :query-string body)
         params (process-params params path-w-extension headers mt/xml)
-        _ (info (format "parameters %s" (println params)))
-        [query-time collections-with-new-granules-search] (util/time-execution
-                                                           (query-svc/get-collections-from-new-granules ctx params))
-        _ (info (format "Initial query finished in %s time and this is what is in it %s"
-                        query-time
-                        (println collections-with-new-granules-search)))
+        [query-time search-results] (util/time-execution
+                                      (query-svc/get-collections-from-new-granules ctx params))]
+    
+    (info (format "Found %d collections in %d ms in format %s with params %s."
+                  (:hits search-results)
+                  query-time
+                  (:result-format params)
+                  (pr-str params)))
 
-        collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
-        _ (info (format "here are the collection-ids %s" (println collection-ids)))
-        search-params (-> params
-                          (assoc :echo-collection-id collection-ids)
-                          (dissoc :has_granules_created_at)
-                          (dissoc :has-granules-created-at)
-                          lp/process-legacy-psa)]
-
-    (info (format "%s collections found" (count collection-ids)))
-    (if (empty? collection-ids)
-      ;; collections-with-new-granules-search already has an empty response object,
-      ;; as well as time-took, which is why it's being passed to search-response here
-      (search-response ctx (-> collections-with-new-granules-search
-                               (assoc :took query-time)
-                               (dissoc :aggregations)
-                               (assoc :results [])))
-                               ; (assoc :results (empty-search-body query-time))))
-      (find-concepts-by-parameters ctx path-w-extension search-params headers body))))
+    (search-response ctx search-results)))
 
 (defn- granule-parent-collection-query?
   "Return true if parameters match any from the list of `multi-part-query-params`

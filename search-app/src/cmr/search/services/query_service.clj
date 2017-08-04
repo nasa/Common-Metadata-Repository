@@ -274,15 +274,24 @@
     (common-search/search-results->response context query results)))
 
 (defn- extract-and-parse-date-range
-  ""
+  "Sanitize and parse date range for has_granules_created_at searches"
   [params]
-  (let [date-range (string/split (or (:has_granules_created_at params)
-                                     (:has-granules-created-at params))
-                                 #"\[\]\=")]
-    (->> date-range
-         (remove string/blank?)
-         (first)
-         (date-time-parser/parse-datetime-range))))
+  (try
+    (let [date-range (string/split (or (:has_granules_created_at params)
+                                       (:has-granules-created-at params))
+                                   #"\[\]\=")]
+      (->> date-range
+           (remove string/blank?)
+           first
+           date-time-parser/parse-datetime-range))
+    (catch Exception e
+      (errors/throw-service-error :bad-request (str (:errors e))))))
+
+(defn- get-bucket-values-from-aggregation
+  "Return a collection of values from aggregation buckets"
+  [aggregation-search-results aggregation-name]
+  (let [buckets (get-in aggregation-search-results [:aggregations aggregation-name :buckets])]
+    (map :key buckets)))
 
 (defn get-collections-from-new-granules
   "Finds granules that were added after a given date and return their parent collection ids.
@@ -291,7 +300,7 @@
   (let [{:keys [start-date end-date]} (extract-and-parse-date-range params)
         query (qm/query {:concept-type :granule
                          :page-size 0
-                         :result-format :query-specified
+                         :result-format (:result-format params)
                          :condition (qm/date-range-condition
                                       (q2e/query-field->elastic-field :created-at :granule)
                                       start-date
@@ -299,9 +308,21 @@
                          :result-fields []
                          :aggregations {:collections
                                         {:terms {:size query-aggregation-size
-                                                 :field (q2e/query-field->elastic-field :collection-concept-id :granule)}}}})]
-    (info (format "Executing query for date range %s" (str start-date "," end-date)))
-    (qe/execute-query context query)))
+                                                 :field (q2e/query-field->elastic-field :collection-concept-id :granule)}}}})
+        results (qe/execute-query context query)
+        collection-ids (get-bucket-values-from-aggregation results :collections)
+        collection-search-params (-> params
+                                     (assoc :echo-collection-id collection-ids)
+                                     (dissoc :has_granules_created_at)
+                                     (dissoc :has-granules-created-at)
+                                     lp/process-legacy-psa)]
+
+    (if (empty? collection-ids)
+      {:results (common-search/search-results->response context query results)
+       :hits 0
+       :result-format (:result-format params)}
+
+      (find-concepts-by-parameters context :collection collection-search-params))))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
