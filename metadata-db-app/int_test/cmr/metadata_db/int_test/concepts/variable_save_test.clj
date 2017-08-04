@@ -19,6 +19,10 @@
   (util/variable-concept "PROV1" uniq-num attributes))
 
 (defn- get-revisions
+  "This is a utility function that returns revisions of interest (given the
+  respective revision ids).
+
+  The results of this function are intended to be used with `(apply ...)`."
   [concept-id initial-revision-id second-revision-id tombstone-revision-id
    final-revision-id]
   (mapv #(:concept (util/get-concept-by-id-and-revision concept-id %))
@@ -73,26 +77,31 @@
           (is (= 201 status))
           (is (= 2 revision-id))))
       (testing "and another with same data but different provider"
-        (let [var3 (util/variable-concept "PROV2" 1)
+        (let [var3 (assoc var1 :provider-id "PROV2")
               {:keys [status revision-id]} (util/save-concept var3)]
           (is (= status 201))
           (is (= 1 revision-id))))
       (testing "and another the same data but with a different native-id"
         (let [var4 (assoc var1 :native-id "var-native-different")
-              failed-concept (util/save-concept var4)
-              failed-revision-id 2
-              failed-concept-id "V1200000002-PROV1"]
-          (is (= 409 (:status failed-concept)))
-          (is (= [(format (str "Revision [%s] of concept [%s] has the same "
-                               "provider [%s] and variable name [%s] but "
-                               "different native id [%s] than the new concept "
-                               "[%s] with revision [%s] and native id [%s].")
-                          failed-revision-id
-                          concept-id
-                          (:provider-id var1)
+              response (util/save-concept var4)
+              ;; after the saving of var2, the revision id was 2; the
+              ;; saving of var3 was for a different provider, so it
+              ;; has a revision-id of 1; if the call above with var4
+              ;; passed the constaint checks (which is shouldn't) the
+              ;; revision-id would now be 3 (but it shouldn't be)
+              failed-revision-id 3
+              find-response (util/get-concept-by-id-and-revision
+                             concept-id failed-revision-id)]
+          (is (= nil (:revision-id response)))
+          (is (= 409 (:status response)))
+          (is (= 404 (:status find-response)))
+          (is (= [(format (str "The provider id [%s] and variable name [%s] "
+                               "combined must be unique for a given native-id "
+                               "[%s]. The following concept with the same "
+                               "provider id, variable name and native-id was "
+                               "found: [%s].")
+                          "PROV1"
                           (get-in var1 [:extra-fields :variable-name])
                           (:native-id var1)
-                          failed-concept-id
-                          revision-id
-                          (:native-id var4))]
-                  (:errors failed-concept))))))))
+                          concept-id)]
+                      (:errors response))))))))

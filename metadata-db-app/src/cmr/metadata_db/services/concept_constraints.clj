@@ -14,22 +14,16 @@
   {:default true
    :type Boolean})
 
-(defn- find-latest-concepts
-  "Returns any concepts which match the concept-type, provider-id, and query
-  that matches the passed in concept"
-  [db provider concept query]
-  (->> query
+(defn- find-latest-matching-concepts
+  "Returns any concepts which match the concept-type, provider-id, and value
+  for the given field that matches the passed in concept."
+  [db provider concept field field-value]
+  (->> {field field-value}
        (merge {:concept-type (:concept-type concept)
                :provider-id (:provider-id concept)})
        (c/find-latest-concepts db provider)
        ;; Remove tombstones from the list of concepts
        (remove :deleted)))
-
-(defn- find-latest-matching-concepts
-  "Returns any concepts which match the concept-type, provider-id, and value for the given field
-  that matches the passed in concept"
-  [db provider concept field field-value]
-  (find-latest-concepts db provider concept {field field-value}))
 
 (defn- validate-num-concepts-found
   "Validates that exactly one matching concept is found. Otherwise throw an error with an
@@ -128,9 +122,9 @@
               (:provider-id old-concept))
            (= (get-in new-concept [:extra-fields :variable-name])
               (get-in old-concept [:extra-fields :variable-name]))
-           (not (= (:native-id new-concept)
-                   (:native-id old-concept))))
-    (msg/pvn-equality-failure new-concept old-concept)
+           (not= (:native-id new-concept)
+                 (:native-id old-concept)))
+    (msg/pvn-equality-failure old-concept)
     []))
 
 (defn variable-pvn-constraint
@@ -144,9 +138,8 @@
   of the constraint will result in an empty list being returned."
   [db provider {:keys [native-id extra-fields] :as concept}]
   (let [variable-name (:variable-name extra-fields)
-        concepts (find-latest-concepts
-                  db provider concept {:provider-id (:provider-id concept)
-                                       :variable-name variable-name})]
+        concepts (find-latest-matching-concepts
+                  db provider concept :variable-name variable-name)]
     (->> concepts
          (mapv (partial validate-pvn-equalities concept))
          (flatten))))
@@ -155,8 +148,8 @@
 ;; constraint configuration is no longer needed. Using a function for now so
 ;; that configuration can be changed in tests.
 (defn- constraints-by-concept-type
-  []
   "Maps concept type to a list of constraint functions to run."
+  []
   {:collection [(unique-field-constraint :entry-title)
                 (unique-field-constraint :entry-id)]
    :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])

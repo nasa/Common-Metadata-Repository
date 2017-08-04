@@ -2,53 +2,42 @@
   (:require
    [config.mdb-migrate-helper :as h]))
 
-(def ^:private table-name "cmr_variables")
-(def ^:private table (format "METADATA_DB.%s" table-name))
-(def ^:private new-constraint-name "variables_con_n_r_p")
-(def ^:private new-index-name "variables_idx_n_r_p")
-(def ^:private old-constraint-name "variables_con_rev")
-(def ^:private old-index-name "variables_ucr_i")
+(defn- drop-old-constraint
+  []
+  (h/sql
+    "ALTER TABLE METADATA_DB.cmr_variables DROP CONSTRAINT variables_con_rev"))
 
 (defn- add-variable-constraint
   []
-  (h/sql
-   (format (str "ALTER TABLE %s "
-                "ADD CONSTRAINT %s "
-                "UNIQUE (native_id, revision_id, provider_id) "
-                "USING INDEX (CREATE UNIQUE INDEX %s ON %s "
-                "(native_id, revision_id, provider_id))")
-           table new-constraint-name new-index-name table-name)))
+  (h/sql (str "ALTER TABLE METADATA_DB.cmr_variables "
+              "ADD CONSTRAINT variables_con_n_r_p "
+              "UNIQUE (native_id, revision_id, provider_id) "
+              "USING INDEX (CREATE UNIQUE INDEX variables_idx_n_r_p "
+              "ON cmr_variables (native_id, revision_id, provider_id))")))
 
-(defn- drop-constraint
-  [constraint-name]
+(defn- drop-new-constraint
+  []
   (h/sql
-    (format "ALTER TABLE %s DROP CONSTRAINT %s" table constraint-name)))
-
-(defn- drop-index
-  [index-name]
-  (h/sql
-    (format "DROP INDEX %s" index-name)))
+    "ALTER TABLE METADATA_DB.cmr_variables DROP CONSTRAINT variables_con_n_r_p"))
 
 (defn- re-add-old-variable-constraint
   []
-  (h/sql
-   (format (str "ALTER TABLE %s "
-                "ADD CONSTRAINT %s "
-                "UNIQUE (native_id, revision_id) "
-                "USING INDEX (CREATE UNIQUE INDEX %s ON %s "
-                "(native_id, revision_id))")
-           table old-constraint-name old-index-name table-name)))
+  (h/sql (str "ALTER TABLE METADATA_DB.cmr_variables "
+              "ADD CONSTRAINT variables_con_rev "
+              "UNIQUE (native_id, revision_id) "
+              "USING INDEX (CREATE UNIQUE INDEX variables_ucr_i "
+              "ON cmr_variables (native_id, revision_id))")))
 
 (defn up
-  "Migrates the database up to version 61."
+  "Migrates the database up to version 62."
   []
   (println "migrations.062-add-variable-constraint up...")
-  (drop-constraint old-constraint-name)
+  (drop-old-constraint)
   (add-variable-constraint))
 
 (defn down
-  "Migrates the database down from version 61."
+  "Migrates the database down from version 62."
   []
   (println "migrations.062-add-variable-constraint down...")
-  (drop-constraint new-constraint-name)
+  (drop-new-constraint)
   (re-add-old-variable-constraint))
