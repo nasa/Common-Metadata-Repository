@@ -108,6 +108,37 @@
       (str/replace (csk/->snake_case_string field) #"_" " ")
       (str/join ", " (map :concept-id concepts)))))
 
+(defn concept-higher-transaction-id
+  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
+  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+               "which is higher than revision [%d] with transaction-id [%d].")
+          revision-id
+          concept-id
+          transaction-id
+          this-revision-id
+          this-transaction-id))
+
+(defn concept-lower-transaction-id
+  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
+  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
+               "which is lower than revision [%d] with transaction-id [%d].")
+          revision-id
+          concept-id
+          transaction-id
+          this-revision-id
+          this-transaction-id))
+
+(defn pvn-equality-failure
+  [concept]
+  (format (str "The provider id [%s] and variable name [%s] combined must be "
+               "unique for a given native-id [%s]. The following concept "
+               "with the same provider id, variable name and native-id was "
+               "found: [%s].")
+          (:provider-id concept)
+          (get-in concept [:extra-fields :variable-name])
+          (:native-id concept)
+          (:concept-id concept)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provider Messages
 
@@ -184,37 +215,3 @@
           provider-id
           field-name
           field-value))
-
-(defn concept-higher-transaction-id
-  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
-  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
-               "which is higher than revision [%d] with transaction-id [%d].")
-          revision-id
-          concept-id
-          transaction-id
-          this-revision-id
-          this-transaction-id))
-
-(defn concept-lower-transaction-id
-  [revision-id concept-id transaction-id this-revision-id this-transaction-id]
-  (format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
-               "which is lower than revision [%d] with transaction-id [%d].")
-          revision-id
-          concept-id
-          transaction-id
-          this-revision-id
-          this-transaction-id))
-
-(defn pvn-equality-failure
-  [new-concept old-concept]
-   (format (str "Revision [%d] of concept [%s] has the same provider [%s] "
-                "and variable name [%s] but different native id [%s] than "
-                "the new concept [%s] with revision [%d] and native id [%s].")
-           (:revision-id old-concept)
-           (:concept-id old-concept)
-           (:provider-id old-concept)
-           (get-in old-concept [:extra-fields :variable-name])
-           (:native-id old-concept)
-           (:concept-id new-concept)
-           (:revision-id new-concept)
-           (:native-id new-concept)))

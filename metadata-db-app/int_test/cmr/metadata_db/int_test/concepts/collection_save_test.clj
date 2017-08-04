@@ -55,7 +55,7 @@
             _ (Thread/sleep 10)
             {second-revision-id :revision-id} (util/save-concept initial-collection)
             _ (Thread/sleep 10)
-            {tombstone-revision-id :revision-id} (util/delete-concept concept-id)
+            {tombstone-revision-id :revision-id} (util/save-concept {:deleted true :concept-id concept-id})
             _ (Thread/sleep 10)
             {final-revision-id :revision-id} (util/save-concept initial-collection)
             [initial-revision
