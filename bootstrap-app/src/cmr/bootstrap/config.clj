@@ -53,7 +53,7 @@
          :queues [(bootstrap-provider-queue-name)]
          :exchanges [(bootstrap-provider-exchange-name)]
          :queues-to-policies {(bootstrap-provider-queue-name) {:max-tries 1
-                                                               ;; 6 hours visibility timeout
-                                                               :visibility-timeout-secs 21600}}
-         :queues-to-exchanges
-         {(bootstrap-provider-queue-name) [(bootstrap-provider-exchange-name)]}))
+                                                               ;; max 12 hours visibility timeout
+                                                               :visibility-timeout-secs 43200}}
+         :queues-to-exchanges {(bootstrap-provider-queue-name)
+                               [(bootstrap-provider-exchange-name)]}))

@@ -7,8 +7,8 @@
 
 (defn publish-bootstrap-event
   "Put a bootstrap event on the message queue."
-  [dispatcher msg]
-  (let [queue-broker (:queue-broker dispatcher)
+  [context msg]
+  (let [queue-broker (get-in context [:system :queue-broker])
         exchange-name (config/bootstrap-provider-exchange-name)]
     (info "Publishing bootstrap message: " msg)
     (queue/publish-message queue-broker exchange-name msg)))
