@@ -42,8 +42,8 @@
   :type Long})
 
 (defconfig default-queue-visibility-timeout
-  "Default number of seconds SQS should wait after a message is read before making it visible to other
-  queue readers."
+  "Default number of seconds SQS should wait after a message is read before making it visible to
+  other queue readers."
   {:default 300
    :type Long})
 
@@ -53,14 +53,19 @@
   {:default 3600
    :type Long})
 
+(defconfig default-num-tries
+  "Default number of tries (including initial attempt and all retries) for an individual message
+  before moving the message to the DLQ."
+  {:default 5
+   :type Long})
+
 (defn queue-visibility-timeout
   "Number of seconds SQS should wait after a message is read from a provider queue before making
   it visible to other readers."
   [queue-name]
-  (-> (if (str/includes? queue-name "provider")
-        (provider-queue-visibility-timeout)
-        (default-queue-visibility-timeout))
-      str))
+  (if (str/includes? queue-name "provider")
+    (provider-queue-visibility-timeout)
+    (default-queue-visibility-timeout)))
 
 (def queue-arn-attribute
   "String used by the AWS SQS API to identify the attribute containing a queue's
@@ -160,30 +165,32 @@
         (recur)))))
 
 (defn- create-queue
- "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
- [sqs-client queue-name]
- (let [q-name (normalize-queue-name queue-name)
-       dlq-name (dead-letter-queue q-name)
+  "Create a queue and its dead-letter-queue if they don't already exist and connect the two."
+  [sqs-client queue-name max-tries visibility-timeout]
+  (let [q-name (normalize-queue-name queue-name)
+        dlq-name (dead-letter-queue q-name)
 
-       ;; Create the dead-letter-queue first and get its url
-       dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
-       dlq-arn (get-queue-arn sqs-client dlq-name)
-       create-queue-request (CreateQueueRequest. q-name)
-       ;; the policy that sets retries and what dead-letter-queue to use
-       redrive-policy (str "{\"maxReceiveCount\":\"5\", \"deadLetterTargetArn\": \"" dlq-arn "\"}")
-       ;; create the primary queue
-       queue-url (.getQueueUrl (.createQueue sqs-client q-name))
-       q-attrs (HashMap. {"RedrivePolicy" redrive-policy
-                          "VisibilityTimeout" (queue-visibility-timeout q-name)})
-       set-queue-attrs-request (doto (SetQueueAttributesRequest.)
-                                     (.setAttributes q-attrs)
-                                     (.setQueueUrl queue-url))]
-    (.setQueueAttributes sqs-client set-queue-attrs-request)))
+        ;; Create the dead-letter-queue first and get its url
+        dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
+        dlq-arn (get-queue-arn sqs-client dlq-name)
+        create-queue-request (CreateQueueRequest. q-name)
+        ;; the policy that sets retries and what dead-letter-queue to use
+        redrive-policy (format "{\"maxReceiveCount\":\"%d\", \"deadLetterTargetArn\": \"%s\"}"
+                               max-tries
+                               dlq-arn)
+        ;; create the primary queue
+        queue-url (.getQueueUrl (.createQueue sqs-client q-name))
+        q-attrs (HashMap. {"RedrivePolicy" redrive-policy
+                           "VisibilityTimeout" (str visibility-timeout)})
+        set-queue-attrs-request (doto (SetQueueAttributesRequest.)
+                                      (.setAttributes q-attrs)
+                                      (.setQueueUrl queue-url))]
+     (.setQueueAttributes sqs-client set-queue-attrs-request)))
 
 (defn- create-exchange
- "Creaete an SNS topic to be used as an exchange."
- [sns-client exchange-name]
- (.createTopic sns-client (normalize-queue-name exchange-name)))
+  "Creaete an SNS topic to be used as an exchange."
+  [sns-client exchange-name]
+  (.createTopic sns-client (normalize-queue-name exchange-name)))
 
 (defn- topic-conditions
   "Returns a sequence of Conditions allowing the given exchanges access to a queue.
@@ -264,6 +271,9 @@
    ;; exchanges (topics) known to this broker
    exchanges
 
+   ;; a map of queue names to the retry policies for that queue
+   queues-to-policies
+
    ;; a map of queues to seqeunces of exchange names to which they should be bound
    queues-to-exchanges]
 
@@ -280,7 +290,10 @@
                                          {}
                                          queues)]
       (doseq [queue-name queues]
-        (create-queue sqs-client queue-name))
+        (let [max-tries (get-in queues-to-policies [queue-name :max-tries] (default-num-tries))
+              visibility-timeout (get-in queues-to-policies [queue-name :visibility-timeout-secs]
+                                         (queue-visibility-timeout queue-name))]
+          (create-queue sqs-client queue-name max-tries visibility-timeout)))
       (doseq [exchange-name exchanges]
         (create-exchange sns-client exchange-name))
       (doseq [queue (keys queues-to-exchanges)
@@ -356,8 +369,8 @@
 
 (defn create-queue-broker
   "Creates a broker that uses SNS/SQS"
-  [{:keys [queues exchanges queues-to-exchanges]}]
-  (->SQSQueueBroker nil nil queues nil exchanges queues-to-exchanges))
+  [{:keys [queues exchanges queues-to-policies queues-to-exchanges]}]
+  (->SQSQueueBroker nil nil queues nil exchanges queues-to-policies queues-to-exchanges))
 
 ;; Tests to make sure SNS/SQS is working
 (comment

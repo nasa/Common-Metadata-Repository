@@ -174,6 +174,7 @@
       (rmq-conf/merge-configs (vp-config/queue-config))
       (rmq-conf/merge-configs (access-control-config/queue-config))
       (rmq-conf/merge-configs (ingest-config/queue-config))
+      (rmq-conf/merge-configs (bootstrap-config/queue-config))
       (assoc :ttls ttls)))
 
 ;; for legacy reasons :external refers to Rabbit MQ
