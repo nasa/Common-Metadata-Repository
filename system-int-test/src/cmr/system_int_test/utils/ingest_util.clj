@@ -673,9 +673,8 @@
        (echo-util/grant-all-ingest (s/context) provider-id))
 
      (when grant-all-access-control?
-       (do
-         (echo-util/grant-system-group-permissions-to-all (s/context))
-         (echo-util/grant-provider-group-permissions-to-all (s/context) provider-id))))))
+       (echo-util/grant-system-group-permissions-to-all (s/context))
+       (echo-util/grant-provider-group-permissions-to-all (s/context) provider-id)))))
 
 (def reset-fixture-default-options
   {:grant-all-search? true

@@ -165,8 +165,7 @@
      (doseq [acl items]
        (e/ungrant (s/context) (:concept_id acl))))
 
-   (let [
-         acl1 (save-acl 1
+   (let [acl1 (save-acl 1
                         {:extra-fields {:acl-identity "system:token"
                                         :target-provider-id "PROV1"}}
                         "TOKEN")
@@ -242,6 +241,7 @@
       (bootstrap/bulk-index-concepts "PROV1" :collection colls)
       (bootstrap/bulk-index-concepts "PROV1" :granule [(:concept-id gran2)])
       (bootstrap/bulk-index-concepts "PROV1" :tag [(:concept-id tag1)])
+      ;; Commented out until ACLs and groups are supported in the index by concept-id API
       ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
       ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
 
@@ -315,6 +315,7 @@
       (bootstrap/bulk-delete-concepts "PROV1" :collection (map :concept-id [coll1]))
       (bootstrap/bulk-delete-concepts "PROV1" :granule (map :concept-id [gran1 gran3 gran4]))
       (bootstrap/bulk-delete-concepts "PROV1" :tag [(:concept-id tag1)])
+      ;; Commented out until ACLs and groups are supported in the index by concept-id API
       ; (bootstrap/bulk-index-concepts "CMR" :access-group [(:concept-id group2)])
       ; (bootstrap/bulk-index-concepts "CMR" :acl [(:concept-id acl2)])
 
@@ -346,7 +347,7 @@
   (s/only-with-real-database
     ;; Disable message publishing so items are not indexed.
     (dev-sys-util/eval-in-dev-sys `(cmr.metadata-db.config/set-publish-messages! false))
-    
+
     ;; Remove fixture ACLs
     (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
           items (:items response)]
