@@ -74,8 +74,7 @@
              :db-batch-size (db-batch-size)
              :core-async-dispatcher (core-async-dispatch/create-core-async-dispatcher)
              :synchronous-dispatcher (synchronous-dispatch/->SynchronousDispatcher)
-             :message-queue-dispatcher (message-queue-dispatch/->MessageQueueDispatcher
-                                        queue-broker)
+             :message-queue-dispatcher (message-queue-dispatch/->MessageQueueDispatcher)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :db (oracle/create-db (bootstrap-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
@@ -98,11 +97,13 @@
         ;; bulk index requests
         started-system (update-in this [:embedded-systems :indexer] idx-system/start)
         started-system (update-in started-system [:embedded-systems :metadata-db] mdb-system/start)
+        started-system (update-in started-system [:embedded-systems :access-control]
+                                  ac-system/start)
         started-system (common-sys/start started-system component-order)]
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
     (vp/handle-virtual-product-requests started-system)
-    (when (:queue-broker started-system)
+    (when (:queue-broker this)
       (message-queue-dispatch/subscribe-to-events {:system started-system}))
     (info "Bootstrap system started")
     started-system))
@@ -114,6 +115,8 @@
   (info "Bootstrap system shutting down")
   (let [stopped-system (common-sys/stop this component-order)
         stopped-system (update-in stopped-system [:embedded-systems :metadata-db] mdb-system/stop)
-        stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)]
+        stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)
+        stopped-system (update-in stopped-system [:embedded-systems :access-control]
+                                  ac-system/stop)]
     (info "Bootstrap system stopped")
     stopped-system))

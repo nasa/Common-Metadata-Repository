@@ -100,6 +100,8 @@
   "Returns the Topic with the given display name."
   [sns-client exchange-name]
   (info "Calling SNS to get topic " exchange-name)
+  (debug "SNS Client" (pr-str sns-client))
+  (debug "Topics" (pr-str (.listTopics sns-client)))
   (let [exchange-name (normalize-queue-name exchange-name)
         topics (vec (.getTopics (.listTopics sns-client)))]
     (some (fn [topic]
@@ -161,7 +163,7 @@
           (catch Throwable t
             (error t "Async handler for queue" queue-name "continuing after failed message receive.")
             ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
-            (Thread/sleep 100)))
+            (Thread/sleep 60000)))
         (recur)))))
 
 (defn- create-queue
@@ -299,7 +301,8 @@
       (doseq [queue (keys queues-to-exchanges)
               :let [exchanges (get queues-to-exchanges queue)]]
         (bind-queue-to-exchanges sns-client sqs-client exchanges queue))
-      (assoc this :sns-client sns-client :sqs-client sqs-client :normalized-queue-names normalized-queue-names)))
+      (assoc this :sns-client sns-client :sqs-client sqs-client
+             :normalized-queue-names normalized-queue-names)))
 
   (stop
     [this system]

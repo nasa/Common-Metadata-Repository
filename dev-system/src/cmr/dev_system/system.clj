@@ -221,9 +221,7 @@
 (defn create-bootstrap-app
   "Create an instance of the indexer application."
   [queue-broker]
-  (-> (bootstrap-system/create-system)
-      (assoc :queue-broker queue-broker)
-      (assoc-in [:message-queue-dispatcher :queue-broker] queue-broker)))
+  (assoc (bootstrap-system/create-system) :queue-broker queue-broker))
 
 (defmulti create-ingest-app
   "Create an instance of the ingest application."

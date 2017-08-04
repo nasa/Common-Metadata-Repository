@@ -19,10 +19,10 @@
   "Bulk index all the collections and granules for a provider."
   [this context provider-id start-index]
   (let [event (message-queue/bootstrap-provider-event provider-id start-index)]
-    (message-queue/publish-bootstrap-event this event)))
+    (message-queue/publish-bootstrap-event context event)))
 
 (defrecord MessageQueueDispatcher
-  [queue-broker])
+  [])
 
 (def dispatch-behavior
   "Map of protocol definitions to the implementations of that protocol for the message queue
@@ -52,10 +52,6 @@
 (defmethod handle-bootstrap-provider-event :index-provider
   [context msg]
   (bulk-index/index-provider (:system context) (:provider-id msg) (:start-index msg)))
-
-;; Default ignores the provider event. There may be provider events we don't care about.
-(defmethod handle-bootstrap-provider-event :default
-  [_ _])
 
 (defn subscribe-to-events
   "Subscribe to event messages on bootstrap queues."
