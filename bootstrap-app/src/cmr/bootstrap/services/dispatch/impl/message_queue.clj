@@ -1,10 +1,9 @@
-(ns cmr.bootstrap.services.dispatch.message-queue-dispatch
+(ns cmr.bootstrap.services.dispatch.impl.message-queue
   "Functions implementing the dispatch protocol to support synchronous calls."
   (:require
    [cmr.bootstrap.config :as config]
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.bootstrap.data.message-queue :as message-queue]
-   [cmr.bootstrap.services.dispatch.dispatch-protocol :as dispatch-protocol]
    [cmr.common.services.errors :as errors]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
@@ -36,10 +35,6 @@
    :index-concepts-by-id (partial not-implemented :index-concepts-by-id)
    :delete-concepts-from-index-by-id (partial not-implemented :delete-concepts-from-index-by-id)
    :bootstrap-virtual-products (partial not-implemented :bootstrap-virtual-products)})
-
-(extend MessageQueueDispatcher
-        dispatch-protocol/Dispatch
-        dispatch-behavior)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Message handling

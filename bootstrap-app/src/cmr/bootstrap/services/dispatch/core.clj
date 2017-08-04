@@ -1,5 +1,13 @@
-(ns cmr.bootstrap.services.dispatch.dispatch-protocol
-  "Defines the Bootstrap dispatch protocol.")
+(ns cmr.bootstrap.services.dispatch.core
+  "Defines the Bootstrap dispatch protocol."
+  (:require
+   [cmr.bootstrap.services.dispatch.impl.async :as async]
+   [cmr.bootstrap.services.dispatch.impl.message-queue :as message-queue]
+   [cmr.bootstrap.services.dispatch.impl.sync :as sync])
+  (:import
+   (cmr.bootstrap.services.dispatch.impl.async CoreAsyncDispatcher)
+   (cmr.bootstrap.services.dispatch.impl.message_queue MessageQueueDispatcher)
+   (cmr.bootstrap.services.dispatch.impl.sync SynchronousDispatcher)))
 
 (defprotocol Dispatch
   "Functions for handling the dispatch of bootstrap requests."
@@ -41,3 +49,28 @@
   (bootstrap-virtual-products
    [this context provider-id entry-title]
    "Initializes virtual products for the given provider and entry title."))
+
+(extend CoreAsyncDispatcher
+        Dispatch
+        async/dispatch-behavior)
+
+(extend MessageQueueDispatcher
+        Dispatch
+        message-queue/dispatch-behavior)
+
+(extend SynchronousDispatcher
+        Dispatch
+        sync/dispatch-behavior)
+
+(defn create-backend
+  "Creates one of the specific implementations of Dispatchers."
+  [backend-type]
+  (case backend-type
+    :async (async/create-core-async-dispatcher)
+    :sync (sync/->SynchronousDispatcher)
+    :message-queue (message-queue/->MessageQueueDispatcher)))
+
+(defn subscribe-to-events
+  "Subscribe to event messages on bootstrap queues. Pass through to message queue implementation."
+  [context]
+  (message-queue/subscribe-to-events context))

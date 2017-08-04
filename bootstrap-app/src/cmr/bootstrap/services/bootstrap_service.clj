@@ -3,7 +3,7 @@
   (:require
     [cmr.bootstrap.data.bulk-index :as bulk]
     [cmr.bootstrap.data.rebalance-util :as rebalance-util]
-    [cmr.bootstrap.services.dispatch.dispatch-protocol :as dispatch-protocol]
+    [cmr.bootstrap.services.dispatch.core :as dispatch]
     [cmr.common.cache :as cache]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer (debug info warn error)]
@@ -28,13 +28,13 @@
   "Copy all the data for a provider (including collections and graunules) from catalog rest
   to the metadata db without blocking."
   [context dispatcher provider-id]
-  (dispatch-protocol/migrate-provider dispatcher context provider-id))
+  (dispatch/migrate-provider dispatcher context provider-id))
 
 (defn migrate-collection
   "Copy all the data for a given collection (including graunules) from catalog rest
   to the metadata db without blocking."
   [context dispatcher provider-id collection-id]
-  (dispatch-protocol/migrate-collection dispatcher context provider-id collection-id))
+  (dispatch/migrate-collection dispatcher context provider-id collection-id))
 
 (defn- get-provider
   "Returns the metadata db provider that matches the given provider id. Throws exception if
@@ -49,12 +49,12 @@
   "Bulk index all the collections and granules for a provider."
   [context dispatcher provider-id start-index]
   (get-provider context provider-id)
-  (dispatch-protocol/index-provider dispatcher context provider-id start-index))
+  (dispatch/index-provider dispatcher context provider-id start-index))
 
 (defn index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
   [context dispatcher date-time]
-  (dispatch-protocol/index-data-later-than-date-time dispatcher context date-time))
+  (dispatch/index-data-later-than-date-time dispatcher context date-time))
 
 (defn- validate-collection
   "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
@@ -70,28 +70,28 @@
    (index-collection context dispatcher provider-id collection-id nil))
   ([context dispatcher provider-id collection-id options]
    (validate-collection context provider-id collection-id)
-   (dispatch-protocol/index-collection dispatcher context provider-id collection-id options)))
+   (dispatch/index-collection dispatcher context provider-id collection-id options)))
 
 (defn index-system-concepts
   "Bulk index all the tags, acls, and access-groups."
   [context dispatcher start-index]
-  (dispatch-protocol/index-system-concepts dispatcher context start-index))
+  (dispatch/index-system-concepts dispatcher context start-index))
 
 (defn index-concepts-by-id
   "Bulk index the concepts given by the concept-ids"
   [context dispatcher provider-id concept-type concept-ids]
-  (dispatch-protocol/index-concepts-by-id dispatcher context provider-id concept-type concept-ids))
+  (dispatch/index-concepts-by-id dispatcher context provider-id concept-type concept-ids))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [context dispatcher provider-id concept-type concept-ids]
-  (dispatch-protocol/delete-concepts-from-index-by-id dispatcher context provider-id concept-type
+  (dispatch/delete-concepts-from-index-by-id dispatcher context provider-id concept-type
                                                       concept-ids))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
   [context dispatcher provider-id entry-title]
-  (dispatch-protocol/bootstrap-virtual-products dispatcher context provider-id entry-title))
+  (dispatch/bootstrap-virtual-products dispatcher context provider-id entry-title))
 
 (defn- wait-until-index-set-hash-cache-times-out
   "Waits until the indexer's index set cache hash codes times out so that all of the indexer's will

@@ -1,8 +1,7 @@
-(ns cmr.bootstrap.services.dispatch.core-async-dispatch
+(ns cmr.bootstrap.services.dispatch.impl.async
   "Provides methods to insert migration requets on the appropriate channels."
   (:require
     [clojure.core.async :as async :refer [>!]]
-    [cmr.bootstrap.services.dispatch.dispatch-protocol :as dispatch-protocol]
     [cmr.common.log :refer [info]]))
 
 (defn migrate-provider
@@ -111,10 +110,6 @@
    :index-concepts-by-id index-concepts-by-id
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
    :bootstrap-virtual-products bootstrap-virtual-products})
-
-(extend CoreAsyncDispatcher
-        dispatch-protocol/Dispatch
-        dispatch-behavior)
 
 (defn- create-default-channels
   "Creates channels needed for all bootstrapping work and returns as a map of channel name to

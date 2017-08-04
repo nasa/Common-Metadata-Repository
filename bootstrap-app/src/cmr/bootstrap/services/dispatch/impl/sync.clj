@@ -1,10 +1,9 @@
-(ns cmr.bootstrap.services.dispatch.synchronous-dispatch
+(ns cmr.bootstrap.services.dispatch.impl.sync
   "Functions implementing the dispatch protocol to support synchronous calls."
   (:require
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.bootstrap.data.bulk-migration :as bulk-migration]
-   [cmr.bootstrap.data.virtual-products :as virtual-products]
-   [cmr.bootstrap.services.dispatch.dispatch-protocol :as dispatch-protocol]))
+   [cmr.bootstrap.data.virtual-products :as virtual-products]))
 
 (defn- migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -67,7 +66,3 @@
    :index-concepts-by-id index-concepts-by-id
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
    :bootstrap-virtual-products bootstrap-virtual-products})
-
-(extend SynchronousDispatcher
-        dispatch-protocol/Dispatch
-        dispatch-behavior)
