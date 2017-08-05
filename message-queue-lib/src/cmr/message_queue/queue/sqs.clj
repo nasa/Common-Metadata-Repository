@@ -163,7 +163,7 @@
           (catch Throwable t
             (error t "Async handler for queue" queue-name "continuing after failed message receive.")
             ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
-            (Thread/sleep 60000)))
+            (Thread/sleep 1000)))
         (recur)))))
 
 (defn- create-queue

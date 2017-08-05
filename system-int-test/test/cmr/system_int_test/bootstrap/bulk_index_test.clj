@@ -25,9 +25,10 @@
     [cmr.transmit.config :as tc]
     [cmr.umm.echo10.echo10-core :as echo10]))
 
-(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-ingest? true
-                                                                                 :grant-all-search? true
-                                                                                 :grant-all-access-control? false})
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"}
+                                                          {:grant-all-ingest? true
+                                                           :grant-all-search? true
+                                                           :grant-all-access-control? false})
                                     tags/grant-all-tag-fixture]))
 
 (defn- save-collection
