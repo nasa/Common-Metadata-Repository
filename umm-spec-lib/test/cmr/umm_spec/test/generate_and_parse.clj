@@ -83,6 +83,11 @@
   [metadata-format]
   (seq (.listFiles (io/file (io/resource (str "example_data/" (name metadata-format)))))))
 
+(defn- remove-vertical-spatial-domains
+  "Remove the VerticalSpatialDomains from the SpatialExtent of the record."
+  [record]
+  (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))  
+
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
         check-failure (fn [result]
@@ -128,8 +133,14 @@
                                #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                                                 (when (> ct 0) ct)))))
                     ;; Change fields to sets for comparison
-                    expected (convert-to-sets expected)
-                    actual (convert-to-sets actual)]]
+                    ;; Also, dif9 changes VerticalSpatialDomain values when they contain Max and Min
+                    ;;  Remove them from the comparison.
+                    expected (convert-to-sets (if (= :dif target-format)
+                                                (remove-vertical-spatial-domains expected)
+                                                expected))
+                    actual (convert-to-sets (if (= :dif target-format)
+                                              (remove-vertical-spatial-domains actual)
+                                              actual))]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure

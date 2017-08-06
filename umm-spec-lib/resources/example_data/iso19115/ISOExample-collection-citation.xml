@@ -1578,6 +1578,41 @@
                             </gmd:polygon>
                         </gmd:EX_BoundingPolygon>
                     </gmd:geographicElement>
+                    <!-- Vertical Spatial Domain -->
+                    <gmd:geographicElement>
+                        <gmd:EX_GeographicDescription id="VerticalSpatialDomain1">
+                            <gmd:geographicIdentifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                        <gco:CharacterString>Type: Maximum GPS Altitude Value: 30</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                        <gco:CharacterString>gov.nasa.esdis.umm.verticalspatialdomain</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                        <gco:CharacterString>VerticalSpatialDomain</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmd:geographicIdentifier>
+                        </gmd:EX_GeographicDescription>
+                    </gmd:geographicElement>
+                    <gmd:geographicElement>
+                        <gmd:EX_GeographicDescription id="VerticalSpatialDomain2">
+                            <gmd:geographicIdentifier>
+                                <gmd:MD_Identifier>
+                                    <gmd:code>
+                                        <gco:CharacterString>Type: Minimum GPS Altitude Value: 10</gco:CharacterString>
+                                    </gmd:code>
+                                    <gmd:codeSpace>
+                                        <gco:CharacterString>gov.nasa.esdis.umm.verticalspatialdomain</gco:CharacterString>
+                                    </gmd:codeSpace>
+                                    <gmd:description>
+                                        <gco:CharacterString>VerticalSpatialDomain</gco:CharacterString>
+                                    </gmd:description>
+                                </gmd:MD_Identifier>
+                            </gmd:geographicIdentifier>
+                        </gmd:EX_GeographicDescription>
+                    </gmd:geographicElement>
                     <gmd:geographicElement>
                         <gmd:EX_GeographicDescription id="OrbitParameters">
                             <gmd:geographicIdentifier>
