@@ -56,7 +56,8 @@
       (update :RelatedUrls set)
       (update-in-each [:DataCenters] update :ContactPersons set)
       (update :DataCenters set)
-      (update :ContactPersons set)))
+      (update :ContactPersons set)
+      (update-in [:SpatialExtent] update :VerticalSpatialDomains set)))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -132,7 +133,7 @@
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
-         (is (= expected actual)
+         (is (= (convert-to-sets expected) (convert-to-sets actual))
 
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))
@@ -142,7 +143,7 @@
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
             actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
-        (is (= expected actual))))))
+        (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
 
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.

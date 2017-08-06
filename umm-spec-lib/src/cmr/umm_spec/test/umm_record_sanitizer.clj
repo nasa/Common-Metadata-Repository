@@ -172,6 +172,23 @@
         #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                          (when (> ct 0) ct))))))
 
+(defn- sanitize-umm-data-presentation-form
+  "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
+   Replace it with a valid URI."
+  [record]
+  (-> record
+      (update-in-each [:CollectionCitations]
+        #(assoc % :DataPresentationForm (when (:DataPresentationForm %)
+                                          "http://google.com")))))
+
+(defn- sanitize-umm-online-resource-function
+  "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
+   Replace it with a valid URI."
+  [record]
+  (if (get-in record [:OnlineResource :Function])
+   (assoc-in record [:OnlineResource :Function] "http://google.com") 
+   record))
+
 (defn sanitized-umm-c-record
   "Returns the sanitized version of the given umm-c record."
   [record]
@@ -184,7 +201,9 @@
       ;; Figure out if we can define this in the schema
       sanitize-science-keywords
       sanitize-umm-record-urls
-      sanitize-umm-number-of-instruments))
+      sanitize-umm-number-of-instruments
+      sanitize-umm-data-presentation-form
+      (update-in-each [:CollectionCitations] sanitize-umm-online-resource-function)))
 
 (defn sanitized-umm-s-record
   "Include only the sanitizers needed for a given umm-s record."
