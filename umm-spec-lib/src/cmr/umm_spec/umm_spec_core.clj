@@ -24,7 +24,7 @@
    ;; Added this to force the loading of the class, so that in CI build, it won't complain about
    ;; "No implementation of method: :validate of protocol: #'cmr.spatial.validation/SpatialValidation 
    ;; found for class: cmr.spatial.cartesian_ring.CartesianRing."
-   [cmr.spatial-ring-validations])
+   [cmr.spatial.ring-validations])
   (:import
    (cmr.umm_spec.models.umm_collection_models UMM-C)
    (cmr.umm_spec.models.umm_service_models UMM-S)
