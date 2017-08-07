@@ -20,7 +20,11 @@
    [cmr.umm-spec.xml-to-umm-mappings.dif9 :as dif9-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
-   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm])
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
+   ;; Added this to force the loading of the class, so that in CI build, it won't complain about
+   ;; "No implementation of method: :validate of protocol: #'cmr.spatial.validation/SpatialValidation 
+   ;; found for class: cmr.spatial.cartesian_ring.CartesianRing."
+   [cmr.spatial-ring-validations]
   (:import
    (cmr.umm_spec.models.umm_collection_models UMM-C)
    (cmr.umm_spec.models.umm_service_models UMM-S)
