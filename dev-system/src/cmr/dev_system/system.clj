@@ -219,7 +219,7 @@
   (assoc (access-control-system/create-system) :queue-broker queue-broker))
 
 (defn create-bootstrap-app
-  "Create an instance of the indexer application."
+  "Create an instance of the bootstrap application."
   [queue-broker]
   (assoc (bootstrap-system/create-system) :queue-broker queue-broker))
 
