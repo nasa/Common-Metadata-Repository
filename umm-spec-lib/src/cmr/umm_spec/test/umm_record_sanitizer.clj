@@ -172,6 +172,9 @@
         #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                          (when (> ct 0) ct))))))
 
+(def valid-uri
+  "http://google.com")
+
 (defn- sanitize-umm-data-presentation-form
   "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
    Replace it with a valid URI."
@@ -179,14 +182,14 @@
   (-> record
       (update-in-each [:CollectionCitations]
         #(assoc % :DataPresentationForm (when (:DataPresentationForm %)
-                                          "http://google.com")))))
+                                          valid-uri)))))
 
 (defn- sanitize-umm-online-resource-function
   "UMM-C schema only requires it as a string, but xml schema requires it as anyURI.
    Replace it with a valid URI."
   [record]
   (if (get-in record [:OnlineResource :Function])
-   (assoc-in record [:OnlineResource :Function] "http://google.com") 
+   (assoc-in record [:OnlineResource :Function] valid-uri) 
    record))
 
 (defn sanitized-umm-c-record

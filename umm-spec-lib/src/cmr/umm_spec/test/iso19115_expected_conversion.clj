@@ -322,39 +322,29 @@
         role (:Roles data-center)]
    (assoc data-center :Roles [role]))))
 
+(defn- create-contact-person
+  "Creates a contact person given a the info of a creator, editor and publisher"
+  [person]
+  (when person 
+    (let [person-names (xml-to-umm-data-contact/parse-individual-name person nil)]
+      (cmn/map->ContactPersonType
+        {:Roles ["Technical Contact"]
+         :FirstName (:FirstName person-names)
+         :MiddleName (:MiddleName person-names)
+         :LastName (:LastName person-names)}))))
+
 (defn- update-contact-persons-from-collection-citation
   "CollectionCitation introduces additional contact persons from creator, editor and publisher.
    They need to be added to the ContactPersons in the expected umm after converting the umm
-   to the xml and back to umm.  Returns the updated ContactPersons"
+   to the xml and back to umm.  Returns the updated ContactPersons."
   [contact-persons collection-citation]
   (let [creator (:Creator collection-citation)
         editor (:Editor collection-citation)
         publisher (:Publisher collection-citation)
-        creator-contact-person (when creator
-                                 (let [creator-names (xml-to-umm-data-contact/parse-individual-name 
-                                                       creator nil)] 
-                                   (cmn/map->ContactPersonType 
-                                     {:Roles ["Technical Contact"] 
-                                      :FirstName (:FirstName creator-names)
-                                      :MiddleName (:MiddleName creator-names)
-                                      :LastName (:LastName creator-names)})))
+        creator-contact-person (create-contact-person creator) 
         editor-contact-person (when editor 
-                                (let [editor-names (xml-to-umm-data-contact/parse-individual-name 
-                                                     editor nil)]
-                                  (cmn/map->ContactPersonType 
-                                    {:Roles ["Technical Contact"]
-                                     :NonDataCenterAffiliation "editor"
-                                     :FirstName (:FirstName editor-names)
-                                     :MiddleName (:MiddleName editor-names)
-				     :LastName (:LastName editor-names)})))
-        publisher-contact-person (when publisher 
-                                   (let [publisher-names (xml-to-umm-data-contact/parse-individual-name 
-                                                           publisher nil)] 
-                                     (cmn/map->ContactPersonType 
-                                       {:Roles ["Technical Contact"]
-                                        :FirstName (:FirstName publisher-names)
-                                        :MiddleName (:MiddleName publisher-names)
-                                        :LastName (:LastName publisher-names)})))]
+                                (assoc (create-contact-person editor) :NonDataCenterAffiliation "editor")) 
+        publisher-contact-person (create-contact-person publisher)]
     (remove nil?  (conj contact-persons 
                         (util/remove-nil-keys creator-contact-person) 
                         (util/remove-nil-keys editor-contact-person)
@@ -373,6 +363,14 @@
              :Editor (when editor (str/trim editor))  
              :Publisher (when publisher (str/trim publisher))
              :ReleasePlace (when release-place (str/trim release-place))))))  
+
+(defn- keep-first-collection-citation
+  "Returns collection-citations with only the first collection-citation in it, trimmed.
+   When collection-citations is nil, return [{}]."
+  [collection-citations]
+  (if collection-citations
+    (conj [] (trim-collection-citation (first collection-citations)))
+    [{}]))
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]
@@ -402,9 +400,7 @@
       ;; If the original CollectionCitation is nil, we should expect it to contain Title and Version. 
       ;; If there are multiple CollectionCitations, we should only expect the first one.
       (assoc :CollectionCitations (map #(assoc % :Title (:EntryTitle umm-coll) :Version (:Version umm-coll)) 
-                                       (if-let [collection-citations (:CollectionCitations umm-coll)]
-                                         (conj [] (trim-collection-citation (first collection-citations)))
-                                         [{}])))
+                                       (keep-first-collection-citation (:CollectionCitations umm-coll))))
       (assoc :ContactGroups (map expected-contact-group (:ContactGroups umm-coll)))
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
