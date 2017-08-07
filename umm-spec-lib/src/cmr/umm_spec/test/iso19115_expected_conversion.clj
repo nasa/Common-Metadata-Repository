@@ -323,7 +323,7 @@
    (assoc data-center :Roles [role]))))
 
 (defn- create-contact-person
-  "Creates a contact person given a the info of a creator, editor and publisher"
+  "Creates a contact person given the info of a creator, editor and publisher"
   [person]
   (when person 
     (let [person-names (xml-to-umm-data-contact/parse-individual-name person nil)]
