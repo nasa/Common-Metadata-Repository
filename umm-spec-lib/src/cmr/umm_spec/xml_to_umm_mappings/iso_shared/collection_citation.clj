@@ -94,6 +94,72 @@
   (str "gmd:contactInfo/gmd:CI_Contact" 
        "/gmd:onlineResource/gmd:CI_OnlineResource/gmd:function/gmd:CI_OnLineFunctionCode/@codeListValue"))
 
+(defn- get-creator-editor
+  "Get creator, editor from the creator-editor-parties.
+   They share the same structure except that editor contains additional position-name."
+  [creator-editor-parties]
+  (into (sorted-map)
+    (for [creator-editor-party creator-editor-parties
+          :let [idname (value-of creator-editor-party individual-name-xpath)
+                osname (value-of creator-editor-party organisation-name-xpath)
+                osname (when osname
+                         (str " " osname))
+                psname (value-of creator-editor-party position-name-xpath)
+                idosname (str idname osname)]]
+      (if (= psname "editor")
+        {:editor (when idosname (str/trim idosname))}
+        {:creator (when idosname (str/trim idosname))}))))
+
+(defn- get-publisher-release-place
+  "Get publisher, release place from the pub-rel-pl-parties.
+   They share the same structure except that release place contains additional position-name."
+  [pub-rel-pl-parties]
+  (into (sorted-map)
+    (for [pub-rel-pl-party pub-rel-pl-parties
+          :let [idname (value-of pub-rel-pl-party individual-name-xpath)
+                osname (value-of pub-rel-pl-party organisation-name-xpath)
+                osname (when osname
+                         (str " " osname))
+                psname (value-of pub-rel-pl-party position-name-xpath)
+                idosname (str idname osname)
+                del-pt (value-of pub-rel-pl-party delivery-point-xpath)
+                city (value-of pub-rel-pl-party city-xpath)
+                city (when city
+                       (str " " city))
+                state (value-of pub-rel-pl-party state-xpath)
+                state (when state
+                        (str " " state))
+                zip (value-of pub-rel-pl-party zip-xpath)
+                zip (when zip
+                      (str " " zip))
+                country (value-of pub-rel-pl-party country-xpath)
+                country (when country
+                          (str " " country))
+                email (value-of pub-rel-pl-party email-xpath)
+                email (when email
+                        (str " " email))
+                release-place (str del-pt city state zip country email)]]
+      (if (= psname "release place")
+        {:release-place (when release-place (str/trim release-place))}
+        {:publisher (when idosname (str/trim idosname))}))))
+
+(defn- get-online-resources
+  "Get the online resources."
+  [online-resource-parties]
+  (for [online-resource-party online-resource-parties
+        :let [linkage (value-of online-resource-party linkage-xpath)
+              protocol (value-of online-resource-party protocal-xpath)
+              app-profile (value-of online-resource-party application-profile-xpath)
+              name (value-of online-resource-party name-xpath)
+              description (value-of online-resource-party description-xpath)
+              function (value-of online-resource-party function-xpath)]]
+    {:Linkage linkage
+     :Protocol protocol
+     :ApplicationProfile app-profile
+     :Name name
+     :Description description
+     :Function function}))
+
 (defn parse-collection-citation
   "Parse the Collection Citation from XML resource citation"
   [doc collection-citation-xpath sanitize?]
@@ -104,60 +170,11 @@
                 creator-editor-parties (seq (select resource-citation creator-editor-xpath))
                 pub-rel-pl-parties (seq (select resource-citation publisher-release-place-xpath))
                 online-resource-parties (seq (select resource-citation online-resource-xpath))
-                creator-editor (for [creator-editor-party creator-editor-parties
-                                     :let [idname (value-of creator-editor-party individual-name-xpath)
-                                           osname (value-of creator-editor-party organisation-name-xpath)
-                                           osname (when osname
-                                                    (str " " osname))
-                                           psname (value-of creator-editor-party position-name-xpath)
-                                           idosname (str idname osname)]]
-                                 (if (= psname "editor")
-                                   {:editor (when idosname (str/trim idosname))}
-                                   {:creator (when idosname (str/trim idosname))}))
-                creator (:creator (into (sorted-map) creator-editor))
-                editor (:editor (into (sorted-map) creator-editor))
-                pub-rel-place (for [pub-rel-pl-party pub-rel-pl-parties 
-                                    :let [idname (value-of pub-rel-pl-party individual-name-xpath)
-                                          osname (value-of pub-rel-pl-party organisation-name-xpath)
-                                          osname (when osname
-                                                    (str " " osname))
-                                          psname (value-of pub-rel-pl-party position-name-xpath)
-                                          idosname (str idname osname) 
-                                          del-pt (value-of pub-rel-pl-party delivery-point-xpath)
-                                          city (value-of pub-rel-pl-party city-xpath)
-                                          city (when city 
-                                                    (str " " city))
-                                          state (value-of pub-rel-pl-party state-xpath)
-                                          state (when state 
-                                                    (str " " state))
-                                          zip (value-of pub-rel-pl-party zip-xpath)
-                                          zip (when zip 
-                                                    (str " " zip))
-                                          country (value-of pub-rel-pl-party country-xpath)
-                                          country (when country 
-                                                    (str " " country))
-                                          email (value-of pub-rel-pl-party email-xpath)
-                                          email (when email 
-                                                    (str " " email))
-                                          release-place (str del-pt city state zip country email)]]
-                                 (if (= psname "release place")
-                                   {:release-place (when release-place (str/trim release-place))}
-                                   {:publisher (when idosname (str/trim idosname))}))
-                 publisher (:publisher (into (sorted-map) pub-rel-place))
-                 release-place (:release-place (into (sorted-map) pub-rel-place))
-                 online-res (for [online-resource-party online-resource-parties
-                                  :let [linkage (value-of online-resource-party linkage-xpath)
-                                        protocol (value-of online-resource-party protocal-xpath) 
-                                        app-profile (value-of online-resource-party application-profile-xpath) 
-                                        name (value-of online-resource-party name-xpath) 
-                                        description (value-of online-resource-party description-xpath) 
-                                        function (value-of online-resource-party function-xpath)]]
-                              {:Linkage linkage
-                               :Protocol protocol
-                               :ApplicationProfile app-profile
-                               :Name name
-                               :Description description
-                               :Function function})]]
+                creator (:creator (get-creator-editor creator-editor-parties))
+                editor (:editor (get-creator-editor creator-editor-parties))
+                publisher (:publisher (get-publisher-release-place pub-rel-pl-parties ))
+                release-place (:release-place (get-publisher-release-place pub-rel-pl-parties))
+                online-resources (get-online-resources online-resource-parties)]]
       (util/remove-nil-keys
         {:Creator creator
          :Editor editor 
@@ -173,6 +190,6 @@
          :IssueIdentification (value-of resource-citation issue-identification-xpath)
          :DataPresentationForm (value-of resource-citation data-presentation-form-xpath)
          :OtherCitationDetails (value-of resource-citation other-citation-details-xpath)
-         :OnlineResource (util/remove-nil-keys (first online-res))}))))
+         :OnlineResource (util/remove-nil-keys (first online-resources))}))))
   
                        
