@@ -100,8 +100,6 @@
   "Returns the Topic with the given display name."
   [sns-client exchange-name]
   (info "Calling SNS to get topic " exchange-name)
-  (debug "SNS Client" (pr-str sns-client))
-  (debug "Topics" (pr-str (.listTopics sns-client)))
   (let [exchange-name (normalize-queue-name exchange-name)
         topics (vec (.getTopics (.listTopics sns-client)))]
     (some (fn [topic]
@@ -190,7 +188,7 @@
      (.setQueueAttributes sqs-client set-queue-attrs-request)))
 
 (defn- create-exchange
-  "Creaete an SNS topic to be used as an exchange."
+  "Create an SNS topic to be used as an exchange."
   [sns-client exchange-name]
   (.createTopic sns-client (normalize-queue-name exchange-name)))
 
