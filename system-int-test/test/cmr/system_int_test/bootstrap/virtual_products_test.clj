@@ -69,19 +69,19 @@
 
             "missing provider-id"
             400
-            ["provider-id and entry-title are required parameters."]
+            ["The parameters [:provider-id :entry-title] are required"]
             nil
             "et1"
 
             "missing entry-id"
             400
-            ["provider-id and entry-title are required parameters."]
+            ["The parameters [:provider-id :entry-title] are required"]
             "PROV1"
             nil
 
             "missing both"
             400
-            ["provider-id and entry-title are required parameters."]
+            ["The parameters [:provider-id :entry-title] are required"]
             nil
             nil
 
