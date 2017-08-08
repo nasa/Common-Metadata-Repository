@@ -22,7 +22,9 @@
    [cmr.common-app.services.search.params :as common-params]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.concepts :as cc]
+   [cmr.common.date-time-range-parser :as date-time-parser]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -271,23 +273,56 @@
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
 
+(defn- extract-and-parse-date-range
+  "Sanitize and parse date range for has_granules_created_at searches"
+  [params]
+  (try
+    (let [date-range (string/split (or (:has_granules_created_at params)
+                                       (:has-granules-created-at params))
+                                   #"\[\]\=")]
+      (->> date-range
+           (remove string/blank?)
+           first
+           date-time-parser/parse-datetime-range))
+    (catch Exception e
+      (errors/throw-service-error :bad-request (str (:errors e))))))
+
+(defn- get-bucket-values-from-aggregation
+  "Return a collection of values from aggregation buckets"
+  [aggregation-search-results aggregation-name]
+  (let [buckets (get-in aggregation-search-results [:aggregations aggregation-name :buckets])]
+    (map :key buckets)))
+
 (defn get-collections-from-new-granules
   "Finds granules that were added after a given date and return their parent collection ids.
    Supports CMR Harvesting."
   [context params]
-  (when-let [[start-date end-date] (mapv time-format/parse
-                                         (string/split (or (:has_granules_created_at params)
-                                                           (:has-granules-created-at params)) #","))]
-    (let [query (qm/query {:concept-type :granule
-                           :page-size 0
-                           :result-format :query-specified
-                           :condition (qm/date-range-condition
-                                        :created-at start-date end-date)
-                           :result-fields []
-                           :aggregations {:collections
-                                          {:terms {:size query-aggregation-size
-                                                   :field :collection-concept-id}}}})]
-      (qe/execute-query context query))))
+  (let [{:keys [start-date end-date]} (extract-and-parse-date-range params)
+        query (qm/query {:concept-type :granule
+                         :page-size 0
+                         :result-format (:result-format params)
+                         :condition (qm/date-range-condition
+                                      (q2e/query-field->elastic-field :created-at :granule)
+                                      start-date
+                                      end-date)
+                         :result-fields []
+                         :aggregations {:collections
+                                        {:terms {:size query-aggregation-size
+                                                 :field (q2e/query-field->elastic-field :collection-concept-id :granule)}}}})
+        results (qe/execute-query context query)
+        collection-ids (get-bucket-values-from-aggregation results :collections)
+        collection-search-params (-> params
+                                     (assoc :echo-collection-id collection-ids)
+                                     (dissoc :has_granules_created_at)
+                                     (dissoc :has-granules-created-at)
+                                     lp/process-legacy-psa)]
+
+    (if (empty? collection-ids)
+      {:results (common-search/search-results->response context query results)
+       :hits 0
+       :result-format (:result-format params)}
+
+      (find-concepts-by-parameters context :collection collection-search-params))))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"

@@ -19,6 +19,8 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (dev-system-util/freeze-resume-time-fixture)]))
 
+(def empty-response-body "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>0</hits><took></took><references></references></results>")
+
 (deftest search-for-collections-with-new-granules
   (let [_ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
         oldest-collection (d/ingest-umm-spec-collection
@@ -88,17 +90,26 @@
     (testing "Old and deleted collections should not be found."
       (let [range-references (search/find-concepts-with-param-string
                                "collection"
-                               "has_granules_created_at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")
+                               "has_granules_created_at=[]=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")
+
+            ;; Use client/get here to verify that the body of a search with no results is correct
             none-found (client/get (str "http://localhost:3003/collections"
-                                        "?has-granules-created-at=2017-02-01T10:00:00Z,2016-02-01T10:00:00Z"))]
+                                        "?has-granules-created-at=[]=2017-02-01T10:00:00Z,2017-03-01T10:00:00Z"))]
         (d/refs-match? [regular-collection] range-references)
-        (and (= (:body none-found) "")
+        (and (= (:body none-found) empty-response-body)
              (= (get (:headers none-found) "CMR-Hits") 0))))
     (testing "Granule search by created-at"
       (let [references (search/find-concepts-with-param-string
                          "granule"
                          "created-at=2014-01-01T10:00:00Z,")]
         (d/refs-match? [regular-granule young-granule] references)))
+    (testing "Improperly formatted dates should fail validation"
+      (let [invalid-date (search/find-concepts-with-param-string
+                          "collection"
+                          "has-granules-created-at=[]=,2016-03-")]
+        (and (= (first (:errors invalid-date))
+                "[\"[2016-03-] is not a valid datetime\"]")
+             (= 400 (:status invalid-date)))))
     (testing "Using unsupported or incorrect parameters in conjunction with multi-part-query-params"
       (are [params]
         (let [{:keys [status errors]} (search/find-concepts-with-param-string
