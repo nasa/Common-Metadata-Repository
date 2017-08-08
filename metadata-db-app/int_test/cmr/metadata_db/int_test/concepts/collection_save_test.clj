@@ -39,14 +39,6 @@
           coll2 (util/collection-concept "SMAL_PROV2" 2 {:native-id "foo"})]
       (c-spec/save-distinct-concepts-test coll1 coll2))))
 
-(defn- created-at-same?
-  "Returns true if the `created-at` for the given concept revisions are the same
-  and none of them are nil"
-  [& concepts]
-  (let [created-ats (map :created-at concepts)]
-    (and (apply = created-ats)
-         (not-any? nil? created-ats))))
-
 (deftest save-collection-created-at-test
   (testing "Save collection multiple times gets same created-at"
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -74,7 +66,7 @@
                                     second-revision-id
                                     tombstone-revision-id
                                     final-revision-id])]
-        (is (created-at-same? initial-revision second-revision tombstone final-revision))))))
+        (is (util/created-at-same? initial-revision second-revision tombstone final-revision))))))
 
 (deftest save-collection-post-commit-constraint-violations
   (testing "duplicate entry titles"

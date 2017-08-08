@@ -1,5 +1,7 @@
 (ns cmr.system-int-test.ingest.variable-ingest-test
-  "CMR variable ingest integration tests."
+  "CMR variable ingest integration tests.
+
+  For variable permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clj-http.client :as client]
    [clj-time.core :as t]

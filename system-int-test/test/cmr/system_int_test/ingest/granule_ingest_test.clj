@@ -1,5 +1,7 @@
 (ns cmr.system-int-test.ingest.granule-ingest-test
-  "CMR granule ingest integration tests"
+  "CMR granule ingest integration tests.
+
+  For granule permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [cheshire.core :as json]
    [clojure.edn :as edn]

@@ -5,6 +5,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
+   [cmr.indexer.data.concepts.science-keyword-util :as science-keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -12,7 +13,11 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id deleted provider-id native-id extra-fields]} concept
         {:keys [variable-name measurement]} extra-fields
-        keyword-text (keyword-util/field-values->keyword-text [variable-name measurement])]
+        science-keywords (mapcat science-keyword-util/science-keyword->keywords
+                                 (:ScienceKeywords parsed-concept))
+        ;; keyword values that are used to index the keyword field
+        keyword-values (flatten (conj [variable-name measurement]
+                                      science-keywords))]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
@@ -27,7 +32,7 @@
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
-       :keyword keyword-text})))
+       :keyword (keyword-util/field-values->keyword-text keyword-values)})))
 
 (defn- variable-association->variable-concept
   "Returns the variable concept and variable association for the given variable association."

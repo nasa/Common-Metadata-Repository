@@ -3,7 +3,7 @@
   (:require
     [clojure.set :as set]
     [cmr.common.config :refer [defconfig]]
-    [cmr.common.log :as log :refer (warn)] 
+    [cmr.common.log :as log :refer (warn)]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
     [cmr.metadata-db.data.concepts :as c]
@@ -15,12 +15,13 @@
    :type Boolean})
 
 (defn- find-latest-matching-concepts
-  "Returns any concepts which match the concept-type, provider-id, and value for the given field
-  that matches the passed in concept"
+  "Returns any concepts which match the concept-type, provider-id, and value
+  for the given field that matches the passed in concept."
   [db provider concept field field-value]
-  (->> (c/find-latest-concepts db provider {:concept-type (:concept-type concept)
-                                            :provider-id (:provider-id concept)
-                                            field field-value})
+  (->> {field field-value}
+       (merge {:concept-type (:concept-type concept)
+               :provider-id (:provider-id concept)})
+       (c/find-latest-concepts db provider)
        ;; Remove tombstones from the list of concepts
        (remove :deleted)))
 
@@ -33,10 +34,7 @@
       (zero? num-concepts)
       (do
         (warn
-          (format "Unable to find saved concept for provider [%s] and %s [%s]"
-                  (:provider-id concept)
-                  (name field)
-                  field-value))
+          (msg/concept-not-found (:provider-id concept) (name field) field-value))
         nil)
       (> num-concepts 1)
       [(msg/duplicate-field-msg
@@ -44,8 +42,8 @@
          (remove #(= (:concept-id concept) (get % :concept-id)) concepts))])))
 
 (defn unique-field-constraint
-  "Returns a function which verifies that there is only one non-deleted concept for a provider
-  with the value for the given field."
+  "Returns a function which verifies that there is only one non-deleted concept
+  for a provider with the value for the given field."
   [field]
   (fn [db provider concept]
     (let [field-value (get-in concept [:extra-fields field])
@@ -94,41 +92,79 @@
             (let [{:keys [transaction-id revision-id]} tran-rev]
               (or (when (and (< revision-id this-revision-id)
                              (> transaction-id this-transaction-id))
-                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
-                                      "which is higher than revision [%d] with transaction-id [%d].")
-                                 revision-id
-                                 concept-id
-                                 transaction-id
-                                 this-revision-id
-                                 this-transaction-id)])
+                        [(msg/concept-higher-transaction-id
+                          revision-id
+                          concept-id
+                          transaction-id
+                          this-revision-id
+                          this-transaction-id)])
                   (when (and (> revision-id this-revision-id)
                              (< transaction-id this-transaction-id))
-                        [(format (str "Revision [%d] of concept [%s] has transaction-id [%d] "
-                                      "which is lower than revision [%d] with transaction-id [%d]."
-                                     revision-id
-                                     concept-id
-                                     transaction-id
-                                     this-revision-id
-                                     this-transaction-id))]))))
+                        [(msg/concept-lower-transaction-id
+                          revision-id
+                          concept-id
+                          transaction-id
+                          this-revision-id
+                          this-transaction-id)]))))
           transaction-revisions)))
 
-;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
-;; needed. Using a function for now so that configuration can be changed in tests.
-(defn- constraints-by-concept-type
-  []
-  "Maps concept type to a list of constraint functions to run."
+(defn validate-pvn-equalities
+  "For any two given concepts, compares provider-ids, variable-names, and
+  native-ids between the two. Validation will return an error message if
+  provider-ids and variable-names match between the two, but the native-ids
+  don't.
 
+  Note that old-style validation functions (see `cmr.common.util`) expect
+  validation functions to return an empty list upon success and a list of
+  one or more error messages upon failure."
+  [new-concept old-concept]
+  (if (and (= (:provider-id new-concept)
+              (:provider-id old-concept))
+           (= (get-in new-concept [:extra-fields :variable-name])
+              (get-in old-concept [:extra-fields :variable-name]))
+           (not= (:native-id new-concept)
+                 (:native-id old-concept)))
+    (msg/pvn-equality-failure old-concept)
+    []))
+
+(defn variable-pvn-constraint
+  "The 'pvn' constraint is for `provider-id`, `variable-name`, and `native-id`.
+  This function ensures that for these three attributes of a concept, updates
+  will only succeed if all three are the same for the most current revision-id.
+  If `provider-id` and `variable-name` are the same, but `native-id` is
+  different, this constraint will not be met and the valdiations will fail.
+
+  Any failures result in a list of error messages returned. Successful passing
+  of the constraint will result in an empty list being returned."
+  [db provider {:keys [native-id extra-fields] :as concept}]
+  (let [variable-name (:variable-name extra-fields)
+        concepts (find-latest-matching-concepts
+                  db provider concept :variable-name variable-name)]
+    (->> concepts
+         (mapv (partial validate-pvn-equalities concept))
+         (flatten))))
+
+;; Note: This needs to be changed back to a var once the enforce-granule-ur-
+;; constraint configuration is no longer needed. Using a function for now so
+;; that configuration can be changed in tests.
+(defn- constraints-by-concept-type
+  "Maps concept type to a list of constraint functions to run."
+  []
   {:collection [(unique-field-constraint :entry-title)
                 (unique-field-constraint :entry-id)]
    :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])
-   :acl [(unique-field-constraint :acl-identity)]})
+   :acl [(unique-field-constraint :acl-identity)]
+   :variable [variable-pvn-constraint]})
 
 (defn perform-post-commit-constraint-checks
-  "Perform the post commit constraint checks aggregating any constraint violations. Returns nil if
-  there are no constraint violations. Otherwise it performs any necessary database cleanup using
-  the provided rollback-function and throws a :conflict error."
+  "Perform the post commit constraint checks aggregating any constraint
+  violations. Returns nil if there are no constraint violations. Otherwise it
+  performs any necessary database cleanup using the provided rollback-function
+  and throws a :conflict error."
   [db provider concept rollback-function]
   (let [constraints ((constraints-by-concept-type) (:concept-type concept))]
+    ;; XXX `util/apply-validations` is deprecated and this is the only place
+    ;; in the CMR codebase where it is used -- we should fix that.
     (when-let [errors (seq (util/apply-validations constraints db provider concept))]
       (rollback-function)
       (errors/throw-service-errors :conflict errors))))
