@@ -92,7 +92,7 @@
     {:regexp {field regex}}))
 
 (defn- keywords->regex-filter
-  "Create a filter for keyword searches that checks for a loose match on "
+  "Create a filter for keyword searches that checks for a loose match on one field"
   [field keywords boost]
   {:weight boost
    ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
