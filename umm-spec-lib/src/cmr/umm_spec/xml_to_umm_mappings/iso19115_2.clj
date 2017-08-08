@@ -15,6 +15,7 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
@@ -281,6 +282,7 @@
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
       :ScienceKeywords (kws/parse-science-keywords md-data-id-el sanitize?)
       :RelatedUrls (dru/parse-related-urls doc sanitize?)
+      :CollectionCitations (collection-citation/parse-collection-citation doc citation-base-xpath sanitize?)
       :AdditionalAttributes (aa/parse-additional-attributes doc sanitize?)
       :MetadataDates (parse-metadata-dates doc)})))
 
