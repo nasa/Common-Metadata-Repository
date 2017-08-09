@@ -30,6 +30,7 @@
 (deftest relevancy-temporal-ranges
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! false))
   (let [coll1 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
                                              {:ShortName "Usage-30"

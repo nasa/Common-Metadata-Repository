@@ -33,24 +33,25 @@
 ;;   * Single date time
 ;;   * Start at Unix epoch time
 ;;   * Start and end before unix epoch time
+;; * Sort by end date
 
 (deftest relevancy-temporal-ranges
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll 1"
                                                 :temporal (dc/temporal {:beginning-date-time "2003-08-01T00:00:00Z"
                                                                         :ending-date-time "2005-10-01T00:00:00Z"})}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll 2"
                                                 :temporal (dc/temporal {:beginning-date-time "1995-08-01T00:00:00Z"
                                                                         :ending-date-time "2000-10-01T00:00:00Z"})}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll 3"
                                                 :temporal (dc/temporal {:beginning-date-time "2009-10-15T12:00:00Z"
                                                                         :ends-at-present? true})}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll4"
+        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll 4"
                                                 :temporal (dc/temporal {:single-date-time "2008-5-15T12:00:00Z"})}))
-        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll5"
+        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll 5"
                                                 :temporal (dc/temporal {:beginning-date-time "1970-01-01T00:00:00Z"
                                                                         :ending-date-time "1996-10-01T00:00:00Z"})}))
-        coll6 (d/ingest "PROV1" (dc/collection {:entry-title "coll6"
+        coll6 (d/ingest "PROV1" (dc/collection {:entry-title "coll 6"
                                                 :temporal (dc/temporal {:beginning-date-time "1910-05-01T00:00:00Z"
                                                                         :ending-date-time "1968-10-01T00:00:00Z"})}))]
     (index/wait-until-indexed)
@@ -82,4 +83,17 @@
       [coll3 coll1 coll2 coll5 coll4]
 
       "Date range including collection with early ranges"
-      ["1955-01-01T10:00:00Z,1999-03-01T0:00:00Z"] [coll5 coll6 coll2])))
+      ["1955-01-01T10:00:00Z,1999-03-01T0:00:00Z"] [coll5 coll6 coll2])
+
+   (testing "Keyword search, sort by end date"
+     (is (d/refs-match-order? [coll3 coll4 coll1 coll2 coll5 coll6]
+                              (search/find-refs :collection {:keyword "coll"})))
+
+     (testing "Multiple ongoing collections"
+       (let [coll7 (d/ingest "PROV1" (dc/collection {:entry-title "coll 7"
+                                                     :temporal (dc/temporal {:beginning-date-time "2015-10-15T12:00:00Z"
+                                                                             :ends-at-present? true})}))]
+
+         (index/wait-until-indexed)
+         (is (d/refs-match-order? [coll7 coll3 coll4 coll1 coll2 coll5 coll6]
+                                  (search/find-refs :collection {:keyword "coll"}))))))))
