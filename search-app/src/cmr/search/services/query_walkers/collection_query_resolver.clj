@@ -70,7 +70,6 @@
         (assoc :context context)
         (assoc :collection-ids (:collection-ids context)))))
 
-
 (defn- resolve-group-conditions
   "Resolves all the condition from a group condition of the given operation. Returns a tuple
   of collection ids and the group condition containing resolved conditions"
