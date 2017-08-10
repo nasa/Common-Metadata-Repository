@@ -73,6 +73,20 @@
     {:status 202
      :body {:message (msg/index-concepts-by-id params result)}}))
 
+(defn index-variables
+  "(Re-)Index the variables stored in metadata-db. If a provider-id is passed,
+  only the variables for that provider will be indexed. With no provider-id,
+  all providers' variables are (re-)indexed.
+
+  Note that this function differs from the service function it calls in that
+  here, the dispatcher implementation is extracted from the request context."
+  ([context]
+   (let [dispatcher (api-util/get-dispatcher context :index-variables)]
+     (service/index-variables context dispatcher)))
+  ([context provider-id]
+    (let [dispatcher (api-util/get-dispatcher context :index-variables)]
+      (service/index-variables context dispatcher provider-id))))
+
 (defn delete-concepts-by-id
   "Delete concepts from the indexes by concept-id."
   [context request-details-map params]

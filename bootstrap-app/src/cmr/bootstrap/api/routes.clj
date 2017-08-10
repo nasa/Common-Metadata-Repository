@@ -40,6 +40,10 @@
           (bulk-index/data-later-than-date-time request-context params))
         (POST "/system_concepts" {:keys [request-context params]}
           (bulk-index/index-system-concepts request-context params))
+        (POST "/variables" {:keys [request-context]}
+          (bulk-index/index-variables request-context))
+        (POST "/variables/:provider-id" [provider-id :as {:keys [request-context]}]
+          (bulk-index/index-variables request-context provider-id))
         (POST "/concepts" {:keys [request-context body params]}
           (bulk-index/index-concepts-by-id request-context body params))
         (DELETE "/concepts" {:keys [request-context body params]}
