@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.iso-shared
   "ISO 19115 specific expected conversion functionality"
   (:require
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.util :as util :refer [update-in-each]]
     [cmr.umm-spec.iso19115-2-util :as iso-util]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
@@ -29,13 +29,11 @@
    They need to be added to the ContactPersons in the expected umm after converting the umm
    to the xml and back to umm.  Returns the updated ContactPersons."
   [contact-persons collection-citation]
-  (let [creator (:Creator collection-citation)
-        editor (:Editor collection-citation)
-        publisher (:Publisher collection-citation)
-        creator-contact-person (create-contact-person creator)
-        editor-contact-person (when editor
-                                (assoc (create-contact-person editor) :NonDataCenterAffiliation "editor"))
-        publisher-contact-person (create-contact-person publisher)]
+  (let [{:keys [Creator Editor Publisher]} collection-citation
+        creator-contact-person (create-contact-person Creator)
+        editor-contact-person (when Editor
+                                (assoc (create-contact-person Editor) :NonDataCenterAffiliation "editor"))
+        publisher-contact-person (create-contact-person Publisher)]
     (remove nil?  (conj contact-persons
                         (util/remove-nil-keys creator-contact-person)
                         (util/remove-nil-keys editor-contact-person)
@@ -44,16 +42,13 @@
 (defn trim-collection-citation
   "Returns CollectionCitation with Creator, Editor, Publisher and ReleasePlace fields trimmed."
   [collection-citation]
-  (let [creator (:Creator collection-citation)
-        editor (:Editor collection-citation)
-        publisher (:Publisher collection-citation)
-        release-place (:ReleasePlace collection-citation)]
+  (let [{:keys [Creator Editor Publisher ReleasePlace]} collection-citation]
     (util/remove-nil-keys
       (assoc collection-citation
-             :Creator (when creator (str/trim creator))
-             :Editor (when editor (str/trim editor))
-             :Publisher (when publisher (str/trim publisher))
-             :ReleasePlace (when release-place (str/trim release-place))))))
+             :Creator (when Creator (string/trim Creator))
+             :Editor (when Editor (string/trim Editor))
+             :Publisher (when Publisher (string/trim Publisher))
+             :ReleasePlace (when ReleasePlace (string/trim ReleasePlace))))))
 
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
