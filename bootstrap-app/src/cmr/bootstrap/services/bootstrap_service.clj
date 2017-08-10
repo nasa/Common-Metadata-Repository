@@ -17,6 +17,7 @@
   {:migrate-provider :core-async-dispatcher
    :migrate-collection :core-async-dispatcher
    :index-provider :message-queue-dispatcher
+   :index-variables :message-queue-dispatcher
    :index-data-later-than-date-time :core-async-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
@@ -81,6 +82,15 @@
   "Bulk index the concepts given by the concept-ids"
   [context dispatcher provider-id concept-type concept-ids]
   (dispatch/index-concepts-by-id dispatcher context provider-id concept-type concept-ids))
+
+(defn index-variables
+  "(Re-)Index the variables stored in metadata-db. If a provider-id is passed,
+  only the variables for that provider will be indexed. With no provider-id,
+  all providers' variables are (re-)indexed."
+  ([context dispatcher]
+   (dispatch/index-variables dispatcher context))
+  ([context dispatcher provider-id]
+   (dispatch/index-variables dispatcher context provider-id)))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
