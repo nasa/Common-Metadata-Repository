@@ -34,6 +34,11 @@
    [this context provider-id collection-id options]
    "Bulk index all the granules in a collection.")
 
+  (index-variables
+    [this context] [this context provider-id]
+    "Bulk index all the variables in CMR. Optionally, pass a provider id, in
+    which case only the variables for that provider will be indexed.")
+
   (index-system-concepts
    [this context start-index]
    "Bulk index all the tags, acls, and access-groups.")
