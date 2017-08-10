@@ -3,7 +3,15 @@
   (:require
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.bootstrap.data.bulk-migration :as bulk-migration]
-   [cmr.bootstrap.data.virtual-products :as virtual-products]))
+   [cmr.bootstrap.data.virtual-products :as virtual-products]
+   [cmr.common.services.errors :as errors]))
+
+(defn- not-implemented
+  "Throws an exception indicating that the specified function is not implemented for
+  the sync dispatcher."
+  [action & _]
+  (errors/internal-error!
+   (format "Sync Dispatcher does not support %s action." (name action))))
 
 (defn- migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -60,6 +68,7 @@
   {:migrate-provider migrate-provider
    :migrate-collection migrate-collection
    :index-provider index-provider
+   :index-variables (partial not-implemented :index-variables)
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts
