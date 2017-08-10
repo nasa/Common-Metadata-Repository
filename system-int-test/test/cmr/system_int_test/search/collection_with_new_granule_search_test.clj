@@ -5,19 +5,90 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.common.util :as util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url-helper]))
 
+
 (use-fixtures :each (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                      [(ingest/reset-fixture {"provguid1" "PROV1"
+                                              "provguid2" "PROV2"})
                        (dev-system-util/freeze-resume-time-fixture)]))
+
+(comment
+ (ingest/create-provider {:provider-id "PROV1" :provider-guid "provguid1"} {:grant-all-ingest? true
+                                                                            :grant-all-search? true})
+ (ingest/create-provider {:provider-id "PROV2" :provider-guid "provguid2"} {:grant-all-ingest? true
+                                                                            :grant-all-search? true})
+ (create-test-granules))
+
+(defn- create-test-granules
+  "TODO"
+  []
+  (dev-system-util/freeze-time! "2010-05-01T10:00:00Z")
+  (let [coll-w-may-2010-granule (d/ingest-umm-spec-collection
+                                 "PROV1"
+                                 (data-umm-c/collection
+                                   {:EntryTitle "may2010"
+                                    :Version "v1"
+                                    :ShortName "New"}))
+
+        may-2010-granule (d/ingest "PROV1"
+                                  (dg/granule-with-umm-spec-collection
+                                    coll-w-may-2010-granule (:concept-id coll-w-may-2010-granule)))
+
+        _ (dev-system-util/freeze-time! "2015-05-01T10:00:00Z")
+        coll-w-may-2015-granule (d/ingest-umm-spec-collection
+                                 "PROV2"
+                                 (data-umm-c/collection
+                                   {:EntryTitle "may2015"
+                                    :Version "v1"
+                                    :ShortName "Regular"}))
+
+        may-2015-granule (d/ingest "PROV2"
+                                   (dg/granule-with-umm-spec-collection
+                                     coll-w-may-2015-granule (:concept-id coll-w-may-2015-granule)))]
+    (index/wait-until-indexed)
+    ;; Force coll2 granules into their own index to make sure
+    ;; granules outside of 1_small_collections get deleted properly.
+    (bootstrap/start-rebalance-collection (:concept-id coll-w-may-2015-granule))
+    (bootstrap/finalize-rebalance-collection (:concept-id coll-w-may-2015-granule))
+    (index/wait-until-indexed)
+    {:coll-w-may-2010-granule coll-w-may-2010-granule
+     :coll-w-may-2015-granule coll-w-may-2015-granule}))
+
+; (deftest collections-has-granules-created-at-test
+;   ;; PROV1 and PROV2 collections and granules
+;   (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule]}
+;         (create-test-granules)]
+;     (testing "with only has_granules_created_at parameter"
+;       (util/are3
+;         [date-ranges expected-results]
+;         (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
+;           (is (d/refs-match? expected-results actual-results)))
+;
+;         "Single date range"
+;         ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
+;
+;         "Prior to date"
+;         [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule]
+;
+;         "After date"
+;         ["2015-06-01T16:13:12Z,"] [coll-w-june-2016-granule]
+;
+;         "Multiple time ranges"
+;         [",2014-07-01T16:13:12Z"
+;          "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
+;          "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
+;         [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule]))))
 
 (deftest search-for-collections-with-new-granules
   (let [_ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
