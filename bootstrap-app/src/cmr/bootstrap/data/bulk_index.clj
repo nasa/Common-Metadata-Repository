@@ -119,6 +119,39 @@
             gran-count
             provider-id)))
 
+(defn- index-variables-by-provider
+  "Bulk index variables for the given provider."
+  [system db provider]
+  (info "Indexing variables for provider" (:provider-id provider))
+  (let [concept-batches (db/find-concepts-in-batches
+                         db provider
+                         {:concept-type :variable}
+                         (:db-batch-size system))
+        num-variables (index/bulk-index
+                       {:system (helper/get-indexer system)}
+                       concept-batches
+                       {})]
+    (info (format "Indexing of %s variables completed." num-variables))
+    num-variables))
+
+(defn index-variables
+  "Bulk index variables for the given provider-id."
+  [system provider-id]
+  (let [db (helper/get-metadata-db-db system)
+        provider (p/get-provider db provider-id)]
+    (index-variables-by-provider system db provider)))
+
+(defn index-all-variables
+  "Bulk index all CMR variables."
+  [system]
+  (info "Indexing all variables")
+  (let [db (helper/get-metadata-db-db system)
+        all-providers (p/get-providers db)
+        variable-counts (->> all-providers
+                             (map (partial index-variables-by-provider system db))
+                             vec)]
+    (info "Indexing of" (reduce + variable-counts) "variables completed.")))
+
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]
