@@ -17,7 +17,8 @@
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su])
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact])
  (:use
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))
@@ -277,6 +278,62 @@
        iso-shared/sort-by-date-type-iso
        (#(or (seq %) (not-provided-temporal-extents)))))
 
+(defn- create-contact-person
+  "Creates a contact person given the info of a creator, editor and publisher"
+  [person]
+  (when person
+    (let [person-names (xml-to-umm-data-contact/parse-individual-name person nil)]
+      (cmn/map->ContactPersonType
+        {:Roles ["Technical Contact"]
+         :FirstName (:FirstName person-names)
+         :MiddleName (:MiddleName person-names)
+         :LastName (:LastName person-names)}))))
+
+(defn- update-contact-persons-from-collection-citation
+  "CollectionCitation introduces additional contact persons from creator, editor and publisher.
+   They need to be added to the ContactPersons in the expected umm after converting the umm
+   to the xml and back to umm.  Returns the updated ContactPersons."
+  [contact-persons collection-citation]
+  (let [creator (:Creator collection-citation)
+        editor (:Editor collection-citation)
+        publisher (:Publisher collection-citation)
+        creator-contact-person (create-contact-person creator)
+        editor-contact-person (when editor
+                                (assoc (create-contact-person editor) :NonDataCenterAffiliation "editor"))
+        publisher-contact-person (create-contact-person publisher)]
+    (remove nil?  (conj contact-persons
+                        (util/remove-nil-keys creator-contact-person)
+                        (util/remove-nil-keys editor-contact-person)
+                        (util/remove-nil-keys publisher-contact-person)))))
+
+(defn- trim-collection-citation
+  "Returns CollectionCitation with Creator, Editor, Publisher and ReleasePlace fields trimmed."
+  [collection-citation]
+  (let [creator (:Creator collection-citation)
+        editor (:Editor collection-citation)
+        publisher (:Publisher collection-citation)
+        release-place (:ReleasePlace collection-citation)]
+    (util/remove-nil-keys
+      (assoc collection-citation
+             :Creator (when creator (str/trim creator))
+             :Editor (when editor (str/trim editor))
+             :Publisher (when publisher (str/trim publisher))
+             :ReleasePlace (when release-place (str/trim release-place))))))
+
+(defn- expected-collection-citations
+  "Returns collection-citations with only the first collection-citation in it, trimmed,
+   and if the Title is nil, replace it with Not provided.
+   When collection-citations is nil, return [{:Title \"Not provided\"}]." 
+  [collection-citations]
+  (if collection-citations
+    (let [collection-citation (first collection-citations)
+          collection-citation-sanitized (if (:Title collection-citation)
+                                          collection-citation
+                                          (assoc collection-citation :Title su/not-provided))]
+       (conj [] (cmn/map->ResourceCitationType 
+                  (trim-collection-citation collection-citation-sanitized))))
+    (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
+                                           
 (defn umm-expected-conversion-iso-smap
   "Change the UMM to what is expected when translating from ISO SMAP so that it can
    be compared to the actual translation."
@@ -292,7 +349,12 @@
         (update :DataCenters expected-data-centers)
         (assoc :VersionDescription nil)
         (assoc :ContactGroups nil)
-        (update :ContactPersons expected-contact-persons "Technical Contact")
+        (assoc :ContactPersons (expected-contact-persons 
+                                 (update-contact-persons-from-collection-citation
+                                   (:ContactPersons umm-coll)
+                                   (trim-collection-citation (first (:CollectionCitations umm-coll))))
+                                 "Technical Contact")) 
+        (update :CollectionCitations expected-collection-citations)
         (assoc :UseConstraints nil)
         (assoc :AccessConstraints nil)
         (assoc :SpatialKeywords nil)
@@ -306,5 +368,4 @@
         (update :ScienceKeywords expected-science-keywords)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
-        (assoc :CollectionCitations nil)
         (update :CollectionProgress su/with-default)))

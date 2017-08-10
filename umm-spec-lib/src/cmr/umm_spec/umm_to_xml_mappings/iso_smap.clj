@@ -6,11 +6,13 @@
     [cmr.umm-spec.date-util :as du]
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level :as proc-level]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element :as project]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation :as smap-collection-citation]
     [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
     [cmr.umm-spec.util :as su :refer [with-default char-string]]))
@@ -97,8 +99,10 @@
          [:gmd:MD_DataIdentification
           [:gmd:citation
            [:gmd:CI_Citation
-            [:gmd:title (char-string "SMAP Level 1A Parsed Radar Instrument Telemetry")]
+            (smap-collection-citation/convert-title c)
             (generate-data-dates c)
+            (smap-collection-citation/convert-version c)
+            (collection-citation/convert-date c)
             [:gmd:identifier
              [:gmd:MD_Identifier
               [:gmd:code (char-string (:ShortName c))]
@@ -129,7 +133,15 @@
               [:gmd:MD_Identifier
                [:gmd:code [:gco:CharacterString collection-data-type]]
                [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
-               [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])]]
+               [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+            (collection-citation/convert-creator c)
+            (collection-citation/convert-editor c)
+            (collection-citation/convert-publisher c)
+            (collection-citation/convert-release-place c)
+            (collection-citation/convert-online-resource c)
+            (collection-citation/convert-data-presentation-form c)
+            (collection-citation/convert-series-name-and-issue-id c)
+            (collection-citation/convert-other-citation-details c)]]
           [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
           [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
           [:gmd:status (generate-collection-progress c)]
