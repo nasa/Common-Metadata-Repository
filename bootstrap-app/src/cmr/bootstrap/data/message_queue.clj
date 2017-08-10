@@ -5,11 +5,11 @@
    [cmr.common.log :refer [info]]
    [cmr.message-queue.services.queue :as queue]))
 
-(defn publish-bootstrap-event
-  "Put a bootstrap event on the message queue."
+(defn publish-bootstrap-provider-event
+  "Put a bootstrap provider event on the message queue."
   [context msg]
   (let [queue-broker (get-in context [:system :queue-broker])
-        exchange-name (config/bootstrap-provider-exchange-name)]
+        exchange-name (config/bootstrap-exchange-name)]
     (info "Publishing bootstrap message: " msg)
     (queue/publish-message queue-broker exchange-name msg)))
 

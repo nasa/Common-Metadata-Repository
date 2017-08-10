@@ -32,7 +32,7 @@
 
   (index-collection
    [this context provider-id collection-id options]
-   "Bulk index all the granules in a collection")
+   "Bulk index all the granules in a collection.")
 
   (index-system-concepts
    [this context start-index]
