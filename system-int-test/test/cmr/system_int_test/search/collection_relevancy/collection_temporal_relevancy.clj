@@ -9,6 +9,8 @@
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.data.query-to-elastic :as query-to-elastic]
+   [cmr.system-int-test.data2.umm-spec-collection :as umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as umm-common]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
@@ -37,23 +39,41 @@
 
 (deftest relevancy-temporal-ranges
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll 1"
-                                                :temporal (dc/temporal {:beginning-date-time "2003-08-01T00:00:00Z"
-                                                                        :ending-date-time "2005-10-01T00:00:00Z"})}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll 2"
-                                                :temporal (dc/temporal {:beginning-date-time "1995-08-01T00:00:00Z"
-                                                                        :ending-date-time "2000-10-01T00:00:00Z"})}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll 3"
-                                                :temporal (dc/temporal {:beginning-date-time "2009-10-15T12:00:00Z"
-                                                                        :ends-at-present? true})}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "coll 4"
-                                                :temporal (dc/temporal {:single-date-time "2008-5-15T12:00:00Z"})}))
-        coll5 (d/ingest "PROV1" (dc/collection {:entry-title "coll 5"
-                                                :temporal (dc/temporal {:beginning-date-time "1970-01-01T00:00:00Z"
-                                                                        :ending-date-time "1996-10-01T00:00:00Z"})}))
-        coll6 (d/ingest "PROV1" (dc/collection {:entry-title "coll 6"
-                                                :temporal (dc/temporal {:beginning-date-time "1910-05-01T00:00:00Z"
-                                                                        :ending-date-time "1968-10-01T00:00:00Z"})}))]
+  (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 1
+                                 {:EntryTitle "coll 1"
+                                  :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "2003-08-01T00:00:00Z"
+                                                                                 :ending-date-time "2005-10-01T00:00:00Z"})]}))
+        coll2 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 2
+                                 {:EntryTitle "coll 2"
+                                  :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "1995-08-01T00:00:00Z"
+                                                                                 :ending-date-time "2000-10-01T00:00:00Z"})]}))
+        coll3 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 3
+                                 {:EntryTitle "coll 3"
+                                  :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "2009-10-15T12:00:00Z"
+                                                                                 :ends-at-present? true})]}))
+        coll4 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 4
+                                 {:EntryTitle "coll 4"
+                                  :TemporalExtents [(umm-common/temporal-extent {:single-date-time "2008-5-15T12:00:00Z"})]}))
+        coll5 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 5
+                                 {:EntryTitle "coll 5"
+                                  :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "1970-01-01T00:00:00Z"
+                                                                                 :ending-date-time "1996-10-01T00:00:00Z"})]}))
+        coll6 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 6
+                                {:EntryTitle "coll 6"
+                                 :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "1910-05-01T00:00:00Z"
+                                                                                :ending-date-time "1968-10-01T00:00:00Z"})]}))]
     (index/wait-until-indexed)
 
     (are3 [temporal-search-ranges expected-collections]
@@ -90,10 +110,13 @@
                               (search/find-refs :collection {:keyword "coll"})))
 
      (testing "Multiple ongoing collections"
-       (let [coll7 (d/ingest "PROV1" (dc/collection {:entry-title "coll 7"
-                                                     :temporal (dc/temporal {:beginning-date-time "2015-10-15T12:00:00Z"
-                                                                             :ends-at-present? true})}))]
+       (let [coll7 (d/ingest-umm-spec-collection
+                    "PROV1"
+                    (umm-c/collection 7
+                                      {:EntryTitle "coll 7"
+                                       :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "2015-10-15T12:00:00Z"
+                                                                                      :ends-at-present? true})]}))]
 
          (index/wait-until-indexed)
-         (is (d/refs-match-order? [coll7 coll3 coll4 coll1 coll2 coll5 coll6]
+         (is (d/refs-match-order? [coll3 coll7 coll4 coll1 coll2 coll5 coll6]
                                   (search/find-refs :collection {:keyword "coll"}))))))))
