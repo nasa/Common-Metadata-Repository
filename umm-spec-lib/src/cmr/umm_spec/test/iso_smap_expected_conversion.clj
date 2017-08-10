@@ -17,7 +17,8 @@
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su])
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact])
  (:use
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))
@@ -277,6 +278,17 @@
        iso-shared/sort-by-date-type-iso
        (#(or (seq %) (not-provided-temporal-extents)))))
 
+(defn- expected-collection-citations
+  "Returns collection-citations with only the first collection-citation in it, trimmed,
+   and if the Title is nil, replace it with Not provided.
+   When collection-citations is nil, return [{:Title \"Not provided\"}]." 
+  [collection-citations]
+  (if collection-citations
+    (conj [] (cmn/map->ResourceCitationType 
+               (iso-shared/trim-collection-citation 
+                 (update (first collection-citations) :Title #(if % % su/not-provided))))) 
+    (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
+                                           
 (defn umm-expected-conversion-iso-smap
   "Change the UMM to what is expected when translating from ISO SMAP so that it can
    be compared to the actual translation."
@@ -292,7 +304,12 @@
         (update :DataCenters expected-data-centers)
         (assoc :VersionDescription nil)
         (assoc :ContactGroups nil)
-        (update :ContactPersons expected-contact-persons "Technical Contact")
+        (assoc :ContactPersons (expected-contact-persons 
+                                 (iso-shared/update-contact-persons-from-collection-citation
+                                   (:ContactPersons umm-coll)
+                                   (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
+                                 "Technical Contact")) 
+        (update :CollectionCitations expected-collection-citations)
         (assoc :UseConstraints nil)
         (assoc :AccessConstraints nil)
         (assoc :SpatialKeywords nil)
@@ -306,5 +323,4 @@
         (update :ScienceKeywords expected-science-keywords)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
-        (assoc :CollectionCitations nil)
         (update :CollectionProgress su/with-default)))

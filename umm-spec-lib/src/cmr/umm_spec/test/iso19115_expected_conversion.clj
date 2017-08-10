@@ -322,54 +322,13 @@
         role (:Roles data-center)]
    (assoc data-center :Roles [role]))))
 
-(defn- create-contact-person
-  "Creates a contact person given the info of a creator, editor and publisher"
-  [person]
-  (when person 
-    (let [person-names (xml-to-umm-data-contact/parse-individual-name person nil)]
-      (cmn/map->ContactPersonType
-        {:Roles ["Technical Contact"]
-         :FirstName (:FirstName person-names)
-         :MiddleName (:MiddleName person-names)
-         :LastName (:LastName person-names)}))))
-
-(defn- update-contact-persons-from-collection-citation
-  "CollectionCitation introduces additional contact persons from creator, editor and publisher.
-   They need to be added to the ContactPersons in the expected umm after converting the umm
-   to the xml and back to umm.  Returns the updated ContactPersons."
-  [contact-persons collection-citation]
-  (let [creator (:Creator collection-citation)
-        editor (:Editor collection-citation)
-        publisher (:Publisher collection-citation)
-        creator-contact-person (create-contact-person creator) 
-        editor-contact-person (when editor 
-                                (assoc (create-contact-person editor) :NonDataCenterAffiliation "editor")) 
-        publisher-contact-person (create-contact-person publisher)]
-    (remove nil?  (conj contact-persons 
-                        (util/remove-nil-keys creator-contact-person) 
-                        (util/remove-nil-keys editor-contact-person)
-                        (util/remove-nil-keys publisher-contact-person)))))
-
-(defn- trim-collection-citation
-  "Returns CollectionCitation with Creator, Editor, Publisher and ReleasePlace fields trimmed."
-  [collection-citation]
-  (let [creator (:Creator collection-citation)
-        editor (:Editor collection-citation)
-        publisher (:Publisher collection-citation)
-        release-place (:ReleasePlace collection-citation)]
-    (util/remove-nil-keys
-      (assoc collection-citation
-             :Creator (when creator (str/trim creator))  
-             :Editor (when editor (str/trim editor))  
-             :Publisher (when publisher (str/trim publisher))
-             :ReleasePlace (when release-place (str/trim release-place))))))  
-
 (defn- keep-first-collection-citation
   "Returns collection-citations with only the first collection-citation in it, trimmed.
    When collection-citations is nil, return [{}]."
   [collection-citations]
   (if collection-citations
-    (conj [] (trim-collection-citation (first collection-citations)))
+    (conj [] (cmn/map->ResourceCitationType
+               (iso-shared/trim-collection-citation (first collection-citations))))
     [{}]))
 
 (defn umm-expected-conversion-iso19115
@@ -391,9 +350,9 @@
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
       ;;add contact persons introduced by CollectionCitation. 
-      (assoc :ContactPersons (update-contact-persons-from-collection-citation 
+      (assoc :ContactPersons (iso-shared/update-contact-persons-from-collection-citation 
                                (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll))
-                               (trim-collection-citation (first (:CollectionCitations umm-coll)))))
+                               (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll)))))
       ;; CollectionCitation's Title and UMM's EntryTitle share the same xml element, So do CollectionCitation's
       ;; Version and UMM's Version. When translate to xml file, we use the UMM's EntryTitle and Version. The values
       ;; could be different. 
