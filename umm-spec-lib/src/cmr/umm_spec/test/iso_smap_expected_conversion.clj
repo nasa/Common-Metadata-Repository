@@ -284,12 +284,9 @@
    When collection-citations is nil, return [{:Title \"Not provided\"}]." 
   [collection-citations]
   (if collection-citations
-    (let [collection-citation (first collection-citations)
-          collection-citation-sanitized (if (:Title collection-citation)
-                                          collection-citation
-                                          (assoc collection-citation :Title su/not-provided))]
-       (conj [] (cmn/map->ResourceCitationType 
-                  (iso-shared/trim-collection-citation collection-citation-sanitized))))
+    (conj [] (cmn/map->ResourceCitationType 
+               (iso-shared/trim-collection-citation 
+                 (update (first collection-citations) :Title #(if % % su/not-provided))))) 
     (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
                                            
 (defn umm-expected-conversion-iso-smap

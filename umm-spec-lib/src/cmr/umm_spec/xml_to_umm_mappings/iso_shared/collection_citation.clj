@@ -153,12 +153,13 @@
               name (value-of online-resource-party name-xpath)
               description (value-of online-resource-party description-xpath)
               function (value-of online-resource-party function-xpath)]]
-    {:Linkage linkage
-     :Protocol protocol
-     :ApplicationProfile app-profile
-     :Name name
-     :Description description
-     :Function function}))
+    (util/remove-nil-keys
+      {:Linkage linkage
+       :Protocol protocol
+       :ApplicationProfile app-profile
+       :Name name
+       :Description description
+       :Function function})))
 
 (defn parse-collection-citation
   "Parse the Collection Citation from XML resource citation"
@@ -174,7 +175,7 @@
                 editor (:editor (get-creator-editor creator-editor-parties))
                 publisher (:publisher (get-publisher-release-place pub-rel-pl-parties ))
                 release-place (:release-place (get-publisher-release-place pub-rel-pl-parties))
-                online-resources (get-online-resources online-resource-parties)]]
+                online-resources (remove #(nil? (seq %))(get-online-resources online-resource-parties))]]
       (util/remove-nil-keys
         {:Creator creator
          :Editor editor 
@@ -190,6 +191,6 @@
          :IssueIdentification (value-of resource-citation issue-identification-xpath)
          :DataPresentationForm (value-of resource-citation data-presentation-form-xpath)
          :OtherCitationDetails (value-of resource-citation other-citation-details-xpath)
-         :OnlineResource (util/remove-nil-keys (first online-resources))}))))
+         :OnlineResource (first online-resources)}))))
   
                        
