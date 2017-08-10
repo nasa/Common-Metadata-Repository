@@ -21,6 +21,18 @@
     context
     (message-queue/bootstrap-provider-event provider-id start-index)))
 
+(defn- index-variables
+  "Bulk index all the variables. If a provider is passed, only index the variables
+  for that provider."
+  ([this context]
+   (message-queue/publish-bootstrap-variables-event
+     context
+     (message-queue/bootstrap-variables-event)))
+  ([this context provider-id]
+   (message-queue/publish-bootstrap-variables-event
+     context
+     (message-queue/bootstrap-variables-event provider-id))))
+
 (defrecord MessageQueueDispatcher
   [])
 
@@ -30,6 +42,7 @@
   {:migrate-provider (partial not-implemented :migrate-provider)
    :migrate-collection (partial not-implemented :migrate-collection)
    :index-provider index-provider
+   :index-variables index-variables
    :index-data-later-than-date-time (partial not-implemented :index-data-later-than-date-time)
    :index-collection (partial not-implemented :index-collection)
    :index-system-concepts (partial not-implemented :index-system-concepts)
@@ -51,7 +64,9 @@
 
 (defmethod handle-bootstrap-event :index-variables
   [context msg]
-  (bulk-index/index-variables (:system context)))
+  (if-let [provider-id (:provider-id msg)]
+    (bulk-index/index-variables (:system context) provider-id)
+    (bulk-index/index-all-variables (:system context))))
 
 (defn subscribe-to-events
   "Subscribe to event messages on bootstrap queues."
