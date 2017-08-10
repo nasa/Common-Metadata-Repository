@@ -3,7 +3,6 @@
   (:require
    [clj-time.coerce :as time-coerce]
    [clj-time.core :as time]
-   [clj-time.format :as f]
    [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as str]
