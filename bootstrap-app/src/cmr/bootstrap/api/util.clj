@@ -23,5 +23,7 @@
 (defn get-dispatcher
   "Returns the correct dispatcher to use based on the system configuration and
   the request."
-  [context params request-type]
-  (get-in context [:system (get-dispatcher-type params request-type)]))
+  ([context request-type]
+   (get-dispatcher context {} request-type))
+  ([context params request-type]
+   (get-in context [:system (get-dispatcher-type params request-type)])))
