@@ -33,16 +33,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Message queue configuration
 
-(defconfig bootstrap-provider-exchange-name
-   "The bootstrap exchange to which provider bootstrap messages are published."
-   {:default "cmr-bootstrap-provider-exchange"})
+(defconfig bootstrap-exchange-name
+   "The bootstrap exchange to which bootstrap messages are published."
+   {:default "cmr-bootstrap-exchange"})
 
-(defconfig bootstrap-provider-queue-name
-  "The queue containing bootstrap provider events."
-  {:default "cmr-bootstrap-provider-queue"})
+(defconfig bootstrap-queue-name
+  "The queue containing bootstrap events."
+  {:default "cmr-bootstrap-queue"})
 
-(defconfig bootstrap-provider-queue-listener-count
-  "Number of worker threads to use for the queue listener for the bootstrap provider queue"
+(defconfig bootstrap-queue-listener-count
+  "Number of worker threads to use for the queue listener for the bootstrap queue."
   {:default 1
    :type Long})
 
@@ -50,10 +50,10 @@
   "Returns the queue configuration for the bootstrap application."
   []
   (assoc (queue-config/default-config)
-         :queues [(bootstrap-provider-queue-name)]
-         :exchanges [(bootstrap-provider-exchange-name)]
-         :queues-to-policies {(bootstrap-provider-queue-name) {:max-tries 1
-                                                               ;; max 12 hours visibility timeout
-                                                               :visibility-timeout-secs 43200}}
-         :queues-to-exchanges {(bootstrap-provider-queue-name)
-                               [(bootstrap-provider-exchange-name)]}))
+         :queues [(bootstrap-queue-name)]
+         :exchanges [(bootstrap-exchange-name)]
+         :queues-to-policies {(bootstrap-queue-name) {:max-tries 1
+                                                      ;; max 12 hours visibility timeout
+                                                      :visibility-timeout-secs 43200}}
+         :queues-to-exchanges {(bootstrap-queue-name)
+                               [(bootstrap-exchange-name)]}))
