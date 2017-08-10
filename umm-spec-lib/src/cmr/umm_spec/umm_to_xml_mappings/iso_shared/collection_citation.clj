@@ -5,9 +5,6 @@
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.iso19115-2-util :as iso]))
 
-;; the Title and Version of the collection citation are shared
-;; by other fields and are already populated. so we skip them here. 
-
 (defn convert-date
   "Convert the release date in umm to the related fields in xml"
   [c]

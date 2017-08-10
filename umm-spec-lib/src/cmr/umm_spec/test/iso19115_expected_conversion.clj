@@ -369,7 +369,8 @@
    When collection-citations is nil, return [{}]."
   [collection-citations]
   (if collection-citations
-    (conj [] (trim-collection-citation (first collection-citations)))
+    (conj [] (cmn/map->ResourceCitationType
+               (trim-collection-citation (first collection-citations))))
     [{}]))
 
 (defn umm-expected-conversion-iso19115
