@@ -111,6 +111,4 @@
 
      (testing "bin size 0.3 - same as 0.2"
        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.3))
-       (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"}))))
-
-     (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! false)))))
+       (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"})))))))

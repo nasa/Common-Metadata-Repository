@@ -109,14 +109,20 @@
      (is (d/refs-match-order? [coll3 coll4 coll1 coll2 coll5 coll6]
                               (search/find-refs :collection {:keyword "coll"})))
 
-     (testing "Multiple ongoing collections"
+     (testing "Multiple ongoing collections, date in future"
        (let [coll7 (d/ingest-umm-spec-collection
                     "PROV1"
                     (umm-c/collection 7
                                       {:EntryTitle "coll 7"
                                        :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "2015-10-15T12:00:00Z"
-                                                                                      :ends-at-present? true})]}))]
+                                                                                      :ends-at-present? true})]}))
+             coll8 (d/ingest-umm-spec-collection
+                          "PROV1"
+                          (umm-c/collection 8
+                                            {:EntryTitle "coll 8"
+                                             :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "2015-10-15T12:00:00Z"
+                                                                                            :ending-date-time "2070-8-4T12:00:00Z"})]}))]
 
          (index/wait-until-indexed)
-         (is (d/refs-match-order? [coll3 coll7 coll4 coll1 coll2 coll5 coll6]
+         (is (d/refs-match-order? [coll8 coll3 coll7 coll4 coll1 coll2 coll5 coll6]
                                   (search/find-refs :collection {:keyword "coll"}))))))))

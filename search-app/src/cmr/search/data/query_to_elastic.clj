@@ -52,7 +52,7 @@
    :default true})
 
 (defconfig keyword-score-bin-size
-  "When sort-bin-keyword-scores is true, what should the keyword score should
+  "When sort-bin-keyword-scores is true, the keyword score should
   be rounded to the nearest keyword-score-bin-size"
   {:type Double
    :default 0.2})
@@ -378,7 +378,7 @@
        ;; collections will be at the top
        (when use-keyword-sort?
          [{:end-date {:order :desc
-                      :missing (time-coerce/to-long (time/today))}}])))))
+                      :missing (time-coerce/to-long (time/now))}}])))))
 
 (defn- temporal-sort-order
   "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
