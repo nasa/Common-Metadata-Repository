@@ -3,14 +3,19 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.variable-util :as variables]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each
+              (join-fixtures
+               [(ingest/reset-fixture {"provguid1" "PROV1"})
+                variables/grant-all-variable-fixture]))
 
 (deftest search-for-variables-validation-test
   (testing "Unrecognized parameters"
@@ -305,3 +310,51 @@
 
       ;; Now I should find the variable when searching
       (variables/assert-variable-search [variable1-3 variable2] (variables/search {})))))
+
+(deftest variable-search-with-associated-collections-test
+  (testing "variable search result has associated collections"
+    (let [token (e/login (s/context) "user1")
+          [coll1 coll2 coll3] (for [n (range 1 4)]
+                                (d/ingest-umm-spec-collection
+                                 "PROV1"
+                                 (data-umm-c/collection n {})
+                                 {:token token}))
+          ;; create variables
+          variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
+                                                           :Name "Variable1"})
+          variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
+                                                           :Name "Variable2"})
+          variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
+                                                           :Name "Variable3"})
+          variable1-concept-id (:concept-id variable1)
+          variable2-concept-id (:concept-id variable2)
+          variable1-assoc-colls [{:concept-id (:concept-id coll1)}
+                                 {:concept-id (:concept-id coll2)}]
+          variable2-assoc-colls [{:concept-id (:concept-id coll3)
+                                  :revision-id 1}]
+          expected-variable1 (assoc variable1 :associated-collections variable1-assoc-colls)
+          expected-variable2 (assoc variable2 :associated-collections variable2-assoc-colls)]
+      ;; index the collections so that they can be found during variable association
+      (index/wait-until-indexed)
+      ;; create variable associations
+      (variables/associate-by-concept-ids token variable1-concept-id variable1-assoc-colls)
+      (variables/associate-by-concept-ids token variable2-concept-id variable2-assoc-colls)
+      (index/wait-until-indexed)
+
+      ;; verify variable search response has associated collections
+      (variables/assert-variable-search
+       [expected-variable1 expected-variable2 variable3]
+       (variables/search {}))
+
+      (testing "update variable not affect the associated collections in search result"
+        (let [updated-variable1-name "Variable1234"
+              updated-variable1 (variables/ingest-variable-with-attrs
+                                 {:native-id "var1"
+                                  :Name updated-variable1-name})
+              expected-variable1 (assoc updated-variable1
+                                        :associated-collections variable1-assoc-colls)]
+          (index/wait-until-indexed)
+
+          (variables/assert-variable-search
+           [expected-variable1]
+           (variables/search {:variable-name updated-variable1-name})))))))

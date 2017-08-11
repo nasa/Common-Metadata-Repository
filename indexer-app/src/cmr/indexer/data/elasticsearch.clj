@@ -179,7 +179,7 @@
   (get-in context [:system :db :config]))
 
 (defn parse-non-tombstone-associations
-  "Returns the parsed tag associations that are not tombstones"
+  "Returns the parsed associations that are not tombstones"
   [context associations]
   (map #(cp/parse-concept context %) (filter #(not (:deleted %)) associations)))
 

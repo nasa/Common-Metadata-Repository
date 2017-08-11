@@ -181,12 +181,19 @@
   (let [params {:associated-concept-id (:concept-id concept)
                 :latest true}
         associations (find-concepts context params assoc-type)]
-    ;; we only want the tag associations that have no associated revision id or one equal to the
+    ;; we only want the associations that have no associated revision id or one equal to the
     ;; revision of this collection
     (filter (fn [ta] (let [rev-id (get-in ta [:extra-fields :associated-revision-id])]
                        (or (nil? rev-id)
                            (= rev-id (:revision-id concept)))))
             associations)))
+
+(defn get-associations-for-variable
+  "Get variable associations (including tombstones) for a given variable."
+  [context concept]
+  (let [params {:variable-concept-id (:concept-id concept)
+                :latest true}]
+    (find-concepts context params :variable-association)))
 
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."
