@@ -18,28 +18,31 @@
         earliest-review (date-util/earliest-date-of-type value "REVIEW")
         latest-review (date-util/latest-date-of-type value "REVIEW")
         earliest-delete (date-util/earliest-date-of-type value "DELETE")]
-    ;;First check the absolute range.
-    (if (or (and latest-create (not (date-util/is-in-past? latest-create)))
-            (and latest-update (not (date-util/is-in-past? latest-update)))
-            (and earliest-review (not (date-util/is-in-future? earliest-review)))
-            (and earliest-delete (not (date-util/is-in-future? earliest-delete))))
-      {field-path [(format 
-                     (str "Latest CREATE and UPDATE values: [%s] [%s]"
-                          " need to be in the past if not nil and"
-                          " earliest REVIEW and DELETE values: [%s] [%s]"
-                          " need to be in the future if not nil.")
-                     latest-create latest-update earliest-review earliest-delete)]}
-      ;;Then check the relative range
-      (when (or (and latest-create 
-                     earliest-update
-                     (time/after? latest-create earliest-update))
-                (and latest-review                                
-                     earliest-delete
-                     (time/after? latest-review earliest-delete)))
-        {field-path [(format
-                       (str "Latest CREATE value: [%s] must be no later than"
-                            " earliest UPDATE value: [%s] if both are not nil and"
-                            " latest REVIEW value: [%s] must be no later than"
-                            " the earliest DELETE value: [%s] if both are not nil.")
-                       latest-create earliest-update latest-review earliest-delete)]})))) 
+    (def warning-msgs (atom ""))
+    (when (and latest-create (not (date-util/is-in-past? latest-create)))
+      (swap! warning-msgs str "CREATE date value: [" latest-create "] needs to be in the past. ")) 
+    (when (and latest-update (not (date-util/is-in-past? latest-update)))
+      (swap! warning-msgs str "UPDATE date value: [" latest-update "] needs to be in the past. "))
+    (when (and earliest-review (not (date-util/is-in-future? earliest-review)))
+      (swap! warning-msgs str "REVIEW date value: [" earliest-review "] needs to be in the future. "))
+    (when (and earliest-delete (not (date-util/is-in-future? earliest-delete)))
+      (swap! warning-msgs str "DELETE date value: [" earliest-delete "] needs to be in the future. "))
+    (when (and latest-create
+               earliest-update
+               (time/after? latest-create earliest-update))  
+      (swap! warning-msgs str "Earliest UPDATE date value: ["  
+                              earliest-update
+                              "] needs to be later than the CREATE date value: ["
+                              latest-create
+                              "]"))  
+    (when (and latest-review
+                earliest-delete
+                (time/after? latest-review earliest-delete))
+      (swap! warning-msgs str "Earliest DELETE date value: [" 
+                              earliest-delete
+                              "] needs to be later than the REVIEW date value: "
+                              latest-review
+                              "]"))
+    {field-path [@warning-msgs]}))
+
 
