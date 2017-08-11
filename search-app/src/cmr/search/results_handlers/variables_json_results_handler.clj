@@ -10,7 +10,8 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :json]
   [concept-type query]
-  ["concept-id" "provider-id" "native-id" "variable-name" "measurement" "collections-gzip-b64"])
+  ["concept-id" "revision-id" "provider-id" "native-id" "variable-name" "measurement"
+   "collections-gzip-b64"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:variable :json]
   [context query elastic-result]

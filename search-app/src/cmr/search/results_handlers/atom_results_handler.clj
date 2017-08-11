@@ -1,28 +1,29 @@
 (ns cmr.search.results-handlers.atom-results-handler
   "Handles the ATOM results format and related functions"
-  (:require [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-            [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-            [cmr.common-app.services.search :as qs]
-            [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
-            [cmr.search.services.query-execution.tags-results-feature :as trf]
-            [clojure.data.xml :as x]
-            [clojure.walk :as walk]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [clj-time.core :as time]
-            [cheshire.core :as json]
-            [cmr.common.util :as util]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.umm-spec.util :as spec-util]
-            [cmr.common-app.services.search.results-model :as r]
-            [cmr.spatial.serialize :as srl]
-            [cmr.search.models.query :as q]
-            [cmr.search.services.url-helper :as url]
-            [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
-            [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
-            [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
-            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
+  (:require
+   [cheshire.core :as json]
+   [clj-time.core :as time]
+   [clojure.data.xml :as x]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.walk :as walk]
+   [cmr.common-app.services.search :as qs]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.util :as util]
+   [cmr.search.models.query :as q]
+   [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
+   [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
+   [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
+   [cmr.search.services.query-execution.tags-results-feature :as trf]
+   [cmr.search.services.url-helper :as url]
+   [cmr.spatial.serialize :as srl]
+   [cmr.umm-spec.util :as spec-util]))
 
 (def metadata-format->atom-original-format
   "Defines the concept metadata format to atom original-format mapping"
@@ -244,8 +245,8 @@
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
-    (r/map->Results {:hits hits 
-                     :items items 
+    (r/map->Results {:hits hits
+                     :items items
                      :result-format (:result-format query)
                      :scroll-id scroll-id})))
 
