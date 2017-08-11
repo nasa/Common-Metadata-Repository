@@ -286,6 +286,10 @@
   [context concept]
   (meta-db/get-associations-for-collection context concept :variable-association))
 
+(defmethod get-variable-associations :variable
+  [context concept]
+  (meta-db/get-associations-for-variable context concept))
+
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
    association concept indexes the associated collection conept."
@@ -350,13 +354,22 @@
       (let [parsed-coll-concept (cp/parse-concept context coll-concept)]
         (index-concept context coll-concept parsed-coll-concept options)))))
 
+(defn- index-associated-variable
+  "Index the associated variable conept of the given variable association concept."
+  [context concept parsed-concept]
+  (let [{{:keys [variable-concept-id]} :extra-fields} concept
+        var-concept (meta-db/get-latest-concept context variable-concept-id)
+        parsed-var-concept (cp/parse-concept context var-concept)]
+    (index-concept context var-concept parsed-var-concept {})))
+
 (defmethod index-concept :tag-association
   [context concept parsed-concept options]
   (index-associated-collection context concept parsed-concept options))
 
 (defmethod index-concept :variable-association
   [context concept parsed-concept options]
-  (index-associated-collection context concept parsed-concept options))
+  (index-associated-collection context concept parsed-concept options)
+  (index-associated-variable context concept parsed-concept))
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
