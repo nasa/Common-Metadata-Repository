@@ -2,6 +2,7 @@
   "Defines validations for UMM collection DataDates and MetadataDates"
   (:require
    [clj-time.core :as time]
+   [clojure.string :as string]
    [cmr.umm-spec.date-util :as date-util]))
 
 (defn data-dates-warning-validation
@@ -43,6 +44,7 @@
                               "] needs to be later than the REVIEW date value: "
                               latest-review
                               "]"))
-    {field-path [@warning-msgs]}))
+    (when-not (string/blank? @warning-msgs)
+      {field-path [@warning-msgs]})))
 
 
