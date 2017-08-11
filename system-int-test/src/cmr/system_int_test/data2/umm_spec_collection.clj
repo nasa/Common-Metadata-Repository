@@ -150,49 +150,6 @@
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"})
 
-;; Used for testing invalid data date ranges.
-(def umm-c-invalid-data-date-ranges
-  "This is valid UMM-C with invalid data date ranges."
-  {:Platforms [(umm-cmn/map->PlatformType
-                 {:ShortName "A340-600" :LongName "Airbus A340-600" :Type "Aircraft"})]
-   :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
-   :DataCenters [(umm-cmn/map->DataCenterType
-                   {:Roles ["ARCHIVER"]
-                    :ShortName "AARHUS-HYDRO"
-                    :LongName "Hydrogeophysics Group, Aarhus University "})]
-   :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
-                      {:Category "EARTH SCIENCE SERVICES"
-                       :Topic "DATA ANALYSIS AND VISUALIZATION"
-                       :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
-   :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-   :ShortName "short"
-   :Version "V1"
-   :EntryTitle "The entry title V5"
-   :CollectionProgress "COMPLETE"
-   :MetadataDates [(umm-cmn/map->DateType {:Date (t/date-time 2050)
-                                           :Type "CREATE"})
-                   (umm-cmn/map->DateType {:Date (t/date-time 2049)
-                                           :Type "UPDATE"})
-                   (umm-cmn/map->DateType {:Date (t/date-time 2049)
-                                           :Type "REVIEW"})
-                   (umm-cmn/map->DateType {:Date (t/date-time 2050)
-                                           :Type "DELETE"})]
-   :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2050)
-                                       :Type "CREATE"})
-               (umm-cmn/map->DateType {:Date (t/date-time 2049)
-                                       :Type "UPDATE"})
-               (umm-cmn/map->DateType {:Date (t/date-time 2011)
-                                       :Type "REVIEW"})
-               (umm-cmn/map->DateType {:Date (t/date-time 2050)
-                                       :Type "DELETE"})]
-   :Abstract "A very abstract collection"
-   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
-
-(defn collection-invalid-data-date-ranges
-  "Returns a UmmCollection with invalid data date ranges"
-  []
-  (umm-c/map->UMM-C umm-c-invalid-data-date-ranges))
-
 (def umm-c-missing-properties-dif
   "This is the minimal valid UMM-C."
   {:DataCenters [(umm-cmn/map->DataCenterType
