@@ -62,6 +62,15 @@
        sort
        last))
 
+(defn earliest-date-of-type
+  "Returns :Date value of the least recent UMM DateType map in date-coll with the given type."
+  [date-coll date-type]
+  (->> date-coll
+       (filter #(= date-type (:Type %)))
+       (map :Date)
+       sort
+       first))
+
 (defn sanitize-and-parse-date
   "If sanitize? is enabled make corrections in the date string then parse. If the date string
   cannot be parsed, the f/parse function will return nil. Return the original date instead
