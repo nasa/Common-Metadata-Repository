@@ -78,7 +78,7 @@
 
 (defmethod prepare-batch :collection
   [context batch options]
-  ;; Get the tag associations as well.
+  ;; Get the tag associations and variable associations as well.
   (let [batch (map (fn [concept]
                      (let [tag-associations (meta-db/get-associations-for-collection
                                              context concept :tag-association)
@@ -87,6 +87,16 @@
                        (-> concept
                            (assoc :tag-associations tag-associations)
                            (assoc :variable-associations variable-associations))))
+                   batch)]
+    (es/prepare-batch context (filter-expired-concepts batch) options)))
+
+(defmethod prepare-batch :variable
+  [context batch options]
+  ;; Get the variable associations as well.
+  (let [batch (map (fn [concept]
+                     (let [variable-associations (meta-db/get-associations-for-variable
+                                                  context concept)]
+                       (assoc concept :variable-associations variable-associations)))
                    batch)]
     (es/prepare-batch context (filter-expired-concepts batch) options)))
 
@@ -228,16 +238,8 @@
               concept-id
               revision-date)))))
 
-(defmulti get-elastic-version-with-associations
-  "Returns the elastic version of the concept and its tag associations"
-  (fn [context concept tag-associations variable-associations]
-    (:concept-type concept)))
-
-(defmethod get-elastic-version-with-associations :default
-  [context concept tag-associations variable-associations]
-  (:revision-id concept))
-
-(defmethod get-elastic-version-with-associations :collection
+(defn- get-elastic-version-with-associations
+  "Returns the elastic version of the concept and its associations"
   [context concept tag-associations variable-associations]
   (es/get-elastic-version
    (-> concept
@@ -259,6 +261,11 @@
         variable-associations (meta-db/get-associations-for-collection
                                context concept :variable-association)]
     (get-elastic-version-with-associations context concept tag-associations variable-associations)))
+
+(defmethod get-elastic-version :variable
+  [context concept]
+  (let [variable-associations (meta-db/get-associations-for-variable context concept)]
+    (get-elastic-version-with-associations context concept nil variable-associations)))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"

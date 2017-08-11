@@ -3114,6 +3114,7 @@ The response is always returned in JSON and includes the following fields.
   * native_id
   * variable_name
   * measurement
+  * associated_collections (if applicable)
 
 ##### Variable Search Example
 
@@ -3133,7 +3134,12 @@ Content-Length: 292
     "provider_id" : "PROV1",
     "native_id" : "var1",
     "variable_name" : "Variable1",
-    "measurement" : "A long UMM-Var name"
+    "measurement" : "A long UMM-Var name",
+    "associated_collections" : [ {
+        "concept_id" : "C1200000005-PROV1"
+      }, {
+        "concept_id" : "C1200000006-PROV1"
+      } ]
   }, {
     "concept_id" : "V1200000008-PROV1",
     "revision_id" : 1,
