@@ -1,11 +1,8 @@
 (ns cmr.umm-spec.validation.data-date
   "Defines validations for UMM collection DataDates and MetadataDates"
   (:require
-   [cmr.umm-spec.date-util :as date-util]
    [clj-time.core :as time]
-   [cmr.common.validations.core :as v]
-   [cmr.umm-spec.date-util :as date]
-   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
+   [cmr.umm-spec.date-util :as date-util]))
 
 (defn data-dates-warning-validation
   "Validate that DataDates/MetadataDates' 
