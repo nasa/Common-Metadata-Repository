@@ -19,13 +19,13 @@
           "maxLength": 500
         },
         "Coordinates": {
-          "description": "A text description of the variable’s coordinate range as given by the data provider. For example, '90N, 90S, 180E, 180W'.",
+          "description": "A variable’s coordinates. These are used to describe how the variable is represented with respect to the Earth geoid.",
           "type": "string",
           "minLength": 0,
           "maxLength": 80
         },
         "GridMapping": {
-          "description": "A text description of the variable's mapping projection standard for the variable. For example: 'WGS84 Web Mercator'.",
+          "description": "The name of the mapping projection standard for the variable. For example: Mercator. This is sourced from the granule header. See the global attributes section.",
           "type": "string",
           "minLength": 0,
           "maxLength": 80
@@ -51,19 +51,19 @@
           "type": "number"
         },
         "Structure": {
-          "description": "The full path to the variable within the Granule. For example, '/<filename>/MODIS_Grid_Daily_1km_LST/Data_Fields/', where filename = 'MOD11A1.A2009172.h16v05.006.2016014073638.hdf'.",
+          "description": "This is a string containing the structure of the variable. This is sourced from the granule header. See the variables section. ",
           "type": "string",
           "minLength": 0,
           "maxLength": 4000
         },
         "MeasurementConditions": {
-          "description": "The measurement conditions of the variable. For example, 'Sampled Particle Size Range: 90 - 600 nm'.",
+          "description": "The measurement conditions of the variable.",
           "type": "string",
           "minLength": 0,
           "maxLength": 4000
         },
         "ReportingConditions": {
-          "description": "The reporting conditions of the variable. The conditions over which the measurement of the variable are valid. For example, 'STP: 1013 mb and 273 K'.",
+          "description": "The reporting conditions of the variable. ",
           "type": "string",
           "minLength": 0,
           "maxLength": 4000
@@ -94,8 +94,8 @@
       "additionalProperties": false,
       "description": "The elements of this section apply to a variable.",
       "properties": {
-        "ServiceTypes": {
-          "description": "The service types available for the variable. For example, 'WMS, WCS'.",
+        "ServiceType": {
+          "description": "This element enables specification of service type. The variable may not yet be available via a service. If so, which protocol standard? For example, 'WMS', 'WCS' etc.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ServiceTypeEnum"
@@ -113,7 +113,7 @@
       }
     },
     "FillValueType": {
-        "description": "The fill value, fill value type and fill value description  of the variable in the data file. The fill value is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The fill value type is data provider-defined. For example, 'Out of Valid Range'.",
+        "description": "The fill value, fill value type and fill value description  of the variable in the data file. The fill value is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'.",
       "type": "object",
       "additionalProperties": false,
       "description": "The elements of this section apply to the fill value of a variable.",
@@ -140,26 +140,26 @@
     "SetType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The elements of this section apply to variable sets.",
+      "description": "The elements of this section apply to a variable.",
       "properties": {
         "Name": {
-            "description": "This element enables specification of set name. For example, 'Data_Fields'.",
+            "description": "This element enables specification of set name. The variable may grouped within a set. The set is defined by the name, type, size and index. For example, some variables exist in pairs or sets of three or more.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "Type": {
-          "description": "This element enables specification of set type. For example, if the variables have been grouped together based on a particular theme, such as wavelength, then the type should be set to that theme, otherwise it should be set to 'General'.",
+          "description": "This element enables specification of set type. The variable may grouped within a set. The set is defined by the name, type, size and index. For example, some variables exist in pairs or sets of three or more.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "Size": {
-          "description": "This element specifies the number of variables in the set. For example, if the number of variables in the set is fifteen, the size should be set to '15'.",
+          "description": "This element specifies the size of the set.",
           "type": "number"
         },
         "Index": {
-          "description": "This element specifies the index value within the set for this variable, For example, if this varible is the third variable in the set, the index value should be set to '3'.",
+          "description": "This element specifies the index value within the set for this variable, i.e. 1,2,3.",
           "type": "number"
         }
       },
@@ -168,14 +168,14 @@
     "ValidRangeType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.",
+      "description": "Valid range data value of a variable: minimum and maximum values. For example. '-100, 5000'.",
       "properties": {
         "Min": {
-          "description": "Minimum data value of a variable. For example, '-100'.",
+          "description": "Minimum data value of a variable.",
           "type": "number"
         },
         "Max": {
-          "description": "Maximum data value of a variable. For example, '5000'.",
+          "description": "Maximum data value of a variable.",
           "type": "number"
         }
       }
@@ -185,19 +185,19 @@
       "type": "string",
       "enum": ["byte", "float", "float32", "double", "uchar", "uchar8", "short", "long", "int8", "int16", "int32", "uint8", "uint16", "unit32", "OTHER"]
     },
-    "DimensionType": {
+    "DimensionsType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An example of a dimension size is '1200'. Variables are rarely one dimensional.",
+      "description": "The elements of this section apply to a variable.",
       "properties": {
         "Name": {
-          "description": "The name of the dimension of the variable represented in the data field. For example, 'XDim.",
+          "description": "The names of the dimensions of the variable represented in the data field. For example, 'XDim, YDim'.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "Size": {
-          "description": "The size of the dimension of the variable represented in the data field. For example, '1200'.",
+          "description": "The values of the dimensions of the variable represented in the data field. For example, '1200, 1200'.",
           "type": "number"
         }
       },
@@ -211,7 +211,7 @@
     "ServiceTypeEnum": {
       "description": "This element enables specification of service type.",
       "type": "string",
-      "enum": ["ESI", "OPeNDAP", "WMS", "WCS", "None"]
+      "enum": ["ESI", "OPeNDAP", "WMS", "WCS"]
     }
   },
     "title": "UMM-Var",
@@ -225,7 +225,7 @@
         "maxLength": 80
       },
       "LongName": {
-        "description": "The expanded or long name related to the variable Name.",
+        "description": "The descriptive name for the variable.",
         "$ref": "umm-cmn-json-schema.json#/definitions/LongNameType"
       },
       "Definition": {
@@ -245,15 +245,14 @@
         "$ref": "#/definitions/DataTypeEnum"
       },
       "Dimensions": {
-        "description": "A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An example of a dimension size is '1200'. Variables are rarely one dimensional.",
         "type": "array",
         "items": {
-          "$ref": "#/definitions/DimensionType"
+          "$ref": "#/definitions/DimensionsType"
         },
         "minItems": 1
       },
-      "ValidRanges": {
-        "description": "Valid ranges of variable data values.",
+      "ValidRange": {
+        "description": "Valid range data value of a variable: minimum and maximum values. For example. '7500, -1', or '0, 377'.",
         "type": "array",
         "items": {
           "$ref": "#/definitions/ValidRangeType"
@@ -261,15 +260,15 @@
         "minItems": 0
       },
       "Scale": {
-        "description": "The factor by which the cell value has been multiplied. The cell value is the value given to a specific location within an array of data values. An example of a scale factor is '0.002'",
+        "description": "Scale factor which has been applied to the cell value. For example, '0.002'",
         "type": "number"
       },
       "Offset": {
-        "description": "The factor to which the cell value has been added. The celle value is the value given to a specific location within an array of data values. An example of an offset is '0.49'.",
+        "description": "The physical value corresponding to a cell value of zero. For example, '0.49'.",
         "type": "number"
       },
-      "FillValues": {
-        "description": "The fill value of the variable in the data file. It is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The fill value type is data provider-defined. For example, 'Out of Valid Range'.",
+      "FillValue": {
+        "description": "The fill value of the variable in the data file. It is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'.",
         "type": "array",
         "items": {
           "$ref": "#/definitions/FillValueType"
@@ -300,7 +299,7 @@
         },
       "minItems": 1
       },
-      "Services": {
+      "Service": {
         "description": "The service information of a variable.",
         "type": "array",
         "items": {
@@ -308,8 +307,8 @@
         },
         "minItems": 0
       },
-      "Sets": {
-        "description": "The set information of a variable. The variable is grouped within a set. The set is defined by the name, type, size and index. For example, Name: 'Data_Fields', Type: 'General', Size: '15', Index: '7' for the case of the variable named 'LST_Day_1km'.",
+      "Set": {
+        "description": "The set information of a variable.",
         "type": "array",
         "items": {
           "$ref": "#/definitions/SetType"
@@ -323,7 +322,7 @@
       "Definition",
       "DataType",
       "Dimensions",
-      "Sets",
+      "Set",
       "Scale",
       "Offset",
       "ScienceKeywords"

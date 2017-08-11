@@ -13,17 +13,17 @@
           :DataType
           :Definition
           :Dimensions
-          :FillValues
+          :FillValue
           :LongName
           :Measurements
           :Name
           :Offset
           :Scale
           :ScienceKeywords
-          :Services
-          :Sets
+          :Service
+          :Set
           :Units
-          :ValidRanges
+          :ValidRange
           :VariableType]
          (-> {}
              (vm/map->UMM-Var)

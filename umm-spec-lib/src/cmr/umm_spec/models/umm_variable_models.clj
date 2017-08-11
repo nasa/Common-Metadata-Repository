@@ -5,33 +5,30 @@
 
 (defrecord UMM-Var
   [
-   ;; Valid ranges of variable data values.
-   ValidRanges
+   ;; Valid range data value of a variable: minimum and maximum values. For example. '7500, -1', or
+   ;; '0, 377'.
+   ValidRange
 
-   ;; A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An
-   ;; example of a dimension size is '1200'. Variables are rarely one dimensional.
+   ;; The service information of a variable.
+   Service
+
    Dimensions
 
-   ;; The factor by which the cell value has been multiplied. The cell value is the value given to a
-   ;; specific location within an array of data values. An example of a scale factor is '0.002'
+   ;; Scale factor which has been applied to the cell value. For example, '0.002'
    Scale
 
-   ;; The factor to which the cell value has been added. The celle value is the value given to a
-   ;; specific location within an array of data values. An example of an offset is '0.49'.
+   ;; The physical value corresponding to a cell value of zero. For example, '0.49'.
    Offset
 
-   ;; The set information of a variable. The variable is grouped within a set. The set is defined by
-   ;; the name, type, size and index. For example, Name: 'Data_Fields', Type: 'General', Size: '15',
-   ;; Index: '7' for the case of the variable named 'LST_Day_1km'.
-   Sets
+   ;; The set information of a variable.
+   Set
+
+   ;; The fill value of the variable in the data file. It is generally a value which falls outside
+   ;; the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'.
+   FillValue
 
    ;; The units associated with a variable.
    Units
-
-   ;; The fill value of the variable in the data file. It is generally a value which falls outside
-   ;; the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The
-   ;; fill value type is data provider-defined. For example, 'Out of Valid Range'.
-   FillValues
 
    ;; The definition of the variable.
    Definition
@@ -46,16 +43,13 @@
    ;; for Science Keywords is maintained in the Keyword Management System (KMS).
    ScienceKeywords
 
-   ;; The service information of a variable.
-   Services
-
    ;; The name of a variable.
    Name
 
    ;; Specify basic type of a variable. These types can be either: Science, Ancillary, Quality etc.
    VariableType
 
-   ;; The expanded or long name related to the variable Name.
+   ;; The descriptive name for the variable.
    LongName
 
    ;; Specify data type of a variable. These types can be either: uint8, uint16, etc.
@@ -77,28 +71,16 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing FillValueType)
 
-;; Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.
+;; Valid range data value of a variable: minimum and maximum values. For example. '-100, 5000'.
 (defrecord ValidRangeType
   [
-   ;; Minimum data value of a variable. For example, '-100'.
+   ;; Minimum data value of a variable.
    Min
 
-   ;; Maximum data value of a variable. For example, '5000'.
+   ;; Maximum data value of a variable.
    Max
   ])
 (record-pretty-printer/enable-record-pretty-printing ValidRangeType)
-
-;; A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An
-;; example of a dimension size is '1200'. Variables are rarely one dimensional.
-(defrecord DimensionType
-  [
-   ;; The name of the dimension of the variable represented in the data field. For example, 'XDim.
-   Name
-
-   ;; The size of the dimension of the variable represented in the data field. For example, '1200'.
-   Size
-  ])
-(record-pretty-printer/enable-record-pretty-printing DimensionType)
 
 ;; The elements of this section apply to a measurement.
 (defrecord MeasurementsType
@@ -125,28 +107,25 @@
    ;; For example, 1200 x 1200 x 16 = 23,040,000.
    Size
 
-   ;; The full path to the variable within the Granule. For example,
-   ;; '/<filename>/MODIS_Grid_Daily_1km_LST/Data_Fields/', where filename =
-   ;; 'MOD11A1.A2009172.h16v05.006.2016014073638.hdf'.
+   ;; This is a string containing the structure of the variable. This is sourced from the granule
+   ;; header. See the variables section.
    Structure
 
-   ;; The measurement conditions of the variable. For example, 'Sampled Particle Size Range: 90 -
-   ;; 600 nm'.
+   ;; The measurement conditions of the variable.
    MeasurementConditions
 
-   ;; A text description of the variable’s coordinate range as given by the data provider. For
-   ;; example, '90N, 90S, 180E, 180W'.
+   ;; A variable’s coordinates. These are used to describe how the variable is represented with
+   ;; respect to the Earth geoid.
    Coordinates
 
    ;; Describes the chunk size of a variable. For example, '100'.
    ChunkSize
 
-   ;; A text description of the variable's mapping projection standard for the variable. For
-   ;; example: 'WGS84 Web Mercator'.
+   ;; The name of the mapping projection standard for the variable. For example: Mercator. This is
+   ;; sourced from the granule header. See the global attributes section.
    GridMapping
 
-   ;; The reporting conditions of the variable. The conditions over which the measurement of the
-   ;; variable are valid. For example, 'STP: 1013 mb and 273 K'.
+   ;; The reporting conditions of the variable.
    ReportingConditions
 
    ;; The computed byte size units for the variable, per the data field. For example B, KB, MB, GB.
@@ -160,32 +139,46 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing CharacteristicsType)
 
-;; The elements of this section apply to variable sets.
+;; The elements of this section apply to a variable.
 (defrecord SetType
   [
-   ;; This element enables specification of set name. For example, 'Data_Fields'.
+   ;; This element enables specification of set name. The variable may grouped within a set. The set
+   ;; is defined by the name, type, size and index. For example, some variables exist in pairs or
+   ;; sets of three or more.
    Name
 
-   ;; This element enables specification of set type. For example, if the variables have been
-   ;; grouped together based on a particular theme, such as wavelength, then the type should be set
-   ;; to that theme, otherwise it should be set to 'General'.
+   ;; This element enables specification of set type. The variable may grouped within a set. The set
+   ;; is defined by the name, type, size and index. For example, some variables exist in pairs or
+   ;; sets of three or more.
    Type
 
-   ;; This element specifies the number of variables in the set. For example, if the number of
-   ;; variables in the set is fifteen, the size should be set to '15'.
+   ;; This element specifies the size of the set.
    Size
 
-   ;; This element specifies the index value within the set for this variable, For example, if this
-   ;; varible is the third variable in the set, the index value should be set to '3'.
+   ;; This element specifies the index value within the set for this variable, i.e. 1,2,3.
    Index
   ])
 (record-pretty-printer/enable-record-pretty-printing SetType)
 
 ;; The elements of this section apply to a variable.
+(defrecord DimensionsType
+  [
+   ;; The names of the dimensions of the variable represented in the data field. For example, 'XDim,
+   ;; YDim'.
+   Name
+
+   ;; The values of the dimensions of the variable represented in the data field. For example,
+   ;; '1200, 1200'.
+   Size
+  ])
+(record-pretty-printer/enable-record-pretty-printing DimensionsType)
+
+;; The elements of this section apply to a variable.
 (defrecord ServiceType
   [
-   ;; The service types available for the variable. For example, 'WMS, WCS'.
-   ServiceTypes
+   ;; This element enables specification of service type. The variable may not yet be available via
+   ;; a service. If so, which protocol standard? For example, 'WMS', 'WCS' etc.
+   ServiceType
 
    ;; A flag to indicate whether this variable is able to be visualized within the context of a
    ;; service.
