@@ -11,7 +11,7 @@
 
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
-  (let [{:keys [concept-id deleted provider-id native-id
+  (let [{:keys [concept-id revision-id deleted provider-id native-id
                 extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
         science-keywords (mapcat science-keyword-util/science-keyword->keywords
@@ -23,8 +23,10 @@
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
       {:concept-id concept-id
+       :revision-id revision-id
        :deleted deleted}
       {:concept-id concept-id
+       :revision-id revision-id
        :variable-name variable-name
        :variable-name.lowercase (string/lower-case variable-name)
        :measurement measurement

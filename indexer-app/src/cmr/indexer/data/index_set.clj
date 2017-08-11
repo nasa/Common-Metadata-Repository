@@ -589,6 +589,7 @@
   "Defines the elasticsearch mapping for storing variables."
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
    :native-id (-> m/string-field-mapping m/stored m/doc-values)
    :native-id.lowercase (m/doc-values m/string-field-mapping)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
@@ -791,7 +792,8 @@
    * all-revisions-index? - true indicates we should target the all collection revisions index."
   ([context concept-id revision-id options]
    (let [concept-type (cs/concept-id->type concept-id)
-         concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
+         concept (when (= :granule concept-type)
+                   (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
    (let [concept-type (cs/concept-id->type concept-id)

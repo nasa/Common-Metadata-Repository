@@ -29,16 +29,30 @@
   [context]
   (get-in context [:system :db :conn]))
 
-(defn get-elastic-version
-  "Get the proper elastic document version for the concept based on type."
+(defmulti get-elastic-version
+  "Get the proper elastic document version for the concept based on type.
+  Since this function is also used by bulk indexing, we figure out the concept type based on
+  the concept id if the concept type field does not exist."
+  (fn [concept]
+    (or (:concept-type concept)
+        (cs/concept-id->type (:concept-id concept)))))
+
+(defmethod get-elastic-version :collection
   [concept]
-  (let [concept-type (cs/concept-id->type (:concept-id concept))]
-    (if (= concept-type :collection)
-      (apply max
-             (:transaction-id concept)
-             (concat (map :transaction-id (:tag-associations concept))
-                     (map :transaction-id (:variable-associations concept))))
-      (:revision-id concept))))
+  (apply max
+         (:transaction-id concept)
+         (concat (map :transaction-id (:tag-associations concept))
+                 (map :transaction-id (:variable-associations concept)))))
+
+(defmethod get-elastic-version :variable
+  [concept]
+  (apply max
+         (:transaction-id concept)
+         (map :transaction-id (:variable-associations concept))))
+
+(defmethod get-elastic-version :default
+  [concept]
+  (:revision-id concept))
 
 (defn- get-elastic-id
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
