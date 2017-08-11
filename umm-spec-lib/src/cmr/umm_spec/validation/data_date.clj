@@ -2,7 +2,6 @@
   "Defines validations for UMM collection DataDates and MetadataDates"
   (:require
    [clj-time.core :as time]
-   [clojure.string :as string]
    [cmr.umm-spec.date-util :as date-util]))
 
 (defn data-dates-warning-validation
@@ -19,26 +18,26 @@
         earliest-review (date-util/earliest-date-of-type value "REVIEW")
         latest-review (date-util/latest-date-of-type value "REVIEW")
         earliest-delete (date-util/earliest-date-of-type value "DELETE")
-        warning-msgs (str 
+        warning-msgs (concat 
                        (when (and latest-create (not (date-util/is-in-past? latest-create)))
-                         (format "CREATE date value: [%s] should be in the past. " latest-create)) 
+                         [(format "CREATE date value: [%s] should be in the past. " latest-create)])
                        (when (and latest-update (not (date-util/is-in-past? latest-update)))
-                         (format "UPDATE date value: [%s] should be in the past. " latest-update))
+                         [(format "latest UPDATE date value: [%s] should be in the past. " latest-update)])
                        (when (and earliest-review (not (date-util/is-in-future? earliest-review)))
-                         (format "REVIEW date value: [%s] should be in the future. " earliest-review))
+                         [(format "earliest REVIEW date value: [%s] should be in the future. " earliest-review)])
                        (when (and earliest-delete (not (date-util/is-in-future? earliest-delete)))
-                         (format "DELETE date value: [%s] should be in the future. " earliest-delete))
+                         [(format "DELETE date value: [%s] should be in the future. " earliest-delete)])
                        (when (and latest-create earliest-update (time/after? latest-create earliest-update))  
-                         (format 
+                         [(format 
                            "Earliest UPDATE date value: [%s] should be later than CREATE date value: [%s]."  
                             earliest-update
-                            latest-create))
+                            latest-create)])
                        (when (and latest-review earliest-delete (time/after? latest-review earliest-delete))
-                         (format 
-                           "Earliest DELETE date value: [%s] should be later than REVIEW date value: [%s]." 
+                         [(format 
+                           "DELETE date value: [%s] should be later than latest REVIEW date value: [%s]." 
                             earliest-delete
-                            latest-review)))]
-    (when-not (string/blank? warning-msgs)
-      {field-path [warning-msgs]})))
+                            latest-review)]))]
+    (when (seq warning-msgs)
+      {field-path warning-msgs})))
 
 
