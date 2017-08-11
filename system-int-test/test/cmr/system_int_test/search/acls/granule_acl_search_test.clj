@@ -323,4 +323,16 @@
           (is (gran-counts/granule-counts-match?
                 :xml {coll1 0 coll2 0 coll3 1 coll4 1 coll5 0
                       coll6 0 coll7 0 coll51 1 coll52 2 coll53 2}
-                refs-result)))))))
+                refs-result)))))
+
+    (testing "has granules created at acl enforcement"
+      (testing "guest"
+        (let [refs-result (search/find-refs
+                           :collection {:token guest-token
+                                        :has-granules-created-at ["1975-01-01T10:00:00Z,"]})]
+          (d/assert-refs-match [coll1 coll2 coll5 coll7] refs-result)))
+      (testing "user"
+        (let [refs-result (search/find-refs
+                           :collection {:token user1-token
+                                        :has-granules-created-at ["1975-01-01T10:00:00Z,"]})]
+          (d/assert-refs-match [coll3 coll4 coll51 coll52 coll53] refs-result))))))
