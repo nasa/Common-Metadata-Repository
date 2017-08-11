@@ -129,8 +129,8 @@
 
 (def collection-only-params
   "List of parameters that are only valid for collections."
-  (concat (set/difference (-> :collection common-params/param-mappings :keys set)
-                          (-> :granule common-params/param-mappings :keys set))))
+  (set/difference (set (keys (common-params/param-mappings :collection)))
+                  (set (keys (common-params/param-mappings :granule)))))
 
 (def collection-to-granule-params
   "Mapping of parameter names in a collection query to the parameter name to use in the granule

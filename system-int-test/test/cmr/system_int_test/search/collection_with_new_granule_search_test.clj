@@ -6,176 +6,266 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util]
+   [cmr.spatial.mbr :as mbr]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
    [cmr.system-int-test.utils.dev-system-util :as dev-system-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url-helper]))
-
+   [cmr.system-int-test.utils.url-helper :as url-helper]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"
                                               "provguid2" "PROV2"})
                        (dev-system-util/freeze-resume-time-fixture)]))
 
-(comment
- (ingest/create-provider {:provider-id "PROV1" :provider-guid "provguid1"} {:grant-all-ingest? true
-                                                                            :grant-all-search? true})
- (ingest/create-provider {:provider-id "PROV2" :provider-guid "provguid2"} {:grant-all-ingest? true
-                                                                            :grant-all-search? true})
- (create-test-granules))
-
-(defn- create-test-granules
-  "TODO"
+(defn- create-test-collections-and-granules
+  "Separated out the test setup into a separate function."
   []
-  (dev-system-util/freeze-time! "2010-05-01T10:00:00Z")
   (let [coll-w-may-2010-granule (d/ingest-umm-spec-collection
                                  "PROV1"
                                  (data-umm-c/collection
                                    {:EntryTitle "may2010"
-                                    :Version "v1"
-                                    :ShortName "New"}))
-
+                                    :ShortName "may2010"}))
+        _ (dev-system-util/freeze-time! "2010-05-01T10:00:00Z")
         may-2010-granule (d/ingest "PROV1"
                                   (dg/granule-with-umm-spec-collection
                                     coll-w-may-2010-granule (:concept-id coll-w-may-2010-granule)))
-
-        _ (dev-system-util/freeze-time! "2015-05-01T10:00:00Z")
         coll-w-may-2015-granule (d/ingest-umm-spec-collection
                                  "PROV2"
                                  (data-umm-c/collection
                                    {:EntryTitle "may2015"
-                                    :Version "v1"
                                     :ShortName "Regular"}))
-
+        _ (dev-system-util/freeze-time! "2015-05-01T10:00:00Z")
         may-2015-granule (d/ingest "PROV2"
                                    (dg/granule-with-umm-spec-collection
-                                     coll-w-may-2015-granule (:concept-id coll-w-may-2015-granule)))]
-    (index/wait-until-indexed)
-    ;; Force coll2 granules into their own index to make sure
-    ;; granules outside of 1_small_collections get deleted properly.
-    (bootstrap/start-rebalance-collection (:concept-id coll-w-may-2015-granule))
-    (bootstrap/finalize-rebalance-collection (:concept-id coll-w-may-2015-granule))
-    (index/wait-until-indexed)
-    {:coll-w-may-2010-granule coll-w-may-2010-granule
-     :coll-w-may-2015-granule coll-w-may-2015-granule}))
+                                     coll-w-may-2015-granule (:concept-id coll-w-may-2015-granule)))
+        coll-w-june-2016-granule (d/ingest-umm-spec-collection
+                                       "PROV1"
+                                       (data-umm-c/collection
+                                         {:EntryTitle "june2016"
+                                          :ShortName "june2016"}))
+        _ (dev-system-util/freeze-time! "2016-06-07T10:00:00Z")
+        june-2016-granule (d/ingest "PROV1"
+                                    (dg/granule-with-umm-spec-collection
+                                      coll-w-june-2016-granule
+                                      (:concept-id coll-w-june-2016-granule)))
+        coll-prov2-w-june-2016-granule (d/ingest-umm-spec-collection
+                                         "PROV2"
+                                         (data-umm-c/collection
+                                           {:EntryTitle "june2016"
+                                            :ShortName "june2016"}))
+        prov2-june-2016-granule (d/ingest "PROV2"
+                                          (dg/granule-with-umm-spec-collection
+                                            coll-prov2-w-june-2016-granule
+                                            (:concept-id coll-prov2-w-june-2016-granule)))
+        coll-with-deleted-granule (d/ingest-umm-spec-collection
+                                    "PROV1"
+                                    (data-umm-c/collection
+                                      {:EntryTitle "deletedgranule"
+                                       :ShortName "deletedgranule"}))
+        deleted-granule-revision-1 (d/ingest "PROV1"
+                                             (dg/granule-with-umm-spec-collection
+                                              coll-with-deleted-granule
+                                              (:concept-id coll-with-deleted-granule)))
 
-; (deftest collections-has-granules-created-at-test
-;   ;; PROV1 and PROV2 collections and granules
-;   (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule]}
-;         (create-test-granules)]
-;     (testing "with only has_granules_created_at parameter"
-;       (util/are3
-;         [date-ranges expected-results]
-;         (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
-;           (is (d/refs-match? expected-results actual-results)))
-;
-;         "Single date range"
-;         ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
-;
-;         "Prior to date"
-;         [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule]
-;
-;         "After date"
-;         ["2015-06-01T16:13:12Z,"] [coll-w-june-2016-granule]
-;
-;         "Multiple time ranges"
-;         [",2014-07-01T16:13:12Z"
-;          "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
-;          "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
-;         [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule]))))
+        delete-granule-params {:provider-id (:provider-id deleted-granule-revision-1)
+                               :native-id (:granule-ur deleted-granule-revision-1)
+                               :concept-type :granule}
 
-(deftest search-for-collections-with-new-granules
-  (let [_ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
-        oldest-collection (d/ingest-umm-spec-collection
-                            "PROV1"
-                            (data-umm-c/collection
-                              {:EntryTitle "oldie"
-                               :Version "v1"
-                               :ShortName "Oldie"}))
+        deleted-granule-revision-2 (ingest/delete-concept delete-granule-params)
 
-        _ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
-        old-granule (d/ingest "PROV1"
-                        (dg/granule-with-umm-spec-collection
-                          oldest-collection (:concept-id oldest-collection)))
-
-        _ (dev-system-util/freeze-time! "2012-01-01T10:00:00Z")
-        elder-collection (d/ingest-umm-spec-collection
-                           "PROV1"
-                           (data-umm-c/collection
-                             {:EntryTitle "new"
-                              :Version "v1"
-                              :ShortName "New"}))
-
-        _ (dev-system-util/freeze-time! "2012-01-01T10:00:00Z")
-        elder-granule (d/ingest "PROV1"
-                        (dg/granule-with-umm-spec-collection
-                          elder-collection (:concept-id elder-collection)))
-
-        _ (dev-system-util/freeze-time! "2016-01-01T10:00:00Z")
-        regular-collection (d/ingest-umm-spec-collection
+        coll-temporal-match (d/ingest-umm-spec-collection
                              "PROV1"
                              (data-umm-c/collection
-                               {:EntryTitle "regular"
-                                :Version "v1"
-                                :ShortName "Regular"}))
+                              {:EntryTitle "temporalmatch"
+                               :ShortName "temporalmatch"
+                               :TemporalExtents
+                               [(data-umm-cmn/temporal-extent
+                                 {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
+        coll-temporal-no-match (d/ingest-umm-spec-collection
+                                 "PROV1"
+                                 (data-umm-c/collection
+                                  {:EntryTitle "notemporalmatch"
+                                   :ShrotName "notemporalmatch"
+                                   :TemporalExtents
+                                   [(data-umm-cmn/temporal-extent
+                                     {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
 
-        _ (dev-system-util/freeze-time! "2016-01-01T10:00:00Z")
-        regular-granule (d/ingest "PROV1"
-                          (dg/granule-with-umm-spec-collection
-                            regular-collection (:concept-id regular-collection)))
+        _ (dev-system-util/freeze-time! "2011-06-07T10:00:00Z")
+        gran-temporal-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                               coll-temporal-match
+                                               (:concept-id coll-temporal-match)
+                                               {:beginning-date-time "2010-12-12T12:00:00Z"
+                                                :ending-date-time "2011-01-03T12:00:00Z"}))
 
-        _ (dev-system-util/freeze-time! "2016-01-01T10:00:00Z")
-        deleted-collection (d/ingest-umm-spec-collection
-                             "PROV1"
-                             (data-umm-c/collection
-                               {:EntryTitle "deleted"
-                                :Version "v1"
-                                :ShortName "Deleted"}))
-        deleted-concept {:provider-id "PROV1"
-                         :concept-type :collection
-                         :native-id (:EntryTitle deleted-collection)}
-        _ (ingest/delete-concept deleted-concept)
-
-        _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
-        whippersnapper-collection (d/ingest-umm-spec-collection
-                                   "PROV1"
+        gran-no-temporal-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                                  coll-temporal-no-match
+                                                  (:concept-id coll-temporal-no-match)
+                                                  {:beginning-date-time "2000-12-12T12:00:00Z"
+                                                   :ending-date-time "2001-01-03T12:00:00Z"}))
+        hsd {:Geometry (umm-cmn/map->GeometryType
+                        {:CoordinateSystem "GEODETIC"
+                         :BoundingRectangles [(umm-cmn/map->BoundingRectangleType
+                                               {:WestBoundingCoordinate -180
+                                                :NorthBoundingCoordinate 90
+                                                :EastBoundingCoordinate 180
+                                                :SouthBoundingCoordinate -90})]})}
+        coll-spatial-match (d/ingest-umm-spec-collection
+                            "PROV1" (data-umm-c/collection
+                                     {:EntryTitle "collspatialmatch"
+                                      :ShortName "collspatialmatch"
+                                      :SpatialExtent (data-umm-cmn/spatial
+                                                      {:gsr "GEODETIC"
+                                                       :sr "GEODETIC"
+                                                       :hsd hsd})}))
+        gran-spatial-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+                                              coll-spatial-match
+                                              (:concept-id coll-spatial-match)
+                                              {:spatial-coverage (dg/spatial (mbr/mbr 45 90 55 70))}))
+        coll-archive-center-match (d/ingest-umm-spec-collection
+                                   "PROV2"
                                    (data-umm-c/collection
-                                     {:EntryTitle "youngling"
-                                      :Version "v1"
-                                      :ShortName "whippersnapper"}))
+                                     {:EntryTitle "coll-archive-center-match"
+                                      :ShortName "coll-archive-center-match"
+                                      :DataCenters [(data-umm-cmn/data-center
+                                                     {:Roles ["ARCHIVER"]
+                                                      :ShortName "NSIDC"})]}))
+        gran-archive-center-match (d/ingest "PROV2"
+                                            (dg/granule-with-umm-spec-collection
+                                             coll-archive-center-match
+                                             (:concept-id coll-archive-center-match)))
+        coll-platform-match (d/ingest-umm-spec-collection
+                             "PROV1"
+                             (data-umm-c/collection {:Platforms [(data-umm-cmn/platform
+                                                                  {:ShortName "AQUA"})]
+                                                     :EntryTitle "coll-platform-match"
+                                                     :ShortName "coll-platform-match"}))
+        _ (dev-system-util/freeze-time! "2016-06-07T10:00:00Z")
+        gran-platform-match (d/ingest "PROV1"
+                                      (dg/granule-with-umm-spec-collection
+                                       coll-platform-match
+                                       (:concept-id coll-platform-match)
+                                       {:platform-refs [(dg/platform-ref {:short-name "AQUA"})]}))
+        _ (dev-system-util/freeze-time! "2011-06-07T10:00:00Z")
+        gran-platform-no-match (d/ingest "PROV1"
+                                      (dg/granule-with-umm-spec-collection
+                                       coll-platform-match
+                                       (:concept-id coll-platform-match)))]
 
-        _ (dev-system-util/freeze-time! "2017-01-01T10:00:00Z")
-        young-granule (d/ingest "PROV1"
-                          (dg/granule-with-umm-spec-collection
-                            whippersnapper-collection (:concept-id whippersnapper-collection)))]
 
+    ;; Sanity check deletion
+    (is (= 2 (:revision-id deleted-granule-revision-2)))
     (index/wait-until-indexed)
-    (testing "Old and deleted collections should not be found."
-      (let [range-references (search/find-concepts-with-param-string
-                               "collection"
-                               "has_granules_created_at=2014-01-01T10:00:00Z,2016-02-01T10:00:00Z")
-            ;; TODO test that an end date before a start date throws a 400 error
-            none-found (client/get (str "http://localhost:3003/collections"
-                                        "?has-granules-created-at=2016-02-01T10:00:00Z,2017-02-01T10:00:00Z"))]
-        (d/refs-match? [regular-collection] range-references)
-        (and (= (:body none-found) "")
-             (= (get (:headers none-found) "CMR-Hits") 0))))
-    (testing "Granule search by created-at"
-      (let [references (search/find-concepts-with-param-string
-                         "granule"
-                         "created-at=2014-01-01T10:00:00Z,")]
-        (d/refs-match? [regular-granule young-granule] references)))
-    (testing "Using unsupported or incorrect parameters in conjunction with multi-part-query-params"
-      (are [params]
-        (let [{:keys [status errors]} (search/find-concepts-with-param-string
-                                        "collection" params)]
-          (= [400 [(format "Parameter [%s] was not recognized."
-                           (first (string/split params #"=")))]]
-             [status errors]))
-        "birthday=2011-01-01T00:00:00Z&has_granules_created_at=2014-01-01T10:00:00Z"))))
+    (s/only-with-real-database
+      ;; Force coll2 granules into their own index to make sure
+      ;; granules outside of 1_small_collections get deleted properly.
+      (bootstrap/start-rebalance-collection (:concept-id coll-w-may-2015-granule))
+      (bootstrap/finalize-rebalance-collection (:concept-id coll-w-may-2015-granule))
+      (index/wait-until-indexed))
+    {:coll-w-may-2010-granule coll-w-may-2010-granule
+     :coll-w-may-2015-granule coll-w-may-2015-granule
+     :coll-w-june-2016-granule coll-w-june-2016-granule
+     :coll-prov2-w-june-2016-granule coll-prov2-w-june-2016-granule
+     :coll-temporal-match coll-temporal-match
+     :coll-temporal-no-match coll-temporal-no-match
+     :coll-archive-center-match coll-archive-center-match
+     :coll-spatial-match coll-spatial-match
+     :coll-platform-match coll-platform-match}))
+
+(deftest collections-has-granules-created-at-test
+  (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
+                coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
+                coll-spatial-match coll-archive-center-match coll-platform-match]}
+        (create-test-collections-and-granules)]
+    (testing "has_granules_created_at parameter by itself"
+      (util/are3
+        [date-ranges expected-results]
+        (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
+          (d/assert-refs-match expected-results actual-results))
+
+        "Single date range"
+        ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
+
+        "Prior to date"
+        [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule
+                                   coll-temporal-match coll-temporal-no-match coll-spatial-match
+                                   coll-archive-center-match coll-platform-match]
+
+        "After date"
+        ["2015-06-01T16:13:12Z,"] [coll-w-june-2016-granule coll-prov2-w-june-2016-granule
+                                   coll-platform-match]
+
+        "Multiple time ranges"
+        [",2014-07-01T16:13:12Z"
+         "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
+         "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
+        [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
+         coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
+         coll-spatial-match coll-archive-center-match coll-platform-match]))
+
+    (testing "Parameters are correctly passed to the granule query"
+      (util/are3
+        [params expected-results]
+        (let [date-range ["2015-06-01T16:13:12Z,"]
+              actual-results (search/find-refs
+                              :collection
+                              (merge {:has-granules-created-at date-range} params))]
+          (d/assert-refs-match expected-results actual-results))
+        "Provider ID"
+        {:provider "PROV2"} [coll-prov2-w-june-2016-granule]
+
+        "Collection concept-id"
+        {:concept-id (:concept-id coll-w-june-2016-granule)} [coll-w-june-2016-granule]
+
+        "Collection concept-id with no matching granule in time range for that concept-id"
+        {:concept-id (:concept-id coll-w-june-2016-granule)
+         :has-granules-created-at [",2015-06-01T16:13:12Z"]}
+        []
+
+        "Temporal"
+        {:temporal ["2010-12-25T12:00:00Z,2011-01-01T12:00:00Z"]
+         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+        [coll-temporal-match]
+
+        "Spatial"
+        {:bounding-box "0,85,180,85"
+         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+        [coll-spatial-match]
+
+        "Spatial does not match granule but matches collection"
+        {:bounding-box "-20,0,-15,1"
+         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+        []
+
+        "Platform"
+        {:platform "AQUA"} [coll-platform-match]
+
+        (str "Platform that matches collection, has matching granules for the time range, but a "
+             "different granule platform does not match")
+        {:platform "AQUA"
+         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+        []))
+
+    (testing "Other collection specific parameters are applied"
+      (util/are3
+        [params expected-results]
+        (let [date-range ["2015-06-01T16:13:12Z," ",2011-06-07T13:00:00Z"]
+              actual-results (search/find-refs
+                              :collection
+                              (merge {:has-granules-created-at date-range} params))]
+          (d/assert-refs-match expected-results actual-results))
+
+        "Archive center"
+        {:archive-center "NSIDC"} [coll-archive-center-match]
+
+        "Keyword"
+        {:keyword "PROV1"} [coll-temporal-match coll-temporal-no-match
+                            coll-spatial-match coll-w-june-2016-granule
+                            coll-w-may-2010-granule coll-platform-match]))))
