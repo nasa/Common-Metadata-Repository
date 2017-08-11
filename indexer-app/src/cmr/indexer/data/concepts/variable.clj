@@ -11,7 +11,8 @@
 
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
-  (let [{:keys [concept-id deleted provider-id native-id extra-fields]} concept
+  (let [{:keys [concept-id deleted provider-id native-id
+                extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
         science-keywords (mapcat science-keyword-util/science-keyword->keywords
                                  (:ScienceKeywords parsed-concept))
@@ -32,7 +33,17 @@
        :provider-id.lowercase (string/lower-case provider-id)
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
-       :keyword (keyword-util/field-values->keyword-text keyword-values)})))
+       :keyword (keyword-util/field-values->keyword-text keyword-values)
+       ;; associated collections saved in elasticsearch for retrieving purpose in the format of:
+       ;; [{"concept_id":"C1200000007-PROV1"}, {"concept_id":"C1200000008-PROV1","revision_id":5}]
+       :collections-gzip-b64 (when (seq variable-associations)
+                               (util/string->gzip-base64
+                                (pr-str
+                                 (map (fn [va]
+                                        (util/remove-nil-keys
+                                         {"concept_id" (:associated-concept-id va)
+                                          "revision_id" (:associated-revision-id va)}))
+                                      variable-associations))))})))
 
 (defn- variable-association->variable-concept
   "Returns the variable concept and variable association for the given variable association."

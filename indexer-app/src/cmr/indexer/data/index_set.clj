@@ -597,7 +597,9 @@
    :variable-name.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement.lowercase (m/doc-values m/string-field-mapping)
-   :keyword m/text-field-mapping})
+   :keyword m/text-field-mapping
+   ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
+   :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
 
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
