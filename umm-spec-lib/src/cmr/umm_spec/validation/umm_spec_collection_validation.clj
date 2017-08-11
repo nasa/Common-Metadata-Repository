@@ -5,6 +5,7 @@
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.validation.additional-attribute :as aa]
+   [cmr.umm-spec.validation.data-date :as data-date]
    [cmr.umm-spec.validation.platform :as p]
    [cmr.umm-spec.validation.project :as project]
    [cmr.umm-spec.validation.related-url :as url]
@@ -84,4 +85,6 @@
   :PublicationReferences (v/every {:OnlineResource {:Linkage url/url-validation}})
   :DataCenters (v/every url/data-center-url-validation)
   :ContactPersons (v/every url/contact-persons-groups-contact-information-validations)
-  :ContactGroups (v/every url/contact-persons-groups-contact-information-validations)})
+  :ContactGroups (v/every url/contact-persons-groups-contact-information-validations)
+  :DataDates data-date/data-dates-warning-validation
+  :MetadataDates data-date/data-dates-warning-validation})
