@@ -37,9 +37,10 @@
    [cmr.search.results-handlers.opendata-results-handler]
    [cmr.search.results-handlers.reference-results-handler]
    [cmr.search.results-handlers.tags-json-results-handler]
-   [cmr.search.results-handlers.variables-json-results-handler]
    [cmr.search.results-handlers.timeline-results-handler]
    [cmr.search.results-handlers.umm-json-results-handler]
+   [cmr.search.results-handlers.variables-json-results-handler]
+   [cmr.search.results-handlers.variables-umm-json-results-handler]
 
    ;; ACL support. Required here to avoid circular dependencies
    [cmr.search.services.acls.collection-acls]
@@ -427,7 +428,7 @@
               (find-concept-by-cmr-concept-id ctx path-w-extension params headers)))
 
         ;; Find concepts
-        (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
+        (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables))(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
                {params :params headers :headers ctx :request-context query-string :query-string}
