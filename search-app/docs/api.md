@@ -1529,7 +1529,12 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 Collection results are sorted by ascending entry title by default when a search does not result in a score.
 
-If a keyword search is performed then the search results will be sorted by relevance (score descending), then by temporal overlap if one or more temporal ranges are provided with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+If a keyword search is performed then the search results will be sorted by:
+
+  * Relevance Score (descending), binned to the nearest 0.2. For example a score of 0.75 and 0.85 will be considered equal for sorting purposes.
+  * Temporal Overlap (descending), if one or more temporal ranges are provided.
+  * EMS Community Usage Score (descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+  * Collection End Date (descending),  with ongoing collections defaulting to today.
 
 If a temporal range search is performed, the search results will be sorted by temporal overlap percentage over all ranges provided.
 

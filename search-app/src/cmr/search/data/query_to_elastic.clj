@@ -1,6 +1,8 @@
 (ns cmr.search.data.query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
+   [clj-time.coerce :as time-coerce]
+   [clj-time.core :as time]
    [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as str]
@@ -47,13 +49,13 @@
   "When sorting by keyword score, set to true if we want to bin the keyword scores
   i.e. round to the nearest keyword-score-bin-size"
   {:type Boolean
-   :default false})
+   :default true})
 
 (defconfig keyword-score-bin-size
-  "When sort-bin-keyword-scores is true, what should the keyword score should
+  "When sort-bin-keyword-scores is true, the keyword score should
   be rounded to the nearest keyword-score-bin-size"
   {:type Double
-   :default 0.1})
+   :default 0.2})
 
 (def keyword-score-bin-script
   "Groovy script used by elastic to bin the keyword score based on bin-size"
@@ -371,7 +373,12 @@
        ;; We only include this if one of the others is present
        (when (and (or use-temporal-sort? use-keyword-sort?)
                   (sort-use-relevancy-score))
-         [{:usage-relevancy-score {:order :desc :missing 0}}])))))
+         [{:usage-relevancy-score {:order :desc :missing 0}}])
+       ;; If end-date is nil, collection is ongoing so use today so ongoing
+       ;; collections will be at the top
+       (when use-keyword-sort?
+         [{:end-date {:order :desc
+                      :missing (time-coerce/to-long (time/now))}}])))))
 
 (defn- temporal-sort-order
   "If there are temporal ranges in the query and temporal relevancy sorting is turned on,
