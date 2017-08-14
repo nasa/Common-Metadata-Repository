@@ -336,7 +336,7 @@
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping
-          :location-keywords location-keywords-hierarchical-mapping
+          :location-keywords (m/doc-values location-keywords-hierarchical-mapping)
           ;; Contains all four types of data centers combined - archive,
           ;; centers, distribution centers, processing centers, and
           ;; originating centers.

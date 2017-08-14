@@ -31,7 +31,7 @@
            "LA" [coll4]
            ["Detroit"] [coll5 coll7]
            ["LL" "Detroit"] [coll5 coll6 coll7]
-           "BLAH" []))
+           "Gaza Strip" [coll-gaza]))
     (testing "search by spatial keywords using wildcard *."
       (is (d/refs-match? [coll3 coll4 coll5 coll7]
                          (search/find-refs :collection
