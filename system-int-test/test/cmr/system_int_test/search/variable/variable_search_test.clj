@@ -11,6 +11,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.variable-util :as variables]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -389,4 +390,18 @@
 
           (du/assert-variable-umm-jsons-match
            umm-version/current-version [expected-variable1]
-           (search/find-concepts-umm-json :variable {:variable_name updated-variable1-name})))))))
+           (search/find-concepts-umm-json :variable {:variable_name updated-variable1-name}))
+
+          (testing "delete collection affect the associated collections in search result"
+            (let [coll1-concept (mdb/get-concept (:concept-id coll1))
+                  _ (ingest/delete-concept coll1-concept)
+                  ;; Now variable1 is only associated to coll2, as coll1 is deleted
+                  expected-variable1 (assoc expected-variable1
+                                            :associated-collections
+                                            [{:concept-id (:concept-id coll2)}])]
+              (index/wait-until-indexed)
+
+              (du/assert-variable-umm-jsons-match
+               umm-version/current-version [expected-variable1]
+               (search/find-concepts-umm-json
+                :variable {:variable_name updated-variable1-name})))))))))
