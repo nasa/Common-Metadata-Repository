@@ -233,7 +233,10 @@
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id (get-scroll-id-from-cache ctx short-scroll-id)
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
-        params (process-params params path-w-extension headers mt/xml)
+        default-mime-type (if (= :variable concept-type)
+                            mt/json
+                            mt/xml)
+        params (process-params params path-w-extension headers default-mime-type)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)

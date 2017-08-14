@@ -173,7 +173,7 @@
            (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
 
 (def variable-names-in-expected-response
-  [:concept-id :revision-id :provider-id :native-id :associated-collections])
+  [:concept-id :revision-id :provider-id :native-id])
 
 (defn assert-variable-search
   "Verifies the variable search results"
@@ -182,7 +182,6 @@
   ([expected-hits variables response]
    (let [expected-items (->> variables
                              (map #(select-keys % variable-names-in-expected-response))
-                             (map #(update % :associated-collections set))
                              seq
                              set)
          expected-response {:status 200
@@ -193,7 +192,6 @@
             (-> response
                 (select-keys [:status :hits :items])
                 (util/update-in-each [:items] dissoc :variable-name :measurement)
-                (util/update-in-each [:items] update :associated-collections set)
                 (update :items set)))))))
 
 (defn- coll-variable-association->expected-variable-association

@@ -221,7 +221,7 @@
   ([json-str]
    (validate-umm-json-search-result json-str ver/current-version))
   ([json-str umm-version]
-   (validate-umm-json-search-result json-str ver/current-version search-result-schema-name))
+   (validate-umm-json-search-result json-str umm-version search-result-schema-name))
   ([json-str umm-version schema-name]
    (let [schema-url (umm-schema-resource umm-version schema-name)]
      (if schema-url
@@ -235,7 +235,7 @@
    (validate-variable-umm-json-search-result json-str ver/current-version))
   ([json-str umm-version]
    (validate-umm-json-search-result
-    json-str ver/current-version variable-search-result-schema-name)))
+    json-str umm-version variable-search-result-schema-name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Loaded schemas

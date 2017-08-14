@@ -53,11 +53,16 @@
             :status 400}
            (variables/search {:concept-id "V*" "options[concept-id][ignore-case]" true}))))
 
+  (testing "Default variable search result format is JSON"
+    (let [{:keys [status headers]} (search/find-concepts-in-format nil :variable {})]
+      (is (= 200 status))
+      (is (= "application/json; charset=utf-8" (get headers "Content-Type")))))
+
   (testing "Unsuported result format"
     (is (= {:errors ["The mime type [application/xml] is not supported for variables."]
             :status 400}
            (search/get-search-failure-xml-data
-            (search/find-concepts-in-format nil :variable {})))))
+            (search/find-concepts-in-format :xml :variable {})))))
 
   (testing "Unsuported result format"
     (is (= {:errors ["The mime type [application/atom+xml] is not supported for variables."]
