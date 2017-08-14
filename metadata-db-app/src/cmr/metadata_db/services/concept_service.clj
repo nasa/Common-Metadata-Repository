@@ -428,18 +428,21 @@
 
 (defn- delete-associations
   "Delete the associations associated with the given collection revision and association type,
-  no variable association deletion event is generated."
+  no association deletion event is generated."
   [context assoc-type coll-concept-id coll-revision-id]
-  (doseq [va (search/find-concepts context {:concept-type assoc-type
-                                            :associated-concept-id coll-concept-id
-                                            :associated-revision-id coll-revision-id
-                                            :exclude-metadata true
-                                            :latest true})]
-    (save-concept-revision context {:concept-type assoc-type
-                                    :concept-id (:concept-id va)
-                                    :deleted true
-                                    :user-id "cmr"
-                                    :skip-publication true})))
+  (let [search-params (cutil/remove-nil-keys
+                       {:concept-type assoc-type
+                        :associated-concept-id coll-concept-id
+                        :associated-revision-id coll-revision-id
+                        :exclude-metadata true
+                        :latest true})
+        associations (search/find-concepts context search-params)]
+    (doseq [association associations]
+      (save-concept-revision context {:concept-type assoc-type
+                                      :concept-id (:concept-id association)
+                                      :deleted true
+                                      :user-id "cmr"
+                                      :skip-publication true}))))
 
 (defn- delete-associated-variable-associations
   "Delete the variable associations associated with the given collection revision,
