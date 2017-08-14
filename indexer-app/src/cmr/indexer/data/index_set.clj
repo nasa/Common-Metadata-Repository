@@ -516,10 +516,8 @@
      :end-date (m/stored m/date-field-mapping)
      :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
 
-     ;; granule temporal search is not nested but it shares the same code
-     ;; with the collection temporal search which is nested. So we need
-     ;; a nested index structure even though for granules it's just using one
-     ;; start-date, end-date.
+     ;; No longer indexing to :temporals due to performance issues, but cannot
+     ;; delete from elastic index
      :temporals temporal-mapping
      :size (m/stored m/float-field-mapping)
      :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
