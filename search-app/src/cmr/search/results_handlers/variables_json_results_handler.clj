@@ -10,8 +10,7 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :json]
   [concept-type query]
-  ["concept-id" "revision-id" "provider-id" "native-id" "variable-name" "measurement"
-   "collections-gzip-b64"])
+  ["concept-id" "revision-id" "provider-id" "native-id" "variable-name" "measurement"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:variable :json]
   [context query elastic-result]
@@ -19,20 +18,15 @@
           [measurement] :measurement
           [provider-id] :provider-id
           [native-id] :native-id
-          [concept-id] :concept-id
-          [collections-gzip-b64] :collections-gzip-b64} :fields} elastic-result
-        revision-id (elastic-results/get-revision-id-from-elastic-result :variable elastic-result)
-        associated-collections (when collections-gzip-b64
-                                 (edn/read-string
-                                  (util/gzip-base64->string collections-gzip-b64)))]
+          [concept-id] :concept-id} :fields} elastic-result
+        revision-id (elastic-results/get-revision-id-from-elastic-result :variable elastic-result)]
     (util/remove-nil-keys
      {:concept-id concept-id
       :revision-id revision-id
       :provider-id provider-id
       :native-id native-id
       :variable-name variable-name
-      :measurement measurement
-      :associated-collections associated-collections})))
+      :measurement measurement})))
 
 (defmethod qs/search-results->response [:variable :json]
   [context query results]
