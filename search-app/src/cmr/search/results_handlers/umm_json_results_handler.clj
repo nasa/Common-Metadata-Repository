@@ -5,8 +5,6 @@
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.common-app.services.search.results-model :as results]
-   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
 (defn- collection-elastic-result->meta
@@ -33,24 +31,14 @@
            :short-name short-name
            :version-id version-id}}))
 
+(defmethod results-helper/elastic-result+metadata->umm-json-item :collection
+  [concept-type elastic-result metadata]
+  {:meta (collection-elastic-result->meta elastic-result)
+   :umm (json/decode metadata)})
+
 (defmethod elastic-results/elastic-results->query-results [:collection :umm-json-results]
   [context query elastic-results]
-  (let [{:keys [result-format]} query
-        hits (get-in elastic-results [:hits :total])
-        elastic-matches (get-in elastic-results [:hits :hits])
-        ;; Get concept metadata in specified UMM format and version
-        tuples (mapv (partial results-helper/elastic-result->tuple :collection) elastic-matches)
-        concepts (metadata-cache/get-formatted-concept-revisions
-                  context :collection tuples (assoc result-format :format :umm-json))
-        ;; Convert concepts into items with parsed umm.
-        items (mapv (fn [elastic-result concept]
-                      (if (:deleted concept)
-                        {:meta (collection-elastic-result->meta elastic-result)}
-                        {:meta (collection-elastic-result->meta elastic-result)
-                         :umm (json/decode (:metadata concept))}))
-                    elastic-matches
-                    concepts)]
-    (results/map->Results {:hits hits :items items :result-format result-format})))
+  (results-helper/query-elastic-results->query-results context :collection query elastic-results))
 
 (defmethod qs/search-results->response [:collection :umm-json-results]
   [context query results]
