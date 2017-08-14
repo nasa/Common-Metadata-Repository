@@ -3,6 +3,7 @@
   (:require
    [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.science-keyword-util :as science-keyword-util]
@@ -11,8 +12,8 @@
 
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
-  (let [{:keys [concept-id revision-id deleted provider-id native-id
-                extra-fields variable-associations]} concept
+  (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
+                revision-date format extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
         science-keywords (mapcat science-keyword-util/science-keyword->keywords
                                  (:ScienceKeywords parsed-concept))
@@ -27,6 +28,7 @@
        :deleted deleted}
       {:concept-id concept-id
        :revision-id revision-id
+       :deleted deleted
        :variable-name variable-name
        :variable-name.lowercase (string/lower-case variable-name)
        :measurement measurement
@@ -36,6 +38,9 @@
        :native-id native-id
        :native-id.lowercase (string/lower-case native-id)
        :keyword (keyword-util/field-values->keyword-text keyword-values)
+       :user-id user-id
+       :revision-date revision-date
+       :metadata-format (name (mt/format-key format))
        ;; associated collections saved in elasticsearch for retrieving purpose in the format of:
        ;; [{"concept_id":"C1200000007-PROV1"}, {"concept_id":"C1200000008-PROV1","revision_id":5}]
        :collections-gzip-b64 (when (seq variable-associations)
@@ -43,8 +48,8 @@
                                 (pr-str
                                  (map (fn [va]
                                         (util/remove-nil-keys
-                                         {"concept_id" (:associated-concept-id va)
-                                          "revision_id" (:associated-revision-id va)}))
+                                         {"concept-id" (:associated-concept-id va)
+                                          "revision-id" (:associated-revision-id va)}))
                                       variable-associations))))})))
 
 (defn- variable-association->variable-concept

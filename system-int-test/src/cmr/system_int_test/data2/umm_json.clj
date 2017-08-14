@@ -1,17 +1,19 @@
 (ns cmr.system-int-test.data2.umm-json
-  (require [clojure.test :refer :all]
-           [cheshire.core :as json]
-           [cmr.common.util :as util]
-           [cmr.common.mime-types :as mt]
-           [cmr.umm.umm-core :as umm-lib]
-           [cmr.umm-spec.legacy :as umm-legacy]
-           [cmr.spatial.mbr :as mbr]
-           [cmr.system-int-test.data2.core :as d]
-           [cmr.system-int-test.data2.collection :as dc]
-           [cmr.umm-spec.umm-spec-core :as umm-spec]
-           [cmr.umm-spec.json-schema :as umm-json-schema]
-           [cmr.umm-spec.test.location-keywords-helper :as lkt]
-           [cmr.umm.collection.entry-id :as eid]))
+  "Contains helper functions for UMM JSON testing."
+  (require
+   [cheshire.core :as json]
+   [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.umm-spec.json-schema :as umm-json-schema]
+   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.test.location-keywords-helper :as lkt]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.umm-core :as umm-lib]))
 
 (def test-context (lkt/setup-context-for-test))
 
@@ -77,6 +79,54 @@
           "UMM search result JSON was invalid")
       (is (= (set (map #(collection->umm-json version %) collections))
              (set (map #(util/dissoc-in % [:meta :revision-date])
+                       (get-in search-result [:results :items]))))))))
+
+(defn- variable->umm-json-meta
+  "Returns the meta section of umm-json format."
+  [variable]
+  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted]} variable]
+    (util/remove-nil-keys
+     {:concept-type "variable"
+      :concept-id concept-id
+      :revision-id revision-id
+      :native-id native-id
+      :user-id user-id
+      :provider-id provider-id
+      :format mt/umm-json
+      :deleted (boolean deleted)})))
+
+(defn- variable->umm-json
+  "Returns the UMM JSON result of the given variable."
+  [version variable]
+  (if (:deleted variable)
+    {:meta (variable->umm-json-meta variable)}
+    (let [;; use the original metadata for now, add version migration when Variable versioning is added
+           {:keys [metadata associated-collections]} variable]
+      {:meta (variable->umm-json-meta variable)
+       :umm (json/decode metadata true)
+       :associations {:collections (set associated-collections)}})))
+
+(defn- result-item-for-comparison
+  "Returns the result item for comparison purpose,
+  i.e. drop revision-date and change associated collections to a set."
+  [item]
+  (-> item
+      (util/dissoc-in [:meta :revision-date])
+      (update-in [:associations :collections] set)))
+
+(defn assert-variable-umm-jsons-match
+  "Returns true if the UMM variable umm-jsons match the umm-jsons returned from the search."
+  [version variables search-result]
+  (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
+    (is (= 200 (:status search-result)) (pr-str search-result))
+    (do
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
+      (is (= version (mt/version-of (:content-type search-result))))
+      (is (nil? (util/seqv (umm-json-schema/validate-variable-umm-json-search-result
+                            (:body search-result) version)))
+          "UMM search result JSON was invalid")
+      (is (= (set (map #(variable->umm-json version %) variables))
+             (set (map result-item-for-comparison
                        (get-in search-result [:results :items]))))))))
 
 (defn minimum-umm-spec-fields

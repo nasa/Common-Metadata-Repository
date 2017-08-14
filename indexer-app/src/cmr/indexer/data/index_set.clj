@@ -599,6 +599,10 @@
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement.lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
+   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
+   :user-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)
    ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
    :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
 

@@ -2,11 +2,11 @@
   "Handles Variable umm-json results format and related functions"
   (:require
    [cheshire.core :as json]
+   [clojure.edn :as edn]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.common-app.services.search.results-model :as results]
-   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
+   [cmr.common.util :as util]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
 (defn- variable-elastic-result->meta
@@ -16,38 +16,30 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :umm-json-results]
   [concept-type query]
-  results-helper/meta-fields)
+  (concat
+   results-helper/meta-fields
+   ["collections-gzip-b64"]))
 
-(defmethod elastic-results/elastic-result->query-result-item [:variable :umm-json-results]
-  [context query elastic-result]
-  (let [{[entry-title] :entry-title
-         [entry-id] :entry-id
-         [short-name] :short-name
-         [version-id] :version-id} (:fields elastic-result)]
-    {:meta (variable-elastic-result->meta elastic-result)
-     :umm {:entry-title entry-title
-           :entry-id entry-id
-           :short-name short-name
-           :version-id version-id}}))
+(defn- elastic-result->associated-collections
+  "Returns the associated collections of the elastic result"
+  [elastic-result]
+  (let [[collections-gzip-b64] (get-in elastic-result [:fields :collections-gzip-b64])]
+    (when collections-gzip-b64
+      (edn/read-string
+       (util/gzip-base64->string collections-gzip-b64)))))
+
+(defmethod results-helper/elastic-result+metadata->umm-json-item :variable
+  [concept-type elastic-result metadata]
+  (let [base-result-item {:meta (results-helper/elastic-result->meta :variable elastic-result)
+                          :umm (json/decode metadata)}
+        associated-colls (elastic-result->associated-collections elastic-result)]
+    (if associated-colls
+      (assoc base-result-item :associations {:collections associated-colls})
+      base-result-item)))
 
 (defmethod elastic-results/elastic-results->query-results [:variable :umm-json-results]
   [context query elastic-results]
-  (let [{:keys [result-format]} query
-        hits (get-in elastic-results [:hits :total])
-        elastic-matches (get-in elastic-results [:hits :hits])
-        ;; Get concept metadata in specified UMM format and version
-        tuples (mapv (partial results-helper/elastic-result->tuple :variable) elastic-matches)
-        concepts (metadata-cache/get-formatted-concept-revisions
-                  context :variable tuples (assoc result-format :format :umm-json))
-        ;; Convert concepts into items with parsed umm.
-        items (mapv (fn [elastic-result concept]
-                      (if (:deleted concept)
-                        {:meta (variable-elastic-result->meta elastic-result)}
-                        {:meta (variable-elastic-result->meta elastic-result)
-                         :umm (json/decode (:metadata concept))}))
-                    elastic-matches
-                    concepts)]
-    (results/map->Results {:hits hits :items items :result-format result-format})))
+  (results-helper/query-elastic-results->query-results context :variable query elastic-results))
 
 (defmethod qs/search-results->response [:variable :umm-json-results]
   [context query results]
