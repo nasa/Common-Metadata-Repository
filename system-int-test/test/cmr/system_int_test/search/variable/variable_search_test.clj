@@ -3,14 +3,17 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
-   [cmr.system-int-test.data2.core :as d]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.variable-util :as variables]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.variable-util :as variables]
+   [cmr.umm-spec.versioning :as umm-version]))
 
 (use-fixtures :each
               (join-fixtures
@@ -48,7 +51,20 @@
             ["Concept-id [V*] is not valid."
              "Option [ignore_case] is not supported for param [concept_id]"],
             :status 400}
-           (variables/search {:concept-id "V*" "options[concept-id][ignore-case]" true})))))
+           (variables/search {:concept-id "V*" "options[concept-id][ignore-case]" true}))))
+
+  (testing "Unsuported result format"
+    (is (= {:errors ["The mime type [application/xml] is not supported for variables."]
+            :status 400}
+           (search/get-search-failure-xml-data
+            (search/find-concepts-in-format nil :variable {})))))
+
+  (testing "Unsuported result format"
+    (is (= {:errors ["The mime type [application/atom+xml] is not supported for variables."]
+            :status 400}
+           (search/get-search-failure-xml-data
+            (search/find-concepts-in-format
+             nil :variable {} {:url-extension "atom"}))))))
 
 (deftest search-for-variables-test
   (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
@@ -311,8 +327,8 @@
       ;; Now I should find the variable when searching
       (variables/assert-variable-search [variable1-3 variable2] (variables/search {})))))
 
-(deftest variable-search-with-associated-collections-test
-  (testing "variable search result has associated collections"
+(deftest variable-search-in-umm-json-format-test
+  (testing "variable search result in UMM JSON format has associated collections"
     (let [token (e/login (s/context) "user1")
           [coll1 coll2 coll3] (for [n (range 1 4)]
                                 (d/ingest-umm-spec-collection
@@ -320,20 +336,29 @@
                                  (data-umm-c/collection n {})
                                  {:token token}))
           ;; create variables
-          variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
-                                                           :Name "Variable1"})
-          variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
-                                                           :Name "Variable2"})
-          variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
-                                                           :Name "Variable3"})
+          variable1-concept (variables/make-variable-concept {:native-id "var1"
+                                                              :Name "Variable1"})
+          variable1 (variables/ingest-variable variable1-concept)
+          variable2-concept (variables/make-variable-concept {:native-id "var2"
+                                                              :Name "Variable2"})
+          variable2 (variables/ingest-variable variable2-concept)
+          variable3-concept (variables/make-variable-concept {:native-id "var3"
+                                                              :Name "Variable3"})
+          variable3 (variables/ingest-variable variable3-concept)
           variable1-concept-id (:concept-id variable1)
           variable2-concept-id (:concept-id variable2)
           variable1-assoc-colls [{:concept-id (:concept-id coll1)}
                                  {:concept-id (:concept-id coll2)}]
           variable2-assoc-colls [{:concept-id (:concept-id coll3)
                                   :revision-id 1}]
-          expected-variable1 (assoc variable1 :associated-collections variable1-assoc-colls)
-          expected-variable2 (assoc variable2 :associated-collections variable2-assoc-colls)]
+          ;; Add the variable info to variable concepts for comparision with UMM JSON result
+          expected-variable1 (merge variable1-concept
+                                    variable1
+                                    {:associated-collections variable1-assoc-colls})
+          expected-variable2 (merge variable2-concept
+                                    variable2
+                                    {:associated-collections variable2-assoc-colls})
+          expected-variable3 (merge variable3-concept variable3)]
       ;; index the collections so that they can be found during variable association
       (index/wait-until-indexed)
       ;; create variable associations
@@ -341,20 +366,22 @@
       (variables/associate-by-concept-ids token variable2-concept-id variable2-assoc-colls)
       (index/wait-until-indexed)
 
-      ;; verify variable search response has associated collections
-      (variables/assert-variable-search
-       [expected-variable1 expected-variable2 variable3]
-       (variables/search {}))
+      ;; verify variable search UMM JSON response has associated collections
+      (du/assert-variable-umm-jsons-match
+       umm-version/current-version [expected-variable1 expected-variable2 expected-variable3]
+       (search/find-concepts-umm-json :variable {}))
 
       (testing "update variable not affect the associated collections in search result"
         (let [updated-variable1-name "Variable1234"
-              updated-variable1 (variables/ingest-variable-with-attrs
-                                 {:native-id "var1"
-                                  :Name updated-variable1-name})
-              expected-variable1 (assoc updated-variable1
-                                        :associated-collections variable1-assoc-colls)]
+              updated-variable1-concept (variables/make-variable-concept
+                                         {:native-id "var1"
+                                          :Name updated-variable1-name})
+              updated-variable1 (variables/ingest-variable updated-variable1-concept)
+              expected-variable1 (merge updated-variable1-concept
+                                        updated-variable1
+                                        {:associated-collections variable1-assoc-colls})]
           (index/wait-until-indexed)
 
-          (variables/assert-variable-search
-           [expected-variable1]
-           (variables/search {:variable-name updated-variable1-name})))))))
+          (du/assert-variable-umm-jsons-match
+           umm-version/current-version [expected-variable1]
+           (search/find-concepts-umm-json :variable {:variable_name updated-variable1-name})))))))
