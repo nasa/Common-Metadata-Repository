@@ -117,7 +117,7 @@
        (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"})))))))
 
 ;; Collections with the same keyword score, community usage, and end date
-;; should be sorted by humanized processing level descending 
+;; should be sorted by humanized processing level descending
 (deftest relevancy-processing-level
   (let [coll1 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
@@ -137,8 +137,14 @@
                                              {:ShortName "Elevation L4"
                                               :Version "4"
                                               :EntryTitle "Elevation coll3"
-                                              :ProcessingLevel {:Id "4"}}))]
+                                              :ProcessingLevel {:Id "4"}}))
+        coll4 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Elevation NP"
+                                              :Version "5"
+                                              :EntryTitle "Elevation coll4"
+                                              :ProcessingLevel {:Id "Not provided"}}))]
     (index/wait-until-indexed)
-    (is (d/refs-match-order? [coll3 coll2 coll1]
+    (is (d/refs-match-order? [coll3 coll2 coll1 coll4]
                              (search/find-refs :collection {:keyword "Elevation"})))
     (search/find-refs :collection {:processing-level-id-h "1T"})))
