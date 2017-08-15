@@ -62,6 +62,30 @@
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
+(defn bulk-index-variables
+  "Call the bootstrap app to bulk index variables (either all of them, or just the
+  ones for the given provider)."
+  ([]
+   (let [response (client/request
+                   {:method :post
+                    :url (url/bulk-index-variables-url)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+  ([provider-id]
+   (let [response (client/request
+                   {:method :post
+                    :url (url/bulk-index-variables-url provider-id)
+                    :content-type :json
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response)))))
+
 (defn bulk-index-provider
   "Call the bootstrap app to bulk index a provider."
   [provider-id]
