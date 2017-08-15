@@ -218,7 +218,8 @@
                            ;; the collection has no end date. This allows NRT collections to be
                            ;; found even if the collection has been reindexed recently.
                            ;; otherwise, use granule-end-date
-                           granule-end-date)]
+                           granule-end-date)
+        humanized-values (humanizer/collection-humanizers-elastic context collection)]
     (merge {:concept-id concept-id
             :doi doi
             :doi.lowercase doi-lowercase
@@ -325,13 +326,19 @@
                               (pr-str
                                (into {} (for [ta tag-associations]
                                           [(:tag-key ta) (util/remove-nil-keys
-                                                          {:data (:data ta)})])))))}
+                                                          {:data (:data ta)})])))))
+
+            :processing-level-id.lowercase.humanized (-> humanized-values
+                                                         :processing-level-id.humanized2
+                                                         first
+                                                         :value.lowercase)}
+
            (variable/variable-associations->elastic-doc context variable-associations)
            (collection-temporal-elastic context concept-id collection)
            (spatial/collection-orbit-parameters->elastic-docs collection)
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection)
-           (humanizer/collection-humanizers-elastic context collection)
+           humanized-values
            (metrics/collection-community-usage-score context collection parsed-version-id))))
 
 (defn- get-elastic-doc-for-tombstone-collection

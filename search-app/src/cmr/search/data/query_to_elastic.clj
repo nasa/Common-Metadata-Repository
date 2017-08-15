@@ -385,7 +385,8 @@
        ;; collections will be at the top
        (when use-keyword-sort?
          [{:end-date {:order :desc
-                      :missing (time-coerce/to-long (time/now))}}])))))
+                      :missing (time-coerce/to-long (time/now))}}
+          {:processing-level-id.lowercase.humanized {:order :desc}}])))))
 
 (defn- temporal-sort-order
   "If there are temporal ranges in the query and temporal relevancy sorting is turned on,

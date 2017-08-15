@@ -1535,6 +1535,7 @@ If a keyword search is performed then the search results will be sorted by:
   * Temporal Overlap (descending), if one or more temporal ranges are provided.
   * EMS Community Usage Score (descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
   * Collection End Date (descending),  with ongoing collections defaulting to today.
+  * Humanized processing level Id (descending)
 
 If a temporal range search is performed, the search results will be sorted by temporal overlap percentage over all ranges provided.
 
