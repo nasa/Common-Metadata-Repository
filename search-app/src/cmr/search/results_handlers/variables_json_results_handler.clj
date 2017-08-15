@@ -21,12 +21,12 @@
           [concept-id] :concept-id} :fields} elastic-result
         revision-id (elastic-results/get-revision-id-from-elastic-result :variable elastic-result)]
     (util/remove-nil-keys
-     {:concept-id concept-id
-      :revision-id revision-id
-      :provider-id provider-id
-      :native-id native-id
-      :variable-name variable-name
-      :measurement measurement})))
+     {:concept_id concept-id
+      :revision_id revision-id
+      :provider_id provider-id
+      :native_id native-id
+      :name variable-name
+      :long_name measurement})))
 
 (defmethod qs/search-results->response [:variable :json]
   [context query results]

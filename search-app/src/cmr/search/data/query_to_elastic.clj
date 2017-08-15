@@ -132,7 +132,8 @@
 
 (defmethod q2e/concept-type->field-mappings :variable
   [_]
-  {:provider :provider-id})
+  {:provider :provider-id
+   :name :variable-name})
 
 (defmethod q2e/elastic-field->query-field-mappings :collection
   [_]
@@ -174,6 +175,11 @@
    :sensor "sensor-sn.lowercase"
    :variable-name "variable-names.lowercase"
    :measurement "measurements.lowercase"})
+
+(defmethod q2e/field->lowercase-field-mappings :variable
+  [_]
+  {:provider "provider-id.lowercase"
+   :name "variable-name.lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
@@ -302,7 +308,8 @@
 
 (defmethod q2e/concept-type->sort-key-map :variable
   [_]
-  {:variable-name :variable-name.lowercase})
+  {:variable-name :variable-name.lowercase
+   :name :variable-name.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]

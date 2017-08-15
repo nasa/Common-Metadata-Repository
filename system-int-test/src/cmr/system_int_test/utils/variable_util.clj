@@ -191,7 +191,7 @@
      (is (= expected-response
             (-> response
                 (select-keys [:status :hits :items])
-                (util/update-in-each [:items] dissoc :variable-name :measurement)
+                (util/update-in-each [:items] dissoc :name :long-name)
                 (update :items set)))))))
 
 (defn- coll-variable-association->expected-variable-association
