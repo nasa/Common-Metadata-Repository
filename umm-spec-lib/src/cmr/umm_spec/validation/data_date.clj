@@ -29,12 +29,12 @@
                          [(format "DELETE date value: [%s] should be in the future. " earliest-delete)])
                        (when (and latest-create earliest-update (time/after? latest-create earliest-update))  
                          [(format 
-                           "Earliest UPDATE date value: [%s] should be later than CREATE date value: [%s]."  
+                           "Earliest UPDATE date value: [%s] should be equal or later than CREATE date value: [%s]."  
                             earliest-update
                             latest-create)])
                        (when (and latest-review earliest-delete (time/after? latest-review earliest-delete))
                          [(format 
-                           "DELETE date value: [%s] should be later than latest REVIEW date value: [%s]." 
+                           "DELETE date value: [%s] should be equal or later than latest REVIEW date value: [%s]." 
                             earliest-delete
                             latest-review)]))]
     (when (seq warning-msgs)
