@@ -43,20 +43,15 @@
 (defn- location-values
   "Returns the location keyword values in order so that we can get the last one"
   [location-keyword]
-  (for [k location-keyword-order
-        :let [value (get location-keyword k)]
-        :when value]
-    value))
-
-(defn- leaf-value
-  "Returns the leaf value of the location-keyword object to be put in a SpatialKeywords list"
-  [location-keyword]
-  (last (location-values location-keyword)))
+  (as-> location-keyword keyword
+        (vals keyword)
+        (distinct keyword)
+        (remove nil? keyword)))
 
 (defn location-keywords->spatial-keywords
   "Converts a list of LocationKeyword maps to a list of SpatialKeywords"
   [location-keyword-list]
-  (map #(leaf-value %) location-keyword-list))
+  (flatten (map location-values location-keyword-list)))
 
 (defn translate-spatial-keywords
   "Translates a list of spatial keywords into an array of LocationKeyword type objects"
