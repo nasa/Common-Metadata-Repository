@@ -173,3 +173,29 @@ Entry title regex and 1.4 boost,2017-08-08T13:32,SUMMARY,,,FAIL,8 tests passed o
 "End date sort, kw bin 0.2",2017-08-11T14:55,35,1,MOD13A1 (Vegetation Indices) should be before MOD04_L2,FAIL,Out of order,2 1,0.860,0.500,
 "End date sort, kw bin 0.2",2017-08-11T14:55,35,2,VIP01 should show up before MOD04_L2,FAIL,Out of order,2 1,0.860,0.500,
 "End date sort, kw bin 0.2",2017-08-11T14:55,SUMMARY,,,FAIL,9 tests passed out of 23,,0.919,0.696,"YES (DCG 0.921, RR: 0.728, Position: )"
+"
+"
+Processing Level Id Sort,2017-08-15T12:54,1,1,Snow cover should come before clouds when searching for snow cover,PASS,,1 2,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,2,1,V006 dataset should come before version 005,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,3,1,Soil moisture products should come before salinity products when searching for SMAP,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,4,1,Ancillary products should be below data products (can't reproduce locally),FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,5,1,OMI products should be above TOMS products because OMI is a later generation.,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,6,1,Collections with Leaf area index in the titles should show up before others when searching for leaf area index,PASS,,1 2,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,9,1,ABoVE project collections should be ahead of collections with above in the description,PASS,,1 2,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,10,1,NPP should return ecology results first,PASS,,1 2,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,11,1,SMAP soil moisture searches should return L2-L4 SMAP above salinity products,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,11,2,SMAP soil moisture searches should return L2-L4 SMAP above L1 products,PASS,,1 2,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,11,3,SMAP soil moisture searches should return L2-L4 SMAP above SMAPVEX products,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,12,1,SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw,PASS,,1 2,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,14,1,World glacier inventory should be a top 3 collection when searching for glacier,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,14,2,GLIMS should be a top 3 collection when searching for glacier,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,15,1,Northern Hemisphere EASE-Grid 2.0 Version 4 should be ranked high because temporal coverage is very long and community usage is high.,PASS,,1 2 3,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,15,2,"MODIS/Terra Snow Cover 5-Min L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high.",PASS,,1 2 3,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,15,3,"NOTE: Found an L3 slightly different - MODIS/Terra Snow Cover Daily L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high.",PASS,,1 2 3,1.000,1.000,
+Processing Level Id Sort,2017-08-15T12:54,20,1,Sea ice extent,FAIL,Out of order,2 1 3 4,0.950,0.500,
+Processing Level Id Sort,2017-08-15T12:54,26,1,Collections from ASDC data center above other data centers,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,32,1,,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,33,1,,PASS,,1 2,1.000,1.000,"YES (DCG 0.860, RR: 0.500, Position: 2 1)"
+Processing Level Id Sort,2017-08-15T12:54,35,1,MOD13A1 (Vegetation Indices) should be before MOD04_L2,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,35,2,VIP01 should show up before MOD04_L2,FAIL,Out of order,2 1,0.860,0.500,
+Processing Level Id Sort,2017-08-15T12:54,SUMMARY,,,FAIL,10 tests passed out of 23,,0.925,0.717,"YES (DCG 0.919, RR: 0.696, Position: )"

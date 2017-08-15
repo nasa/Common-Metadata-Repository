@@ -19,7 +19,10 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       hu/grant-all-humanizers-fixture
+                       hu/save-sample-humanizers-fixture]))
 
 (def sample-usage-csv
   (str "Product,Version,Hosts\n"
@@ -112,3 +115,36 @@
      (testing "bin size 0.3 - same as 0.2"
        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.3))
        (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"})))))))
+
+;; Collections with the same keyword score, community usage, and end date
+;; should be sorted by humanized processing level descending
+(deftest relevancy-processing-level
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Elevation L1"
+                                              :Version "2"
+                                              :EntryTitle "Elevation coll1"
+                                              ;; Will get humanized to 1T
+                                              :ProcessingLevel {:Id "L1T"}}))
+        coll2 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Elevation L1"
+                                              :Version "1"
+                                              :EntryTitle "Elevation coll2"
+                                              :ProcessingLevel {:Id "2"}}))
+        coll3 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Elevation L4"
+                                              :Version "4"
+                                              :EntryTitle "Elevation coll3"
+                                              :ProcessingLevel {:Id "4"}}))
+        coll4 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection
+                                             {:ShortName "Elevation NP"
+                                              :Version "5"
+                                              :EntryTitle "Elevation coll4"
+                                              :ProcessingLevel {:Id "Not provided"}}))]
+    (index/wait-until-indexed)
+    (is (d/refs-match-order? [coll3 coll2 coll1 coll4]
+                             (search/find-refs :collection {:keyword "Elevation"})))
+    (search/find-refs :collection {:processing-level-id-h "1T"})))
