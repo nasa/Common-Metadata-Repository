@@ -112,6 +112,7 @@
 (defmethod common-params/param-mappings :variable
   [_]
   {:variable-name :string
+   :name :string
    :measurement :string
    :provider :string
    :native-id :string

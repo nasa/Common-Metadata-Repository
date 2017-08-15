@@ -3086,9 +3086,9 @@ The following parameters are supported when searching for variables.
 
 ##### Variable Matching Parameters
 
-These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `variable_name[]=key1&variable_name[]=key2`. The values are ORed together.
+These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
-* variable_name
+* name
   * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
@@ -3105,8 +3105,8 @@ The JSON response includes the following fields.
   * revision_id
   * provider_id
   * native_id
-  * variable_name
-  * measurement
+  * name
+  * long_name
 
 The UMM JSON response contains meta-metadata of the collection, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
 
@@ -3115,7 +3115,7 @@ The UMM JSON response contains meta-metadata of the collection, the UMM fields a
 JSON response:
 
 ```
-curl -g -i "%CMR-ENDPOINT%/variables?pretty=true&variable_name=Var*&options[variable_name][pattern]=true"
+curl -g -i "%CMR-ENDPOINT%/variables?pretty=true&name=Var*&options[name][pattern]=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -3129,15 +3129,15 @@ Content-Length: 292
     "revision_id" : 3,
     "provider_id" : "PROV1",
     "native_id" : "var1",
-    "variable_name" : "Variable1",
-    "measurement" : "A long UMM-Var name"
+    "name" : "Variable1",
+    "long_name" : "A long UMM-Var name"
   }, {
     "concept_id" : "V1200000008-PROV1",
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "var2",
-    "variable_name" : "Variable2",
-    "measurement" : "A long UMM-Var name"
+    "name" : "Variable2",
+    "long_name" : "A long UMM-Var name"
   } ]
 }
 ```
@@ -3145,7 +3145,7 @@ Content-Length: 292
 UMM JSON response:
 
 ```
-curl -g -i "%CMR-ENDPOINT%/variables.umm_json?variable_name=Variable1234&pretty=true"
+curl -g -i "%CMR-ENDPOINT%/variables.umm_json?name=Variable1234&pretty=true"
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.9; charset=UTF-8
 Content-Length: 1177
