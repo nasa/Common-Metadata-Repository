@@ -21,15 +21,19 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.system-int-test.utils.variable-util :as variable]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as tc]
    [cmr.umm.echo10.echo10-core :as echo10]))
 
-(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"}
-                                                          {:grant-all-ingest? true
-                                                           :grant-all-search? true
-                                                           :grant-all-access-control? false})
-                                    tags/grant-all-tag-fixture]))
+(use-fixtures :each (join-fixtures
+                     [(ingest/reset-fixture {"provguid1" "PROV1"
+                                             "provguid2" "PROV2"
+                                             "provguid3" "PROV3"}
+                                            {:grant-all-ingest? true
+                                             :grant-all-search? true
+                                             :grant-all-access-control? false})
+                     tags/grant-all-tag-fixture]))
 
 (defn- save-collection
   "Saves a collection concept"
@@ -690,3 +694,85 @@
       (testing "All tag parameters with XML references"
         (is (d/refs-match? [coll1]
                            (search/find-refs :collection {:tag-key "tag1"})))))))
+
+(deftest bulk-index-variables-for-provider
+  (testing "Bulk index variables for a single provider"
+    (s/only-with-real-database
+      ;; Disable message publishing so items are not indexed.
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.metadata-db.config/set-publish-messages! false))
+
+      ;; The following is saved, but not indexed due to the above call
+      (let [var1 (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)]
+        (is (= 0 (:hits (variable/search {}))))
+        (bootstrap/bulk-index-variables "PROV1")
+        (index/wait-until-indexed)
+        (testing "Variable concepts are indexed."
+          (let [{:keys [hits items]} (variable/search {})]
+            (is (= 1 hits))
+            (is (= (:concept-id var1)
+                   (:concept-id (first items)))))))
+      (testing "Bulk index multilpe variables for a single provider")
+      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 2)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 3)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 4)
+      (is (= 1 (:hits (variable/search {}))))
+      (bootstrap/bulk-index-variables "PROV1")
+      (index/wait-until-indexed)
+      (let [{:keys [hits items]} (variable/search {})]
+        (is (= 4 hits))
+        (is (= 4 (count items))))
+
+      ;; Re-enable message publishing.
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.metadata-db.config/set-publish-messages! true)))))
+
+(deftest bulk-index-variables
+  (testing "Bulk index variables for multiple providers, explicitly"
+    (s/only-with-real-database
+      ;; Disable message publishing so items are not indexed.
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.metadata-db.config/set-publish-messages! false))
+
+      ;; The following are saved, but not indexed due to the above call
+      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 2)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 3)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 4)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 5)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 6)
+      (is (= 0 (:hits (variable/search {}))))
+      (bootstrap/bulk-index-variables "PROV1")
+      (bootstrap/bulk-index-variables "PROV2")
+      (bootstrap/bulk-index-variables "PROV3")
+      (index/wait-until-indexed)
+      (testing "Variable concepts are indexed."
+        (let [{:keys [hits items]} (variable/search {})]
+          (is (= 6 hits))
+          (is (= 6 (count items)))))
+
+      ;; Re-enable message publishing.
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.metadata-db.config/set-publish-messages! true)))))
+
+(deftest bulk-index-all-variables
+  (testing "Bulk index variables for multiple providers, implicitly"
+    (s/only-with-real-database
+      ;; Disable message publishing so items are not indexed.
+      (dev-sys-util/eval-in-dev-sys
+       `(cmr.metadata-db.config/set-publish-messages! false))
+      ;; The following are saved, but not indexed due to the above call
+      (variable/ingest-variable-with-attrs {:provider-id "PROV1"} {} 1)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV2"} {} 2)
+      (variable/ingest-variable-with-attrs {:provider-id "PROV3"} {} 3)
+      (is (= 0 (:hits (variable/search {}))))
+      (bootstrap/bulk-index-variables)
+      (index/wait-until-indexed)
+      (testing "Variable concepts are indexed."
+        (let [{:keys [hits items]} (variable/search {})]
+          (is (= 3 hits))
+          (is (= 3 (count items)))))
+
+    ;; Re-enable message publishing.
+    (dev-sys-util/eval-in-dev-sys
+     `(cmr.metadata-db.config/set-publish-messages! true)))))

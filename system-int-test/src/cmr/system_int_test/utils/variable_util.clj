@@ -59,9 +59,9 @@
         (data-umm-v/variable-concept)
         (assoc :format (mt/with-version content-type schema-version))
         (merge attrs)))
-  ([metadata-attrs attrs index]
+  ([metadata-attrs attrs idx]
     (-> (merge {:provider-id "PROV1"} metadata-attrs)
-        (data-umm-v/variable-concept :umm-json index)
+        (data-umm-v/variable-concept :umm-json idx)
         (assoc :format (mt/with-version content-type schema-version))
         (merge attrs))))
 
@@ -86,8 +86,12 @@
 
 (defn ingest-variable-with-attrs
   "Helper function to ingest a variable with the given variable attributes"
-  [attrs]
-  (ingest-variable (make-variable-concept attrs)))
+  ([metadata-attrs]
+   (ingest-variable (make-variable-concept metadata-attrs)))
+  ([metadata-attrs attrs]
+   (ingest-variable (make-variable-concept metadata-attrs attrs)))
+  ([metadata-attrs attrs idx]
+   (ingest-variable (make-variable-concept metadata-attrs attrs idx))))
 
 (defn- associate-variable
   "Associate a variable with collections by the JSON condition.
