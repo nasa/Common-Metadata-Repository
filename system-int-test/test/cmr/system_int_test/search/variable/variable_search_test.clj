@@ -95,6 +95,44 @@
       all-variables {}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; name Param
+      "By name case sensitive - exact match"
+      [variable1]
+      {:name "Variable1"}
+
+      "By name case sensitive, default ignore-case true"
+      [variable1]
+      {:name "variable1"}
+
+      "By name ignore case false"
+      []
+      {:name "variable1" "options[name][ignore-case]" false}
+
+      "By name ignore case true"
+      [variable1]
+      {:name "variable1" "options[name][ignore-case]" true}
+
+      "By name Pattern, default false"
+      []
+      {:name "*other"}
+
+      "By name Pattern true"
+      [variable4]
+      {:name "*other" "options[name][pattern]" true}
+
+      "By name Pattern false"
+      []
+      {:name "*other" "options[name][pattern]" false}
+
+      "By multiple names"
+      [variable1 variable2]
+      {:name ["Variable1" "variable2"]}
+
+      "By multiple names with options"
+      [variable1 variable4]
+      {:name ["Variable1" "*other"] "options[name][pattern]" true}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; variable-name Param
       "By variable-name case sensitive - exact match"
       [variable1]
