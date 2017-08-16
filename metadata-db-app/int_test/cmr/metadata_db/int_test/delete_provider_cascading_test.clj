@@ -24,21 +24,31 @@
         gran1 (util/create-and-save-granule "REG_PROV" coll1 1)
         gran2 (util/create-and-save-granule "PROV1" coll2 1)
         variable1 (util/create-and-save-variable "REG_PROV" 1)
-        variable2 (util/create-and-save-variable "PROV1" 1)
+        variable2 (util/create-and-save-variable "PROV1" 2)
+        variable3 (util/create-and-save-variable "PROV1" 3)
         variable-association1 (util/create-and-save-variable-association coll1 variable1 1)
-        variable-association2 (util/create-and-save-variable-association coll2 variable2 1)]
+        variable-association2 (util/create-and-save-variable-association coll1 variable2 2)
+        variable-association3 (util/create-and-save-variable-association coll2 variable1 3)
+        variable-association4 (util/create-and-save-variable-association coll2 variable2 4)]
 
     ;; Delete REG_PROV
     (util/delete-provider "REG_PROV")
 
-    ;; Verify the REG_PROV's concepts are deleted
+    ;; Verify REG_PROV related concepts are deleted
     (is (concept-deleted? coll1))
     (is (concept-deleted? gran1))
     (is (concept-deleted? variable1))
+    ;; variable-association1, both collection and variable are related to the deleted provider
     (is (concept-deleted? variable-association1))
+    ;; variable-association2, collection is related to the deleted provider
+    (is (concept-deleted? variable-association2))
+    ;; variable-association3, variable is related to the deleted provider
+    (is (concept-deleted? variable-association3))
 
-    ;; Verify the PROV1's concepts still exist
+    ;; Verify concepts not related to the delete provider (REG_PROV) still exist
     (is (concept-exist? coll2))
     (is (concept-exist? gran2))
     (is (concept-exist? variable2))
-    (is (concept-exist? variable-association2))))
+    (is (concept-exist? variable3))
+    ;; variable-association4, either collection nor variable is related to the deleted provider
+    (is (concept-exist? variable-association4))))
