@@ -2,4 +2,11 @@
 
 {% block app-nav %}
   <li><a href="{{ base-url }}site/docs/access-control">Documentation</a></li>
+  <script src="https://cdn.uat.earthdata.nasa.gov/tophat2/tophat2.js"
+        id="earthdata-tophat-script"
+        data-show-fbm="true"
+        data-show-status="true"
+        data-status-api-url="https://status.uat.earthdata.nasa.gov/api/v1/notifications"
+        data-status-polling-interval="10">
+  </script>
 {% endblock %}
