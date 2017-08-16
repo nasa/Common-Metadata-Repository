@@ -390,9 +390,12 @@
                                                    [{:provider-id "CMR"}]
                                                    {:concept-type :variable-association})]
      (let [{:keys [concept-id revision-id variable-concept-id extra-fields]} var-association
-           {:keys [variable-concept-id]} extra-fields]
-       (when (= (:provider-id provider)
-                (:provider-id (cc/parse-concept-id variable-concept-id)))
+           {:keys [associated-concept-id variable-concept-id]} extra-fields
+           referenced-providers (map (comp :provider-id cc/parse-concept-id)
+                                     [associated-concept-id variable-concept-id])]
+       ;; If the variable association references the deleted provider through
+       ;; either collection or variable, delete the variable association
+       (when (some #{(:provider-id provider)} referenced-providers)
          (concepts/force-delete
            db :variable-association {:provider-id "CMR"} concept-id revision-id))))
 
