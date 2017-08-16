@@ -3,6 +3,7 @@
   (:require
     [cmr.bootstrap.data.bulk-index :as bulk]
     [cmr.bootstrap.data.rebalance-util :as rebalance-util]
+    [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.bootstrap.services.dispatch.core :as dispatch]
     [cmr.common.cache :as cache]
     [cmr.common.concepts :as concepts]
@@ -41,10 +42,11 @@
   "Returns the metadata db provider that matches the given provider id. Throws exception if
   no matching provider is found."
   [context provider-id]
-  (if-let [provider (bulk/get-provider-by-id context provider-id)]
+  (if-let [provider (helper/get-provider (:system context) provider-id)]
     provider
-    (errors/throw-service-errors :bad-request
-                              [(format "Provider: [%s] does not exist in the system" provider-id)])))
+    (errors/throw-service-errors
+     :bad-request
+     [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
@@ -62,8 +64,9 @@
   [context provider-id collection-id]
   (let [provider (get-provider context provider-id)]
     (when-not (bulk/get-collection context provider collection-id)
-      (errors/throw-service-errors :bad-request
-                                [(format "Collection [%s] does not exist." collection-id)]))))
+      (errors/throw-service-errors
+       :bad-request
+       [(format "Collection [%s] does not exist." collection-id)]))))
 
 (defn index-collection
   "Bulk index all the granules in a collection"
