@@ -87,7 +87,10 @@
   (reset-providers
     [db]
     (doseq [provider (p/get-providers db)]
-      (p/delete-provider db provider))))
+      (p/delete-provider db provider))
+    ;; delete the variables and vairable associations
+    (j/db-do-commands db "DELETE FROM cmr_variables")
+    (j/db-do-commands db "DELETE FROM cmr_variable_associations")))
 
 
 (comment
