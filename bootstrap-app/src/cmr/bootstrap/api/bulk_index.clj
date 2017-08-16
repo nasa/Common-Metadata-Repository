@@ -78,8 +78,9 @@
   only the variables for that provider will be indexed. With no provider-id,
   all providers' variables are (re-)indexed.
 
-  Note that this function differs from the service function it calls in that
-  here, the dispatcher implementation is extracted from the request context."
+  Note that this function differs from the service function it calls, in that
+  this function extracts dispatcher implementation from the context, while the
+  service function takes the dispatcher as an argument."
   ([context]
    (let [dispatcher (api-util/get-dispatcher context :index-variables)]
      (service/index-variables context dispatcher)))

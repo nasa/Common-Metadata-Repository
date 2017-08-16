@@ -3,15 +3,7 @@
   (:require
    [cmr.bootstrap.data.bulk-index :as bulk-index]
    [cmr.bootstrap.data.bulk-migration :as bulk-migration]
-   [cmr.bootstrap.data.virtual-products :as virtual-products]
-   [cmr.common.services.errors :as errors]))
-
-(defn- not-implemented
-  "Throws an exception indicating that the specified function is not implemented for
-  the sync dispatcher."
-  [action & _]
-  (errors/internal-error!
-   (format "Sync Dispatcher does not support %s action." (name action))))
+   [cmr.bootstrap.data.virtual-products :as virtual-products]))
 
 (defn- migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -50,6 +42,14 @@
   [this context provider-id concept-type concept-ids]
   (bulk-index/index-concepts-by-id (:system context) provider-id concept-type concept-ids))
 
+(defn- index-variables
+  "Bulk index the variables in CMR. If a provider-id is given, only index the
+  variables for that provider."
+  ([this context]
+   (bulk-index/index-all-variables (:system context)))
+  ([this context provider-id]
+   (bulk-index/index-variables (:system context) provider-id)))
+
 (defn- delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [this context provider-id concept-type concept-ids]
@@ -68,7 +68,7 @@
   {:migrate-provider migrate-provider
    :migrate-collection migrate-collection
    :index-provider index-provider
-   :index-variables (partial not-implemented :index-variables)
+   :index-variables index-variables
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts
