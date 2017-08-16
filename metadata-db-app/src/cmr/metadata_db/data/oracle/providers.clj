@@ -45,6 +45,10 @@
     (if small
       (delete-small-provider-concepts db provider)
       (ct/delete-provider-concept-tables db provider))
+    ;; Delete the variable associations related to the provider
+    (j/db-do-commands db (str "DELETE FROM cmr_variable_associations where variable_concept_id like 'V%-" provider-id "'"))
+    ;; Delete variables of the provider
+    (j/delete! db (ct/get-table-name provider :variable) ["provider_id = ?" provider-id])
     (j/delete! db :providers ["provider_id = ?" provider-id])))
 
 (extend-protocol p/ProvidersStore
@@ -87,10 +91,7 @@
   (reset-providers
     [db]
     (doseq [provider (p/get-providers db)]
-      (p/delete-provider db provider))
-    ;; delete the variables and vairable associations
-    (j/db-do-commands db "DELETE FROM cmr_variables")
-    (j/db-do-commands db "DELETE FROM cmr_variable_associations")))
+      (p/delete-provider db provider))))
 
 
 (comment
