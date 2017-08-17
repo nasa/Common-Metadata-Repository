@@ -3,7 +3,7 @@
  (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.location-keywords :as lk]
@@ -297,4 +297,4 @@
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (update :CollectionProgress su/with-default)))
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))))

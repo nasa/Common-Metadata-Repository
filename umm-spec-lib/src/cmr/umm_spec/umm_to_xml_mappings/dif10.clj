@@ -4,7 +4,7 @@
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
     [clojure.set :as set]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.util :as util]
     [cmr.common.xml.gen :as gen]
     [cmr.umm-spec.date-util :as date]
@@ -13,6 +13,12 @@
     [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]
     [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
     [cmr.umm-spec.util :as u :refer [with-default]]))
+
+(def coll-progress-mapping
+  "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
+  {"COMPLETE" "COMPLETE"
+   "ACTIVE" "IN WORK"
+   "PLANNED" "PLANNED"})
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -194,34 +200,20 @@
     [:Related_URL
      [:URL u/not-provided-url]]))
 
-(def collection-progress->dif10-dataset-progress
-  "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
-  {"PLANNED" "PLANNED"
-   "ONGOING" "IN WORK"
-   "ONLINE" "IN WORK"
-   "COMPLETED" "COMPLETE"
-   "FINAL" "COMPLETE"})
-
-(def dif10-dataset-progress-values
-  "Set of Dataset_Progress values supported in DIF10"
-  (set (distinct (vals collection-progress->dif10-dataset-progress))))
-
 (defn- generate-dataset-progress
   "Return Dataset_Progress attribute by translating from the UMM CollectionProgress to one of the
   DIF10 enumerations. Defaults to generating a Dataset_Progress of IN WORK if translation cannot be
   determined."
   [c]
   (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
-                          (str/upper-case coll-progress))]
-    [:Dataset_Progress (if (dif10-dataset-progress-values c-progress)
-                         c-progress
-                         (get collection-progress->dif10-dataset-progress c-progress "IN WORK"))]))
+                          (get coll-progress-mapping (string/upper-case coll-progress)))] 
+    [:Dataset_Progress c-progress]))
 
 (defn- dif10-product-level-id
   "Returns the given product-level-id in DIF10 format."
   [product-level-id]
   (when product-level-id
-    (product-levels (str/replace product-level-id #"Level " ""))))
+    (product-levels (string/replace product-level-id #"Level " ""))))
 
 (defn generate-dataset-citation
   "Returns the dif10 Data_Set_Citations from UMM-C."
