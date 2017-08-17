@@ -128,9 +128,16 @@
   (cqm/text-condition :keyword (str/lower-case value)))
 
 (def collection-only-params
-  "List of parameters that are only valid for collections."
-  (set/difference (set (keys (common-params/param-mappings :collection)))
-                  (set (keys (common-params/param-mappings :granule)))))
+  "List of parameters that are valid in collection query models, but not in granule query models."
+  (let [granule-param-mappings (common-params/param-mappings :granule)
+        collection-param-mappings (common-params/param-mappings :collection)
+        do-not-exist-for-granules (set/difference (set (keys collection-param-mappings))
+                                                  (set (keys granule-param-mappings)))
+        collection-query-params (keep (fn [[k v]]
+                                        (when (= v :collection-query)
+                                          k))
+                                      granule-param-mappings)]
+    (concat do-not-exist-for-granules collection-query-params)))
 
 (def collection-to-granule-params
   "Mapping of parameter names in a collection query to the parameter name to use in the granule

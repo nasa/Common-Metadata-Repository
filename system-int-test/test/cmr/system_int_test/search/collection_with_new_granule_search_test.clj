@@ -165,7 +165,7 @@
     (index/wait-until-indexed)
     (s/only-with-real-database
       ;; Force coll2 granules into their own index to make sure
-      ;; granules outside of 1_small_collections get deleted properly.
+      ;; granules outside of 1_small_collections get searched properly.
       (bootstrap/start-rebalance-collection (:concept-id coll-w-may-2015-granule))
       (bootstrap/finalize-rebalance-collection (:concept-id coll-w-may-2015-granule))
       (index/wait-until-indexed))
@@ -229,6 +229,9 @@
          :has-granules-created-at [",2015-06-01T16:13:12Z"]}
         []
 
+        "Short name"
+        {:short-name "coll-platform-match"} [coll-platform-match]
+
         "Temporal"
         {:temporal ["2010-12-25T12:00:00Z,2011-01-01T12:00:00Z"]
          :has-granules-created-at [",2011-06-07T13:00:00Z"]}
@@ -252,6 +255,7 @@
         {:platform "AQUA"
          :has-granules-created-at [",2011-06-07T13:00:00Z"]}
         []))
+
 
     (testing "Other collection specific parameters are applied"
       (util/are3
