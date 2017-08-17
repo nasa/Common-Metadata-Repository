@@ -17,8 +17,21 @@
 (defn- index-provider
   "Bulk index all the collections and granules for a provider."
   [this context provider-id start-index]
-  (let [event (message-queue/bootstrap-provider-event provider-id start-index)]
-    (message-queue/publish-bootstrap-event context event)))
+  (message-queue/publish-bootstrap-provider-event
+    context
+    (message-queue/bootstrap-provider-event provider-id start-index)))
+
+(defn- index-variables
+  "Bulk index all the variables. If a provider is passed, only index the variables
+  for that provider."
+  ([this context]
+   (message-queue/publish-bootstrap-variables-event
+     context
+     (message-queue/bootstrap-variables-event)))
+  ([this context provider-id]
+   (message-queue/publish-bootstrap-variables-event
+     context
+     (message-queue/bootstrap-variables-event provider-id))))
 
 (defrecord MessageQueueDispatcher
   [])
@@ -29,6 +42,7 @@
   {:migrate-provider (partial not-implemented :migrate-provider)
    :migrate-collection (partial not-implemented :migrate-collection)
    :index-provider index-provider
+   :index-variables index-variables
    :index-data-later-than-date-time (partial not-implemented :index-data-later-than-date-time)
    :index-collection (partial not-implemented :index-collection)
    :index-system-concepts (partial not-implemented :index-system-concepts)
@@ -39,20 +53,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Message handling
 
-(defmulti handle-bootstrap-provider-event
-  "Handle the actions that can be requested for a provider via the bootstrap-provider-queue"
+(defmulti handle-bootstrap-event
+  "Handle the actions that can be requested for a provider via the bootstrap-queue."
   (fn [context msg]
     (keyword (:action msg))))
 
-(defmethod handle-bootstrap-provider-event :index-provider
+(defmethod handle-bootstrap-event :index-provider
   [context msg]
   (bulk-index/index-provider (:system context) (:provider-id msg) (:start-index msg)))
+
+(defmethod handle-bootstrap-event :index-variables
+  [context msg]
+  (if-let [provider-id (:provider-id msg)]
+    (bulk-index/index-variables (:system context) provider-id)
+    (bulk-index/index-all-variables (:system context))))
 
 (defn subscribe-to-events
   "Subscribe to event messages on bootstrap queues."
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/bootstrap-provider-queue-listener-count)]
+    (dotimes [n (config/bootstrap-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
-                                (config/bootstrap-provider-queue-name)
-                                #(handle-bootstrap-provider-event context %)))))
+                                (config/bootstrap-queue-name)
+                                #(handle-bootstrap-event context %)))))

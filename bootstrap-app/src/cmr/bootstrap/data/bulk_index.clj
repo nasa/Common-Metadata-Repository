@@ -51,12 +51,6 @@
         collections (db/find-concepts db [provider] params)]
     (map :concept-id collections)))
 
-(defn get-provider-by-id
-  "Returns the metadata db provider that matches the given provider id."
-  [context provider-id]
-  (let [db (helper/get-metadata-db-db (:system context))]
-    (p/get-provider db provider-id)))
-
 (defn get-collection
   "Get specified collection from cmr."
   [context provider collection-id]
@@ -119,6 +113,36 @@
             gran-count
             provider-id)))
 
+(defn- index-variables-by-provider
+  "Bulk index variables for the given provider."
+  [system provider]
+  (info "Indexing variables for provider" (:provider-id provider))
+  (let [db (helper/get-metadata-db-db system)
+        concept-batches (db/find-concepts-in-batches
+                         db provider
+                         {:concept-type :variable}
+                         (:db-batch-size system))
+        num-variables (index/bulk-index
+                       {:system (helper/get-indexer system)}
+                       concept-batches
+                       {})]
+    (info (format "Indexing of %s variables completed." num-variables))))
+
+(defn index-variables
+  "Bulk index variables for the given provider-id."
+  [system provider-id]
+  (->> provider-id
+       (helper/get-provider system)
+       (index-variables-by-provider system)))
+
+(defn index-all-variables
+  "Bulk index all CMR variables."
+  [system]
+  (info "Indexing all variables")
+  (doseq [provider (helper/get-providers system)]
+    (index-variables-by-provider system provider))
+  (info "Indexing of all variables completed."))
+
 (defn- index-access-control-concepts
   "Bulk index ACLs or access groups"
   [system concept-batches]
@@ -178,14 +202,14 @@
 (defn index-concepts-by-id
   "Index concepts of the given type for the given provider with the given concept-ids."
   [system provider-id concept-type concept-ids]
-  (let [db-conn (helper/get-metadata-db-db system)
-        provider (get-provider-by-id {:system system} provider-id)
+  (let [db (helper/get-metadata-db-db system)
+        provider (helper/get-provider system provider-id)
         ;; Oracle only allows 1000 values in an 'in' clause, so we partition here
         ;; to prevent exceeding that. This should probably be done in the db namespace,
         ;; but I want to avoid making changes beyond bootstrap-app for this functionality.
         concept-id-batches (partition-all 1000 concept-ids)
         concept-batches (for [batch concept-id-batches
-                              concept-batch (db/find-concepts-in-batches db-conn
+                              concept-batch (db/find-concepts-in-batches db
                                                                          provider
                                                                          {:concept-type concept-type :concept-id batch}
                                                                          (:db-batch-size system))]
@@ -226,8 +250,7 @@
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
   (info "Indexing concepts with revision-date later than " date-time "started.")
-  (let [db (helper/get-metadata-db-db system)
-        providers (p/get-providers db)
+  (let [providers (helper/get-providers system)
         provider-response-map (for [provider providers
                                     concept-type [:collection :granule]]
                                 (fetch-and-index-new-concepts

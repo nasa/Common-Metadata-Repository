@@ -64,10 +64,9 @@
 (def variable-api-routes
   (context "/variables" []
 
-    ;; Search for variables
-    (GET "/" {:keys [request-context params]}
-      (search-for-variables request-context params))
+    ;; Search for variables route is defined in routes.clj
 
+    ;; variable associations routes
     (context "/:variable-concept-id" [variable-concept-id]
       (context "/associations" []
 

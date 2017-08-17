@@ -384,12 +384,28 @@
    ;; Cascade to delete the concepts
    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts db [provider] nil)]
      (concepts/force-delete db concept-type provider concept-id revision-id))
+
+   ; Cascade to delete the variable associations, this is a hacky way of doing things
+   (doseq [var-association (concepts/find-concepts db
+                                                   [{:provider-id "CMR"}]
+                                                   {:concept-type :variable-association})]
+     (let [{:keys [concept-id revision-id variable-concept-id extra-fields]} var-association
+           {:keys [associated-concept-id variable-concept-id]} extra-fields
+           referenced-providers (map (comp :provider-id cc/parse-concept-id)
+                                     [associated-concept-id variable-concept-id])]
+       ;; If the variable association references the deleted provider through
+       ;; either collection or variable, delete the variable association
+       (when (some #{(:provider-id provider)} referenced-providers)
+         (concepts/force-delete
+           db :variable-association {:provider-id "CMR"} concept-id revision-id))))
+
    ;; to find items that reference the provider that should be deleted (e.g. ACLs)
    (doseq [{:keys [concept-type concept-id revision-id]} (concepts/find-concepts
                                                           db
                                                           [pv/cmr-provider]
                                                           {:target-provider-id (:provider-id provider)})]
      (concepts/force-delete db concept-type pv/cmr-provider concept-id revision-id))
+   ;; finally delete the provider
    (swap! providers-atom dissoc (:provider-id provider)))
 
   (reset-providers

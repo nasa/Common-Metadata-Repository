@@ -9,6 +9,7 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
@@ -271,6 +272,7 @@
             [:gmd:title (char-string (:EntryTitle c))]
             (generate-data-dates c)
             [:gmd:edition (char-string (:Version c))]
+            (collection-citation/convert-date c)
             [:gmd:identifier
               [:gmd:MD_Identifier
                 [:gmd:code (char-string (:ShortName c))]
@@ -297,7 +299,15 @@
                 [:gmd:MD_Identifier
                   [:gmd:code [:gco:CharacterString collection-data-type]]
                   [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
-                  [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])]]
+                  [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+            (collection-citation/convert-creator c)
+            (collection-citation/convert-editor c)
+            (collection-citation/convert-publisher c)
+            (collection-citation/convert-release-place c)
+            (collection-citation/convert-online-resource c)
+            (collection-citation/convert-data-presentation-form c)
+            (collection-citation/convert-series-name-and-issue-id c)
+            (collection-citation/convert-other-citation-details c)]]
           [:gmd:abstract (char-string (if (or abstract version-description)
                                         (str abstract iso/version-description-separator version-description)
                                         su/not-provided))]

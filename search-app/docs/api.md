@@ -777,7 +777,7 @@ __Example__
 
 #### <a name="umm-json"></a> UMM JSON
 
-The JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
+The UMM JSON response contains meta-metadata of the collection and the UMM fields. The UMM JSON format is only applicable to collection and variable searches. The UMM-JSON response is helpful if you wish to get the native-id of a collection after ingesting it. The version of the UMM returned will be the version requested or the latest most version. Clients are recommended to always specify a version to avoid breaking changes in UMM.
 
 This format can be retrieved in a variety of methods:
 
@@ -1529,7 +1529,13 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 Collection results are sorted by ascending entry title by default when a search does not result in a score.
 
-If a keyword search is performed then the search results will be sorted by relevance (score descending), then by temporal overlap if one or more temporal ranges are provided with the tie breaker being the EMS community usage score (also descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+If a keyword search is performed then the search results will be sorted by:
+
+  * Relevance Score (descending), binned to the nearest 0.2. For example a score of 0.75 and 0.85 will be considered equal for sorting purposes.
+  * Temporal Overlap (descending), if one or more temporal ranges are provided.
+  * EMS Community Usage Score (descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+  * Collection End Date (descending),  with ongoing collections defaulting to today.
+  * Humanized processing level Id (descending)
 
 If a temporal range search is performed, the search results will be sorted by temporal overlap percentage over all ranges provided.
 
@@ -3061,16 +3067,11 @@ Content-Length: 292
 
 ### <a name="variable"></a> Variable
 
-Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service.
-
-Variable have the following fields:
-
-* variable_name (REQUIRED): free text specifying the key of the variable. Variable name cannot contain `/` character.
-* measurement (REQUIRED): the measurement that the variable belongs to.
+Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service. Variable metadata is in JSON format and conforms to UMM-Var Schema.
 
 #### <a name="searching-for-variables"></a> Searching for Variables
 
-Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`.
+Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`. JSON and UMM JSON response formats are supported for variables search.
 
 Variable search results are paged. See [Paging Details](#paging-details) for more information on how to page through variable search results.
 
@@ -3086,19 +3087,17 @@ The following parameters are supported when searching for variables.
 
 ##### Variable Matching Parameters
 
-These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `variable_name[]=key1&variable_name[]=key2`. The values are ORed together.
+These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
-* variable_name
-  * options: pattern, ignore_case
-* measurement
+* name
   * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
-  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for variable keyword search: variable name, measurement, and science keywords.
+  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for variable keyword search: variable name, long name, and science keywords.
 
 ##### Variable Search Response
 
-The response is always returned in JSON and includes the following fields.
+The JSON response includes the following fields.
 
 * hits - How many total variables were found.
 * took - How long the search took in milliseconds
@@ -3107,13 +3106,17 @@ The response is always returned in JSON and includes the following fields.
   * revision_id
   * provider_id
   * native_id
-  * variable_name
-  * measurement
+  * name
+  * long_name
+
+The UMM JSON response contains meta-metadata of the collection, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
 
 ##### Variable Search Example
 
+JSON response:
+
 ```
-curl -g -i "%CMR-ENDPOINT%/variables?pretty=true&variable_name=Var\\.*&options[variable_name][pattern]=true"
+curl -g -i "%CMR-ENDPOINT%/variables?pretty=true&name=Var*&options[name][pattern]=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -3127,19 +3130,78 @@ Content-Length: 292
     "revision_id" : 3,
     "provider_id" : "PROV1",
     "native_id" : "var1",
-    "variable_name" : "Variable1",
-    "measurement" : "A long UMM-Var name"
+    "name" : "Variable1",
+    "long_name" : "A long UMM-Var name"
   }, {
     "concept_id" : "V1200000008-PROV1",
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "var2",
-    "variable_name" : "Variable2",
-    "measurement" : "A long UMM-Var name"
+    "name" : "Variable2",
+    "long_name" : "A long UMM-Var name"
   } ]
 }
 ```
 
+UMM JSON response:
+
+```
+curl -g -i "%CMR-ENDPOINT%/variables.umm_json?name=Variable1234&pretty=true"
+HTTP/1.1 200 OK
+Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.9; charset=UTF-8
+Content-Length: 1177
+
+{
+  "hits" : 1,
+  "took" : 14,
+  "items" : [ {
+    "meta" : {
+      "revision-id" : 2,
+      "deleted" : false,
+      "format" : "application/vnd.nasa.cmr.umm+json",
+      "provider-id" : "PROV1",
+      "native-id" : "var1",
+      "concept-id" : "V1200000009-PROV1",
+      "revision-date" : "2017-08-14T20:12:43Z",
+      "concept-type" : "variable"
+    },
+    "umm" : {
+      "VariableType" : "SCIENCE_VARIABLE",
+      "DataType" : "float32",
+      "Offset" : 0.0,
+      "ScienceKeywords" : [ {
+        "Category" : "sk-A",
+        "Topic" : "sk-B",
+        "Term" : "sk-C"
+      } ],
+      "Scale" : 1.0,
+      "FillValues" : [ {
+        "Value" : -9999.0,
+        "Type" : "Science"
+      } ],
+      "Sets" : [ {
+        "Name" : "Data_Fields",
+        "Type" : "Science",
+        "Size" : 2,
+        "Index" : 2
+      } ],
+      "Dimensions" : [ {
+        "Name" : "Solution_3_Land",
+        "Size" : 3
+      } ],
+      "Definition" : "Defines the variable",
+      "Name" : "Variable1234",
+      "Units" : "m",
+      "LongName" : "A long UMM-Var name"
+    },
+    "associations" : {
+      "collections" : [ {
+        "concept-id" : "C1200000007-PROV1"
+      } ]
+    }
+  } ]
+}
+```
 #### <a name="variable-access-control"></a> Variable Access Control
 
 Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL system object identity. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.

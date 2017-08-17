@@ -8,6 +8,7 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
@@ -23,6 +24,11 @@
 (def citation-base-xpath
   (str md-identification-base-xpath
        "/gmd:citation/gmd:CI_Citation"))
+
+(def collection-citation-base-xpath
+  (str citation-base-xpath
+       "[gmd:identifier/gmd:MD_Identifier"
+       "/gmd:description/gco:CharacterString='The ECS Short Name']"))
 
 (def short-name-identification-xpath
   (str md-identification-base-xpath
@@ -154,4 +160,5 @@
                          (char-string-value
                           data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
        :RelatedUrls (dru/parse-related-urls doc sanitize?)
+       :CollectionCitations (collection-citation/parse-collection-citation doc collection-citation-base-xpath sanitize?)
        :Projects (project/parse-projects doc projects-xpath sanitize?)}))))

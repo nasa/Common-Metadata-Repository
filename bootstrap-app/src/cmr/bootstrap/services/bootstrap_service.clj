@@ -3,6 +3,7 @@
   (:require
     [cmr.bootstrap.data.bulk-index :as bulk]
     [cmr.bootstrap.data.rebalance-util :as rebalance-util]
+    [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.bootstrap.services.dispatch.core :as dispatch]
     [cmr.common.cache :as cache]
     [cmr.common.concepts :as concepts]
@@ -17,6 +18,7 @@
   {:migrate-provider :core-async-dispatcher
    :migrate-collection :core-async-dispatcher
    :index-provider :message-queue-dispatcher
+   :index-variables :message-queue-dispatcher
    :index-data-later-than-date-time :core-async-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
@@ -40,10 +42,11 @@
   "Returns the metadata db provider that matches the given provider id. Throws exception if
   no matching provider is found."
   [context provider-id]
-  (if-let [provider (bulk/get-provider-by-id context provider-id)]
+  (if-let [provider (helper/get-provider (:system context) provider-id)]
     provider
-    (errors/throw-service-errors :bad-request
-                              [(format "Provider: [%s] does not exist in the system" provider-id)])))
+    (errors/throw-service-errors
+     :bad-request
+     [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
@@ -61,8 +64,9 @@
   [context provider-id collection-id]
   (let [provider (get-provider context provider-id)]
     (when-not (bulk/get-collection context provider collection-id)
-      (errors/throw-service-errors :bad-request
-                                [(format "Collection [%s] does not exist." collection-id)]))))
+      (errors/throw-service-errors
+       :bad-request
+       [(format "Collection [%s] does not exist." collection-id)]))))
 
 (defn index-collection
   "Bulk index all the granules in a collection"
@@ -81,6 +85,15 @@
   "Bulk index the concepts given by the concept-ids"
   [context dispatcher provider-id concept-type concept-ids]
   (dispatch/index-concepts-by-id dispatcher context provider-id concept-type concept-ids))
+
+(defn index-variables
+  "(Re-)Index the variables stored in metadata-db. If a provider-id is passed,
+  only the variables for that provider will be indexed. With no provider-id,
+  all providers' variables are (re-)indexed."
+  ([context dispatcher]
+   (dispatch/index-variables dispatcher context))
+  ([context dispatcher provider-id]
+   (dispatch/index-variables dispatcher context provider-id)))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"

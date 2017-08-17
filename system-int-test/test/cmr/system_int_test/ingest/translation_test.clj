@@ -47,6 +47,12 @@
   <Visible>true</Visible>
   </Collection>")
 
+(defn- convert-to-sets
+  "Convert lists in the umm record to sets so order doesn't matter during comparison"
+  [record]
+  (-> record
+      (update :ContactPersons set)))
+
 (deftest translate-metadata
   (doseq [input-format valid-formats
           output-format valid-formats]
@@ -54,12 +60,15 @@
       (let [input-str (umm-spec/generate-metadata test-context expected-conversion/example-collection-record input-format)
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
             expected (update-in-each expected [:Platforms] update-in-each [:Instruments] assoc
-                                               :NumberOfInstruments nil) 
+                                               :NumberOfInstruments nil)
+            expected (convert-to-sets expected) 
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (first (mt/extract-mime-types (:content-type headers)))
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)
             parsed-umm-json (update-in-each parsed-umm-json [:Platforms] update-in-each [:Instruments] assoc
-                                                             :NumberOfInstruments nil)]
+                                                             :NumberOfInstruments nil)
+            parsed-umm-json (convert-to-sets parsed-umm-json)]
+          
         (is (= 200 status) body)
         (is (= (mt/format->mime-type output-format) content-type))
         ;; when translating from dif9 to echo10,

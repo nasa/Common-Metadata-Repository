@@ -21,6 +21,7 @@
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
+    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]
     [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
 
 (defn- propagate-first
@@ -321,6 +322,15 @@
         role (:Roles data-center)]
    (assoc data-center :Roles [role]))))
 
+(defn- keep-first-collection-citation
+  "Returns collection-citations with only the first collection-citation in it, trimmed.
+   When collection-citations is nil, return [{}]."
+  [collection-citations]
+  (if collection-citations
+    (conj [] (cmn/map->ResourceCitationType
+               (iso-shared/trim-collection-citation (first collection-citations))))
+    [{}]))
+
 (defn umm-expected-conversion-iso19115
   [umm-coll]
   (-> umm-coll
@@ -339,11 +349,20 @@
       (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      (assoc :ContactPersons (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll)))
+      ;;add contact persons introduced by CollectionCitation. 
+      (assoc :ContactPersons (iso-shared/update-contact-persons-from-collection-citation 
+                               (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll))
+                               (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll)))))
+      ;; CollectionCitation's Title and UMM's EntryTitle share the same xml element, So do CollectionCitation's
+      ;; Version and UMM's Version. When translate to xml file, we use the UMM's EntryTitle and Version. The values
+      ;; could be different. 
+      ;; If the original CollectionCitation is nil, we should expect it to contain Title and Version. 
+      ;; If there are multiple CollectionCitations, we should only expect the first one.
+      (assoc :CollectionCitations (map #(assoc % :Title (:EntryTitle umm-coll) :Version (:Version umm-coll)) 
+                                       (keep-first-collection-citation (:CollectionCitations umm-coll))))
       (assoc :ContactGroups (map expected-contact-group (:ContactGroups umm-coll)))
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (assoc :CollectionCitations nil)
       (update :CollectionProgress su/with-default)
       js/parse-umm-c))

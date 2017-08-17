@@ -37,9 +37,10 @@
    [cmr.search.results-handlers.opendata-results-handler]
    [cmr.search.results-handlers.reference-results-handler]
    [cmr.search.results-handlers.tags-json-results-handler]
-   [cmr.search.results-handlers.variables-json-results-handler]
    [cmr.search.results-handlers.timeline-results-handler]
    [cmr.search.results-handlers.umm-json-results-handler]
+   [cmr.search.results-handlers.variables-json-results-handler]
+   [cmr.search.results-handlers.variables-umm-json-results-handler]
 
    ;; ACL support. Required here to avoid circular dependencies
    [cmr.search.services.acls.collection-acls]
@@ -225,7 +226,10 @@
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id (get-scroll-id-from-cache ctx short-scroll-id)
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
-        params (process-params params path-w-extension headers mt/xml)
+        default-mime-type (if (= :variable concept-type)
+                            mt/json
+                            mt/xml)
+        params (process-params params path-w-extension headers default-mime-type)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
@@ -384,7 +388,7 @@
               (find-concept-by-cmr-concept-id ctx path-w-extension params headers)))
 
         ;; Find concepts
-        (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]
+        (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables))(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
                {params :params headers :headers ctx :request-context query-string :query-string}

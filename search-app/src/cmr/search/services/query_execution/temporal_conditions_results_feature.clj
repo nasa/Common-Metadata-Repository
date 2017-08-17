@@ -1,5 +1,7 @@
 (ns cmr.search.services.query-execution.temporal-conditions-results-feature
-  "Functions to pull out temporal conditions in pre-processing and get the temporal
+  "Functions for temporal pre-processing. Add concept-type to the condition because
+  when we create the elastic conditions we need special processing based on
+  concept type. Pull out temporal conditions in pre-processing and get the temporal
   range data from the query. This is done during pre-processing since down the road temporal
   conditions get very complicated and it's easier to pull them out here."
   (:require
@@ -12,9 +14,10 @@
 
 (defmethod query-execution/pre-process-query-result-feature :temporal-conditions
   [_ query _]
-  (if-let [temporal-ranges (temporal-range-extractor/extract-query-temporal-ranges query)]
-    (assoc query ::temporal-ranges temporal-ranges)
-    query))
+  (let [query (assoc-in query [:condition :concept-type] (:concept-type query))]
+    (if-let [temporal-ranges (temporal-range-extractor/extract-query-temporal-ranges query)]
+      (assoc query ::temporal-ranges temporal-ranges)
+      query)))
 
 (defn get-query-temporal-conditions
  [query]

@@ -19,7 +19,8 @@
    "application/dif+xml" "dif9"
    "application/dif10+xml" "dif10"
    "application/iso:smap+xml" "iso-smap"
-   "application/iso19115+xml" "iso19115"})
+   "application/iso19115+xml" "iso19115"
+   "application/vnd.nasa.cmr.umm+json" "umm-json"})
 
 (defn- find-collection-ids-to-download
   "Returns a list of concepts that need to be downloaded. Uses the anomaly tests CSV file."
@@ -44,14 +45,25 @@
 
 (defn- download-concept-metadata
   "Returns the metadata for the provided concept-id in its native format."
-  [concept-id]
+  [concept-id fmt]
   (let [url (format "%s/concepts/%s" (source-url) concept-id)
-        response (client/get url {:query-params {:concept-id concept-id}})]
+        params {:query-params {:concept-id concept-id}}
+        params (if (= fmt "application/vnd.nasa.cmr.umm+json")
+                 (assoc params :accept "application/vnd.nasa.cmr.umm+json") ; want latest version of umm
+                 params)
+        response (client/get url params)]
     (:body response)))
 
 (def collections-dir
   "The place to save collections."
   "../search-relevancy-test/resources/test_files")
+
+(defn- file-extension
+  "Given a format, return the file extension"
+  [format]
+  (if (= "application/vnd.nasa.cmr.umm+json" format)
+    ".json"
+    ".xml"))
 
 (defn download-and-save-all-collections
   "Main function for this namespace to find all the concepts to download, retrieve them from
@@ -61,11 +73,11 @@
         concept-id->format-map (formats-for-collections concept-ids)]
     (doseq [[concept-id fmt] concept-id->format-map]
       (let [directory (get format-string->directory fmt)
-            filename (str concept-id ".xml")
+            filename (str concept-id (file-extension fmt))
             full-path (format "%s/%s/%s" collections-dir directory filename)]
         (if (.exists (io/as-file full-path))
           (info "Skipping already downloaded concept" concept-id)
-          (let [collection-metadata (download-concept-metadata concept-id)]
+          (let [collection-metadata (download-concept-metadata concept-id fmt)]
             (info "Saving" filename "to" directory)
             (spit full-path collection-metadata)))))))
 
@@ -74,5 +86,5 @@
  (download-and-save-all-collections)
  (find-collection-ids-to-download)
  (formats-for-collections ["C1200196931-SCIOPS" "C1000000803-DEV08"]) ;; SIT
- (formats-for-collections ["C1386246230-NSIDCV0"]) ;; Prod
+ (formats-for-collections ["C194001237-LPDAAC_ECS"]) ;; Prod
  (download-concept-metadata "C1237114193-GES_DISC"))

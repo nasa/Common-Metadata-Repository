@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-umm-spec-validation-test
   "CMR Ingest umm-spec validation integration tests"
   (:require
+    [clj-time.core :as t]
     [clojure.test :refer :all]
     [cmr.common-app.test.side-api :as side]
     [cmr.common.util :as u :refer     [are3]]
@@ -15,6 +16,49 @@
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm.umm-spatial :as umm-s]))
+
+;; Used for testing invalid data date ranges.
+(def umm-c-invalid-data-date-ranges
+  "This is valid UMM-C with invalid data date ranges."
+  {:Platforms [(umm-cmn/map->PlatformType
+                 {:ShortName "A340-600" :LongName "Airbus A340-600" :Type "Aircraft"})]
+   :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
+   :DataCenters [(umm-cmn/map->DataCenterType
+                   {:Roles ["ARCHIVER"]
+                    :ShortName "AARHUS-HYDRO"
+                    :LongName "Hydrogeophysics Group, Aarhus University "})]
+   :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
+                      {:Category "EARTH SCIENCE SERVICES"
+                       :Topic "DATA ANALYSIS AND VISUALIZATION"
+                       :Term "GEOGRAPHIC INFORMATION SYSTEMS"})]
+   :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+   :ShortName "short"
+   :Version "V1"
+   :EntryTitle "The entry title V5"
+   :CollectionProgress "COMPLETE"
+   :MetadataDates [(umm-cmn/map->DateType {:Date (t/date-time 2049)
+                                           :Type "UPDATE"})
+                   (umm-cmn/map->DateType {:Date (t/date-time 2011)
+                                           :Type "REVIEW"})
+                   (umm-cmn/map->DateType {:Date (t/date-time 2050)
+                                           :Type "REVIEW"})
+                   (umm-cmn/map->DateType {:Date (t/date-time 2049)
+                                           :Type "DELETE"})]
+   :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2050)
+                                       :Type "CREATE"})
+               (umm-cmn/map->DateType {:Date (t/date-time 2049)
+                                       :Type "UPDATE"})
+               (umm-cmn/map->DateType {:Date (t/date-time 2011)
+                                       :Type "UPDATE"})
+               (umm-cmn/map->DateType {:Date (t/date-time 2011)
+                                       :Type "REVIEW"})]
+   :Abstract "A very abstract collection"
+   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
+
+(defn collection-invalid-data-date-ranges
+  "Returns a UmmCollection with invalid data date ranges"
+  []
+  (umm-c/map->UMM-C umm-c-invalid-data-date-ranges))
 
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
@@ -278,6 +322,9 @@
           "ECHO10 Ingest and Ingest Validation"
           :echo10 (data-umm-c/collection-missing-properties {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"DataCenters\",\"Platforms\",\"ProcessingLevel\",\"ScienceKeywords\",\"TemporalExtents\"])"
 
+          "umm-json Ingest and Ingest Validation for Invalid data date ranges"
+          :umm-json (collection-invalid-data-date-ranges) "After translating item to UMM-C the metadata had the following issue: [:MetadataDates] latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past.  earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future.  DELETE date value: [2049-01-01T00:00:00.000Z] should be equal or later than latest REVIEW date value: [2050-01-01T00:00:00.000Z].After translating item to UMM-C the metadata had the following issue: [:DataDates] CREATE date value: [2050-01-01T00:00:00.000Z] should be in the past.  latest UPDATE date value: [2049-01-01T00:00:00.000Z] should be in the past.  earliest REVIEW date value: [2011-01-01T00:00:00.000Z] should be in the future.  Earliest UPDATE date value: [2011-01-01T00:00:00.000Z] should be equal or later than CREATE date value: [2050-01-01T00:00:00.000Z]."
+          
           "DIF10 Ingest and Ingest Validation"
           :dif10 (data-umm-c/collection-missing-properties-dif10 {}) "After translating item to UMM-C the metadata had the following issue: object has missing required properties ([\"CollectionProgress\",\"ProcessingLevel\"])"
 

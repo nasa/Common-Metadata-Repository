@@ -426,6 +426,30 @@
   (fn [context concept]
     (boolean (:deleted concept))))
 
+(defn- delete-associations
+  "Delete the associations associated with the given collection revision and association type,
+  no association deletion event is generated."
+  [context assoc-type coll-concept-id coll-revision-id]
+  (let [search-params (cutil/remove-nil-keys
+                       {:concept-type assoc-type
+                        :associated-concept-id coll-concept-id
+                        :associated-revision-id coll-revision-id
+                        :exclude-metadata true
+                        :latest true})
+        associations (search/find-concepts context search-params)]
+    (doseq [association associations]
+      (save-concept-revision context {:concept-type assoc-type
+                                      :concept-id (:concept-id association)
+                                      :deleted true
+                                      :user-id "cmr"
+                                      :skip-publication true}))))
+
+(defn- delete-associated-variable-associations
+  "Delete the variable associations associated with the given collection revision,
+  no variable association deletion event is generated."
+  [context coll-concept-id coll-revision-id]
+  (delete-associations context :variable-association coll-concept-id coll-revision-id))
+
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
   [context concept]
@@ -455,19 +479,23 @@
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
                                           (try-to-save db provider))]
-            ;; skip publication flag is only set for tag association when its associated collection
-            ;; revision is force deleted. In this case, the tag association is no longer needed to
-            ;; be indexed, so we don't publish the deletion event.
+            ;; delete the variable associations associated with the collection
+            (when (= :collection concept-type)
+              (delete-associated-variable-associations context concept-id nil))
+
+            ;; skip publication flag is only set for tag/variable association when its associated
+            ;; collection revision is force deleted. In this case, the association is no longer
+            ;; needed to be indexed, so we don't publish the deletion event.
             ;; We can't let the message get published because by the time indexer get the message,
             ;; the associated collection revision is gone and indexer won't be able to find it.
-            ;; The tag association is potentially created by a different user than the provider,
-            ;; so a collection revision is force deleted doesn't necessarily mean that the tag
-            ;; association is no longer needed. People might want to see what is in the old tag
+            ;; The association is potentially created by a different user than the provider,
+            ;; so a collection revision is force deleted doesn't necessarily mean that the
+            ;; association is no longer needed. People might want to see what is in the old
             ;; association potentially and force deleting it seems to run against the rationale
             ;; that we introduced revisions in the first place.
             (when-not skip-publication
               (ingest-events/publish-event
-                context (ingest-events/concept-delete-event revisioned-tombstone)))
+               context (ingest-events/concept-delete-event revisioned-tombstone)))
             revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
@@ -506,16 +534,7 @@
   "Delete the tag associations associated with the given collection revision,
   no tag association deletion event is generated."
   [context coll-concept-id coll-revision-id]
-  (doseq [ta (search/find-concepts context {:concept-type :tag-association
-                                            :associated-concept-id coll-concept-id
-                                            :associated-revision-id coll-revision-id
-                                            :exclude-metadata true
-                                            :latest true})]
-    (save-concept-revision context {:concept-type :tag-association
-                                    :concept-id (:concept-id ta)
-                                    :deleted true
-                                    :user-id "cmr"
-                                    :skip-publication true})))
+  (delete-associations context :tag-association coll-concept-id coll-revision-id))
 
 (defn force-delete
   "Remove a revision of a concept from the database completely."
@@ -527,8 +546,9 @@
     (if concept
       (do
         (when (= :collection concept-type)
-          ;; delete the related tag associations
+          ;; delete the related tag associations and variable associations
           (delete-associated-tag-associations context concept-id revision-id)
+          (delete-associated-variable-associations context concept-id revision-id)
           (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id))
         (c/force-delete db concept-type provider concept-id revision-id))
       (cmsg/data-error :not-found
@@ -637,8 +657,9 @@
             "old concept revisions for provider" (:provider-id provider))
       (when (= :collection concept-type)
         (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-          ;; delete the related tag associations
+          ;; delete the related tag associations and variable associations
           (delete-associated-tag-associations context concept-id (long revision-id))
+          (delete-associated-variable-associations context concept-id (long revision-id))
           (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id)))
       (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
 

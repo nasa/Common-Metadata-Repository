@@ -58,7 +58,7 @@
    :spatial-keyword 1.1
    :temporal-keyword 1.1
    :version-id 1.0
-   :entry-title 1.3
+   :entry-title 1.4
    :provider 1.0
    :two-d-coord-name 1.0
    :processing-level-id 1.0
@@ -90,6 +90,19 @@
   [field keyword]
   (let [regex (process-keyword keyword)]
     {:regexp {field regex}}))
+
+(defn- keywords->regex-filter
+  "Create a filter for keyword searches that checks for a loose match on one field"
+  [field keywords boost]
+  {:weight boost
+   ;; Should the 'and' below actually be an 'or'? Investigate this as part of CMR-1329
+   :filter {:or (concat
+                 (when-let [keywords (:keywords keywords)]
+                  [{:and (map (partial keyword-regexp-filter field) keywords)}])
+                 (when-let [field-keywords (:field-keywords keywords)]
+                  [{:or (concat
+                         (map (partial keyword-regexp-filter field) field-keywords)
+                         (map (partial keyword-regexp-filter field) field-keywords))}]))}})
 
 (defn- keywords->name-filter
   "Create a filter for keyword searches that checks for a loose match on one field or an
@@ -182,8 +195,8 @@
                                            (get-boost-fn :version-id))
 
      ;; entry-title
-     (keywords->boosted-exact-match-filter :entry-title.lowercase keywords
-                                           (get-boost-fn :entry-title))
+     (keywords->regex-filter :entry-title.lowercase keywords
+                             (get-boost-fn :entry-title))
 
      ;; doi
      (keywords->boosted-exact-match-filter :doi.lowercase keywords

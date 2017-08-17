@@ -7,10 +7,48 @@
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.util :as su]
+    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]
     [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories])
   (:use
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))
+
+(defn- create-contact-person
+  "Creates a contact person given the info of a creator, editor and publisher"
+  [person]
+  (when person
+    (let [person-names (xml-to-umm-data-contact/parse-individual-name person nil)]
+      (cmn/map->ContactPersonType
+        {:Roles ["Technical Contact"]
+         :FirstName (:FirstName person-names)
+         :MiddleName (:MiddleName person-names)
+         :LastName (:LastName person-names)}))))
+
+(defn update-contact-persons-from-collection-citation
+  "CollectionCitation introduces additional contact persons from creator, editor and publisher.
+   They need to be added to the ContactPersons in the expected umm after converting the umm
+   to the xml and back to umm.  Returns the updated ContactPersons."
+  [contact-persons collection-citation]
+  (let [{:keys [Creator Editor Publisher]} collection-citation
+        creator-contact-person (create-contact-person Creator)
+        editor-contact-person (when Editor
+                                (assoc (create-contact-person Editor) :NonDataCenterAffiliation "editor"))
+        publisher-contact-person (create-contact-person Publisher)]
+    (remove nil?  (conj contact-persons
+                        (util/remove-nil-keys creator-contact-person)
+                        (util/remove-nil-keys editor-contact-person)
+                        (util/remove-nil-keys publisher-contact-person)))))
+
+(defn trim-collection-citation
+  "Returns CollectionCitation with Creator, Editor, Publisher and ReleasePlace fields trimmed."
+  [collection-citation]
+  (let [{:keys [Creator Editor Publisher ReleasePlace]} collection-citation]
+    (util/remove-nil-keys
+      (assoc collection-citation
+             :Creator (when Creator (string/trim Creator))
+             :Editor (when Editor (string/trim Editor))
+             :Publisher (when Publisher (string/trim Publisher))
+             :ReleasePlace (when ReleasePlace (string/trim ReleasePlace))))))
 
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key

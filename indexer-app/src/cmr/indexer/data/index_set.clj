@@ -516,10 +516,8 @@
      :end-date (m/stored m/date-field-mapping)
      :end-date-doc-values                (-> m/date-field-mapping m/stored m/doc-values)
 
-     ;; granule temporal search is not nested but it shares the same code
-     ;; with the collection temporal search which is nested. So we need
-     ;; a nested index structure even though for granules it's just using one
-     ;; start-date, end-date.
+     ;; No longer indexing to :temporals due to performance issues, but cannot
+     ;; delete from elastic index
      :temporals temporal-mapping
      :size (m/stored m/float-field-mapping)
      :size-doc-values (-> m/float-field-mapping m/stored m/doc-values)
@@ -589,6 +587,7 @@
   "Defines the elasticsearch mapping for storing variables."
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-id (-> m/int-field-mapping m/stored m/doc-values)
    :native-id (-> m/string-field-mapping m/stored m/doc-values)
    :native-id.lowercase (m/doc-values m/string-field-mapping)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
@@ -597,7 +596,13 @@
    :variable-name.lowercase (m/doc-values m/string-field-mapping)
    :measurement (-> m/string-field-mapping m/stored m/doc-values)
    :measurement.lowercase (m/doc-values m/string-field-mapping)
-   :keyword m/text-field-mapping})
+   :keyword m/text-field-mapping
+   :deleted (-> m/bool-field-mapping m/stored m/doc-values)
+   :user-id (-> m/string-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+   :metadata-format (-> m/string-field-mapping m/stored m/doc-values)
+   ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
+   :collections-gzip-b64 (m/not-indexed (m/stored m/string-field-mapping))})
 
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
@@ -789,7 +794,8 @@
    * all-revisions-index? - true indicates we should target the all collection revisions index."
   ([context concept-id revision-id options]
    (let [concept-type (cs/concept-id->type concept-id)
-         concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
+         concept (when (= :granule concept-type)
+                   (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
    (let [concept-type (cs/concept-id->type concept-id)

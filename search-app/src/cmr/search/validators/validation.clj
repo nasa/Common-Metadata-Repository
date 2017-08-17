@@ -30,6 +30,13 @@
   [_]
   #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml, :native :timeline})
 
+(defmethod cqv/supported-result-formats :variable
+  [_]
+  (into #{:json
+          ;; umm-json supported with and without versions
+          :umm-json :umm-json-results}
+        umm-versioned-result-formats))
+
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
   (into #{:legacy-umm-json :xml :umm-json :umm-json-results} umm-versioned-result-formats))

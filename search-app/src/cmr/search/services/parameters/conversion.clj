@@ -113,6 +113,7 @@
 (defmethod common-params/param-mappings :variable
   [_]
   {:variable-name :string
+   :name :string
    :measurement :string
    :provider :string
    :native-id :string
@@ -337,8 +338,7 @@
                                 (when-not (str/blank? (:include-tags params))
                                   [:tags])
                                 ;; Always include temporal, the processor will see if any temporal
-                                ;; conditions exist. Not specific to relevancy, but currently used
-                                ;; for temporal relevancy
+                                ;; conditions exist
                                 [:temporal-conditions])
         keywords (when (:keyword params)
                    (str/split (str/lower-case (:keyword params)) #" "))

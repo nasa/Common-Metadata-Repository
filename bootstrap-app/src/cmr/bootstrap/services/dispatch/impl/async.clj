@@ -2,7 +2,15 @@
   "Provides methods to insert migration requets on the appropriate channels."
   (:require
     [clojure.core.async :as async :refer [>!]]
-    [cmr.common.log :refer [info]]))
+    [cmr.common.log :refer [info]]
+    [cmr.common.services.errors :as errors]))
+
+(defn- not-implemented
+  "Throws an exception indicating that the specified function is not implemented for
+  the async dispatcher."
+  [action & _]
+  (errors/internal-error!
+   (format "Async Dispatcher does not support %s action." (name action))))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -104,6 +112,7 @@
   {:migrate-provider migrate-provider
    :migrate-collection migrate-collection
    :index-provider index-provider
+   :index-variables (partial not-implemented :index-variables)
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts

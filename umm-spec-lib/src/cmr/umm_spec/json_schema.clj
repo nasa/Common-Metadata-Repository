@@ -23,6 +23,10 @@
   "Defines the name of the search result schema."
   "umm-search-results-json-schema.json")
 
+(def variable-search-result-schema-name
+  "Defines the name of the variable search result schema."
+  "umm-var-search-results-json-schema.json")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Code for loading schema files.
 
@@ -217,11 +221,21 @@
   ([json-str]
    (validate-umm-json-search-result json-str ver/current-version))
   ([json-str umm-version]
-   (let [schema-url (umm-schema-resource umm-version search-result-schema-name)]
+   (validate-umm-json-search-result json-str umm-version search-result-schema-name))
+  ([json-str umm-version schema-name]
+   (let [schema-url (umm-schema-resource umm-version schema-name)]
      (if schema-url
        (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
          (js-validations/validate-json java-schema-obj json-str))
        [(str "Unknown UMM JSON schema version: " (pr-str umm-version))]))))
+
+(defn validate-variable-umm-json-search-result
+  "Validates the variable UMM JSON search result and returns a list of errors if invalid."
+  ([json-str]
+   (validate-variable-umm-json-search-result json-str ver/current-version))
+  ([json-str umm-version]
+   (validate-umm-json-search-result
+    json-str umm-version variable-search-result-schema-name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Loaded schemas
