@@ -17,12 +17,12 @@
   [c]
   (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
                           (get coll-progress-mapping (string/upper-case coll-progress)))]
-    (if (= "NOT APPLICABLE" c-progress)
-      [:gmd:MD_ProgressCode
-       {:codeList ""
-        :codeListValue ""}
-       c-progress]
-      [:gmd:MD_ProgressCode
-       {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode") 
-        :codeListValue c-progress}
-       c-progress])))
+    [:gmd:status (if (= "NOT APPLICABLE" c-progress)
+                   [:gmd:MD_ProgressCode
+                     {:codeList ""
+                      :codeListValue ""}
+                    c-progress]
+                   [:gmd:MD_ProgressCode
+                     {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode") 
+                      :codeListValue c-progress}
+                    c-progress])]))

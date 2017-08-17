@@ -136,7 +136,7 @@
             (collection-citation/convert-other-citation-details c)]]
           [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
           [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
-          [:gmd:status (collection-progress/generate-collection-progress c)]
+          (collection-progress/generate-collection-progress c)
           (data-contact/generate-data-centers c "DISTRIBUTOR" "ORIGINATOR" "ARCHIVER")
           (data-contact/generate-data-centers-contact-persons c "DISTRIBUTOR" "ORIGINATOR" "ARCHIVER")
           (data-contact/generate-contact-persons (:ContactPersons c))
