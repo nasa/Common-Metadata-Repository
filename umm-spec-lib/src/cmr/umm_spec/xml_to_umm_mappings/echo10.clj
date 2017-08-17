@@ -10,10 +10,10 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.xml-to-umm-mappings.collection-progress :as collection-progress]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
-   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]))
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]))
 
 (def coll-progress-mapping
   "Mapping from values supported for ECHO10 CollectionState to UMM CollectionProgress."
@@ -166,7 +166,7 @@
    :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_MAX sanitize?)
-   :CollectionProgress (collection-progress/get-collection-progress
+   :CollectionProgress (get-umm-element/get-collection-progress
                          coll-progress-mapping
                          doc
                          "/Collection/CollectionState")

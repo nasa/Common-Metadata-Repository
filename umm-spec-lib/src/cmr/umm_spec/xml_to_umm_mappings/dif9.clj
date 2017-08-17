@@ -13,12 +13,12 @@
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.xml-to-umm-mappings.collection-progress :as collection-progress]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]
+    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
     [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def coll-progress-mapping
@@ -144,7 +144,7 @@
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})
      :DirectoryNames (dif-util/parse-idn-node doc)
-     :CollectionProgress (collection-progress/get-collection-progress
+     :CollectionProgress (get-umm-element/get-collection-progress
                            coll-progress-mapping
                            doc
                            "/DIF/Data_Set_Progress") 

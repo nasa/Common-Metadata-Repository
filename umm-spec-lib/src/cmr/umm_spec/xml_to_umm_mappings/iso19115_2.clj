@@ -15,7 +15,7 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
-   [cmr.umm-spec.xml-to-umm-mappings.collection-progress :as collection-progress]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
@@ -232,7 +232,7 @@
       :VersionDescription version-description
       :Abstract abstract
       :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
-      :CollectionProgress (collection-progress/get-collection-progress
+      :CollectionProgress (get-umm-element/get-collection-progress
                             coll-progress-mapping
                             md-data-id-el 
                             "gmd:status/gmd:MD_ProgressCode")
