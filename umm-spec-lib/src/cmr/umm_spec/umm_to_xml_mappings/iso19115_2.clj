@@ -313,7 +313,7 @@
                                         (str abstract iso/version-description-separator version-description)
                                         su/not-provided))]
           [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
-          [:gmd:status (collection-progress/generate-collection-progress c)]
+          (collection-progress/generate-collection-progress c)
           (data-contact/generate-data-centers (:DataCenters c))
           (data-contact/generate-data-center-contact-persons (:DataCenters c))
           (data-contact/generate-data-center-contact-groups (:DataCenters c))
