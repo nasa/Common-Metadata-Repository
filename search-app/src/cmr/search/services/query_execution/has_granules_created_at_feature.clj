@@ -3,10 +3,13 @@
   which have any granules that were created within the time ranges specified by the
   has_granules_created_at time range(s).
 
-  Supporting the feature requires two queries
-  1.) Perform a granule search for any granules that match the passed in query parameters and have
-  a created_at in the has_granules_created_at time ranges.
-  2.) Return the full search results for those collection-ids from the prior query."
+  Supporting the feature requires three queries
+  1.) Perform a collection query to find only the collections that could potentially match based
+  on the collection query parameters ignoring the granule time range.
+  2.) Perform a granule search for any granules that match the passed in query parameters and
+  collection concept-ids returned in the first query and have a created_at in the
+  has_granules_created_at time ranges.
+  3.) Return the full search results for those collection-ids returned by the granule query."
   (:require
    [clojure.set :as set]
    [cmr.common-app.services.search.group-query-conditions :as group-query-conditions]
@@ -60,7 +63,7 @@
                                             context :granule :collection-concept-id
                                             collection-concept-ids nil))]
     (if-not (seq collection-concept-ids)
-      (query-model/query (query-model/match-none))
+      (query-model/query {:concept-type :granule :condition query-model/match-none})
       (as-> query query
             ;; Change all collection field names to granule field names in the query
             (reduce (fn [upd-query [orig-field-key new-field-key]]

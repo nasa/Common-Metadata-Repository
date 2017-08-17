@@ -121,6 +121,7 @@
                             "PROV1" (data-umm-c/collection
                                      {:EntryTitle "collspatialmatch"
                                       :ShortName "collspatialmatch"
+                                      :Version "1"
                                       :SpatialExtent (data-umm-cmn/spatial
                                                       {:gsr "GEODETIC"
                                                        :sr "GEODETIC"
@@ -208,7 +209,10 @@
          "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
         [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
          coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
-         coll-spatial-match coll-archive-center-match coll-platform-match]))
+         coll-spatial-match coll-archive-center-match coll-platform-match]
+
+        "No matches"
+        [",2090-01-01T12:34:56ZZ"] []))
 
     (testing "Parameters are correctly passed to the granule query"
       (util/are3
@@ -218,6 +222,7 @@
                               :collection
                               (merge {:has-granules-created-at date-range} params))]
           (d/assert-refs-match expected-results actual-results))
+
         "Provider ID"
         {:provider "PROV2"} [coll-prov2-w-june-2016-granule]
 
@@ -231,6 +236,21 @@
 
         "Short name"
         {:short-name "coll-platform-match"} [coll-platform-match]
+
+        "Version"
+        {:version "1"
+         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+        [coll-spatial-match]
+
+        "Entry title case insensitive"
+        {:entry-title "COLL-PLATFORM-match"
+         "options[entry-title][ignore-case]" "true"}
+        [coll-platform-match]
+
+        "Entry title case-sensitive"
+        {:entry-title "COLL-PLATFORM-match"
+         "options[entry-title][ignore-case]" "false"}
+        []
 
         "Temporal"
         {:temporal ["2010-12-25T12:00:00Z,2011-01-01T12:00:00Z"]

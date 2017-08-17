@@ -27,7 +27,6 @@
         :with-provider-ids-no-query-ids)
       :with-query-coll-ids)))
 
-
 ;; There are no query collection ids or provider ids so all granule applicable acls are used.
 (defmethod filter-applicable-granule-acls :no-query-or-provider-coll-ids
   [context _ _ acls]
