@@ -10,7 +10,6 @@
             [clojure.set :as set])
   (:import cmr.search.models.query.CollectionQueryCondition))
 
-
 (defprotocol ResolveCollectionQuery
   "Defines a function to resolve a collection query condition into conditions of
   collection-concept-ids."
