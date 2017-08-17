@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap
   "Defines mappings from ISO-SMAP XML to UMM records"
   (:require
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -8,6 +9,7 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.collection-progress :as collection-progress]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
@@ -16,6 +18,16 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
+
+(def coll-progress-mapping
+  "Mapping from values supported for ISO-SMAP ProgressCode to UMM CollectionProgress."
+  {"COMPLETED" "COMPLETE"
+   "HISTORICALARCHIVE" "COMPLETE"
+   "OBSOLETE" "COMPLETE"
+   "ONGOING" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "UNDERDEVELOPMENT" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -138,7 +150,10 @@
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
-       :CollectionProgress (u/with-default (value-of data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
+       :CollectionProgress (collection-progress/get-collection-progress
+                             coll-progress-mapping
+                             data-id-el
+                             "gmd:status/gmd:MD_ProgressCode")
        :Quality (u/truncate (char-string-value doc quality-xpath) u/QUALITY_MAX sanitize?)
        :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")

@@ -3,6 +3,7 @@
  (:require
   [clj-time.core :as t]
   [clj-time.format :as f]
+  [clojure.string :as string]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
@@ -298,6 +299,6 @@
         ;; DIF 9 does not support VersionDescription
         (assoc :VersionDescription nil)
         (update :DataLanguage conversion-util/dif-expected-data-language)
-        (update :CollectionProgress su/with-default)
+        (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
         (update-in [:CollectionCitations] expected-collection-citations (:Version umm-coll))
         js/parse-umm-c)))
