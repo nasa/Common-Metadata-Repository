@@ -12,13 +12,13 @@
     [cmr.umm-spec.json-schema :as js]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su :refer [without-default-value-of]]
-    [cmr.umm-spec.xml-to-umm-mappings.collection-progress :as collection-progress]    
     [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.paleo-temporal :as pt]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
+    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
     [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def coll-progress-mapping
@@ -190,7 +190,7 @@
    :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (dif-util/parse-iso-topic-categories doc)
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
-   :CollectionProgress (collection-progress/get-collection-progress
+   :CollectionProgress (get-umm-element/get-collection-progress
                          coll-progress-mapping
                          doc
                          "/DIF/Dataset_Progress")

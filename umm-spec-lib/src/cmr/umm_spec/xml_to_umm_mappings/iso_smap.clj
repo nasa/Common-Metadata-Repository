@@ -9,7 +9,7 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.xml-to-umm-mappings.collection-progress :as collection-progress]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
@@ -150,7 +150,7 @@
        :Version (value-of data-id-el version-xpath)
        :Abstract (u/truncate (value-of short-name-el "gmd:abstract/gco:CharacterString") u/ABSTRACT_MAX sanitize?)
        :Purpose (u/truncate (value-of short-name-el "gmd:purpose/gco:CharacterString") u/PURPOSE_MAX sanitize?)
-       :CollectionProgress (collection-progress/get-collection-progress
+       :CollectionProgress (get-umm-element/get-collection-progress
                              coll-progress-mapping
                              data-id-el
                              "gmd:status/gmd:MD_ProgressCode")

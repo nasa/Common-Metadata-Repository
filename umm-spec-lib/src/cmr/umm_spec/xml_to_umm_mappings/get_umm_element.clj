@@ -1,5 +1,5 @@
-(ns cmr.umm-spec.xml-to-umm-mappings.collection-progress
-  "Functions for parsing UMM collection progress records out of XML documents of other formats."
+(ns cmr.umm-spec.xml-to-umm-mappings.get-umm-element
+  "Functions for getting UMM element out of XML documents of other formats."
   (:require
    [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
@@ -14,4 +14,4 @@
   (get coll-progress-mapping
        (when-let [xml-value (value-of doc xml-path)]
          (string/upper-case xml-value))
-       (string/upper-case umm-spec-util/not-provided)))
+       umm-spec-util/NOT-PROVIDED))
