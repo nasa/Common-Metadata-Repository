@@ -505,18 +505,26 @@
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es/delete-by-query
-        context
-        index
-        ccmt
-        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
+       context
+       index
+       ccmt
+       {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
 
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es/delete-by-query
-        context
-        index-name
-        (concept-mapping-types :granule)
-        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))))
+       context
+       index-name
+       (concept-mapping-types :granule)
+       {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
+
+    ;; delete the variables
+    (doseq [index (vals (:variable index-names))]
+      (es/delete-by-query
+       context
+       index
+       (concept-mapping-types :variable)
+       {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
