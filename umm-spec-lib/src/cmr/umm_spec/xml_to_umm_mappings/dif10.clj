@@ -12,6 +12,7 @@
     [cmr.umm-spec.json-schema :as js]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su :refer [without-default-value-of]]
+    [cmr.umm-spec.xml-to-umm-mappings.collection-progress :as collection-progress]    
     [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
@@ -19,6 +20,12 @@
     [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
     [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
+
+(def coll-progress-mapping
+  "Mapping from values supported for DIF10 Data_Set_Progress to UMM CollectionProgress."
+  {"COMPLETE" "COMPLETE"
+   "IN WORK"  "ACTIVE"
+   "PLANNED" "PLANNED"})
 
 (defn- parse-characteristics
   [el]
@@ -183,7 +190,10 @@
    :MetadataDates (parse-metadata-dates doc)
    :ISOTopicCategories (dif-util/parse-iso-topic-categories doc)
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
-   :CollectionProgress (su/with-default (value-of doc "/DIF/Dataset_Progress") sanitize?)
+   :CollectionProgress (collection-progress/get-collection-progress
+                         coll-progress-mapping
+                         doc
+                         "/DIF/Dataset_Progress")
    :LocationKeywords (for [lk (select doc "/DIF/Location")]
                        {:Category (value-of lk "Location_Category")
                         :Type (value-of lk "Location_Type")

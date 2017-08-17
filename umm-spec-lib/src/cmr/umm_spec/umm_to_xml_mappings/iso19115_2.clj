@@ -2,7 +2,7 @@
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.date-util :as date-util]
@@ -10,6 +10,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
@@ -214,9 +215,9 @@
            "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
            "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)
            "Temporal Range Type" (:TemporalRangeType temporal)}]
-    (str/join "," (for [[k v] m
+    (string/join "," (for [[k v] m
                         :when (some? v)]
-                    (str k "=" (str/replace v #"[,=]" ""))))))
+                    (str k "=" (string/replace v #"[,=]" ""))))))
 
 (defn- generate-user-constraints
   "Returns the constraints appropriate for the given metadata."
@@ -312,12 +313,7 @@
                                         (str abstract iso/version-description-separator version-description)
                                         su/not-provided))]
           [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
-          [:gmd:status
-           (when-let [collection-progress (:CollectionProgress c)]
-             [:gmd:MD_ProgressCode
-              {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
-               :codeListValue (str/lower-case collection-progress)}
-              collection-progress])]
+          [:gmd:status (collection-progress/generate-collection-progress c)]
           (data-contact/generate-data-centers (:DataCenters c))
           (data-contact/generate-data-center-contact-persons (:DataCenters c))
           (data-contact/generate-data-center-contact-groups (:DataCenters c))

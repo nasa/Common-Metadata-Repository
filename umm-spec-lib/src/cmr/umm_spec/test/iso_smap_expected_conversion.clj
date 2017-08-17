@@ -3,7 +3,7 @@
  (:require
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -50,7 +50,7 @@
   (seq (for [related-url (remove #(#{"DataCenterURL" "DataContactURL"} (:URLContentType %)) related-urls)]
          (-> related-url
              (update :URL #(url/format-url % true))
-             (update :Description #(when % (str/trim %)))
+             (update :Description #(when % (string/trim %)))
              (expected-related-url-get-service)
              (assoc :GetData nil)))))
 
@@ -166,7 +166,7 @@
   (remove
    (fn [person]
      (let [{:keys [FirstName MiddleName LastName]} person
-           individual-name (str/trim (str/join " " [FirstName MiddleName LastName]))]
+           individual-name (string/trim (string/join " " [FirstName MiddleName LastName]))]
        (if (re-matches #"(?i).*user services|science software development.*" individual-name)
          true
          false)))
@@ -288,7 +288,7 @@
                (iso-shared/trim-collection-citation 
                  (update (first collection-citations) :Title #(if % % su/not-provided))))) 
     (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
-                                           
+
 (defn umm-expected-conversion-iso-smap
   "Change the UMM to what is expected when translating from ISO SMAP so that it can
    be compared to the actual translation."
@@ -323,4 +323,4 @@
         (update :ScienceKeywords expected-science-keywords)
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
-        (update :CollectionProgress su/with-default)))
+        (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))))
