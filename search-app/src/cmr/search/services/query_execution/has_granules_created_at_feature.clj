@@ -38,21 +38,43 @@
                             :field (query-to-elastic/query-field->elastic-field
                                     :collection-concept-id :granule)}}}}))
 
-(defn- generate-granule-query
-  "Creates a query to get the granules based on the provided collection query."
+(defn- collection-pre-query
+  "Returns a query that will get a list of collections that could potentially be matched. We do
+  this to improve the performance of the granule query by reducing the potential indexes to be
+  searched against."
   [query]
-  (as-> query query
-        ;; Change all collection field names to granule field names in the query
-        (reduce (fn [upd-query [orig-field-key new-field-key]]
-                  (update-field-resolver/rename-field upd-query orig-field-key new-field-key))
-                query
-                parameters/collection-to-granule-params)
-        ;; Remove any collection specific fields from the query
-        (reduce (fn [upd-query field-to-remove]
-                  (update-field-resolver/remove-field upd-query field-to-remove))
-                query
-                parameters/collection-only-params)
-        (has-granules-created-at-query (:condition query))))
+  (-> query
+      (dissoc :result-features)
+      (assoc :page-size :unlimited
+             :result-fields [(query-to-elastic/query-field->elastic-field
+                              :concept-id :collection)])
+      query-model/query
+      (update-field-resolver/remove-field :has-granules-created-at)))
+
+(defn- generate-granule-query
+  "Returns a query model to search for granules based on the provided collection query and
+  collection concept IDs."
+  [context query collection-concept-ids]
+  (let [collection-concept-ids-condition (when (seq collection-concept-ids)
+                                           (common-params/parameter->condition
+                                            context :granule :collection-concept-id
+                                            collection-concept-ids nil))]
+    (if-not (seq collection-concept-ids)
+      (query-model/query (query-model/match-none))
+      (as-> query query
+            ;; Change all collection field names to granule field names in the query
+            (reduce (fn [upd-query [orig-field-key new-field-key]]
+                      (update-field-resolver/rename-field upd-query orig-field-key new-field-key))
+                    query
+                    parameters/collection-to-granule-params)
+            ;; Remove any collection specific fields from the query
+            (reduce (fn [upd-query field-to-remove]
+                      (update-field-resolver/remove-field upd-query field-to-remove))
+                    query
+                    parameters/collection-only-params)
+            ;; Add collection concept IDs to query
+            (group-query-conditions/and-conds [(:condition query) collection-concept-ids-condition])
+            (has-granules-created-at-query query)))))
 
 (defn- generate-collection-query-condition
   "Takes the original query and the concept IDs from the granules query and constructs a new
@@ -70,7 +92,10 @@
 
 (defmethod query-execution/pre-process-query-result-feature :has-granules-created-at
   [context query feature]
-  (let [granule-query (generate-granule-query query)
+  (let [first-coll-query (collection-pre-query query)
+        collection-results (:items (query-execution/execute-query context first-coll-query))
+        collection-concept-ids (map :concept-id collection-results)
+        granule-query (generate-granule-query context query collection-concept-ids)
         results (query-execution/execute-query context granule-query)
         concept-ids (map :key (get-in results [:aggregations :collections :buckets]))]
     (assoc query :condition (generate-collection-query-condition context query concept-ids))))
