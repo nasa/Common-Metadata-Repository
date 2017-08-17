@@ -16,24 +16,38 @@
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
    [cmr.search.services.query-walkers.collection-query-resolver :as r]
+   [cmr.search.services.query-walkers.provider-id-extractor :as provider-id-extractor]
    [cmr.umm-spec.acl-matchers :as umm-matchers]))
 
 (defmulti filter-applicable-granule-acls
-  (fn [context coll-ids-by-prov acls]
+  (fn [context coll-ids-by-prov provider-ids acls]
     (if (empty? coll-ids-by-prov)
-      :no-query-coll-ids
+      (if (empty? provider-ids)
+        :no-query-or-provider-coll-ids
+        :with-provider-ids-no-query-ids)
       :with-query-coll-ids)))
 
-;; There are no query collection ids so all granule applicable acls are used.
-(defmethod filter-applicable-granule-acls :no-query-coll-ids
-  [context _ acls]
+;; There are no query collection ids or provider ids so all granule applicable acls are used.
+(defmethod filter-applicable-granule-acls :no-query-or-provider-coll-ids
+  [context _ _ acls]
   (filter (comp :granule-applicable :catalog-item-identity) acls))
+
+(defn- in?
+  "Returns true if collection contains the provided element."
+  [coll element]
+  (some #(= element %) coll))
+
+;; Limit ACLs to only the ones that affect the matching provider
+(defmethod filter-applicable-granule-acls :with-provider-ids-no-query-ids
+  [context _ provider-ids acls]
+  (->> acls
+       (filter #(in? provider-ids (get-in % [:catalog-item-identity :provider-id])))
+       (filter (comp :granule-applicable :catalog-item-identity))))
 
 ;; The query contains collection concept ids so they will be used to limit which acls are added to
 ;; the query.
 (defmethod filter-applicable-granule-acls :with-query-coll-ids
-  [context coll-ids-by-prov acls]
-
+  [context coll-ids-by-prov _ acls]
   (filter (fn [acl]
             (let [{{:keys [provider-id] :as cii} :catalog-item-identity} acl
                   entry-titles (get-in cii [:collection-identifier :entry-titles])
@@ -209,9 +223,11 @@
                               (map (fn [[prov concept-ids]]
                                      [prov (set concept-ids)]))
                               (into {}))
+        provider-ids (provider-id-extractor/extract-provider-ids query)
         acls (filter-applicable-granule-acls
                context
                coll-ids-by-prov
+               provider-ids
                (acl-helper/get-acls-applicable-to-token context))
         acl-cond (acls->query-condition context coll-ids-by-prov acls)]
 
