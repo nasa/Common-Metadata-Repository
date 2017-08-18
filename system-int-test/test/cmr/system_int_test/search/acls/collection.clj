@@ -1,26 +1,25 @@
-(ns cmr.system-int-test.search.acls.collection-acl-search-test
-  "Tests searching for collections with ACLs in place"
+(ns cmr.system-int-test.search.acls.collection
+  "Tests searching for collections with ACLs in place."
   (:require
-    [cmr.common-app.test.side-api :as side]
-    [clojure.test :refer :all]
-    [clojure.string :as str]
-    [cmr.acl.acl-fetcher :as acl-fetcher]
-    [cmr.common.services.messages :as msg]
-    [cmr.common.util :refer [are2] :as util]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.atom :as da]
-    [cmr.system-int-test.data2.collection :as dc]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.opendata :as od]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.transmit.access-control :as ac]
-    [cmr.transmit.config :as tc]))
-
+   [cmr.common-app.test.side-api :as side]
+   [clojure.test :refer :all]
+   [clojure.string :as str]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common.services.messages :as msg]
+   [cmr.common.util :refer [are2] :as util]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.opendata :as od]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"

@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.acls.temporal-acl-search-test
+(ns cmr.system-int-test.search.acls.temporal-collection-granule
   "Tests searching for collections and granules with temporal ACLs in place."
   (:require
    [clj-time.core :as t]
@@ -21,7 +21,6 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.config :as tc]
    [cmr.transmit.echo.conversion :as echo-conversion]))
-
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"}

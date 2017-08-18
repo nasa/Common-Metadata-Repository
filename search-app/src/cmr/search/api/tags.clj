@@ -1,4 +1,4 @@
-(ns cmr.search.api.tags-api
+(ns cmr.search.api.tags
   "Defines the API for tagging collections in the CMR."
   (:require
    [cheshire.core :as json]
