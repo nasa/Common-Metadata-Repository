@@ -20,7 +20,8 @@
 ;;; Utility Functions
 
 (defn- customized-compare
-  "Compare begin and end.
+  "Customizing the compare because normal string compare results in 
+   1.n > 1.10 and doesn't convert the version_steps correctly(1< n <10).
    Assuming the version only contains two parts part1.part2.
    both part1 and part2 are integers."
   [begin end]
