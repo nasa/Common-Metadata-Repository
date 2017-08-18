@@ -16,7 +16,7 @@
    ;; specific location within an array of data values. An example of a scale factor is '0.002'
    Scale
 
-   ;; The factor to which the cell value has been added. The celle value is the value given to a
+   ;; The factor to which the cell value has been added. The cell value is the value given to a
    ;; specific location within an array of data values. An example of an offset is '0.49'.
    Offset
 

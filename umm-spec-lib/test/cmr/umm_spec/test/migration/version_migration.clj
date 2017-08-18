@@ -312,10 +312,12 @@
                   :LongName "processor.processor"}]})
 
 (deftest test-version-steps
-  (with-bindings {#'cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3"]}
+  (with-bindings {#'cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3" "1.9" "1.10"]}
     (is (= [] (#'vm/version-steps "1.2" "1.2")))
-    (is (= [["1.1" "1.2"] ["1.2" "1.3"]] (#'vm/version-steps "1.1" "1.3")))
-    (is (= [["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps "1.2" "1.0")))))
+    (is (= [["1.1" "1.2"] ["1.2" "1.3"] ["1.3" "1.9"] ["1.9" "1.10"]] (#'vm/version-steps "1.1" "1.10")))
+    (is (= [["1.9" "1.10"]] (#'vm/version-steps "1.9" "1.10")))
+    (is (= [["1.10" "1.9"]] (#'vm/version-steps "1.10" "1.9")))
+    (is (= [["1.10" "1.9"] ["1.9" "1.3"] ["1.3" "1.2"] ["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps "1.10" "1.0")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
@@ -1129,3 +1131,51 @@
             {:URLs ["www.contact.shoo.com"],
              :Description "Contact related url description"}]
            collection-contact-persons))))
+
+(deftest migrate-1_9-up-to-1_10
+  (is (= u/NOT-PROVIDED
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:CollectionProgress "ACTIVE"}))))
+  (is (= "PLANNED" 
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:CollectionProgress "planned"}))))
+  (is (= "ACTIVE" 
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:CollectionProgress "IN WORK"}))))
+  (is (= u/NOT-PROVIDED
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:CollectionProgress "NOT PROVIDED"}))))
+  (is (= "NOT APPLICABLE" 
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:CollectionProgress "NOT APPLICABLE"}))))
+  (is (= "COMPLETE" 
+         (:CollectionProgress
+           (vm/migrate-umm {} :collection "1.9" "1.10"
+                          {:CollectionProgress "COMPLETE"})))))
+
+(deftest migrate-1_10-down-to-1_9
+  (is (= "PLANNED"
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:CollectionProgress "PLANNED"}))))
+  (is (= "IN WORK"
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:CollectionProgress "ACTIVE"}))))
+  (is (= u/NOT-PROVIDED
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:CollectionProgress "NOT PROVIDED"}))))
+  (is (= "NOT APPLICABLE"
+        (:CollectionProgress
+          (vm/migrate-umm {} :collection "1.10" "1.9"
+                         {:CollectionProgress "NOT APPLICABLE"}))))
+  (is (= "COMPLETE"
+         (:CollectionProgress
+           (vm/migrate-umm {} :collection "1.10" "1.9"
+                          {:CollectionProgress "COMPLETE"})))))
