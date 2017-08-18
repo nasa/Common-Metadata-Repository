@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -13,7 +14,7 @@
    [compojure.route :as route]))
 
 (defn- validate-variable-content-type
-  "Validates that content type sent with a variable is JSON"
+  "Validates that content type sent with a variable is JSON."
   [headers]
   (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
 
@@ -27,18 +28,16 @@
     :headers {"Content-Type" mt/json}}))
 
 (defn- verify-variable-association-permission
-  "Verifies the current user has been granted permission to make variable associations"
-  [context permission-type]
-  (when-not (seq (acl/get-permitting-acls
-                  context :system-object "INGEST_MANAGEMENT_ACL" permission-type))
-    (errors/throw-service-error
-      :unauthorized
-      (format "You do not have permission to %s a variable." (name permission-type)))))
+  "Verifies the current user has been granted permission to make variable associations."
+  [context concept-id permission-type]
+  (let [provider-id (concepts/concept-id->provider-id concept-id)]
+    (acl/verify-ingest-management-permission
+     context :update :provider-object provider-id)))
 
 (defn associate-variable-to-collections
   "Associate the variable to a list of collections."
   [context headers body variable-concept-id]
-  (verify-variable-association-permission context :update)
+  (verify-variable-association-permission context variable-concept-id :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-variable-content-type headers)
   (info (format "Associate variable [%s] on collections: %s by client: %s."
@@ -49,7 +48,7 @@
 (defn dissociate-variable-to-collections
   "Dissociate the variable to a list of collections."
   [context headers body variable-concept-id]
-  (verify-variable-association-permission context :update)
+  (verify-variable-association-permission context variable-concept-id :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-variable-content-type headers)
   (info (format "Dissociating variable [%s] from collections: %s by client: %s."
