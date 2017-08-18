@@ -1,4 +1,4 @@
-(ns cmr.search.api.variables-api
+(ns cmr.search.api.variables
   "Defines the API for associating/dissociating variables with collections in the CMR."
   (:require
    [cheshire.core :as json]

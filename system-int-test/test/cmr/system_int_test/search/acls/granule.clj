@@ -1,20 +1,21 @@
-(ns cmr.system-int-test.search.acls.granule-acl-search-test
-  "Tests searching for collections with ACLs in place"
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
-            [cmr.common.services.messages :as msg]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.atom :as da]
-            [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.granule-counts :as gran-counts]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.transmit.config :as tc]))
+(ns cmr.system-int-test.search.acls.granule
+  "Tests searching for collections with ACLs in place."
+  (:require
+   [clojure.test :refer :all]
+   [clojure.string :as str]
+   [cmr.common.services.messages :as msg]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.atom :as da]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.granule-counts :as gran-counts]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+   [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"

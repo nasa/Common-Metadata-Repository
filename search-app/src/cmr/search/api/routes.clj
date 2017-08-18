@@ -19,8 +19,8 @@
    [cmr.search.api.community-usage-metrics :as metrics-api]
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
-   [cmr.search.api.tags-api :as tags-api]
-   [cmr.search.api.variables-api :as variables-api]
+   [cmr.search.api.tags :as tags-api]
+   [cmr.search.api.variables :as variables-api]
 
    ;; Required here to make sure the multimethod function implementation is available
    [cmr.search.data.elastic-results-to-query-results]
