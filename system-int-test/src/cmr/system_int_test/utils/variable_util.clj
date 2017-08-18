@@ -16,7 +16,7 @@
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.variable :as transmit-variable]))
 
-(def schema-version "1.9")
+(def schema-version "1.10")
 (def unique-index (atom 0))
 (def content-type "application/vnd.nasa.cmr.umm+json")
 (def default-opts {:accept-format :json
