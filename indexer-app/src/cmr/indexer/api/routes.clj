@@ -89,13 +89,6 @@
         (index-svc/reindex-tags request-context)
         {:status 200})
 
-      ;; This endpoint is only added for MMT and internal testing.
-      ;; Use the bootstrap-app bulk index variables endpoint for operational needs.
-      (POST "/reindex-variables" {:keys [request-context params headers]}
-        (acl/verify-ingest-management-permission request-context :update)
-        (index-svc/reindex-variables request-context)
-        {:status 200})
-
       ;; Unindex all concepts within a provider
       (context "/provider/:provider-id" [provider-id]
         (DELETE "/" {:keys [request-context params headers]}
