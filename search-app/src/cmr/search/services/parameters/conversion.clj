@@ -58,6 +58,7 @@
    :line :line
    :exclude :exclude
    :has-granules :has-granules
+   :author :string
 
    ;; Tag parameters
    :tag-key :tag-query
