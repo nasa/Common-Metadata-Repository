@@ -48,5 +48,5 @@
                                   :Subregion1 "CENTRAL AFRICA"}]
           location-keyword-list (map #(umm-c/map->LocationKeywordType %) location-keyword-maps)
           actual (lk/location-keywords->spatial-keywords location-keyword-list)
-          expected ["SPACE" "ANGOLA" "CENTRAL AFRICA"]]
+          expected ["SPACE" "EARTH MAGNETIC FIELD" "CONTINENT" "AFRICA" "CENTRAL AFRICA" "ANGOLA"]]
       (is (= expected actual)))))

@@ -41,13 +41,12 @@
   [location-keyword]
   (as-> location-keyword keyword
         (vals keyword)
-        (distinct keyword)
         (remove nil? keyword)))
 
 (defn location-keywords->spatial-keywords
   "Converts a list of LocationKeyword maps to a list of SpatialKeywords"
   [location-keyword-list]
-  (mapcat location-values location-keyword-list))
+  (distinct (mapcat location-values location-keyword-list)))
 
 (defn translate-spatial-keywords
   "Translates a list of spatial keywords into an array of LocationKeyword type objects"

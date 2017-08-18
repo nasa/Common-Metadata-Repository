@@ -395,14 +395,14 @@
           (vm/migrate-umm {} :collection "1.2" "1.1"
                           {:LocationKeywords
                            [{:Category "CONTINENT"}]}))))
-  (is (= ["ANGOLA"]
+  (is (= ["CONTINENT" "AFRICA" "CENTRAL AFRICA" "ANGOLA"]
          (:SpatialKeywords
           (vm/migrate-umm {} :collection "1.2" "1.1"
                           {:LocationKeywords [{:Category "CONTINENT"
                                                :Type "AFRICA"
                                                :Subregion1 "CENTRAL AFRICA"
                                                :Subregion2 "ANGOLA"}]}))))
-  (is (= ["Somewhereville" "Nowhereville"]
+  (is (= ["OTHER" "Somewhereville" "Nowhereville"]
          (:SpatialKeywords
           (vm/migrate-umm {} :collection "1.2" "1.1"
                           {:LocationKeywords [{:Category "OTHER" :Type "Somewhereville"}
