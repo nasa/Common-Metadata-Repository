@@ -26,8 +26,9 @@
     [cmr.indexer.data.index-set :as idx-set]
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
     [cmr.message-queue.config :as qcfg]
-    [cmr.message-queue.services.queue :as queue]
     [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+    [cmr.message-queue.services.queue :as queue]
+    [cmr.metadata-db.services.util :as mdb-util]
     [cmr.transmit.cubby :as cubby]
     [cmr.transmit.echo.rest :as rest]
     [cmr.transmit.index-set :as tis]
@@ -47,6 +48,14 @@
   names are excluded from this map if the query field name matches the field name in elastic search."
   {:granule {:provider-id :provider-id-doc-values
              :collection-concept-id :collection-concept-id-doc-values}})
+
+(def deleted-granule-index-name
+  "The name of the index in elastic search."
+  "deleted-granules")
+
+(def deleted-granule-type-name
+  "The name of the mapping type within the cubby elasticsearch index."
+  "deleted-granule")
 
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name. Duplicated the mappings from
@@ -404,12 +413,20 @@
     (errors/throw-service-error
       :bad-request
       (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
-
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (let [concept (meta-db/get-concept context concept-id revision-id)
-            parsed-concept (cp/parse-concept context concept)]
+            parsed-concept (cp/parse-concept context concept)
+            elastic-version (get-elastic-version context concept)]
+        (when (and (> revision-id 1)
+                   (= :granule concept-type))
+          (let [previous-concept (meta-db/get-concept context concept-id (- revision-id 1))]
+            (when (mdb-util/is-tombstone? previous-concept)
+              ;; When a granule tombstone is updated, remove deleted-granule index for it
+              (es/delete-document context [deleted-granule-index-name] deleted-granule-type-name
+                                  (str "D" concept-id) revision-id elastic-version
+                                  {:refresh true}))))
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))
 
@@ -456,9 +473,18 @@
           ;; delete concept from primary concept index
           (do
             (es/delete-document
-             context index-names (concept-mapping-types concept-type)
-             concept-id revision-id elastic-version elastic-options)
-            ;; propagate collection deletion to granules and variables
+              context index-names (concept-mapping-types concept-type)
+              concept-id revision-id elastic-version elastic-options)
+            ;; Index a deleted-granule document when granule is deleted
+            (when (= :granule concept-type)
+              (let [deleted-granule-id (str "D" (:concept-id concept))
+                    es-doc (es/parsed-concept->elastic-doc context
+                                                           (assoc concept :concept-id deleted-granule-id)
+                                                           concept)]
+                (es/save-document-in-elastic
+                  context [deleted-granule-index-name] deleted-granule-type-name
+                  es-doc deleted-granule-id revision-id elastic-version elastic-options)))
+            ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (cascade-collection-delete
                context concept-mapping-types concept-id revision-id))))))))

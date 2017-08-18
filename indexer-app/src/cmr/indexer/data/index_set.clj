@@ -65,6 +65,11 @@
                    :number_of_replicas 1,
                    :refresh_interval "1s"}})
 
+(def deleted-granule-setting {:index
+                              {:number_of_shards (elastic-tag-index-num-shards)
+                               :number_of_replicas 1,
+                               :refresh_interval "1s"}})
+
 (def variable-setting {:index
                        {:number_of_shards (elastic-variable-index-num-shards)
                         :number_of_replicas 1,
@@ -423,6 +428,15 @@
           :usage-relevancy-score m/int-field-mapping}
          spatial-coverage-fields))
 
+(defmapping deleted-granule-mapping :deleted-granule
+  "Defines the elasticsearch mapping for storing granules"
+  {:_id  {:path "concept-id"}}
+  {:concept-id (m/stored m/string-field-mapping)
+   :delete-time (m/stored m/string-field-mapping)
+   :provider-id (m/stored m/string-field-mapping)
+   :granule-ur (m/stored m/string-field-mapping)
+   :parent-collection-id (m/stored m/string-field-mapping)})
+
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections"
   {:_id  {:path "concept-id"}}
@@ -637,8 +651,10 @@
                              {:name "all-collection-revisions"
                               :settings collection-setting-v1}]
                             :mapping collection-mapping}
-               ;; The granule configuration here initially only specifies a single collection indexes
-               ;; Additional granule indexes are created over time via the index set application.
+               :deleted-granule {:indexes
+                                 [{:name "deleted-granules"
+                                   :settings deleted-granule-setting}]
+                                 :mapping deleted-granule-mapping}
                :granule {:indexes
                          (cons {:name "small_collections"
                                 :settings granule-settings-for-small-collections-index}
@@ -746,6 +762,7 @@
                                       name))]
      {:collection (get-concept-mapping-fn :collection)
       :granule (get-concept-mapping-fn :granule)
+      :deleted-granule (get-concept-mapping-fn :deleted-granule)
       :tag (get-concept-mapping-fn :tag)
       :variable (get-concept-mapping-fn :variable)})))
 
@@ -818,6 +835,9 @@
 
        :variable
        [(get indexes (or target-index-key :variables))]
+
+       :deleted-granule
+       [(get indexes (or target-index-key :deleted-granules))]
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]

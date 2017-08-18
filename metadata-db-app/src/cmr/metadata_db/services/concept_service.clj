@@ -4,6 +4,7 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string]
+   [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
@@ -11,6 +12,7 @@
    [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as cutil]
+   [cmr.elastic-utils.index-util :as index-util]
    [cmr.metadata-db.config :as config]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
@@ -655,6 +657,11 @@
       [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
       (info "Deleting" (count concept-id-revision-id-tuples)
             "old concept revisions for provider" (:provider-id provider))
+      (when (= :granule concept-type)
+        ;; Remove any refrence to granule from deleted-granule index
+        (doseq [[concept-id revision-id] concept-id-revision-id-tuples
+                :let [elastic-store (esi/context->search-index context)]]             
+          (index-util/delete-by-id elastic-store "deleted-granules" "deleted-granule" (str "D" concept-id))))
       (when (= :collection concept-type)
         (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
           ;; delete the related tag associations and variable associations

@@ -6,6 +6,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.jvm-info :as jvm-info]
+   [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
@@ -26,7 +27,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :queue-broker :scheduler :unclustered-scheduler :web :nrepl])
+  [:log :caches :search-index :db :queue-broker :scheduler :unclustered-scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -44,6 +45,7 @@
    (let [sys {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
+              :search-index (esi/create-elastic-search-index)
               :log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/metadata-db-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
