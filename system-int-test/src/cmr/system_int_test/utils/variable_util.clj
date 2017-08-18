@@ -33,6 +33,29 @@
   (echo-util/grant-all-variable (s/context))
   (f))
 
+(defn setup-acl
+  [group-name user-name user-type]
+  (let [gid (echo-util/get-or-create-group (s/context) group-name)
+        token (echo-util/login (s/context) user-name [gid])
+        grant-id (echo-util/grant (assoc (s/context) :token token)
+                                   [{:permissions [:read]
+                                     :user_type user-type}]
+                                   :system_identity
+                                   {:target nil})]
+     {:user-name user-name
+      :group-name group-name
+      :group-id gid
+      :grant-id grant-id
+      :token token}))
+
+(defn setup-guest-acl
+  [gid-name uid-name]
+  (setup-acl gid-name uid-name :guest))
+
+(defn setup-registered-acl
+  [gid-name uid-name]
+  (setup-acl gid-name uid-name :registered))
+
 (defn setup-update-acl
   "Set up the ACLs for UMM-Var update permissions and return the ids+token"
   ([context provider-id]
