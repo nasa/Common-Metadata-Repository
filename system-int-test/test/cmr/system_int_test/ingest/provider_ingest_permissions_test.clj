@@ -202,35 +202,12 @@
 
 (deftest variable-ingest-permissions-test
   (testing "Variable ingest permissions:"
-    (let [;; Groups
-          guest-group-id (echo-util/get-or-create-group
-                          (s/context) "umm-var-guid1")
-          reg-user-group-id (echo-util/get-or-create-group
-                             (s/context) "umm-var-guid2")
-          ;; Tokens
-          guest-token (echo-util/login
-                       (s/context) "umm-var-user1" [guest-group-id])
-          reg-user-token (echo-util/login
-                          (s/context) "umm-var-user2" [reg-user-group-id])
-          ;; Grants
-          guest-grant-id (echo-util/grant
-                          (assoc (s/context) :token guest-token)
-                          [{:permissions [:read]
-                            :user_type :guest}]
-                          :system_identity
-                          {:target nil})
-          reg-user-grant-id (echo-util/grant
-                             (assoc (s/context) :token reg-user-token)
-                             [{:permissions [:read]
-                               :user_type :registered}]
-                             :system_identity
-                             {:target nil})
-          {update-user-name :user-name
-           update-group-name :group-name
-           update-token :token
-           update-grant-id :grant-id
-           update-group-id :group-id} (variable-util/setup-update-acl
-                                       (s/context) "PROV1")
+    (let [{guest-token :token} (variable-util/setup-guest-acl
+                                "umm-var-guid1" "umm-var-user1")
+          {registered-token :token} (variable-util/setup-guest-acl
+                                     "umm-var-guid2" "umm-var-user2")
+          {update-token :token} (variable-util/setup-update-acl
+                                 (s/context) "PROV1")
           concept (variable-util/make-variable-concept)]
       (testing "disallowed create responses:"
         (are3 [token expected]
@@ -244,7 +221,7 @@
           "guest user denied"
           guest-token 401
           "regular user denied"
-          reg-user-token 401))
+          registered-token 401))
        (testing "disallowed delete responses:"
         (are3 [token expected]
           (let [response (ingest/delete-concept
@@ -259,7 +236,7 @@
           "guest user denied"
           guest-token 401
           "regular user denied"
-          reg-user-token 401))
+          registered-token 401))
       (testing "allowed responses:"
         (let [create-response (variable-util/ingest-variable
                                concept {:token update-token})
