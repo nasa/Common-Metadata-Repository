@@ -317,7 +317,7 @@
               :access-control (create-access-control-app queue-broker)
               :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component queue-broker)
-              :bootstrap (create-bootstrap-app queue-broker)
+              :bootstrap (when-not db-component (create-bootstrap-app queue-broker))
               :indexer (create-indexer-app queue-broker)
               :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)
