@@ -37,7 +37,16 @@
            ["LL" "Detroit"] [coll5 coll6 coll7]
            "Gaza Strip" [coll-gaza]
            "Tuolumne River Basin" [coll-iso-sample]
-           "North America" [coll-iso-sample]))
+           "North America" [coll-iso-sample]
+           "Continent" [coll-iso-sample coll-angola coll-c-africa coll-gaza]))
+    (testing "search by spatial keywords using wildcard * for cmr-4192 collection"
+      (is (d/refs-match? [coll-iso-sample]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "*river*"
+                                            "options[spatial-keyword][pattern]" "true"})))
+      (is (d/refs-match? [coll-iso-sample]
+                         (search/find-refs :collection
+                                           {:spatial-keyword "nOrTh aMEricA"}))))
     (testing "search by spatial keywords using wildcard *."
       (is (d/refs-match? [coll3 coll4 coll5 coll7]
                          (search/find-refs :collection

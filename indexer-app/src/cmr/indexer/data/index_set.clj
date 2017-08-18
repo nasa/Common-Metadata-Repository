@@ -321,7 +321,7 @@
           :archive-center.lowercase       m/string-field-mapping
           :data-center                    (m/stored m/string-field-mapping)
           :data-center.lowercase          m/string-field-mapping
-          :spatial-keyword                (m/doc-values m/string-field-mapping)
+          :spatial-keyword                m/string-field-mapping
           :spatial-keyword.lowercase      m/string-field-mapping
           :two-d-coord-name               m/string-field-mapping
           :two-d-coord-name.lowercase     m/string-field-mapping
@@ -336,7 +336,7 @@
           :platforms platform-hierarchical-mapping
           :instruments instrument-hierarchical-mapping
           :archive-centers data-center-hierarchical-mapping
-          :location-keywords (m/doc-values location-keywords-hierarchical-mapping)
+          :location-keywords location-keywords-hierarchical-mapping
           ;; Contains all four types of data centers combined - archive,
           ;; centers, distribution centers, processing centers, and
           ;; originating centers.
