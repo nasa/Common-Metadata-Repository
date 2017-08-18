@@ -100,3 +100,8 @@
   (-> concept-id
       concept-id->concept-prefix
       concept-prefix->concept-type))
+
+(defn concept-id->provider-id
+  "Returns the provider-id associated with the given concept-id."
+  [concept-id]
+  (:provider-id (parse-concept-id concept-id)))
