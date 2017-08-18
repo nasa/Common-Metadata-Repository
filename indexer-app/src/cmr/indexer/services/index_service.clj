@@ -524,7 +524,7 @@
        context
        index
        (concept-mapping-types :variable)
-       {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))))
+       {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
