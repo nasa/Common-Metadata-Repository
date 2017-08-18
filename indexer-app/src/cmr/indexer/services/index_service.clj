@@ -219,7 +219,7 @@
                              :tag
                              REINDEX_BATCH_SIZE
                              {:latest true})]
-    (bulk-index context latest-tag-batches {:force-version? true})))
+    (bulk-index context latest-tag-batches)))
 
 (defn- log-ingest-to-index-time
   "Add a log message indicating the time it took to go from ingest to completed indexing."
@@ -552,20 +552,6 @@
   [context]
   (humanizer-fetcher/refresh-cache context)
   (reindex-all-collections context))
-
-(defn reindex-variables
-  "Reindexes all the variables. Only the latest revisions will be indexed.
-  This function is only added for MMT and internal testing needs.
-  Use the bootstrap-app bulk index variables endpoint for operational needs."
-  [context]
-  (info "Reindexing variables")
-  (let [latest-variable-batches (meta-db/find-in-batches
-                                 context
-                                 :variable
-                                 REINDEX_BATCH_SIZE
-                                 {:latest true})]
-    (bulk-index context latest-variable-batches {:force-version? true}))
-  (info "Reindexing variables completed."))
 
 (defn reset
   "Delegates reset elastic indices operation to index-set app as well as resetting caches"
