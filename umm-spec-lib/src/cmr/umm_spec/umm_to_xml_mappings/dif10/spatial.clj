@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.spatial
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :as u]))
+  (:require
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.util :as u]))
 
 ;; CMR-1990 - We need to consolidate the SpatialCoverageTypeEnum between UMM JSON and DIF10
 (def umm-spatial-type->dif10-spatial-type

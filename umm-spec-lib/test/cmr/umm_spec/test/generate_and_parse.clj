@@ -26,6 +26,7 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
+  ; [:dif10])
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
 (def test-context (lkt/setup-context-for-test))
@@ -86,7 +87,7 @@
 (defn- remove-vertical-spatial-domains
   "Remove the VerticalSpatialDomains from the SpatialExtent of the record."
   [record]
-  (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))  
+  (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))
 
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)

@@ -20,7 +20,7 @@
 ;;; Utility Functions
 
 (defn- customized-compare
-  "Customizing the compare because normal string compare results in 
+  "Customizing the compare because normal string compare results in
    1.n > 1.10 and doesn't convert the version_steps correctly(1< n <10).
    Assuming the version only contains two parts part1.part2.
    both part1 and part2 are integers."
@@ -35,7 +35,7 @@
         part2-compare (- begin-part2 end-part2)]
     (if (zero? part1-compare)
       part2-compare
-      part1-compare))) 
+      part1-compare)))
 
 (defn- version-steps
   "Returns a sequence of version steps between begin and end, inclusive."
@@ -240,6 +240,19 @@
      (assoc :NumberOfSensors (:NumberOfInstruments instrument))
      (dissoc :ComposedOf)
      (dissoc :NumberOfInstruments)))
+
+(defn migrate-tiling-identification-systems
+  "Migrate TilingIdentificationSystems from 1.9 up to 1.10"
+  [collection]
+  (let [updated-tiling-id-systems (filter
+                                    #(spatial-conversion/tile-id-system-name-is-valid?
+                                      (:TilingIdentificationSystemName %))
+                                    (:TilingIdentificationSystems collection))
+        tiling-id-systems (when-not (empty? updated-tiling-id-systems)
+                            updated-tiling-id-systems)]
+   (-> collection
+       (dissoc :TilingIdentificationSystems)
+       (assoc :TilingIdentificationSystems tiling-id-systems))))
 
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]

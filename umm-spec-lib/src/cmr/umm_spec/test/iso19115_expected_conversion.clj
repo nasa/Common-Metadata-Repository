@@ -13,6 +13,7 @@
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.related-url :as ru-gen]
+    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
     [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
     [cmr.umm-spec.test.iso-shared :as iso-shared]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
@@ -21,8 +22,8 @@
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
+    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
+    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]))
 
 (defn- propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
@@ -349,20 +350,21 @@
       (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
-      ;;add contact persons introduced by CollectionCitation. 
-      (assoc :ContactPersons (iso-shared/update-contact-persons-from-collection-citation 
+      ;;add contact persons introduced by CollectionCitation.
+      (assoc :ContactPersons (iso-shared/update-contact-persons-from-collection-citation
                                (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll))
                                (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll)))))
       ;; CollectionCitation's Title and UMM's EntryTitle share the same xml element, So do CollectionCitation's
       ;; Version and UMM's Version. When translate to xml file, we use the UMM's EntryTitle and Version. The values
-      ;; could be different. 
-      ;; If the original CollectionCitation is nil, we should expect it to contain Title and Version. 
+      ;; could be different.
+      ;; If the original CollectionCitation is nil, we should expect it to contain Title and Version.
       ;; If there are multiple CollectionCitations, we should only expect the first one.
-      (assoc :CollectionCitations (map #(assoc % :Title (:EntryTitle umm-coll) :Version (:Version umm-coll)) 
+      (assoc :CollectionCitations (map #(assoc % :Title (:EntryTitle umm-coll) :Version (:Version umm-coll))
                                        (keep-first-collection-citation (:CollectionCitations umm-coll))))
       (assoc :ContactGroups (map expected-contact-group (:ContactGroups umm-coll)))
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       js/parse-umm-c))
