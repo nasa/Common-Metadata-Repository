@@ -357,7 +357,8 @@
         coll-concept (if (and need-to-index? (not assoc-to-latest-revision?))
                        (meta-db/get-concept context associated-concept-id associated-revision-id)
                        coll-concept)]
-    (when need-to-index?
+    (when (and need-to-index?
+               (not (:deleted coll-concept)))
       (let [parsed-coll-concept (cp/parse-concept context coll-concept)]
         (index-concept context coll-concept parsed-coll-concept options)))))
 
