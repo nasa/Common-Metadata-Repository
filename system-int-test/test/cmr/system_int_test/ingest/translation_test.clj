@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.ingest.translation-test
-  (:require 
+  (:require
     [clj-time.core :as t]
     [clojure.test :refer :all]
     [cmr.common.mime-types :as mt]
@@ -61,14 +61,14 @@
             expected (expected-conversion/convert expected-conversion/example-collection-record input-format output-format)
             expected (update-in-each expected [:Platforms] update-in-each [:Instruments] assoc
                                                :NumberOfInstruments nil)
-            expected (convert-to-sets expected) 
+            expected (convert-to-sets expected)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (first (mt/extract-mime-types (:content-type headers)))
             parsed-umm-json (umm-spec/parse-metadata test-context :collection output-format body)
             parsed-umm-json (update-in-each parsed-umm-json [:Platforms] update-in-each [:Instruments] assoc
                                                              :NumberOfInstruments nil)
             parsed-umm-json (convert-to-sets parsed-umm-json)]
-          
+
         (is (= 200 status) body)
         (is (= (mt/format->mime-type output-format) content-type))
         ;; when translating from dif9 to echo10,
