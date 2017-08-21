@@ -344,7 +344,7 @@
 
 (deftest deleted-variables-not-found-test
   (let [token (e/login (s/context) "user1")
-        [coll1 coll2] (for [n (range 1 3)]
+        [coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                         (d/ingest-umm-spec-collection
                          "PROV1"
                          (data-umm-c/collection n {})
@@ -357,7 +357,9 @@
         variable2 (variables/ingest-variable var2-concept {:token token})
         all-variables [variable1 variable2]
         associated-collections [{:concept-id (:concept-id coll1)}
-                                {:concept-id (:concept-id coll2)}]]
+                                {:concept-id (:concept-id coll2)}
+                                {:concept-id (:concept-id coll3)}
+                                {:concept-id (:concept-id coll4)}]]
     (index/wait-until-indexed)
 
     ;; Now I should find the all variables when searching
