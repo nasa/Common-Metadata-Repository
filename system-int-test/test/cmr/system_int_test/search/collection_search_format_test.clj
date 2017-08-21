@@ -206,7 +206,7 @@
               "DIF" :dif
               "DIF10" :dif10
               "ISO" :iso19115))))))
-  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! "1.9")))
+  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! original-ingest-accept-umm-version)))
 
 (deftest collection-umm-json-metadata-cache-test
   (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! "1.10")) 
@@ -249,7 +249,7 @@
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]})))
-  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! "1.9")))
+  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! original-ingest-accept-umm-version)))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
