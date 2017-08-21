@@ -27,23 +27,39 @@
 
     (index/wait-until-indexed)
 
-    (are3 [items author options]
-      (let [params (merge {:author author}
-                          options)]
-        (d/refs-match? items (search/find-refs :collection params)))
+    (testing "Author parameter search"
+      (are3 [items author options]
+        (let [params (merge {:author author}
+                            options)]
+          (d/refs-match? items (search/find-refs :collection params)))
 
-      "Author search"
-      [coll1] "Nelkin" nil
+        "Author search"
+        [coll1] "Nelkin" nil
 
-      "Pattern search"
-      [coll1 coll2] "*hilburn*" {"options[author][pattern]" "true"}
+        "Pattern search"
+        [coll1 coll2] "*hilburn*" {"options[author][pattern]" "true"}
 
-      "Pattern search, leading wildcard only"
-      [coll1] "*Hilburn" {"options[author][pattern]" "true"}
+        "Pattern search, leading wildcard only"
+        [coll1] "*Hilburn" {"options[author][pattern]" "true"}
 
-      "And search"
-      [coll1] ["*Hilburn*" "Nelkin"] {"options[author][pattern]" "true"
-                                      "options[author][and]" "true"}
+        "And search"
+        [coll1] ["*Hilburn*" "Nelkin"] {"options[author][pattern]" "true"
+                                        "options[author][and]" "true"}
 
-      "Other citation details search"
-      [coll2] "*jpl*" {"options[author][pattern]" "true"})))
+        "Other citation details search"
+        [coll2] "*jpl*" {"options[author][pattern]" "true"})
+
+     (testing "Keyword search"
+       (are3 [items keyword options]
+         (let [params (merge {:keyword keyword}
+                             options)]
+           (d/refs-match? items (search/find-refs :collection params)))
+
+         "Author search"
+         [coll1] "Nelkin" nil
+
+         "Search returns multiple collections"
+         [coll1 coll2] "*hilburn*" {"options[keyword][pattern]" "true"}
+
+         "Other citation details search"
+         [coll2] "JPL*" {"options[keyword][pattern]" "true"})))))

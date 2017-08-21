@@ -70,6 +70,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Point](#c-point)
         * [Line](#c-line)
     * [Additional Attribute](#c-additional-attribute)
+    * [Author](#c-author)
     * [With/without granules](#c-has-granules)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
@@ -1360,6 +1361,7 @@ The following fields are indexed for keyword search:
     * Sensor short names, long names, and techniques
     * Characteristic names, descriptions and values
     * TwoD coordinate system names
+    * Author
 
 #### <a name="c-provider"></a> Find collections by provider
 
@@ -1518,6 +1520,14 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 Multiple attributes can be provided. The default is for collections to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
 
 For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
+
+#### <a name="c-author"></a> Find collections by author
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching the given 'author' values
+
+    curl "%CMR-ENDPOINT%/collections?author=*JPL*&options[author][pattern]=true"
 
 #### <a name="c-has-granules"></a> Find collections with or without granules
 
