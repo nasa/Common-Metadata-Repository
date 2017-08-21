@@ -343,7 +343,10 @@
       "s?per term*")))
 
 (deftest deleted-variables-not-found-test
-  (let [{token :token} (variables/setup-update-acl (s/context) "PROV1")
+  (let [token (e/login (s/context) "user1")
+        coll1 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection 1 {})
+                                            {:token token})
         var1-concept (variables/make-variable-concept {:native-id "var1"
                                                        :Name "Variable1"})
         variable1 (variables/ingest-variable var1-concept {:token token})
@@ -355,21 +358,24 @@
 
     ;; Now I should find the all variables when searching
     (variables/assert-variable-search all-variables (variables/search {}))
+
     ;; Delete variable1
     (ingest/delete-concept var1-concept {:token token})
-
     (index/wait-until-indexed)
-
-    ;; Now searching variables finds nothing
+    ;; Now searching variables does not find the deleted variable
     (variables/assert-variable-search [variable2] (variables/search {}))
 
-    ;; resave the variable
-    (let [variable1-3 (variables/ingest-variable var1-concept {:token token})]
-
-      (index/wait-until-indexed)
-
-      ;; Now I should find the variable when searching
-      (variables/assert-variable-search [variable1-3 variable2] (variables/search {})))))
+    ;; Now verify that after we delete a variable that has variable association,
+    ;; we can't find it through search
+    ;; create variable associations on variable2
+    (variables/associate-by-concept-ids token
+                                        (:concept-id variable2)
+                                        [{:concept-id (:concept-id coll1)}])
+    ;; Delete variable2
+    (ingest/delete-concept var2-concept {:token token})
+    (index/wait-until-indexed)
+    ;; Now searching variables does not find the deleted variables
+    (variables/assert-variable-search [] (variables/search {}))))
 
 (deftest variable-search-in-umm-json-format-test
   (testing "variable search result in UMM JSON format has associated collections"

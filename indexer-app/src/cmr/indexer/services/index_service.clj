@@ -306,8 +306,14 @@
 (defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
-        {:keys [concept-id revision-id concept-type]} concept]
-    (when (indexing-applicable? concept-type all-revisions-index?)
+        {:keys [concept-id revision-id concept-type deleted]} concept]
+    (when (and (indexing-applicable? concept-type all-revisions-index?)
+               ;; don't index a deleted variable
+               ;; we need to add this check because a variable deletion causes a variable
+               ;; association deletion event which triggers a variable index again
+               ;; So it is possible that we try to reindex a deleted variable here
+               ;; and we don't want to allow a deleted variable be indexed
+               (not (and (= :variable concept-type) deleted)))
       (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
