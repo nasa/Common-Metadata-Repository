@@ -1,12 +1,13 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.xml.gen :refer :all]
     [cmr.umm-spec.date-util :as du]
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
+    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform :as platform]
@@ -30,15 +31,6 @@
    :xmlns:srv "http://www.isotc211.org/2005/srv"
    :xmlns:xlink "http://www.w3.org/1999/xlink"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
-
-(defn- generate-collection-progress
-  "Returns ISO SMAP CollectionProgress element from UMM-C collection c."
-  [c]
-  (when-let [collection-progress (:CollectionProgress c)]
-    [:gmd:MD_ProgressCode
-     {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
-      :codeListValue (str/lower-case collection-progress)}
-     collection-progress]))
 
 (defn- generate-spatial-extent
   "Returns ISO SMAP SpatialExtent content generator instructions"
@@ -144,7 +136,7 @@
             (collection-citation/convert-other-citation-details c)]]
           [:gmd:abstract (char-string (or (:Abstract c) su/not-provided))]
           [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
-          [:gmd:status (generate-collection-progress c)]
+          (collection-progress/generate-collection-progress c)
           (data-contact/generate-data-centers c "DISTRIBUTOR" "ORIGINATOR" "ARCHIVER")
           (data-contact/generate-data-centers-contact-persons c "DISTRIBUTOR" "ORIGINATOR" "ARCHIVER")
           (data-contact/generate-contact-persons (:ContactPersons c))

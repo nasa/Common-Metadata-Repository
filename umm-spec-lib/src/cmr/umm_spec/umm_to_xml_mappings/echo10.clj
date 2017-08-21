@@ -1,16 +1,24 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require [clj-time.format :as f]
-            [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.related-url :as ru]
-            [cmr.umm-spec.util :refer [with-default]]
-            [cmr.umm-spec.util :as spec-util]
-            [cmr.umm-spec.date-util :as dates]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.location-keywords :as lk]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
-            [cmr.umm-spec.date-util :as date]))
+  (:require 
+   [clj-time.format :as f]
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.date-util :as dates]
+   [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.related-url :as ru]
+   [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
+   [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
+   [cmr.umm-spec.util :refer [with-default]]
+   [cmr.umm-spec.util :as spec-util]))
+
+(def coll-progress-mapping
+  "Mapping from known collection progress values to values supported for ECHO10 Collection_State."
+  {"COMPLETE" "COMPLETE"
+   "ACTIVE" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn characteristic-mapping
   [data]
@@ -152,7 +160,7 @@
      [:CollectionDataType (:CollectionDataType c)]
      [:Orderable "false"]
      [:Visible "true"]
-     (when-let [revision-date (date/metadata-update-date c)]
+     (when-let [revision-date (dates/metadata-update-date c)]
        [:RevisionDate (f/unparse (f/formatters :date-time) revision-date)])
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]
      (dc/generate-processing-centers c)
@@ -161,7 +169,9 @@
      (dc/generate-archive-centers c)
      [:VersionDescription (:VersionDescription c)]
      (generate-collection-citations c)
-     [:CollectionState (:CollectionProgress c)]
+   (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
+                           (get coll-progress-mapping (string/upper-case coll-progress)))] 
+     [:CollectionState c-progress])
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (util/trunc (-> c :AccessConstraints :Description) 1024)]
      [:Price (when-let [price-str (-> c :Distributions first :Fees)]

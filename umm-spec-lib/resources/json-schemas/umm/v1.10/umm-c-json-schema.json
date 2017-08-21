@@ -255,6 +255,11 @@
       "type": "string",
       "enum": ["SCIENCE_QUALITY", "NEAR_REAL_TIME", "OTHER"]
     },
+    "CollectionProgressEnum": {
+      "description": "This element describes the production status of the data set. There are four choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.", 
+      "type": "string",
+      "enum": ["ACTIVE", "PLANNED", "COMPLETE", "NOT APPLICABLE", "NOT PROVIDED"]
+    },
     "LocationKeywordType": {
       "description": "This element defines a mapping to the GCMD KMS hierarchical location list. It replaces SpatialKeywords. Each tier must have data in the tier above it.",
       "type": "object",
@@ -379,11 +384,8 @@
       "minItems": 0
     },
     "CollectionProgress": {
-      "description": "Describes the production status of the data set. There are three choices: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. IN WORK refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.",
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 80,
-      "pattern": "[\\w]{1,79}"
+      "description": "This element describes the production status of the data set. There are four choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.",
+      "$ref": "#/definitions/CollectionProgressEnum" 
     },
     "Quality": {
       "description": "Free text description of the quality of the collection data.  Description may include: 1) succinct description of the quality of data in the collection; 2) Any quality assurance procedures followed in producing the data in the collection; 3) indicators of collection quality or quality flags - both validated or invalidated; 4) recognized or potential problems with quality; 5) established quality control mechanisms; and 6) established quantitative quality measurements.",
