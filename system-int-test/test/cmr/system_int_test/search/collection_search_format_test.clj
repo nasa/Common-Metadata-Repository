@@ -92,7 +92,7 @@
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(ngest-config/set-ingest-accept-umm-version! "1.10"))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.10"))
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
