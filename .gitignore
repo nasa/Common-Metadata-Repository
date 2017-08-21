@@ -7,3 +7,4 @@
 .vscode
 profiles.clj
 /ingest-app/resources/public/
+pom.xml
