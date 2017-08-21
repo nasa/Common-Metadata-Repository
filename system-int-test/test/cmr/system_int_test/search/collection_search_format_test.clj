@@ -11,6 +11,7 @@
     [cmr.common.mime-types :as mt]
     [cmr.common.util :as util :refer [are2 are3]]
     [cmr.common.xml :as cx]
+    [cmr.ingest.config :as ingest-config]
     [cmr.search.validators.opendata :as opendata-json]
     [cmr.spatial.codec :as codec]
     [cmr.spatial.line-string :as l]
@@ -50,12 +51,12 @@
 
 (def current-umm-version
   "current umm schema version."
-  "1.10")
+  umm-version/current-version)
 
 (def original-ingest-accept-umm-version
   "Original ingest-accept-umm-version in ingest config
    used to reverse back after changing it for certain tests."
-  "1.9")
+  (ingest-config/ingest-accept-umm-version))
 
 (deftest simple-search-test
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
@@ -100,7 +101,7 @@
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! current-umm-version))
+  (dev-sys-util/eval-in-dev-sys `(ngest-config/set-ingest-accept-umm-version! current-umm-version))
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -210,10 +211,10 @@
               "DIF" :dif
               "DIF10" :dif10
               "ISO" :iso19115))))))
-  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! original-ingest-accept-umm-version)))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! original-ingest-accept-umm-version)))
 
 (deftest collection-umm-json-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! current-umm-version)) 
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! current-umm-version)) 
   (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
                              {:format :echo10})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
@@ -253,7 +254,7 @@
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]})))
-  (dev-sys-util/eval-in-dev-sys `(cmr.ingest.config/set-ingest-accept-umm-version! original-ingest-accept-umm-version)))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! original-ingest-accept-umm-version)))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
