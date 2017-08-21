@@ -10,9 +10,9 @@
             [clojure.set :as set])
   (:import cmr.search.models.query.CollectionQueryCondition))
 
-
 (defprotocol ResolveCollectionQuery
-  "Defines a function to resolve a collection query condition into conditions of collection-concept-ids."
+  "Defines a function to resolve a collection query condition into conditions of
+  collection-concept-ids."
   (merge-collection-queries
     [c]
     "Merges together collection query conditions to reduce the number of collection queries.")
@@ -68,7 +68,6 @@
         (update-in [:resolved-conditions] conj resolved-cond)
         (assoc :context context)
         (assoc :collection-ids (:collection-ids context)))))
-
 
 (defn- resolve-group-conditions
   "Resolves all the condition from a group condition of the given operation. Returns a tuple
@@ -158,7 +157,8 @@
                      cqm/match-none
 
                      collection-ids
-                     (gc/and-conds [(cqm/string-conditions :concept-id collection-ids true) condition])
+                     (gc/and-conds [(cqm/string-conditions :concept-id collection-ids true)
+                                    condition])
 
                      :else
                      condition)
@@ -169,8 +169,8 @@
                                                                  :page-size :unlimited})))
          ;; It's possible that many collection concept ids could be found here. If this becomes a
          ;; performance issue we could restrict the collections that are found to ones that we know
-         ;; have some granules. The has-granule-results-feature has a cache of collections to granule
-         ;; counts. That could be refactored to be usable here.
+         ;; have some granules. The has-granule-results-feature has a cache of collections to
+         ;; granule counts. That could be refactored to be usable here.
          collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
      (if (empty? collection-concept-ids)
@@ -186,4 +186,3 @@
   (merge-collection-queries [this] this)
   (resolve-collection-query [this context] [:all this])
   (is-collection-query-cond? [_] false))
-

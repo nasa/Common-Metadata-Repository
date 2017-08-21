@@ -33,16 +33,46 @@
   (echo-util/grant-all-variable (s/context))
   (f))
 
+(defn setup-acl
+  [group-name user-name user-type]
+  (let [gid (echo-util/get-or-create-group (s/context) group-name)
+        token (echo-util/login (s/context) user-name [gid])
+        grant-id (echo-util/grant (assoc (s/context) :token token)
+                                   [{:permissions [:read]
+                                     :user_type user-type}]
+                                   :system_identity
+                                   {:target nil})]
+     {:user-name user-name
+      :group-name group-name
+      :group-id gid
+      :grant-id grant-id
+      :token token}))
+
+(defn setup-guest-acl
+  [gid-name uid-name]
+  (setup-acl gid-name uid-name :guest))
+
+(defn setup-registered-acl
+  [gid-name uid-name]
+  (setup-acl gid-name uid-name :registered))
+
 (defn setup-update-acl
   "Set up the ACLs for UMM-Var update permissions and return the ids+token"
   ([context provider-id]
-   (setup-update-acl context provider-id "umm-var-user42" "umm-var-guid42"))
+   (setup-update-acl
+    context provider-id :update "umm-var-user42" "umm-var-guid42"))
+  ([context provider-id permission-type]
+   (setup-update-acl
+    context provider-id permission-type "umm-var-user42" "umm-var-guid42"))
   ([context provider-id user-name group-name]
+   (setup-update-acl
+    context provider-id :update user-name group-name))
+  ([context provider-id permission-type user-name group-name]
    (let [update-group-id (echo-util/get-or-create-group context group-name)
          update-token (echo-util/login context user-name [update-group-id])
          token-context (assoc context :token update-token)
          update-grant-id (echo-util/grant-group-provider-admin
-                          token-context update-group-id provider-id :update)]
+                          token-context update-group-id provider-id permission-type)]
      {:user-name user-name
       :group-name group-name
       :group-id update-group-id

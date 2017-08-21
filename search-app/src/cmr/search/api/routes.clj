@@ -19,8 +19,8 @@
    [cmr.search.api.community-usage-metrics :as metrics-api]
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
-   [cmr.search.api.tags-api :as tags-api]
-   [cmr.search.api.variables-api :as variables-api]
+   [cmr.search.api.tags :as tags-api]
+   [cmr.search.api.variables :as variables-api]
 
    ;; Required here to make sure the multimethod function implementation is available
    [cmr.search.data.elastic-results-to-query-results]
@@ -113,13 +113,6 @@
 
 (def find-by-concept-id-concept-types
   #{:collection :granule :variable})
-
-(def granule-parent-collection-params
-  "Parameters that signify the need to search collections with data taken from
-   a granule search.
-
-  This could be generalized to support parameters that require multiple queries"
-  #{:has_granules_created_at :has-granules-created-at})
 
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
@@ -245,39 +238,6 @@
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (search-response ctx results)))
 
-(defn- get-bucket-values-from-aggregation
-  "Return a collection of values from aggregation buckets"
-  [aggregation-search-results aggregation-name]
-  (let [buckets (get-in aggregation-search-results [:aggregations aggregation-name :buckets])]
-    (map :key buckets)))
-
-(defn- find-granule-parent-collections
-  "Invokes query service to find collections based on data found in a granule search,
-   then executes a search for collections with the found concept-ids. Supports CMR Harvesting."
-  [ctx path-w-extension params headers body]
-  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        ctx (assoc ctx :query-string body)
-        params (process-params params path-w-extension headers mt/xml)
-        collections-with-new-granules-search (query-svc/get-collections-from-new-granules ctx params)
-        collection-ids (get-bucket-values-from-aggregation collections-with-new-granules-search :collections)
-        search-params (-> params
-                          (assoc :echo-collection-id collection-ids)
-                          (dissoc :has_granules_created_at)
-                          (dissoc :has-granules-created-at)
-                          lp/process-legacy-psa)]
-
-    (if (empty? collection-ids)
-      ;; collections-with-new-granules-search already has an empty response object,
-      ;; as well as time-took, which is why it's being passed to search-response here
-      (search-response ctx (dissoc collections-with-new-granules-search :aggregations))
-      (find-concepts-by-parameters ctx path-w-extension search-params headers body))))
-
-(defn- granule-parent-collection-query?
-  "Return true if parameters match any from the list of `multi-part-query-params`
-   defined above. Supports CMR Harvesting."
-  [search-params]
-  (boolean (some granule-parent-collection-params (keys search-params))))
-
 (defn- find-concepts
   "Invokes query service to find results and returns the response.
 
@@ -292,9 +252,6 @@
     (cond
       (= mt/json content-type-header)
       (find-concepts-by-json-query ctx path-w-extension params headers body)
-
-      (granule-parent-collection-query? params)
-      (find-granule-parent-collections ctx path-w-extension params headers body)
 
       (or (nil? content-type-header) (= mt/form-url-encoded content-type-header))
       (find-concepts-by-parameters ctx path-w-extension params headers body)

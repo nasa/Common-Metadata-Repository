@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.ingest.provider-ingest-test
   "CMR provider ingest integration test"
   (:require
-    [clojure.set :as set]
     [clj-http.client :as client]
+    [clojure.set :as set]
     [clojure.test :refer :all]
     [cmr.access-control.test.util :as access-control]
     [cmr.common.mime-types :as mt]
@@ -17,6 +17,7 @@
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.system-int-test.utils.variable-util :as variables]
     [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -122,6 +123,12 @@
                                                                               :ShortName "S3"
                                                                               :Version "V3"}))
           gran4 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1"))
+          variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
+                                                           :Name "Variable1"})
+
+          variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
+                                                           :Name "Variable2"
+                                                           :provider-id "PROV2"})
           ;; create an access group to test cascading deletes
           access-group (u/map-keys->kebab-case
                         (access-control/create-group
@@ -137,12 +144,12 @@
                                                                 :target "CATALOG_ITEM_ACL"}}))
           _ (index/wait-until-indexed)
           acl2 (u/map-keys->kebab-case
-                 (access-control/create-acl token
-                                            {:group_permissions [{:permissions [:read :order]
-                                                                  :user_type "guest"}]
-                                             :catalog_item_identity {:name "PROV1 read, order"
-                                                                     :collection_applicable true
-                                                                     :provider_id "PROV1"}}))
+                (access-control/create-acl token
+                                           {:group_permissions [{:permissions [:read :order]
+                                                                 :user_type "guest"}]
+                                            :catalog_item_identity {:name "PROV1 read, order"
+                                                                    :collection_applicable true
+                                                                    :provider_id "PROV1"}}))
           acl3 {:concept-id
                 (e/grant (merge
                           {:token (transmit-config/echo-system-token)}
@@ -157,6 +164,8 @@
 
       (is (= 2 (count (:refs (search/find-refs :collection {:provider-id "PROV1"})))))
       (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
+      (is (= 1 (:hits (variables/search {:name "Variable1"}))))
+      (is (= 1 (:hits (variables/search {:name "Variable2"}))))
 
       ;; ensure PROV1 group is indexed
       (is (= [(:concept-id access-group)]
@@ -184,6 +193,7 @@
         gran1
         gran2
         gran3
+        variable1
         access-group
         acl1
         acl2)
@@ -200,7 +210,8 @@
       (are [concept]
         (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
         coll3
-        gran4)
+        gran4
+        variable2)
 
       ;; search on PROV1 finds nothing
       (is (d/refs-match?
@@ -216,7 +227,11 @@
            (search/find-refs :collection {:provider-id "PROV2"})))
       (is (d/refs-match?
            [gran4]
-           (search/find-refs :granule {:provider-id "PROV2"})))))
+           (search/find-refs :granule {:provider-id "PROV2"})))
+      ;; Variable on PROV1 is not found in search
+      (is (= 0 (:hits (variables/search {:name "Variable1"}))))
+      ;; Variable on PROV2 is still found in search
+      (is (= 1 (:hits (variables/search {:name "Variable2"}))))))
 
   (testing "delete non-existent provider"
     (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]

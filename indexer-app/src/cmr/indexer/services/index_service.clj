@@ -306,8 +306,14 @@
 (defmethod index-concept :default
   [context concept parsed-concept options]
   (let [{:keys [all-revisions-index?]} options
-        {:keys [concept-id revision-id concept-type]} concept]
-    (when (indexing-applicable? concept-type all-revisions-index?)
+        {:keys [concept-id revision-id concept-type deleted]} concept]
+    (when (and (indexing-applicable? concept-type all-revisions-index?)
+               ;; don't index a deleted variable
+               ;; we need to add this check because a variable deletion causes a variable
+               ;; association deletion event which triggers a variable index again
+               ;; So it is possible that we try to reindex a deleted variable here
+               ;; and we don't want to allow a deleted variable be indexed
+               (not (and (= :variable concept-type) deleted)))
       (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
@@ -357,7 +363,8 @@
         coll-concept (if (and need-to-index? (not assoc-to-latest-revision?))
                        (meta-db/get-concept context associated-concept-id associated-revision-id)
                        coll-concept)]
-    (when need-to-index?
+    (when (and need-to-index?
+               (not (:deleted coll-concept)))
       (let [parsed-coll-concept (cp/parse-concept context coll-concept)]
         (index-concept context coll-concept parsed-coll-concept options)))))
 
@@ -505,18 +512,26 @@
     ;; delete collections
     (doseq [index (vals (:collection index-names))]
       (es/delete-by-query
-        context
-        index
-        ccmt
-        {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
+       context
+       index
+       ccmt
+       {:term {(query-field->elastic-field :provider-id :collection) provider-id}}))
 
     ;; delete the granules
     (doseq [index-name (idx-set/get-granule-index-names-for-provider context provider-id)]
       (es/delete-by-query
-        context
-        index-name
-        (concept-mapping-types :granule)
-        {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))))
+       context
+       index-name
+       (concept-mapping-types :granule)
+       {:term {(query-field->elastic-field :provider-id :granule) provider-id}}))
+
+    ;; delete the variables
+    (doseq [index (vals (:variable index-names))]
+      (es/delete-by-query
+       context
+       index
+       (concept-mapping-types :variable)
+       {:term {(query-field->elastic-field :provider-id :variable) provider-id}}))))
 
 (defn publish-provider-event
   "Put a provider event on the message queue."
