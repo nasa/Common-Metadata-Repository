@@ -344,16 +344,22 @@
 
 (deftest deleted-variables-not-found-test
   (let [token (e/login (s/context) "user1")
-        coll1 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection 1 {})
-                                            {:token token})
+        [coll1 coll2 coll3 coll4] (for [n (range 1 5)]
+                        (d/ingest-umm-spec-collection
+                         "PROV1"
+                         (data-umm-c/collection n {})
+                         {:token token}))
         var1-concept (variables/make-variable-concept {:native-id "var1"
                                                        :Name "Variable1"})
         variable1 (variables/ingest-variable var1-concept {:token token})
         var2-concept (variables/make-variable-concept {:native-id "var2"
                                                        :Name "Variable2"})
         variable2 (variables/ingest-variable var2-concept {:token token})
-        all-variables [variable1 variable2]]
+        all-variables [variable1 variable2]
+        associated-collections [{:concept-id (:concept-id coll1)}
+                                {:concept-id (:concept-id coll2)}
+                                {:concept-id (:concept-id coll3)}
+                                {:concept-id (:concept-id coll4)}]]
     (index/wait-until-indexed)
 
     ;; Now I should find the all variables when searching
@@ -370,12 +376,15 @@
     ;; create variable associations on variable2
     (variables/associate-by-concept-ids token
                                         (:concept-id variable2)
-                                        [{:concept-id (:concept-id coll1)}])
+                                        associated-collections)
+    (index/wait-until-indexed)
     ;; Delete variable2
     (ingest/delete-concept var2-concept {:token token})
     (index/wait-until-indexed)
     ;; Now searching variables does not find the deleted variables
-    (variables/assert-variable-search [] (variables/search {}))))
+    (variables/assert-variable-search [] (variables/search {}))
+    ;; verify searching collections by variable name also found no matches
+    (d/refs-match? [] (search/find-refs :collection {:variable_name "Variable2"}))))
 
 (deftest variable-search-in-umm-json-format-test
   (testing "variable search result in UMM JSON format has associated collections"

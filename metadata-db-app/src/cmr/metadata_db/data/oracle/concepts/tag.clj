@@ -43,12 +43,14 @@
                                           (assoc :deleted true :metadata "")
                                           (update :revision-id inc)))
                         tag-associations)]
+    ;; save tag association tombstones
     (doseq [tombstone tombstones]
-      (concepts/save-concept db {:provider-id "CMR" :small false} tombstone)
-      ;; publish tag-association delete event
+      (concepts/save-concept db {:provider-id "CMR" :small false} tombstone))
+    ;; publish tag association delete events
+    (doseq [tombstone tombstones]
       (ingest-events/publish-event
-        (:context db)
-        (ingest-events/concept-delete-event tombstone)))))
+       (:context db)
+       (ingest-events/concept-delete-event tombstone)))))
 
 ;; CMR-2520 Remove this and the related functions when implementing asynchronous cascade deletes
 (defmethod c/after-save :tag
