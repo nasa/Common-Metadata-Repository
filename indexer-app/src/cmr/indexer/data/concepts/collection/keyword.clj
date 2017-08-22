@@ -46,7 +46,7 @@
         processing-level-id (when-not (= su/not-provided processing-level-id)
                               processing-level-id)
         detailed-locations (map :DetailedLocation (:LocationKeywords collection))
-        spatial-keywords (lk/location-keywords->spatial-keywords
+        spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
         projects (for [{:keys [ShortName LongName]} (:Projects collection)]
                    {:short-name ShortName :long-name LongName})

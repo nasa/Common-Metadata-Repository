@@ -68,7 +68,6 @@
                        {:Category "CONTINENT"
                         :Type "Somewhereville"
                         :DetailedLocation "Detailed Somewhereville"}]
-    :SpatialKeywords ["ANGOLA" "Somewhereville"]
     :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                     :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
