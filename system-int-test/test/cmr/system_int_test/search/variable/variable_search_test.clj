@@ -18,7 +18,7 @@
 
 (use-fixtures :each
               (join-fixtures
-               [(ingest/reset-fixture {"provguid1" "PROV1"})
+               [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                 variables/grant-all-variable-fixture]))
 
 (deftest search-for-variables-validation-test
@@ -75,17 +75,23 @@
 (deftest search-for-variables-test
   (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
                                                          :Name "Variable1"
-                                                         :LongName "Measurement1"})
+                                                         :LongName "Measurement1"
+                                                         :provider-id "PROV1"})
         variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
                                                          :Name "Variable2"
-                                                         :LongName "Measurement2"})
+                                                         :LongName "Measurement2"
+                                                         :provider-id "PROV1"})
         variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
                                                          :Name "a subsitute for variable2"
-                                                         :LongName "variable1"})
+                                                         :LongName "variable1"
+                                                         :provider-id "PROV2"})
         variable4 (variables/ingest-variable-with-attrs {:native-id "var4"
                                                          :Name "v.other"
-                                                         :LongName "m.other"})
-        all-variables [variable1 variable2 variable3 variable4]]
+                                                         :LongName "m.other"
+                                                         :provider-id "PROV2"})
+        prov1-variables [variable1 variable2]
+        prov2-variables [variable3 variable4]
+        all-variables (concat prov1-variables prov2-variables)]
     (index/wait-until-indexed)
 
     (are3 [expected-variables query]
@@ -171,42 +177,42 @@
       {:variable-name ["Variable1" "*other"] "options[variable-name][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; measurement Param
-      "By measurement case sensitive - exact match"
-      [variable1]
-      {:measurement "Measurement1"}
+      ;; provider Param
+      "By provider - exact match"
+      prov1-variables
+      {:provider "PROV1"}
 
-      "By measurement case sensitive, default ignore-case true"
-      [variable1]
-      {:measurement "measurement1"}
+      "By provider, default ignore-case true"
+      prov1-variables
+      {:provider "prov1"}
 
-      "By measurement ignore case false"
+      "By provider ignore case false"
       []
-      {:measurement "measurement1" "options[measurement][ignore-case]" false}
+      {:provider "prov1" "options[provider][ignore-case]" false}
 
-      "By measurement ignore case true"
-      [variable1]
-      {:measurement "measurement1" "options[measurement][ignore-case]" true}
+      "By provider ignore case true"
+      prov1-variables
+      {:provider "prov1" "options[provider][ignore-case]" true}
 
-      "By measurement Pattern, default false"
+      "By provider Pattern, default false"
       []
-      {:measurement "*other"}
+      {:provider "PROV?"}
 
-      "By measurement Pattern true"
-      [variable4]
-      {:measurement "*other" "options[measurement][pattern]" true}
+      "By provider Pattern true"
+      all-variables
+      {:provider "PROV?" "options[provider][pattern]" true}
 
-      "By measurement Pattern false"
+      "By provider Pattern false"
       []
-      {:measurement "*other" "options[measurement][pattern]" false}
+      {:provider "PROV?" "options[provider][pattern]" false}
 
-      "By multiple measurements"
-      [variable1 variable2]
-      {:measurement ["Measurement1" "measurement2"]}
+      "By multiple providers"
+      prov2-variables
+      {:provider ["PROV2" "PROV3"]}
 
-      "By multiple measurements with options"
-      [variable1 variable4]
-      {:measurement ["measurement1" "*other"] "options[measurement][pattern]" true}
+      "By multiple providers with options"
+      all-variables
+      {:provider ["PROV1" "*2"] "options[provider][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; concept-id Param
