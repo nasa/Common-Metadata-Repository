@@ -75,7 +75,8 @@
   "Separator used to separate keyword into keyword fields"
   ;; Note: This is going to be changed to "\s*>\s*"" per CMR-3181
   ;; but requires changes to unit tests
-  #"\s?>\s?")
+  ;; Note: This now will also match "&gt;" to satisfy CMR-4192
+  #"(\s?>\s?|\s?\Q&gt;\E\s?)")
 
 (def keyword-separator-join
   "Separator used to join keyword fields into a keyword string"
