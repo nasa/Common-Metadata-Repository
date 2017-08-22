@@ -11,7 +11,8 @@
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.umm-spec.additional-attribute :as aa]))
+   [cmr.umm-spec.additional-attribute :as aa]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
@@ -788,10 +789,10 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo")}))]
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Replacement_Tile")}))
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "SOURCE_TILE")}))
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "Another_Tile")}))
+                                                     :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems spatial-conversion/valid-tile-identification-system-names)}))]
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "WRS-1")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "CALIPSO")}))
     (index/wait-until-indexed)
     (testing "Update collection successful cases"
       (are3
@@ -805,13 +806,13 @@
           (is (= [200 nil] [status errors])))
 
         "Adding an additional new tile is OK"
-        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "Foo" "New_Tile"]
+        ["MISR" "CALIPSO" "MODIS Tile EASE" "WRS-2" "WELD Alaska Tile"]
 
         "Removing a tile not referenced by any granule in the collection is OK"
-        ["Replacement_Tile" "SOURCE_TILE" "Another_Tile" "New_Tile"]
-
-        "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
-        ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
+        ["MISR" "CALIPSO" "MODIS Tile EASE" "WELD Alaska Tile"]))
+        ;
+        ; "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
+        ; ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
 
     (testing "Update collection failure cases"
       (are3
@@ -826,11 +827,11 @@
           (is (= [422 expected-errors] [status errors])))
 
         "Removing a tile that is referenced by a granule is invalid."
-        ["Replacement_Tile"]
-        ["Collection TilingIdentificationSystemName [another_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]
+        ["CALIPSO"]
+        ["Collection TilingIdentificationSystemName [CALIPSO] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
-        ["SOURCE_TILE" "Source_Tile_New" "Another_Tile" "New_Tile"]
+        ["MODIS Tile EASE" "WRS-2" "CALIPSO" "WELD Alaska Tile"]
         ["Collection TilingIdentificationSystemName [replacement_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
 
 (deftest collection-update-instrument-test
@@ -916,12 +917,12 @@
                         :ShortName "S1"
                         :Version "V1"
                         :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
-                        :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "SOURCE_TILE")
+                        :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "MISR")
                         :Projects (data-umm-cmn/projects "PROJECT")
                         :AdditionalAttributes [a1 a2 a3 a4 a5 a6 a7 a8]}
 
         granule-map {:project-refs ["PROJECT"]
-                     :two-d-coordinate-system (dg/two-d "SOURCE_TILE")
+                     :two-d-coordinate-system (dg/two-d "MISR")
                      :platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "PLATFORM" "INSTRUMENT" "CHILDINSTRUMENT")]
                      :product-specific-attributes [(dg/psa "STRING" ["alpha"])
                                                    (dg/psa "BOOLEAN" ["true"])
@@ -948,8 +949,8 @@
       (assoc granule-map :project-refs ["prOJecT"])
 
       "Tiling Identification Systems"
-      (assoc collection-map :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "sOUrce_tIle"))
-      (assoc granule-map :two-d-coordinate-system (dg/two-d "SOURCE_tile"))
+      (assoc collection-map :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "MISR"))
+      (assoc granule-map :two-d-coordinate-system (dg/two-d "MISR"))
 
       "Platforms Instruments Child Instruments"
       (assoc collection-map :Platforms [(data-umm-cmn/platform-with-instrument-and-childinstruments "plAtfoRM" "inStrUmEnt" "CHildinSTrument")])

@@ -26,7 +26,6 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  ; [:dif10])
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
 (def test-context (lkt/setup-context-for-test))

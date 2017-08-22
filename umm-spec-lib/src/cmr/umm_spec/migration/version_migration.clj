@@ -6,14 +6,15 @@
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.location-keywords :as lk]
-   [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
+   [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.versioning :refer [versions current-version]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -242,17 +243,15 @@
      (dissoc :NumberOfInstruments)))
 
 (defn migrate-tiling-identification-systems
-  "Migrate TilingIdentificationSystems from 1.9 up to 1.10"
+  "Migrate TilingIdentificationSystems from 1.9 up to 1.10
+   If a TilingIdentificationSystemName is not valid, the entire
+   TilingIdentificationSystem will be dropped."
   [collection]
-  (let [updated-tiling-id-systems (filter
-                                    #(spatial-conversion/tile-id-system-name-is-valid?
-                                      (:TilingIdentificationSystemName %))
-                                    (:TilingIdentificationSystems collection))
-        tiling-id-systems (when-not (empty? updated-tiling-id-systems)
-                            updated-tiling-id-systems)]
-   (-> collection
-       (dissoc :TilingIdentificationSystems)
-       (assoc :TilingIdentificationSystems tiling-id-systems))))
+  (let [tiling-id-systems (filter
+                           #(spatial-conversion/tile-id-system-name-is-valid?
+                             (:TilingIdentificationSystemName %))
+                           (:TilingIdentificationSystems collection))]
+   (assoc collection :TilingIdentificationSystems (seq tiling-id-systems))))
 
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
@@ -283,12 +282,13 @@
 (defmethod migrate-umm-version [:collection "1.9" "1.10"]
   [context c & _]
   (-> c
-      (coll-progress-migration/migrate-up)))
+      migrate-tiling-identification-systems
+      coll-progress-migration/migrate-up))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
   (-> c
-      (coll-progress-migration/migrate-down)))
+      coll-progress-migration/migrate-down))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 

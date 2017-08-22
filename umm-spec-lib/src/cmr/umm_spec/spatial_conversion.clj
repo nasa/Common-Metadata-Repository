@@ -28,9 +28,8 @@
   "Return nil or equivalent value if the given name does not match any
    in the list of valid ones"
   [tile-identification-system-name]
-   (when (tile-id-system-name-is-valid? tile-identification-system-name)
-     tile-identification-system-name))
-
+  (when (tile-id-system-name-is-valid? tile-identification-system-name)
+    tile-identification-system-name))
 
 (defn expected-tiling-id-systems-name
   "Translate TilingIdentificationSystemNames in accordance with UMM Spec v1.10"

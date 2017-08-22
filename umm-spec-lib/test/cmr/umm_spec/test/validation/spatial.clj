@@ -8,17 +8,6 @@
             [cmr.spatial.point :as p]
             [cmr.common.services.errors :as e]))
 
-(def valid-tile-identification-system-names
-  "Valid names for TilingIdentificationSystemName as stated in CMR-3675"
-  ["CALIPSO"
-   "MISR"
-   "MODIS Tile EASE"
-   "MODIS Tile SIN"
-   "WELD Alaska Tile"
-   "WELD CONUS Tile"
-   "WRS-1"
-   "WRS-2"])
-
 (defn- umm-spec-point
   "Returns a point for a umm-spec model."
   [lon lat]

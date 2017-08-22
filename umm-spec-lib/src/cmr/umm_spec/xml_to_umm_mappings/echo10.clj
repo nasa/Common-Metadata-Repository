@@ -95,11 +95,15 @@
 (defn parse-tiling
   "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."
   [doc]
-  (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
-    {:TilingIdentificationSystemName (spatial-conversion/translate-tile-id-system-name
-                                      (value-of sys-el "TwoDCoordinateSystemName"))
-     :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
-     :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)}))
+  (let [tiling-id-systems
+        (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
+         {:TilingIdentificationSystemName (value-of sys-el "TwoDCoordinateSystemName")
+          :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
+          :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)})]
+    (filter
+     #(spatial-conversion/tile-id-system-name-is-valid?
+       (:TilingIdentificationSystemName %))
+     tiling-id-systems)))
 
 (defn- parse-platforms
   "Parses platforms from the ECHO10 collection document."

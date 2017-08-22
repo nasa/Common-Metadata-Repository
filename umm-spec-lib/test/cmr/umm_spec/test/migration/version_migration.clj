@@ -1179,39 +1179,37 @@
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.10" "1.9"
                           {:CollectionProgress "COMPLETE"})))))
+
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems
                            [{:TilingIdentificationSystemName "MISR"
-                             :Coordinate1 {:MinimumValue 1.0
-                                           :MaximumValue 10.0}
-                             :Coordinate2 {:MinimumValue 1.0
-                                           :MaximumValue 10.0}}
+                             :Coordinate1 {:MinimumValue 1
+                                           :MaximumValue 10}
+                             :Coordinate2 {:MinimumValue 1
+                                           :MaximumValue 10}}
                             {:TilingIdentificationSystemName "Heat Miser"
-                              :Coordinate1 {:MinimumValue 11.0
-                                            :MaximumValue 20.0}
-                              :Coordinate2 {:MinimumValue 11.0
-                                            :MaximumValue 20.0}}]}
+                              :Coordinate1 {:MinimumValue 11
+                                            :MaximumValue 20}
+                              :Coordinate2 {:MinimumValue 11
+                                            :MaximumValue 20}}
+                            {:TilingIdentificationSystemName "CALIPSO"
+                              :Coordinate1 {:MinimumValue 1
+                                            :MaximumValue 10}}
+                            {:TilingIdentificationSystemName "MODIS Tile EASE"
+                              :Coordinate1 {:MinimumValue 1
+                                            :MaximumValue 10}}
+                            {:TilingIdentificationSystemName "WRS-1"
+                              :Coordinate1 {:MinimumValue 1
+                                            :MaximumValue 10}}]}
         result (vm/migrate-umm {} :collection "1.9" "1.10" tiling-id-systems)
         other-result (vm/migrate-tiling-identification-systems tiling-id-systems)]
-    (proto-repl.saved-values/save 8)
-    (is (= result
-           {:CollectionCitations nil,
-            :Personnel
-            [{:Party {:Person {:LastName "Not provided"}},
-              :Role "POINTOFCONTACT"}],
-            :TilingIdentificationSystems
-            [{:Coordinate2 {:MinimumValue 1, :MaximumValue 10},
-              :Coordinate1 {:MinimumValue 1, :MaximumValue 10},
-              :TilingIdentificationSystemName "MISR"}],
-            :PublicationReferences nil,
-            :RelatedUrls
-            [{:Subtype "GENERAL DOCUMENTATION",
-              :GetData nil,
-              :URLContentType "PublicationURL",
-              :Description nil,
-              :Type "VIEW RELATED INFORMATION",
-              :URL "Not%20provided",
-              :GetService nil}],
-            :Organizations [],
-            :Platforms nil,
-            :PaleoTemporalCoverage nil}))))
+    (is (= (:TilingIdentificationSystems result)
+           [{:TilingIdentificationSystemName "MISR",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10},
+             :Coordinate2 {:MinimumValue 1, :MaximumValue 10}}
+            {:TilingIdentificationSystemName "CALIPSO",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}
+            {:TilingIdentificationSystemName "MODIS Tile EASE",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}
+            {:TilingIdentificationSystemName "WRS-1",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}]))))
