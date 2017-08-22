@@ -1363,7 +1363,7 @@ The following fields are indexed for keyword search:
 
 #### <a name="c-provider"></a> Find collections by provider
 
-This parameter supports `pattern`, `ignore_case` and option `and`.
+This parameter supports `pattern` and `ignore_case`.
 
 Find collections matching 'provider' param value
 
@@ -3090,6 +3090,8 @@ The following parameters are supported when searching for variables.
 These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
 * name
+  * options: pattern, ignore_case
+* provider
   * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
