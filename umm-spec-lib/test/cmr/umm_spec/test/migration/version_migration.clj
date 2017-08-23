@@ -1133,6 +1133,34 @@
            collection-contact-persons))))
 
 (deftest migrate-1_9-up-to-1_10
+  (is (= [{:PrecisionOfSeconds "3"
+           :EndsAtPresentFlag "false"
+           :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                             :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                            {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                             :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
+          {:PrecisionOfSeconds "3"
+           :EndsAtPresentFlag "false"
+           :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                             :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                            {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                             :EndingDateTime "2003-01-01T00:00:00.000Z"}]}] 
+        (:TemporalExtents
+          (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:TemporalExtents [{:TemporalRangeType "temp range 1"
+                                             :PrecisionOfSeconds "3"
+                                             :EndsAtPresentFlag "false"
+                                             :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                               :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                              {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}
+                                            {:TemporalRangeType "temp range 2"
+                                             :PrecisionOfSeconds "3"
+                                             :EndsAtPresentFlag "false"
+                                             :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                               :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                              {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]}))))
   (is (= u/NOT-PROVIDED
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"

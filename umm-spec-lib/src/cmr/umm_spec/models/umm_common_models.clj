@@ -676,10 +676,6 @@
 ;; Information which describes the temporal range or extent of a specific collection.
 (defrecord TemporalExtentType
   [
-   ;; This attribute tells the system and ultimately the end user how temporal coverage is specified
-   ;; for the collection. Choices are Single Date Time, Range Date Time, and Periodic Date Time.
-   TemporalRangeType
-
    ;; The precision (position in number of places to right of decimal point) of seconds used in
    ;; measurement.
    PrecisionOfSeconds

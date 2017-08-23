@@ -28,8 +28,7 @@
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
   [doc]
   (for [temporal (select doc "/Collection/Temporal")]
-    {:TemporalRangeType (value-of temporal "TemporalRangeType")
-     :PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
+    {:PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
      :EndsAtPresentFlag (Boolean/valueOf (value-of temporal "EndsAtPresentFlag"))
      :RangeDateTimes (for [rdt (select temporal "RangeDateTime")]
                        (fields-from rdt :BeginningDateTime :EndingDateTime))
