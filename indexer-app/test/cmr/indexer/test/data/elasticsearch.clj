@@ -14,17 +14,19 @@
                            {:name "all-collection-revisions",
                             :settings i/collection-setting-v1},]
                  :mapping i/collection-mapping},
+    :deleted-granule {:indexes [{:name "deleted-granules",
+                                 :settings i/deleted-granule-setting}]
+                      :mapping i/deleted-granule-mapping}
     :granule {:indexes
               [{:name "small_collections",
                 :settings i/granule-settings-for-small-collections-index}
-               {:name "deleted-granules",
-                 :settings i/deleted-granule-setting}
+
                {:name "C274209-USGS_EROS",
                 :settings i/granule-settings-for-individual-indexes}
                {:name "C274211-USGS_EROS",
                 :settings i/granule-settings-for-individual-indexes}],
               :individual-index-settings i/granule-settings-for-individual-indexes
-              :mapping (merge i/granule-mapping i/deleted-granule-mapping)}
+              :mapping i/granule-mapping}
     :tag {:indexes [{:name "tags",
                      :settings i/tag-setting}],
           :mapping i/tag-mapping},
