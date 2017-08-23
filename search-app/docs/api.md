@@ -1539,7 +1539,7 @@ Find collections matching the given 'author' values
 
 When `has_granules` is set to "true" or "false", results will be restricted to collections with or without granules, respectively.
 
-    curl "%CMR_ENDPOINT%/collections?has_granules=true"
+    curl "%CMR-ENDPOINT%/collections?has_granules=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
