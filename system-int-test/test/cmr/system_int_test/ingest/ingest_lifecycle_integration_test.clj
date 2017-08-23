@@ -140,9 +140,9 @@
                "Type" "AFRICA",
                "Subregion1" "CENTRAL AFRICA",
                "Subregion2" "ANGOLA"}
-              {"Category" "OTHER",
-               "Type" "Somewhereville"}] (get response "LocationKeywords")))
-      (is (= ["ANGOLA" "Somewhereville"] (get response "SpatialKeywords"))))))
+              {"Category" "OTHER", "Type" "Detailed Somewhereville"}]
+             (get response "LocationKeywords")))
+      (is (= ["ANGOLA" "Detailed Somewhereville"] (get response "SpatialKeywords"))))))
 
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"

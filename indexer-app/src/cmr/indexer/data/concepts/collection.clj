@@ -143,7 +143,7 @@
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
         processing-level-id (get-in collection [:ProcessingLevel :Id])
-        spatial-keywords (lk/location-keywords->spatial-keywords
+        spatial-keywords (lk/location-keywords->spatial-keywords-for-indexing
                           (:LocationKeywords collection))
         access-value (get-in collection [:AccessConstraints :Value])
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)

@@ -2,11 +2,13 @@
   "Contains functions for migrating between versions of UMM schema."
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
+   [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
@@ -17,13 +19,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
 
+(defn- customized-compare
+  "Customizing the compare because normal string compare results in 
+   1.n > 1.10 and doesn't convert the version_steps correctly(1< n <10).
+   Assuming the version only contains two parts part1.part2.
+   both part1 and part2 are integers."
+  [begin end]
+  (let [begin-parts (string/split begin #"\.")
+        end-parts (string/split end #"\.")
+        begin-part1 (read-string (first begin-parts))
+        begin-part2 (read-string (last begin-parts))
+        end-part1 (read-string (first end-parts))
+        end-part2 (read-string (last end-parts))
+        part1-compare (- begin-part1 end-part1)
+        part2-compare (- begin-part2 end-part2)]
+    (if (zero? part1-compare)
+      part2-compare
+      part1-compare))) 
+
 (defn- version-steps
   "Returns a sequence of version steps between begin and end, inclusive."
   [begin end]
-  (->> (condp #(%1 %2) (compare begin end)
-         neg?  (sort versions)
+  (->> (condp #(%1 %2) (customized-compare begin end)
+         neg?  (sort-by count versions)
          zero? nil
-         pos?  (reverse (sort versions)))
+         pos?  (reverse (sort-by count versions)))
        (partition 2 1 nil)
        (drop-while #(not= (first %) begin))
        (take-while #(not= (first %) end))))
@@ -246,6 +266,16 @@
       (update-in-each [:CollectionCitations] related-url/migrate-online-resource-to-related-url)
       (update-in-each [:Platforms] update-in-each [:Instruments] migrate-instrument-to-sensor)
       add-related-urls))
+
+(defmethod migrate-umm-version [:collection "1.9" "1.10"]
+  [context c & _]
+  (-> c
+      (coll-progress-migration/migrate-up)))
+
+(defmethod migrate-umm-version [:collection "1.10" "1.9"]
+  [context c & _]
+  (-> c
+      (coll-progress-migration/migrate-down)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 

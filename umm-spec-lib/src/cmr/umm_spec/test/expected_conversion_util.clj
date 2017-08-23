@@ -3,6 +3,7 @@
  (:require
   [clj-time.core :as t]
   [clj-time.format :as f]
+  [clojure.string :as string]
   [cmr.common-app.services.kms-fetcher :as kf]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.dif-util :as dif-util]
@@ -12,6 +13,23 @@
   [cmr.umm-spec.test.location-keywords-helper :as lkt]
   [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as su]))
+
+(def coll-progress-enum-list
+  "The enum list for CollectionProgress in v1.10. that could be converted from 
+   all formats except for DIF10"
+  (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED" "NOT APPLICABLE"]))
+
+(defn expected-coll-progress
+  "Returns the expected colleciton progress after converting from umm to other format, then back to umm."
+  ([umm-coll]
+   (expected-coll-progress umm-coll coll-progress-enum-list))
+  ([umm-coll enum-list-set]
+   (let [coll-progress (:CollectionProgress umm-coll)
+         upper-case-coll-progress (when coll-progress
+                                    (string/upper-case coll-progress))]
+     (if (coll-progress-enum-list upper-case-coll-progress)
+       upper-case-coll-progress
+       "NOT PROVIDED"))))
 
 (def relation-set #{"GET DATA"
                     "GET RELATED VISUALIZATION"

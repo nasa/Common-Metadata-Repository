@@ -3,7 +3,7 @@
   (:require
     [clj-time.core :as t]
     [clj-time.format :as f]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.util :as util :refer [update-in-each]]
     [cmr.spatial.mbr :as m]
     [cmr.umm-spec.date-util :as date-util]
@@ -38,7 +38,7 @@
   (for [extent temporal-extents]
     (update-in extent [:TemporalRangeType] (fn [x]
                                              (when x
-                                               (str/trim (iso-util/sanitize-value x)))))))
+                                               (string/trim (iso-util/sanitize-value x)))))))
 
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
@@ -117,7 +117,7 @@
           (-> related-url
               (dissoc :FileSize :MimeType :GetData)
               expected-related-url-get-service
-              (update :Description #(when % (str/trim %))))))))
+              (update :Description #(when % (string/trim %))))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -126,7 +126,7 @@
                     ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
                     ;; XML, so the values must be updated to match what we expect in the resulting
                     ;; XML document.
-                    (str/trim x)))]
+                    (string/trim x)))]
     (-> vsd
         (update-in [:Type] fix-val)
         (update-in [:Value] fix-val))))
@@ -232,12 +232,12 @@
        organization-name (if LongName
                           (str ShortName " &gt; " LongName)
                           ShortName)
-       name-split (str/split organization-name #"&gt;|>")]
+       name-split (string/split organization-name #"&gt;|>")]
    (if (> (count name-split) 0)
     (-> data-center
-        (assoc :ShortName (str/trim (first name-split)))
+        (assoc :ShortName (string/trim (first name-split)))
         (assoc :LongName (when (> (count name-split) 1)
-                          (str/join " " (map str/trim (rest name-split))))))
+                          (string/join " " (map string/trim (rest name-split))))))
     (-> data-center
         (assoc :ShortName su/not-provided)
         (assoc :LongName nil)))))
@@ -248,8 +248,8 @@
  as well as leading/trailing spaces."
  [person]
  (let [{:keys [FirstName MiddleName LastName]} person
-       combined-name (str/trim (str/join " " [FirstName MiddleName LastName]))
-       names (str/split combined-name #" {1,}")
+       combined-name (string/trim (string/join " " [FirstName MiddleName LastName]))
+       names (string/split combined-name #" {1,}")
        num-names (count names)]
   (if (= 1 num-names)
     (-> person
@@ -258,7 +258,7 @@
         (dissoc :MiddleName))
     (-> person
         (assoc :FirstName (first names))
-        (assoc :MiddleName (str/join " " (subvec names 1 (dec num-names))))
+        (assoc :MiddleName (string/join " " (subvec names 1 (dec num-names))))
         (update :MiddleName #(when (seq %) %)) ; nil if empty
         (assoc :LastName (last names))))))
 
@@ -364,5 +364,5 @@
       (update :DataCenters expected-iso-data-centers)
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
-      (update :CollectionProgress su/with-default)
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
       js/parse-umm-c))

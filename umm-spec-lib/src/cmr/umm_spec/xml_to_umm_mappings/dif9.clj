@@ -3,6 +3,7 @@
   (:require
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
+    [clojure.string :as string]
     [cmr.common.util :as common-util]
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select]]
@@ -17,7 +18,16 @@
     [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]
+    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
     [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
+
+(def coll-progress-mapping
+  "Mapping from values supported for DIF9 Data_Set_Progress to UMM CollectionProgress."
+  {"COMPLETE" "COMPLETE"
+   "IN WORK"  "ACTIVE"
+   "ACTIVE" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn- parse-instruments
   "Returns the parsed instruments for the given xml doc."
@@ -134,7 +144,10 @@
                  {:ShortName (value-of proj "Short_Name")
                   :LongName (su/truncate (value-of proj "Long_Name") su/PROJECT_LONGNAME_MAX sanitize?)})
      :DirectoryNames (dif-util/parse-idn-node doc)
-     :CollectionProgress (su/with-default (value-of doc "/DIF/Data_Set_Progress") sanitize?)
+     :CollectionProgress (get-umm-element/get-collection-progress
+                           coll-progress-mapping
+                           doc
+                           "/DIF/Data_Set_Progress") 
      :LocationKeywords  (let [lks (select doc "/DIF/Location")]
                           (for [lk lks]
                             {:Category (value-of lk "Location_Category")

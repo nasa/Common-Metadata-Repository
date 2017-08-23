@@ -141,6 +141,10 @@
   "place holder string value for not provided string field"
   "Not provided")
 
+(def NOT-PROVIDED
+  "place holder string value for NOT PROVIDED string field"
+  "NOT PROVIDED")
+
 (def not-provided-data-center
   "Place holder to use when a data center is not provided."
   (cmn/map->DataCenterType

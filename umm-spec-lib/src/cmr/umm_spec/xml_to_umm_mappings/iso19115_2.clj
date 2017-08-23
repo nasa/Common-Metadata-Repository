@@ -15,6 +15,7 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
@@ -25,6 +26,16 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
+
+(def coll-progress-mapping
+  "Mapping from values supported for ISO19115 ProgressCode to UMM CollectionProgress."
+  {"COMPLETED" "COMPLETE"
+   "HISTORICALARCHIVE" "COMPLETE"
+   "OBSOLETE" "COMPLETE"
+   "ONGOING" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "UNDERDEVELOPMENT" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -221,7 +232,10 @@
       :VersionDescription version-description
       :Abstract abstract
       :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
-      :CollectionProgress (su/with-default (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode") sanitize?)
+      :CollectionProgress (get-umm-element/get-collection-progress
+                            coll-progress-mapping
+                            md-data-id-el 
+                            "gmd:status/gmd:MD_ProgressCode")
       :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (parse-access-constraints doc sanitize?)

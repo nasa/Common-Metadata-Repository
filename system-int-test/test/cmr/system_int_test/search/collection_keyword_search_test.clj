@@ -677,12 +677,26 @@
         coll3 (d/ingest-concept-with-metadata-file "data/iso_mends/no_spatial_iso_collection.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
+                                                    :format-key :iso19115})
+
+        coll4 (d/ingest-concept-with-metadata-file "iso-samples/cmr-4192-iso-collection.xml"
+                                                   {:provider-id "PROV2"
+                                                    :concept-type :collection
                                                     :format-key :iso19115})]
+
     (index/wait-until-indexed)
     (testing "parameter searches"
       (are3 [keyword-str items]
         (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})]
           (d/assert-refs-match items parameter-refs))
+        "Testing parameter search by location keyword"
+        "Tuolumne River Basin"
+        [coll4]
+
+        "Testing parameter search by location keyword"
+        "America"
+        [coll4]
+
         "testing parameter search by shortname keyword in collection whose xml file contains no SpatialExtent content"
         "NSIDC-0705"
         [coll3]

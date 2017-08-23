@@ -3,7 +3,7 @@
  (:require
   [clj-time.core :as t]
   [clj-time.format :as f]
-  [clojure.string :as str]
+  [clojure.string :as string]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
@@ -42,7 +42,7 @@
   [processing-level-id]
   (if (nil? processing-level-id)
     su/not-provided
-    (let [id-without-level (str/replace processing-level-id #"Level " "")]
+    (let [id-without-level (string/replace processing-level-id #"Level " "")]
       (get dif10/product-levels id-without-level su/not-provided))))
 
 (defn- dif10-processing-level
@@ -55,15 +55,6 @@
       ;; the ProcessingLevel will be nil,making the umm invalid, which can't be used to match.
       (assoc :Id (dif10-get-processing-level-id (:Id processing-level)))
       su/convert-empty-record-to-nil))
-
-(defn- dif10-collection-progress
-  "converts collection progress values to values supported for DIF10 Dataset_Progress."
-  [collection-progress-value]
-  (when-let [c-progress (when-let [coll-progress collection-progress-value]
-                          (str/upper-case coll-progress))]
-    (if (dif10/dif10-dataset-progress-values c-progress)
-      c-progress
-      (get dif10/collection-progress->dif10-dataset-progress c-progress "IN WORK"))))
 
 (defn- dif10-project
   [proj]
@@ -276,6 +267,10 @@
         (assoc-in [:OnlineResource :Linkage] (or linkage su/not-provided-url))
         (update :OnlineResource dissoc :Function :ApplicationProfile :Protocol))))
 
+(def coll-progress-enum-list
+  "Part of the enum list for CollectionProgress in v1.10. that could be converted from dif10"
+  (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED"]))
+
 (defn umm-expected-conversion-dif10
   [umm-coll]
   (-> umm-coll
@@ -291,9 +286,9 @@
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
       (update-in [:ProcessingLevel] dif10-processing-level)
-      ;; CMR 3253 DIF10 maps CollectionProgress values to DIF10 supported values.
-      ;; So the umm-dif10-expected needs to be modified.
-      (update-in [:CollectionProgress] dif10-collection-progress)
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress 
+                                   umm-coll
+                                   coll-progress-enum-list))
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] conversion-util/prune-empty-maps)
       (update-in-each [:PublicationReferences] conversion-util/dif-publication-reference)
@@ -305,7 +300,6 @@
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :DataLanguage conversion-util/dif-expected-data-language)
-      (update :CollectionProgress su/with-default)
       (update-in [:CollectionCitations] expected-collection-citations)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
       js/parse-umm-c))

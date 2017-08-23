@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
@@ -12,7 +12,17 @@
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
-   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]))
+   [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]))
+
+(def coll-progress-mapping
+  "Mapping from values supported for ECHO10 CollectionState to UMM CollectionProgress."
+  {"COMPLETE" "COMPLETE"
+   "COMPLETED" "COMPLETE"
+   "IN WORK" "ACTIVE"
+   "ACTIVE" "ACTIVE"
+   "PLANNED" "PLANNED"
+   "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -61,7 +71,7 @@
     {:EntryId (value-of element "ShortName")
      :Version (u/without-default version-id)
      :Type (some-> (u/without-default assoc-type)
-                   str/upper-case)
+                   string/upper-case)
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations
@@ -156,7 +166,10 @@
    :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_MAX sanitize?)
-   :CollectionProgress (u/with-default (value-of doc "/Collection/CollectionState") sanitize?)
+   :CollectionProgress (get-umm-element/get-collection-progress
+                         coll-progress-mapping
+                         doc
+                         "/Collection/CollectionState")
    :AccessConstraints (parse-access-constraints doc sanitize?)
    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                     :Fees (value-of doc "/Collection/Price")}]
