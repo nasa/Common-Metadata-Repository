@@ -28,8 +28,27 @@
   (case tag
     "gov.nasa.eosdis" "EOSDIS"))
 
-(defn collection-data
+(defmulti get-providers
+  "Get the providers, based on contextual data."
+  :execution-context)
+
+(defmethod get-providers :cli
+  [context]
+  (:providers context))
+
+(defmethod get-providers :default
+  [context]
+  (mdb/get-providers context))
+
+(defmulti collection-data
   "Get the collection data associated with a provider and tag."
+  (fn [context & args] (:execution-context context)))
+
+(defmethod collection-data :cli
+  [context tag provider-id]
+  (:collections context))
+
+(defmethod collection-data :default
   [context tag provider-id]
   (as-> {:tag-key tag
          :provider provider-id
@@ -120,17 +139,17 @@
 ;;; Page data functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn base-page
+(defmulti base-page
   "Data that all app pages have in common."
+  :execution-context)
+
+(defmethod base-page :cli
+  [context]
+  (assoc (common-data/base-static) :app-title "CMR Search"))
+
+(defmethod base-page :default
   [context]
   (assoc (common-data/base-page context) :app-title "CMR Search"))
-
-(defn base-static
-  "Data that all static pages have in common.
-
-  Note that static pages don't have any context."
-  []
-  (assoc (common-data/base-static) :app-title "CMR Search"))
 
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory
@@ -142,10 +161,9 @@
              :text "EOSDIS Collections"}]}))
 
 (defn get-eosdis-directory-links
-  "Generate the data necessary to render EOSDIS directory page links."
   [context]
   (->> context
-       (mdb/get-providers)
+       (get-providers)
        (providers-data context "gov.nasa.eosdis")
        (hash-map :providers)
        (merge (base-page context))))
