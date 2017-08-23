@@ -34,6 +34,10 @@
   "Number of shards to use for the small collections granule index."
   {:default 20 :type Long})
 
+(defconfig elastic-deleted-granule-index-num-shards
+  "Number of shards to use for the deleted granules index."
+  {:default 5 :type Long})
+
 (defconfig elastic-tag-index-num-shards
   "Number of shards to use for the tags index."
   {:default 5 :type Long})
@@ -66,7 +70,7 @@
                    :refresh_interval "1s"}})
 
 (def deleted-granule-setting {:index
-                              {:number_of_shards (elastic-tag-index-num-shards)
+                              {:number_of_shards (elastic-deleted-granule-index-num-shards)
                                :number_of_replicas 1,
                                :refresh_interval "1s"}})
 
@@ -650,21 +654,21 @@
                              {:name "all-collection-revisions"
                               :settings collection-setting-v1}]
                             :mapping collection-mapping}
-               :granule {:indexes
-                         (concat [{:name "small_collections"
-                                   :settings granule-settings-for-small-collections-index}
-                                  {:name "deleted-granules"
+               :deleted-granule {:indexes
+                                 [{:name "deleted-granules"
                                    :settings deleted-granule-setting}]
-                                 (vec
-                                   (for [idx extra-granule-indexes]
-                                     {:name idx
-                                      :settings granule-settings-for-individual-indexes})))
-
+                                 :mapping deleted-granule-mapping}
+               :granule {:indexes
+                         (cons {:name "small_collections"
+                                :settings granule-settings-for-small-collections-index}
+                               (for [idx extra-granule-indexes]
+                                 {:name idx
+                                  :settings granule-settings-for-individual-indexes}))
                          ;; This specifies the settings for new granule indexes that contain data for a single collection
                          ;; This allows the index set application to know what settings to use when creating
                          ;; a new granule index.
                          :individual-index-settings granule-settings-for-individual-indexes
-                         :mapping (merge granule-mapping deleted-granule-mapping)}
+                         :mapping granule-mapping}
                :tag {:indexes
                      [{:name "tags"
                        :settings tag-setting}]

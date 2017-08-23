@@ -79,10 +79,10 @@
          {(index-queue-name) [(ingest-exchange-name)
                               (deleted-granule-revision-exchange-name)]
           (provider-queue-name) [(provider-exchange-name)]
+          (deleted-granules-index-queue-name) [(deleted-collection-revision-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
           ;; deleted collection revision exchange
-          (all-revisions-index-queue-name) [(ingest-exchange-name)
-                                            (deleted-collection-revision-exchange-name)]}))
+          (all-revisions-index-queue-name) [(ingest-exchange-name)]}))
 
 (defconfig indexer-nrepl-port
   "Port to listen for nREPL connections"

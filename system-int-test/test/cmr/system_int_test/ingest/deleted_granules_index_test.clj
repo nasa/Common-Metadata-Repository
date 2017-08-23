@@ -2,15 +2,7 @@
   "When a granule is deleted, a document is indexed in the deleted-granules index.
    This namespace tests that functionality"
   (:require
-   [cheshire.core :as json]
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]
-   [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :as u :refer [are3]]
-   [cmr.indexer.data.index-set :as index-set]
-   [cmr.indexer.system :as indexer-system]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.metadata-db.int-test.utility :as mdb-test-util]
    [cmr.system-int-test.data2.core :as d]
@@ -18,10 +10,7 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
-   [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.umm-granule :as umm-g]))
+   [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
