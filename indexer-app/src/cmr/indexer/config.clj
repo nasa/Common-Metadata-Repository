@@ -25,15 +25,14 @@
    :type Long})
 
 (defconfig deleted-granules-index-queue-name
-  "The queue containing ingest events for the indexer all revisions index. We use a
+  "The queue containing ingest events for the indexer deleted-granules index. We use a
   separate index here because it allows independent retries of indexing failures. If
   we used a single queue then if either indexing operation (primary or all revisions)
-  failed then we would have to retry both. Also, having separate queues facilitates
-  bootstrapping the all revisions index."
+  failed then we would have to retry both."
   {:default "cmr_index.deleted_granules_queue"})
 
 (defconfig deleted-granules-index-queue-listener-count
-  "Number of worker threads to use for the queue listener for the all revisions queue"
+  "Number of worker threads to use for the queue listener for the deleted-granules queue"
   {:default 2
    :type Long})
 
