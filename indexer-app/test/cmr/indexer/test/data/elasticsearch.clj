@@ -24,7 +24,7 @@
                {:name "C274211-USGS_EROS",
                 :settings i/granule-settings-for-individual-indexes}],
               :individual-index-settings i/granule-settings-for-individual-indexes
-              :mapping (merge i/granule-mapping i/deleted-granule-mapping,)}
+              :mapping (merge i/granule-mapping i/deleted-granule-mapping)}
     :tag {:indexes [{:name "tags",
                      :settings i/tag-setting}],
           :mapping i/tag-mapping},
@@ -34,7 +34,6 @@
     :concepts {:collection {:collections "1_collections_v2",
                             :all-collection-revisions "1_all_collection_revisions"},
                :granule {:small_collections "1_small_collections",
-                         :deleted-granules "deleted-granules"
                          :C274209-USGS_EROS "1_c274209_usgs_eros",
                          :C274211-USGS_EROS "1_c274211_usgs_eros"},
                :tag {:tags "1_tags"}

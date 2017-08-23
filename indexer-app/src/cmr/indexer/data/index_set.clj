@@ -664,7 +664,6 @@
                          ;; This allows the index set application to know what settings to use when creating
                          ;; a new granule index.
                          :individual-index-settings granule-settings-for-individual-indexes
-                         ; :mapping granule-mapping
                          :mapping (merge granule-mapping deleted-granule-mapping)}
                :tag {:indexes
                      [{:name "tags"
@@ -834,9 +833,6 @@
 
        :variable
        [(get indexes (or target-index-key :variables))]
-
-       :deleted-granule
-       [(get indexes (or target-index-key :deleted-granules))]
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]

@@ -29,7 +29,6 @@
     [cmr.message-queue.config :as qcfg]
     [cmr.message-queue.queue.queue-protocol :as queue-protocol]
     [cmr.message-queue.services.queue :as queue]
-    [cmr.metadata-db.services.util :as mdb-util]
     [cmr.transmit.cubby :as cubby]
     [cmr.transmit.echo.rest :as rest]
     [cmr.transmit.index-set :as tis]
