@@ -14,5 +14,6 @@ pom.xml.asc
 .nrepl-port
 testreports.xml
 /resources/public/site
+/resources/public/sitemap.xml
 test2junit
 build.xml
