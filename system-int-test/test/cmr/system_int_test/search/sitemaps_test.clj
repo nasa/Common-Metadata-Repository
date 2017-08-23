@@ -1,18 +1,20 @@
 (ns cmr.system-int-test.search.sitemaps-test
-  (:require [clj-http.client :as client]
-            [clj-xml-validation.core :as xmlv]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
-            [clojure.test :refer :all]
-            [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.tag-util :as tags]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.umm-spec.models.umm-common-models :as cm]
-            [cmr.umm-spec.test.expected-conversion :as exp-conv]))
+  (:require
+   [clj-http.client :as client]
+   [clj-xml-validation.core :as xmlv]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.site.static :as static]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm-spec.models.umm-common-models :as cm]
+   [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and general utility functions for the tests
@@ -88,7 +90,9 @@
     (assert (= (count nodoi-colls) 6))
     (assert (= (count doi-colls) 3))
     (assert (= (count tag-colls) 6))
-    (assert (= (count all-colls) 9)))))
+    (assert (= (count all-colls) 9))
+    ;; Generate the static content
+    (static/generate-site-resources))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures
