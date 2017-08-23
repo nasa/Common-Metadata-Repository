@@ -24,7 +24,7 @@
     {% for holding in holdings %}
     <tr>
       <td>
-        <a href="{{ holding.link-href }}">{{ holding.link-text }}</a>
+        <a href="{{ holding.link-href }}">{{ holding.umm.EntryTitle }}</a>
       </td>
       <td>
         {{ holding.umm.ShortName }}

@@ -68,22 +68,12 @@
     (is (= "http://dx.doi.org/doi6"
            (data/make-href cmr-base-url coll-data-2)))))
 
-(deftest get-entry-title
-  (testing "with an entry title"
-    (is (= "coll3"
-           (data/get-entry-title coll-data-1)))))
-
-(deftest get-short-name
-  (testing "short name"
-    (is (= "s3"
-           (data/get-short-name coll-data-1)))))
-
 (deftest make-holding-data
   (testing "with an entry title and short name"
     (let [data (data/make-holding-data cmr-base-url coll-data-1)]
       (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
              (:link-href data)))
-      (is (= "coll3" (:link-text data)))
+      (is (= "coll3" (get-in data [:umm "EntryTitle"])))
       (is (= "s3" (get-in data [:umm "ShortName"])))
       (is (= "6" (get-in data [:umm "Version"])))))
   (testing "with an entry title, short name, and doi"
