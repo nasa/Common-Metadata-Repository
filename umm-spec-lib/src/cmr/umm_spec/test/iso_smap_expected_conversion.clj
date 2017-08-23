@@ -259,8 +259,7 @@
   "Returns a default temporal extent type def record and not a map so that
    it can be compared to the actual round trip translation."
   []
-  [(map->TemporalExtentType {:TemporalRangeType nil
-                             :PrecisionOfSeconds nil
+  [(map->TemporalExtentType {:PrecisionOfSeconds nil
                              :EndsAtPresentFlag nil
                              :RangeDateTimes (not-provided-begin-date)
                              :SingleDateTimes nil
@@ -270,7 +269,6 @@
   "Changes the temporal extent to the expected outcome of a ISO SMAP translation."
   [temporal-extents]
   (->> temporal-extents
-       (map #(assoc % :TemporalRangeType nil))
        (map #(assoc % :PrecisionOfSeconds nil))
        iso-shared/fixup-iso-ends-at-present
        (iso-shared/split-temporals :RangeDateTimes)

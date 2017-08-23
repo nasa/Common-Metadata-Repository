@@ -107,8 +107,7 @@
   [temporal sanitize?]
   (let [temporal-extent
         (util/remove-map-keys empty?
-                              {:TemporalRangeType (value-of temporal "Temporal_Range_Type")
-                               :PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
+                              {:PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
                                :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
                                :RangeDateTimes (for [rdt (select temporal "Range_DateTime")]
                                                  {:BeginningDateTime (date/with-default (value-of rdt "Beginning_Date_Time") sanitize?)

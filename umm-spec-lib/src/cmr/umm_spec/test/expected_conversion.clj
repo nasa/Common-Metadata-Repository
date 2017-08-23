@@ -47,8 +47,7 @@
                                                                  :Unit "dB"
                                                                  :Value "10"}]
                                               :Technique "Drunken Fist"}]}]}]
-    :TemporalExtents [{:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
+    :TemporalExtents [{:PrecisionOfSeconds 3
                        :EndsAtPresentFlag false
                        :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
                                          :EndingDateTime (t/date-time 2001)}

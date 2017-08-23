@@ -49,7 +49,6 @@
   "Returns the temporal coverage content without the temporal keywords"
   [extent]
   [:Temporal_Coverage
-   [:Temporal_Range_Type (:TemporalRangeType extent)]
    [:Precision_Of_Seconds (:PrecisionOfSeconds extent)]
    [:Ends_At_Present_Flag (:EndsAtPresentFlag extent)]
 

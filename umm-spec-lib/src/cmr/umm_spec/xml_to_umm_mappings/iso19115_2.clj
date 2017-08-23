@@ -129,7 +129,6 @@
   (for [temporal (select md-data-id-el temporal-xpath)]
     {:PrecisionOfSeconds (value-of doc precision-xpath)
      :EndsAtPresentFlag (temporal-ends-at-present? temporal)
-     :TemporalRangeType (get extent-info "Temporal Range Type")
      :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
                        {:BeginningDateTime (value-of period "gml:beginPosition")
                         :EndingDateTime    (value-of period "gml:endPosition")})
