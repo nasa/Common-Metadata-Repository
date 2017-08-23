@@ -1,9 +1,9 @@
 (ns cmr.common-app.static
   "This namespace contains helpers for generating and returning static
   documentation pages for an application. This usually includes API
-  Documentation, Site Routes & Web ResourcesDocumentation, and potentially
-  others. It is intended that applications use this in a `cmr.*.site.static`
-  namespace.
+  Documentation, Site Routes & Web Resources Documentation, and other web
+  resources that would take too long to generate at request time. It is
+  intended that applications use this in a `cmr.*.site.static` namespace.
 
 
   ## Markdown Support
