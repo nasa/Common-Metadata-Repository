@@ -63,6 +63,13 @@
       context concept-id revision-id {:ignore-conflict? true
                                       :all-revisions-index? all-revisions-index?})))
 
+(defmethod handle-ingest-event :tombstone-delete
+  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  (when (= :granule (cc/concept-id->type concept-id))
+    (indexer/remove-deleted-granule context concept-id revision-id
+                                    {:ignore-conflict? true
+                                     :all-revisions-index? all-revisions-index?})))
+
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (when-not (= :humanizer (cc/concept-id->type concept-id))
@@ -90,4 +97,8 @@
     (dotimes [n (config/all-revisions-index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/all-revisions-index-queue-name)
+                                #(handle-ingest-event context true %)))
+    (dotimes [n (config/deleted-granules-index-queue-listener-count)]
+      (queue-protocol/subscribe queue-broker
+                                (config/deleted-granules-index-queue-name)
                                 #(handle-ingest-event context true %)))))

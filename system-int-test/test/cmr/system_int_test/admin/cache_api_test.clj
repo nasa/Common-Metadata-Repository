@@ -272,5 +272,4 @@
         {:collection "collection"
          :granule "granule"
          :tag "tag"
-         :variable "variable"
-         :deleted-granule "deleted-granule"}))))
+         :variable "variable"}))))

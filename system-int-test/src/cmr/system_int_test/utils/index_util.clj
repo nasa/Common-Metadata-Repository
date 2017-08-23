@@ -72,7 +72,6 @@
 (defn doc-present?
   "If doc is present return true, otherwise return false"
   [index-name type-name doc-id]
-  ; (println "dbg:" (format (str (url/elastic-root) "/%s/%s/_search?_id=%s") index-name type-name doc-id))
   (let [response (client/get
                   (format (str (url/elastic-root) "/%s/%s/_search?_id=%s") index-name type-name doc-id)
                   {:throw-exceptions false

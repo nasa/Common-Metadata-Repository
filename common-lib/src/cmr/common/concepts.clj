@@ -11,7 +11,6 @@
     :acl
     :collection
     :granule
-    :deleted-granule
     :humanizer
     :service
     :tag
@@ -25,7 +24,6 @@
    "AG" :access-group
    "C" :collection
    "G" :granule
-   "DG" :deleted-granule
    "H" :humanizer
    "S" :service
    "T" :tag

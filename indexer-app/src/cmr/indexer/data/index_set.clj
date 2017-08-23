@@ -430,12 +430,11 @@
 
 (defmapping deleted-granule-mapping :deleted-granule
   "Defines the elasticsearch mapping for storing granules"
-  {:_id  {:path "concept-id"}}
-  {:concept-id (m/stored m/string-field-mapping)
-   :delete-time (m/stored m/string-field-mapping)
-   :provider-id (m/stored m/string-field-mapping)
-   :granule-ur (m/stored m/string-field-mapping)
-   :parent-collection-id (m/stored m/string-field-mapping)})
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :delete-time (-> m/string-field-mapping m/stored m/doc-values)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
+   :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
 
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections"
@@ -651,22 +650,22 @@
                              {:name "all-collection-revisions"
                               :settings collection-setting-v1}]
                             :mapping collection-mapping}
-               :deleted-granule {:indexes
-                                 [{:name "deleted-granules"
-                                   :settings deleted-granule-setting}]
-                                 :mapping deleted-granule-mapping}
                :granule {:indexes
-                         (cons {:name "small_collections"
-                                :settings granule-settings-for-small-collections-index}
-                               (for [idx extra-granule-indexes]
-                                 {:name idx
-                                  :settings granule-settings-for-individual-indexes}))
+                         (concat [{:name "small_collections"
+                                   :settings granule-settings-for-small-collections-index}
+                                  {:name "deleted-granules"
+                                   :settings deleted-granule-setting}]
+                                 (vec
+                                   (for [idx extra-granule-indexes]
+                                     {:name idx
+                                      :settings granule-settings-for-individual-indexes})))
 
                          ;; This specifies the settings for new granule indexes that contain data for a single collection
                          ;; This allows the index set application to know what settings to use when creating
                          ;; a new granule index.
                          :individual-index-settings granule-settings-for-individual-indexes
-                         :mapping granule-mapping}
+                         ; :mapping granule-mapping
+                         :mapping (merge granule-mapping deleted-granule-mapping)}
                :tag {:indexes
                      [{:name "tags"
                        :settings tag-setting}]
@@ -681,7 +680,8 @@
   [index-set]
   (->> (get-in index-set [:index-set :granule :indexes])
        (map :name)
-       (remove #(= % "small_collections"))))
+       (remove #(or (= % "deleted-granules")
+                    (= % "small_collections")))))
 
 (defn reset
   "Reset configured elastic indexes"
@@ -762,7 +762,6 @@
                                       name))]
      {:collection (get-concept-mapping-fn :collection)
       :granule (get-concept-mapping-fn :granule)
-      :deleted-granule (get-concept-mapping-fn :deleted-granule)
       :tag (get-concept-mapping-fn :tag)
       :variable (get-concept-mapping-fn :variable)})))
 

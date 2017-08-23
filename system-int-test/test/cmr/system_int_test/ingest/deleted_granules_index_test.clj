@@ -28,8 +28,8 @@
 (defn check-index-for-deleted-granule
   "Check elastic search deleted-granules index from related deleted granule entry,
    Returns true if document exists, false if it does not."
-  [deleted-granule-id]
-  (index/doc-present? "deleted-granules" "deleted-granule" deleted-granule-id))
+  [concept-id]
+  (index/doc-present? "deleted-granules" "deleted-granule" concept-id))
 
 (deftest deleted-granules-test
   (testing "Ingest granule, delete, then reingest"
@@ -41,10 +41,10 @@
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
       (is (= 1 (- delete-revision-id ingest-revision-id)))
-      (is (check-index-for-deleted-granule (str "D" granule)))
+      (is (check-index-for-deleted-granule granule))
       (ingest/ingest-concept granule)
       (index/wait-until-indexed)
-      (is (not (check-index-for-deleted-granule (str "D" granule))))))
+      (is (not (check-index-for-deleted-granule granule)))))
 
   (testing "Ingest granule, delete, delete tombstone"
     (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 0))
@@ -56,8 +56,8 @@
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
       (is (= 1 (- delete-revision-id ingest-revision-id)))
-      (is (check-index-for-deleted-granule (str "D" granule)))
+      (is (check-index-for-deleted-granule granule))
       (mdb-test-util/old-revision-concept-cleanup)
       (index/wait-until-indexed)
-      (is (not (check-index-for-deleted-granule (str "D" granule))))
+      (is (not (check-index-for-deleted-granule granule)))
       (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 356)))))
