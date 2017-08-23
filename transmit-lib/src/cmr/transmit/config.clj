@@ -41,7 +41,11 @@
   "echo-token")
 
 (defmacro def-app-conn-config
-  "Defines three configuration entries for an application for the host, port and relative root URL"
+  "Defines the following configuration entries for an application:
+  * protocol
+  * host
+  * port
+  * relative root URL"
   [app-name defaults]
   (let [protocol-config (symbol (str (name app-name) "-protocol"))
         host-config (symbol (str (name app-name) "-host"))
@@ -244,10 +248,20 @@
   {:connection-manager (conn/conn-mgr connection)
    :socket-timeout (http-socket-timeout)})
 
-(defn application-public-root-url
-  "Returns the public root url for an application given a context. Assumes public configuration is
-   stored in a :public-conf key of the system."
-  [context]
-  (let [{:keys [protocol host port relative-root-url]} (get-in context [:system :public-conf])
-        port (if (empty? relative-root-url) port (format "%s%s" port relative-root-url))]
+(defn- format-public-root-url
+  [{:keys [protocol host port relative-root-url]}]
+  (let [port (if (empty? relative-root-url) port (format "%s%s" port relative-root-url))]
     (format "%s://%s:%s/" protocol host port)))
+
+(defmulti application-public-root-url
+  "Returns the public root url for an application given a context. Assumes
+  public configuration is stored in a :public-conf key of the system."
+   type)
+
+(defmethod application-public-root-url clojure.lang.Keyword
+  [app-key]
+  (format-public-root-url (app-key (app-conn-info))))
+
+(defmethod application-public-root-url :default
+  [context]
+  (format-public-root-url (get-in context [:system :public-conf])))
