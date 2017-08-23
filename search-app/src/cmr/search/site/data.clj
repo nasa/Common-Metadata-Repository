@@ -10,10 +10,13 @@
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs."
   (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
    [clj-time.core :as clj-time]
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.site.data :as common-data]
+   [cmr.common.mime-types :as mt]
    [cmr.search.services.query-service :as query-svc]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]))
@@ -32,9 +35,18 @@
   "Get the providers, based on contextual data."
   :execution-context)
 
+(def endpoint-get
+  (memoize
+   (fn [& args]
+     (-> (apply client/get args)
+         :body
+         (json/parse-string true)))))
+
 (defmethod get-providers :cli
   [context]
-  (:providers context))
+  (let [providers-url (format "%sproviders"
+                              (config/application-public-root-url :ingest))]
+    (endpoint-get providers-url {:accept mt/json})))
 
 (defmethod get-providers :default
   [context]
@@ -46,7 +58,13 @@
 
 (defmethod collection-data :cli
   [context tag provider-id]
-  (:collections context))
+  (let [collections-url (format "%scollections"
+                                (config/application-public-root-url :search))]
+    (-> collections-url
+        (endpoint-get {:accept mt/umm-json-results
+                       :query-params {"provider" provider-id
+                                      "tag_key" tag}})
+        :items)))
 
 (defmethod collection-data :default
   [context tag provider-id]
@@ -111,23 +129,11 @@
     (doi-link (get-doi item))
     (cmr-link cmr-base-url (get-in item [:meta :concept-id]))))
 
-(defn get-entry-title
-  "Get a collection item's long name."
-  [item]
-  (get-in item [:umm "EntryTitle"]))
-
-(defn get-short-name
-  "Get a collection item's short name, if it exists."
-  [item]
-  (get-in item [:umm "ShortName"]))
-
 (defn make-holding-data
   "Given a single item from a query's collections, update the item with data
   for linking to its landing page."
   [cmr-base-url item]
-  (merge item
-         {:link-href (make-href cmr-base-url item)
-          :link-text (get-entry-title item)}))
+  (assoc item :link-href (make-href cmr-base-url item)))
 
 (defn make-holdings-data
   "Given a collection from an elastic search query, generate landing page

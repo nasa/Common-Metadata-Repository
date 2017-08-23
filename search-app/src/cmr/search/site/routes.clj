@@ -22,24 +22,9 @@
         (GET "/"
              {ctx :request-context}
              (pages/home ctx))
-        (GET "/sitemap.xml"
-             {ctx :request-context}
-             (pages/sitemap-master ctx))
-        (GET "/site/sitemap.xml"
-             {ctx :request-context}
-             (pages/sitemap-top-level ctx))
         (GET "/site/collections/directory"
              {ctx :request-context}
              (pages/collections-directory ctx))
-        (GET "/site/collections/directory/eosdis"
-             {ctx :request-context}
-             (pages/eosdis-collections-directory ctx))
-        (GET "/site/collections/directory/:provider-id/:tag"
-             [provider-id tag :as {ctx :request-context}]
-             (pages/provider-tag-directory ctx provider-id tag))
-        (GET "/site/collections/directory/:provider-id/:tag/sitemap.xml"
-             [provider-id tag :as {ctx :request-context}]
-             (pages/sitemap-provider-tag ctx provider-id tag))
         ;; Backwards comapatibility for old docs URLs
         (GET "/site/search_api_docs.html"
              {ctx :request-context}
