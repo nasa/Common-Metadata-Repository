@@ -58,6 +58,7 @@
       (queue/publish-message queue-broker exchange-name msg))))
 
 (defn publish-tombstone-delete-msg
+  "Publishes a message indicating a tombstone was removed/overwritten with updated concept"
   [context concept-type concept-id revision-id]
   (when (config/publish-messages)
     (let [queue-broker (get-in context [:system :queue-broker])

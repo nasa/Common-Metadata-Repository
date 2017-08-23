@@ -685,6 +685,9 @@
         concept-type-name (str (name concept-type) "s")
         tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
 
+    ;; We only want to publish the deleted-tombstone event in the case where a granule tombstone is
+    ;; being cleaned up, not when an old revision is being removed, because the case of old revision,
+    ;; a deleted-tombstone even would have been published already.
     (info "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
       context provider concept-type false
