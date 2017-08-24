@@ -4,13 +4,13 @@
   (:require
    [clojure.test :refer :all]
    [cmr.metadata-db.services.concept-service :as concept-service]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
-   [cmr.system-int-test.utils.ingest-util :as ingest]))
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
