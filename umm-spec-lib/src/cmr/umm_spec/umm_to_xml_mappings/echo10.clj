@@ -74,7 +74,6 @@
   (when-let [temporals (seq (:TemporalExtents c))]
     [:Temporal
      (elements-from (first temporals)
-                    :TemporalRangeType
                     :PrecisionOfSeconds)
      [:EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporals))]
      (let [range-date-times (mapcat :RangeDateTimes temporals)

@@ -236,8 +236,7 @@
   (let [range-date-times (mapcat :RangeDateTimes temporal-extents)
         single-date-times (mapcat :SingleDateTimes temporal-extents)
         periodic-date-times (mapcat :PeriodicDateTimes temporal-extents)
-        temporal-extent {:TemporalRangeType (:TemporalRangeType (first temporal-extents))
-                         :PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
+        temporal-extent {:PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
                          :EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporal-extents))}]
     (cond
       (seq range-date-times)

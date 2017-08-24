@@ -270,12 +270,13 @@
 (defmethod migrate-umm-version [:collection "1.9" "1.10"]
   [context c & _]
   (-> c
-      (coll-progress-migration/migrate-up)))
+      coll-progress-migration/migrate-up
+      (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
   (-> c
-      (coll-progress-migration/migrate-down)))
+      coll-progress-migration/migrate-down))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 
