@@ -73,7 +73,7 @@
                   (provider-queue-name)]
          :exchanges [(ingest-exchange-name)
                      (deleted-collection-revision-exchange-name)
-                     (deleted-granule-revision-exchange-name)
+                     (deleted-granule-exchange-name)
                      (provider-exchange-name)]
          :queues-to-exchanges
          {(index-queue-name) [(ingest-exchange-name)

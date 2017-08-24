@@ -62,7 +62,7 @@
   [context concept-type concept-id revision-id]
   (when (config/publish-messages)
     (let [queue-broker (get-in context [:system :queue-broker])
-          exchange-name (config/deleted-granule-revision-exchange-name)
+          exchange-name (config/deleted-granule-exchange-name)
           ;; Note it's important that the format of this message match the ingest event format.
           msg {:action :tombstone-delete
                :concept-id concept-id
