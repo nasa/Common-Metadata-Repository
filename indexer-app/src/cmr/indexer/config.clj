@@ -58,10 +58,10 @@
   from metadata db."
   {:default "cmr_deleted_collection_revision.exchange"})
 
-(defconfig deleted-granule-revision-exchange-name
+(defconfig deleted-granule-exchange-name
   "An exchange that will have messages passed to it whenever a granule revision is removed
   from metadata db."
-  {:default "cmr_deleted_granule_revision.exchange"})
+  {:default "cmr_deleted_granule.exchange"})
 
 (defn queue-config
   "Returns the rabbit mq configuration for the indexer application."
@@ -77,9 +77,10 @@
                      (provider-exchange-name)]
          :queues-to-exchanges
          {(index-queue-name) [(ingest-exchange-name)
-                              (deleted-granule-revision-exchange-name)]
+                              (deleted-collection-revision-exchange-name)]
+
           (provider-queue-name) [(provider-exchange-name)]
-          (deleted-granules-index-queue-name) [(deleted-collection-revision-exchange-name)]
+          (deleted-granules-index-queue-name) [(deleted-granule-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
           ;; deleted collection revision exchange
           (all-revisions-index-queue-name) [(ingest-exchange-name)]}))
