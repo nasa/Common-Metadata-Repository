@@ -4,11 +4,10 @@
 [![Build Status][travis badge]][travis]
 [![Dependencies Status][deps-badge]][deps]
 /-->
-[![Clojars Project][clojars-badge]][clojars]
+[![Clojars Project][clojars-badge]][clojars] [![Clojure version][clojure-v]](project.clj)
 <!--
 [![Tag][tag-badge]][tag]
 /-->
-[![Clojure version][clojure-v]](project.clj)
 
 A Clojure(Script) Client for NASA's Common Metadata Repository
 
