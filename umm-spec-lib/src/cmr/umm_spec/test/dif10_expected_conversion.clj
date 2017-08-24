@@ -302,5 +302,4 @@
       (update :DataLanguage conversion-util/dif-expected-data-language)
       (update-in [:CollectionCitations] expected-collection-citations)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
-      (update-in-each [:TemporalExtents] dissoc :TemporalRangeType) 
       js/parse-umm-c))
