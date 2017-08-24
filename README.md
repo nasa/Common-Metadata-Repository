@@ -1,9 +1,13 @@
 # A Clojure(Script) CMR Client
 
+<!--
 [![Build Status][travis badge]][travis]
 [![Dependencies Status][deps-badge]][deps]
+/-->
 [![Clojars Project][clojars-badge]][clojars]
+<!--
 [![Tag][tag-badge]][tag]
+/-->
 [![Clojure version][clojure-v]](project.clj)
 
 A Clojure(Script) Client for NASA's Common Metadata Repository
@@ -23,7 +27,7 @@ Copyright © 2017 Duncan McGreggor
 Distributed under the Apache License, Version 2.0.
 
 
-[](Named page links below ...)
+<!-- Named page links below: /-->
 
 [logo]: misc/images/ohboyohboyohboy.gif
 [travis]: https://travis-ci.org/oubiwann/cmr-client
