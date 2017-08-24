@@ -91,7 +91,8 @@
                           :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2
                           :variable-name :variable-names
-                          :measurement :measurements}]
+                          :measurement :measurements
+                          :author :authors}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -149,7 +150,8 @@
    :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date
    :variable-names :variable-name
-   :measurements :measurement})
+   :measurements :measurement
+   :authors :author})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
@@ -174,7 +176,8 @@
    :instrument "instrument-sn.lowercase"
    :sensor "sensor-sn.lowercase"
    :variable-name "variable-names.lowercase"
-   :measurement "measurements.lowercase"})
+   :measurement "measurements.lowercase"
+   :author "authors.lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :variable
   [_]

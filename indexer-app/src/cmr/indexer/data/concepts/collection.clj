@@ -179,6 +179,11 @@
                                  (map str/trim))
         project-long-names (->> (keep :LongName (:Projects collection))
                                 (map str/trim))
+        ;; Pull author info from both creator and other citation details
+        authors (->> (concat
+                      (keep :Creator (:CollectionCitations collection))
+                      (keep :OtherCitationDetails (:CollectionCitations collection)))
+                     (map str/trim))
         two-d-coord-names (map :TilingIdentificationSystemName
                                (:TilingIdentificationSystems collection))
         meaningful-short-name-fn (fn [c]
@@ -277,6 +282,8 @@
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
             :sensor-sn.lowercase  (map str/lower-case sensor-short-names)
+            :authors authors
+            :authors.lowercase (map str/lower-case authors)
             :project-sn2 project-short-names
             :project-sn2.lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names
