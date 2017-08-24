@@ -7,10 +7,18 @@
     [clj-http "3.7.0"]
     [cljs-http "0.1.43"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/clojurescript "1.9.908"]]
+    [org.clojure/clojurescript "1.9.908"]
+    [org.clojure/core.async "0.3.443"]
+    [org.clojure/data.json "0.2.6"]
+    [org.clojure/data.xml "0.2.0-alpha2"]]
   :profiles {
     :dev {
-      :plugins [[lein-cljsbuild "1.1.5"]]}
+      :dependencies [[org.clojure/tools.namespace "0.2.11"]]
+      :plugins [[lein-cljsbuild "1.1.5"]]
+      :resource-paths ["dev-resources"]
+      :source-paths ["dev-resources/src"]
+      :repl-options {
+        :init-ns cmr.client.dev}}
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
