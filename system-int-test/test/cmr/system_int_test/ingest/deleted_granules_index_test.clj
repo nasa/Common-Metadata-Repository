@@ -18,9 +18,9 @@
   "Check elastic search deleted-granules index from related deleted granule entry,
    Returns true if document exists, false if it does not."
   [concept-id]
-  (index/doc-present? "deleted-granules" "deleted-granule" concept-id)
+  (index/doc-present? "deleted-granules" "deleted-granule" concept-id))
 
- (deftest deleted-granules-test
+(deftest deleted-granules-test
   (testing "Ingest granule, delete, then reingest"
     (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
           granule (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
@@ -49,4 +49,4 @@
       (mdb-util/cleanup-old-revisions)
       (index/wait-until-indexed)
       (is (not (check-index-for-deleted-granule granule)))
-      (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 365))))))
+      (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 365)))))
