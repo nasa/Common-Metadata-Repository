@@ -1133,6 +1133,7 @@
            collection-contact-persons))))
 
 (deftest migrate-1_9-up-to-1_10
+  (testing "TemporalRangeType migration from version 1.9 to 1.10"
   (is (= [{:PrecisionOfSeconds "3"
            :EndsAtPresentFlag "false"
            :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
@@ -1160,7 +1161,8 @@
                                              :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
                                                                :EndingDateTime "2001-01-01T00:00:00.000Z"}
                                                               {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]}))))
+                                                               :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
+  (testing "CollectionProgress migration from version 1.9 to 1.10"
   (is (= u/NOT-PROVIDED
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
@@ -1184,9 +1186,10 @@
   (is (= "COMPLETE" 
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
-                          {:CollectionProgress "COMPLETE"})))))
+                          {:CollectionProgress "COMPLETE"}))))))
 
 (deftest migrate-1_10-down-to-1_9
+  (testing "CollectionProgress migration from version 1.10 to 1.9"
   (is (= "PLANNED"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.10" "1.9"
@@ -1206,4 +1209,4 @@
   (is (= "COMPLETE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.10" "1.9"
-                          {:CollectionProgress "COMPLETE"})))))
+                          {:CollectionProgress "COMPLETE"}))))))
