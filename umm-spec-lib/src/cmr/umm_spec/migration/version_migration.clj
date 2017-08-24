@@ -12,7 +12,6 @@
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
-   [cmr.umm-spec.migration.temporal-range-type-migration :as temporal-range-type-migration]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.versioning :refer [versions current-version]]))
@@ -272,7 +271,7 @@
   [context c & _]
   (-> c
       coll-progress-migration/migrate-up
-      temporal-range-type-migration/migrate-up))
+      (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
