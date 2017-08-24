@@ -40,7 +40,7 @@
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
                        :entry-title :doi :native-id :platform :platform-h :processing-level-id :processing-level-id-h
-                       :sensor :data-center-h :measurement}
+                       :sensor :data-center-h :measurement :author}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}}))
 
@@ -117,6 +117,7 @@
    :revision-date cpv/and-option
    :created-at cpv/and-option
    :highlights highlights-option
+   :author cpv/string-plus-and-options
 
    ;; Tag related parameters
    :tag-key cpv/pattern-option

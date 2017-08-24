@@ -20,6 +20,7 @@
   [_]
   {:archive-center :string
    :attribute :attribute
+   :author :string
    :bounding-box :bounding-box
    :browsable :boolean
    :collection-data-type :collection-data-type

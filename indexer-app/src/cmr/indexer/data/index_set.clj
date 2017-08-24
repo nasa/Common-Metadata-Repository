@@ -327,6 +327,8 @@
           :two-d-coord-name.lowercase     m/string-field-mapping
           :attributes                     attributes-field-mapping
           :downloadable                   (m/stored m/bool-field-mapping)
+          :authors                        (m/doc-values m/string-field-mapping)
+          :authors.lowercase              (m/doc-values m/string-field-mapping)
 
           ;; Mappings for nested fields used for searching and
           ;; hierarchical facets
