@@ -4,7 +4,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.metadata-db.services.concept-service :as concept-service]
-   [cmr.metadata-db.int-test.utility :as mdb-test-util]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -46,7 +46,7 @@
       (index/wait-until-indexed)
       (is (= 1 (- delete-revision-id ingest-revision-id)))
       (is (check-index-for-deleted-granule granule))
-      (mdb-test-util/old-revision-concept-cleanup)
+      (mdb-util/cleanup-old-revisions)
       (index/wait-until-indexed)
       (is (not (check-index-for-deleted-granule granule)))
       (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 365))))))
