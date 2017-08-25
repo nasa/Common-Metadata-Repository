@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.concepts.deleted-granule
   "Contains functions to parse and convert deleted-granule index document"
   (:require
-   [clj-time.core :as t]
    [cmr.indexer.data.elasticsearch :as es]))
 
 (def deleted-granule-index-name
