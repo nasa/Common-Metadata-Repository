@@ -22,7 +22,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
    ;; Added this to force the loading of the class, so that in CI build, it won't complain about
-   ;; "No implementation of method: :validate of protocol: #'cmr.spatial.validation/SpatialValidation 
+   ;; "No implementation of method: :validate of protocol: #'cmr.spatial.validation/SpatialValidation
    ;; found for class: cmr.spatial.cartesian_ring.CartesianRing."
    [cmr.spatial.ring-validations])
   (:import
@@ -30,7 +30,7 @@
    (cmr.umm_spec.models.umm_service_models UMM-S)
    (cmr.umm_spec.models.umm_variable_models UMM-Var)))
 
-(defn concept-type
+(defn- concept-type
   "Returns a concept type keyword from a UMM Clojure record (i.e. defrecord)."
   [record]
   (condp instance? record
@@ -38,17 +38,17 @@
     UMM-S :service
     UMM-Var :variable))
 
-(defn umm-json-version
+(defn- umm-json-version
   "Returns the UMM JSON version of the given media type. The media type may be a keyword like :echo10
   or a string like umm+json;version=1.1, or a map like {:format :umm-json :version \"1.2\"}"
-  [media-type]
+  [concept-type media-type]
   (if (map? media-type)
     (if-let [version (:version media-type)]
       version
-      ver/current-version)
+      (ver/current-version concept-type))
     (if (= :umm-json media-type)
-      ver/current-version
-      (or (mt/version-of media-type) ver/current-version))))
+      (ver/current-version concept-type)
+      (or (mt/version-of media-type) (ver/current-version concept-type)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validate Metadata
@@ -70,7 +70,7 @@
   [concept-type fmt metadata]
   (let [format-key (mt/format-key fmt)]
     (if (= (mt/format-key fmt) :umm-json)
-      (js/validate-umm-json metadata concept-type (umm-json-version fmt))
+      (js/validate-umm-json metadata concept-type (umm-json-version concept-type fmt))
       (validate-xml concept-type format-key metadata))))
 
 (defn parse-metadata
@@ -84,7 +84,8 @@
    (parse-metadata context concept-type fmt metadata u/default-parsing-options))
   ([context concept-type fmt metadata options]
    (condp = [concept-type (mt/format-key fmt)]
-     [:collection :umm-json] (umm-json/json->umm context :collection metadata (umm-json-version fmt))
+     [:collection :umm-json] (umm-json/json->umm
+                              context :collection metadata (umm-json-version :collection fmt))
      [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c
                                context (xpath/context metadata) options)
      [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata) options)
@@ -92,7 +93,8 @@
      [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c
                                context (xpath/context metadata) options)
      [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata) options)
-     [:variable :umm-json]   (umm-json/json->umm context :variable metadata (umm-json-version fmt)))))
+     [:variable :umm-json]   (umm-json/json->umm
+                              context :variable metadata (umm-json-version :variable fmt)))))
 
 (defn generate-metadata
   "Returns the generated metadata for the given metadata format and umm record.
@@ -105,12 +107,12 @@
    (generate-metadata context umm fmt nil))
   ([context umm fmt source-version]
    (let [concept-type (concept-type umm)
-         source-version (or source-version ver/current-version)]
+         source-version (or source-version (ver/current-version concept-type))]
      (condp = [concept-type (mt/format-key fmt)]
        [:collection :umm-json] (umm-json/umm->json (vm/migrate-umm context
                                                                    concept-type
                                                                    source-version
-                                                                   (umm-json-version fmt)
+                                                                   (umm-json-version :collection fmt)
                                                                    umm))
        [:collection :echo10]   (umm-to-echo10/umm-c-to-echo10-xml umm)
        [:collection :dif]      (umm-to-dif9/umm-c-to-dif9-xml umm)

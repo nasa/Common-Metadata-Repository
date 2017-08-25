@@ -127,20 +127,21 @@
   [type-def]
   (referenced-schema-names (:items type-def)))
 
-(defn umm-schema-resource
-  "Returns a resource URL for the given schema name and optional UMM version. If umm-version is
-   not specified, the current version is returned."
-  ([schema-name]
-   (umm-schema-resource ver/current-version schema-name))
-  ([umm-version schema-name]
-   (io/resource (str "json-schemas/umm/v" umm-version "/" schema-name))))
+(defn- umm-schema-resource
+  "Returns a resource URL for the given concept type, schema name and optional UMM version.
+  If umm-version is not specified, the current version for the given concept type is returned."
+  ([concept-type schema-name]
+   (umm-schema-resource concept-type schema-name (ver/current-version concept-type)))
+  ([concept-type schema-name umm-version]
+   (io/resource (format "json-schemas/%s/umm/v%s/%s"
+                        (name concept-type) umm-version schema-name))))
 
 (defn concept-schema-resource
   "Returns a resource URL for the specified UMM concept type keyword."
   ([concept-type]
-   (concept-schema-resource ver/current-version concept-type))
+   (concept-schema-resource (ver/current-version concept-type) concept-type))
   ([umm-version concept-type]
-   (umm-schema-resource umm-version (concept-schema-name concept-type))))
+   (umm-schema-resource concept-type (concept-schema-name concept-type) umm-version)))
 
 (defn- load-schema
   "Loads a JSON schema into a Clojure structure. Returns a map with the following keys
@@ -150,8 +151,8 @@
   * :root - A keyword for the name of root type defined in this schema. This will be a key defined
   in the definitions map. May be nil if no root type is defined.
   * :ref-schemas - A map of schema name to schemas that are referenced within this schema."
-  [umm-version schema-name]
-  (let [parsed (load-json-resource (umm-schema-resource umm-version schema-name))
+  [concept-type schema-name umm-version]
+  (let [parsed (load-json-resource (umm-schema-resource concept-type schema-name umm-version))
         definitions (resolve-ref-deflist schema-name (get parsed :definitions))
         root-def (when (:title parsed)
                    (resolve-ref schema-name (dissoc parsed :definitions :$schema :title)))
@@ -167,7 +168,8 @@
      :schema-name schema-name
      :root (keyword (:title parsed))
      :ref-schemas (into {} (for [ref-schema-name referenced-schemas]
-                             [ref-schema-name (load-schema umm-version ref-schema-name)]))}))
+                             [ref-schema-name (load-schema
+                                               concept-type ref-schema-name umm-version)]))}))
 
 (defn lookup-ref
   "Looks up a ref in a loaded schema. Returns the schema containing the referenced type and the ref.
@@ -182,12 +184,12 @@
     (or result
         (throw (Exception. (str "Unable to load ref " (pr-str the-ref)))))))
 
-(defn concept-schema*
+(defn- concept-schema*
   ([concept-type]
     ;; Default to the current UMM version.
-   (concept-schema* ver/current-version concept-type))
-  ([umm-version concept-type]
-   (load-schema umm-version (concept-schema-name concept-type))))
+   (concept-schema* concept-type (ver/current-version concept-type)))
+  ([concept-type umm-version]
+   (load-schema concept-type (concept-schema-name concept-type) umm-version)))
 
 ;; Define a memoized version of concept-schema to cache loaded JSON schemas.
 (def concept-schema
@@ -196,7 +198,7 @@
 
 (defn- concept-schema-java*
   [umm-version concept-type]
-  (let [schema-url (umm-schema-resource umm-version (concept-schema-name concept-type))]
+  (let [schema-url (umm-schema-resource concept-type (concept-schema-name concept-type) umm-version)]
     (js-validations/parse-json-schema-from-uri schema-url)))
 
 (def concept-schema-java (memoize concept-schema-java*))
@@ -207,35 +209,35 @@
 (defn validate-umm-json
   "Validates the UMM JSON and returns a list of errors if invalid."
   ([json-str concept-type]
-   (validate-umm-json json-str concept-type ver/current-version))
+   (validate-umm-json json-str concept-type (ver/current-version concept-type)))
   ([json-str concept-type umm-version]
    (let [schema-name (concept-schema-name concept-type)
-         schema-url (umm-schema-resource umm-version schema-name)]
+         schema-url (umm-schema-resource concept-type schema-name umm-version)]
      (if schema-url
        (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
          (js-validations/validate-json java-schema-obj json-str))
        [(str "Unknown UMM JSON schema version: " (pr-str umm-version))]))))
 
-(defn validate-umm-json-search-result
+(defn- validate-umm-json-search-result
   "Validates the UMM JSON search result and returns a list of errors if invalid."
-  ([json-str]
-   (validate-umm-json-search-result json-str ver/current-version))
-  ([json-str umm-version]
-   (validate-umm-json-search-result json-str umm-version search-result-schema-name))
-  ([json-str umm-version schema-name]
-   (let [schema-url (umm-schema-resource umm-version schema-name)]
+  [json-str concept-type schema-name umm-version]
+   (let [schema-url (umm-schema-resource concept-type schema-name umm-version)]
      (if schema-url
        (let [java-schema-obj (js-validations/parse-json-schema-from-uri schema-url)]
          (js-validations/validate-json java-schema-obj json-str))
-       [(str "Unknown UMM JSON schema version: " (pr-str umm-version))]))))
+       [(format "Unable to load schema [%s] with version [%s]." schema-name umm-version)])))
+
+(defn validate-collection-umm-json-search-result
+  "Validates the collection UMM JSON search result and returns a list of errors if invalid."
+  [json-str umm-version]
+   (validate-umm-json-search-result
+    json-str :collection search-result-schema-name umm-version))
 
 (defn validate-variable-umm-json-search-result
   "Validates the variable UMM JSON search result and returns a list of errors if invalid."
-  ([json-str]
-   (validate-variable-umm-json-search-result json-str ver/current-version))
-  ([json-str umm-version]
+  [json-str umm-version]
    (validate-umm-json-search-result
-    json-str umm-version variable-search-result-schema-name)))
+    json-str :variable variable-search-result-schema-name umm-version))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Loaded schemas
@@ -248,7 +250,7 @@
 
 (def umm-cmn-schema-file
   "The schema required to parse umm-common"
-  (umm-schema-resource ver/current-version "umm-cmn-json-schema.json"))
+  (umm-schema-resource :collection "umm-cmn-json-schema.json"))
 
 (defn root-def
   "Returns the root type definition of the given schema."
