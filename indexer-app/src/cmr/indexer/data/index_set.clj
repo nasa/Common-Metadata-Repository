@@ -435,7 +435,7 @@
 (defmapping deleted-granule-mapping :deleted-granule
   "Defines the elasticsearch mapping for storing granules"
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :delete-time (-> m/string-field-mapping m/stored m/doc-values)
+   :delete-time (-> m/date-field-mapping m/stored m/doc-values)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
    :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
    :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
@@ -683,8 +683,7 @@
   [index-set]
   (->> (get-in index-set [:index-set :granule :indexes])
        (map :name)
-       (remove #(or (= % "deleted-granules")
-                    (= % "small_collections")))))
+       (remove #(= % "small_collections"))))
 
 (defn reset
   "Reset configured elastic indexes"

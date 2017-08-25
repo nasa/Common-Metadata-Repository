@@ -49,14 +49,6 @@
   {:granule {:provider-id :provider-id-doc-values
              :collection-concept-id :collection-concept-id-doc-values}})
 
-(def deleted-granule-index-name
-  "The name of the index in elastic search."
-  "deleted-granules")
-
-(def deleted-granule-type-name
-  "The name of the mapping type within the cubby elasticsearch index."
-  "deleted-granule")
-
 (defn query-field->elastic-field
   "Returns the elastic field name for the equivalent query field name. Duplicated the mappings from
   the search application here."
@@ -469,22 +461,11 @@
               concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
             (when (= :granule concept-type)
-              (let [es-doc (dg/deleted-granule->elastic-doc concept)]
-                (es/save-document-in-elastic
-                  context [deleted-granule-index-name] deleted-granule-type-name
-                  es-doc concept-id revision-id elastic-version elastic-options)))
+              (dg/index-deleted-granule context concept revision-id elastic-version elastic-options))
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (cascade-collection-delete
                context concept-mapping-types concept-id revision-id))))))))
-
-(defn remove-deleted-granule
-  "Remove deleted granule from deleted granule index for given concept id"
-  [context concept-id revision-id options]
-  (let [elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
-    (es/delete-document
-      context [deleted-granule-index-name] deleted-granule-type-name
-      concept-id revision-id nil elastic-options)))
 
 (defn- index-association-concept
   "Index the association concept identified by the given concept-id and revision-id."
