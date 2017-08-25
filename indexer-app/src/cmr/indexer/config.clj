@@ -24,7 +24,7 @@
   {:default 2
    :type Long})
 
-(defconfig deleted-granules-index-queue-name
+(defconfig deleted-granule-index-queue-name
   "The queue containing ingest events for the indexer deleted-granules index. We use a
   separate index here because it allows independent retries of indexing failures. If
   we used a single queue then if either indexing operation (primary or all revisions)
@@ -69,21 +69,20 @@
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)
                   (all-revisions-index-queue-name)
-                  (deleted-granules-index-queue-name)
+                  (deleted-granule-index-queue-name)
                   (provider-queue-name)]
          :exchanges [(ingest-exchange-name)
                      (deleted-collection-revision-exchange-name)
                      (deleted-granule-exchange-name)
                      (provider-exchange-name)]
          :queues-to-exchanges
-         {(index-queue-name) [(ingest-exchange-name)
-                              (deleted-collection-revision-exchange-name)]
-
+         {(index-queue-name) [(ingest-exchange-name)]
           (provider-queue-name) [(provider-exchange-name)]
-          (deleted-granules-index-queue-name) [(deleted-granule-exchange-name)]
+          (deleted-granule-index-queue-name) [(deleted-granule-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
           ;; deleted collection revision exchange
-          (all-revisions-index-queue-name) [(ingest-exchange-name)]}))
+          (all-revisions-index-queue-name) [(ingest-exchange-name)
+                                            (deleted-collection-revision-exchange-name)]}))
 
 (defconfig indexer-nrepl-port
   "Port to listen for nREPL connections"

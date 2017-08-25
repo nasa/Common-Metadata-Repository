@@ -100,5 +100,5 @@
                                 #(handle-ingest-event context true %)))
     (dotimes [n (config/deleted-granules-index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
-                                (config/deleted-granules-index-queue-name)
+                                (config/deleted-granule-index-queue-name)
                                 #(handle-ingest-event context true %)))))
