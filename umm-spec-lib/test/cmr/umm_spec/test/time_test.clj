@@ -137,3 +137,76 @@
      true
      [{:BeginningDateTime (t/date-time 2000)
        :EndingDateTime nil}])))
+
+
+(deftest resolve-range-overlaps
+  (testing "Resolve overlaps"
+    (are3 [range-date-times expected-ranges]
+      (is (= expected-ranges
+             (#'time/resolve-range-overlaps range-date-times)))
+
+      "No overlap"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2001)}
+       {:BeginningDateTime (t/date-time 2003)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}
+       {:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2001)}
+       {:BeginningDateTime (t/date-time 2003)
+        :EndingDateTime (t/date-time 2005)}]
+
+      "2 ranges overlap"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2002)}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+
+      "Range encompassed by other range"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2003)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+
+      "All ranges overlap"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2002)}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 2004)
+        :EndingDateTime (t/date-time 2007)}]
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2007)}]
+
+      "Overlapping with nil end date"
+      [{:BeginningDateTime (t/date-time 2004)
+        :EndingDateTime nil}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime nil}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+
+      "Empty temporal ranges"
+      [] []
+
+      "Nil temporal ranges"
+      nil [])))
