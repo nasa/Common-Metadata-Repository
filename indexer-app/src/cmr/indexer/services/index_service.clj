@@ -461,7 +461,7 @@
               concept-id revision-id elastic-version elastic-options)
             ;; Index a deleted-granule document when granule is deleted
             (when (= :granule concept-type)
-              (dg/index-deleted-granule context concept revision-id elastic-version elastic-options))
+              (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (cascade-collection-delete
