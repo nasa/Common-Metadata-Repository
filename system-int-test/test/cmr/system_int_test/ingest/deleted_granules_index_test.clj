@@ -30,10 +30,10 @@
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
       (is (= 1 (- delete-revision-id ingest-revision-id)))
-      (is (check-index-for-deleted-granule granule))
+      (is (check-index-for-deleted-granule (:concept-id granule)))
       (ingest/ingest-concept granule)
       (index/wait-until-indexed)
-      (is (not (check-index-for-deleted-granule granule)))))
+      (is (not (check-index-for-deleted-granule (:concept-id granule))))))
 
   (testing "Ingest granule, delete, delete tombstone"
     (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 0))
@@ -45,8 +45,8 @@
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
       (is (= 1 (- delete-revision-id ingest-revision-id)))
-      (is (check-index-for-deleted-granule granule))
+      (is (check-index-for-deleted-granule (:concept-id granule)))
       (mdb-util/cleanup-old-revisions)
       (index/wait-until-indexed)
-      (is (not (check-index-for-deleted-granule granule)))
+      (is (not (check-index-for-deleted-granule (:concept-id granule))))
       (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 365)))))

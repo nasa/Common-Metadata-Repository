@@ -78,7 +78,8 @@
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
-    (= 1 (get-in body [:hits :total]))))
+    (and (= 1 (get-in body [:hits :total]))
+         (= doc-id (get-in body [:hits :hits 0 :_id])))))
 
 (defn- messages+id->message
   "Returns the first message for a given message id."
