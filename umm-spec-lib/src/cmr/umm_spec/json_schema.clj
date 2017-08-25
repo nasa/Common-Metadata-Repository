@@ -139,8 +139,8 @@
 (defn concept-schema-resource
   "Returns a resource URL for the specified UMM concept type keyword."
   ([concept-type]
-   (concept-schema-resource (ver/current-version concept-type) concept-type))
-  ([umm-version concept-type]
+   (concept-schema-resource concept-type (ver/current-version concept-type)))
+  ([concept-type umm-version]
    (umm-schema-resource concept-type (concept-schema-name concept-type) umm-version)))
 
 (defn- load-schema
