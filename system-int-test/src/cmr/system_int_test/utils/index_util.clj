@@ -78,6 +78,7 @@
                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
+    (println "dbg:" body)
     (and (= 1 (get-in body [:hits :total]))
          (= doc-id (get-in body [:hits :hits 0 :_id])))))
 
