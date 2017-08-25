@@ -312,16 +312,16 @@
                   :LongName "processor.processor"}]})
 
 (deftest test-version-steps
-  (with-bindings {#'cmr.umm-spec.versioning/versions ["1.0" "1.1" "1.2" "1.3" "1.9" "1.10"]}
-    (is (= [] (#'vm/version-steps "1.2" "1.2")))
-    (is (= [["1.1" "1.2"] ["1.2" "1.3"] ["1.3" "1.9"] ["1.9" "1.10"]] (#'vm/version-steps "1.1" "1.10")))
-    (is (= [["1.9" "1.10"]] (#'vm/version-steps "1.9" "1.10")))
-    (is (= [["1.10" "1.9"]] (#'vm/version-steps "1.10" "1.9")))
-    (is (= [["1.10" "1.9"] ["1.9" "1.3"] ["1.3" "1.2"] ["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps "1.10" "1.0")))))
+  (with-bindings {#'cmr.umm-spec.versioning/versions {:collection ["1.0" "1.1" "1.2" "1.3" "1.9" "1.10"]}}
+    (is (= [] (#'vm/version-steps :collection "1.2" "1.2")))
+    (is (= [["1.1" "1.2"] ["1.2" "1.3"] ["1.3" "1.9"] ["1.9" "1.10"]] (#'vm/version-steps :collection "1.1" "1.10")))
+    (is (= [["1.9" "1.10"]] (#'vm/version-steps :collection "1.9" "1.10")))
+    (is (= [["1.10" "1.9"]] (#'vm/version-steps :collection "1.10" "1.9")))
+    (is (= [["1.10" "1.9"] ["1.9" "1.3"] ["1.3" "1.2"] ["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps :collection "1.10" "1.0")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
-            dest-version (gen/elements v/versions)]
+            dest-version (gen/elements (v/versions :collection))]
     (let [dest-media-type (str mt/umm-json "; version=" dest-version)
           metadata (core/generate-metadata (lkt/setup-context-for-test)
                                            umm-record dest-media-type)]
@@ -1145,7 +1145,7 @@
            :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
                              :EndingDateTime "2001-01-01T00:00:00.000Z"}
                             {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                             :EndingDateTime "2003-01-01T00:00:00.000Z"}]}] 
+                             :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]
         (:TemporalExtents
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:TemporalExtents [{:TemporalRangeType "temp range 1"
@@ -1167,11 +1167,11 @@
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "ACTIVE"}))))
-  (is (= "PLANNED" 
+  (is (= "PLANNED"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "planned"}))))
-  (is (= "ACTIVE" 
+  (is (= "ACTIVE"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "IN WORK"}))))
@@ -1179,11 +1179,11 @@
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "NOT PROVIDED"}))))
-  (is (= "NOT APPLICABLE" 
+  (is (= "NOT APPLICABLE"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "NOT APPLICABLE"}))))
-  (is (= "COMPLETE" 
+  (is (= "COMPLETE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
                           {:CollectionProgress "COMPLETE"}))))))

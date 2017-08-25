@@ -1,0 +1,305 @@
+{
+  "$schema": "http://json-schema.org/draft-05/schema#",
+  "definitions": {
+    "ServiceOptionsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element describes service options, subset type, supported SRSs, interpolation types, formats, exceptions and whether the service is synchronous or asyncronous.",
+      "properties": {
+        "SubsetType": {
+          "description": "This element is used to identify the list of supported subsetting requests.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubsetTypeEnum"
+          },
+          "minItems": 1
+        },
+        "SupportedSRS": {
+          "description": "This element is used to identify the list of supported Spatial Reference Systems (SRS).",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SupportedSRSType"
+          },
+          "minItems": 0
+        },
+        "InterpolationType": {
+          "description": "This element is used to identify the list of supported interpolation types. These are used in regridding.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InterpolationTypeEnum"
+          },
+          "minItems": 1
+        },
+        "NativeResolution": {
+          "description": "This entity represents the default (native) spatial resolution of the variable in units of km. See the <gml:offsetVector> flag in the DescribeCoverage request for that coverage.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "ResX": {
+          "description": "Resolution of the x dimension of the requested coverage or map. (Use ResX and ResY or Width and Height - but not both in the same request).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "ResY": {
+          "description": "Resolution of the y dimension of the requested coverage or map. (Use ResX and ResY or Width and Height - but not both in the same request).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "TemporalResolution": {
+          "description": "This entity represents the default (native) temporal resolution of the variable in units of km.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "SupportedFormats": {
+          "description": "The project element describes the list of names of the formats supported by the service.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FormatType"
+          },
+          "minItems": 1
+        },
+        "Exceptions": {
+          "description": "This field describes the list of exceptions for the service.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "Synchronous": {
+          "description": "This provides a field to state whether the service is deemed either synchronous or asynchronous.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        }
+      }
+    },
+    "ServiceKeywordType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element enables specification of service keywords.",
+      "properties": {
+        "Category": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "Topic": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "Term": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "ServiceSpecificName": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        }
+      },
+      "required": ["Category", "Topic", "Term"]
+    },
+    "SubsetTypeEnum": {
+      "description": "This element is used to identify the subset type of the variable.",
+      "type": "string",
+      "enum": ["Spatial", "Temporal", "Variable", "Regridding", "Reprojection", "Resampling", "Mosaicing"]
+    },
+    "SupportedSRSType": {
+      "description": "This element is used to identify the Spatial Reference System (SRS) of the variable.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "InterpolationTypeEnum": {
+      "description": "This element is used to identify the interpolation type of the variable.",
+      "type": "string",
+      "enum": ["Bilinear Interpolation", "Bicubic Interpolation", "Distance-weighted average resampling", "Nearest Neighbor"]
+    },
+    "FormatType": {
+      "description": "The distribution format of the variable provided by the service.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "VersionType": {
+        "description": "Version of the service, e.g. 1.1.1.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+    },
+    "LayerType": {
+      "description": "The name of the layer (or identifier) available via the service.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "SupportedRequestEnum": {
+      "description": "This element is used to identify the request type for the service, GetCapabilities, DescribeCoverage, GetCoverage, etc.",
+      "type": "string",
+      "enum": ["GetCapabilities", "DescribeMap", "GetMap", "GetLegendGraphic", "DescribeFeatureType", "GetFeature", "DescribeCoverage", "GetCoverage"]
+    }
+  },
+    "title": "UMM-S",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "Name": {
+        "description": "The name of the service.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "Title": {
+        "description": "The title of the service described by the metadata.",
+        "$ref": "umm-cmn-json-schema.json#/definitions/EntryTitleType"
+      },
+      "Abstract": {
+        "description": "Abstract provides a brief description of the service the metadata represents.",
+        "$ref": "umm-cmn-json-schema.json#/definitions/AbstractType"
+      },
+      "Description": {
+        "description": "This element contains a description of the service.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "ServiceKeywords": {
+        "description": "This element enables specification of service keywords.",
+        "type": "array",
+        "items": {
+          "$ref": "umm-s-json-schema.json#/definitions/ServiceKeywordType"
+        },
+        "minItems": 1
+      },
+      "ScienceKeywords": {
+        "description": "This element enables specification of Earth science keywords.",
+        "type": "array",
+        "items": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/ScienceKeywordType"
+        },
+        "minItems": 1
+      },
+      "Type": {
+        "description": "Specification of the service, e.g. Web Mapping Service.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "Version": {
+        "description": "Version of the service, e.g. 1.1.1.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "SupportedRequests": {
+        "description": "Supported requests of the service.",
+         "type": "array",
+         "items": {
+           "$ref": "#/definitions/SupportedRequestEnum"
+         },
+         "minItems": 1
+      },
+      "Layers": {
+        "description": "This element is used to provide a list of layer names (identifiers) which are available via the service.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/LayerType"
+        },
+        "minItems": 1
+      },
+      "Format": {
+        "description": "The default format for delivery of the service for the specified layer(s).",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "Width": {
+        "description": "The width of the requested map.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "Height": {
+        "description": "The height of the requested map.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "BBox": {
+        "description": "Bounding box corners = lower left (min x, min y), and upper right (max x and max y).",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "RelatedUrls": {
+        "description": "This element describes any data/service related URLs that include project home pages, services, related data archives/servers, metadata extensions, direct links to online software packages, web mapping services, links to images, or other data.",
+        "type": "array",
+        "items": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/RelatedUrlType"
+        },
+        "minItems": 1
+      },
+      "ContactPerson": {
+        "description": "The name of the contact person who maintains the service.",
+        "$ref": "umm-cmn-json-schema.json#/definitions/ContactPersonType"
+      },
+      "ContactOrganization": {
+        "description": "The name of the contact organization whhic maintains the service.",
+        "$ref": "umm-cmn-json-schema.json#/definitions/DataCenterType"
+      },
+      "AccessConstraints": {
+        "description": "This element with the description field allows the author to provide information about any constraints for accessing the service. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining the service. Some words that may be used in this element's value include: Public, In-house, Limited, None. The value field is used for special ACL rules (Access Control Lists (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide metadata when it isn't ready for public consumption.",
+        "$ref": "umm-cmn-json-schema.json#/definitions/AccessConstraintsType"
+      },
+      "AcceptVersions": {
+        "description": "This element is used to identify which versions of the services are available to accept requests.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/VersionType"
+        },
+        "minItems": 1
+      },
+      "Fees": {
+        "description": "The fee for obtaining data through the provided service. The fee is entered as a number, in US dollars.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "CreationDate": {
+        "description": "This provides the date (day and time) for which the service record was originally created.",
+         "format": "date-time",
+         "type": "string"
+      },
+      "ReviewDate": {
+        "description": "This provides the date (day and time) for which the service record was last reviewed.",
+         "format": "date-time",
+         "type": "string"
+      },
+      "ServiceOptions": {
+        "description": "This provides a object to define the set of options for the service.",
+        "$ref": "#/definitions/ServiceOptionsType"
+      }
+    },
+    "required": [
+      "Name",
+      "Title",
+      "Abstract",
+      "Description",
+      "ServiceKeywords",
+      "ScienceKeywords",
+      "Type",
+      "Version",
+      "SupportedRequests",
+      "Layers",
+      "Format",
+      "Width",
+      "Height",
+      "BBox",
+      "RelatedUrls",
+      "ContactPerson",
+      "ContactOrganization",
+      "AccessConstraints",
+      "AcceptVersions",
+      "Fees",
+      "CreationDate",
+      "ReviewDate"
+    ]
+}
+
