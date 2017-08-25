@@ -22,9 +22,31 @@
         (GET "/"
              {ctx :request-context}
              (pages/home ctx))
+        (GET "/sitemap.xml"
+             {ctx :request-context}
+             {:status 200
+              :body (slurp (static/site-resource "../sitemap.xml"))})
         (GET "/site/collections/directory"
              {ctx :request-context}
              (pages/collections-directory ctx))
+        (GET "/site/collections/directory/eosdis"
+             [provider-id tag]
+             (when-let [resource (static/site-resource
+                                  (format
+                                    "collections/directory/eosdis/index.html"
+                                    provider-id
+                                    tag))]
+               {:status 200
+                :body (slurp resource)}))
+        (GET "/site/collections/directory/:provider-id/:tag"
+             [provider-id tag]
+             (when-let [resource (static/site-resource
+                                  (format
+                                    "collections/directory/%s/%s/index.html"
+                                    provider-id
+                                    tag))]
+               {:status 200
+                :body (slurp resource)}))
         ;; Backwards comapatibility for old docs URLs
         (GET "/site/search_api_docs.html"
              {ctx :request-context}
