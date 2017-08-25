@@ -37,6 +37,9 @@ project aims to support them all, each in their own namespace. Respectively:
 This project has only just started, but that being said, here's what you can
 do so far:
 
+
+### Clojure
+
 ```bash
 $ lein repl
 ```
@@ -56,6 +59,15 @@ $ lein repl
   :short-name "PROV3",
   :cmr-only true,
   :small false}]
+```
+
+
+### ClojureScript
+
+Start a `rhino` REPL:
+
+```bash
+$ lein rhino-repl
 ```
 
 
