@@ -69,6 +69,11 @@ Start a `rhino` REPL:
 ```bash
 $ lein rhino-repl
 ```
+```clj
+(require '[cmr.client.ingest.core :as ingest])
+(def client (ingest/create-client {:endpoint :local :return-body? true}))
+(def results (ingest/get-providers client))
+```
 
 
 ## License

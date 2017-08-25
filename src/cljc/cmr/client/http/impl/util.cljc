@@ -1,7 +1,7 @@
 (ns cmr.client.http.impl.util
   (:require
-   [clojure.data.json :as json]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [cmr.client.util :as util]))
 
 (defn get-default-options
   [this]
@@ -17,7 +17,7 @@
 (defn convert-body
   [response content-type]
   (case content-type
-     :json (json/read-str (:body response) :key-fn keyword)
+     :json (util/read-json-str (:body response))
      :unsupported (:body response)))
 
 (defn parse-body!

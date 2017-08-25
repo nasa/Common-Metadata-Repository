@@ -3,7 +3,7 @@
    #?(:clj [cmr.client.http.impl.cljhttp :as http
                                          :refer [->HTTPClientData]]
       :cljs [cmr.client.http.impl.cljshttp :as http
-                                           :refer :all
+                                           :refer [HTTPClientData]
                                            :include-macros true]))
   #?(:clj
     (:import (cmr.client.http.impl.cljhttp HTTPClientData)))
@@ -31,6 +31,5 @@
   ([http-options]
    (create-client {} http-options))
   ([parent-client-options http-options]
-   (->HTTPClientData
-    parent-client-options
-    http-options)))
+   (->HTTPClientData parent-client-options
+                     http-options)))

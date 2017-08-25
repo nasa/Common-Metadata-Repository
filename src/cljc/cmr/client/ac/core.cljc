@@ -1,6 +1,6 @@
 (ns cmr.client.ac.core
  (:require
-  [cmr.client.const :as const]
+  [cmr.client.constants :as constants]
   [cmr.client.util :as util]
   [cmr.client.http.core :as http]))
 
@@ -8,5 +8,5 @@
   {:service "/access-control"
    :local ":3011"})
 
-(def default-endpoint (str const/host-prod (:service endpoints)))
+(def default-endpoint (str constants/host-prod (:service endpoints)))
 

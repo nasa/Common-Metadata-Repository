@@ -1,7 +1,7 @@
 (ns cmr.client.ingest.impl
  (:require
   [cmr.client.http.core :as http]
-  #?(:clj  [clojure.core.async :as async]
+  #?(:clj [clojure.core.async :as async]
      :cljs [cljs.core.async :as async])))
 
 (defrecord CMRIngestClientOptions [

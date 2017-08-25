@@ -1,7 +1,8 @@
 (ns cmr.client.http.impl.cljshttp
   (:require
    [cljs-http.client :as http]
-   [cmr.client.http.impl.util :as util]))
+   [cmr.client.http.impl.util :as util])
+  (:refer-clojure :exclude [get]))
 
 (defrecord HTTPClientData [
   parent-client-options
@@ -10,6 +11,12 @@
 (defn- get
   ([this url]
     (get this url (util/get-default-options this)))
+  ([this url options]
+    :not-implemented))
+
+(defn- head
+  ([this url]
+    (head this url (util/get-default-options this)))
   ([this url options]
     :not-implemented))
 

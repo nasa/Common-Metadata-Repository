@@ -1,13 +1,13 @@
 (ns cmr.client.ingest.core
  (:require
-  [cmr.client.const :as const]
+  [cmr.client.constants :as constants]
   [cmr.client.util :as util]
   [cmr.client.http.core :as http]
   #?(:clj [cmr.client.ingest.impl :as impl
                                   :refer [->CMRIngestClientData
                                           ->CMRIngestClientOptions]]
      :cljs [cmr.client.ingest.impl :as impl
-                                   :refer :all
+                                   :refer [CMRIngestClientData]
                                    :include-macros true]))
  #?(:clj
      (:import (cmr.client.ingest.impl CMRIngestClientData CMRIngestClientOptions))))
@@ -16,7 +16,7 @@
   :service "/ingest"
   :local ":3002"})
 
-(def default-endpoint (str const/host-prod (:service endpoints)))
+(def default-endpoint (str constants/host-prod (:service endpoints)))
 
 (defprotocol CMRIngestAPI
   (get-url [this segment])
@@ -34,10 +34,9 @@
   ([options http-options]
    (let [endpoint (or (:endpoint options) default-endpoint)
          client-options (->CMRIngestClientOptions (:return-body? options))]
-     (->CMRIngestClientData
-       (util/parse-endpoint endpoint endpoints)
-       client-options
-       (http/create-client client-options http-options)))))
+     (->CMRIngestClientData (util/parse-endpoint endpoint endpoints)
+                            client-options
+                            (http/create-client client-options http-options)))))
 
 (comment
   (def client (ingest/create-client {:endpoint :local :return-body? true}))
