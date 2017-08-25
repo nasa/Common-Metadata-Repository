@@ -154,18 +154,16 @@
                 Extensions]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Utility Functions
+;;; Utility Functions & Constants
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def ^:private resource-root "public/site/")
 
 (defn default-renderer
   "This is the function used by default to render templates, given data that
   the template needs to render."
   [template-file data]
   (selmer/render-file template-file data))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Routing Setup
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro force-trailing-slash
   "Given a ring request, if the request was made against a resource path with a trailing
@@ -177,12 +175,14 @@
      ~body
      (assoc (response/redirect (str (request/request-url ~req) "/")) :status 301)))
 
-(def ^:private resource-root "public/site/")
-
-(defn- site-resource
+(defn site-resource
   "Returns a URL for a resource in resource-root, or nil if it does not exist."
   [resource-name]
   (io/resource (str resource-root resource-name)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Routing Setup
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn docs-routes
   "Defines routes for returning API documentation. Takes the public-protocol (http or https),
