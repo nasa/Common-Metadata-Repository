@@ -6,13 +6,6 @@
   (:refer-clojure :exclude [get]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Utility Functions & Constants  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def default-endpoint
-  (str const/host-prod (get-in const/endpoints [:ingest :service])))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -50,7 +43,7 @@
   ([options]
    (create-client options {}))
   ([options http-options]
-   (let [endpoint (or (:endpoint options) default-endpoint)
+   (let [endpoint (util/get-default-endpoint options :ingest)
          options (when (object? options) (js->clj options :keywordize-keys true))
          client-options (->CMRIngestClientOptions (:return-body? options))]
      (->CMRIngestClientData endpoint
