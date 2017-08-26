@@ -24,6 +24,11 @@
       :source-paths ["dev-resources/src"]
       :repl-options {
         :init-ns cmr.client.dev}}
+    :test {
+      :dependencies [
+        [clojusc/ltest "0.2.0-SNAPSHOT"]]
+      :source-paths ["test/clj"]
+    }
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
@@ -50,17 +55,10 @@
     "build-cljs"
       ^{:doc "Build just the ClojureScript code."}
       ["cljsbuild" "once" "cmr-client"]
-    "rhino-repl"
-      ^{:doc "Start a Rhino-based Clojurescript REPL"}
-      ["do" ["compile"]
-            ["build-cljs"]
-            ["with-profile" "+cljs"
-             "trampoline" "run" "-m" "clojure.main"
-             "dev-resources/src/cmr/client/dev/rhino.clj"]]
-    "browser-repl"
-      ^{:doc "Start a browser-based Clojurescript REPL"}
-      ["trampoline" "run" "-m" "clojure.main"
-       "dev-resources/src/cmr/client/dev/browser.clj"]
+    "run-tests"
+      ^{:doc "Use the ltest runner for verbose, colourful test output"}
+      ["with-profile" "+test"
+       "run" "-m" "cmr.client.testing.runner"]
     "check-deps"
       ^{:doc "Check to see if any dependencies are out of date"}
       ["with-profile" "lint" "ancient" "all"]})
