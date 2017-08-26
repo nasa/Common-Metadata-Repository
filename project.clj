@@ -18,7 +18,7 @@
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
-        [lein-cljsbuild "1.1.5"]
+        [lein-cljsbuild "1.1.7"]
         [lein-figwheel "0.5.13"]]
       :resource-paths ["dev-resources"]
       :source-paths ["dev-resources/src"]
@@ -32,25 +32,30 @@
         [lein-ancient "0.6.10"]
         [lein-bikeshed "0.4.1"]
         [lein-kibit "0.1.2"]
-        [venantius/yagni "0.1.4"]]}}
+        [venantius/yagni "0.1.4"]]}
+    :cljs {
+      :source-paths ^:replace ["src/cljs" "src/cljc"]
+      }}
   :cljsbuild {
     :builds [{
       :id "cmr-client"
       :source-paths ["src/cljs" "src/cljc"]
       :figwheel true
       :compiler {
-        :main "cmr.client.core"
+        :main "cmr.client.ingest"
+        :asset-path "js/out"
         :output-to "resources/public/js/cmr_client.js"
-        :output-dir "resources/public/js"}}]}
+        :output-dir "resources/public/js/out"}}]}
   :aliases {
     "build-cljs"
       ^{:doc "Build just the ClojureScript code."}
       ["cljsbuild" "once" "cmr-client"]
     "rhino-repl"
       ^{:doc "Start a Rhino-based Clojurescript REPL"}
-      ["do" ["build-cljs"]
-            ["compile"]
-            ["trampoline" "run" "-m" "clojure.main"
+      ["do" ["compile"]
+            ["build-cljs"]
+            ["with-profile" "+cljs"
+             "trampoline" "run" "-m" "clojure.main"
              "dev-resources/src/cmr/client/dev/rhino.clj"]]
     "browser-repl"
       ^{:doc "Start a browser-based Clojurescript REPL"}
