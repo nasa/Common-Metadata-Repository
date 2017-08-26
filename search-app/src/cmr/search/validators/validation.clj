@@ -13,9 +13,11 @@
   (:require
    cmr.spatial.ring-validations))
 
-(def umm-versioned-result-formats
+(defn- umm-versioned-result-formats
+  "Returns the umm versioned result formats for the given concept-type"
+  [concept-type]
   (for [format-key [:umm-json :umm-json-results]
-        version umm-version/versions]
+        version (umm-version/versions concept-type)]
     {:format format-key
      :version version}))
 
@@ -24,7 +26,7 @@
   (into #{:xml :json :legacy-umm-json :echo10 :dif :dif10 :atom :iso19115 :kml :opendata :native
           ;; umm-json supported with and without versions
           :umm-json :umm-json-results}
-        umm-versioned-result-formats))
+        (umm-versioned-result-formats :collection)))
 
 (defmethod cqv/supported-result-formats :granule
   [_]
@@ -35,11 +37,12 @@
   (into #{:json
           ;; umm-json supported with and without versions
           :umm-json :umm-json-results}
-        umm-versioned-result-formats))
+        (umm-versioned-result-formats :variable)))
 
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
-  (into #{:legacy-umm-json :xml :umm-json :umm-json-results} umm-versioned-result-formats))
+  (into #{:legacy-umm-json :xml :umm-json :umm-json-results}
+        (umm-versioned-result-formats :collection)))
 
 (defn validate-result-format-for-all-revisions
   "Validate requested search result format for all-revisions?."

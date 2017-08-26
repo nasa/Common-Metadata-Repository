@@ -33,7 +33,7 @@
   [context umm requested-media-type]
   ;; We are only going to respond with a version parameter if we are returning UMM JSON.
   (let [response-media-type (if (mt/umm-json? requested-media-type)
-                              (ver/with-default-version requested-media-type)
+                              (ver/with-default-version (:concept-type umm) requested-media-type)
                               requested-media-type)
         body (umm-spec/generate-metadata context umm response-media-type)]
     {:status  200
