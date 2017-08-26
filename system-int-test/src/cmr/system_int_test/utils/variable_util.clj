@@ -14,9 +14,10 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.echo.tokens :as tokens]
-   [cmr.transmit.variable :as transmit-variable]))
+   [cmr.transmit.variable :as transmit-variable]
+   [cmr.umm-spec.versioning :as versioning]))
 
-(def schema-version "1.10")
+(def schema-version versioning/current-variable-version)
 (def unique-index (atom 0))
 (def content-type "application/vnd.nasa.cmr.umm+json")
 (def default-opts {:accept-format :json

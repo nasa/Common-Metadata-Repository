@@ -5,7 +5,7 @@
    [cmr.common.background-jobs :as background-jobs]
    [cmr.common.lifecycle :as lifecycle]))
 
-(deftest background-jobs-test
+#_(deftest background-jobs-test
   (let [counter1 (atom 0)
         counter2 (atom 0)
         counter3 (atom 0)

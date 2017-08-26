@@ -424,7 +424,7 @@
 
       ;; verify variable search UMM JSON response has associated collections
       (du/assert-variable-umm-jsons-match
-       umm-version/current-version [expected-variable1 expected-variable2 expected-variable3]
+       umm-version/current-variable-version [expected-variable1 expected-variable2 expected-variable3]
        (search/find-concepts-umm-json :variable {}))
 
       (testing "update variable not affect the associated collections in search result"
@@ -439,7 +439,7 @@
           (index/wait-until-indexed)
 
           (du/assert-variable-umm-jsons-match
-           umm-version/current-version [expected-variable1]
+           umm-version/current-variable-version [expected-variable1]
            (search/find-concepts-umm-json :variable {:variable_name updated-variable1-name}))
 
           (testing "delete collection affect the associated collections in search result"
@@ -452,6 +452,6 @@
               (index/wait-until-indexed)
 
               (du/assert-variable-umm-jsons-match
-               umm-version/current-version [expected-variable1]
+               umm-version/current-variable-version [expected-variable1]
                (search/find-concepts-umm-json
                 :variable {:variable_name updated-variable1-name})))))))))
