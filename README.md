@@ -9,28 +9,48 @@
 [![Tag][tag-badge]][tag]
 /-->
 
-A Clojure(Script) Client for NASA's Common Metadata Repository
+*A Clojure(Script) Client for NASA's Common Metadata Repository*
 
 [![][logo]][logo]
 
 
-## Background
+#### Contents
+
+* [Background](#background-)
+* [CMR API](#cmr-api-)
+* [Usage](#usage-)
+  * [Clojure](#clojure-)
+  * [ClojureScript](#clojurescript-)
+  * [JavaScript](#javascript-)
+* [License](#license-)
+
+
+## Background [&#x219F;](#contents)
+
+The [Common Metadata Repository][cmr-project] (CMR) is a high-performance,
+high-quality, continuously evolving metadata system that catalogs all data and
+service metadata records for the [EOSDIS][eosdis] system and will be the
+authoritative management system for all EOSDIS metadata. These metadata records
+are registered, modified, discovered, and accessed through programmatic
+interfaces leveraging standard protocols and APIs.
+
+Code for the CMR is up on [github][cmr-github].
+
+
+## CMR API [&#x219F;](#contents)
 
 There are three major API endpoints for the CMR:
 
-* /access-control - [Access Control API docs][ac-api-docs]
-* /ingest - [Ingest API docs][ingest-api-docs]
 * /search - [Search API docs][search-api-docs]
+* /ingest - [Ingest API docs][ingest-api-docs]
+* /access-control - [Access Control API docs][ac-api-docs]
 
 The last of these is the largest and most-used API. Regardless, this client
 project aims to support them all, each in their own namespace. Respectively:
 
-* `cmr.client.ac`
-* `cmr.client.ingest`
 * `cmr.client.search`
-
-
-## CMR
+* `cmr.client.ingest`
+* `cmr.client.ac`
 
 By default, new clients are instantiated to run against CMR in production. You
 may override this with the `:endpoint` key in the options passed to
@@ -45,7 +65,7 @@ keys are used to create clients against their respective CMR deployments:
 The last one being for developers running an instance of CMR locally.
 
 
-## Usage
+## Usage [&#x219F;](#contents)
 
 *WIP*
 
@@ -53,7 +73,7 @@ This project has only just started, but that being said, here's what you can
 do so far:
 
 
-### Clojure
+### Clojure [&#x219F;](#contents)
 
 ```bash
 $ lein repl
@@ -74,9 +94,9 @@ $ lein repl
 ```
 
 
-### ClojureScript
+### ClojureScript [&#x219F;](#contents)
 
-Start a the figwheel  REPL:
+Start a the figwheel REPL:
 
 ```bash
 $ rlwrap lein figwheel
@@ -120,7 +140,7 @@ Got body: [{:provider-id LARC_ASDC, :short-name LARC_ASDC, :cmr-only false ...}
 ```
 
 
-## JavaScript
+## JavaScript [&#x219F;](#contents)
 
 You can use the compiled ClojureScript client in the browser like so:
 
@@ -137,7 +157,7 @@ Got body: [{:provider-id LARC_ASDC, :short-name LARC_ASDC, :cmr-only false ...}
 ```
 
 
-## License
+## License [&#x219F;](#contents)
 
 Copyright © 2017 Duncan McGreggor
 
@@ -162,3 +182,6 @@ Distributed under the Apache License, Version 2.0.
 [ac-api-docs]: https://cmr.earthdata.nasa.gov/access-control/site/docs/access-control/api.html
 [ingest-api-docs]: https://cmr.earthdata.nasa.gov/ingest/site/docs/ingest/api.html
 [search-api-docs]: https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html
+[cmr-project]: https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository
+[cmr-github]: https://github.com/nasa/Common-Metadata-Repository
+[eosdis]: https://earthdata.nasa.gov/about
