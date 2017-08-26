@@ -17,7 +17,7 @@
     (async/promise-chan)))
 
 (defn get-default-options
-  [this]
+  [client]
   {:with-credentials? false})
 
 (defn make-http-options
@@ -32,7 +32,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol HTTPClientAPI
-  "A common interface for both Clojure and ClojureScript HTTP clients."
+  "An interface for ClojureScript HTTP clients."
   (^:export get [this url] [this url opts])
   (^:export head [this url] [this url opts])
   (^:export put [this url] [this url opts])
