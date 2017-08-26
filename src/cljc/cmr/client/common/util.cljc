@@ -5,15 +5,27 @@
       :cljs [cljs.core.async :as async]))
   #?(:cljs (:require-macros [cljs.core.async.macros :refer [go go-loop]])))
 
+(def default-environment-type :prod)
+
+(defn get-endpoint
+  [environment-type service-key]
+  (->> (environment-type const/deployment-type)
+       (vector service-key)
+       (get-in const/endpoints)
+       (str (environment-type const/hosts))))
+
+(defn get-default-endpoint
+  [options service-key]
+  (or (:endpoint options)
+      (get-endpoint default-environment-type service-key)))
+
 (defn parse-endpoint
-  [endpoint endpoints]
-  (if (string? endpoint)
-    endpoint
-    (case endpoint
-      :prod (str const/host-prod (:service endpoints))
-      :uat (str const/host-uat (:service endpoints))
-      :sit (str const/host-sit (:service endpoints))
-      :local (str const/host-local (:local endpoints)))))
+  ([endpoint]
+   (parse-endpoint endpoint nil))
+  ([endpoint service-key]
+   (if (string? endpoint)
+     endpoint
+     (get-endpoint endpoint service-key))))
 
 (defn ^:export with-callback
   [chan callback]
