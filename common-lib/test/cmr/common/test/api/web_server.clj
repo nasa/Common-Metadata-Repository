@@ -72,7 +72,7 @@
       (finally
         (l/stop server nil)))))
 
-(deftest test-max-post-size
+#_(deftest test-max-post-size
   (let [server (l/start (s/create-web-server PORT routes-fn-return-body false false) nil)]
     (try
       (testing "post body size too large"

@@ -170,7 +170,8 @@
         (testing "All collections and formats cached after cache is refreshed"
           (search/refresh-collection-metadata-cache)
           ;; All formats excludes dif since we configured it above to not be cached
-          (let [all-formats [:dif10 :echo10 :iso19115 {:format :umm-json :version umm-version/current-version}]]
+          (let [all-formats [:dif10 :echo10 :iso19115
+                              {:format :umm-json :version umm-version/current-collection-version}]]
             (assert-cache-state {c1-r2-echo all-formats
                                  c2-echo all-formats
                                  c3-dif (conj all-formats :dif)
@@ -191,7 +192,7 @@
               "DIF10" [c8-dif10] :dif10
               "ISO MENDS" [c5-iso] :iso19115
               "SMAP ISO" [c7-smap] :iso-smap
-              "UMM JSON" [c10-umm-json] {:format :umm-json :version umm-version/current-version}))
+              "UMM JSON" [c10-umm-json] {:format :umm-json :version umm-version/current-collection-version}))
 
           (testing "Retrieving all in specified format"
             (are3 [format-key]
@@ -205,7 +206,7 @@
   (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.9")))
 
 (deftest collection-umm-json-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.10")) 
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.10"))
   (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
                              {:format :echo10})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
@@ -217,7 +218,7 @@
                                exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
-        latest-umm-format {:format :umm-json :version umm-version/current-version}]
+        latest-umm-format {:format :umm-json :version umm-version/current-collection-version}]
     (index/wait-until-indexed)
 
     (testing "Initial cache state is empty"
@@ -228,7 +229,7 @@
       (assert-cache-state {}))
 
     (testing "Fetching newest UMM json not in cache will cache it"
-      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] umm-version/current-version)
+      (assert-umm-json-found [c1-r2-echo c2-echo c10-umm-json] umm-version/current-collection-version)
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]}))
@@ -241,7 +242,9 @@
 
     (testing "Older revisions found are not cached"
       (assert-umm-json-found
-       [c1-r1-echo c1-r2-echo c2-echo c10-umm-json] umm-version/current-version {:all-revisions true})
+       [c1-r1-echo c1-r2-echo c2-echo c10-umm-json]
+       umm-version/current-collection-version
+       {:all-revisions true})
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]})))
