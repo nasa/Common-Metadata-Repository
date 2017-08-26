@@ -8,6 +8,8 @@
    [clojure.string :as string]
    [clojure.tools.namespace.repl :as repl]
    [cmr.client.ac.core :as ac]
+   [cmr.client.common.const :as const]
+   [cmr.client.common.util :as util]
    [cmr.client.http.core :as http]
    [cmr.client.ingest.core :as ingest]
    [cmr.client.search.core :as search]))
