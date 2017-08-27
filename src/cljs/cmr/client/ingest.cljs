@@ -1,8 +1,12 @@
 (ns cmr.client.ingest
   (:require
+   [cmr.client.base :refer [make-options CMRClientAPI]]
+   [cmr.client.base.impl :as base]
    [cmr.client.common.const :as const]
    [cmr.client.common.util :as util]
-   [cmr.client.http :as http])
+   [cmr.client.http :as http]
+   [cmr.client.ingest.impl :as ingest :refer [->CMRIngestClientData
+                                              CMRIngestClientData]])
   (:refer-clojure :exclude [get]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -10,39 +14,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol CMRIngestAPI
-  (^:export get-url [this segment])
   (^:export get-providers [this]))
-
-(defrecord CMRIngestClientOptions [
-  return-body?])
-
-(defrecord CMRIngestClientData [
-  endpoint
-  options
-  http-client])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend-type CMRIngestClientData
-  CMRIngestAPI
+  CMRClientAPI
   (get-url
     [this segment]
-    (str (:endpoint this) segment))
+    (base/get-url this segment)))
 
+(extend-type CMRIngestClientData
+  CMRIngestAPI
   (get-providers
     [this]
-    (-> this
-        :http-client
-        (http/get (get-url this "/providers")))))
+    (ingest/get-providers this)))
 
-(defn make-options
-  [options]
-  (let [options (if (object? options)
-                 (js->clj options :keywordize-keys true)
-                 options)]
-    (->CMRIngestClientOptions (:return-body? options))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Constrcutor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:export create-client
   (util/create-service-client-constructor

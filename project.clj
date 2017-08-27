@@ -49,7 +49,7 @@
       :source-paths ["src/cljs" "src/cljc"]
       :figwheel true
       :compiler {
-        :main "cmr.client.ingest"
+        :main "cmr.client"
         :asset-path "js/out"
         :output-to "resources/public/js/cmr_client.js"
         :output-dir "resources/public/js/out"}}]}
