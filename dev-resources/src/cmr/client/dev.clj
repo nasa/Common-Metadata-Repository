@@ -14,6 +14,13 @@
    [cmr.client.ingest.core :as ingest]
    [cmr.client.search.core :as search]))
 
+(repl/set-refresh-dirs
+   "src/clj"
+   "src/cljc"
+   "dev-resources/src")
+
+;;; Aliases
+
 (def reload #'repl/refresh)
 (def refresh #'repl/refresh)
 (def reset #'repl/refresh)
