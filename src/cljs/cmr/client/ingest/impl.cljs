@@ -1,8 +1,7 @@
 (ns cmr.client.ingest.impl
   (:require
    [cmr.client.base.impl :as base]
-   [cmr.client.http :as http])
-  (:refer-clojure :exclude [get]))
+   [cmr.client.http :as http]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
