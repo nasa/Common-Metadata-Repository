@@ -2,6 +2,7 @@
   (:require
    [clj-http.client :as http]
    [clojure.data.json :as json]
+   [clojure.data.xml :as xml]
    [clojure.string :as string])
   (:refer-clojure :exclude [get]))
 
@@ -37,16 +38,22 @@
   (let [content-type (get-in response [:headers "Content-Type"])]
     (cond
       (string/includes? content-type "json") :json
+      (string/includes? content-type "xml") :xml
       :else :unsupported)))
 
 (defn read-json-str
   [string-data]
   (json/read-str string-data :key-fn keyword))
 
+(defn read-xml-str
+  [string-data]
+  (xml/parse-str string-data))
+
 (defn convert-body
   [response content-type]
   (case content-type
      :json (read-json-str (:body response))
+     :xml (read-xml-str (:body response))
      :unsupported (:body response)))
 
 (defn parse-body!
