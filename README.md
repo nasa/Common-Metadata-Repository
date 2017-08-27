@@ -18,6 +18,8 @@
 
 * [Background](#background-)
 * [CMR API](#cmr-api-)
+  * [Overview](#overview)
+  * [Environments](#environments)
 * [Usage](#usage-)
   * [Clojure](#clojure-)
   * [ClojureScript](#clojurescript-)
@@ -39,18 +41,25 @@ Code for the CMR is up on [github][cmr-github].
 
 ## CMR API [&#x219F;](#contents)
 
+
+### Overview
+
 There are three major API endpoints for the CMR:
 
 * /search - [Search API docs][search-api-docs]
 * /ingest - [Ingest API docs][ingest-api-docs]
 * /access-control - [Access Control API docs][ac-api-docs]
 
-The last of these is the largest and most-used API. Regardless, this client
-project aims to support them all, each in their own namespace. Respectively:
+The `/search` endpoint is the largest and most-used API. Regardless, this
+client project aims to support them all, each in their own namespace.
+Respectively:
 
 * `cmr.client.search`
 * `cmr.client.ingest`
 * `cmr.client.ac`
+
+
+### Environments
 
 By default, new clients are instantiated to run against CMR in production. You
 may override this with the `:endpoint` key in the options passed to
