@@ -14,12 +14,14 @@
     [org.clojure/data.xml "0.2.0-alpha2"]]
   :source-paths ["src/clj" "src/cljc"]
   :profiles {
+    :uberjar {
+      :aot :all}
     :dev {
       :dependencies [
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
-        [lein-cljsbuild "1.1.7"]
-        [lein-figwheel "0.5.13"]]
+        [lein-cljsbuild "1.1.7" :exclusions [org.clojure/clojure]]
+        [lein-figwheel "0.5.13" :exclusions [org.clojure/clojure]]]
       :resource-paths ["dev-resources"]
       :source-paths ["dev-resources/src"]
       :repl-options {
