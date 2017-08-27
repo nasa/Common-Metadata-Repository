@@ -33,3 +33,41 @@
     (if-let [response (async/<! chan)]
       (callback response)
       (recur))))
+
+(defn create-service-client-constructor
+  "This is a utility function that returns a function for creating clients of
+  a particular type, e.g., ingest, search, or access-control clients.
+
+  The arguments details are as follows:
+
+  * `service-type` - must be one of the supported service types, notably
+    `:ingest`, `:search`, or `:access-control`
+  * `client-constructor` - this is the var of that is assigned the value of the
+    call to `create-service-client-constructor`; it is passed so that the
+    anonymous function below has something to refer to in support of multiple
+    arities
+  * `client-data-fn` - this is the constrcutor for the record that is used for
+    the implementation of the protocol (that which is extended)
+  * `options-fn` - a functin which creates the client client options, including
+    basic defaults, for the implementation; it should be a function that in
+    turn calls a `CMR*ClientOpions` constructor
+  * `http-client-constructor` - a function that instrantiates the CMR HTTP
+    client used by all CMR service type clients (different for Clojure and
+    ClojureScript)
+
+  This docstring is a bit dense; for more clarity, be sure to view the calls
+  made to this function in both the Clojure and ClojureScript clients."
+  [servie-type client-constructor client-data-fn options-fn
+   http-client-constructor]
+  (fn
+    ([]
+     (client-constructor {}))
+    ([options]
+     (client-constructor options {}))
+    ([options http-options]
+     (let [endpoint (get-default-endpoint options servie-type)
+           client-options (options-fn options)
+           http-client (http-client-constructor client-options http-options)]
+       (client-data-fn (parse-endpoint endpoint servie-type)
+                       client-options
+                       http-client)))))

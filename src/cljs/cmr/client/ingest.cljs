@@ -37,15 +37,17 @@
         :http-client
         (http/get (get-url this "/providers")))))
 
-(defn ^:export create-client
-  ([]
-   (create-client {}))
-  ([options]
-   (create-client options {}))
-  ([options http-options]
-   (let [endpoint (util/get-default-endpoint options :ingest)
-         options (when (object? options) (js->clj options :keywordize-keys true))
-         client-options (->CMRIngestClientOptions (:return-body? options))]
-     (->CMRIngestClientData endpoint
-                            client-options
-                            (http/create-client client-options http-options)))))
+(defn make-options
+  [options]
+  (let [options (if (object? options)
+                 (js->clj options :keywordize-keys true)
+                 options)]
+    (->CMRIngestClientOptions (:return-body? options))))
+
+(def ^:export create-client
+  (util/create-service-client-constructor
+   :ingest
+   #'cmr.client.ingest/create-client
+   ->CMRIngestClientData
+   make-options
+   http/create-client))

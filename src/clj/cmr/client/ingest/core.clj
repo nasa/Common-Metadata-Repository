@@ -6,28 +6,30 @@
   [cmr.client.ingest.impl :as impl])
  (:import (cmr.client.ingest.impl CMRIngestClientData CMRIngestClientOptions)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defprotocol CMRIngestAPI
   (get-url [this segment])
   (get-providers [this]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend CMRIngestClientData
         CMRIngestAPI
         impl/client-behaviour)
 
-(defn create-client
-  ([]
-   (create-client {}))
-  ([options]
-   (create-client options {}))
-  ([options http-options]
-   (let [endpoint (util/get-default-endpoint options :ingest)
-         client-options (impl/->CMRIngestClientOptions
-                         (:return-body? options))]
-     (impl/->CMRIngestClientData (util/parse-endpoint endpoint :ingest)
-                                 client-options
-                                 (http/create-client client-options
-                                                     http-options)))))
+(defn make-options
+  [options]
+  (impl/->CMRIngestClientOptions (:return-body? options)))
 
-(comment
-  (def client (ingest/create-client {:endpoint :local :return-body? true}))
-  (ingest/get-providers client))
+(def create-client
+  (util/create-service-client-constructor
+   :ingest
+   #'cmr.client.ingest.core/create-client
+   impl/->CMRIngestClientData
+   make-options
+   http/create-client))
