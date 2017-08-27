@@ -1,5 +1,6 @@
 (ns cmr.client.testing.runner
-  (:require [ltest.core :as ltest])
+  (:require
+   [ltest.core :as ltest])
   (:gen-class))
 
 (defn run-tests
