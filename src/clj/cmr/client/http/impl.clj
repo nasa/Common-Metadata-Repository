@@ -12,20 +12,34 @@
 
 (defn get-default-options
   [client]
-  {:async? true})
+  ;{:async? true}
+  {})
+
+(defn get-conn-mgr-option
+  [client]
+  (if-let [conn-mgr (get-in client
+                            [:parent-client-options :connection-manager])]
+    {:connection-manager conn-mgr}
+    {}))
 
 (defn make-http-options
   [client call-options]
   (merge (get-default-options client)
+         (get-conn-mgr-option client)
          (:options client)
          call-options))
 
-(defn make-http-client-args
+(defn make-async-http-client-args
   [client url options success-callback error-callback channel]
   [url
    (make-http-options client options)
    (partial success-callback client channel)
    (partial error-callback client channel)])
+
+(defn make-http-client-args
+  [client url options]
+  [url
+   (make-http-options client options)])
 
 (defn parse-content-type
   [response]
@@ -50,12 +64,19 @@
   ([response content-type]
    (assoc response :body (convert-body response content-type))))
 
+(defn- handle-response
+  ([client response]
+   (handle-response client {} response))
+  ([client options response]
+   (if (or (:return-body? options)
+           (get-in client [:parent-client-options :return-body?]))
+     (:body (parse-body! response))
+     (parse-body! response))))
+
 (defn- client-callback
   "When we get the response, write it to the channel."
-  [this chan response]
-  (async/>!! chan (if (get-in this [:parent-client-options :return-body?])
-                    (:body (parse-body! response))
-                    (parse-body! response))))
+  [client chan response]
+  (async/>!! chan (handle-response client response)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,15 +90,23 @@
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; (defn- get
+;   ([this url]
+;     (get this url {}))
+;   ([this url options]
+;     (let [chan (async/chan)]
+;       (apply http/get
+;              (make-async-http-client-args
+;               this url options client-callback client-callback chan))
+;       chan)))
+
 (defn- get
   ([this url]
     (get this url {}))
   ([this url options]
-    (let [chan (async/chan)]
-      (apply http/get
-             (make-http-client-args
-              this url options client-callback client-callback chan))
-      chan)))
+    (->> (make-http-client-args this url options)
+         (apply http/get)
+         (handle-response this options))))
 
 (defn- head
   ([this url]

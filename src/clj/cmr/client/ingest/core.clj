@@ -1,5 +1,6 @@
 (ns cmr.client.ingest.core
  (:require
+  [clj-http.conn-mgr :as conn-mgr]
   [cmr.client.common.const :as const]
   [cmr.client.common.util :as util]
   [cmr.client.http.core :as http]
@@ -24,7 +25,13 @@
 
 (defn make-options
   [options]
-  (impl/->CMRIngestClientOptions (:return-body? options)))
+  (impl/->CMRIngestClientOptions
+    (:return-body? options)
+    ;(conn-mgr/make-reuseable-async-conn-manager
+    (conn-mgr/make-reusable-conn-manager
+     ;; Use the same defaults that the `with-connection-pool` uses
+     {:timeout 5
+      :threads 4})))
 
 (def create-client
   (util/create-service-client-constructor

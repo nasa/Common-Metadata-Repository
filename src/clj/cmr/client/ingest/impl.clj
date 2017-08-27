@@ -8,7 +8,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord CMRIngestClientOptions [
-  return-body?])
+  return-body?
+  connection-manager])
 
 (defrecord CMRIngestClientData [
   endpoint
@@ -23,12 +24,18 @@
   [this segment]
   (str (:endpoint this) segment))
 
+; (defn- get-providers
+;   [this]
+;   (-> this
+;       :http-client
+;       (http/get (get-url this "/providers"))
+;       (async/<!!)))
+
 (defn- get-providers
   [this]
   (-> this
       :http-client
-      (http/get (get-url this "/providers"))
-      (async/<!!)))
+      (http/get (get-url this "/providers"))))
 
 (def client-behaviour
   {:get-url get-url
