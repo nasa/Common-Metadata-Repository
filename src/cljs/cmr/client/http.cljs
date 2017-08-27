@@ -2,6 +2,7 @@
   (:require
    [cljs-http.client :as http]
    [cljs.core.async :as async]
+   [cmr.client.common.util :as common-util]
    [cmr.client.ingest.util :as util])
   (:refer-clojure :exclude [get])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -99,11 +100,7 @@
     ([this url options]
       :not-implemented)))
 
-(defn ^:export create-client
-  ([]
-   (create-client {}))
-  ([http-options]
-   (create-client {} http-options))
-  ([parent-client-options http-options]
-   (->HTTPClientData parent-client-options
-                     http-options)))
+(def ^:export create-client
+  (common-util/create-http-client-constructor
+    #'cmr.client.http/create-client
+    ->HTTPClientData))

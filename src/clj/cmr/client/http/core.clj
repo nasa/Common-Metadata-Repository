@@ -1,8 +1,13 @@
 (ns cmr.client.http.core
   (:require
+   [cmr.client.common.util :as util]
    [cmr.client.http.impl :as impl])
   (:import (cmr.client.http.impl HTTPClientData))
   (:refer-clojure :exclude [get]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defprotocol HTTPClientAPI
   "An interface for Clojure HTTP clients."
@@ -16,15 +21,15 @@
   (patch [this url] [this url opts])
   (options [this url] [this url opts]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (extend HTTPClientData
         HTTPClientAPI
         impl/client-behaviour)
 
-(defn create-client
-  ([]
-   (create-client {}))
-  ([http-options]
-   (create-client {} http-options))
-  ([parent-client-options http-options]
-   (impl/->HTTPClientData parent-client-options
-                          http-options)))
+(def create-client
+  (util/create-http-client-constructor
+    #'cmr.client.http.core/create-client
+    impl/->HTTPClientData))
