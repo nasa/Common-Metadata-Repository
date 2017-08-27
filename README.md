@@ -119,11 +119,11 @@ channel. However, if you don't want to work with channels, you can easily
 process results in a callback:
 
 ```clj
-(with-callback ch #(println "Got body:" %))
+(with-callback ch #(println "Got response:" %))
 ```
 Which gives:
 ```clj
-Got body: {:status 200, :success true, :body [{:provider-id LARC_ASDC ...
+Got response: {:status 200, :success true, :body [{:provider-id LARC_ASDC ...
 ```
 
 If you don't need the full response and are just after the data, you can
