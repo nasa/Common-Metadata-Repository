@@ -1,7 +1,6 @@
 (ns cmr.client.ingest.impl
  (:require
-  [cmr.client.http.core :as http]
-  [clojure.core.async :as async]))
+  [cmr.client.http.core :as http]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -23,13 +22,6 @@
 (defn- get-url
   [this segment]
   (str (:endpoint this) segment))
-
-; (defn- get-providers
-;   [this]
-;   (-> this
-;       :http-client
-;       (http/get (get-url this "/providers"))
-;       (async/<!!)))
 
 (defn- get-providers
   [this]

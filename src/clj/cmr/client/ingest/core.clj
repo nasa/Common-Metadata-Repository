@@ -27,7 +27,6 @@
   [options]
   (impl/->CMRIngestClientOptions
     (:return-body? options)
-    ;(conn-mgr/make-reuseable-async-conn-manager
     (conn-mgr/make-reusable-conn-manager
      ;; Use the same defaults that the `with-connection-pool` uses
      {:timeout 5

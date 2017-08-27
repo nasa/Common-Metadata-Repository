@@ -1,7 +1,6 @@
 (ns cmr.client.http.impl
   (:require
    [clj-http.client :as http]
-   [clojure.core.async :as async]
    [clojure.data.json :as json]
    [clojure.string :as string])
   (:refer-clojure :exclude [get]))
@@ -12,7 +11,6 @@
 
 (defn get-default-options
   [client]
-  ;{:async? true}
   {})
 
 (defn get-conn-mgr-option
@@ -28,13 +26,6 @@
          (get-conn-mgr-option client)
          (:options client)
          call-options))
-
-(defn make-async-http-client-args
-  [client url options success-callback error-callback channel]
-  [url
-   (make-http-options client options)
-   (partial success-callback client channel)
-   (partial error-callback client channel)])
 
 (defn make-http-client-args
   [client url options]
@@ -73,11 +64,6 @@
      (:body (parse-body! response))
      (parse-body! response))))
 
-(defn- client-callback
-  "When we get the response, write it to the channel."
-  [client chan response]
-  (async/>!! chan (handle-response client response)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Records &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,16 +75,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-; (defn- get
-;   ([this url]
-;     (get this url {}))
-;   ([this url options]
-;     (let [chan (async/chan)]
-;       (apply http/get
-;              (make-async-http-client-args
-;               this url options client-callback client-callback chan))
-;       chan)))
 
 (defn- get
   ([this url]
