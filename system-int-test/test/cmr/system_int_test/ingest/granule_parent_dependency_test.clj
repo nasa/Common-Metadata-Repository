@@ -256,7 +256,7 @@
         projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
-        c-two-d-cs-A {:TilingIdentificationSystemName "MISR"
+        c-two-d-cs-A {:TilingIdentificationSystemName "WRS-1"
                       :Coordinate1 {:MinimumValue 100
                                     :MaximumValue 200}
                       :Coordinate2 {:MinimumValue 300
@@ -267,7 +267,7 @@
                       :Coordinate2 {:MinimumValue 300
                                     :MaximumValue 400}}
         g-two-d-cs-A (dg/two-d-coordinate-system
-                       {:name "MISR"
+                       {:name "WRS-1"
                         :start-coordinate-1 110
                         :end-coordinate-1 130
                         :start-coordinate-2 300
@@ -346,8 +346,8 @@
           ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [CALIPSO]."]
           gran-B-for-echo10-coll-A
 
-          "A granule ingested in collection B with OldName is permitted"
-          []
+          "A granule ingested in collection B with different TilingIdentificationSystemName is not permitted"
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [WRS-1]."]
           gran-A-for-echo10-coll-B
 
           "A granule ingested in collection B with NewName is permitted"

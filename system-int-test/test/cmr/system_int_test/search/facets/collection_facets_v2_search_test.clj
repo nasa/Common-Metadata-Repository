@@ -7,6 +7,8 @@
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as frf2]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
+   [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
@@ -23,37 +25,37 @@
                        hu/save-sample-humanizers-fixture
                        variable-util/grant-all-variable-fixture]))
 
-(def sk1 (dc/science-keyword {:category "Earth science"
-                              :topic "Topic1"
-                              :term "Term1"
-                              :variable-level-1 "Level1-1"
-                              :variable-level-2 "Level1-2"
-                              :variable-level-3 "Level1-3"
-                              :detailed-variable "Detail1"}))
+(def sk1 (umm-spec-common/science-keyword {:Category "Earth science"
+                                           :Topic "Topic1"
+                                           :Term "Term1"
+                                           :VariableLevel1 "Level1-1"
+                                           :VariableLevel2 "Level1-2"
+                                           :VariableLevel3 "Level1-3"
+                                           :DetailedVariable "Detail1"}))
 
-(def sk2 (dc/science-keyword {:category "EARTH SCIENCE"
-                              :topic "Popular"
-                              :term "Extreme"
-                              :variable-level-1 "Level2-1"
-                              :variable-level-2 "Level2-2"
-                              :variable-level-3 "Level2-3"
-                              :detailed-variable "UNIVERSAL"}))
+(def sk2 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
+                                           :Topic "Popular"
+                                           :Term "Extreme"
+                                           :VariableLevel1 "Level2-1"
+                                           :VariableLevel2 "Level2-2"
+                                           :VariableLevel3 "Level2-3"
+                                           :DetailedVariable "UNIVERSAL"}))
 
-(def sk3 (dc/science-keyword {:category "EARTH SCIENCE"
-                              :topic "Popular"
-                              :term "UNIVERSAL"}))
+(def sk3 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
+                                           :Topic "Popular"
+                                           :Term "UNIVERSAL"}))
 
-(def sk4 (dc/science-keyword {:category "EARTH SCIENCE"
-                              :topic "Popular"
-                              :term "Alpha"}))
+(def sk4 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
+                                           :Topic "Popular"
+                                           :Term "Alpha"}))
 
-(def sk5 (dc/science-keyword {:category "EARTH SCIENCE"
-                              :topic "Popular"
-                              :term "Beta"}))
+(def sk5 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
+                                           :Topic "Popular"
+                                           :Term "Beta"}))
 
-(def sk6 (dc/science-keyword {:category "EARTH SCIENCE"
-                              :topic "Popular"
-                              :term "Omega"}))
+(def sk6 (umm-spec-common/science-keyword {:Category "EARTH SCIENCE"
+                                           :Topic "Popular"
+                                           :Term "Omega"}))
 
 (defn- search-and-return-v2-facets
   "Returns the facets returned by a search requesting v2 facets."
@@ -74,13 +76,13 @@
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms fu/FROM_KMS 2 2 1)
                             (fu/processing-level-id "PL1")
-                            {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
+                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]})
         coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms fu/FROM_KMS 2 2 1)
                             (fu/processing-level-id "PL1")
-                            {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
+                            {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]})
         _ (index/wait-until-indexed)
         ;; create variables
         {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-attrs
@@ -161,7 +163,7 @@
   (fu/make-coll 2 "PROV1" (fu/platforms "default" 55) (fu/science-keywords sk1 sk2))
 
   ;; 1 platform with a count of 1 but high priority, so it should appear
-  (fu/make-coll 3 "PROV1" {:platforms [(dc/platform {:short-name "Terra"})]}
+  (fu/make-coll 3 "PROV1" {:Platforms [(data-umm-spec/platform {:ShortName "Terra"})]}
                 (fu/science-keywords sk2 sk5))
   ;; 55 platforms with a count of 1, none of which should appear
   (fu/make-coll 4 "PROV1" (fu/platforms "low" 55) (fu/science-keywords sk2 sk5))
@@ -245,9 +247,9 @@
   (is (= fr/partial-v2-facets (search-and-return-v2-facets))))
 
 (deftest only-earth-science-category-test
-  (let [non-earth-science-keyword (dc/science-keyword {:category "Cat1"
-                                                       :topic "OtherTopic"
-                                                       :term "OtherTerm"})]
+  (let [non-earth-science-keyword (umm-spec-common/science-keyword {:Category "Cat1"
+                                                                    :Topic "OtherTopic"
+                                                                    :Term "OtherTerm"})]
     (fu/make-coll 1 "PROV1" (fu/science-keywords non-earth-science-keyword))
     (testing "No facets included because there are no collections under the Earth Science category"
       (is (= empty-v2-facets (search-and-return-v2-facets))))
@@ -260,24 +262,24 @@
                                [{:title "Topic1"}]}]}]
         (is (= expected-facets (fu/prune-facet-response (search-and-return-v2-facets) [:title])))))))
 
-(def sk-all (dc/science-keyword {:category "Earth science"
-                                 :topic "Topic1"
-                                 :term "Term1"
-                                 :variable-level-1 "Level1-1"
-                                 :variable-level-2 "Level1-2"
-                                 :variable-level-3 "Level1-3"}))
+(def sk-all (umm-spec-common/science-keyword {:Category "Earth science"
+                                              :Topic "Topic1"
+                                              :Term "Term1"
+                                              :VariableLevel1 "Level1-1"
+                                              :VariableLevel2 "Level1-2"
+                                              :VariableLevel3 "Level1-3"}))
 
-(def sk-same-vl1 (dc/science-keyword {:category "Earth science"
-                                      :topic "Topic1"
-                                      :term "Term2"
-                                      :variable-level-1 "Level1-1"
-                                      :variable-level-2 "Level2-2"
-                                      :variable-level-3 "Level2-3"}))
+(def sk-same-vl1 (umm-spec-common/science-keyword {:Category "Earth science"
+                                                   :Topic "Topic1"
+                                                   :Term "Term2"
+                                                   :VariableLevel1 "Level1-1"
+                                                   :VariableLevel2 "Level2-2"
+                                                   :VariableLevel3 "Level2-3"}))
 
-(def sk-diff-vl1 (dc/science-keyword {:category "Earth science"
-                                      :topic "Topic1"
-                                      :term "Term1"
-                                      :variable-level-1 "Another Level"}))
+(def sk-diff-vl1 (umm-spec-common/science-keyword {:Category "Earth science"
+                                                   :Topic "Topic1"
+                                                   :Term "Term1"
+                                                   :VariableLevel1 "Another Level"}))
 
 (deftest link-traversal-test
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
@@ -384,32 +386,32 @@
     (is (= count (:count field-match-value)))))
 
 (deftest platform-facets-v2-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection
-                                {:entry-title "coll1"
-                                 :short-name "S1"
-                                 :version-id "V1"
-                                 :platforms (dc/platforms "P1")}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll2"
-                                  :short-name "S2"
-                                  :version-id "V2"
-                                  :platforms (dc/platforms "P1" "P2")}))
-        coll3 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll3"
-                                  :short-name "S3"
-                                  :version-id "V3"
-                                  :platforms [(dc/platform
-                                               {:short-name "P2"
-                                                :instruments [(dc/instrument {:short-name "I3"})]})]
-                                  :projects (dc/projects "proj3")}))
-        coll4 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll4"
-                                  :short-name "S4"
-                                  :version-id "V4"
-                                  :platforms [(dc/platform
-                                               {:short-name "P4"
-                                                :instruments [(dc/instrument {:short-name "I4"})]})]
-                                  :projects (dc/projects "proj4")}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :Platforms (data-umm-spec/platforms "P1")}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll2"
+                                                       :ShortName "S2"
+                                                       :VersionId "V2"
+                                                       :Platforms (data-umm-spec/platforms "P1" "P2")}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll3"
+                                                       :ShortName "S3"
+                                                       :VersionId "V3"
+                                                       :Platforms [(data-umm-spec/platform
+                                                                    {:ShortName "P2"
+                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I3"})]})]
+                                                       :Projects (umm-spec-common/projects "proj3")}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll4"
+                                                       :ShortName "S4"
+                                                       :VersionId "V4"
+                                                       :Platforms [(data-umm-spec/platform
+                                                                    {:ShortName "P4"
+                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I4"})]})]
+                                                       :Projects (umm-spec-common/projects "proj4")}))]
     (testing "search by platform parameter filters the other facets, but not platforms facets"
       (let [facets-result (search-and-return-v2-facets {:platform-h ["P4"]})]
         (assert-facet-field facets-result "Platforms" "P1" 2)
@@ -463,43 +465,43 @@
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
 (deftest science-keywords-facets-v2-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection
-                                {:entry-title "coll1"
-                                 :short-name "S1"
-                                 :version-id "V1"
-                                 :platforms (dc/platforms "P1")
-                                 :science-keywords [(dc/science-keyword
-                                                     {:category "Earth Science"
-                                                      :topic "Topic1"
-                                                      :term "Term1"
-                                                      :variable-level-1 "Level1-1"
-                                                      :variable-level-2 "Level1-2"
-                                                      :variable-level-3 "Level1-3"
-                                                      :detailed-variable "Detail1"})]}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll2"
-                                  :short-name "S2"
-                                  :version-id "V2"
-                                  :platforms (dc/platforms "P2")
-                                  :science-keywords [(dc/science-keyword
-                                                      {:category "Earth Science"
-                                                       :topic "Topic2"
-                                                       :term "Term2"
-                                                       :variable-level-1 "Level2-1"
-                                                       :variable-level-2 "Level2-2"})]}))
-        coll3 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll3"
-                                  :short-name "S3"
-                                  :version-id "V3"
-                                  :platforms (dc/platforms "P3")
-                                  :science-keywords [(dc/science-keyword
-                                                      {:category "Earth Science"
-                                                       :topic "Topic1"
-                                                       :term "Term3"})
-                                                     (dc/science-keyword
-                                                      {:category "Earth Science"
-                                                       :topic "Topic2"
-                                                       :term "Term3"})]}))]
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :Platforms (data-umm-spec/platforms "P1")
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic1"
+                                                                           :Term "Term1"
+                                                                           :VariableLevel1 "Level1-1"
+                                                                           :VariableLevel2 "Level1-2"
+                                                                           :VariableLevel3 "Level1-3"
+                                                                           :DetailedVariable "Detail1"})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :VersionId "V2"
+                                                      :Platforms (data-umm-spec/platforms "P2")
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic2"
+                                                                           :Term "Term2"
+                                                                           :VariableLevel1 "Level2-1"
+                                                                           :VariableLevel2 "Level2-2"})]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll3"
+                                                      :ShortName "S3"
+                                                      :VersionId "V3"
+                                                      :Platforms (data-umm-spec/platforms "P3")
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic1"
+                                                                           :Term "Term3"})
+                                                                         (umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic2"
+                                                                           :Term "Term3"})]}))]
     ;; We only check the topic level science keywords facet for convenience since the whole
     ;; hierarchical structure of science keywords facet has been covered in all facets test.
     (testing "search by science-keywords param filters the other facets, but not science-keywords facets"
@@ -545,31 +547,31 @@
         (assert-facet-field-not-exist facets-result "Platforms" "P2")))))
 
 (deftest organization-facets-v2-test
-  (let [org1 (dc/org :archive-center "DOI/USGS/CMG/WHSC")
-        org2 (dc/org :processing-center "LPDAAC")
-        org3 (dc/org :archive-center "NSIDC")
-        coll1 (d/ingest "PROV1" (dc/collection
-                                {:entry-title "coll1"
-                                 :short-name "S1"
-                                 :version-id "V1"
-                                 :organizations [org1]}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll2"
-                                  :short-name "S2"
-                                  :version-id "V2"
-                                  :organizations [org2]}))
-        coll3 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll3"
-                                  :short-name "S3"
-                                  :version-id "V3"
-                                  :organizations [org1 org2]
-                                  :projects (dc/projects "proj3")}))
-        coll4 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll4"
-                                  :short-name "S4"
-                                  :version-id "V4"
-                                  :organizations [org3]
-                                  :projects (dc/projects "proj4")}))]
+  (let [org1 (data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})
+        org2 (data-umm-spec/data-center {:Roles ["PROCESSOR"] :ShortName "LPDAAC"})
+        org3 (data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "NSIDC"})
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :DataCenters [org1]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll2"
+                                                       :ShortName "S2"
+                                                       :VersionId "V2"
+                                                       :DataCenters [org2]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll3"
+                                                       :ShortName "S3"
+                                                       :VersionId "V3"
+                                                       :DataCenters [org1 org2]
+                                                       :Projects (data-umm-spec/projects "proj3")}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll4"
+                                                       :ShortName "S4"
+                                                       :VersionId "V4"
+                                                       :DataCenters [org3]
+                                                       :Projects (data-umm-spec/projects "proj4")}))]
     (testing "search by data-center parameter filters the other facets, but not Organizations facets"
       (let [facets-result (search-and-return-v2-facets
                            {:data-center-h ["NSIDC"]})]
@@ -618,25 +620,25 @@
 
 (deftest variables-facets-v2-test
   (let [token (e/login (s/context) "user1")
-        coll1 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll1"
-                                  :short-name "S1"
-                                  :version-id "V1"
-                                  :platforms (dc/platforms "P1")}))
-        coll2 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll2"
-                                  :short-name "S2"
-                                  :version-id "V2"
-                                  :platforms (dc/platforms "P2")}))
-        coll3 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll3"
-                                  :short-name "S3"
-                                  :version-id "V3"
-                                  :platforms (dc/platforms "P3")}))
-        coll4 (d/ingest "PROV1" (dc/collection
-                                 {:entry-title "coll4"
-                                  :short-name "S4"
-                                  :version-id "V4"}))
+        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :Platforms (data-umm-spec/platforms "P1")}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :VersionId "V2"
+                                                      :Platforms (data-umm-spec/platforms "P2")}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll3"
+                                                      :ShortName "S3"
+                                                      :VersionId "V3"
+                                                      :Platforms (data-umm-spec/platforms "P3")}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll4"
+                                                      :ShortName "S4"
+                                                      :VersionId "V4"}))
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
         ;; create variables

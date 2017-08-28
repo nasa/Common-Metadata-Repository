@@ -235,7 +235,7 @@
               [result] {:keyword "temporal keyword 1"}
 
               "two-d-coordinate-system-name matches"
-              [result] {:two-d-coordinate-system-name "Tiling System Name"}
+              [result] {:two-d-coordinate-system-name "MISR"}
 
               "science-keywords"
               [result] {:science-keywords {:0 {:category "EARTH SCIENCE"

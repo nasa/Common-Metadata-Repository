@@ -1,19 +1,25 @@
 (ns cmr.system-int-test.search.facets.facets-util
   "Helper vars and functions for testing collection facet responses."
-  (:require [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.data2.collection :as dc]
-            [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
-            [cmr.common.util :as util]
-            [clj-http.client :as client]))
+  (:require
+   [clj-http.client :as client]
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
+   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
+   [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]))
 
 (defn make-coll
   "Helper for creating and ingesting an ECHO10 collection"
   [n prov & attribs]
-  (d/ingest prov (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))))
+  (d/ingest-umm-spec-collection
+   prov
+   (data-umm-spec/collection-without-minimal-attribs
+    n (apply merge {:EntryTitle (str "coll" n)} attribs))))
 
 (defn projects
   [& project-names]
-  {:projects (apply dc/projects project-names)})
+  {:Projects (apply data-umm-spec/projects project-names)})
 
 (def platform-short-names
   "List of platform short names that exist in the test KMS hierarchy. Note we are testing case
@@ -38,47 +44,47 @@
   ([prefix num-platforms num-instruments]
    (platforms prefix num-platforms num-instruments 0))
   ([prefix num-platforms num-instruments num-sensors]
-   {:platforms
+   {:Platforms
     (for [pn (range 0 num-platforms)
           :let [platform-name (str prefix "-p" pn)]]
-      (dc/platform
-        {:short-name (if (= FROM_KMS prefix)
+      (data-umm-spec/platform
+        {:ShortName (if (= FROM_KMS prefix)
                        (or (get platform-short-names pn) platform-name)
                        platform-name)
-         :long-name platform-name
-         :instruments
-         (for [in (range 0 num-instruments)
-               :let [instrument-name (str platform-name "-i" in)]]
-           (dc/instrument
-             {:short-name (if (= FROM_KMS prefix)
-                            (or (get instrument-short-names in) instrument-name)
-                            instrument-name)
-              :sensors (for [sn (range 0 num-sensors)
-                             :let [sensor-name (str instrument-name "-s" sn)]]
-                         (dc/sensor {:short-name sensor-name}))}))}))}))
+         :LongName platform-name
+         :Instruments
+           (for [instrument (range 0 num-instruments)
+                 :let [instrument-name (str platform-name "-i" instrument)]]
+             (apply data-umm-spec/instrument-with-childinstruments
+                    (if (= FROM_KMS prefix)
+                        (or (get instrument-short-names instrument) instrument-name)
+                        instrument-name)
+                    (for [sn (range 0 num-sensors)
+                          :let [sensor-name (str instrument-name "-s" sn)]]
+                      sensor-name)))}))}))
 
 (defn twod-coords
   [& names]
-  {:two-d-coordinate-systems (map dc/two-d names)})
+  {:TilingIdentificationSystems (apply umm-spec-common/tiling-identification-systems names)})
 
 (defn science-keywords
   [& sks]
-  {:science-keywords sks})
+  {:ScienceKeywords sks})
 
 (defn processing-level-id
   [id]
-  {:processing-level-id id})
+  {:ProcessingLevel {:Id id}})
 
 (defn generate-science-keywords
   "Generate science keywords based on a unique number."
   [n]
-  (dc/science-keyword {:category (str "Cat-" n)
-                       :topic (str "Topic-" n)
-                       :term (str "Term-" n)
-                       :variable-level-1 "Level1-1"
-                       :variable-level-2 "Level1-2"
-                       :variable-level-3 "Level1-3"
-                       :detailed-variable (str "Detail-" n)}))
+  (dc/science-keyword {:Category (str "Cat-" n)
+                       :Topic (str "Topic-" n)
+                       :Term (str "Term-" n)
+                       :VariableLevel1 "Level1-1"
+                       :VariableLevel2 "Level1-2"
+                       :VariableLevel3 "Level1-3"
+                       :DetailedVariable (str "Detail-" n)}))
 
 (defn prune-facet-response
   "Recursively limit the facet response to only the keys provided to make it easier to test

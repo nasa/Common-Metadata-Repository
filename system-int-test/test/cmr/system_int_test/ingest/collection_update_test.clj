@@ -789,8 +789,8 @@
                                                     {:EntryTitle "parent-collection"
                                                      :ShortName "S1"
                                                      :Version "V1"
-                                                     :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems spatial-conversion/valid-tile-identification-system-names)}))]
-    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "WRS-1")}))
+                                                     :TilingIdentificationSystems (data-umm-cmn/tiling-identification-systems "CALIPSO" "MISR" "WRS-1" "WRS-2")}))]
+    (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "MISR")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:two-d-coordinate-system (dg/two-d "CALIPSO")}))
     (index/wait-until-indexed)
@@ -806,13 +806,13 @@
           (is (= [200 nil] [status errors])))
 
         "Adding an additional new tile is OK"
-        ["MISR" "CALIPSO" "MODIS Tile EASE" "WRS-2" "WELD Alaska Tile"]
+        ["MISR" "CALIPSO" "WRS-1" "WRS-2" "WELD Alaska Tile"]
 
         "Removing a tile not referenced by any granule in the collection is OK"
-        ["MISR" "CALIPSO" "MODIS Tile EASE" "WELD Alaska Tile"]))
-        ;
-        ; "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
-        ; ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
+        ["MISR" "CALIPSO" "WRS-1" "WRS-2"])
+
+        "Updating SOURCE_TILE to Source_Tile_New is ok because the humanized alias Replacement_Tile is in the collection"
+        ["Replacement_Tile" "Source_Tile_New" "Another_Tile" "New_Tile"]))
 
     (testing "Update collection failure cases"
       (are3
@@ -828,11 +828,11 @@
 
         "Removing a tile that is referenced by a granule is invalid."
         ["CALIPSO"]
-        ["Collection TilingIdentificationSystemName [CALIPSO] is referenced by existing granules, cannot be removed. Found 1 granules."]
+        ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."]
 
         "Updating a tile that is referenced by a granule by humanized alias back to its original value is invalid."
         ["MODIS Tile EASE" "WRS-2" "CALIPSO" "WELD Alaska Tile"]
-        ["Collection TilingIdentificationSystemName [replacement_tile] is referenced by existing granules, cannot be removed. Found 1 granules."]))))
+        ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."])))
 
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"

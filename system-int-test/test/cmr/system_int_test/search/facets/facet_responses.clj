@@ -539,7 +539,7 @@
      ["FROM_KMS-p1-i0-s0" 2]
      ["FROM_KMS-p1-i1-s0" 2]]}
    {:field "two_d_coordinate_system_name",
-    :value-counts [["Alpha" 2]]}
+    :value-counts [["MISR" 2]]}
    {:field "processing_level_id", :value-counts [["PL1" 2]]}
    {:field "detailed_variable",
     :value-counts [["DETAIL1" 2] ["UNIVERSAL" 2]]}
