@@ -24,11 +24,8 @@
   (testing "Ingest granule, delete, then reingest"
     (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
           granule (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
-          granule2 (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G3-PROV1"}))
           ingest-result (ingest/ingest-concept granule)
           delete-result (ingest/delete-concept granule)
-          _  (ingest/ingest-concept granule2)
-          _ (ingest/delete-concept granule2)
           ingest-revision-id (:revision-id ingest-result)
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
