@@ -46,9 +46,9 @@ Code for the CMR is up on [github][cmr-github].
 
 There are three major API endpoints for the CMR:
 
-* /search - [Search API docs][search-api-docs]
-* /ingest - [Ingest API docs][ingest-api-docs]
-* /access-control - [Access Control API docs][ac-api-docs]
+* `/search` - [Search API docs][search-api-docs]
+* `/ingest` - [Ingest API docs][ingest-api-docs]
+* `/access-control` - [Access Control API docs][ac-api-docs]
 
 The `/search` endpoint is the largest and most-used API. Regardless, this
 client project aims to support them all, each in their own namespace.
