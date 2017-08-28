@@ -20,6 +20,7 @@
 * [CMR API](#cmr-api-)
   * [Overview](#overview)
   * [Environments](#environments)
+* [Status](#status-)
 * [Usage](#usage-)
   * [Clojure](#clojure-)
   * [ClojureScript](#clojurescript-)
@@ -40,7 +41,6 @@ Code for the CMR is up on [github][cmr-github].
 
 
 ## CMR API [&#x219F;](#contents)
-
 
 ### Overview
 
@@ -74,13 +74,26 @@ keys are used to create clients against their respective CMR deployments:
 The last one being for developers running an instance of CMR locally.
 
 
+## Status [&#x219F;](#contents)
+
+The current implementation status of the CMR APIs is being tracked in the
+following tickets:
+
+* [Search API](https://github.com/oubiwann/cmr-client/issues/4)
+* [Ingest API](https://github.com/oubiwann/cmr-client/issues/2)
+* [Access Control API](https://github.com/oubiwann/cmr-client/issues/3)
+
+Note that the checkboxes only get checked once imlementation is complete. As
+such, there may be parts of the client API that usable but not feature yet
+complete. If this is of interest to you, be sure to take a look at the current
+source for the Clojure and ClojureScript clients.
+
+If you would like to see a particular part of the API get special attention,
+just leave a comment on the appropriate API ticket above, and we'll put our
+attention there.
+
+
 ## Usage [&#x219F;](#contents)
-
-*WIP*
-
-This project has only just started, but that being said, here's what you can
-do so far:
-
 
 ### Clojure [&#x219F;](#contents)
 
