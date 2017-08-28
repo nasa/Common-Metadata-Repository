@@ -17,7 +17,8 @@
   (static/generate
    "resources/public/site/docs/search/api.html"
    "templates/search-docs-static.html"
-   (merge (data/base-page {:execution-context :cli})
+   (merge (data/base-page {:cmr-application :search
+                           :execution-context :cli})
           {:site-title "CMR Search"
            :page-title "API Documentation"
            :page-content (static/md-file->html "docs/api.md")})))
@@ -28,7 +29,8 @@
   (static/generate
    "resources/public/site/docs/search/site.html"
    "templates/search-docs-static.html"
-   (merge (data/base-page {:execution-context :cli})
+   (merge (data/base-page {:cmr-application :search
+                           :execution-context :cli})
           {:site-title "CMR Search"
            :page-title "Site Routes & Web Resource Documentation"
            :page-content (static/md-file->html "docs/site.md")})))
@@ -64,7 +66,7 @@
       ;; Generate directory HTML files per provider+tag combination
       (static/generate (util/get-provider-index base provider-id tag)
                        "templates/search-provider-tag-landing-links.html"
-                       (assoc (data/get-provider-tag-sitemap-landing-links
+                       (assoc (data/get-provider-tag-landing-links
                                context
                                provider-id
                                tag)
@@ -75,7 +77,8 @@
   that are too expensive to generate dynamically."
   []
   (let [supported-tags ["gov.nasa.eosdis"]
-        context {:execution-context :cli
+        context {:cmr-application :search
+                 :execution-context :cli
                  :tags supported-tags}]
     (info "Created context:" context)
     (generate-directory-resources context (util/get-search-app-abs-path))))

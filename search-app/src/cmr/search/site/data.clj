@@ -31,16 +31,16 @@
   (case tag
     "gov.nasa.eosdis" "EOSDIS"))
 
-(defmulti get-providers
-  "Get the providers, based on contextual data."
-  :execution-context)
-
 (def endpoint-get
   (memoize
    (fn [& args]
      (-> (apply client/get args)
          :body
          (json/parse-string true)))))
+
+(defmulti get-providers
+  "Get the providers, based on contextual data."
+  :execution-context)
 
 (defmethod get-providers :cli
   [context]
@@ -58,13 +58,14 @@
 
 (defmethod collection-data :cli
   [context tag provider-id]
-  (let [collections-url (format "%scollections"
-                                (config/application-public-root-url :search))]
-    (-> collections-url
-        (endpoint-get {:accept mt/umm-json-results
-                       :query-params {"provider" provider-id
-                                      "tag_key" tag}})
-        :items)))
+  (as-> (config/application-public-root-url :search) data
+        (format "%scollections" data)
+        (endpoint-get data {:accept mt/umm-json-results
+                            :query-params {:provider provider-id
+                                           :tag-key tag
+                                           :page-size 2000}})
+        (:items data)
+        (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
 (defmethod collection-data :default
   [context tag provider-id]
@@ -74,7 +75,8 @@
         (query-svc/make-concepts-query context :collection data)
         (assoc data :page-size :unlimited)
         (query-exec/execute-query context data)
-        (:items data)))
+        (:items data)
+        (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
 (defn provider-data
   "Create a provider data structure suitable for template iteration to
@@ -103,7 +105,8 @@
 (defn get-doi
   "Extract the DOI information from a collection item."
   [item]
-  (get-in item [:umm "DOI"]))
+  (or (get-in item [:umm "DOI"])
+      (get-in item [:umm :DOI])))
 
 (defn has-doi?
   "Determine whether a collection item has a DOI entry."
@@ -114,7 +117,7 @@
   "Given DOI umm data of the form `{:doi <STRING>}`, generate a landing page
   link."
   [doi-data]
-  (format "http://dx.doi.org/%s" (doi-data "DOI")))
+  (format "http://dx.doi.org/%s" (or (doi-data "DOI") (doi-data :DOI))))
 
 (defn cmr-link
   "Given a CMR host and a concept ID, return the collection landing page for
@@ -140,6 +143,12 @@
   links appropriate for the collection."
   [cmr-base-url coll]
   (map (partial make-holding-data cmr-base-url) coll))
+
+(defn get-app-url
+  [context]
+  (case (:execution-context context)
+    :cli (config/application-public-root-url (:cmr-application context))
+    (config/application-public-root-url context)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Page data functions
@@ -185,7 +194,7 @@
      :tag-name (get-tag-short-name tag)
      :holdings (filter filter-fn
                        (make-holdings-data
-                        (config/application-public-root-url context)
+                        (get-app-url context)
                         (collection-data context tag provider-id)))})))
 
 (defn get-provider-tag-sitemap-landing-links
@@ -201,4 +210,4 @@
    tag
    #(string/includes?
      (str %)
-     (config/application-public-root-url context))))
+     (get-app-url context))))

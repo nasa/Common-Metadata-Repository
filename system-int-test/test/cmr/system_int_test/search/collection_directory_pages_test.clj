@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.site.static :as static]
    [cmr.search.site.data :as site-data]
    [cmr.search.site.routes :as r]
    [cmr.system-int-test.data2.core :as d]
@@ -43,15 +44,15 @@
 
 (defn expected-header-link?
   [body]
-  (string/includes? body (str base-url "site/collections/directory")))
+  (string/includes? body "site/collections/directory"))
 
 (defn expected-top-level-links?
   [body]
-  (string/includes? body (str base-url "site/collections/directory/eosdis")))
+  (string/includes? body "site/collections/directory/eosdis"))
 
 (defn expected-eosdis-level-links?
   [body]
-  (let [url (str base-url "site/collections/directory")
+  (let [url "site/collections/directory"
         tag "gov.nasa.eosdis"]
     (and
       (string/includes? body (format "%s/%s/%s" url "PROV1" tag))
@@ -62,40 +63,52 @@
 
 (defn expected-provider1-level-links?
   [body]
-  (let [url (format "%sconcepts" base-url)]
+  (string/includes? body "EOSDIS holdings for the PROV1 provider")
+  (let [url "concepts"]
     (and
       (string/includes? body (format "%s/%s" url "C2-PROV1.html"))
-      (string/includes? body "Collection Item 2")
       (string/includes? body (format "%s/%s" url "C3-PROV1.html"))
-      (string/includes? body "Collection Item 3"))))
+      (string/includes? body "Collection Item 2</a>")
+      (string/includes? body "Collection Item 3</a>")
+      (not (string/includes? body "Collection Item 1")))))
 
 (defn expected-provider2-level-links?
   [body]
-  (let [url (format "%sconcepts" base-url)]
+  (string/includes? body "EOSDIS holdings for the PROV2 provider")
+  (let [url "concepts"]
     (and
       (string/includes? body (format "%s/%s" url "C2-PROV2.html"))
-      (string/includes? body "Collection Item 2")
       (string/includes? body (format "%s/%s" url "C3-PROV2.html"))
-      (string/includes? body "Collection Item 3"))))
+      (string/includes? body "Collection Item 2</a>")
+      (string/includes? body "Collection Item 3</a>")
+      (string/includes? body "Collection Item 7</a>")
+      (string/includes? body "Collection Item 7</a>")
+      (string/includes? body "Collection Item 10</a>")
+      (string/includes? body "Collection Item 20</a>")
+      (string/includes? body "Collection Item 30</a>")
+      (not (string/includes? body "Collection Item 1</a>"))
+      (not (string/includes? body "Collection Item 4</a>")))))
 
 (defn expected-provider3-level-links?
   [body]
+  (string/includes? body "EOSDIS holdings for the PROV3 provider")
   (let [url "http://dx.doi.org"]
     (and
       (string/includes? body (format "%s/%s" url "doi5"))
-      (string/includes? body "Collection Item 5")
       (string/includes? body (format "%s/%s" url "doi6"))
-      (string/includes? body "Collection Item 6"))))
+      (string/includes? body "Collection Item 5</a>")
+      (string/includes? body "Collection Item 6</a>")
+      (not (string/includes? body "Collection Item 4</a>")))))
 
 (defn expected-provider1-col1-link?
   [body]
-  (let [url (format "%sconcepts" base-url)]
+  (let [url "concepts"]
     (and
       (string/includes? body (format "%s/%s" url "C1-PROV1.html"))
-      (string/includes? body "Collection Item 1"))))
+      (string/includes? body "Collection Item 1</a>"))))
 
 (def expected-over-ten-count
-  "<td class=\"align-r\">\n        14\n      </td>")
+  "<td class=\"align-r\">\n        34\n      </td>")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Functions for creating testing data
@@ -117,6 +130,7 @@
                                       :concept-id (format "C%d-%s" n p))
                                {:format :umm-json
                                 :accept-format :json}))
+         _ (index/wait-until-indexed)
          [c1-p3 c2-p3 c3-p3] (for [n (range 4 7)]
                                (d/ingest-umm-spec-collection
                                 "PROV3"
@@ -129,10 +143,11 @@
                                        :concept-id (format "C%d-PROV3" n))
                                 {:format :umm-json
                                  :accept-format :json}))
+         _ (index/wait-until-indexed)
          ;; Let's create another collection that will put the total over the
          ;; default of 10 values so that we can ensure the :unlimited option
          ;; is being used in the directory page data.
-         over-ten-colls (for [n (range 20 41)]
+         over-ten-colls (for [n (range 7 50)]
                           (d/ingest-umm-spec-collection
                            "PROV2"
                            (assoc exp-conv/example-collection-record
@@ -160,8 +175,10 @@
     (is (= (count notag-colls) 3))
     (is (= (count nodoi-colls) 6))
     (is (= (count doi-colls) 3))
-    (is (= (count tag-colls) 27))
-    (is (= (count all-colls) 33)))))
+    (is (= (count tag-colls) 49))
+    (is (= (count all-colls) 55))
+    ;; Generate the static content
+    (static/generate-site-resources))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures
@@ -175,11 +192,11 @@
 ;; Note tha the fixtures are created out of order such that sorting can be
 ;; checked.
 (use-fixtures :once (join-fixtures
-                      [(ingest/reset-fixture {"provguid5" "NOCOLLS"
-                                              "provguid4" "NONEOSDIS"
+                      [(ingest/reset-fixture {"provguid1" "PROV1"
+                                              "provguid2" "PROV2"
                                               "provguid3" "PROV3"
-                                              "provguid1" "PROV1"
-                                              "provguid2" "PROV2"})
+                                              "provguid4" "NONEOSDIS"
+                                              "provguid5" "NOCOLLS"})
                        tags/grant-all-tag-fixture
                        collections-fixture]))
 
