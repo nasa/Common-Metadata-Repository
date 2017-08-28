@@ -1,31 +1,36 @@
-(ns cmr.client.ac.core
+(ns cmr.client.search
  (:require
   [cmr.client.base :as base]
   [cmr.client.common.util :as util]
   [cmr.client.http.core :as http]
-  [cmr.client.ac.impl :as impl])
+  [cmr.client.search.impl :as impl])
  (:import
-  (cmr.client.ac.impl CMRAccessControlClientData)))
+  (cmr.client.search.impl CMRSearchClientData)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol CMRAccessControlAPI
-  (get-acls [this http-options] [this query-params http-options])
-  (get-groups [this http-options] [this query-params http-options])
-  (get-health [this] [this http-options])
-  (get-permissions [this http-options] [this query-params http-options]))
+(defprotocol CMRSearchAPI
+  (get-collections [this] [this http-options] [this query-params http-options])
+  (get-concept [this concept-id http-options]
+               [this concept-id revision-id http-options])
+  (get-granules [this http-options] [this query-params http-options])
+  (get-humanizers [this] [this http-options])
+  (get-tag [this tag-id http-options] [this tag-id query-params http-options])
+  (get-tags [this http-options] [this query-params http-options])
+  (get-tiles [this http-options] [this query-params http-options])
+  (get-variables [this http-options] [this query-params http-options]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(extend CMRAccessControlClientData
-        CMRAccessControlAPI
+(extend CMRSearchClientData
+        CMRSearchAPI
         impl/client-behaviour)
 
-(extend CMRAccessControlClientData
+(extend CMRSearchClientData
         base/CMRClientAPI
         base/client-behaviour)
 
@@ -35,8 +40,8 @@
 
 (def create-client
   (util/create-service-client-constructor
-   :access-control
-   #'cmr.client.ac.core/create-client
-   impl/->CMRAccessControlClientData
+   :search
+   #'cmr.client.search/create-client
+   impl/->CMRSearchClientData
    base/make-options
    http/create-client))

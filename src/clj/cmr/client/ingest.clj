@@ -1,4 +1,4 @@
-(ns cmr.client.ingest.core
+(ns cmr.client.ingest
  (:require
   [cmr.client.base :as base]
   [cmr.client.common.util :as util]
@@ -33,7 +33,7 @@
 (def create-client
   (util/create-service-client-constructor
    :ingest
-   #'cmr.client.ingest.core/create-client
+   #'cmr.client.ingest/create-client
    impl/->CMRIngestClientData
    base/make-options
    http/create-client))
