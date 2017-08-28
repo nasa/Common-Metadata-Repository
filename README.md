@@ -85,7 +85,7 @@ following tickets:
 * Issue #3 - [Access Control API](https://github.com/oubiwann/cmr-client/issues/3)
 
 Note that the checkboxes only get checked once imlementation is complete. As
-such, there may be parts of the client API that usable but not feature yet
+such, there may be parts of the client API that are usable but not feature yet
 complete. If this is of interest to you, be sure to take a look at the current
 source for the Clojure and ClojureScript clients.
 
