@@ -79,9 +79,9 @@ The last one being for developers running an instance of CMR locally.
 The current implementation status of the CMR APIs is being tracked in the
 following tickets:
 
-* [Search API](https://github.com/oubiwann/cmr-client/issues/4)
-* [Ingest API](https://github.com/oubiwann/cmr-client/issues/2)
-* [Access Control API](https://github.com/oubiwann/cmr-client/issues/3)
+* Issue #4 - [Search API](https://github.com/oubiwann/cmr-client/issues/4)
+* Issue #2 - [Ingest API](https://github.com/oubiwann/cmr-client/issues/2)
+* Issue #3 - [Access Control API](https://github.com/oubiwann/cmr-client/issues/3)
 
 Note that the checkboxes only get checked once imlementation is complete. As
 such, there may be parts of the client API that usable but not feature yet
