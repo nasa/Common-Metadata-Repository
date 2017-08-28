@@ -92,7 +92,7 @@
 ;; This tests that searching for and retrieving metadata after refreshing the search cache works.
 ;; Other metadata tests all run before refreshing the cache so they cover that case.
 (deftest collection-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.10"))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.10"))
   (let [c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"})
                           {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:entry-title "c2-echo"})
@@ -203,10 +203,10 @@
               "DIF" :dif
               "DIF10" :dif10
               "ISO" :iso19115))))))
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.9")))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.9")))
 
 (deftest collection-umm-json-metadata-cache-test
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.10"))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.10"))
   (let [c1-r1-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"})
                              {:format :echo10})
         c1-r2-echo (d/ingest "PROV1" (du/umm-spec-collection {:entry-title "c1-echo"
@@ -248,7 +248,7 @@
       (assert-cache-state {c1-r2-echo [:echo10 latest-umm-format]
                            c2-echo [:echo10 latest-umm-format]
                            c10-umm-json [latest-umm-format]})))
-  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-ingest-accept-umm-version! "1.9")))
+  (dev-sys-util/eval-in-dev-sys `(ingest-config/set-collection-umm-version! "1.9")))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test

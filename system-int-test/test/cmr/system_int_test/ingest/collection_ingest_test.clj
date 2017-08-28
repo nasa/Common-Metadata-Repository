@@ -658,15 +658,15 @@
     (is (= 201 (:status response)))))
 
 (deftest ingest-higher-than-accepted-umm-version
-  (let [accepted-version (config/ingest-accept-umm-version)
-        _ (side/eval-form `(config/set-ingest-accept-umm-version! "1.8"))
+  (let [accepted-version (config/collection-umm-version)
+        _ (side/eval-form `(config/set-collection-umm-version! "1.8"))
         coll-map {:provider-id  "PROV1"
                   :native-id    "umm_json_coll_V1"
                   :concept-type :collection
                   :format       "application/vnd.nasa.cmr.umm+json;version=1.9"
                   :metadata     "{\"foo\":\"bar\"}"}
         response (ingest/ingest-concept coll-map {:accept-format :json})
-        _ (side/eval-form `(config/set-ingest-accept-umm-version! ~accepted-version))]
+        _ (side/eval-form `(config/set-collection-umm-version! ~accepted-version))]
     (is (= 400 (:status response)))
     (is (= [(str "UMM JSON version 1.8 or lower can be ingested. Any version above that is considered in-development and cannot be ingested at this time.")]
            (:errors response)))))

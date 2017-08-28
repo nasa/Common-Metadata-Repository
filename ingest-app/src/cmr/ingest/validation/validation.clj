@@ -98,7 +98,7 @@
   (if-errors-throw :bad-request
                    (if (mt/umm-json? (:format concept))
                      (let [umm-version (mt/version-of (:format concept))
-                           accept-version (config/ingest-accept-umm-version)]
+                           accept-version (config/ingest-accept-umm-version (:concept-type concept))]
                        (if (>= 0 (compare umm-version accept-version))
                          (umm-spec/validate-metadata (:concept-type concept)
                                                      (:format concept)
