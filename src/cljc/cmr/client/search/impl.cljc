@@ -1,5 +1,6 @@
 (ns cmr.client.search.impl
  (:require
+   [cmr.client.common.http :as http-util]
    [cmr.client.http.core :as http]
    #?(:clj [cmr.client.base :as base]
       :cljs [cmr.client.base.impl :as base])))
@@ -22,8 +23,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/collections")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 (defn get-concept
   ([this concept-id http-options]
@@ -47,8 +47,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/granules")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 (defn get-humanizers
   ([this]
@@ -66,8 +65,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this ("/tag/" tag-id))
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 (defn get-tags
   ([this http-options]
@@ -76,8 +74,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/tags")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 (defn get-tiles
   ([this http-options]
@@ -86,8 +83,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/tiles")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 (defn get-variables
   ([this http-options]
@@ -96,8 +92,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/variables")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 #?(:clj
 (def client-behaviour

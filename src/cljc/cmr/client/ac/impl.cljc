@@ -1,5 +1,6 @@
 (ns cmr.client.ac.impl
  (:require
+   [cmr.client.common.http :as http-util]
    [cmr.client.http.core :as http]
    #?(:clj [cmr.client.base :as base]
       :cljs [cmr.client.base.impl :as base])))
@@ -20,8 +21,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/acls")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 (defn get-groups
   ([this http-options]
@@ -30,8 +30,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/groups")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 (defn get-health
   ([this]
@@ -49,8 +48,7 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/permissions")
-                 (merge {:query-params query-params}
-                        http-options)))))
+                 (http-util/query+options query-params http-options)))))
 
 #?(:clj
 (def client-behaviour
