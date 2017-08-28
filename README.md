@@ -90,8 +90,8 @@ complete. If this is of interest to you, be sure to take a look at the current
 source for the Clojure and ClojureScript clients.
 
 If you would like to see a particular part of the API get special attention,
-just leave a comment on the appropriate API ticket above, and we'll put our
-attention there.
+just leave a comment on the appropriate API ticket above, and we'll work with
+that as a priority.
 
 
 ## Usage [&#x219F;](#contents)
