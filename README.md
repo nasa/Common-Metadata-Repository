@@ -25,6 +25,7 @@
   * [Clojure](#clojure-)
   * [ClojureScript](#clojurescript-)
   * [JavaScript](#javascript-)
+* [Contributing](#contributing-)
 * [License](#license-)
 
 
@@ -214,6 +215,30 @@ Got body: [{:provider-id LARC_ASDC, :short-name LARC_ASDC, :cmr-only false ...}
 ```
 
 
+## Contributing [&#x219F;](#contents)
+
+If you would like to assist with the development of the CMR client libraries,
+here are the steps you need to follow:
+
+* Identify the API call you'd like to implement
+* Update the protocol, e.g., `cljc/cmr/client/search/protocol.cljc`
+  * Add the new protocol method to the `import-vars` in the Clojure client,
+    e.g., `clj/cmr/client/search.clj`
+  * Add the new protocol method to the `import-vars` in the ClojureScript
+    client, e.g., `cljs/cmr/client/search.clj`
+* Create an implementation of the new function, e.g.,
+  `cljc/cmr/client/search/impl.cljc`
+* Update the `extend-type` in the ClojureScript client, e.g.,
+  `cljs/cmr/client/search.clj` (this step isn't needed for the Clojure client;
+  it's needed in ClojureScript because it doesn't support the `extend` macro)
+* Try out the new function in the Clojure REPL
+* Try it out in the ClojureScript (figwheel) REPL
+* Try it out in the dev console at [http://localhost:3449/dev.html](local-web-repl)
+* For any support functions you've created, add some unit tests
+* Add integration tests for the new function
+* Make sure you've included docstrings for all your additions
+
+
 ## License [&#x219F;](#contents)
 
 Copyright © 2017 Duncan McGreggor
@@ -242,3 +267,4 @@ Distributed under the Apache License, Version 2.0.
 [cmr-project]: https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository
 [cmr-github]: https://github.com/nasa/Common-Metadata-Repository
 [eosdis]: https://earthdata.nasa.gov/about
+[local-web-repl]: http://localhost:3449/dev.html
