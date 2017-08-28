@@ -60,6 +60,7 @@
                                     (assoc :EntryTitle (str "Collection Item " n)))
                                 {:format :umm-json
                                  :accept-format :json}))
+         _ (index/wait-until-indexed)
          [c1-p3 c2-p3 c3-p3] (for [n (range 4 7)]
                                (d/ingest-umm-spec-collection
                                  "PROV3"
@@ -154,10 +155,10 @@
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
       (is (string/includes? body "</changefreq>"))
-      (is (string/includes? body "concepts/C1200000015-PROV1.html</loc>"))
-      (is (string/includes? body "concepts/C1200000016-PROV1.html</loc>")))
+      (is (string/includes? body "concepts/C2-PROV1.html</loc>"))
+      (is (string/includes? body "concepts/C3-PROV1.html</loc>")))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C1200000014-PROV1.html</loc>"))))))
+      (is (not (string/includes? body "C1-PROV1.html</loc>"))))))
 
 (deftest sitemap-provider2
   (let [provider "PROV2"
@@ -172,10 +173,10 @@
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
       (is (string/includes? body "</changefreq>"))
-      (is (string/includes? body "concepts/C1200000018-PROV2.html</loc>"))
-      (is (string/includes? body "concepts/C1200000019-PROV2.html</loc>")))
+      (is (string/includes? body "concepts/C2-PROV2.html</loc>"))
+      (is (string/includes? body "concepts/C3-PROV2.html</loc>")))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C1200000001-PROV1.html</loc>"))))))
+      (is (not (string/includes? body "C1-PROV2.html</loc>"))))))
 
 (deftest sitemap-provider3
   (let [provider "PROV3"
@@ -190,4 +191,4 @@
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>")))
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>"))))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C1200000014-PROV1.html</loc>"))))))
+      (is (not (string/includes? body "C4-PROV3.html</loc>"))))))
