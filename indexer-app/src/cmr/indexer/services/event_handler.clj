@@ -68,8 +68,7 @@
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (when (= :granule (cc/concept-id->type concept-id))
     (deleted-granule/remove-deleted-granule context concept-id revision-id
-                                            {:ignore-conflict? true
-                                             :all-revisions-index? all-revisions-index?})))
+                                            {:ignore-conflict? true})))
 
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]

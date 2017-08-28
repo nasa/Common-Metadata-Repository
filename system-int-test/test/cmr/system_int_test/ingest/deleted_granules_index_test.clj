@@ -24,17 +24,18 @@
   (testing "Ingest granule, delete, then reingest"
     (let [collection (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
           granule (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G1-PROV1"}))
+          granule2 (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection) {:concept-id "G3-PROV1"}))
           ingest-result (ingest/ingest-concept granule)
           delete-result (ingest/delete-concept granule)
+          _  (ingest/ingest-concept granule2)
+          _ (ingest/delete-concept granule2)
           ingest-revision-id (:revision-id ingest-result)
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
-      (Thread/sleep 1000)
       (is (= 1 (- delete-revision-id ingest-revision-id)))
       (is (check-index-for-deleted-granule (:concept-id granule)))
       (ingest/ingest-concept granule)
       (index/wait-until-indexed)
-      (Thread/sleep 1000)
       (is (not (check-index-for-deleted-granule (:concept-id granule))))))
 
   (testing "Ingest granule, delete, delete tombstone"
@@ -46,11 +47,9 @@
           ingest-revision-id (:revision-id ingest-result)
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
-      (Thread/sleep 1000)
       (is (= 1 (- delete-revision-id ingest-revision-id)))
       (is (check-index-for-deleted-granule (:concept-id granule)))
       (mdb-util/cleanup-old-revisions)
       (index/wait-until-indexed)
-      (Thread/sleep 1000)
       (is (not (check-index-for-deleted-granule (:concept-id granule))))
       (dev-sys-util/eval-in-dev-sys `(concept-service/set-days-to-keep-tombstone! 365)))))

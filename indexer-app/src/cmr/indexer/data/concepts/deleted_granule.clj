@@ -14,7 +14,7 @@
 (defn remove-deleted-granule
   "Remove deleted granule from deleted granule index for given concept id"
   [context concept-id revision-id options]
-  (let [elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
+  (let [elastic-options (select-keys options [:ignore-conflict?])]
     (es/delete-document
       context [deleted-granule-index-name] deleted-granule-type-name
       concept-id revision-id nil elastic-options)))

@@ -73,12 +73,10 @@
   "If doc is present return true, otherwise return false"
   [index-name type-name doc-id]
   (let [response (client/get
-                  (format (str (url/elastic-root) "/%s/%s/_search?_id=%s") index-name type-name doc-id)
+                  (format "%s/%s/%s/_search?q=_id:%s" (url/elastic-root) index-name type-name doc-id)
                   {:throw-exceptions false
-                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
-    (println "dbg:" body)
     (and (= 1 (get-in body [:hits :total]))
          (= doc-id (get-in body [:hits :hits 0 :_id])))))
 
