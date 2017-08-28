@@ -7,6 +7,7 @@
    [cmr.common-app.static :as static]
    [cmr.common.log :refer :all]
    [cmr.search.site.data :as data]
+   [cmr.search.system]
    [cmr.transmit.config :as transmit]))
 
 (defn get-search-reference-file
