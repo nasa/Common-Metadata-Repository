@@ -1,7 +1,7 @@
 (ns cmr.client.search.impl
  (:require
   [cmr.client.base.impl :as base]
-  [cmr.client.http :as http]))
+  [cmr.client.http.core :as http]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,4 +1,4 @@
-(ns cmr.client.http
+(ns cmr.client.http.core
   (:require
    [cljs.core.async :as async]
    [cmr.client.common.util :as util]
@@ -80,5 +80,5 @@
 
 (def ^:export create-client
   (util/create-http-client-constructor
-    #'cmr.client.http/create-client
+    #'cmr.client.http.core/create-client
     ->HTTPClientData))

@@ -4,7 +4,7 @@
    [cmr.client.base.impl :as base]
    [cmr.client.common.const :as const]
    [cmr.client.common.util :as util]
-   [cmr.client.http :as http]
+   [cmr.client.http.core :as http]
    [cmr.client.ingest.impl :as ingest :refer [->CMRIngestClientData
                                               CMRIngestClientData]])
   (:refer-clojure :exclude [get]))
