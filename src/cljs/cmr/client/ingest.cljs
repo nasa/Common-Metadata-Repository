@@ -6,15 +6,18 @@
    [cmr.client.common.util :as util]
    [cmr.client.http.core :as http]
    [cmr.client.ingest.impl :as ingest :refer [->CMRIngestClientData
-                                              CMRIngestClientData]])
+                                              CMRIngestClientData]]
+   [cmr.client.ingest.protocol :refer [CMRIngestAPI]])
+  (:require-macros [cmr.client.common.util :refer [import-vars]])
   (:refer-clojure :exclude [get]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol CMRIngestAPI
-  (^:export get-providers [this]))
+(import-vars
+  [cmr.client.ingest.protocol
+    get-providers])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
