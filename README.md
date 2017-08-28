@@ -158,9 +158,9 @@ Back in the terminal where you started the REPL:
 (def ch (ingest/get-providers client))
 ```
 
-The Clojure API uses the cljs-http library, so requests return a `core.async`
-channel. However, if you don't want to work with channels, you can easily
-process results in a callback:
+The ClojureScript API uses the cljs-http library, so requests return a
+`core.async` channel. However, if you don't want to work with channels, you
+can easily process results in a callback:
 
 ```clj
 (with-callback ch #(println "Got response:" %))
