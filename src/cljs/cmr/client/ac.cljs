@@ -6,20 +6,21 @@
    [cmr.client.common.util :as util]
    [cmr.client.http.core :as http]
    [cmr.client.ac.impl :as ac :refer [->CMRAccessControlClientData
-                                      CMRAccessControlClientData]])
+                                      CMRAccessControlClientData]]
+   [cmr.client.ac.protocol :refer [CMRAccessControlAPI]])
+  (:require-macros [cmr.client.common.util :refer [import-vars]])
   (:refer-clojure :exclude [get]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol CMRAccessControlAPI
-  (^:export get-acls [this http-options] [this query-params http-options])
-  (^:export get-groups [this http-options] [this query-params http-options])
-  (^:export get-health [this] [this http-options])
-  (^:export get-permissions
-   [this http-options]
-   [this query-params http-options]))
+(import-vars
+  [cmr.client.ac.protocol
+    get-acls
+    get-groups
+    get-health
+    get-permissions])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

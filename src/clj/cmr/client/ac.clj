@@ -3,7 +3,9 @@
   [cmr.client.base :as base]
   [cmr.client.common.util :as util]
   [cmr.client.http.core :as http]
-  [cmr.client.ac.impl :as impl])
+  [cmr.client.ac.impl :as impl]
+  [cmr.client.ac.protocol :as api]
+  [potemkin :refer [import-vars]])
  (:import
   (cmr.client.ac.impl CMRAccessControlClientData)))
 
@@ -11,23 +13,24 @@
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol CMRAccessControlAPI
-  (get-acls [this http-options] [this query-params http-options])
-  (get-groups [this http-options] [this query-params http-options])
-  (get-health [this] [this http-options])
-  (get-permissions [this http-options] [this query-params http-options]))
+(import-vars
+  [cmr.client.ac.protocol
+    get-acls
+    get-groups
+    get-health
+    get-permissions])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend CMRAccessControlClientData
-        CMRAccessControlAPI
-        impl/client-behaviour)
-
-(extend CMRAccessControlClientData
         base/CMRClientAPI
         base/client-behaviour)
+
+(extend CMRAccessControlClientData
+        api/CMRAccessControlAPI
+        impl/client-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constrcutor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
