@@ -23,7 +23,7 @@
 
 (def update-format
   "Format to save bulk updates"
-  (str "application/vnd.nasa.cmr.umm+json;version=" (config/ingest-accept-umm-version)))
+  (str "application/vnd.nasa.cmr.umm+json;version=" (config/collection-umm-version)))
 
 (def complete-status
   "Indicates bulk update operation finished successfully."
