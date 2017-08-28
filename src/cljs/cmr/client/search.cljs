@@ -6,31 +6,25 @@
    [cmr.client.common.util :as util]
    [cmr.client.http.core :as http]
    [cmr.client.search.impl :as search :refer [->CMRSearchClientData
-                                              CMRSearchClientData]])
+                                              CMRSearchClientData]]
+   [cmr.client.search.protocol :refer [CMRSearchAPI]])
+  (:require-macros [cmr.client.common.util :refer [import-vars]])
   (:refer-clojure :exclude [get]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol CMRSearchAPI
-  (^:export get-collections
-   [this]
-   [this http-options]
-   [this query-params http-options])
-  (^:export get-concept
-   [this concept-id http-options]
-   [this concept-id revision-id http-options])
-  (^:export get-granules [this http-options] [this query-params http-options])
-  (^:export get-humanizers [this] [this http-options])
-  (^:export get-tag
-   [this tag-id http-options]
-   [this tag-id query-params http-options])
-  (^:export get-tags [this http-options] [this query-params http-options])
-  (^:export get-tiles [this http-options] [this query-params http-options])
-  (^:export get-variables
-   [this http-options]
-   [this query-params http-options]))
+(import-vars
+  [cmr.client.search.protocol
+    get-collections
+    get-concept
+    get-granules
+    get-humanizers
+    get-tag
+    get-tags
+    get-tiles
+    get-variables])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

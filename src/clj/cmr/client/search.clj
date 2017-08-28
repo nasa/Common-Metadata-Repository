@@ -3,7 +3,9 @@
   [cmr.client.base :as base]
   [cmr.client.common.util :as util]
   [cmr.client.http.core :as http]
-  [cmr.client.search.impl :as impl])
+  [cmr.client.search.impl :as impl]
+  [cmr.client.search.protocol :as api]
+  [potemkin :refer [import-vars]])
  (:import
   (cmr.client.search.impl CMRSearchClientData)))
 
@@ -11,28 +13,28 @@
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol CMRSearchAPI
-  (get-collections [this] [this http-options] [this query-params http-options])
-  (get-concept [this concept-id http-options]
-               [this concept-id revision-id http-options])
-  (get-granules [this http-options] [this query-params http-options])
-  (get-humanizers [this] [this http-options])
-  (get-tag [this tag-id http-options] [this tag-id query-params http-options])
-  (get-tags [this http-options] [this query-params http-options])
-  (get-tiles [this http-options] [this query-params http-options])
-  (get-variables [this http-options] [this query-params http-options]))
+(import-vars
+  [cmr.client.search.protocol
+    get-collections
+    get-concept
+    get-granules
+    get-humanizers
+    get-tag
+    get-tags
+    get-tiles
+    get-variables])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend CMRSearchClientData
-        CMRSearchAPI
-        impl/client-behaviour)
-
-(extend CMRSearchClientData
         base/CMRClientAPI
         base/client-behaviour)
+
+(extend CMRSearchClientData
+        api/CMRSearchAPI
+        impl/client-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constrcutor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
