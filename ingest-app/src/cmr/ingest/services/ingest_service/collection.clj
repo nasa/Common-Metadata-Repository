@@ -52,7 +52,7 @@
   "Validates the collection and adds extra fields needed for metadata db. Throws a service error
   if any validation issues are found and errors are enabled, otherwise returns errors as warnings."
   [context concept validation-options]
-  (let [concept (update-in concept [:format] util/fix-ingest-concept-format)
+  (let [concept (update-in concept [:format] (partial util/fix-ingest-concept-format :collection))
         {:keys [collection warnings]} (validate-and-parse-collection-concept context
                                                                              concept
                                                                              validation-options)
