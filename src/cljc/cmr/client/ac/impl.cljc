@@ -1,10 +1,11 @@
 (ns cmr.client.ac.impl
  (:require
-  [cmr.client.base :as base]
-  [cmr.client.http.core :as http]))
+   [cmr.client.http.core :as http]
+   #?(:clj [cmr.client.base :as base]
+      :cljs [cmr.client.base.impl :as base])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Records &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord CMRAccessControlClientData [
@@ -12,11 +13,7 @@
   options
   http-client])
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn- get-acls
+(defn get-acls
   ([this http-options]
    (get-acls this {} http-options))
   ([this query-params http-options]
@@ -26,7 +23,7 @@
                  (merge {:query-params query-params}
                         http-options)))))
 
-(defn- get-groups
+(defn get-groups
   ([this http-options]
    (get-groups this {} http-options))
   ([this query-params http-options]
@@ -36,7 +33,7 @@
                  (merge {:query-params query-params}
                         http-options)))))
 
-(defn- get-health
+(defn get-health
   ([this]
    (get-health this {}))
   ([this http-options]
@@ -45,7 +42,7 @@
        (http/get (base/get-url this "/groups")
                  http-options))))
 
-(defn- get-permissions
+(defn get-permissions
   ([this http-options]
    (get-permissions this {} http-options))
   ([this query-params http-options]
@@ -55,8 +52,9 @@
                  (merge {:query-params query-params}
                         http-options)))))
 
+#?(:clj
 (def client-behaviour
   {:get-acls get-acls
    :get-groups get-groups
    :get-health get-health
-   :get-permissions get-permissions})
+   :get-permissions get-permissions}))
