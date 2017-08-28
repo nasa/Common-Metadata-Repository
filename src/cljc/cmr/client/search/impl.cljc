@@ -1,7 +1,8 @@
 (ns cmr.client.search.impl
  (:require
-  [cmr.client.base.impl :as base]
-  [cmr.client.http.core :as http]))
+   [cmr.client.http.core :as http]
+   #?(:clj [cmr.client.base :as base]
+      :cljs [cmr.client.base.impl :as base])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -97,3 +98,14 @@
        (http/get (base/get-url this "/variables")
                  (merge {:query-params query-params}
                         http-options)))))
+
+#?(:clj
+(def client-behaviour
+  {:get-collections get-collections
+   :get-concept get-concept
+   :get-granules get-granules
+   :get-humanizers get-humanizers
+   :get-tag get-tag
+   :get-tags get-tags
+   :get-tiles get-tiles
+   :get-variables get-variables}))
