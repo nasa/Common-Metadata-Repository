@@ -227,7 +227,9 @@ here are the steps you need to follow:
   * Add the new protocol method to the `import-vars` in the ClojureScript
     client, e.g., `cljs/cmr/client/search.clj`
 * Create an implementation of the new function, e.g.,
-  `cljc/cmr/client/search/impl.cljc`
+  `cljc/cmr/client/search/impl.cljc` (note that Clojure and ClojureScript CMR
+  clients share implementations, so you'll have to write code that's compatible
+  with both)
 * Update the `extend-type` in the ClojureScript client, e.g.,
   `cljs/cmr/client/search.clj` (this step isn't needed for the Clojure client;
   it's needed in ClojureScript because it doesn't support the `extend` macro)
