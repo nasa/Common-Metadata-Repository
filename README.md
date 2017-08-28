@@ -151,6 +151,14 @@ Or, if you just want the body:
  ...]
 ```
 
+Run against a local instance instead of production:
+
+```clj
+(def client (ingest/create-client {:endpoint :local :return-body? true}))
+(def results (ingest/get-providers client))
+(pprint results)
+```
+
 
 ### ClojureScript [&#x219F;](#contents)
 
