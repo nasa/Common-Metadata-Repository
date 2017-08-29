@@ -3214,6 +3214,24 @@ Content-Length: 1177
   } ]
 }
 ```
+##### Sorting Variable Results
+
+By default, variable results are sorted by name, then provider-id.
+
+One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
+
+###### Valid Variable Sort Keys
+
+  * `name`
+  * `long_name`
+  * `provider_id`
+  * `revision_date`
+
+Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=-long_name"
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=%2Blong_name"
+
 #### <a name="variable-access-control"></a> Variable Access Control
 
 Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL system object identity. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.
