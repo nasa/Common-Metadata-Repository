@@ -111,11 +111,11 @@
     (f)))
 
 (use-fixtures :once (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"
-                                              "provguid2" "PROV2"
-                                              "provguid3" "PROV3"})
-                       tags/grant-all-tag-fixture
-                       collections-fixture]))
+                     [(ingest/reset-fixture {"provguid1" "PROV1"
+                                             "provguid2" "PROV2"
+                                             "provguid3" "PROV3"})
+                      tags/grant-all-tag-fixture
+                      collections-fixture]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
