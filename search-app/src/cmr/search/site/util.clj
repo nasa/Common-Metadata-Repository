@@ -6,16 +6,34 @@
    [clojure.java.io :as io]
    [cmr.common-app.static :as static]
    [cmr.common.log :refer :all]
-   [cmr.search.site.data :as data]
-   [cmr.search.system]
-   [cmr.transmit.config :as transmit]))
+   [cmr.transmit.config :as transmit])
+  (:import (java.net ConnectException)))
+
+(def supported-directory-tags
+  "A utility data structure used for both the tag names themselves as well as a
+  mapping to more human-friendly version of a tag."
+  {"gov.nasa.eosdis" "EOSDIS"})
+
+(defn get-app-url
+  "A utility function for gettin the app's root URL.
+
+  When called from the CLI, the key `:cmr-application` will have a value
+  matching the application (in this case, `:search`). When called from a
+  running system, the request context will be in place and a null value will
+  be returned when applying the `:cmr-application` key."
+  [context]
+  (transmit/application-public-root-url
+    (or (:cmr-application context) context)))
 
 (defn get-search-reference-file
   "Locate a reference file whose location is well-known and stable (won't
   change) in the search-app codebase. This is intended to be used to calculate
-  the absolute file-system path to the `search-app` directory."
+  the absolute file-system path to the `search-app` directory.
+
+  Note, seleection of function depends on ns being in `require`, so it can't
+  be something that causes a cyclic dependency."
   []
-  (-> (meta #'cmr.search.system/start)
+  (-> (meta #'cmr.search.site.util/get-search-reference-file)
       :file
       (io/resource)
       (.getFile)))
@@ -40,7 +58,7 @@
   `dev-system`)."
   []
   (-> (get-search-reference-file)
-      (walk-parents 4)
+      (walk-parents 5)
       (str "/")))
 
 (defn make-relative-parents
@@ -74,3 +92,16 @@
   "Get the absolute file-system path for a provider+tag index.html resource."
   [base provider-id tag]
   (get-provider-resource base provider-id tag "index.html"))
+
+(defn endpoint-get
+  "A utilitye function that performs an HTTP `GET` and a few consistently used
+  processing steps."
+  [& args]
+  (try
+    (-> (apply client/get args)
+        :body
+        (json/parse-string true))
+    (catch ConnectException
+           e
+           (warn (.getMessage e))
+           {})))

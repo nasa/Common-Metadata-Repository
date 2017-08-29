@@ -30,12 +30,9 @@
              {ctx :request-context}
              (pages/collections-directory ctx))
         (GET "/site/collections/directory/eosdis"
-             [provider-id tag]
+             []
              (when-let [resource (static/site-resource
-                                  (format
-                                    "collections/directory/eosdis/index.html"
-                                    provider-id
-                                    tag))]
+                                  "collections/directory/eosdis/index.html")]
                {:status 200
                 :body (slurp resource)}))
         (GET "/site/collections/directory/:provider-id/:tag"
