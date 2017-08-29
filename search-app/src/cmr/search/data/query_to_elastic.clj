@@ -91,6 +91,7 @@
                           :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2
                           :variable-name :variable-names
+                          :variable-native-id :variable-native-ids
                           :measurement :measurements
                           :author :authors}]
     (if (use-doc-values-fields)
@@ -150,6 +151,7 @@
    :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date
    :variable-names :variable-name
+   :variable-native-ids :variable-native-id
    :measurements :measurement
    :authors :author})
 
@@ -176,6 +178,7 @@
    :instrument "instrument-sn.lowercase"
    :sensor "sensor-sn.lowercase"
    :variable-name "variable-names.lowercase"
+   :variable-native-id "variable-native-ids.lowercase"
    :measurement "measurements.lowercase"
    :author "authors.lowercase"})
 

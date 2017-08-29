@@ -1442,14 +1442,16 @@ Collections can be found by searching for associated variables. The following va
 
 * variable_name
   * supports `pattern`, `ignore_case` and option `and`
+* variable_native_id
+  * supports `pattern`, `ignore_case` and option `and`
 
 Find collections matching variable name.
 
     curl "%CMR-ENDPOINT%/collections?variable_name=totcldh2ostderr"
 
-Find collections matching measurement.
+Find collections matching variable native id.
 
-    curl "%CMR-ENDPOINT%/collections?measurement\[\]=Ozone&measurement\[\]=radiance"
+    curl "%CMR-ENDPOINT%/collections?variable_native_id\[\]=var1&variable_native_id\[\]=var2"
 
 #### <a name="c-variables"></a> Find collections by hierarchical variables
 

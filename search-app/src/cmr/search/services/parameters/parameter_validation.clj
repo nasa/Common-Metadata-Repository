@@ -39,8 +39,9 @@
                      :all-revisions}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
-                       :entry-title :doi :native-id :platform :platform-h :processing-level-id :processing-level-id-h
-                       :sensor :data-center-h :measurement :author}
+                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
+                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
+                       :variable-native-id :author}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}}))
 
@@ -126,6 +127,7 @@
 
    ;; Variable related parameters
    :variable-name cpv/string-plus-and-options
+   :variable-native-id cpv/string-plus-and-options
    :measurement cpv/string-plus-and-options
    :variables-h cpv/string-plus-or-options})
 
