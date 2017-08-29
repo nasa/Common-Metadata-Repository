@@ -10,6 +10,7 @@
    [cmr.search.site.data :as site-data]
    [cmr.search.site.routes :as r]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -22,6 +23,7 @@
 ;;; Constants and general utility functions for the tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def ^:private test-collections (atom {}))
 (def ^:private base-url
   "We don't call to `(transmit-config/application-public-root-url)`
    due to the fact that it requires a context and we're not creating
@@ -64,10 +66,11 @@
 (defn expected-provider1-level-links?
   [body]
   (string/includes? body "EOSDIS holdings for the PROV1 provider")
-  (let [url "concepts"]
+  (let [url "concepts"
+        colls (@test-collections "PROV1")]
     (and
-      (string/includes? body (format "%s/%s" url "C2-PROV1.html"))
-      (string/includes? body (format "%s/%s" url "C3-PROV1.html"))
+      (string/includes? body (format "%s/%s" url (nth colls 1)))
+      (string/includes? body (format "%s/%s" url (nth colls 2)))
       (string/includes? body "Collection Item 2</a>")
       (string/includes? body "Collection Item 3</a>")
       (not (string/includes? body "Collection Item 1")))))
@@ -75,17 +78,15 @@
 (defn expected-provider2-level-links?
   [body]
   (string/includes? body "EOSDIS holdings for the PROV2 provider")
-  (let [url "concepts"]
+  (let [url "concepts"
+        colls (@test-collections "PROV2")]
     (and
-      (string/includes? body (format "%s/%s" url "C2-PROV2.html"))
-      (string/includes? body (format "%s/%s" url "C3-PROV2.html"))
+      (string/includes? body (format "%s/%s" url (nth colls 1)))
+      (string/includes? body (format "%s/%s" url (nth colls 2)))
       (string/includes? body "Collection Item 2</a>")
       (string/includes? body "Collection Item 3</a>")
-      (string/includes? body "Collection Item 7</a>")
-      (string/includes? body "Collection Item 7</a>")
-      (string/includes? body "Collection Item 10</a>")
-      (string/includes? body "Collection Item 20</a>")
-      (string/includes? body "Collection Item 30</a>")
+      (string/includes? body "Collection Item 1001</a>")
+      (string/includes? body "Collection Item 1016</a>")
       (not (string/includes? body "Collection Item 1</a>"))
       (not (string/includes? body "Collection Item 4</a>")))))
 
@@ -94,21 +95,22 @@
   (string/includes? body "EOSDIS holdings for the PROV3 provider")
   (let [url "http://dx.doi.org"]
     (and
-      (string/includes? body (format "%s/%s" url "doi5"))
-      (string/includes? body (format "%s/%s" url "doi6"))
-      (string/includes? body "Collection Item 5</a>")
-      (string/includes? body "Collection Item 6</a>")
-      (not (string/includes? body "Collection Item 4</a>")))))
+      (string/includes? body (format "%s/%s" url "doi102"))
+      (string/includes? body (format "%s/%s" url "doi103"))
+      (string/includes? body "Collection Item 102</a>")
+      (string/includes? body "Collection Item 103</a>")
+      (not (string/includes? body "Collection Item 101</a>")))))
 
 (defn expected-provider1-col1-link?
   [body]
-  (let [url "concepts"]
+  (let [url "concepts"
+        colls (@test-collections "PROV1")]
     (and
-      (string/includes? body (format "%s/%s" url "C1-PROV1.html"))
+      (string/includes? body (format "%s/%s" url (first colls)))
       (string/includes? body "Collection Item 1</a>"))))
 
 (def expected-over-ten-count
-  "<td class=\"align-r\">\n        34\n      </td>")
+  "<td class=\"align-r\">\n        18\n      </td>")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Functions for creating testing data
@@ -120,18 +122,17 @@
   []
   (let [[c1-p1 c2-p1 c3-p1
          c1-p2 c2-p2 c3-p2
-         c1-p4 c2-p4 c3-p4] (for [p ["PROV1" "PROV2" "NONEOSDIS"]
+         c1-p4 c2-p4 c3-p4] (doall (for [p ["PROV1" "PROV2" "NONEOSDIS"]
                                   n (range 1 4)]
                               (d/ingest-umm-spec-collection
                                p
                                (assoc exp-conv/example-collection-record
                                       :ShortName (str "s" n)
-                                      :EntryTitle (str "Collection Item " n)
-                                      :concept-id (format "C%d-%s" n p))
+                                      :EntryTitle (str "Collection Item " n))
                                {:format :umm-json
-                                :accept-format :json}))
+                                :accept-format :json})))
          _ (index/wait-until-indexed)
-         [c1-p3 c2-p3 c3-p3] (for [n (range 4 7)]
+         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 101 104)]
                                (d/ingest-umm-spec-collection
                                 "PROV3"
                                 (assoc exp-conv/example-collection-record
@@ -139,23 +140,25 @@
                                        :EntryTitle (str "Collection Item " n)
                                        :DOI (cm/map->DoiType
                                              {:DOI (str "doi" n)
-                                              :Authority (str "auth" n)})
-                                       :concept-id (format "C%d-PROV3" n))
+                                              :Authority (str "auth" n)}))
                                 {:format :umm-json
-                                 :accept-format :json}))
+                                 :accept-format :json})))
          _ (index/wait-until-indexed)
          ;; Let's create another collection that will put the total over the
          ;; default of 10 values so that we can ensure the :unlimited option
          ;; is being used in the directory page data.
-         over-ten-colls (for [n (range 7 50)]
+         over-ten-colls (doall (for [n (range 1001 1017)]
                           (d/ingest-umm-spec-collection
                            "PROV2"
                            (assoc exp-conv/example-collection-record
                                   :ShortName (str "s" n)
-                                  :EntryTitle (str "Collection Item " n)
-                                  :concept-id (format "C%d-PROV2" n))
+                                  :EntryTitle (str "Collection Item " n))
                            {:format :umm-json
-                            :accept-format :json}))]
+                            :accept-format :json})))]
+    (reset! test-collections
+            {"PROV1" (sort (map :concept-id [c1-p1 c2-p1 c3-p1]))
+             "PROV2" (sort (map :concept-id (conj over-ten-colls c1-p2 c2-p2 c3-p2)))
+             "PROV3" (sort (map :concept-id [c1-p3 c2-p3 c3-p3]))})
     ;; Wait until collections are indexed so tags can be associated with them
     (index/wait-until-indexed)
     ;; Use the following to generate html links that will be matched in tests
@@ -165,20 +168,18 @@
           doi-colls [c1-p3 c2-p3 c3-p3]
           non-eosdis-provider-colls [c1-p4 c2-p4 c3-p4]
           all-colls (flatten [over-ten-colls nodoi-colls doi-colls non-eosdis-provider-colls])
-          tag-colls (into over-ten-colls [c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3])
+          tag-colls (conj over-ten-colls c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3)
           tag (tags/save-tag
                 user-token
                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
                 tag-colls)]
-    (index/wait-until-indexed)
-    ;; Sanity checks
-    (is (= (count notag-colls) 3))
-    (is (= (count nodoi-colls) 6))
-    (is (= (count doi-colls) 3))
-    (is (= (count tag-colls) 49))
-    (is (= (count all-colls) 55))
-    ;; Generate the static content
-    (static/generate-site-resources))))
+      (index/wait-until-indexed)
+      ;; Sanity checks
+      (is (= 3 (count notag-colls)))
+      (is (= 6 (count nodoi-colls)))
+      (is (= 3 (count doi-colls)))
+      (is (= 22 (count tag-colls)))
+      (is (= 28 (count all-colls))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures
@@ -186,7 +187,9 @@
 
 (def collections-fixture
   (fn [f]
+    (search/refresh-collection-metadata-cache)
     (setup-collections)
+    (static/generate-site-resources)
     (f)))
 
 ;; Note tha the fixtures are created out of order such that sorting can be
@@ -237,8 +240,8 @@
     (testing "provider page should have header links"
       (is (expected-header-link? body)))
     ;; XXX Can't get a consistent count on the page ...
-    ; (testing "collection count is greater than the default 10-limit"
-    ;   (is (string/includes? body expected-over-ten-count)))
+    (testing "collection count is greater than the default 10-limit"
+      (is (string/includes? body expected-over-ten-count)))
     ))
 
 (deftest provider1-level-links
