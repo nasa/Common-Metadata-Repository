@@ -32,12 +32,14 @@
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
   (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
-         c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
-                                        n (range 1 5)]
-                                    (:concept-id (d/ingest p (dc/collection
-                                                              {:short-name (str "S" n)
-                                                               :version-id (str "V" n)
-                                                               :entry-title (str "ET" n)}))))
+         c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
+                                               n (range 1 5)]
+                                           (:concept-id (d/ingest
+                                                         p
+                                                         (dc/collection
+                                                          {:short-name (str "S" n)
+                                                           :version-id (str "V" n)
+                                                           :entry-title (str "ET" n)})))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         token (e/login (s/context) "user1")
@@ -165,12 +167,12 @@
         _ (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV3"))
         [c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
-         c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
-                                        n (range 1 5)]
-                                    (d/ingest p (dc/collection
-                                                 {:short-name (str "S" n)
-                                                  :version-id (str "V" n)
-                                                  :entry-title (str "ET" n)})))
+         c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
+                                               n (range 1 5)]
+                                           (d/ingest p (dc/collection
+                                                        {:short-name (str "S" n)
+                                                         :version-id (str "V" n)
+                                                         :entry-title (str "ET" n)}))))
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
@@ -370,8 +372,8 @@
 (deftest associate-dissociate-variable-with-collections-test
   ;; Grant all collections in PROV1
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV1"))
-  (let [[coll1 coll2 coll3] (for [n (range 1 4)]
-                              (d/ingest "PROV1" (dc/collection)))
+  (let [[coll1 coll2 coll3] (doall (for [n (range 1 4)]
+                                    (d/ingest "PROV1" (dc/collection))))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
         token (e/login (s/context) "user1")
         {variable1-concept-id :concept-id} (vu/ingest-variable-with-attrs {:Name "variable1"})
