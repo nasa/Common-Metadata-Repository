@@ -41,6 +41,10 @@ CMR developer for the appropriate values for each key in `profiles.clj`.
 that allows unrestricted access to shutdown the system, evaluate arbitrary
 code, remove all data, etc.
 
+## Update of umm-cmn-json-schema.json
+
+Since the common umm-cmn-json-schema.json is shared by UMM-C, UMM-Var and UMM-S, and is compiled into clojure model. We cannot really untie it from the different concept schemas. As a result, there can only be one version of umm-cmn-json-schema.json for the latest version of different concept schemas. We should update umm-cmn-json-schema.json for all concept schemas when it is updated.
+
 ## License
 
 Copyright © 2014-2017 NASA
