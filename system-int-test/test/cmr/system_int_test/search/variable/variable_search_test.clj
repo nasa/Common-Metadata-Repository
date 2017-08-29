@@ -455,3 +455,54 @@
                umm-version/current-variable-version [expected-variable1]
                (search/find-concepts-umm-json
                 :variable {:variable_name updated-variable1-name})))))))))
+
+(deftest variable-search-sort
+  (let [variable1 (variables/ingest-variable-with-attrs {:native-id "var1"
+                                                         :Name "variable"
+                                                         :LongName "Measurement1"
+                                                         :provider-id "PROV2"})
+        variable2 (variables/ingest-variable-with-attrs {:native-id "var2"
+                                                         :Name "Variable 2"
+                                                         :LongName "Measurement2"
+                                                         :provider-id "PROV1"})
+        variable3 (variables/ingest-variable-with-attrs {:native-id "var3"
+                                                         :Name "a variable"
+                                                         :LongName "Long name"
+                                                         :provider-id "PROV1"})
+        variable4 (variables/ingest-variable-with-attrs {:native-id "var4"
+                                                         :Name "variable"
+                                                         :LongName "m.other"
+                                                         :provider-id "PROV1"})]
+    (index/wait-until-indexed)
+
+    (are3 [sort-key expected-variables]
+      (do
+       (variables/assert-variable-search-order
+        expected-variables
+        (variables/search (if sort-key
+                            {:sort-key sort-key}
+                            {}))))
+
+      "Default sort"
+      nil
+      [variable3 variable4 variable1 variable2]
+
+      "Sort by name"
+      "name"
+      [variable3 variable4 variable1 variable2]
+
+      "Sort by provider id"
+      "provider_id"
+      [variable2 variable3 variable4 variable1]
+
+      "Sort by revision-date"
+      "revision_date"
+      [variable1 variable2 variable3 variable4]
+
+      "Sort by long name"
+      "long-name"
+      [variable3 variable4 variable1 variable2]
+
+      "Sort by name then long name"
+      ["name" "long_name"]
+      [variable3 variable4 variable1 variable2])))

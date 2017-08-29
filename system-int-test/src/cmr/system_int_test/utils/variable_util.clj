@@ -229,6 +229,17 @@
                 (util/update-in-each [:items] dissoc :name :long-name)
                 (update :items set)))))))
 
+(defn assert-variable-search-order
+  "Verifies the searcch results are in the correct order"
+  [variables response]
+  (let [expected-items (->> variables
+                            (map #(select-keys % variable-names-in-expected-response))
+                            seq)]
+    (is (= expected-items
+           (-> response
+               (util/update-in-each [:items] dissoc :name :long-name)
+               :items)))))
+
 (defn- coll-variable-association->expected-variable-association
   "Returns the expected variable association for the given collection concept id to
   variable association mapping, which is in the format of, e.g.
