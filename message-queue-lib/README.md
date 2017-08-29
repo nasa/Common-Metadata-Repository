@@ -5,7 +5,7 @@ Library containing code to handle message queues within the CMR.  Implementation
 ## Handling Errors and Retries
 
 * Errors (non-2xx HTTP responses) will result in retrying a fixed number of times with an exponentially increasing delay between retries. A different wait queue is used for each of the retries, each with its own retry interval. After the maximum number of retries has occurred the request will be logged with an error.
-* Wait queues are configured to have no consumer but a TTL set for each message and the original queue set as its _dead letter queue_.  When a consumer on the main queue fails to process a request, the original message is acked then a copy with an appropraite TTL is added to the appropriate wait queue based on how many times it has already been tried. Since there is no consumer for the wait queue, eventually messages will time out and be added to the dead letter queue, the main queue, in this case. This pattern is described [here](zhttp://globaldev.co.uk/2014/07/back-off-and-retry-with-rabbitmq/).
+* Wait queues are configured to have no consumer but a TTL set for each message and the original queue set as its _dead letter queue_.  When a consumer on the main queue fails to process a request, the original message is acked then a copy with an appropriate TTL is added to the appropriate wait queue based on how many times it has already been tried. Since there is no consumer for the wait queue, eventually messages will time out and be added to the dead letter queue, the main queue, in this case. This pattern is described [here](zhttp://globaldev.co.uk/2014/07/back-off-and-retry-with-rabbitmq/).
 
 ## Publisher Backpressure
 

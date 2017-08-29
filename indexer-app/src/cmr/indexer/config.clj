@@ -24,6 +24,18 @@
   {:default 2
    :type Long})
 
+(defconfig deleted-granule-index-queue-name
+  "The queue containing ingest events for the indexer deleted-granules index. We use a
+  separate index here because it allows independent retries of indexing failures. If
+  we used a single queue then if either indexing operation (primary or all revisions)
+  failed then we would have to retry both."
+  {:default "cmr_index.deleted_granules_queue"})
+
+(defconfig deleted-granules-index-queue-listener-count
+  "Number of worker threads to use for the queue listener for the deleted-granules queue"
+  {:default 2
+   :type Long})
+
 (defconfig provider-queue-name
   "The queue containing provider events like 'index provider collections'."
   {:default "cmr_provider.queue"})
@@ -46,19 +58,27 @@
   from metadata db."
   {:default "cmr_deleted_collection_revision.exchange"})
 
+(defconfig deleted-granule-exchange-name
+  "An exchange that will have messages passed to it whenever a granule revision is removed
+  from metadata db."
+  {:default "cmr_deleted_granule.exchange"})
+
 (defn queue-config
   "Returns the rabbit mq configuration for the indexer application."
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)
                   (all-revisions-index-queue-name)
+                  (deleted-granule-index-queue-name)
                   (provider-queue-name)]
          :exchanges [(ingest-exchange-name)
                      (deleted-collection-revision-exchange-name)
+                     (deleted-granule-exchange-name)
                      (provider-exchange-name)]
          :queues-to-exchanges
          {(index-queue-name) [(ingest-exchange-name)]
           (provider-queue-name) [(provider-exchange-name)]
+          (deleted-granule-index-queue-name) [(deleted-granule-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
           ;; deleted collection revision exchange
           (all-revisions-index-queue-name) [(ingest-exchange-name)

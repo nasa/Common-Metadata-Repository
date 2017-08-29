@@ -21,13 +21,14 @@
     [cmr.elastic-utils.connect :as es-util]
     [cmr.indexer.config :as config]
     [cmr.indexer.data.concept-parser :as cp]
+    [cmr.indexer.data.concepts.deleted-granule :as dg]
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
     [cmr.indexer.data.index-set :as idx-set]
     [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
     [cmr.message-queue.config :as qcfg]
-    [cmr.message-queue.services.queue :as queue]
     [cmr.message-queue.queue.queue-protocol :as queue-protocol]
+    [cmr.message-queue.services.queue :as queue]
     [cmr.transmit.cubby :as cubby]
     [cmr.transmit.echo.rest :as rest]
     [cmr.transmit.index-set :as tis]
@@ -456,9 +457,12 @@
           ;; delete concept from primary concept index
           (do
             (es/delete-document
-             context index-names (concept-mapping-types concept-type)
-             concept-id revision-id elastic-version elastic-options)
-            ;; propagate collection deletion to granules and variables
+              context index-names (concept-mapping-types concept-type)
+              concept-id revision-id elastic-version elastic-options)
+            ;; Index a deleted-granule document when granule is deleted
+            (when (= :granule concept-type)
+              (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))
+            ;; propagate collection deletion to granules
             (when (= :collection concept-type)
               (cascade-collection-delete
                context concept-mapping-types concept-id revision-id))))))))

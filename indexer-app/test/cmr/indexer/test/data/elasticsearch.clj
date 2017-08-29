@@ -14,15 +14,19 @@
                            {:name "all-collection-revisions",
                             :settings i/collection-setting-v1},]
                  :mapping i/collection-mapping},
+    :deleted-granule {:indexes [{:name "deleted-granules",
+                                 :settings i/deleted-granule-setting}]
+                      :mapping i/deleted-granule-mapping}
     :granule {:indexes
               [{:name "small_collections",
                 :settings i/granule-settings-for-small-collections-index}
+
                {:name "C274209-USGS_EROS",
                 :settings i/granule-settings-for-individual-indexes}
                {:name "C274211-USGS_EROS",
                 :settings i/granule-settings-for-individual-indexes}],
               :individual-index-settings i/granule-settings-for-individual-indexes
-              :mapping i/granule-mapping},
+              :mapping i/granule-mapping}
     :tag {:indexes [{:name "tags",
                      :settings i/tag-setting}],
           :mapping i/tag-mapping},
@@ -73,7 +77,6 @@
   (testing "Nil index set"
     ;; A nil index set is possible if there is no existing index set.
     (is (empty? (i/index-set->extra-granule-indexes nil)))))
-
 
 (deftest requires-update-test
   (testing "No updates required"
