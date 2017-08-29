@@ -13,8 +13,17 @@
    [cmr.transmit.config :as transmit])
   (:gen-class))
 
-(def supported-directory-tags
-  ["gov.nasa.eosdis"])
+;; Contextual data that is used for static content in the absense of a system
+;; context, e.g., when run from the command line.
+(defrecord StaticContext [
+  ;; the deployment env; one of :prod, :uat, :sit, or :local
+  deployment-target
+  ;; the application which is being run with the context, e.g., :search
+  cmr-application
+  ;; the context of execution, e.g., :cli, when run from a system shell
+  execution-context
+  ;; a place to store context-specific data
+  static-data])
 
 (defn generate-api-docs
   "Generate CMR Search API docs."
@@ -44,13 +53,13 @@
   "Generate CMR Search site resources such as directory pages and XML sitemaps
   that are too expensive to generate dynamically."
   []
-  (let [context {:cmr-application :search
-                 :execution-context :cli
-                 :tags supported-directory-tags}
+  (let [context (map->StaticContext {:cmr-application :search
+                                     :execution-context :cli})
         app-base-path (util/get-search-app-abs-path)]
     (debug "Created context for static generation:" context)
-    (site/generate-top-level-resources context app-base-path
-    (directory/generate-directory-resources context app-base-path))))
+    (site/generate-top-level-resources context app-base-path)
+    (directory/generate-directory-resources
+      context app-base-path (keys util/supported-directory-tags))))
 
 (defn -main
   "The entrypoint for command-line static docs generation. Example usage:

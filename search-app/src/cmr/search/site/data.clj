@@ -10,14 +10,13 @@
   this context; the data functions defined herein are specifically for use
   in page templates, structured explicitly for their needs."
   (:require
-   [cheshire.core :as json]
-   [clj-http.client :as client]
    [clj-time.core :as clj-time]
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.site.data :as common-data]
    [cmr.common.mime-types :as mt]
    [cmr.search.services.query-service :as query-svc]
+   [cmr.search.site.util :as util]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]))
 
@@ -25,45 +24,44 @@
 ;;; Data utility functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn get-tag-short-name
-  "A utility function used to present a more human-friendly version of a tag."
-  [tag]
-  (case tag
-    "gov.nasa.eosdis" "EOSDIS"))
-
-(def endpoint-get
-  (memoize
-   (fn [& args]
-     (-> (apply client/get args)
-         :body
-         (json/parse-string true)))))
-
 (defmulti get-providers
-  "Get the providers, based on contextual data."
+  "Get the providers, based on contextual data.
+
+  The `:cli` variant uses a special constructed context (see
+  `static.StaticContext`).
+
+  The default variant is the original, designed to work with the regular
+  request context which contains the state of a running CMR."
   :execution-context)
 
 (defmethod get-providers :cli
   [context]
   (let [providers-url (format "%sproviders"
                               (config/application-public-root-url :ingest))]
-    (endpoint-get providers-url {:accept mt/json})))
+    (util/endpoint-get providers-url {:accept mt/json})))
 
 (defmethod get-providers :default
   [context]
   (mdb/get-providers context))
 
 (defmulti collection-data
-  "Get the collection data associated with a provider and tag."
+  "Get the collection data associated with a provider and tag.
+
+  The `:cli` variant uses a special constructed context (see
+  `static.StaticContext`).
+
+  The default variant is the original, designed to work with the regular
+  request context which contains the state of a running CMR."
   (fn [context & args] (:execution-context context)))
 
 (defmethod collection-data :cli
   [context tag provider-id]
   (as-> (config/application-public-root-url :search) data
         (format "%scollections" data)
-        (endpoint-get data {:accept mt/umm-json-results
-                            :query-params {:provider provider-id
-                                           :tag-key tag
-                                           :page-size 2000}})
+        (util/endpoint-get data {:accept mt/umm-json-results
+                                 :query-params {:provider provider-id
+                                                :tag-key tag
+                                                :page-size 2000}})
         (:items data)
         (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
@@ -144,18 +142,18 @@
   [cmr-base-url coll]
   (map (partial make-holding-data cmr-base-url) coll))
 
-(defn get-app-url
-  [context]
-  (case (:execution-context context)
-    :cli (config/application-public-root-url (:cmr-application context))
-    (config/application-public-root-url context)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Page data functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmulti base-page
-  "Data that all app pages have in common."
+  "Data that all app pages have in common.
+
+  The `:cli` variant uses a special constructed context (see
+  `static.StaticContext`).
+
+  The default variant is the original, designed to work with the regular
+  request context which contains the state of a running CMR."
   :execution-context)
 
 (defmethod base-page :cli
@@ -191,10 +189,10 @@
    (merge
     (base-page context)
     {:provider-id provider-id
-     :tag-name (get-tag-short-name tag)
+     :tag-name (util/supported-directory-tags tag)
      :holdings (filter filter-fn
                        (make-holdings-data
-                        (get-app-url context)
+                        (util/get-app-url context)
                         (collection-data context tag provider-id)))})))
 
 (defn get-provider-tag-sitemap-landing-links
@@ -210,4 +208,4 @@
    tag
    #(string/includes?
      (str %)
-     (get-app-url context))))
+     (util/get-app-url context))))
