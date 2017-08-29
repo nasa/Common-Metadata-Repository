@@ -96,6 +96,9 @@ that as a priority.
 
 ## Usage [&#x219F;](#contents)
 
+[API Documentation][client-api-docs]
+
+
 ### Clojure [&#x219F;](#contents)
 
 ```bash
@@ -278,3 +281,4 @@ Distributed under the Apache License, Version 2.0.
 [cmr-github]: https://github.com/nasa/Common-Metadata-Repository
 [eosdis]: https://earthdata.nasa.gov/about
 [local-web-repl]: http://localhost:3449/dev.html
+[client-api-docs]: https://oubiwann.github.io/cmr-client/current/
