@@ -195,13 +195,13 @@
 ;; Note tha the fixtures are created out of order such that sorting can be
 ;; checked.
 (use-fixtures :once (join-fixtures
-                      [(ingest/reset-fixture {"provguid1" "PROV1"
-                                              "provguid2" "PROV2"
-                                              "provguid3" "PROV3"
-                                              "provguid4" "NONEOSDIS"
-                                              "provguid5" "NOCOLLS"})
-                       tags/grant-all-tag-fixture
-                       collections-fixture]))
+                     [(ingest/reset-fixture {"provguid1" "PROV1"
+                                             "provguid2" "PROV2"
+                                             "provguid3" "PROV3"
+                                             "provguid4" "NONEOSDIS"
+                                             "provguid5" "NOCOLLS"})
+                      tags/grant-all-tag-fixture
+                      collections-fixture]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
@@ -239,10 +239,8 @@
       (is (expected-header-link? body)))
     (testing "provider page should have header links"
       (is (expected-header-link? body)))
-    ;; XXX Can't get a consistent count on the page ...
     (testing "collection count is greater than the default 10-limit"
-      (is (string/includes? body expected-over-ten-count)))
-    ))
+      (is (string/includes? body expected-over-ten-count)))))
 
 (deftest provider1-level-links
   (let [provider "PROV1"

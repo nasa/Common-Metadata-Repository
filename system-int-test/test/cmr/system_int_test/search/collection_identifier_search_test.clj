@@ -1,18 +1,18 @@
 (ns cmr.system-int-test.search.collection-identifier-search-test
   "Tests searching for collections using basic collection identifiers"
   (:require
-    [clojure.java.shell :as shell]
-    [clojure.string :as s]
-    [clojure.test :refer :all]
-    [cmr.common-app.services.search.messages :as cmsg]
-    [cmr.common.services.messages :as msg]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.system-int-test.utils.url-helper :as url]
-    [cmr.umm-spec.models.umm-collection-models :as umm-c]))
+   [clojure.java.shell :as shell]
+   [clojure.string :as s]
+   [clojure.test :refer :all]
+   [cmr.common-app.services.search.messages :as cmsg]
+   [cmr.common.services.messages :as msg]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
