@@ -42,8 +42,25 @@
         [lein-kibit "0.1.2"]
         [venantius/yagni "0.1.4"]]}
     :cljs {
-      :source-paths ^:replace ["src/cljs" "src/cljc"]
-      }}
+      :source-paths ^:replace ["src/cljs" "src/cljc"]}
+    :docs {
+      :dependencies [
+        [codox-theme-rdash "0.1.2"]]
+      :plugins [
+        [lein-codox "0.10.3"]
+        [lein-marginalia "0.9.0"]
+        [lein-simpleton "1.3.0"]]
+      :codox {
+        :project {
+          :name "CMR Client"
+          :description "A Clojure(Script) Client for NASA's Common Metadata Repository"}
+        :namespaces [#"^cmr\.(?!dev)"]
+        :themes [:rdash]
+        :output-path "docs/current"
+        :doc-paths ["resources/docs"]
+        :metadata {
+          :doc/format :markdown
+          :doc "Documentation forthcoming"}}}}
   :cljsbuild {
     :builds [{
       :id "cmr-client"
@@ -64,4 +81,18 @@
        "run" "-m" "cmr.client.testing.runner"]
     "check-deps"
       ^{:doc "Check to see if any dependencies are out of date"}
-      ["with-profile" "lint" "ancient" "all"]})
+      ["with-profile" "lint" "ancient" "all"]
+    "lint" ["with-profile" "+test" "kibit"]
+    "docs" ["with-profile" "+docs" "do"
+      ["codox"]
+      ; ["marg" "--dir" "docs/current"
+      ;         "--file" "marginalia.html"
+      ;         "--name" "sockets"]
+      ]
+    "build" ["with-profile" "+test" "do"
+      ["check-deps"]
+      ["lint"]
+      ["test"]
+      ["compile"]
+      ["docs"]
+      ["uberjar"]]})
