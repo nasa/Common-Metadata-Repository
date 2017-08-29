@@ -1,5 +1,5 @@
-(ns cmr.system-int-test.search.variable.collection-measurement-search-test
-  "Tests searching for collections by associated variables and measurements"
+(ns cmr.system-int-test.search.variable.collection-variable-search-test
+  "Tests searching for collections by associated variables"
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
@@ -17,7 +17,7 @@
                [(ingest/reset-fixture {"provguid1" "PROV1"})
                 vu/grant-all-variable-fixture]))
 
-(deftest collection-variable-measurement-search-test
+(deftest collection-variable-search-test
   (let [token (e/login (s/context) "user1")
         [coll1 coll2 coll3 coll4 coll5] (for [n (range 1 6)]
                                           (d/ingest-umm-spec-collection
