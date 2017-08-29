@@ -386,11 +386,11 @@
 (deftest variable-search-in-umm-json-format-test
   (testing "variable search result in UMM JSON format has associated collections"
     (let [token (e/login (s/context) "user1")
-          [coll1 coll2 coll3] (for [n (range 1 4)]
-                                (d/ingest-umm-spec-collection
-                                 "PROV1"
-                                 (data-umm-c/collection n {})
-                                 {:token token}))
+          [coll1 coll2 coll3] (doall (for [n (range 1 4)]
+                                       (d/ingest-umm-spec-collection
+                                        "PROV1"
+                                        (data-umm-c/collection n {})
+                                        {:token token})))
           ;; create variables
           variable1-concept (variables/make-variable-concept {:native-id "var1"
                                                               :Name "Variable1"})
