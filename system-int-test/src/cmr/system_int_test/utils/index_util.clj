@@ -1,15 +1,16 @@
 (ns cmr.system-int-test.utils.index-util
   "provides index related utilities."
-  (:require [clojure.test :refer [is]]
-            [clj-http.client :as client]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.indexer.config :as config]
-            [cmr.system-int-test.utils.queue :as queue]
-            [cmr.transmit.config :as transmit-config]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cheshire.core :as json]
-            [cmr.system-int-test.system :as s]
-            [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.test :refer [is]]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.indexer.config :as config]
+   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.queue :as queue]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (defn refresh-elastic-index
   []
@@ -68,6 +69,16 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
+(defn doc-present?
+  "If doc is present return true, otherwise return false"
+  [index-name type-name doc-id]
+  (let [response (client/get
+                  (format "%s/%s/%s/_search?q=_id:%s" (url/elastic-root) index-name type-name doc-id)
+                  {:throw-exceptions false
+                   :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (and (= 1 (get-in body [:hits :total]))
+         (= doc-id (get-in body [:hits :hits 0 :_id])))))
 
 (defn- messages+id->message
   "Returns the first message for a given message id."

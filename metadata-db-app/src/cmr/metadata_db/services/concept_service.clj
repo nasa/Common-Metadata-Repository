@@ -482,7 +482,6 @@
             ;; delete the variable associations associated with the collection
             (when (= :collection concept-type)
               (delete-associated-variable-associations context concept-id nil))
-
             ;; skip publication flag is only set for tag/variable association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
@@ -524,7 +523,15 @@
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
-                       (try-to-save db provider))]
+                       (try-to-save db provider))
+          concept-type (:concept-type concept)
+          concept-id (:concept-id concept)
+          revision-id (:revision-id concept)]
+      (when (and (= :granule concept-type)
+                 (> revision-id 1))
+        (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
+          (when (util/is-tombstone? previous-concept)
+            (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id))))
       (ingest-events/publish-event
         context
         (ingest-events/concept-update-event concept))
@@ -649,12 +656,17 @@
 (defn force-delete-with
   "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
   to find concept id revision id tuples to delete. Stops once the function returns an empty set."
-  [context provider concept-type concept-id-revision-id-tuple-finder]
+  [context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder]
   (let [db (util/context->db context)]
     (cutil/while-let
       [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
       (info "Deleting" (count concept-id-revision-id-tuples)
             "old concept revisions for provider" (:provider-id provider))
+      (when (and tombstone-delete?
+                 (= :granule concept-type))
+        ;; Remove any reference to granule from deleted-granule index
+        (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+          (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
       (when (= :collection concept-type)
         (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
           ;; delete the related tag associations and variable associations
@@ -671,9 +683,12 @@
         concept-type-name (str (name concept-type) "s")
         tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
 
+    ;; We only want to publish the deleted-tombstone event in the case where a granule tombstone is
+    ;; being cleaned up, not when an old revision is being removed, because the case of old revision,
+    ;; a deleted-tombstone even would have been published already.
     (info "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
-      context provider concept-type
+      context provider concept-type false
       #(c/get-old-concept-revisions
          db
          provider
@@ -684,7 +699,7 @@
 
     (info "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
-      context provider concept-type
+      context provider concept-type true
       #(c/get-tombstoned-concept-revisions
          db
          provider
