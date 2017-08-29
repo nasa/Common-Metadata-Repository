@@ -425,6 +425,11 @@
         specified-score-combined (seq (concat specified-sort score-sort-order))]
     (concat (or specified-score-combined default-sort) sub-sort-fields)))
 
+(defmethod q2e/concept-type->sub-sort-fields :variable
+  [_]
+  [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}])
+
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
   (reduce-query-condition

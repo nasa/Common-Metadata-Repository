@@ -489,7 +489,7 @@
 
       "Sort by name"
       "name"
-      [variable3 variable1 variable4 variable2]
+      [variable3 variable4 variable1 variable2]
 
       "Sort by provider id"
       "provider_id"
