@@ -50,14 +50,14 @@
   "Set up the provider holdings fixtures for tests."
   []
   (let [;; Provider 1
-        prov1-colls (for [_ (range 0 prov1-collection-count)]
-                      (d/ingest "PROV1" (dc/collection)))
+        prov1-colls (doall (for [_ (range 0 prov1-collection-count)]
+                             (d/ingest "PROV1" (dc/collection))))
         prov1-granule-counts (map #(* prov1-grans-increment-count %) (range 1 (inc prov1-collection-count)))
         prov1-holdings (map (partial collection-holding "PROV1") prov1-colls prov1-granule-counts)
 
         ;; Provider 2
-        prov2-colls (for [_ (range 0 prov2-collection-count)]
-                      (d/ingest "PROV2" (dc/collection)))
+        prov2-colls (doall (for [_ (range 0 prov2-collection-count)]
+                             (d/ingest "PROV2" (dc/collection))))
         prov2-granule-counts (map #(* prov2-grans-increment-count %) (range 1 (inc prov2-collection-count)))
         prov2-holdings (map (partial collection-holding "PROV2") prov2-colls prov2-granule-counts)
 

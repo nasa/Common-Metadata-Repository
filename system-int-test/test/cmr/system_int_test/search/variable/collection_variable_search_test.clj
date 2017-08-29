@@ -19,11 +19,11 @@
 
 (deftest collection-variable-search-test
   (let [token (e/login (s/context) "user1")
-        [coll1 coll2 coll3 coll4 coll5] (for [n (range 1 6)]
-                                          (d/ingest-umm-spec-collection
-                                           "PROV1"
-                                           (data-umm-c/collection n {})
-                                           {:token token}))
+        [coll1 coll2 coll3 coll4 coll5] (doall (for [n (range 1 6)]
+                                                (d/ingest-umm-spec-collection
+                                                 "PROV1"
+                                                 (data-umm-c/collection n {})
+                                                 {:token token})))
         ;; index the collections so that they can be found during variable association
         _ (index/wait-until-indexed)
         ;; create variables
