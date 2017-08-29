@@ -84,11 +84,14 @@
   (let [variable-concepts (remove nil?
                                   (map #(variable-association->variable-concept context %)
                                        variable-associations))
+        variable-native-ids (map :native-id variable-concepts)
         variable-fields (map :extra-fields variable-concepts)
         variable-names (map :variable-name variable-fields)
         measurements (map :measurement variable-fields)]
     {:variable-names variable-names
      :variable-names.lowercase (map string/lower-case variable-names)
+     :variable-native-ids variable-native-ids
+     :variable-native-ids.lowercase (map string/lower-case variable-native-ids)
      :measurements measurements
      :measurements.lowercase (map string/lower-case measurements)
      :variables (map variable-concept->elastic-doc variable-concepts)}))

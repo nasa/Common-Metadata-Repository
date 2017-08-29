@@ -36,7 +36,7 @@
                                              :Name "Variable2"
                                              :LongName "Measurement2"})
         {variable3-concept-id :concept-id} (vu/ingest-variable-with-attrs
-                                            {:native-id "var3"
+                                            {:native-id "somevar"
                                              :Name "SomeVariable"
                                              :LongName "Measurement2"})]
 
@@ -87,6 +87,43 @@
 
         "ignore-case false"
         [] "variable1" {:ignore-case false}))
+
+    (testing "search collections by variable native-ids"
+      (are3 [items variable options]
+        (let [params (merge {:variable_native_id variable}
+                            (when options
+                              {"options[variable_native_id]" options}))]
+          (d/refs-match? items (search/find-refs :collection params)))
+
+        "single variable search"
+        [coll1 coll2] "var1" {}
+
+        "no matching variable"
+        [] "var3" {}
+
+        "multiple variables"
+        [coll1 coll2 coll3] ["var1" "var2"] {}
+
+        "AND option false"
+        [coll1 coll2 coll3] ["var1" "var2"] {:and false}
+
+        "AND option true"
+        [coll2] ["var1" "var2"] {:and true}
+
+        "pattern true"
+        [coll1 coll2 coll3] "var*" {:pattern true}
+
+        "pattern false"
+        [] "var*" {:pattern false}
+
+        "default pattern is false"
+        [] "var*" {}
+
+        "ignore-case true"
+        [coll1 coll2] "VAR1" {:ignore-case true}
+
+        "ignore-case false"
+        [] "VAR1" {:ignore-case false}))
 
     (testing "search collections by measurements"
       (are3 [items measurement options]

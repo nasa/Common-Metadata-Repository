@@ -424,6 +424,8 @@
           ;; associated variables
           :variable-names m/string-field-mapping
           :variable-names.lowercase m/string-field-mapping
+          :variable-native-ids (m/doc-values m/string-field-mapping)
+          :variable-native-ids.lowercase (m/doc-values m/string-field-mapping)
           :measurements m/string-field-mapping
           :measurements.lowercase m/string-field-mapping
           :variables variables-mapping

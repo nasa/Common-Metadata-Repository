@@ -69,6 +69,7 @@
    ;; Variable parameters
    :measurement :string
    :variable-name :string
+   :variable-native-id :string
    :variables-h :variables-h})
 
 (defmethod common-params/param-mappings :granule
