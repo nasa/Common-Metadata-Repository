@@ -8,6 +8,7 @@
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.site.static :as static]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -20,6 +21,7 @@
 ;;; Constants and general utility functions for the tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def ^:private test-collections (atom {}))
 (def ^:private base-url
   "We don't call to `(transmit-config/application-public-root-url)`
    due to the fact that it requires a context and we're not creating
@@ -51,27 +53,31 @@
   need to test."
   []
   (let [[c1-p1 c2-p1 c3-p1
-         c1-p2 c2-p2 c3-p2] (for [p ["PROV1" "PROV2"]
-                                  n (range 1 4)]
-                              (d/ingest-umm-spec-collection
-                                p
-                                (-> exp-conv/example-collection-record
-                                    (assoc :ShortName (str "s" n))
-                                    (assoc :EntryTitle (str "Collection Item " n)))
-                                {:format :umm-json
-                                 :accept-format :json}))
+         c1-p2 c2-p2 c3-p2] (doall (for [p ["PROV1" "PROV2"]
+                                         n (range 1 4)]
+                                     (d/ingest-umm-spec-collection
+                                      p
+                                      (-> exp-conv/example-collection-record
+                                          (assoc :ShortName (str "s" n))
+                                          (assoc :EntryTitle (str "Collection Item " n)))
+                                      {:format :umm-json
+                                       :accept-format :json})))
          _ (index/wait-until-indexed)
-         [c1-p3 c2-p3 c3-p3] (for [n (range 4 7)]
-                               (d/ingest-umm-spec-collection
-                                 "PROV3"
-                                 (-> exp-conv/example-collection-record
-                                     (assoc :ShortName (str "s" n))
-                                     (assoc :EntryTitle (str "Collection Item " n))
-                                     (assoc :DOI (cm/map->DoiType
-                                                   {:DOI (str "doi" n)
-                                                    :Authority (str "auth" n)})))
-                                 {:format :umm-json
-                                  :accept-format :json}))]
+         [c1-p3 c2-p3 c3-p3] (doall (for [n (range 4 7)]
+                                     (d/ingest-umm-spec-collection
+                                       "PROV3"
+                                       (-> exp-conv/example-collection-record
+                                           (assoc :ShortName (str "s" n))
+                                           (assoc :EntryTitle (str "Collection Item " n))
+                                           (assoc :DOI (cm/map->DoiType
+                                                         {:DOI (str "doi" n)
+                                                          :Authority (str "auth" n)})))
+                                       {:format :umm-json
+                                        :accept-format :json})))]
+    (reset! test-collections
+            {"PROV1" (map :concept-id [c1-p1 c2-p1 c3-p1])
+             "PROV2" (map :concept-id [c1-p2 c2-p2 c3-p2])
+             "PROV3" (map :concept-id [c1-p3 c2-p3 c3-p3])})
     ;; Wait until collections are indexed so tags can be associated with them
     (index/wait-until-indexed)
     ;; Use the following to generate html links that will be matched in tests
@@ -85,15 +91,13 @@
                 user-token
                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
                 tag-colls)]
-    (index/wait-until-indexed)
-    ;; Sanity checks
-    (assert (= (count notag-colls) 3))
-    (assert (= (count nodoi-colls) 6))
-    (assert (= (count doi-colls) 3))
-    (assert (= (count tag-colls) 6))
-    (assert (= (count all-colls) 9))
-    ;; Generate the static content
-    (static/generate-site-resources))))
+      (index/wait-until-indexed)
+      ;; Sanity checks
+      (assert (= (count notag-colls) 3))
+      (assert (= (count nodoi-colls) 6))
+      (assert (= (count doi-colls) 3))
+      (assert (= (count tag-colls) 6))
+      (assert (= (count all-colls) 9)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures
@@ -102,6 +106,8 @@
 (def collections-fixture
   (fn [f]
     (setup-collections)
+    (search/refresh-collection-metadata-cache)
+    (static/generate-site-resources)
     (f)))
 
 (use-fixtures :once (join-fixtures
@@ -149,16 +155,20 @@
                   "site/collections/directory/%s/%s/sitemap.xml"
                   provider tag)
         response (get-response url-path)
-        body (:body response)]
+        body (:body response)
+        colls (@test-collections "PROV1")]
     (testing "XML validation"
       (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
       (is (string/includes? body "</changefreq>"))
-      (is (string/includes? body "concepts/C2-PROV1.html</loc>"))
-      (is (string/includes? body "concepts/C3-PROV1.html</loc>")))
+      (is (string/includes?
+           body (format "concepts/%s.html</loc>" (second colls))))
+      (is (string/includes?
+           body (format "concepts/%s.html</loc>" (last colls)))))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C1-PROV1.html</loc>"))))))
+      (is (not (string/includes?
+                body (format "%s.html</loc>" (first colls))))))))
 
 (deftest sitemap-provider2
   (let [provider "PROV2"
@@ -167,16 +177,20 @@
                   "site/collections/directory/%s/%s/sitemap.xml"
                   provider tag)
         response (get-response url-path)
-        body (:body response)]
+        body (:body response)
+        colls (@test-collections "PROV2")]
     (testing "XML validation"
       (is (xmlv/valid? (validate-sitemap body))))
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
       (is (string/includes? body "</changefreq>"))
-      (is (string/includes? body "concepts/C2-PROV2.html</loc>"))
-      (is (string/includes? body "concepts/C3-PROV2.html</loc>")))
+      (is (string/includes?
+           body (format "concepts/%s.html</loc>" (second colls))))
+      (is (string/includes?
+           body (format "concepts/%s.html</loc>" (last colls)))))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C1-PROV2.html</loc>"))))))
+      (is (not (string/includes?
+                body (format "%s.html</loc>" (first colls))))))))
 
 (deftest sitemap-provider3
   (let [provider "PROV3"
@@ -185,10 +199,12 @@
                   "site/collections/directory/%s/%s/sitemap.xml"
                   provider tag)
         response (get-response url-path)
-        body (:body response)]
+        body (:body response)
+        colls (@test-collections "PROV3")]
     (testing "presence and content of sitemap.xml file"
       (is (= 200 (:status response)))
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>")))
       (is (not (string/includes? body "http://dx.doi.org/doi5</loc>"))))
     (testing "the collections not tagged with eosdis shouldn't show up"
-      (is (not (string/includes? body "C4-PROV3.html</loc>"))))))
+      (is (not (string/includes?
+                body (format "%s.html</loc>" (first colls))))))))
