@@ -72,9 +72,7 @@
         {:keys [concept-id revision-id]} (mdb2/save-concept context
                                           (assoc concept :provider-id (:provider-id concept)
                                                          :native-id (:native-id concept)))]
-      {:name (:name concept)
-       :long-name (:long-name concept)
-       :concept-id concept-id
+      {:concept-id concept-id
        :revision-id revision-id}))
 
 (defn delete-variable
