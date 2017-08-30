@@ -10,7 +10,6 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.ingest.config :as icfg]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -237,9 +236,10 @@
     (let [xml-elem (x/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
-        {:concept-id (cx/string-at-path xml-elem [:concept-id])
-         :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
-         :warnings (cx/string-at-path xml-elem [:warnings])}))
+        (util/remove-nil-keys
+         {:concept-id (cx/string-at-path xml-elem [:concept-id])
+          :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))
+          :warnings (cx/string-at-path xml-elem [:warnings])})))
 
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
