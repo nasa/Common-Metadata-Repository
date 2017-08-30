@@ -7,6 +7,7 @@
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.migration.characteristics-data-type-migration :as char-data-type-migration]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.related-url :as ru-gen]
@@ -289,6 +290,7 @@
       ;; CMR 3253 This is added because it needs to support DIF10 umm. when it does roundtrip,
       ;; dif10umm-echo10(with default)-umm(without default needs to be removed)
       (update-in-each [:Platforms] expected-echo10-platform-longname-with-default-value)
+      (update-in-each [:Platforms] char-data-type-migration/migrate-platform-characteristics-data-type)
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)

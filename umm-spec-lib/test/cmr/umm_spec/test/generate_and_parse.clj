@@ -26,7 +26,7 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:dif :dif10 :echo10 :iso19115 :iso-smap])
+  [:dif :dif10 :iso19115])
 
 (def test-context (lkt/setup-context-for-test))
 
@@ -36,7 +36,7 @@
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
-  [:echo10 :dif10 :dif :iso19115 :iso-smap])
+  [:dif10 :dif :iso19115])
 
 (def collection-format-examples
   "Map of format type to example file"

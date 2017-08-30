@@ -10,6 +10,7 @@
     [cmr.umm-spec.iso19115-2-util :as iso-util]
     [cmr.umm-spec.json-schema :as js]
     [cmr.umm-spec.location-keywords :as lk]
+    [cmr.umm-spec.migration.characteristics-data-type-migration :as char-data-type-migration]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.related-url :as ru-gen]
@@ -356,4 +357,5 @@
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
+      (update-in-each [:Platforms] char-data-type-migration/migrate-platform-characteristics-data-type)
       js/parse-umm-c))
