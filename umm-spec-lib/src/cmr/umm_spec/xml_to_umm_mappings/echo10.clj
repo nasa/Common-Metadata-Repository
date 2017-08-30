@@ -9,6 +9,7 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.migration.characteristics-data-type-migration :as char-data-type-migration]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
@@ -45,7 +46,9 @@
 (defn parse-characteristics
   "Returns a seq of UMM characteristic records from the element's child Characteristics."
   [el]
-  (map parse-characteristic (select el "Characteristics/Characteristic")))
+  (seq (remove nil?
+         (map char-data-type-migration/migrate-data-type
+           (map parse-characteristic (select el "Characteristics/Characteristic"))))))
 
 (defn parse-sensor
   "Returns a UMM Sensor record from an ECHO10 Sensor element."

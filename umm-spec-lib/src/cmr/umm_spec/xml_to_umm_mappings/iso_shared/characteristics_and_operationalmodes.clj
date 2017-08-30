@@ -3,7 +3,8 @@
   (:require
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select text]]
-    [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]))
+    [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
+    [cmr.umm-spec.migration.characteristics-data-type-migration :as char-data-type-migration]))
 
 (def characteristics-and-operationalmodes-xpath
   "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")
@@ -14,13 +15,16 @@
 (defn parse-characteristics
   "Returns the parsed characteristics from the element."
   [element]
-  (for [chars (select element characteristics-and-operationalmodes-xpath)]
-    (when-not (= "OperationalMode" (char-string-value chars (str pc-attr-base-path "/eos:name")))
-      {:Name        (char-string-value chars (str pc-attr-base-path "/eos:name"))
-       :Description (char-string-value chars (str pc-attr-base-path "/eos:description"))
-       :DataType    (value-of chars (str pc-attr-base-path "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
-       :Unit        (char-string-value chars (str pc-attr-base-path "/eos:parameterUnitsOfMeasure"))
-       :Value       (char-string-value chars (str "eos:value"))})))
+  (seq 
+    (remove nil?
+      (map char-data-type-migration/migrate-data-type 
+        (for [chars (select element characteristics-and-operationalmodes-xpath)]
+          (when-not (= "OperationalMode" (char-string-value chars (str pc-attr-base-path "/eos:name")))
+            {:Name        (char-string-value chars (str pc-attr-base-path "/eos:name"))
+             :Description (char-string-value chars (str pc-attr-base-path "/eos:description"))
+             :DataType    (value-of chars (str pc-attr-base-path "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
+             :Unit        (char-string-value chars (str pc-attr-base-path "/eos:parameterUnitsOfMeasure"))
+             :Value       (char-string-value chars (str "eos:value"))}))))))
 
 (defn parse-operationalmodes
   "Returns the parsed operationalmodes from the element."

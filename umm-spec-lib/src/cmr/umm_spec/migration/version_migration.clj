@@ -7,6 +7,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.migration.characteristics-data-type-migration :as characteristics-migration]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
@@ -271,7 +272,8 @@
   [context c & _]
   (-> c
       coll-progress-migration/migrate-up
-      (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)))
+      (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)
+      characteristics-migration/migrate-up))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
