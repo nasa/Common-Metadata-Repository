@@ -70,6 +70,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [Point](#c-point)
         * [Line](#c-line)
     * [Additional Attribute](#c-additional-attribute)
+    * [Author](#c-author)
     * [With/without granules](#c-has-granules)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
@@ -1190,7 +1191,7 @@ Find collections that match all of the 'project' param values
 
  Find collections which were created within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-   curl "%CMR-ENDPOINT%/collections?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
+    curl "%CMR-ENDPOINT%/collections?created_at\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="c-with-new-granules"></a> Find collections with new granules
 
@@ -1198,7 +1199,7 @@ Find collections that match all of the 'project' param values
 
   Find collections containing granules added within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
-  curl "%CMR_ENDPOINT%/collections?has_granules_created_at=\[\]2015-01-01T10:00:00Z,"
+    curl "%CMR-ENDPOINT%/collections?has_granules_created_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="c-revision-date"></a> Find collections by revision_date
 
@@ -1360,10 +1361,11 @@ The following fields are indexed for keyword search:
     * Sensor short names, long names, and techniques
     * Characteristic names, descriptions and values
     * TwoD coordinate system names
+    * Author
 
 #### <a name="c-provider"></a> Find collections by provider
 
-This parameter supports `pattern`, `ignore_case` and option `and`.
+This parameter supports `pattern` and `ignore_case`.
 
 Find collections matching 'provider' param value
 
@@ -1440,14 +1442,16 @@ Collections can be found by searching for associated variables. The following va
 
 * variable_name
   * supports `pattern`, `ignore_case` and option `and`
+* variable_native_id
+  * supports `pattern`, `ignore_case` and option `and`
 
 Find collections matching variable name.
 
     curl "%CMR-ENDPOINT%/collections?variable_name=totcldh2ostderr"
 
-Find collections matching measurement.
+Find collections matching variable native id.
 
-    curl "%CMR-ENDPOINT%/collections?measurement\[\]=Ozone&measurement\[\]=radiance"
+    curl "%CMR-ENDPOINT%/collections?variable_native_id\[\]=var1&variable_native_id\[\]=var2"
 
 #### <a name="c-variables"></a> Find collections by hierarchical variables
 
@@ -1518,6 +1522,14 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 Multiple attributes can be provided. The default is for collections to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
 
 For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
+
+#### <a name="c-author"></a> Find collections by author
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching the given 'author' values
+
+    curl "%CMR-ENDPOINT%/collections?author=*JPL*&options[author][pattern]=true"
 
 #### <a name="c-has-granules"></a> Find collections with or without granules
 
@@ -3091,6 +3103,8 @@ These parameters will match fields within a variable. They are case insensitive 
 
 * name
   * options: pattern, ignore_case
+* provider
+  * options: pattern, ignore_case
 * concept_id
 * keyword (free text)
   * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for variable keyword search: variable name, long name, and science keywords.
@@ -3202,6 +3216,24 @@ Content-Length: 1177
   } ]
 }
 ```
+##### Sorting Variable Results
+
+By default, variable results are sorted by name, then provider-id.
+
+One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
+
+###### Valid Variable Sort Keys
+
+  * `name`
+  * `long_name`
+  * `provider_id`
+  * `revision_date`
+
+Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=-long_name"
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=%2Blong_name"
+
 #### <a name="variable-access-control"></a> Variable Access Control
 
 Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL system object identity. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.

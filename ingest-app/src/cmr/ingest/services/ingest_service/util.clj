@@ -19,12 +19,12 @@
 
 (defn fix-ingest-concept-format
   "Fixes formats"
-  [fmt]
+  [concept-type fmt]
   (if (or
         (not (mt/umm-json? fmt))
         (mt/version-of fmt))
     fmt
-    (str fmt ";version=" (config/ingest-accept-umm-version))))
+    (str fmt ";version=" (config/ingest-accept-umm-version concept-type))))
 
 (defn reset
   "Resets the queue broker"

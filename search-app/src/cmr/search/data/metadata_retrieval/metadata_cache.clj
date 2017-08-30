@@ -45,7 +45,7 @@
     :dif10
     ;; Note that when upgrading umm version we should also cache the previous version of UMM.
     {:format :umm-json
-     :version umm-version/current-version}})
+     :version umm-version/current-collection-version}})
 
 (defn cached-formats
   "This is a set of formats that are cached."

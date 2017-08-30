@@ -130,7 +130,7 @@
   [sort-key aliases]
   (when sort-key
     (if (sequential? sort-key)
-      (mapcat parse-sort-key sort-key aliases)
+      (mapcat #(parse-sort-key % aliases) sort-key)
       (let [[_ dir-char field] (re-find #"([\-+])?(.*)" sort-key)
             direction (cond
                         (= dir-char "-")

@@ -72,6 +72,11 @@
   from metadata db."
   {:default "cmr_deleted_collection_revision.exchange"})
 
+(defconfig deleted-granule-exchange-name
+  "An exchange that will have messages passed to it whenever a granule revision is removed
+  from metadata db."
+  {:default "cmr_deleted_granule.exchange"})
+
 (defconfig publish-messages
   "This indicates whether or not messages be published to the exchange"
   {:default true :type Boolean})

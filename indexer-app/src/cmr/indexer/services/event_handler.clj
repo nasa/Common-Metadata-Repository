@@ -1,14 +1,15 @@
 (ns cmr.indexer.services.event-handler
   "Provides functions for subscribing to and handling events."
   (:require
+   [cmr.common.concepts :as cc]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.indexer.config :as config]
-   [cmr.indexer.services.index-service :as indexer]
-   [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
-   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
-   [cmr.common.concepts :as cc]))
+   [cmr.indexer.config :as config]
+   [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+   [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
+   [cmr.indexer.services.index-service :as indexer]
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
 ;; Isolating provider events from other ingest events to prevent them from ever being processed
 ;; by the normal ingest handlers as that can lead to a swamped ingest queue. These handlers
@@ -63,6 +64,12 @@
       context concept-id revision-id {:ignore-conflict? true
                                       :all-revisions-index? all-revisions-index?})))
 
+(defmethod handle-ingest-event :tombstone-delete
+  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  (when (= :granule (cc/concept-id->type concept-id))
+    (deleted-granule/remove-deleted-granule context concept-id revision-id
+                                            {:ignore-conflict? true})))
+
 (defmethod handle-ingest-event :concept-revision-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (when-not (= :humanizer (cc/concept-id->type concept-id))
@@ -90,4 +97,8 @@
     (dotimes [n (config/all-revisions-index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                                 (config/all-revisions-index-queue-name)
+                                #(handle-ingest-event context true %)))
+    (dotimes [n (config/deleted-granules-index-queue-listener-count)]
+      (queue-protocol/subscribe queue-broker
+                                (config/deleted-granule-index-queue-name)
                                 #(handle-ingest-event context true %)))))

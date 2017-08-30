@@ -165,22 +165,28 @@
 ;; Verify that the accept header works
 (deftest variable-ingest-accept-header-response-test
   (let [{token :token} (variable-util/setup-update-acl
-                        (s/context) "PROV1" "user1" "update-group")]
+                        (s/context) "PROV1" "user1" "update-group")
+        supplied-concept-id "V1000-PROV1"]
     (testing "json response"
       (let [response (variable-util/ingest-variable
-                      (variable-util/make-variable-concept)
+                      (variable-util/make-variable-concept
+                       {:concept-id supplied-concept-id})
                       (merge (variable-util/token-opts token)
                              {:raw? true}))]
-        (is (= 1
-               (:revision-id (ingest/parse-ingest-body :json response))))))
+        (is (= {:revision-id 1
+                :concept-id supplied-concept-id}
+               (ingest/parse-ingest-body :json response)))))
+
     (testing "xml response"
       (let [response (variable-util/ingest-variable
-                      (variable-util/make-variable-concept)
+                      (variable-util/make-variable-concept
+                       {:concept-id supplied-concept-id})
                       (merge (variable-util/token-opts token)
                              {:accept-format :xml
                               :raw? true}))]
-        (is (= 2
-               (:revision-id (ingest/parse-ingest-body :xml response))))))))
+        (is (= {:revision-id 2
+                :concept-id supplied-concept-id}
+               (ingest/parse-ingest-body :xml response)))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest variable-ingest-with-errors-accept-header-test

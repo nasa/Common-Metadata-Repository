@@ -33,19 +33,10 @@
     (for [x coll]
       (assoc x k v))))
 
-(defn- fixup-comma-encoded-values
-  [temporal-extents]
-  (for [extent temporal-extents]
-    (update-in extent [:TemporalRangeType] (fn [x]
-                                             (when x
-                                               (string/trim (iso-util/sanitize-value x)))))))
-
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
        (propagate-first :PrecisionOfSeconds)
-       (propagate-first :TemporalRangeType)
-       fixup-comma-encoded-values
        iso-shared/fixup-iso-ends-at-present
        (iso-shared/split-temporals :RangeDateTimes)
        (iso-shared/split-temporals :SingleDateTimes)

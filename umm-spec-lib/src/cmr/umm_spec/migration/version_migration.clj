@@ -14,13 +14,13 @@
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.dif-util :as dif-util]
-   [cmr.umm-spec.versioning :refer [versions current-version]]))
+   [cmr.umm-spec.versioning :refer [versions]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
 
 (defn- customized-compare
-  "Customizing the compare because normal string compare results in 
+  "Customizing the compare because normal string compare results in
    1.n > 1.10 and doesn't convert the version_steps correctly(1< n <10).
    Assuming the version only contains two parts part1.part2.
    both part1 and part2 are integers."
@@ -35,15 +35,15 @@
         part2-compare (- begin-part2 end-part2)]
     (if (zero? part1-compare)
       part2-compare
-      part1-compare))) 
+      part1-compare)))
 
 (defn- version-steps
   "Returns a sequence of version steps between begin and end, inclusive."
-  [begin end]
+  [concept-type begin end]
   (->> (condp #(%1 %2) (customized-compare begin end)
-         neg?  (sort-by count versions)
+         neg?  (sort-by count (versions concept-type))
          zero? nil
-         pos?  (reverse (sort-by count versions)))
+         pos?  (reverse (sort-by count (versions concept-type))))
        (partition 2 1 nil)
        (drop-while #(not= (first %) begin))
        (take-while #(not= (first %) end))))
@@ -270,12 +270,13 @@
 (defmethod migrate-umm-version [:collection "1.9" "1.10"]
   [context c & _]
   (-> c
-      (coll-progress-migration/migrate-up)))
+      coll-progress-migration/migrate-up
+      (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
   (-> c
-      (coll-progress-migration/migrate-down)))
+      coll-progress-migration/migrate-down))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Public Migration Interface
 
@@ -287,4 +288,4 @@
     (reduce (fn [data [v1 v2]]
               (migrate-umm-version context data concept-type v1 v2))
             data
-            (version-steps source-version dest-version))))
+            (version-steps concept-type source-version dest-version))))

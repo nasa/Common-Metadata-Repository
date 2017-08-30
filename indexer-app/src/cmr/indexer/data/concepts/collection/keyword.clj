@@ -89,6 +89,10 @@
         related-url-urls (map :URL related-urls)
         related-url-titles (map :Title related-urls)
         related-url-descriptions (map :Description related-urls)
+        ;; Pull author info from both creator and other citation details
+        authors (concat
+                 (keep :Creator (:CollectionCitations collection))
+                 (keep :OtherCitationDetails (:CollectionCitations collection)))
         all-fields (flatten (conj [concept-id]
                                   ancillary-keywords
                                   attrib-keywords
@@ -130,5 +134,6 @@
                                   temporal-keywords
                                   two-d-coord-names
                                   version-description
-                                  version-id))]
+                                  version-id
+                                  authors))]
     (keyword-util/field-values->keyword-text all-fields)))

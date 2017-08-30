@@ -99,7 +99,7 @@
     (try
       (es/create-indexes context)
       (when (es/requires-update? context)
-        (es/update-indexes context))
+        (es/update-indexes context {}))
       (catch Exception e
         (common-sys/stop started-system component-order)
         (throw e)))

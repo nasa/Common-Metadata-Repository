@@ -56,3 +56,15 @@
                :concept-id concept-id
                :revision-id revision-id}]
       (queue/publish-message queue-broker exchange-name msg))))
+
+(defn publish-tombstone-delete-msg
+  "Publishes a message indicating a tombstone was removed/overwritten with updated concept"
+  [context concept-type concept-id revision-id]
+  (when (config/publish-messages)
+    (let [queue-broker (get-in context [:system :queue-broker])
+          exchange-name (config/deleted-granule-exchange-name)
+          ;; Note it's important that the format of this message match the ingest event format.
+          msg {:action :tombstone-delete
+               :concept-id concept-id
+               :revision-id revision-id}]
+      (queue/publish-message queue-broker exchange-name msg))))
