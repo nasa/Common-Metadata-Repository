@@ -21,6 +21,7 @@
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
    [cmr.ingest.system :as ingest-system]
+   [cmr.search.services.content-service :as content-service]
    [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.search.system :as search-system]
    [cmr.system-int-test.system :as sit-sys]
@@ -179,9 +180,10 @@
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
-  ;; Prevent humanizer report job from blocking calls to reset
+  ;; Prevent jobs from blocking calls to reset
   (humanizer-report-service/set-retry-count! 0)
   (humanizer-report-service/set-humanizer-report-generator-job-wait! 0)
+  (content-service/set-job-wait! 0)
 
   ;; uncomment this line to start gorilla repl.
   ;;(system/set-gorilla-repl-port! 8090)

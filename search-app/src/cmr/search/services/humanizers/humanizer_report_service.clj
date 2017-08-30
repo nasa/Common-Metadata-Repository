@@ -5,8 +5,8 @@
    [cmr.common-app.humanizer :as h]
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.cache.cubby-cache :as cubby-cache]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache :as cache]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
@@ -41,21 +41,22 @@
   {:default 500 :type Long})
 
 (defconfig humanizer-report-generator-job-delay
-  "Number of seconds humanizer-report-generator-job needs to wait after collection cache
-   refresh job starts..
-   We want to add the delay so that the collection cache can be populated first.
-   Splunk shows the average time taken for collection cache to be refreshed is around
-   300 seconds"
+  "Number of seconds the humanizer-report-generator-job needs to wait after collection
+  cache refresh job starts.
+
+  We want to add the delay so that the collection cache can be populated first.
+  Splunk shows the average time taken for collection cache to be refreshed is around
+  300 seconds"
   {:default 400 :type Long})
 
 (defconfig humanizer-report-generator-job-wait
   "Number of milli-seconds humanizer-generator-job waits for the collection cache
-   to be populated in the event when the delay is not long enough."
+  to be populated in the event when the delay is not long enough."
   {:default 60000 :type Long}) ;; one minute
 
 (defconfig retry-count
   "Number of times humanizer-report-generator-job retries to get the collections
-   from collection cache."
+  from collection cache."
   {:default 20 :type Long})
 
 (defn- rfm->umm-collection
@@ -76,7 +77,7 @@
 
 (defn- get-cached-revision-format-maps-with-retry
   "Get all the collections from cache, if nothing is returned,
-   Wait configurable number of seconds before retrying configurable number of times."
+  Wait configurable number of seconds before retrying configurable number of times."
   [context]
   (loop [retries (retry-count)]
     (if-let [rfms (metadata-cache/all-cached-revision-format-maps context)]
@@ -174,11 +175,7 @@
     serves, all the content is the same;
   * A single-threaded cache that circumvents potential race conditions
     between HTTP requests for a report and Quartz cluster jobs that save
-    report data.
-
-  Note that in the future this particular cache may be useful for other
-  content we generate via one or more job schedulers, at which point we'll
-  want to move it to a more general ns."
+    report data."
   []
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
