@@ -8,7 +8,7 @@
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.location-keywords :as lk]
-   [cmr.umm-spec.migration.characteristics-data-type-migration :as char-data-type-migration]
+   [cmr.umm-spec.migration.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.related-url :as ru-gen]
@@ -323,4 +323,4 @@
         (assoc :PaleoTemporalCoverages nil)
         (assoc :MetadataDates nil)
         (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
-        (update-in-each [:Platforms] char-data-type-migration/migrate-platform-characteristics-data-type)))
+        (update-in-each [:Platforms] char-data-type-normalization/migrate-platform-characteristics-data-type)))
