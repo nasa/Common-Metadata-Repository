@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.migration.characteristics-data-type-migration
+(ns cmr.umm-spec.migration.characteristics-data-type-normalization
   "Contains helper functions for migrating between different versions of UMM characteristics' data type."
   (:require
    [clojure.set :as set] 
