@@ -1133,6 +1133,225 @@
            collection-contact-persons))))
 
 (deftest migrate-1_9-up-to-1_10
+  (testing "Characteristics data type migration from version 1.9 to 1.10"
+  (is (= [(umm-cmn/map->PlatformType
+          {:ShortName "Platform 1"
+           :LongName "Example Platform Long Name 1"
+           :Type "Aircraft"
+           :Characteristics [{:Name "OrbitalPeriod"
+                              :Description "Orbital period in decimal minutes."
+                              :DataType "STRING"
+                              :Unit "Minutes"
+                              :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "INT"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "FLOAT"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "INT"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "BOOLEAN"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "DATE"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "TIME"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "DATETIME"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "DATE_STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "TIME_STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "DATETIME_STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "STRING"
+                               :Unit "Minutes"
+                               :Value "96.7"}]
+           :Instruments [(umm-cmn/map->InstrumentType
+                           {:ShortName "An Instrument"
+                            :LongName "The Full Name of An Instrument v123.4"
+                            :Technique "Two cans and a string"
+                            :NumberOfInstruments 1
+                            :OperationalModes ["on" "off"]
+                            :Characteristics [{:Name "Signal to Noise Ratio"
+                                               :Description "Is that necessary?"
+                                               :DataType "STRING"
+                                               :Unit "dB"
+                                               :Value "10"}]
+                            :ComposedOf [(umm-cmn/map->InstrumentChildType
+                                           {:ShortName "ABC"
+                                            :LongName "Long Range Sensor"
+                                            :Characteristics [{:Name "Signal to Noise Ratio"
+                                                               :Description "Is that necessary?"
+                                                               :DataType "STRING"
+                                                               :Unit "dB"
+                                                               :Value "10"}]
+                                            :Technique "Drunken Fist"})]})]})]
+        (:Platforms
+          (vm/migrate-umm {} :collection "1.9" "1.10"
+            {:Platforms [{:ShortName "Platform 1"
+                          :LongName "Example Platform Long Name 1"
+                          :Type "Aircraft"
+                          :Characteristics [{:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "time/Direction (ascending)"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Time/direction (descending)"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "VarchaR"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Integer"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Radiocarbon Dates"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "String"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Float"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "int"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "boolean"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Date"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Time"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Datetime"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Date_String"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "time_string"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "Datetime_String"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "randomstring"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}
+                                            {:Name "OrbitalPeriod"
+                                             :Description "Orbital period in decimal minutes."
+                                             :DataType "not applicable"
+                                             :Unit "Minutes"
+                                             :Value "96.7"}]
+                          :Instruments [{:ShortName "An Instrument"
+                                         :LongName "The Full Name of An Instrument v123.4"
+                                         :Technique "Two cans and a string"
+                                         :NumberOfInstruments 1
+                                         :OperationalModes ["on" "off"]
+                                         :Characteristics [{:Name "Signal to Noise Ratio"
+                                                            :Description "Is that necessary?"
+                                                            :DataType "randomstring"
+                                                            :Unit "dB"
+                                                            :Value "10"}
+                                                            nil]
+                                         :ComposedOf [{:ShortName "ABC"
+                                                       :LongName "Long Range Sensor"
+                                                       :Characteristics [{:Name "Signal to Noise Ratio"
+                                                                          :Description "Is that necessary?"
+                                                                          :DataType "not applicable"
+                                                                          :Unit "dB"
+                                                                          :Value "10"}]
+                                                       :Technique "Drunken Fist"}]}]}]})))))
   (testing "TemporalRangeType migration from version 1.9 to 1.10"
   (is (= [{:PrecisionOfSeconds "3"
            :EndsAtPresentFlag "false"

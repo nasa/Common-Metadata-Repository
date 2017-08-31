@@ -10,6 +10,7 @@
     [cmr.umm-spec.date-util :as date]
     [cmr.umm-spec.dif-util :as dif-util]
     [cmr.umm-spec.json-schema :as js]
+    [cmr.umm-spec.migration.characteristics-data-type-normalization :as char-data-type-normalization]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su :refer [without-default-value-of]]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
@@ -29,8 +30,10 @@
 
 (defn- parse-characteristics
   [el]
-  (for [characteristic (select el "Characteristics")]
-    (fields-from characteristic :Name :Description :DataType :Unit :Value)))
+  (seq (remove nil? 
+         (map char-data-type-normalization/migrate-data-type
+           (for [characteristic (select el "Characteristics")]
+             (fields-from characteristic :Name :Description :DataType :Unit :Value))))))
 
 (defn- parse-projects-impl
   [doc sanitize?]

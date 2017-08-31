@@ -863,10 +863,7 @@
         },
         "DataType": {
           "description": "The datatype of the Characteristic/attribute.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80,
-          "pattern": "[\\w]{1,79}"
+          "$ref": "#/definitions/DataTypeEnum" 
         }
       },
       "required": ["Name", "Description", "DataType", "Unit", "Value"]

@@ -145,6 +145,10 @@
   "place holder string value for NOT PROVIDED string field"
   "NOT PROVIDED")
 
+(def STRING
+  "place holder string value for string field not in the enum list."
+  "STRING")
+
 (def not-provided-data-center
   "Place holder to use when a data center is not provided."
   (cmn/map->DataCenterType
