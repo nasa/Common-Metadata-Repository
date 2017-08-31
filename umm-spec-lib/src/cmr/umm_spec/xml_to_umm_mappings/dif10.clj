@@ -31,9 +31,10 @@
 (defn- parse-characteristics
   [el]
   (seq (remove nil? 
-         (map char-data-type-normalization/normalize-data-type
-           (for [characteristic (select el "Characteristics")]
-             (fields-from characteristic :Name :Description :DataType :Unit :Value))))))
+    (map char-data-type-normalization/normalize-data-type
+      (remove nil?
+        (for [characteristic (select el "Characteristics")]
+          (fields-from characteristic :Name :Description :DataType :Unit :Value)))))))
 
 (defn- parse-projects-impl
   [doc sanitize?]
