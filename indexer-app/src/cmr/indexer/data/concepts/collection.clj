@@ -138,7 +138,7 @@
         {short-name :ShortName version-id :Version entry-title :EntryTitle
          collection-data-type :CollectionDataType summary :Abstract
          temporal-keywords :TemporalKeywords platforms :Platforms
-         related-urls :RelatedUrls temporal-extents :TemporalExtents} collection
+         related-urls :RelatedUrls collection-temporal-extents :TemporalExtents} collection
         parsed-version-id (collection-util/parse-version-id version-id)
         doi (get-in collection [:DOI :DOI])
         doi-lowercase (util/safe-lowercase doi)
@@ -197,13 +197,19 @@
         data-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
                           (map str/trim (data-center/extract-data-center-names collection)))
         ;; returns a list of {:start-date xxx :end-date yyy}
-        temporal-extents (->> temporal-extents
+        temporal-extents (->> collection-temporal-extents
                               ;; converts temporal-extents into a list of many
                               ;; {:BeginningDateTime xxx :EndingDateTime xxx}
                               (mapcat spec-time/temporal-ranges)
                               (map #(set/rename-keys % {:BeginningDateTime :start-date
                                                         :EndingDateTime :end-date}))
                               (map #(apply-function-to-all-values-in-map % index-util/date->elastic)))
+        temporal-extents-ranges (->> collection-temporal-extents
+                                     (map #(dissoc % :SingleDateTimes))
+                                     (mapcat spec-time/temporal-ranges)
+                                     (map #(set/rename-keys % {:BeginningDateTime :start-date
+                                                               :EndingDateTime :end-date}))
+                                     (map #(apply-function-to-all-values-in-map % index-util/date->elastic)))
         data-center-names (keep meaningful-short-name-fn data-centers)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
@@ -266,6 +272,10 @@
             :archive-centers archive-centers
             :data-centers data-centers
             :temporals temporal-extents
+            :temporal-ranges (mapcat (fn [extent]
+                                       [(:start-date extent)
+                                        (:end-date extent)])
+                                 temporal-extents-ranges)
             ;; added so that we can respect all collection temporal ranges in search
             ;; when limit_to_granules is set and there are no granules for the collection.
             :limit-to-granules-temporals

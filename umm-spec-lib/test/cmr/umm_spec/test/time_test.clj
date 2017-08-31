@@ -1,9 +1,11 @@
 (ns cmr.umm-spec.test.time-test
-  (:require [clj-time.core :as t]
-            [clojure.test :refer :all]
-            [cmr.umm-spec.models.umm-collection-models :as umm-c]
-            [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-            [cmr.umm-spec.time :refer :all]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
+   [cmr.umm-spec.time :as time]))
 
 (def temporal
   (umm-cmn/map->TemporalExtentType
@@ -33,7 +35,7 @@
                                :PeriodCycleDurationValue 3}])}))
 
 (deftest test-temporal-all-dates
-  (is (= (temporal-all-dates temporal)
+  (is (= (time/temporal-all-dates temporal)
          #{(t/date-time 2000)
            :present ; no ending date for the first range
            (t/date-time 2001)
@@ -48,29 +50,163 @@
 (deftest test-collection-start-date
   (testing "Multiple values"
    (is (= (t/date-time 2000)
-          (collection-start-date example-record))))
+          (time/collection-start-date example-record))))
 
   (testing "Single value"
     (is (= (t/date-time 2004)
-           (collection-start-date {:TemporalExtents [{:SingleDateTimes [(t/date-time 2004)]}]}))))
+           (time/collection-start-date {:TemporalExtents [{:SingleDateTimes [(t/date-time 2004)]}]}))))
 
   (testing "No dates"
-    (is (nil? (collection-start-date {})))))
+    (is (nil? (time/collection-start-date {})))))
 
 (deftest test-collection-end-date
   (testing "Nil ending-date"
     (is (= :present ; first range date does not have an end date
-           (collection-end-date example-record))))
+           (time/collection-end-date example-record))))
   (testing "Ends at present flag"
     (is (= :present ; The collection ends at present flag is set.
-           (collection-end-date {:TemporalExtents [{:RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
+           (time/collection-end-date {:TemporalExtents [{:RangeDateTimes [{:BeginningDateTime (t/date-time 2000)}]
                                                                       :EndingDateTime (t/date-time 2001)}]
-                                                    :EndsAtPresentFlag true}]}))))
+                                                    :EndsAtPresentFlag true}))))
 
   (testing "Single value"
     (is (= (t/date-time 2006)
-           (collection-end-date {:TemporalExtents [{:SingleDateTimes [(t/date-time 2006)]}]}))))
+           (time/collection-end-date {:TemporalExtents [{:SingleDateTimes [(t/date-time 2006)]}]}))))
   (testing "No dates"
-    (is (nil? (collection-end-date {})))))
+    (is (nil? (time/collection-end-date {})))))
+
+(deftest normalize-range-end-dates
+  (testing "Normalize end dates"
+    (are3 [range-date-times ends-at-present expected-ranges]
+      (is (= expected-ranges
+             (#'time/normalize-temporal-ranges range-date-times ends-at-present)))
+
+      "Ranges correct, ends at present false"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2001)}
+       {:BeginningDateTime (t/date-time 2003)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      false
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2001)}
+       {:BeginningDateTime (t/date-time 2003)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+
+     "Ranges correct, ends at present true"
+     [{:BeginningDateTime (t/date-time 2000)
+       :EndingDateTime (t/date-time 2001)}
+      {:BeginningDateTime (t/date-time 2003)}
+      {:BeginningDateTime (t/date-time 1996)
+       :EndingDateTime (t/date-time 1997)}]
+     true
+     [{:BeginningDateTime (t/date-time 2000)
+       :EndingDateTime (t/date-time 2001)}
+      {:BeginningDateTime (t/date-time 2003)
+       :EndingDateTime nil}
+      {:BeginningDateTime (t/date-time 1996)
+       :EndingDateTime (t/date-time 1997)}]
+
+     "Has end date, ends at present true"
+     [{:BeginningDateTime (t/date-time 2000)
+       :EndingDateTime (t/date-time 2001)}
+      {:BeginningDateTime (t/date-time 2003)
+       :EndingDateTime (t/date-time 2005)}
+      {:BeginningDateTime (t/date-time 1996)
+       :EndingDateTime (t/date-time 1997)}]
+     true
+     [{:BeginningDateTime (t/date-time 2000)
+       :EndingDateTime (t/date-time 2001)}
+      {:BeginningDateTime (t/date-time 2003)
+       :EndingDateTime nil}
+      {:BeginningDateTime (t/date-time 1996)
+       :EndingDateTime (t/date-time 1997)}]
+
+     "Empty temporal ranges"
+     [] true []
+
+     "Nil temporal ranges"
+     nil true []
+
+     "One temporal range"
+     [{:BeginningDateTime (t/date-time 2000)
+       :EndingDateTime (t/date-time 2001)}]
+     true
+     [{:BeginningDateTime (t/date-time 2000)
+       :EndingDateTime nil}])))
 
 
+(deftest resolve-range-overlaps
+  (testing "Resolve overlaps"
+    (are3 [range-date-times expected-ranges]
+      (is (= expected-ranges
+             (#'time/resolve-range-overlaps range-date-times)))
+
+      "No overlap"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2001)}
+       {:BeginningDateTime (t/date-time 2003)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}
+       {:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2001)}
+       {:BeginningDateTime (t/date-time 2003)
+        :EndingDateTime (t/date-time 2005)}]
+
+      "2 ranges overlap"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2002)}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+
+      "Range encompassed by other range"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2003)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+
+      "All ranges overlap"
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2002)}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 2004)
+        :EndingDateTime (t/date-time 2007)}]
+      [{:BeginningDateTime (t/date-time 2000)
+        :EndingDateTime (t/date-time 2007)}]
+
+      "Overlapping with nil end date"
+      [{:BeginningDateTime (t/date-time 2004)
+        :EndingDateTime nil}
+       {:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime (t/date-time 2005)}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+      [{:BeginningDateTime (t/date-time 2001)
+        :EndingDateTime nil}
+       {:BeginningDateTime (t/date-time 1996)
+        :EndingDateTime (t/date-time 1997)}]
+
+      "Empty temporal ranges"
+      [] []
+
+      "Nil temporal ranges"
+      nil [])))
