@@ -46,9 +46,10 @@
 (defn parse-characteristics
   "Returns a seq of UMM characteristic records from the element's child Characteristics."
   [el]
-  (seq (remove nil?
-         (map (comp char-data-type-normalization/normalize-data-type parse-characteristic)
-              (select el "Characteristics/Characteristic")))))
+  (let [elements (select el "Characteristics/Characteristic")
+        parsed-characteristics (remove nil? (map parse-characteristic elements))] 
+    (seq (remove nil?
+           (map char-data-type-normalization/normalize-data-type parsed-characteristics)))))
 
 (defn parse-sensor
   "Returns a UMM Sensor record from an ECHO10 Sensor element."

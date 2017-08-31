@@ -29,10 +29,10 @@
 (defn normalize-data-type
   "Migrate the Charateristics' data type from string to enum."
   [characteristics]
-  (when-let [data-type (:DataType characteristics)]
-    (let [upper-case-data-type (string/upper-case data-type)]
-       (assoc characteristics :DataType 
-         (get upper-case-string-to-enum-mapping upper-case-data-type umm-spec-util/STRING)))))
+  (let [data-type (:DataType characteristics)
+        upper-case-data-type (string/upper-case data-type)]
+    (assoc characteristics :DataType 
+      (get upper-case-string-to-enum-mapping upper-case-data-type umm-spec-util/STRING))))
 
 (defn update-each-characteristics
   "Update all the characteristics in a given element: platform/instrument/child instrument."
