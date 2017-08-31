@@ -12,6 +12,7 @@
     [cmr.umm-spec.json-schema :as js]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su :refer [without-default-value-of]]
+    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-center :as center]
     [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]
@@ -29,8 +30,11 @@
 
 (defn- parse-characteristics
   [el]
-  (for [characteristic (select el "Characteristics")]
-    (fields-from characteristic :Name :Description :DataType :Unit :Value)))
+  (seq (remove nil? 
+    (map char-data-type-normalization/normalize-data-type
+      (remove nil?
+        (for [characteristic (select el "Characteristics")]
+          (fields-from characteristic :Name :Description :DataType :Unit :Value)))))))
 
 (defn- parse-projects-impl
   [doc sanitize?]
@@ -107,8 +111,7 @@
   [temporal sanitize?]
   (let [temporal-extent
         (util/remove-map-keys empty?
-                              {:TemporalRangeType (value-of temporal "Temporal_Range_Type")
-                               :PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
+                              {:PrecisionOfSeconds (value-of temporal "Precision_Of_Seconds")
                                :EndsAtPresentFlag (value-of temporal "Ends_At_Present_Flag")
                                :RangeDateTimes (for [rdt (select temporal "Range_DateTime")]
                                                  {:BeginningDateTime (date/with-default (value-of rdt "Beginning_Date_Time") sanitize?)

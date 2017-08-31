@@ -126,3 +126,46 @@
          (index/wait-until-indexed)
          (is (d/refs-match-order? [coll8 coll3 coll7 coll4 coll1 coll2 coll5 coll6]
                                   (search/find-refs :collection {:keyword "coll"}))))))))
+
+(deftest relevancy-multiple-temporal-ranges
+  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
+  (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 1
+                                 {:EntryTitle "coll 1"
+                                  :ShortName "coll 1"
+                                  :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "1992-08-01T00:00:00Z"
+                                                                                 :ending-date-time "1994-10-01T00:00:00Z"})
+                                                    (umm-common/temporal-extent {:beginning-date-time "2002-08-01T00:00:00Z"
+                                                                                 :ending-date-time "2005-10-01T00:00:00Z"})]}))
+        coll2 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 2
+                                 {:EntryTitle "coll 2"
+                                  :ShortName "coll 2"
+                                  :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "1995-08-01T00:00:00Z"
+                                                                                 :ending-date-time "2000-10-01T00:00:00Z"})
+                                                    (umm-common/temporal-extent {:beginning-date-time "2003-08-01T00:00:00Z"
+                                                                                  :ending-date-time "2005-10-01T00:00:00Z"})]}))
+
+        coll3 (d/ingest-umm-spec-collection
+               "PROV1"
+               (umm-c/collection 3
+                                 {:EntryTitle "coll 3"
+                                  :ShortName "coll 3"
+                                  :TemporalExtents [(umm-common/temporal-extent {:beginning-date-time "1995-08-01T00:00:00Z"
+                                                                                 :ending-date-time "1996-10-01T00:00:00Z"})
+                                                    (umm-common/temporal-extent {:beginning-date-time "2003-08-01T00:00:00Z"
+                                                                                 :ending-date-time "2005-10-01T00:00:00Z"})
+                                                    (umm-common/temporal-extent {:beginning-date-time "2010-08-01T00:00:00Z"
+                                                                                 :ends-at-present? true})]}))]
+    (index/wait-until-indexed)
+
+    (are3 [temporal-search-ranges expected-collections]
+      (is (d/refs-match-order? expected-collections (search/find-refs :collection {:temporal temporal-search-ranges})))
+
+      "Multiple temporal conditions"
+      ["2003-08-02T10:00:00Z,2003-09-02T10:00:00Z" "1996-01-01T10:00:00Z,1997-01-01T10:00:00Z"] [coll2 coll3 coll1]
+
+      "Single temporal condition spanning multiple ranges"
+      ["1998-01-02T10:00:00Z,2004-09-02T10:00:00Z"] [coll2 coll1 coll3])))

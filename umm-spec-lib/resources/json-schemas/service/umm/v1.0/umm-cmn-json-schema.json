@@ -863,10 +863,7 @@
         },
         "DataType": {
           "description": "The datatype of the Characteristic/attribute.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80,
-          "pattern": "[\\w]{1,79}"
+          "$ref": "#/definitions/DataTypeEnum" 
         }
       },
       "required": ["Name", "Description", "DataType", "Unit", "Value"]
@@ -993,12 +990,6 @@
       "additionalProperties": false,
       "description": "Information which describes the temporal range or extent of a specific collection.",
       "properties": {
-        "TemporalRangeType": {
-          "description": "This attribute tells the system and ultimately the end user how temporal coverage is specified for the collection.  Choices are Single Date Time, Range Date Time, and Periodic Date Time.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
-        },
         "PrecisionOfSeconds": {
           "description": "The precision (position in number of places to right of decimal point) of seconds used in measurement.",
           "type": "integer"
@@ -1331,7 +1322,8 @@
       "description": "Information about a two-dimensional tiling system related to this collection.",
       "properties": {
         "TilingIdentificationSystemName": {
-          "$ref": "#/definitions/TilingIdentificationSystemNameEnum"
+          "type": "string",
+          "minLength": 1
         },
         "Coordinate1": {
           "$ref": "#/definitions/TilingCoordinateType"
@@ -1557,10 +1549,6 @@
     "GetDataTypeFormatEnum": {
       "type": "string",
       "enum": ["ascii", "binary", "GRIB", "BUFR", "HDF4", "HDF5", "HDF-EOS4", "HDF-EOS5", "jpeg", "png", "tiff", "geotiff", "kml", "Not provided"]
-    },
-    "TilingIdentificationSystemNameEnum": {
-      "type": "string",
-      "enum": ["CALIPSO", "MISR", "MODIS Tile EASE", "MODIS Tile SIN", "WELD Alaska Tile", "WELD CONUS Tile", "WRS-1", "WRS-2"]
     }
   }
 }

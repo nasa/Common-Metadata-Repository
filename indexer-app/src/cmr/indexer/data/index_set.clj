@@ -34,6 +34,10 @@
   "Number of shards to use for the small collections granule index."
   {:default 20 :type Long})
 
+(defconfig elastic-deleted-granule-index-num-shards
+  "Number of shards to use for the deleted granules index."
+  {:default 5 :type Long})
+
 (defconfig elastic-tag-index-num-shards
   "Number of shards to use for the tags index."
   {:default 5 :type Long})
@@ -64,6 +68,11 @@
                   {:number_of_shards (elastic-tag-index-num-shards)
                    :number_of_replicas 1,
                    :refresh_interval "1s"}})
+
+(def deleted-granule-setting {:index
+                              {:number_of_shards (elastic-deleted-granule-index-num-shards)
+                               :number_of_replicas 1,
+                               :refresh_interval "1s"}})
 
 (def variable-setting {:index
                        {:number_of_shards (elastic-variable-index-num-shards)
@@ -293,6 +302,8 @@
           :start-date                     (m/stored m/date-field-mapping)
           :end-date                       (m/stored m/date-field-mapping)
 
+          :temporal-ranges                m/date-field-mapping
+
           ;; Temporal range of min and max granule values or the same as collection start and end date
           ;; if the collection has not granules.
           :granule-start-date             m/date-field-mapping
@@ -327,6 +338,8 @@
           :two-d-coord-name.lowercase     m/string-field-mapping
           :attributes                     attributes-field-mapping
           :downloadable                   (m/stored m/bool-field-mapping)
+          :authors                        (m/doc-values m/string-field-mapping)
+          :authors.lowercase              (m/doc-values m/string-field-mapping)
 
           ;; Mappings for nested fields used for searching and
           ;; hierarchical facets
@@ -413,6 +426,8 @@
           ;; associated variables
           :variable-names m/string-field-mapping
           :variable-names.lowercase m/string-field-mapping
+          :variable-native-ids (m/doc-values m/string-field-mapping)
+          :variable-native-ids.lowercase (m/doc-values m/string-field-mapping)
           :measurements m/string-field-mapping
           :measurements.lowercase m/string-field-mapping
           :variables variables-mapping
@@ -420,6 +435,14 @@
           ;; Relevancy score from community usage metrics
           :usage-relevancy-score m/int-field-mapping}
          spatial-coverage-fields))
+
+(defmapping deleted-granule-mapping :deleted-granule
+  "Defines the elasticsearch mapping for storing granules"
+  {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+   :delete-time (-> m/date-field-mapping m/stored m/doc-values)
+   :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+   :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
+   :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
 
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections"
@@ -635,15 +658,16 @@
                              {:name "all-collection-revisions"
                               :settings collection-setting-v1}]
                             :mapping collection-mapping}
-               ;; The granule configuration here initially only specifies a single collection indexes
-               ;; Additional granule indexes are created over time via the index set application.
+               :deleted-granule {:indexes
+                                 [{:name "deleted-granules"
+                                   :settings deleted-granule-setting}]
+                                 :mapping deleted-granule-mapping}
                :granule {:indexes
                          (cons {:name "small_collections"
                                 :settings granule-settings-for-small-collections-index}
                                (for [idx extra-granule-indexes]
                                  {:name idx
                                   :settings granule-settings-for-individual-indexes}))
-
                          ;; This specifies the settings for new granule indexes that contain data for a single collection
                          ;; This allows the index set application to know what settings to use when creating
                          ;; a new granule index.

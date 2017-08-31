@@ -11,6 +11,7 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
@@ -29,8 +30,7 @@
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
   [doc]
   (for [temporal (select doc "/Collection/Temporal")]
-    {:TemporalRangeType (value-of temporal "TemporalRangeType")
-     :PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
+    {:PrecisionOfSeconds (value-of temporal "PrecisionOfSeconds")
      :EndsAtPresentFlag (Boolean/valueOf (value-of temporal "EndsAtPresentFlag"))
      :RangeDateTimes (for [rdt (select temporal "RangeDateTime")]
                        (fields-from rdt :BeginningDateTime :EndingDateTime))
@@ -47,7 +47,10 @@
 (defn parse-characteristics
   "Returns a seq of UMM characteristic records from the element's child Characteristics."
   [el]
-  (map parse-characteristic (select el "Characteristics/Characteristic")))
+  (let [elements (select el "Characteristics/Characteristic")
+        parsed-characteristics (remove nil? (map parse-characteristic elements))] 
+    (seq (remove nil?
+           (map char-data-type-normalization/normalize-data-type parsed-characteristics)))))
 
 (defn parse-sensor
   "Returns a UMM Sensor record from an ECHO10 Sensor element."

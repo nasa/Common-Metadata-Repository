@@ -213,8 +213,7 @@
   (let [temporal (first (:TemporalExtents c))
         m {"SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
            "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
-           "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)
-           "Temporal Range Type" (:TemporalRangeType temporal)}]
+           "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)}]
     (string/join "," (for [[k v] m
                         :when (some? v)]
                     (str k "=" (string/replace v #"[,=]" ""))))))

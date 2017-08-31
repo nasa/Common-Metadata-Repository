@@ -20,6 +20,7 @@
   [_]
   {:archive-center :string
    :attribute :attribute
+   :author :string
    :bounding-box :bounding-box
    :browsable :boolean
    :collection-data-type :collection-data-type
@@ -68,6 +69,7 @@
    ;; Variable parameters
    :measurement :string
    :variable-name :string
+   :variable-native-id :string
    :variables-h :variables-h})
 
 (defmethod common-params/param-mappings :granule

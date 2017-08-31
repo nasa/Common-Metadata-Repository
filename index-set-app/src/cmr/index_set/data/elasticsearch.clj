@@ -45,7 +45,7 @@
         ;; The index exists. Update the mappings.
         (doseq [[type-name type-mapping] mapping]
           (let [response (esi/update-mapping
-                           conn index-name (name type-name) :mapping mapping :ignore_conflicts false)]
+                           conn index-name (name type-name) :mapping type-mapping :ignore_conflicts false)]
             (when-not (= {:acknowledged true} response)
               (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
                                            (pr-str response))))))
@@ -164,4 +164,3 @@
 
 (comment
   (doc/get "index-sets" "set" "1" "fields" "index-set-id,index-set-name,index-set-request"))
-

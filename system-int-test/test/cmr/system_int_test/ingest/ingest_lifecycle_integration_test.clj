@@ -147,7 +147,7 @@
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
     ;; test for each UMM JSON version
-    (doseq [v ver/versions]
+    (doseq [v (ver/versions :collection)]
       (let [coll      expected-conversion/example-collection-record
             mime-type (str "application/vnd.nasa.cmr.umm+json;version=" v)
             json      (umm-spec/generate-metadata context coll mime-type)

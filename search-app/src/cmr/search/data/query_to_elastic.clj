@@ -91,7 +91,9 @@
                           :processing-level-id-h :processing-level-id.humanized2
                           :revision-date :revision-date2
                           :variable-name :variable-names
-                          :measurement :measurements}]
+                          :variable-native-id :variable-native-ids
+                          :measurement :measurements
+                          :author :authors}]
     (if (use-doc-values-fields)
       (merge default-mappings spatial-doc-values-field-mappings)
       default-mappings)))
@@ -149,7 +151,9 @@
    :processing-level-id.humanized2 :processing-level-id-h
    :revision-date2 :revision-date
    :variable-names :variable-name
-   :measurements :measurement})
+   :variable-native-ids :variable-native-id
+   :measurements :measurement
+   :authors :author})
 
 (defmethod q2e/elastic-field->query-field-mappings :granule
   [_]
@@ -174,7 +178,9 @@
    :instrument "instrument-sn.lowercase"
    :sensor "sensor-sn.lowercase"
    :variable-name "variable-names.lowercase"
-   :measurement "measurements.lowercase"})
+   :variable-native-id "variable-native-ids.lowercase"
+   :measurement "measurements.lowercase"
+   :author "authors.lowercase"})
 
 (defmethod q2e/field->lowercase-field-mappings :variable
   [_]
@@ -309,7 +315,9 @@
 (defmethod q2e/concept-type->sort-key-map :variable
   [_]
   {:variable-name :variable-name.lowercase
-   :name :variable-name.lowercase})
+   :name :variable-name.lowercase
+   :long-name :measurement.lowercase
+   :provider :provider-id.lowercase})
 
 (defmethod q2e/concept-type->sort-key-map :granule
   [_]
@@ -419,6 +427,11 @@
         ;; Only if neither is present should it then go to the default sort.
         specified-score-combined (seq (concat specified-sort score-sort-order))]
     (concat (or specified-score-combined default-sort) sub-sort-fields)))
+
+(defmethod q2e/concept-type->sub-sort-fields :variable
+  [_]
+  [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}])
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition

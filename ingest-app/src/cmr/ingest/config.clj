@@ -15,10 +15,29 @@
   "Flag for whether or not bulk update is enabled."
   {:default true :type Boolean})
 
-(defconfig ingest-accept-umm-version
-  "Defines the latest umm version accepted by ingest - it's the latest official version.
+(defconfig collection-umm-version
+  "Defines the latest collection umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
   {:default "1.9"})
+
+(defconfig variable-umm-version
+  "Defines the latest variable umm version accepted by ingest - it's the latest official version.
+   This environment variable needs to be manually set when newer UMM version becomes official"
+  {:default "1.0"})
+
+(defconfig service-umm-version
+  "Defines the latest service umm version accepted by ingest - it's the latest official version.
+   This environment variable needs to be manually set when newer UMM version becomes official"
+  {:default "1.0"})
+
+(defn ingest-accept-umm-version
+  "Returns the latest umm version accepted by ingest for the given concept-type."
+  [concept-type]
+  (get
+   {:collection (collection-umm-version)
+    :variable (variable-umm-version)
+    :service (service-umm-version)}
+   concept-type))
 
 (defconfig ingest-username
   "Ingest database username"

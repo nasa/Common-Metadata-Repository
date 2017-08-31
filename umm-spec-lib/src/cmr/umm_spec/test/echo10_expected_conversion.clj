@@ -15,7 +15,8 @@
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 (defn- fixup-echo10-data-dates
   [data-dates]
@@ -237,8 +238,7 @@
   (let [range-date-times (mapcat :RangeDateTimes temporal-extents)
         single-date-times (mapcat :SingleDateTimes temporal-extents)
         periodic-date-times (mapcat :PeriodicDateTimes temporal-extents)
-        temporal-extent {:TemporalRangeType (:TemporalRangeType (first temporal-extents))
-                         :PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
+        temporal-extent {:PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
                          :EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporal-extents))}]
     (cond
       (seq range-date-times)
@@ -291,6 +291,7 @@
       ;; CMR 3253 This is added because it needs to support DIF10 umm. when it does roundtrip,
       ;; dif10umm-echo10(with default)-umm(without default needs to be removed)
       (update-in-each [:Platforms] expected-echo10-platform-longname-with-default-value)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)

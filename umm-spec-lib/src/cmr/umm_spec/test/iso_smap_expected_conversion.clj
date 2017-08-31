@@ -19,6 +19,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact])
  (:use
    [cmr.umm-spec.models.umm-collection-models]
@@ -260,8 +261,7 @@
   "Returns a default temporal extent type def record and not a map so that
    it can be compared to the actual round trip translation."
   []
-  [(map->TemporalExtentType {:TemporalRangeType nil
-                             :PrecisionOfSeconds nil
+  [(map->TemporalExtentType {:PrecisionOfSeconds nil
                              :EndsAtPresentFlag nil
                              :RangeDateTimes (not-provided-begin-date)
                              :SingleDateTimes nil
@@ -271,7 +271,6 @@
   "Changes the temporal extent to the expected outcome of a ISO SMAP translation."
   [temporal-extents]
   (->> temporal-extents
-       (map #(assoc % :TemporalRangeType nil))
        (map #(assoc % :PrecisionOfSeconds nil))
        iso-shared/fixup-iso-ends-at-present
        (iso-shared/split-temporals :RangeDateTimes)
@@ -325,4 +324,5 @@
       (assoc :PaleoTemporalCoverages nil)
       (assoc :MetadataDates nil)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
-      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)))
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)))

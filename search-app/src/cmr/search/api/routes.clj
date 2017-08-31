@@ -144,10 +144,10 @@
   "Returns the requested search results format parsed from headers or from the URL extension,
   The search result format is keyword for any format other than umm-json. For umm-json,
   it is a map in the format of {:format :umm-json :version \"1.2\"}"
-  ([path-w-extension headers default-mime-type]
+  ([concept-type path-w-extension headers default-mime-type]
    (get-search-results-format
-     path-w-extension headers search-result-supported-mime-types default-mime-type))
-  ([path-w-extension headers valid-mime-types default-mime-type]
+     concept-type path-w-extension headers search-result-supported-mime-types default-mime-type))
+  ([concept-type path-w-extension headers valid-mime-types default-mime-type]
    (let [result-format (mt/mime-type->format
                          (or (mt/path->mime-type path-w-extension valid-mime-types)
                              (mt/extract-header-mime-type valid-mime-types headers "accept" true)
@@ -156,13 +156,13 @@
      (if (contains? #{:umm-json :umm-json-results} result-format)
        {:format result-format
         :version (or (mt/version-of (mt/get-header headers "accept"))
-                     umm-version/current-version)}
+                     (umm-version/current-version concept-type))}
        result-format))))
 
 (defn- process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."
-  [params ^String path-w-extension headers default-mime-type]
-  (let [result-format (get-search-results-format path-w-extension headers default-mime-type)
+  [concept-type params ^String path-w-extension headers default-mime-type]
+  (let [result-format (get-search-results-format concept-type path-w-extension headers default-mime-type)
         ;; Continue to treat the search extension "umm-json" as the legacy umm json response for now
         ;; to avoid breaking clients
         result-format (if (.endsWith path-w-extension ".umm-json")
@@ -212,7 +212,7 @@
   "Invokes query service to parse the JSON query, find results and return the response."
   [ctx path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        params (process-params params path-w-extension headers mt/xml)
+        params (process-params concept-type params path-w-extension headers mt/xml)
         _ (info (format "Searching for %ss from client %s in format %s with JSON %s and query parameters %s."
                         (name concept-type) (:client-id ctx)
                         (rfh/printable-result-format (:result-format params)) json-query params))
@@ -229,7 +229,7 @@
         default-mime-type (if (= :variable concept-type)
                             mt/json
                             mt/xml)
-        params (process-params params path-w-extension headers default-mime-type)
+        params (process-params concept-type params path-w-extension headers default-mime-type)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
@@ -265,7 +265,7 @@
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
   [ctx path-w-extension params headers query-string]
-  (let [params (process-params params path-w-extension headers mt/json)
+  (let [params (process-params :granule params path-w-extension headers mt/json)
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id ctx) (pr-str params)))
         search-params (lp/process-legacy-psa params)
@@ -277,7 +277,7 @@
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
   [ctx path-w-extension params headers aql]
-  (let [params (process-params params path-w-extension headers mt/xml)
+  (let [params (process-params nil params path-w-extension headers mt/xml)
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params)) aql params))
         results (query-svc/find-concepts-by-aql ctx params aql)]
@@ -301,9 +301,8 @@
       ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
       ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
       (let [supported-mime-types (disj concept-type-supported-mime-types mt/atom mt/json)
-            result-format (get-search-results-format path-w-extension headers
-                                                     supported-mime-types
-                                                     mt/native)
+            result-format (get-search-results-format concept-type path-w-extension headers
+                                                     supported-mime-types mt/native)
             ;; XML means native in this case
             result-format (if (= result-format :xml) :native result-format)]
         (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
@@ -315,7 +314,7 @@
                               result-format
                               concept-id
                               revision-id)))
-      (let [result-format (get-search-results-format path-w-extension headers
+      (let [result-format (get-search-results-format concept-type path-w-extension headers
                                                      concept-type-supported-mime-types
                                                      mt/native)
             ;; XML means native in this case
@@ -326,7 +325,7 @@
 (defn- get-deleted-collections
   "Invokes query service to search for collections that are deleted and returns the response"
   [ctx path-w-extension params headers]
-  (let [params (process-params params path-w-extension headers mt/xml)]
+  (let [params (process-params :collection params path-w-extension headers mt/xml)]
     (info (format "Searching for deleted collections from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))
@@ -335,7 +334,7 @@
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [ctx path-w-extension params headers]
-  (let [params (process-params params path-w-extension headers mt/json)
+  (let [params (process-params nil params path-w-extension headers mt/json)
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id ctx) (rfh/printable-result-format (:result-format params))
                         (pr-str params)))

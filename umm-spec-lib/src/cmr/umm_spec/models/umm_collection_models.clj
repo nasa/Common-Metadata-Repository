@@ -123,13 +123,18 @@
    ;; this collection.
    Distributions
 
-   ;; Describes the production status of the data set. There are three choices: PLANNED refers to
-   ;; data sets to be collected in the future and are thus unavailable at the present time. For
-   ;; Example: The Hydro spacecraft has not been launched, but information on planned data sets may
-   ;; be available. IN WORK refers to data sets currently in production or data that is continuously
-   ;; being collected or updated. For Example: data from the AIRS instrument on Aqua is being
-   ;; collected continuously. COMPLETE refers to data sets in which no updates or further data
-   ;; collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.
+   ;; This element describes the production status of the data set. There are four choices for Data
+   ;; Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable
+   ;; at the present time. For Example: The Hydro spacecraft has not been launched, but information
+   ;; on planned data sets may be available. ACTIVE refers to data sets currently in production or
+   ;; data that is continuously being collected or updated. For Example: data from the AIRS
+   ;; instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no
+   ;; updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection
+   ;; has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not
+   ;; applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that
+   ;; should not be used by a data provider. It is currently being used as a value when a correct
+   ;; translation cannot be done with the current valid values, or when the value is not provided by
+   ;; the data provider.
    CollectionProgress
 
    ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by

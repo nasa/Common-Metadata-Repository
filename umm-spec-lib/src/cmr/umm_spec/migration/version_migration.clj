@@ -15,7 +15,8 @@
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.versioning :refer [versions current-version]]))
+   [cmr.umm-spec.versioning :refer [versions current-version]]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions
@@ -40,11 +41,11 @@
 
 (defn- version-steps
   "Returns a sequence of version steps between begin and end, inclusive."
-  [begin end]
+  [concept-type begin end]
   (->> (condp #(%1 %2) (customized-compare begin end)
-         neg?  (sort-by count versions)
+         neg?  (sort-by count (versions concept-type))
          zero? nil
-         pos?  (reverse (sort-by count versions)))
+         pos?  (reverse (sort-by count (versions concept-type))))
        (partition 2 1 nil)
        (drop-while #(not= (first %) begin))
        (take-while #(not= (first %) end))))
@@ -283,7 +284,9 @@
   [context c & _]
   (-> c
       migrate-tiling-identification-systems
-      coll-progress-migration/migrate-up))
+      coll-progress-migration/migrate-up
+      (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)
+      char-data-type-normalization/migrate-up))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
   [context c & _]
@@ -300,4 +303,4 @@
     (reduce (fn [data [v1 v2]]
               (migrate-umm-version context data concept-type v1 v2))
             data
-            (version-steps source-version dest-version))))
+            (version-steps concept-type source-version dest-version))))

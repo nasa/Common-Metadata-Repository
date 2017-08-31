@@ -77,10 +77,10 @@
               response (search/find-concepts-umm-json :collection {:all-revisions true} options)]
           (du/assert-umm-jsons-match version collections response))
         "Latest version is default with accept header of UMM JSON Search Results"
-        umm-version/current-version mt/umm-json-results nil
+        umm-version/current-collection-version mt/umm-json-results nil
 
         "Latest version is default with accept header of UMM JSON"
-        umm-version/current-version mt/umm-json nil
+        umm-version/current-collection-version mt/umm-json nil
 
         "Retrieve older version with accept header of UMM JSON Search Results"
         "1.3" (str mt/umm-json-results ";version=1.3") nil
@@ -97,7 +97,7 @@
     (testing "find collections in umm-json format"
       (are3 [collections params]
         (du/assert-umm-jsons-match
-         umm-version/current-version collections
+         umm-version/current-collection-version collections
          (search/find-concepts-umm-json :collection params))
 
         ;; Should not get matching tombstone for second collection back
@@ -174,7 +174,7 @@
 (deftest search-umm-json-error-cases
   (testing "granule umm-json search is not supported"
     (is (= {:status 400
-            :errors [(str "The mime type [application/vnd.nasa.cmr.umm_results+json] with version [" umm-version/current-version "] is not supported for granules.")]}
+            :errors [(str "The mime type [application/vnd.nasa.cmr.umm_results+json] is not supported for granules.")]}
            (select-keys (search/find-concepts-umm-json :granule {}) [:status :errors]))))
   (testing "Searching with invalid UMM JSON extension"
     (is (= {:status 400

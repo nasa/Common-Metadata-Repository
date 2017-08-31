@@ -1,15 +1,15 @@
 (ns cmr.umm-spec.umm-json
   "Contains functions for converting a UMM into JSON and back out of JSON."
-  (:require [cheshire.core :as json]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.record-generator :as record-gen]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.umm-spec.versioning :as ver]
-            [cmr.umm-spec.migration.version-migration :as vm]
-
-    ;; To get ability to convert joda time to json
-            [cmr.common.joda-time]
-            [clojure.set :as set]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.set :as set]
+   [cmr.common.date-time-parser :as dtp]
+   ;; To get ability to convert joda time to json
+   [cmr.common.joda-time]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.record-generator :as record-gen]
+   [cmr.umm-spec.versioning :as ver]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UMM To JSON
@@ -108,11 +108,12 @@
   "Parses the JSON string and returns Clojure UMM record in the current UMM version."
   ([context concept-type json-str]
    ;; default to trying to parse json string according to the current UMM version
-   (json->umm context concept-type json-str ver/current-version))
+   (json->umm context concept-type json-str (ver/current-version concept-type)))
   ([context concept-type json-str original-umm-version]
-   (let [schema (js/concept-schema ver/current-version concept-type)
+   (let [schema (js/concept-schema concept-type)
          root-type-def (get-in schema [:definitions (:root schema)])
          json-obj (json/decode json-str true)
          migrated (vm/migrate-umm
-                   context concept-type original-umm-version ver/current-version json-obj)]
+                   context concept-type original-umm-version
+                   (ver/current-version concept-type) json-obj)]
      (parse-json schema [(:root schema)] (:root schema) root-type-def migrated))))

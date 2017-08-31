@@ -26,7 +26,7 @@
                  :Type "Aircraft"
                  :Characteristics [{:Name "OrbitalPeriod"
                                     :Description "Orbital period in decimal minutes."
-                                    :DataType "float"
+                                    :DataType "FLOAT"
                                     :Unit "Minutes"
                                     :Value "96.7"}]
                  :Instruments [{:ShortName "An Instrument"
@@ -36,19 +36,18 @@
                                 :OperationalModes ["on" "off"]
                                 :Characteristics [{:Name "Signal to Noise Ratio"
                                                    :Description "Is that necessary?"
-                                                   :DataType "float"
+                                                   :DataType "FLOAT"
                                                    :Unit "dB"
                                                    :Value "10"}]
                                 :ComposedOf [{:ShortName "ABC"
                                               :LongName "Long Range Sensor"
                                               :Characteristics [{:Name "Signal to Noise Ratio"
                                                                  :Description "Is that necessary?"
-                                                                 :DataType "float"
+                                                                 :DataType "FLOAT"
                                                                  :Unit "dB"
                                                                  :Value "10"}]
                                               :Technique "Drunken Fist"}]}]}]
-    :TemporalExtents [{:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
+    :TemporalExtents [{:PrecisionOfSeconds 3
                        :EndsAtPresentFlag false
                        :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
                                          :EndingDateTime (t/date-time 2001)}

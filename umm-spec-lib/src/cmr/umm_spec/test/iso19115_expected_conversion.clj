@@ -22,8 +22,9 @@
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
-    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]))
+    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
+    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]
+    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
 
 (defn- propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
@@ -34,19 +35,10 @@
     (for [x coll]
       (assoc x k v))))
 
-(defn- fixup-comma-encoded-values
-  [temporal-extents]
-  (for [extent temporal-extents]
-    (update-in extent [:TemporalRangeType] (fn [x]
-                                             (when x
-                                               (string/trim (iso-util/sanitize-value x)))))))
-
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
        (propagate-first :PrecisionOfSeconds)
-       (propagate-first :TemporalRangeType)
-       fixup-comma-encoded-values
        iso-shared/fixup-iso-ends-at-present
        (iso-shared/split-temporals :RangeDateTimes)
        (iso-shared/split-temporals :SingleDateTimes)
@@ -367,4 +359,5 @@
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       js/parse-umm-c))

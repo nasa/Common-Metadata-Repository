@@ -75,7 +75,8 @@
     (do
       (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
       (is (= version (mt/version-of (:content-type search-result))))
-      (is (nil? (util/seqv (umm-json-schema/validate-umm-json-search-result (:body search-result) version)))
+      (is (nil? (util/seqv (umm-json-schema/validate-collection-umm-json-search-result
+                            (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(collection->umm-json version %) collections))
              (set (map #(util/dissoc-in % [:meta :revision-date])

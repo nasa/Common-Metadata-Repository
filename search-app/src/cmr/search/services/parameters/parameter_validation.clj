@@ -39,8 +39,9 @@
                      :all-revisions}
      :multiple-value #{:short-name :instrument :instrument-h :two-d-coordinate-system-name
                        :collection-data-type :project :project-h :entry-id :version :provider
-                       :entry-title :doi :native-id :platform :platform-h :processing-level-id :processing-level-id-h
-                       :sensor :data-center-h :measurement}
+                       :entry-title :doi :native-id :platform :platform-h :processing-level-id
+                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
+                       :variable-native-id :author}
      :always-case-sensitive #{:echo-collection-id}
      :disallow-pattern #{:echo-collection-id}}))
 
@@ -117,6 +118,7 @@
    :revision-date cpv/and-option
    :created-at cpv/and-option
    :highlights highlights-option
+   :author cpv/string-plus-and-options
 
    ;; Tag related parameters
    :tag-key cpv/pattern-option
@@ -125,6 +127,7 @@
 
    ;; Variable related parameters
    :variable-name cpv/string-plus-and-options
+   :variable-native-id cpv/string-plus-and-options
    :measurement cpv/string-plus-and-options
    :variables-h cpv/string-plus-or-options})
 
@@ -223,6 +226,13 @@
     :downloadable
     :browsable
     :revision-date})
+
+(defmethod cpv/valid-sort-keys :variable
+  [_]
+  #{:name
+    :long-name
+    :revision-date
+    :provider})
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"

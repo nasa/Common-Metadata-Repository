@@ -41,6 +41,10 @@ CMR developer for the appropriate values for each key in `profiles.clj`.
 that allows unrestricted access to shutdown the system, evaluate arbitrary
 code, remove all data, etc.
 
+## Update of umm-cmn-json-schema.json
+
+We need to keep the latest version of the umm-cmn-json-schema.json in sync for all concept types. When the umm-cmn-json-schema.json is updated for one concept type, the corresponding files should be updated for all concept types.
+
 ## License
 
 Copyright © 2014-2017 NASA

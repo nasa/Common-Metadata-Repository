@@ -225,7 +225,7 @@
             (is (= expected-version (mt/version-of response-concept-type))))
 
           "default version"
-          nil ver/current-version
+          nil ver/current-collection-version
 
           "original umm version, 1.0"
           original-umm-version original-umm-version
@@ -234,7 +234,7 @@
           "1.2" "1.2"
 
           "specific latest version"
-          ver/current-version ver/current-version)))
+          ver/current-collection-version ver/current-collection-version)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
