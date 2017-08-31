@@ -1342,8 +1342,7 @@
                                                             :Description "Is that necessary?"
                                                             :DataType "randomstring"
                                                             :Unit "dB"
-                                                            :Value "10"}
-                                                            nil]
+                                                            :Value "10"}]
                                          :ComposedOf [{:ShortName "ABC"
                                                        :LongName "Long Range Sensor"
                                                        :Characteristics [{:Name "Signal to Noise Ratio"

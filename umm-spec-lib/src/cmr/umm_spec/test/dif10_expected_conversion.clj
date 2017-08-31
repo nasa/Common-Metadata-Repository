@@ -8,7 +8,6 @@
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
   [cmr.umm-spec.location-keywords :as lk]
-  [cmr.umm-spec.migration.characteristics-data-type-normalization :as char-data-type-normalization]
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
   [cmr.umm-spec.models.umm-common-models :as cmn]
   [cmr.umm-spec.related-url :as ru-gen]
@@ -17,6 +16,7 @@
   [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
   [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as su]
+  [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
   [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
 
 (def dif10-roles
@@ -285,7 +285,7 @@
       (update-in [:DataDates] conversion-util/fixup-dif10-data-dates)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:Platforms] char-data-type-normalization/migrate-platform-characteristics-data-type)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress 
