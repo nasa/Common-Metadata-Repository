@@ -50,8 +50,8 @@
            :page-content (static/md-file->html "docs/site.md")})))
 
 (defn generate-site-resources
-  "Generate CMR Search site resources such as directory pages and XML sitemaps
-  that are too expensive to generate dynamically."
+  "Generate filesystem files for CMR Search site resources such as directory
+  pages and XML sitemaps that are too expensive to generate dynamically."
   []
   (let [context (map->StaticContext {:cmr-application :search
                                      :execution-context :cli})
@@ -72,9 +72,7 @@
   (case (keyword doc-type)
     :prep (static/prepare-docs)
     :api (generate-api-docs)
-    :site (do
-            (generate-site-docs)
-            (generate-site-resources))
+    :site (generate-site-docs)
     :all (do
            (-main :prep)
            (-main :api)
