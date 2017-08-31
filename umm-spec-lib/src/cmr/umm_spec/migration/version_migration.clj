@@ -7,7 +7,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
-   [cmr.umm-spec.migration.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
@@ -15,7 +14,8 @@
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.dif-util :as dif-util]
-   [cmr.umm-spec.versioning :refer [versions]]))
+   [cmr.umm-spec.versioning :refer [versions]]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions

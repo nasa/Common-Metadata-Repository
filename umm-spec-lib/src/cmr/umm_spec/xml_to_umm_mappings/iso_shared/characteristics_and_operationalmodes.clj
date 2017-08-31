@@ -4,7 +4,7 @@
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select text]]
     [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
-    [cmr.umm-spec.migration.characteristics-data-type-normalization :as char-data-type-normalization]))
+    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 (def characteristics-and-operationalmodes-xpath
   "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")
@@ -17,7 +17,7 @@
   [element]
   (seq 
     (remove nil?
-      (map char-data-type-normalization/migrate-data-type 
+      (map char-data-type-normalization/normalize-data-type 
         (for [chars (select element characteristics-and-operationalmodes-xpath)]
           (when-not (= "OperationalMode" (char-string-value chars (str pc-attr-base-path "/eos:name")))
             {:Name        (char-string-value chars (str pc-attr-base-path "/eos:name"))
