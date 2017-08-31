@@ -9,7 +9,7 @@
 
 (def mapping-up
   "Defines mappings of Characteristics' data type values from v1.9 to v1.10.
-   Anything not in this map, and not equal to \"NOT APPLICABLE\", map it to \"STRING\"."
+   Anything not in this map, map it to \"STRING\"."
   {"TIME/DIRECTION (ASCENDING)" "STRING"
    "TIME/DIRECTION (DESCENDING)" "STRING"
    "VARCHAR" "STRING"
@@ -31,8 +31,7 @@
   [characteristics]
   (when-let [data-type (:DataType characteristics)]
     (let [upper-case-data-type (string/upper-case data-type)]
-      (when-not (= umm-spec-util/NOT-APPLICABLE upper-case-data-type)    
-       (assoc characteristics :DataType (get mapping-up upper-case-data-type umm-spec-util/STRING))))))
+       (assoc characteristics :DataType (get mapping-up upper-case-data-type umm-spec-util/STRING)))))
 
 (defn update-each-characteristics
   "Update all the characteristics in a given element: platform/instrument/child instrument."
