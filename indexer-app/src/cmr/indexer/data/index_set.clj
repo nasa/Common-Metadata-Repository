@@ -302,6 +302,8 @@
           :start-date                     (m/stored m/date-field-mapping)
           :end-date                       (m/stored m/date-field-mapping)
 
+          :temporal-ranges                m/date-field-mapping
+
           ;; Temporal range of min and max granule values or the same as collection start and end date
           ;; if the collection has not granules.
           :granule-start-date             m/date-field-mapping
