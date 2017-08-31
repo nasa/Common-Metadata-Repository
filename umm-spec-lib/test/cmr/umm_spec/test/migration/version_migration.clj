@@ -1217,6 +1217,11 @@
                                :Description "Orbital period in decimal minutes."
                                :DataType "STRING"
                                :Unit "Minutes"
+                               :Value "96.7"}
+                              {:Name "OrbitalPeriod"
+                               :Description "Orbital period in decimal minutes."
+                               :DataType "STRING"
+                               :Unit "Minutes"
                                :Value "96.7"}]
            :Instruments [(umm-cmn/map->InstrumentType
                            {:ShortName "An Instrument"
@@ -1232,6 +1237,11 @@
                             :ComposedOf [(umm-cmn/map->InstrumentChildType
                                            {:ShortName "ABC"
                                             :LongName "Long Range Sensor"
+                                            :Characteristics [{:Name "Signal to Noise Ratio"
+                                                               :Description "Is that necessary?"
+                                                               :DataType "STRING"
+                                                               :Unit "dB"
+                                                               :Value "10"}]
                                             :Technique "Drunken Fist"})]})]})]
         (:Platforms
           (vm/migrate-umm {} :collection "1.9" "1.10"
