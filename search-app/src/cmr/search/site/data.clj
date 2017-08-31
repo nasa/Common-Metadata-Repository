@@ -14,6 +14,7 @@
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.site.data :as common-data]
+   [cmr.common.log :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.util :as util]
@@ -94,6 +95,7 @@
   "Given a list of provider maps, create the nested data structure needed
   for rendering providers in a template."
   [context tag providers]
+  (debug "Using providers:" providers)
   (->> providers
        (map (partial provider-data context tag))
        ;; Only want to include providers with EOSDIS collections
