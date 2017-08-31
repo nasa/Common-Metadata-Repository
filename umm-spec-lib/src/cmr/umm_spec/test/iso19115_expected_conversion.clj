@@ -10,7 +10,6 @@
     [cmr.umm-spec.iso19115-2-util :as iso-util]
     [cmr.umm-spec.json-schema :as js]
     [cmr.umm-spec.location-keywords :as lk]
-    [cmr.umm-spec.migration.characteristics-data-type-normalization :as char-data-type-normalization]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.related-url :as ru-gen]
@@ -22,6 +21,7 @@
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
+    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
     [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]
     [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
 
@@ -357,5 +357,5 @@
       (update :ScienceKeywords expected-science-keywords)
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
-      (update-in-each [:Platforms] char-data-type-normalization/migrate-platform-characteristics-data-type)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       js/parse-umm-c))
