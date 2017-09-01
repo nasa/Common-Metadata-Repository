@@ -62,19 +62,30 @@
           :doc/format :markdown
           :doc "Documentation forthcoming"}}}}
   :cljsbuild {
-    :builds [{
-      :id "cmr-client"
-      :source-paths ["src/cljs" "src/cljc"]
-      :figwheel true
-      :compiler {
-        :main "cmr.client"
-        :asset-path "js/out"
-        :output-to "resources/public/js/cmr_client.js"
-        :output-dir "resources/public/js/out"}}]}
+    :builds [
+      {:id "cmr-dev"
+       :source-paths ["src/cljs" "src/cljc"]
+       :figwheel true
+       :compiler {
+         :main "cmr.client"
+         :asset-path "js/out"
+         :output-to "resources/public/js/cmr_dev.js"
+         :output-dir "resources/public/js/out"}}
+      {:id "cmr-prod"
+       :source-paths ["src/cljs" "src/cljc"]
+       :compiler {
+         :main "cmr.client"
+         :static-fns true
+         :fn-invoke-direct true
+         :optimizations :simple
+         :output-to "resources/public/js/cmr_client.js"}}]}
   :aliases {
-    "build-cljs"
-      ^{:doc "Build just the ClojureScript code."}
-      ["cljsbuild" "once" "cmr-client"]
+    "build-cljs-dev"
+      ^{:doc "Build just the dev version of the ClojureScript code."}
+      ["cljsbuild" "once" "cmr-dev"]
+    "build-cljs-prod"
+      ^{:doc "Build just the prod version of the ClojureScript code."}
+      ["cljsbuild" "once" "cmr-prod"]
     "run-tests"
       ^{:doc "Use the ltest runner for verbose, colourful test output"}
       ["with-profile" "+test"

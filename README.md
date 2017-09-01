@@ -217,7 +217,8 @@ You can use the compiled ClojureScript client in the browser like so:
 var client = cmr.client.ingest.create_client({"return-body?": true});
 var channel = cmr.client.ingest.get_providers(client);
 cmr.client.common.util.with_callback(channel, function(data) {
-  alert("Got body: " + data);
+  var formatted_output = JSON.stringify(data, null, 2);
+  document.getElementById("data").innerHTML = formatted_output;
 });
 ```
 Then you'll get an `alert` dialog with the following content:
