@@ -2,25 +2,28 @@
   (:require
    [cljs.core.async :as async]
    [cmr.client.common.util :as util]
-   [cmr.client.http.impl :as http :refer [->HTTPClientData HTTPClientData]])
+   [cmr.client.http.impl :as http :refer [->HTTPClientData HTTPClientData]]
+   [cmr.client.http.protocol :refer [HTTPClientAPI]])
   (:refer-clojure :exclude [get])
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
+  (:require-macros
+   [cljs.core.async.macros :refer [go go-loop]]
+   [cmr.client.common.util :refer [import-vars]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Protocols &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defprotocol HTTPClientAPI
-  "An interface for ClojureScript HTTP clients."
-  (^:export get [this url] [this url opts])
-  (^:export head [this url] [this url opts])
-  (^:export put [this url] [this url opts])
-  (^:export post [this url] [this url opts])
-  (^:export delete [this url] [this url opts])
-  (^:export copy [this url] [this url opts])
-  (^:export move [this url] [this url opts])
-  (^:export patch [this url] [this url opts])
-  (^:export options [this url] [this url opts]))
+(import-vars
+  [cmr.client.http.protocol
+    get
+    head
+    put
+    post
+    delete
+    copy
+    move
+    patch
+    options])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

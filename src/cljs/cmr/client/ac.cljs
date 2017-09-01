@@ -1,13 +1,13 @@
 (ns cmr.client.ac
   (:require
+   [cmr.client.ac.impl :as ac :refer [->CMRAccessControlClientData
+                                      CMRAccessControlClientData]]
+   [cmr.client.ac.protocol :refer [CMRAccessControlAPI]]
    [cmr.client.base :refer [make-options CMRClientAPI]]
    [cmr.client.base.impl :as base]
    [cmr.client.common.const :as const]
    [cmr.client.common.util :as util]
-   [cmr.client.http.core :as http]
-   [cmr.client.ac.impl :as ac :refer [->CMRAccessControlClientData
-                                      CMRAccessControlClientData]]
-   [cmr.client.ac.protocol :refer [CMRAccessControlAPI]])
+   [cmr.client.http.core :as http])
   (:require-macros [cmr.client.common.util :refer [import-vars]])
   (:refer-clojure :exclude [get]))
 

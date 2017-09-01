@@ -1,6 +1,6 @@
 (ns cmr.client.ac.impl
  (:require
-   [cmr.client.common.http :as http-util]
+   [cmr.client.http.util :as http-util]
    [cmr.client.http.core :as http]
    #?(:clj [cmr.client.base :as base]
       :cljs [cmr.client.base.impl :as base])))

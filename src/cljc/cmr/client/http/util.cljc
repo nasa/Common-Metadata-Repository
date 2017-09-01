@@ -1,4 +1,4 @@
-(ns cmr.client.common.http)
+(ns cmr.client.http.util)
 
 (defn query+options
   [query-params http-options]
