@@ -64,7 +64,7 @@
   ([this tag-id query-params http-options]
    (-> this
        :http-client
-       (http/get (base/get-url this ("/tag/" tag-id))
+       (http/get (base/get-url this (str "/tag/" tag-id))
                  (http-util/query+options query-params http-options)))))
 
 (defn get-tags
