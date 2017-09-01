@@ -3236,7 +3236,7 @@ Examples of sorting by long_name in descending (reverse alphabetical) and ascend
 
 ##### <a name="retrieving-all-revisions-of-a-variable"></a> Retrieving All Revisions of a Variable
 
-In addition to retrieving the latest revision for a variable parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a variable parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
     curl "%CMR-ENDPOINT%/variables?provider=PROV1&all_revisions=true&pretty=true"
 
@@ -3245,7 +3245,7 @@ __Sample response__
 ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <results>
-      <hits>7</hits>
+      <hits>3</hits>
       <took>3</took>
       <references>
           <reference>

@@ -368,6 +368,11 @@
    {(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
    {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
 
+(def variable-latest-sub-sort-fields
+  "This defines the sub sort fields for a latest revision variable search."
+  [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
+   {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}])
+
 (defn- score-sort-order
   "Determine the keyword sort order based on the sort-use-relevancy-score config and the presence
    of temporal range parameters in the query"
@@ -429,12 +434,15 @@
         specified-score-combined (seq (concat specified-sort score-sort-order))]
     (concat (or specified-score-combined default-sort) sub-sort-fields)))
 
-(defmethod q2e/concept-type->sub-sort-fields :variable
+(defmethod q2e/query->sort-params :variable
   [query]
-  (if (:all-revisions? query)
-    (all-revision-sub-sort-fields :variable)
-    [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
-     {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}]))
+  (let [{:keys [concept-type sort-keys]} query
+        specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+        default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
+        sub-sort-fields (if (:all-revisions? query)
+                          (all-revision-sub-sort-fields :variable)
+                          variable-latest-sub-sort-fields)]
+    (concat (or specified-sort default-sort) sub-sort-fields)))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
