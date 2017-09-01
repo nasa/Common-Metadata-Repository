@@ -2,6 +2,7 @@
   "Provides service functions for generating static content."
   (:require
    [clojure.string :as string]
+   [cmr.acl.core :as acl]
    [cmr.common-app.cache.consistent-cache :as consistent-cache]
    [cmr.common-app.cache.cubby-cache :as cubby-cache]
    [cmr.common.cache :as cache]
@@ -30,23 +31,9 @@
   {:default 400
    :type Long})
 
-(defconfig job-wait
-  "Number of milliseconds the `static-content-generator-job` waits for the
-  collection cache to be populated in the event when the delay is not long
-  enough."
-  {:default (* 60 1000)
-   :type Long})
-
-(defconfig retry-count
-  "Number of times `static-content-generator-job` retries to get the
-  collections from collection cache."
-  {:default 20
-   :type Long})
-
 (defconfig generation-interval
   "Number of seconds between `static-content-generator-job` runs."
-  {;:default (* 60 60 24)
-   :default (* 60)
+  {:default (* 60 60 24)
    :type Long})
 
 (defn create-cache
@@ -97,18 +84,28 @@
 (defn retrieve-page
   "Attempt to retrieve from the cache the page data for a given route. If no
   value is found in the cache, genereate the content, cache it, and then return
-  the cached value."
-  [& args]
-    (let [context (first args)
-          route (second args)]
-      (debug "Retrieving" route)
-      (if-let [content (cache/get-value (cache/context->cache context cache-key)
-                                        route)]
-        content
-        (do
-          (debug "Route" route "not found in cache")
-          (apply cache-page args)
-          (retrieve-page context route)))))
+  the cached value.
+
+  Note that the first three arguements will always be `context`, HTTP `params`,
+  and resource `route`. Additional arguments may be present (e.g., provider id
+  and tag)."
+  [context params route & remaining]
+  (debug "Retrieving" route "with params" params "and remaining args" remaining)
+  (let [args (concat [context route] remaining)
+        regenerate? (= "true" (util/safe-lowercase (:regenerate params)))]
+    ;; Only admins can force the pages and sitemaps in the cache to be
+    ;; regenerated.
+    (when regenerate?
+      (acl/verify-ingest-management-permission context :update)
+      (debug "Forcing resource regeneration/cache update" route)
+      (apply cache-page args))
+    (if-let [content (cache/get-value
+                      (cache/context->cache context cache-key) route)]
+      content
+      (do
+        (debug "Route" route "not found in cache")
+        (apply cache-page args)
+        (retrieve-page context params route)))))
 
 (defn- cache-top-level-content
   "Cache all the content for the expensive, top-level routes."
@@ -134,6 +131,10 @@
   "Cache all the content for the expensive routes. This is the function
   intended for use by the static content job scheduler."
   [context]
+  ;; XXX debug
+  (info "context keys:" (keys context))
+  (info "system keys:" (keys (:system context)))
+  ;; XXX end debug
   (info "Generating site content for caching")
   (let [[ms _] (util/time-execution
                 (do
@@ -142,9 +143,12 @@
     (info (format "Content generated in %d ms" ms))))
 
 ;; A job for generating static content
+;; Note: since content generation is being done via a job without an HTTP
+;;       context, we use the :cli execution context that doesn't require
+;;       particular ACL settings provided by the HTTP context.
 (defjob StaticContentGeneratorJob
   [_job-context system]
-  (generate-content {:system system}))
+  (generate-content {:system system :execution-context :cli}))
 
 (def static-content-generator-job
   "The job definition used by the system job scheduler."
