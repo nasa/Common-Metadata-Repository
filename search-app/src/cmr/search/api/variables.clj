@@ -56,10 +56,6 @@
   (variable-api-response
    (variable-service/dissociate-variable-to-collections context variable-concept-id body)))
 
-(defn search-for-variables
-  [context params]
-  (variable-api-response (variable-service/search-for-variables context params)))
-
 (def variable-api-routes
   (context "/variables" []
 

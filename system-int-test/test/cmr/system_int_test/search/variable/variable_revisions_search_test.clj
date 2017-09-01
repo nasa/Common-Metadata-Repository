@@ -2,18 +2,13 @@
   "Integration test for variable all revisions search"
   (:require
    [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are3] :as util]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-   [cmr.system-int-test.utils.variable-util :as variables]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.system-int-test.utils.variable-util :as variables]))
 
 (use-fixtures :each
               (join-fixtures
@@ -49,67 +44,64 @@
                                                     :LongName "LongName3"
                                                     :provider-id "PROV2"})]
     (index/wait-until-indexed)
-    (testing "search-with-all-revisions parameter"
+    (testing "search variables for all revisions"
       (are3 [variables params]
         (do
           ;; find references with all revisions
-          (d/refs-match? variables (search/find-refs :variable params))
+          (variables/assert-variable-references-match variables (search/find-refs :variable params))
           ;; search in JSON with all-revisions
           (variables/assert-variable-search variables (variables/search params)))
 
-        ;; Should not get matching tombstone for second variable back
         "provider-id all-revisions=false"
         [var1-3]
         {:provider-id "PROV1" :all-revisions false}
-        ;
-        ; "provider-id all-revisions unspecified"
-        ; [var1-3]
-        ; {:provider-id "PROV1"}
-        ;
-        ; "provider-id all-revisions=true"
-        ; [var1-1 var1-2-tombstone var1-3 var2-1 var2-2 var2-3-tombstone]
-        ; {:provider-id "PROV1" :all-revisions true}
-        ;
-        ; "native-id all-revisions=false"
-        ; [var1-3]
-        ; {:native-id "var1" :all-revisions false}
-        ;
-        ; "native-id all-revisions unspecified"
-        ; [var1-3]
-        ; {:native-id "var1"}
-        ;
-        ; "native-id all-revisions=true"
-        ; [var1-1 var1-2-tombstone var1-3]
-        ; {:native-id "var1" :all-revisions true}
-        ;
-        ; "name all-revisions false"
-        ; [var1-3 var3]
-        ; {:name "Variable1" :all-revisions false}
-        ;
-        ; ;; this test is across providers
-        ; "name all-revisions unspecified"
-        ; [var1-3 var3]
-        ; {:name "Variable1"}
-        ;
-        ; "name all-revisions true"
-        ; [var1-1 var1-2-tombstone var1-3 var3]
-        ; {:name "Variable1" :all-revisions true}
-        ;
-        ; "name is updated on revision -- not found without all-revisions true"
-        ; []
-        ; {:name "Variable2"}
-        ;
-        ; "name is updated on revision -- found with all-revisions true"
-        ; [var2-1]
-        ; {:name "Variable2" :all-revisions true}
-        ;
-        ; "all-revisions true"
-        ; [var1-1 var1-2-tombstone var1-3 var2-1 var2-2 var2-3-tombstone var3]
-        ; {:all-revisions true}
-        ))))
 
+        "provider-id all-revisions unspecified"
+        [var1-3]
+        {:provider-id "PROV1"}
 
-#_(deftest search-all-revisions-error-cases
+        "provider-id all-revisions=true"
+        [var1-1 var1-2-tombstone var1-3 var2-1 var2-2 var2-3-tombstone]
+        {:provider-id "PROV1" :all-revisions true}
+
+        "native-id all-revisions=false"
+        [var1-3]
+        {:native-id "var1" :all-revisions false}
+
+        "native-id all-revisions unspecified"
+        [var1-3]
+        {:native-id "var1"}
+
+        "native-id all-revisions=true"
+        [var1-1 var1-2-tombstone var1-3]
+        {:native-id "var1" :all-revisions true}
+
+        "name all-revisions false"
+        [var1-3 var3]
+        {:name "Variable1" :all-revisions false}
+
+        ;; this test is across providers
+        "name all-revisions unspecified"
+        [var1-3 var3]
+        {:name "Variable1"}
+
+        "name all-revisions true"
+        [var1-1 var1-2-tombstone var1-3 var3]
+        {:name "Variable1" :all-revisions true}
+
+        "name is updated on revision -- not found without all-revisions true"
+        []
+        {:name "Variable2"}
+
+        "name is updated on revision -- found with all-revisions true"
+        [var2-1]
+        {:name "Variable2" :all-revisions true}
+
+        "all-revisions true"
+        [var1-1 var1-2-tombstone var1-3 var2-1 var2-2 var2-3-tombstone var3]
+        {:all-revisions true}))))
+
+(deftest search-all-revisions-error-cases
   (testing "variable search with all_revisions bad value"
     (let [{:keys [status errors]} (search/find-refs :variable {:all-revisions "foo"})]
       (is (= [400 ["Parameter all_revisions must take value of true, false, or unset, but was [foo]"]]

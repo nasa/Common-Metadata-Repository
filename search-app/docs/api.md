@@ -3245,29 +3245,29 @@ __Sample response__
 ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <results>
-        <hits>3</hits>
-        <took>5</took>
-        <references>
-            <reference>
-                <name>et1</name>
-                <id>C1200000000-PROV1</id>
-                <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1/3</location>
-                <revision-id>3</revision-id>
-            </reference>
-            <reference>
-                <name>et1</name>
-                <id>C1200000000-PROV1</id>
-                <revision-id>2</revision-id>
-                <deleted>true</deleted>
-            </reference>
-            <reference>
-                <name>et1</name>
-                <id>C1200000000-PROV1</id>
-                <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1/1</location>
-                <revision-id>1</revision-id>
-            </reference>
-        </references>
-    </results>
+      <hits>7</hits>
+      <took>3</took>
+      <references>
+          <reference>
+              <name>Variable1</name>
+              <id>V1200000010-PROV1</id>
+              <location>%CMR-ENDPOINT%/concepts/V1200000010-PROV1/3</location>
+              <revision-id>3</revision-id>
+          </reference>
+          <reference>
+              <name>Variable1</name>
+              <id>V1200000010-PROV1</id>
+              <deleted>true</deleted>
+              <revision-id>2</revision-id>
+          </reference>
+          <reference>
+              <name>Variable1</name>
+              <id>V1200000010-PROV1</id>
+              <location>%CMR-ENDPOINT%/concepts/V1200000010-PROV1/1</location>
+              <revision-id>1</revision-id>
+          </reference>
+      </references>
+  </results>
 ```
 
 #### <a name="variable-access-control"></a> Variable Access Control

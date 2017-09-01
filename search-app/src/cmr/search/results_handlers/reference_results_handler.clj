@@ -28,10 +28,20 @@
    "revision-id"
    "_score"])
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:variable :xml]
+  [concept-type query]
+  ["variable-name"
+   "provider-id"
+   "concept-id"
+   "deleted"
+   "revision-id"
+   "_score"])
+
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
   {:collection :entry-title
-   :granule :granule-ur})
+   :granule :granule-ur
+   :variable :variable-name})
 
 (defn- elastic-result->query-result-item
   [context query elastic-result]
@@ -47,7 +57,7 @@
      :name name-value
      :score (q/normalize-score score)}))
 
-(doseq [concept-type [:collection :granule]]
+(doseq [concept-type [:collection :granule :variable]]
   (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]
     [context query elastic-result]
     (elastic-result->query-result-item context query elastic-result)))
@@ -126,7 +136,7 @@
         include-facets? (boolean (some #{:facets} result-features))]
     (x/emit-str (results->xml-element echo-compatible? include-facets? results))))
 
-(doseq [concept-type [:collection :granule]]
+(doseq [concept-type [:collection :granule :variable]]
   (defmethod qs/search-results->response [concept-type :xml]
     [context query results]
     (search-results->response context query results)))

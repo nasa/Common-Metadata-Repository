@@ -214,12 +214,3 @@
   "Dissociates a variable from the given list of variable associations in json."
   [context variable-concept-id variable-associations-json]
   (link-variable-to-collections context variable-concept-id variable-associations-json :delete))
-
-(defn search-for-variables
-  "Returns the variable search result in JSON format."
-  [context params]
-  (let [results (:results (query-service/find-concepts-by-parameters
-                            context :variable (assoc params :result-format :json)))]
-    (-> results
-        (json/parse-string true)
-        util/map-keys->snake_case)))
