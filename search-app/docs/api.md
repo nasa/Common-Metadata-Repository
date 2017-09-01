@@ -146,6 +146,10 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Searching for Tags](#searching-for-tags)
   * [Variable](#variable)
     * [Searching for Variables](#searching-for-variables)
+        * [Variable Search Parameters](#variable-search-params)
+        * [Variable Search Response](#variable-search-response)
+    * [Retrieving All Revisions of a Variable](#retrieving-all-revisions-of-a-variable)
+    * [Sorting Variable Results](#sorting-variable-results)
     * [Variable Access Control](#variable-access-control)
     * [Variable association](#variable-association)
     * [Variable dissociation](#variable-dissociation)
@@ -3083,16 +3087,15 @@ Variable is some of the measurement variables that belongs to collections/granul
 
 #### <a name="searching-for-variables"></a> Searching for Variables
 
-Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`. JSON and UMM JSON response formats are supported for variables search.
+Variables can be searched for by sending a request to `%CMR-ENDPOINT%/variables`. XML reference, JSON and UMM JSON response formats are supported for variables search.
 
 Variable search results are paged. See [Paging Details](#paging-details) for more information on how to page through variable search results.
 
-##### Variable Search Parameters
+##### <a name="variable-search-params"></a> Variable Search Parameters
 
 The following parameters are supported when searching for variables.
 
-##### Standard Parameters:
-
+##### Standard Parameters
 * page_size
 * page_num
 * pretty
@@ -3109,8 +3112,49 @@ These parameters will match fields within a variable. They are case insensitive 
 * keyword (free text)
   * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed. The following fields are indexed for variable keyword search: variable name, long name, and science keywords.
 
-##### Variable Search Response
+##### <a name="variable-search-response"></a> Variable Search Response
 
+##### XML Reference
+The XML reference response format is used for returning references to search results. It consists of the following fields:
+
+|   Field    |                    Description                     |
+| ---------- | -------------------------------------------------- |
+| hits       | the number of results matching the search query    |
+| took       | time in milliseconds it took to perform the search |
+| references | identifying information about each search result   |
+
+The `references` field may contain multiple `reference` entries, each consisting of the following fields:
+
+|    Field    |                                                   Description                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| name        | the provider's unique identifier for the item. This is Granule UR for granules and Entry Title for collections. |
+| id          | the CMR identifier for the result                                                                               |
+| location    | the URL at which the full metadata for the result can be retrieved                                              |
+| revision-id | the internal CMR version number for the result                                                                  |
+
+__Example__
+```
+curl -i "%CMR-ENDPOINT%/variables?pretty=true&name=Variable1"
+
+HTTP/1.1 200 OK
+Content-Type: application/xml; charset=UTF-8
+Content-Length: 393
+
+<?xml version="1.0" encoding="UTF-8"?>
+<results>
+    <hits>1</hits>
+    <took>17</took>
+    <references>
+        <reference>
+            <name>Variable1</name>
+            <id>V1200000007-PROV1</id>
+            <location>http://localhost:3003/concepts/V1200000007-PROV1/1</location>
+            <revision-id>1</revision-id>
+        </reference>
+    </references>
+</results>
+```
+##### JSON
 The JSON response includes the following fields.
 
 * hits - How many total variables were found.
@@ -3123,17 +3167,12 @@ The JSON response includes the following fields.
   * name
   * long_name
 
-The UMM JSON response contains meta-metadata of the collection, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
-
-##### Variable Search Example
-
-JSON response:
-
+__Example__
 ```
-curl -g -i "%CMR-ENDPOINT%/variables?pretty=true&name=Var*&options[name][pattern]=true"
+curl -g -i "%CMR-ENDPOINT%/variables.json?pretty=true&name=Var*&options[name][pattern]=true"
 
 HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
+Content-Type: application/json; charset=UTF-8
 Content-Length: 292
 
 {
@@ -3156,9 +3195,10 @@ Content-Length: 292
   } ]
 }
 ```
+##### UMM JSON
+The UMM JSON response contains meta-metadata of the collection, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
 
-UMM JSON response:
-
+__Example__
 ```
 curl -g -i "%CMR-ENDPOINT%/variables.umm_json?name=Variable1234&pretty=true"
 HTTP/1.1 200 OK
@@ -3216,29 +3256,12 @@ Content-Length: 1177
   } ]
 }
 ```
-##### Sorting Variable Results
-
-By default, variable results are sorted by name, then provider-id.
-
-One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
-
-###### Valid Variable Sort Keys
-
-  * `name`
-  * `long_name`
-  * `provider_id`
-  * `revision_date`
-
-Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
-
-    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=-long_name"
-    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=%2Blong_name"
 
 ##### <a name="retrieving-all-revisions-of-a-variable"></a> Retrieving All Revisions of a Variable
 
 In addition to retrieving the latest revision for a variable parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
-    curl "%CMR-ENDPOINT%/variables?provider=PROV1&all_revisions=true&pretty=true"
+    curl "%CMR-ENDPOINT%/variables?concept_id=V1200000010-PROV1&all_revisions=true&pretty=true"
 
 __Sample response__
 
@@ -3269,6 +3292,23 @@ __Sample response__
       </references>
   </results>
 ```
+
+##### <a name="sorting-variable-results"></a> Sorting Variable Results
+
+By default, variable results are sorted by name, then provider-id.
+
+One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
+
+###### Valid Variable Sort Keys
+  * `name`
+  * `long_name`
+  * `provider_id`
+  * `revision_date`
+
+Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=-long_name"
+    curl "%CMR-ENDPOINT%/variables?sort_key\[\]=%2Blong_name"
 
 #### <a name="variable-access-control"></a> Variable Access Control
 
