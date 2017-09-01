@@ -398,7 +398,6 @@
       (catch NumberFormatException e
         [(apply error-message-fn args)]))))
 
-
 (defn cloud-cover-validation
   "Validates cloud cover range values are numeric"
   [concept-type params]
@@ -593,52 +592,53 @@
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
   {:collection (concat
-                 cpv/common-validations
-                 [boosts-validation
-                  temporal-format-validation
-                  updated-since-validation
-                  revision-date-validation
-                  created-at-validation
-                  orbit-number-validation
-                  equator-crossing-longitude-validation
-                  equator-crossing-date-validation
-                  cloud-cover-validation
-                  attribute-validation
-                  (partial science-keywords-validation-for-field :science-keywords)
-                  (partial science-keywords-validation-for-field :science-keywords-h)
-                  variables-validation
-                  exclude-validation
-                  boolean-value-validation
-                  polygon-validation
-                  bounding-box-validation
-                  point-validation
-                  line-validation
-                  tag-data-validation
-                  no-highlight-options-without-highlights-validation
-                  highlights-numeric-options-validation
-                  include-tags-parameter-validation
-                  include-facets-validation])
+                cpv/common-validations
+                [boosts-validation
+                 temporal-format-validation
+                 updated-since-validation
+                 revision-date-validation
+                 created-at-validation
+                 orbit-number-validation
+                 equator-crossing-longitude-validation
+                 equator-crossing-date-validation
+                 cloud-cover-validation
+                 attribute-validation
+                 (partial science-keywords-validation-for-field :science-keywords)
+                 (partial science-keywords-validation-for-field :science-keywords-h)
+                 variables-validation
+                 exclude-validation
+                 boolean-value-validation
+                 polygon-validation
+                 bounding-box-validation
+                 point-validation
+                 line-validation
+                 tag-data-validation
+                 no-highlight-options-without-highlights-validation
+                 highlights-numeric-options-validation
+                 include-tags-parameter-validation
+                 include-facets-validation])
    :granule (concat
-              cpv/common-validations
-              [temporal-format-validation
-               created-at-validation
-               updated-since-validation
-               revision-date-validation
-               orbit-number-validation
-               equator-crossing-longitude-validation
-               equator-crossing-date-validation
-               cloud-cover-validation
-               attribute-validation
-               (partial science-keywords-validation-for-field :science-keywords)
-               exclude-validation
-               boolean-value-validation
-               polygon-validation
-               bounding-box-validation
-               point-validation
-               line-validation
-               collection-concept-id-validation])
+             cpv/common-validations
+             [temporal-format-validation
+              created-at-validation
+              updated-since-validation
+              revision-date-validation
+              orbit-number-validation
+              equator-crossing-longitude-validation
+              equator-crossing-date-validation
+              cloud-cover-validation
+              attribute-validation
+              (partial science-keywords-validation-for-field :science-keywords)
+              exclude-validation
+              boolean-value-validation
+              polygon-validation
+              bounding-box-validation
+              point-validation
+              line-validation
+              collection-concept-id-validation])
    :tag cpv/common-validations
-   :variable cpv/common-validations})
+   :variable (concat cpv/common-validations
+                     [boolean-value-validation])})
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

@@ -25,7 +25,7 @@
   (let [entry-title (some #(get item %) [:entry-title :EntryTitle])]
     ;; If the item contains an entry title it will be trimmed.
     (or (some-> entry-title string/trim)
-        (some #(get item %) [:granule-ur :native-id :LongName]))))
+        (some #(get item %) [:granule-ur :variable-name :native-id :LongName]))))
 
 (def context (lkt/setup-context-for-test))
 
