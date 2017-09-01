@@ -208,7 +208,7 @@
            (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
 
 (def variable-names-in-expected-response
-  [:concept-id :revision-id :provider-id :native-id])
+  [:concept-id :revision-id :provider-id :native-id :deleted])
 
 (defn assert-variable-search
   "Verifies the variable search results"
@@ -220,7 +220,7 @@
                              seq
                              set)
          expected-response {:status 200
-                            :hits (or expected-hits (:hits response))
+                            :hits (or expected-hits (count variables))
                             :items expected-items}]
      (is (:took response))
      (is (= expected-response
@@ -304,4 +304,5 @@
   "Searches for variables using the given parameters"
   [params]
   (search/process-response
-   (transmit-variable/search-for-variables (s/context) params {:raw? true})))
+   (transmit-variable/search-for-variables (s/context) params {:raw? true
+                                                               :http-options {:accept :json}})))

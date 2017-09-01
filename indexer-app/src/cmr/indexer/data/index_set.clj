@@ -611,6 +611,9 @@
   {:_id  {:path "concept-id"}}
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-id (-> m/int-field-mapping m/stored m/doc-values)
+   ;; This is used explicitly for sorting. The values take up less space in the
+   ;; fielddata cache.
+   :concept-seq-id (m/doc-values m/int-field-mapping)
    :native-id (-> m/string-field-mapping m/stored m/doc-values)
    :native-id.lowercase (m/doc-values m/string-field-mapping)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
@@ -679,6 +682,10 @@
                      :mapping tag-mapping}
                :variable {:indexes
                           [{:name "variables"
+                            :settings variable-setting}
+                           ;; This index contains all the revisions (including tombstones) and
+                           ;; is used for all-revisions searches.
+                           {:name "all-variable-revisions"
                             :settings variable-setting}]
                           :mapping variable-mapping}}})
 
@@ -831,15 +838,17 @@
          all-revisions-index? [(get indexes :all-collection-revisions)]
          ;; Else index to all collection indexes except for the all-collection-revisions index.
          :else (keep (fn [[k v]]
-                      (when-not (= :all-collection-revisions (keyword k))
-                        v))
+                       (when-not (= :all-collection-revisions (keyword k))
+                         v))
                      indexes))
 
        :tag
        [(get indexes (or target-index-key :tags))]
 
        :variable
-       [(get indexes (or target-index-key :variables))]
+       (if all-revisions-index?
+         [(get indexes :all-variable-revisions)]
+         [(get indexes (or target-index-key :variables))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]

@@ -3234,6 +3234,42 @@ Examples of sorting by long_name in descending (reverse alphabetical) and ascend
     curl "%CMR-ENDPOINT%/variables?sort_key\[\]=-long_name"
     curl "%CMR-ENDPOINT%/variables?sort_key\[\]=%2Blong_name"
 
+##### <a name="retrieving-all-revisions-of-a-variable"></a> Retrieving All Revisions of a Variable
+
+In addition to retrieving the latest revision for a variable parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/variables?provider=PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>3</hits>
+        <took>5</took>
+        <references>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1/3</location>
+                <revision-id>3</revision-id>
+            </reference>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <revision-id>2</revision-id>
+                <deleted>true</deleted>
+            </reference>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1/1</location>
+                <revision-id>1</revision-id>
+            </reference>
+        </references>
+    </results>
+```
+
 #### <a name="variable-access-control"></a> Variable Access Control
 
 Access to variable and variable association is granted through the INGEST_MANAGEMENT_ACL system object identity. Users can only create, update, or delete a variable if they are granted the appropriate permission in ECHO. Associating and dissociating collections with a variable is considered an update.

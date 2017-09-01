@@ -58,8 +58,9 @@
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
   [concept-id revision-id all-revisions-index?]
   (if (and
-        (= :collection (cs/concept-id->type concept-id))
-        all-revisions-index?)
+       (or (= :collection (cs/concept-id->type concept-id))
+           (= :variable (cs/concept-id->type concept-id)))
+       all-revisions-index?)
     (str concept-id "," revision-id)
     concept-id))
 

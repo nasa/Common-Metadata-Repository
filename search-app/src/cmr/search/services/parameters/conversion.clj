@@ -370,6 +370,12 @@
     [(dissoc params :echo-compatible)
      (merge query-attribs {:echo-compatible? (= "true" (:echo-compatible params))})]))
 
+(defmethod common-params/parse-query-level-params :variable
+  [concept-type params]
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                 :variable params)]
+    [(dissoc params :all-revisions)
+     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."

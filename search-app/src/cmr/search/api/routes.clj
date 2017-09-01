@@ -109,6 +109,7 @@
               mt/iso19115
               mt/iso-smap}
    :variable #{mt/any
+               mt/xml
                mt/umm-json}})
 
 (def find-by-concept-id-concept-types
@@ -226,10 +227,7 @@
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id (get-scroll-id-from-cache ctx short-scroll-id)
         ctx (assoc ctx :query-string body :scroll-id scroll-id)
-        default-mime-type (if (= :variable concept-type)
-                            mt/json
-                            mt/xml)
-        params (process-params concept-type params path-w-extension headers default-mime-type)
+        params (process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (info (format "Searching for %ss from client %s in format %s with params %s."
                         (name concept-type) (:client-id ctx)
