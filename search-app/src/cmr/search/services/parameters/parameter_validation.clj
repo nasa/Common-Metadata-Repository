@@ -69,7 +69,7 @@
   [_]
   (cpv/merge-params-config
     cpv/basic-params-config
-    {:single-value #{:keyword}
+    {:single-value #{:keyword :all-revisions}
      :multiple-value #{:name :variable-name :measurement :provider :native-id :concept-id}
      :always-case-sensitive #{}
      :disallow-pattern #{}}))
@@ -185,6 +185,10 @@
 (defmethod cpv/valid-query-level-params :granule
   [_]
   #{:echo-compatible})
+
+(defmethod cpv/valid-query-level-params :variable
+  [_]
+  #{:all-revisions})
 
 (defmethod cpv/valid-sort-keys :collection
   [_]

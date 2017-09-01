@@ -2,6 +2,7 @@
   "Contains functions to parse and convert variable concepts"
   (:require
    [clojure.string :as string]
+   [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -15,6 +16,7 @@
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields variable-associations]} concept
         {:keys [variable-name measurement]} extra-fields
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
         science-keywords (mapcat science-keyword-util/science-keyword->keywords
                                  (:ScienceKeywords parsed-concept))
         ;; keyword values that are used to index the keyword field
@@ -25,9 +27,22 @@
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
       {:concept-id concept-id
        :revision-id revision-id
-       :deleted deleted}
+       :concept-seq-id concept-seq-id
+       :deleted deleted
+       :variable-name variable-name
+       :variable-name.lowercase (string/lower-case variable-name)
+       :measurement measurement
+       :measurement.lowercase (string/lower-case measurement)
+       :provider-id provider-id
+       :provider-id.lowercase (string/lower-case provider-id)
+       :native-id native-id
+       :native-id.lowercase (string/lower-case native-id)
+       :keyword (keyword-util/field-values->keyword-text keyword-values)
+       :user-id user-id
+       :revision-date revision-date}
       {:concept-id concept-id
        :revision-id revision-id
+       :concept-seq-id concept-seq-id
        :deleted deleted
        :variable-name variable-name
        :variable-name.lowercase (string/lower-case variable-name)
