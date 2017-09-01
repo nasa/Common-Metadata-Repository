@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.services.content-service :as content-service]
    [cmr.search.site.static :as static]
    [cmr.search.site.data :as site-data]
    [cmr.search.site.routes :as r]
@@ -24,21 +25,57 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:private test-collections (atom {}))
-(def ^:private base-url
-  "We don't call to `(transmit-config/application-public-root-url)`
-   due to the fact that it requires a context and we're not creating
-   contexts for these integration tests, we're simply using an HTTP
-   client."
-   (format "%s://%s:%s/"
-           (transmit-config/search-protocol)
-           (transmit-config/search-host)
-           (transmit-config/search-port)))
+
+(defn- add-token-header
+  ([token]
+   (add-token-header token {}))
+  ([token options]
+   (assoc-in options [:headers transmit-config/token-header] token)))
 
 (defn- get-response
-  [url-path]
-  (->> url-path
-       (str base-url)
-       (client/get)))
+  ([url-path]
+   (get-response url-path {}))
+  ([url-path options]
+   (-> (transmit-config/application-public-root-url :search)
+       (str url-path)
+       (client/get options))))
+
+(defn- do-permission-assertions
+  [test-section url-path]
+  (testing test-section
+    (let [no-perms-error ["You do not have permission to perform that action."]]
+      (testing "anonymous"
+        (let [response (get-response url-path {:throw-exceptions? false})]
+          (is (= 401 (:status response)))
+          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
+      (testing "nil token"
+        (let [response (get-response
+                        url-path
+                        (add-token-header nil {:throw-exceptions? false}))]
+          (is (= 401 (:status response)))
+          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
+      (testing "fake token"
+        (let [response (get-response
+                        url-path
+                        (add-token-header "ABC" {:throw-exceptions? false}))]
+          (is (= 401 (:status response)))
+          (is (= ["Token ABC does not exist"]
+                 (search/safe-parse-error-xml (:body response))))))
+      (testing "regular user token"
+        (let [response (get-response
+                        url-path
+                        (add-token-header (e/login (s/context) "user")
+                                          {:throw-exceptions? false}))]
+          (is (= 401 (:status response)))
+          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
+      (testing "admin"
+        (let [admin-group-id (e/get-or-create-group (s/context) "admin-group")
+              admin-user-token (e/login (s/context) "admin-user" [admin-group-id])
+              _ (e/grant-group-admin (s/context) admin-group-id :update)
+              ;; Need to clear the ACL cache to get the latest ACLs from mock-echo
+              _ (search/clear-caches)
+              response (get-response url-path (add-token-header admin-user-token))]
+          (is (= 200 (:status response))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Exepcted results check functions
@@ -189,7 +226,6 @@
   (fn [f]
     (search/refresh-collection-metadata-cache)
     (setup-collections)
-    (static/generate-site-resources)
     (f)))
 
 ;; Note tha the fixtures are created out of order such that sorting can be
@@ -289,6 +325,14 @@
       (is (not (expected-provider1-col1-link? body))))
     (testing "provider page should have header links"
       (is (expected-header-link? body)))))
+
+(deftest regeneration-permissions
+  (do-permission-assertions
+   "eosdis directory level"
+   "site/collections/directory/eosdis?regenerate=true")
+  (do-permission-assertions
+   "provider/tag level"
+   "site/collections/directory/PROV1/gov.nasa.eosdis?regenerate=true"))
 
 ;; Note that the following test was originally in the unit tests for
 ;; cmr-search (thus its similarity to those tests) but had to be moved into

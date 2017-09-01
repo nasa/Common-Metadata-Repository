@@ -142,7 +142,7 @@
 ;; A job for generating static content
 ;; Note: since content generation is being done via a job without an HTTP
 ;;       context, we use the :cli execution context that doesn't require
-;;       particular ACL settings provided by the HTTP context.
+;;       particular ACL settings provided by the HTTP request context.
 (defjob StaticContentGeneratorJob
   [_job-context system]
   (generate-content {:system system :execution-context :cli}))

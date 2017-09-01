@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.services.content-service :as content-service]
    [cmr.search.site.static :as static]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.utils.search-util :as search]
@@ -22,27 +23,61 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:private test-collections (atom {}))
-(def ^:private base-url
-  "We don't call to `(transmit-config/application-public-root-url)`
-   due to the fact that it requires a context and we're not creating
-   contexts for these integration tests, we're simply using an HTTP
-   client."
-   (format "%s://%s:%s/"
-           (transmit-config/search-protocol)
-           (transmit-config/search-host)
-           (transmit-config/search-port)))
-
-(defn- get-response
-  [url-path]
-  (->> url-path
-       (str base-url)
-       (client/get)))
-
 (def ^:private validate-sitemap-index
   (xmlv/create-validation-fn (io/resource "sitemaps/siteindex.xsd")))
-
 (def ^:private validate-sitemap
   (xmlv/create-validation-fn (io/resource "sitemaps/sitemap.xsd")))
+
+(defn- add-token-header
+  ([token]
+   (add-token-header token {}))
+  ([token options]
+   (assoc-in options [:headers transmit-config/token-header] token)))
+
+(defn- get-response
+  ([url-path]
+   (get-response url-path {}))
+  ([url-path options]
+   (-> (transmit-config/application-public-root-url :search)
+       (str url-path)
+       (client/get options))))
+
+(defn- do-permission-assertions
+  [test-section url-path]
+  (testing test-section
+    (let [no-perms-error ["You do not have permission to perform that action."]]
+      (testing "anonymous"
+        (let [response (get-response url-path {:throw-exceptions? false})]
+          (is (= 401 (:status response)))
+          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
+      (testing "nil token"
+        (let [response (get-response
+                        url-path
+                        (add-token-header nil {:throw-exceptions? false}))]
+          (is (= 401 (:status response)))
+          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
+      (testing "fake token"
+        (let [response (get-response
+                        url-path
+                        (add-token-header "ABC" {:throw-exceptions? false}))]
+          (is (= 401 (:status response)))
+          (is (= ["Token ABC does not exist"]
+                 (search/safe-parse-error-xml (:body response))))))
+      (testing "regular user token"
+        (let [response (get-response
+                        url-path
+                        (add-token-header (e/login (s/context) "user")
+                                          {:throw-exceptions? false}))]
+          (is (= 401 (:status response)))
+          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
+      (testing "admin"
+        (let [admin-group-id (e/get-or-create-group (s/context) "admin-group")
+              admin-user-token (e/login (s/context) "admin-user" [admin-group-id])
+              _ (e/grant-group-admin (s/context) admin-group-id :update)
+              ;; Need to clear the ACL cache to get the latest ACLs from mock-echo
+              _ (search/clear-caches)
+              response (get-response url-path (add-token-header admin-user-token))]
+          (is (= 200 (:status response))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Functions for creating testing data
@@ -107,7 +142,6 @@
   (fn [f]
     (setup-collections)
     (search/refresh-collection-metadata-cache)
-    (static/generate-site-resources)
     (f)))
 
 (use-fixtures :once (join-fixtures
@@ -208,3 +242,12 @@
     (testing "the collections not tagged with eosdis shouldn't show up"
       (is (not (string/includes?
                 body (format "%s.html</loc>" (first colls))))))))
+
+(deftest regeneration-permissions
+  (do-permission-assertions
+   "master sitemap" "sitemap.xml?regenerate=true")
+  (do-permission-assertions
+   "content sitemap" "site/sitemap.xml?regenerate=true")
+  (do-permission-assertions
+   "provider/tag sitemap"
+   "site/collections/directory/PROV1/gov.nasa.eosdis/sitemap.xml?regenerate=true"))
