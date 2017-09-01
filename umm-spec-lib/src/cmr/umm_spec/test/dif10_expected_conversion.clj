@@ -11,6 +11,7 @@
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
   [cmr.umm-spec.models.umm-common-models :as cmn]
   [cmr.umm-spec.related-url :as ru-gen]
+  [cmr.umm-spec.spatial-conversion :as spatial-conversion]
   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
   [cmr.umm-spec.test.location-keywords-helper :as lkt]
   [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
@@ -288,7 +289,7 @@
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update-in-each [:AdditionalAttributes] expected-dif10-additional-attribute)
       (update-in [:ProcessingLevel] dif10-processing-level)
-      (assoc :CollectionProgress (conversion-util/expected-coll-progress 
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress
                                    umm-coll
                                    coll-progress-enum-list))
       (update-in-each [:Projects] dif10-project)
@@ -303,5 +304,6 @@
       (update :AccessConstraints conversion-util/expected-access-constraints)
       (update :DataLanguage conversion-util/dif-expected-data-language)
       (update-in [:CollectionCitations] expected-collection-citations)
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
       js/parse-umm-c))

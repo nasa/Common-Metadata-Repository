@@ -1428,3 +1428,37 @@
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.10" "1.9"
                           {:CollectionProgress "COMPLETE"}))))))
+
+(deftest migrate-1-9-tiling-identification-systems-to-1-10
+  (let [tiling-id-systems {:TilingIdentificationSystems
+                           [{:TilingIdentificationSystemName "MISR"
+                             :Coordinate1 {:MinimumValue 1
+                                           :MaximumValue 10}
+                             :Coordinate2 {:MinimumValue 1
+                                           :MaximumValue 10}}
+                            {:TilingIdentificationSystemName "Heat Miser"
+                              :Coordinate1 {:MinimumValue 11
+                                            :MaximumValue 20}
+                              :Coordinate2 {:MinimumValue 11
+                                            :MaximumValue 20}}
+                            {:TilingIdentificationSystemName "CALIPSO"
+                              :Coordinate1 {:MinimumValue 1
+                                            :MaximumValue 10}}
+                            {:TilingIdentificationSystemName "MODIS Tile EASE"
+                              :Coordinate1 {:MinimumValue 1
+                                            :MaximumValue 10}}
+                            {:TilingIdentificationSystemName "WRS-1"
+                              :Coordinate1 {:MinimumValue 1
+                                            :MaximumValue 10}}]}
+        result (vm/migrate-umm {} :collection "1.9" "1.10" tiling-id-systems)
+        other-result (vm/migrate-tiling-identification-systems tiling-id-systems)]
+    (is (= (:TilingIdentificationSystems result)
+           [{:TilingIdentificationSystemName "MISR",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10},
+             :Coordinate2 {:MinimumValue 1, :MaximumValue 10}}
+            {:TilingIdentificationSystemName "CALIPSO",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}
+            {:TilingIdentificationSystemName "MODIS Tile EASE",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}
+            {:TilingIdentificationSystemName "WRS-1",
+             :Coordinate1 {:MinimumValue 1, :MaximumValue 10}}]))))

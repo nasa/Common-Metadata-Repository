@@ -9,6 +9,7 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
@@ -97,11 +98,15 @@
 (defn parse-tiling
   "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."
   [doc]
-  (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
-    {:TilingIdentificationSystemName (u/without-default
-                                       (value-of sys-el "TwoDCoordinateSystemName"))
-     :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
-     :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)}))
+  (let [tiling-id-systems
+        (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
+         {:TilingIdentificationSystemName (value-of sys-el "TwoDCoordinateSystemName")
+          :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
+          :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)})]
+    (filter
+     #(spatial-conversion/tile-id-system-name-is-valid?
+       (:TilingIdentificationSystemName %))
+     tiling-id-systems)))
 
 (defn- parse-platforms
   "Parses platforms from the ECHO10 collection document."

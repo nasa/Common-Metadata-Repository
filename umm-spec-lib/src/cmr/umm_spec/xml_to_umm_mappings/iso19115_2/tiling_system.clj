@@ -2,6 +2,7 @@
   (:require
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]))
 
 (def tiling-system-xpath
@@ -41,7 +42,9 @@
   [md-data-id-el]
   (for [tiling-system-el (select md-data-id-el tiling-system-xpath)]
     (let [code-string (value-of tiling-system-el "gmd:code/gco:CharacterString")
-          description-string (value-of tiling-system-el "gmd:description/gco:CharacterString")]
-      (merge
-       {:TilingIdentificationSystemName (or description-string "")}
-       (parse-tiling-system-coordinates code-string)))))
+          description-string (value-of tiling-system-el "gmd:description/gco:CharacterString")
+          tiling-id-system-name (spatial-conversion/translate-tile-id-system-name description-string)]
+      (when tiling-id-system-name
+       (merge
+        {:TilingIdentificationSystemName tiling-id-system-name}
+        (parse-tiling-system-coordinates code-string))))))

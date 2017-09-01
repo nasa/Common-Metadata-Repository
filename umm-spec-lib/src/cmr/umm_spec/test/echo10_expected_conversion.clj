@@ -10,6 +10,7 @@
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.related-url :as ru-gen]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
@@ -294,6 +295,7 @@
       ;; CMR 2716 Getting rid of SpatialKeywords but keeping them for legacy purposes.
       (assoc :SpatialKeywords nil)
       (assoc :PaleoTemporalCoverages nil)
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update :CollectionCitations expected-collection-citations)
       (assoc :MetadataDates (expected-metadata-dates umm-coll))
       (update :ScienceKeywords expected-science-keywords)

@@ -102,8 +102,8 @@
         personnel1 (data-umm-cmn/contact-person "Bob" "Hope" "bob.hope@nasa.gov" "TECHNICAL CONTACT")
         personnel2 (data-umm-cmn/contact-person "Victor" "Fries" "victor.fries@nsidc.gov" "TECHNICAL CONTACT")
         personnel3 (data-umm-cmn/contact-person "Otto" "Octavious" "otto.octavious@noaa.gov")
-        tdcs1 (data-umm-cmn/tiling-identification-system "XYZ")
-        tdcs2 (data-umm-cmn/tiling-identification-system "twoduniq")
+        tdcs1 (data-umm-cmn/tiling-identification-system "MISR")
+        tdcs2 (data-umm-cmn/tiling-identification-system "WRS-2")
         org (data-umm-cmn/data-center {:Roles ["ARCHIVER"]
                                      :ShortName "Some&Place"})
         url1 (data-umm-cmn/related-url {:URL "http://cmr.earthdata.nasa.gov"
@@ -209,7 +209,7 @@
         "ABC!XYZ_V001" [coll2]
 
         ;; short name
-        "XYZ" [coll2 coll13]
+        "XYZ" [coll2]
 
         ;; version id
         "V001" [coll2]
@@ -242,7 +242,7 @@
         ;;;; "in" [coll10]
 
         ;; two d coord
-        "xyz" [coll2 coll13]
+        "xyz" [coll2]
 
         ;; archive center
         "some" [coll6]
@@ -349,7 +349,7 @@
         "S@PER" [coll10]
 
         ;; search by keywords using wildcard *
-        "XY*" [coll2 coll13]
+        "XY*" [coll2]
         "*aser" [coll21 coll5 coll7 coll9 coll14]
         "p*ce" [coll6]
         "NEA*REA*IME" [coll22]
@@ -357,7 +357,7 @@
         "\"Quoted*" [coll23]
 
         ;; search by keywords using wildcard ?
-        "XY?" [coll2 coll13]
+        "XY?" [coll2]
         "?aser" [coll21 coll5 coll7 coll9 coll14]
         "p*ace" [coll6]
         "NEAR?REAL?TIME" [coll22]

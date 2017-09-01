@@ -80,7 +80,7 @@
                                       :InclinationAngle 94.0
                                       :NumberOfOrbits 2.0
                                       :StartCircularLatitude 50.0}}
-    :TilingIdentificationSystems [{:TilingIdentificationSystemName "Tiling System Name"
+    :TilingIdentificationSystems [{:TilingIdentificationSystemName "MISR"
                                     :Coordinate1 {:MinimumValue 1.0
                                                   :MaximumValue 10.0}
                                     :Coordinate2 {:MinimumValue 1.0

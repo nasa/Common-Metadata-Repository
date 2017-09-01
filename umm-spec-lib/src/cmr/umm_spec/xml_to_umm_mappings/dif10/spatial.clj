@@ -1,9 +1,11 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.spatial
   "Defines mappings from DIF 10 XML spatial elements into UMM records"
-  (:require [clojure.set :as set]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.xml.parse :refer :all]
-            [cmr.umm-spec.util :as u]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.util :as u]))
 
 (def dif10-spatial-type->umm-spatial-type
   {"Horizontal" "HORIZONTAL"
@@ -75,6 +77,9 @@
   "Returns UMM-C TilingIdentificationSystem map from DIF 10 XML document."
   [doc]
   (for [twod-el (select doc tiling-system-xpath)]
-    {:TilingIdentificationSystemName (value-of twod-el "TwoD_Coordinate_System_Name")
-     :Coordinate1 (parse-tiling-coord twod-el "Coordinate1")
-     :Coordinate2 (parse-tiling-coord twod-el "Coordinate2")}))
+    (let [tiling-id-system-name (spatial-conversion/translate-tile-id-system-name
+                                  (value-of twod-el "TwoD_Coordinate_System_Name"))]
+     (when tiling-id-system-name
+      {:TilingIdentificationSystemName tiling-id-system-name
+       :Coordinate1 (parse-tiling-coord twod-el "Coordinate1")
+       :Coordinate2 (parse-tiling-coord twod-el "Coordinate2")}))))
