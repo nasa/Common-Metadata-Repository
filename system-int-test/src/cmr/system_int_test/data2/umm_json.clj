@@ -85,22 +85,26 @@
 (defn- variable->umm-json-meta
   "Returns the meta section of umm-json format."
   [variable]
-  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted]} variable]
-    (util/remove-nil-keys
-     {:concept-type "variable"
-      :concept-id concept-id
-      :revision-id revision-id
-      :native-id native-id
-      :user-id user-id
-      :provider-id provider-id
-      :format mt/umm-json
-      :deleted (boolean deleted)})))
+  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted]} variable
+        deleted (boolean deleted)
+        meta (util/remove-nil-keys
+              {:concept-type "variable"
+               :concept-id concept-id
+               :revision-id revision-id
+               :native-id native-id
+               :user-id user-id
+               :provider-id provider-id
+               :deleted deleted})]
+    (if deleted
+      meta
+      (assoc meta :format mt/umm-json))))
 
 (defn- variable->umm-json
   "Returns the UMM JSON result of the given variable."
   [version variable]
   (if (:deleted variable)
-    {:meta (variable->umm-json-meta variable)}
+    {:meta (variable->umm-json-meta variable)
+     :associations {:collections #{}}}
     (let [;; use the original metadata for now, add version migration when Variable versioning is added
            {:keys [metadata associated-collections]} variable]
       {:meta (variable->umm-json-meta variable)
