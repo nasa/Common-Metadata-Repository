@@ -79,7 +79,6 @@
   (testing "with an entry title, short name, and doi"
     (let [data (data/make-holding-data cmr-base-url coll-data-2)]
       (is (= "http://dx.doi.org/doi6" (:link-href data)))
-      (is (= "coll3" (:link-text data)))
       (is (= "s3" (get-in data [:umm "ShortName"])))
       (is (= "7" (get-in data [:umm "Version"]))))))
 
@@ -89,10 +88,8 @@
                   (vec))]
     (is (= "http://cmr.test.host/concepts/C1200000003-PROV1.html"
            (get-in data [0 :link-href])))
-    (is (= "coll3" (get-in data [0 :link-text])))
     (is (= "s3" (get-in data [0 :umm "ShortName"])))
     (is (= "6" (get-in data [0 :umm "Version"])))
     (is (= "http://dx.doi.org/doi6" (get-in data [1 :link-href])))
-    (is (= "coll3" (get-in data [1 :link-text])))
     (is (= "s3" (get-in data [1 :umm "ShortName"])))
     (is (= "7" (get-in data [1 :umm "Version"])))))

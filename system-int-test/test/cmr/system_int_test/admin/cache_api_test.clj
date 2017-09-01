@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.services.content-service :as content-service]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
@@ -109,6 +110,7 @@
         (url/search-read-caches-url) [
          "acls"
          "collections-for-gran-acls"
+         (name content-service/cache-key)
          "has-granules-map"
          "health"
          "humanizer-report-cache"
