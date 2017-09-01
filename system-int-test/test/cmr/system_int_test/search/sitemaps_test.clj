@@ -13,6 +13,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.site-util :as site]
    [cmr.system-int-test.utils.tag-util :as tags]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as cm]
@@ -27,57 +28,6 @@
   (xmlv/create-validation-fn (io/resource "sitemaps/siteindex.xsd")))
 (def ^:private validate-sitemap
   (xmlv/create-validation-fn (io/resource "sitemaps/sitemap.xsd")))
-
-(defn- add-token-header
-  ([token]
-   (add-token-header token {}))
-  ([token options]
-   (assoc-in options [:headers transmit-config/token-header] token)))
-
-(defn- get-response
-  ([url-path]
-   (get-response url-path {}))
-  ([url-path options]
-   (-> (transmit-config/application-public-root-url :search)
-       (str url-path)
-       (client/get options))))
-
-(defn- do-permission-assertions
-  [test-section url-path]
-  (testing test-section
-    (let [no-perms-error ["You do not have permission to perform that action."]]
-      (testing "anonymous"
-        (let [response (get-response url-path {:throw-exceptions? false})]
-          (is (= 401 (:status response)))
-          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
-      (testing "nil token"
-        (let [response (get-response
-                        url-path
-                        (add-token-header nil {:throw-exceptions? false}))]
-          (is (= 401 (:status response)))
-          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
-      (testing "fake token"
-        (let [response (get-response
-                        url-path
-                        (add-token-header "ABC" {:throw-exceptions? false}))]
-          (is (= 401 (:status response)))
-          (is (= ["Token ABC does not exist"]
-                 (search/safe-parse-error-xml (:body response))))))
-      (testing "regular user token"
-        (let [response (get-response
-                        url-path
-                        (add-token-header (e/login (s/context) "user")
-                                          {:throw-exceptions? false}))]
-          (is (= 401 (:status response)))
-          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
-      (testing "admin"
-        (let [admin-group-id (e/get-or-create-group (s/context) "admin-group")
-              admin-user-token (e/login (s/context) "admin-user" [admin-group-id])
-              _ (e/grant-group-admin (s/context) admin-group-id :update)
-              ;; Need to clear the ACL cache to get the latest ACLs from mock-echo
-              _ (search/clear-caches)
-              response (get-response url-path (add-token-header admin-user-token))]
-          (is (= 200 (:status response))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Functions for creating testing data
@@ -156,7 +106,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest sitemap-master
-  (let [response (get-response "sitemap.xml")
+  (let [response (site/get-search-response "sitemap.xml")
         body (:body response)]
     (testing "XML validation"
       (is (xmlv/valid? (validate-sitemap-index body))))
@@ -168,7 +118,7 @@
       (is (string/includes? body "/collections/directory/PROV3/gov.nasa.eosdis/sitemap.xml</loc>")))))
 
 (deftest sitemap-top-level
-  (let [response (get-response "site/sitemap.xml")
+  (let [response (site/get-search-response "site/sitemap.xml")
         body (:body response)]
     (testing "XML validation"
       (is (xmlv/valid? (validate-sitemap body))))
@@ -188,7 +138,7 @@
         url-path (format
                   "site/collections/directory/%s/%s/sitemap.xml"
                   provider tag)
-        response (get-response url-path)
+        response (site/get-search-response url-path)
         body (:body response)
         colls (@test-collections "PROV1")]
     (testing "XML validation"
@@ -210,7 +160,7 @@
         url-path (format
                   "site/collections/directory/%s/%s/sitemap.xml"
                   provider tag)
-        response (get-response url-path)
+        response (site/get-search-response url-path)
         body (:body response)
         colls (@test-collections "PROV2")]
     (testing "XML validation"
@@ -232,7 +182,7 @@
         url-path (format
                   "site/collections/directory/%s/%s/sitemap.xml"
                   provider tag)
-        response (get-response url-path)
+        response (site/get-search-response url-path)
         body (:body response)
         colls (@test-collections "PROV3")]
     (testing "presence and content of sitemap.xml file"
@@ -244,10 +194,10 @@
                 body (format "%s.html</loc>" (first colls))))))))
 
 (deftest regeneration-permissions
-  (do-permission-assertions
+  (site/assert-search-directory-regen-permissions
    "master sitemap" "sitemap.xml?regenerate=true")
-  (do-permission-assertions
+  (site/assert-search-directory-regen-permissions
    "content sitemap" "site/sitemap.xml?regenerate=true")
-  (do-permission-assertions
+  (site/assert-search-directory-regen-permissions
    "provider/tag sitemap"
    "site/collections/directory/PROV1/gov.nasa.eosdis/sitemap.xml?regenerate=true"))

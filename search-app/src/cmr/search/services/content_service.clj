@@ -57,10 +57,9 @@
      "/site/sitemap.xml" (pages/sitemap-top-level context)
      "/site/collections/directory/eosdis" (pages/eosdis-collections-directory context)))
   ([context route provider-id tag]
-   (cond
-     (string/ends-with? route ".xml")
+   (if (string/ends-with? route ".xml")
      (pages/sitemap-provider-tag context provider-id tag)
-     :else (pages/provider-tag-directory context provider-id tag))))
+     (pages/provider-tag-directory context provider-id tag))))
 
 (defn cache-page
   "Cache a page for a given route. If the content is supplied, simply cache
@@ -78,6 +77,8 @@
                 (get-page-content context route provider-id tag))))
 
 (defn- create-lookup-fn
+  "A convenience function that is intended for use by the caching API when a
+  cache miss is encountered."
   [args]
   (debug "Route" (second args) "not found in cache")
   (fn [] (apply get-page-content args)))
@@ -114,24 +115,20 @@
 (defn- cache-directory-content
   "Cache all the content for the expensive, directory-level routes."
   [context]
-  (debug "Providers:" (mdb/get-providers context))
-  (debug "Provider ids:" (map :provider-id (mdb/get-providers context)))
-  (doseq [provider-id (map :provider-id (mdb/get-providers context))]
-    (doseq [tag (keys site-utils/supported-directory-tags)]
-      (doseq [route [(format "/site/collections/directory/%s/%s" provider-id tag)
-                     (format "/site/collections/directory/%s/%s/sitemap.xml"
-                             provider-id
-                             tag)]]
-        (cache-page context route provider-id tag)))))
+  (let [provider-ids (map :provider-id (mdb/get-providers context))]
+    (debug "Providers:" provider-ids)
+    (doseq [provider-id provider-ids]
+      (doseq [tag (keys site-utils/supported-directory-tags)]
+        (doseq [route [(format "/site/collections/directory/%s/%s" provider-id tag)
+                       (format "/site/collections/directory/%s/%s/sitemap.xml"
+                               provider-id
+                               tag)]]
+          (cache-page context route provider-id tag))))))
 
 (defn generate-content
   "Cache all the content for the expensive routes. This is the function
   intended for use by the static content job scheduler."
   [context]
-  ;; XXX debug
-  (info "context keys:" (keys context))
-  (info "system keys:" (keys (:system context)))
-  ;; XXX end debug
   (info "Generating site content for caching")
   (let [[ms _] (util/time-execution
                 (do
