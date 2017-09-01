@@ -354,10 +354,11 @@
                                :cloud-cover :cloud-cover-doc-values})
       default-mappings)))
 
-(def collection-all-revision-sub-sort-fields
-  "This defines the sub sort fields for an all revisions search."
-  [{(q2e/query-field->elastic-field :concept-seq-id :collection) {:order "asc"}}
-   {(q2e/query-field->elastic-field :revision-id :collection) {:order "desc"}}])
+(defn- all-revision-sub-sort-fields
+  "This defines the sub sort fields of an all revisions search for the given concept type."
+  [concept-type]
+  [{(q2e/query-field->elastic-field :concept-seq-id concept-type) {:order "asc"}}
+   {(q2e/query-field->elastic-field :revision-id concept-type) {:order "desc"}}])
 
 (def collection-latest-sub-sort-fields
   "This defines the sub sort fields for a latest revision collection search. Short name and version id
@@ -421,7 +422,7 @@
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
         sub-sort-fields (if (:all-revisions? query)
-                          collection-all-revision-sub-sort-fields
+                          (all-revision-sub-sort-fields :collection)
                           collection-latest-sub-sort-fields)
         ;; We want the specified sort then to sub-sort by the score.
         ;; Only if neither is present should it then go to the default sort.
@@ -429,9 +430,11 @@
     (concat (or specified-score-combined default-sort) sub-sort-fields)))
 
 (defmethod q2e/concept-type->sub-sort-fields :variable
-  [_]
-  [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
-   {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}])
+  [query]
+  (if (:all-revisions? query)
+    (all-revision-sub-sort-fields :variable)
+    [{(q2e/query-field->elastic-field :name :variable) {:order "asc"}}
+     {(q2e/query-field->elastic-field :provider :variable) {:order "asc"}}]))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition

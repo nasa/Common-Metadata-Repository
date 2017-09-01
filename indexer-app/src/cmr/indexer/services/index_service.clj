@@ -154,10 +154,13 @@
 (defn- indexing-applicable?
   "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.
   Indexing is applicable for all concept types if all-revisions-index? is false and only for
-  collection, tag-association and variable-association concept types if all-revisions-index? is true."
+  collection, variable, tag-association and variable-association concept types
+  if all-revisions-index? is true."
   [concept-type all-revisions-index?]
   (or (not all-revisions-index?)
-      (and all-revisions-index? (contains? #{:collection :tag-association :variable-association} concept-type))))
+      (and all-revisions-index? (contains?
+                                 #{:collection :variable :tag-association :variable-association}
+                                 concept-type))))
 
 (def REINDEX_BATCH_SIZE 2000)
 

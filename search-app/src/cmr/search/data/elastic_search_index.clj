@@ -149,7 +149,9 @@
 
 (defmethod common-esi/concept-type->index-info :variable
   [context _ query]
-  {:index-name "1_variables"
+  {:index-name (if (:all-revisions? query)
+                 "1_all_variable_revisions"
+                 "1_variables")
    :type-name "variable"})
 
 (defn context->conn
