@@ -10,15 +10,22 @@
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def result-xducer
+  (map clj->js))
+
+(def result-body-xducer
+  (map (comp clj->js :body)))
+
 (defn make-channel
   [client]
   (if (get-in client [:parent-client-options :return-body?])
-    (async/promise-chan (map :body))
-    (async/promise-chan)))
+    (async/promise-chan result-body-xducer)
+    (async/promise-chan result-xducer)))
 
 (defn get-default-options
   [client]
-  {:with-credentials? false})
+  {:with-credentials? false
+   :headers {"Accept" "application/json"}})
 
 (defn make-http-options
   [client call-options]
