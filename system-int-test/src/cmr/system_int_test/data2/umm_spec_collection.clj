@@ -232,6 +232,18 @@
   ([attribs]
    (umm-c/map->UMM-C (merge umm-c-missing-properties-dif10 attribs))))
 
+(defn collection-without-minimal-attribs
+  "Return a UMM Collection that hasn't been merged with the minimal values.
+   Used only for testing purposes"
+  [index attribs]
+  (umm-c/map->UMM-C
+   (merge
+    {:ShortName (str "Short Name " index)
+     :Version (str "V" index)
+     :EntryTitle (str "Entry Title " index)}
+    attribs)))
+
+
 (defn collection
   "Returns a UmmCollection from the given attribute map."
   ([]

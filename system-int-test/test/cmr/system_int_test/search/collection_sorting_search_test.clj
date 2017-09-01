@@ -242,7 +242,7 @@
                                              :topic "wood"
                                              :term "wood"})
         projects (dc/projects "wood")
-        two-d (dc/two-d "wood")
+        two-d (dc/two-d "MISR")
 
         ;; Common attributes for all collections
         common-attribs {:projects projects
@@ -286,7 +286,7 @@
         {:sensor "wood"}
         {:science-keywords {"0" {:any "wood"}}}
         {:project "wood"}
-        {:two-d-coordinate-system-name "wood"}
+        {:two-d-coordinate-system-name "MISR"}
         {:processing-level-id "wood"}
         {:data-center "wood"}
         {:archive-center "wood"})))

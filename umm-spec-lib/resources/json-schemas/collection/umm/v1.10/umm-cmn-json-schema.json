@@ -863,7 +863,7 @@
         },
         "DataType": {
           "description": "The datatype of the Characteristic/attribute.",
-          "$ref": "#/definitions/DataTypeEnum" 
+          "$ref": "#/definitions/DataTypeEnum"
         }
       },
       "required": ["Name", "Description", "DataType", "Unit", "Value"]
@@ -1322,8 +1322,7 @@
       "description": "Information about a two-dimensional tiling system related to this collection.",
       "properties": {
         "TilingIdentificationSystemName": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/definitions/TilingIdentificationSystemNameEnum"
         },
         "Coordinate1": {
           "$ref": "#/definitions/TilingCoordinateType"
@@ -1549,6 +1548,10 @@
     "GetDataTypeFormatEnum": {
       "type": "string",
       "enum": ["ascii", "binary", "GRIB", "BUFR", "HDF4", "HDF5", "HDF-EOS4", "HDF-EOS5", "jpeg", "png", "tiff", "geotiff", "kml", "Not provided"]
+    },
+    "TilingIdentificationSystemNameEnum": {
+       "type": "string",
+       "enum": ["CALIPSO", "MISR", "MODIS Tile EASE", "MODIS Tile SIN", "WELD Alaska Tile", "WELD CONUS Tile", "WRS-1", "WRS-2"]
     }
   }
 }

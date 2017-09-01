@@ -6,15 +6,16 @@
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.location-keywords :as lk]
-   [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
+   [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.dif-util :as dif-util]
-   [cmr.umm-spec.versioning :refer [versions]]
+   [cmr.umm-spec.versioning :refer [versions current-version]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -242,6 +243,17 @@
      (dissoc :ComposedOf)
      (dissoc :NumberOfInstruments)))
 
+(defn migrate-tiling-identification-systems
+  "Migrate TilingIdentificationSystems from 1.9 up to 1.10
+   If a TilingIdentificationSystemName is not valid, the entire
+   TilingIdentificationSystem will be dropped."
+  [collection]
+  (let [tiling-id-systems (filter
+                           #(spatial-conversion/tile-id-system-name-is-valid?
+                             (:TilingIdentificationSystemName %))
+                           (:TilingIdentificationSystems collection))]
+   (assoc collection :TilingIdentificationSystems (seq tiling-id-systems))))
+
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
   (-> c
@@ -271,6 +283,7 @@
 (defmethod migrate-umm-version [:collection "1.9" "1.10"]
   [context c & _]
   (-> c
+      migrate-tiling-identification-systems
       coll-progress-migration/migrate-up
       (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)
       char-data-type-normalization/migrate-up))

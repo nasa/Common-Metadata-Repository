@@ -11,9 +11,10 @@
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.related-url :as ru-gen]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-   [cmr.umm-spec.test.iso19115-expected-conversion :as iso]
    [cmr.umm-spec.test.iso-shared :as iso-shared]
+   [cmr.umm-spec.test.iso19115-expected-conversion :as iso]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.url :as url]
@@ -280,12 +281,12 @@
 (defn- expected-collection-citations
   "Returns collection-citations with only the first collection-citation in it, trimmed,
    and if the Title is nil, replace it with Not provided.
-   When collection-citations is nil, return [{:Title \"Not provided\"}]." 
+   When collection-citations is nil, return [{:Title \"Not provided\"}]."
   [collection-citations]
   (if collection-citations
-    (conj [] (cmn/map->ResourceCitationType 
-               (iso-shared/trim-collection-citation 
-                 (update (first collection-citations) :Title #(if % % su/not-provided))))) 
+    (conj [] (cmn/map->ResourceCitationType
+               (iso-shared/trim-collection-citation
+                 (update (first collection-citations) :Title #(if % % su/not-provided)))))
     (conj [] (cmn/map->ResourceCitationType {:Title su/not-provided}))))
 
 (defn umm-expected-conversion-iso-smap
@@ -293,34 +294,35 @@
    be compared to the actual translation."
   [umm-coll]
   (-> umm-coll
-        (assoc :DirectoryNames nil)
-        (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
-        (update-in [:DataDates] expected-smap-data-dates)
-        (update :DataLanguage #(or % "eng"))
-        (update :TemporalExtents expected-temporal)
-        (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-        (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
-        (update :DataCenters expected-data-centers)
-        (assoc :VersionDescription nil)
-        (assoc :ContactGroups nil)
-        (assoc :ContactPersons (expected-contact-persons 
-                                 (iso-shared/update-contact-persons-from-collection-citation
-                                   (:ContactPersons umm-coll)
-                                   (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
-                                 "Technical Contact")) 
-        (update :CollectionCitations expected-collection-citations)
-        (assoc :UseConstraints nil)
-        (assoc :AccessConstraints nil)
-        (assoc :SpatialKeywords nil)
-        (assoc :TemporalKeywords nil)
-        (assoc :AdditionalAttributes nil)
-        (update :ProcessingLevel su/convert-empty-record-to-nil)
-        (assoc :Distributions nil)
-        (assoc :PublicationReferences nil)
-        (assoc :AncillaryKeywords nil)
-        (update :RelatedUrls expected-iso-smap-related-urls)
-        (update :ScienceKeywords expected-science-keywords)
-        (assoc :PaleoTemporalCoverages nil)
-        (assoc :MetadataDates nil)
-        (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
-        (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)))
+      (assoc :DirectoryNames nil)
+      (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
+      (update-in [:DataDates] expected-smap-data-dates)
+      (update :DataLanguage #(or % "eng"))
+      (update :TemporalExtents expected-temporal)
+      (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
+      (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
+      (update :DataCenters expected-data-centers)
+      (assoc :VersionDescription nil)
+      (assoc :ContactGroups nil)
+      (assoc :ContactPersons (expected-contact-persons
+                               (iso-shared/update-contact-persons-from-collection-citation
+                                 (:ContactPersons umm-coll)
+                                 (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
+                               "Technical Contact"))
+      (update :CollectionCitations expected-collection-citations)
+      (assoc :UseConstraints nil)
+      (assoc :AccessConstraints nil)
+      (assoc :SpatialKeywords nil)
+      (assoc :TemporalKeywords nil)
+      (assoc :AdditionalAttributes nil)
+      (update :ProcessingLevel su/convert-empty-record-to-nil)
+      (assoc :Distributions nil)
+      (assoc :PublicationReferences nil)
+      (assoc :AncillaryKeywords nil)
+      (update :RelatedUrls expected-iso-smap-related-urls)
+      (update :ScienceKeywords expected-science-keywords)
+      (assoc :PaleoTemporalCoverages nil)
+      (assoc :MetadataDates nil)
+      (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
+      (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
+      (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)))

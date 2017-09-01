@@ -50,13 +50,13 @@
         projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
-        two-d-cs {:TilingIdentificationSystemName "BRAVO"
+        two-d-cs {:TilingIdentificationSystemName "MISR"
                   :Coordinate1 {:MinimumValue 100
                                 :MaximumValue 200}
                   :Coordinate2 {:MinimumValue 300
                                 :MaximumValue 400}}
         g-two-d-cs (dg/two-d-coordinate-system
-                     {:name "BRAVO"
+                     {:name "MISR"
                       :start-coordinate-1 110
                       :end-coordinate-1 130
                       :start-coordinate-2 300
@@ -256,24 +256,24 @@
         projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
-        c-two-d-cs-A {:TilingIdentificationSystemName "SOURCE_TILE"
+        c-two-d-cs-A {:TilingIdentificationSystemName "WRS-1"
                       :Coordinate1 {:MinimumValue 100
                                     :MaximumValue 200}
                       :Coordinate2 {:MinimumValue 300
                                     :MaximumValue 400}}
-        c-two-d-cs-B {:TilingIdentificationSystemName "REPLACEMENT_TILE"
+        c-two-d-cs-B {:TilingIdentificationSystemName "CALIPSO"
                       :Coordinate1 {:MinimumValue 100
                                     :MaximumValue 200}
                       :Coordinate2 {:MinimumValue 300
                                     :MaximumValue 400}}
         g-two-d-cs-A (dg/two-d-coordinate-system
-                       {:name "SOURCE_TILE"
+                       {:name "WRS-1"
                         :start-coordinate-1 110
                         :end-coordinate-1 130
                         :start-coordinate-2 300
                         :end-coordinate-2 328})
         g-two-d-cs-B (dg/two-d-coordinate-system
-                       {:name "REPLACEMENT_TILE"
+                       {:name "CALIPSO"
                         :start-coordinate-1 110
                         :end-coordinate-1 130
                         :start-coordinate-2 300
@@ -343,11 +343,11 @@
           gran-A-for-echo10-coll-A
 
           "A granule ingested in collection A with NewName is rejected"
-          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [REPLACEMENT_TILE]."]
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [CALIPSO]."]
           gran-B-for-echo10-coll-A
 
-          "A granule ingested in collection B with OldName is permitted"
-          []
+          "A granule ingested in collection B with different TilingIdentificationSystemName is not permitted"
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [WRS-1]."]
           gran-A-for-echo10-coll-B
 
           "A granule ingested in collection B with NewName is permitted"
@@ -384,19 +384,19 @@
         pB (data-umm-cmn/platform {:ShortName "platform-Sn A" :Instruments [iB]})
         prB (dg/platform-ref {:short-name "platform-Sn A" :instrument-refs [irB]})
 
-        c-two-d-cs {:TilingIdentificationSystemName "REPLACEMENT_TILE"
+        c-two-d-cs {:TilingIdentificationSystemName "MISR"
                     :Coordinate1 {:MinimumValue 100
                                   :MaximumValue 200}
                     :Coordinate2 {:MinimumValue 300
                                   :MaximumValue 400}}
         g-two-d-cs-A (dg/two-d-coordinate-system
-                       {:name "SOURCE_TILE"
+                       {:name "MISR"
                         :start-coordinate-1 110
                         :end-coordinate-1 130
                         :start-coordinate-2 300
                         :end-coordinate-2 328})
         g-two-d-cs-B (dg/two-d-coordinate-system
-                       {:name "REPLACEMENT_TILE"
+                       {:name "MISR"
                         :start-coordinate-1 110
                         :end-coordinate-1 130
                         :start-coordinate-2 300
@@ -490,13 +490,13 @@
         projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
-        two-d-cs {:TilingIdentificationSystemName "BRAVO"
+        two-d-cs {:TilingIdentificationSystemName "CALIPSO"
                   :Coordinate1 {:MinimumValue 100
                                 :MaximumValue 200}
                   :Coordinate2 {:MinimumValue 300
                                 :MaximumValue 400}}
         g-two-d-cs (dg/two-d-coordinate-system
-                     {:name "BRAVO"
+                     {:name "CALIPSO"
                       :start-coordinate-1 110
                       :end-coordinate-1 130
                       :start-coordinate-2 300
@@ -553,7 +553,7 @@
           gran-for-echo10-coll
 
           "DIF collection"
-          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [BRAVO]."]
+          ["The following list of Tiling Identification System Names did not exist in the referenced parent collection: [CALIPSO]."]
           gran-for-dif-coll
 
           "DIF10 collection"
@@ -584,13 +584,13 @@
         projects (data-umm-cmn/projects "proj")
         mbr1 (umm-s/set-coordinate-system :geodetic (m/mbr 10 10 20 0))
         gran-spatial-rep (apply dg/spatial [mbr1])
-        two-d-cs {:TilingIdentificationSystemName "BRAVO"
+        two-d-cs {:TilingIdentificationSystemName "MISR"
                   :Coordinate1 {:MinimumValue 100
                                 :MaximumValue 200}
                   :Coordinate2 {:MinimumValue 300
                                 :MaximumValue 400}}
         g-two-d-cs (dg/two-d-coordinate-system
-                     {:name "BRAVO"
+                     {:name "MISR"
                       :start-coordinate-1 110
                       :end-coordinate-1 130
                       :start-coordinate-2 300
@@ -628,7 +628,7 @@
          (= exp-errors
             (flatten (:errors (d/ingest-umm-spec-collection "PROV1" coll {:format metadata-format
                                                                           :allow-failure? true}))))
-         ["Collection TilingIdentificationSystemName [bravo] is referenced by existing granules, cannot be removed. Found 1 granules."]
+         ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 1 granules."]
          :dif
 
          []

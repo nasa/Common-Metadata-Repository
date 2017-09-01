@@ -86,7 +86,7 @@
 (defn- remove-vertical-spatial-domains
   "Remove the VerticalSpatialDomains from the SpatialExtent of the record."
   [record]
-  (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))  
+  (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))
 
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)

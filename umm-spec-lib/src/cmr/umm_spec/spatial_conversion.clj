@@ -7,6 +7,42 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]))
 
+(def valid-tile-identification-system-names
+  "Valid names for TilingIdentificationSystemName as stated in CMR-3675"
+  ["CALIPSO"
+   "MISR"
+   "MODIS Tile EASE"
+   "MODIS Tile SIN"
+   "WELD Alaska Tile"
+   "WELD CONUS Tile"
+   "WRS-1"
+   "WRS-2"])
+
+(defn tile-id-system-name-is-valid?
+  "Return whether or not the given TileIdentificationSystemName is one of the
+   valid-tile-identification-system-names"
+  [tile-system-id-name]
+  (some #(= tile-system-id-name %) valid-tile-identification-system-names))
+
+(defn translate-tile-id-system-name
+  "Return nil or equivalent value if the given name does not match any
+   in the list of valid ones"
+  [tile-identification-system-name]
+  (when (tile-id-system-name-is-valid? tile-identification-system-name)
+    tile-identification-system-name))
+
+(defn expected-tiling-id-systems-name
+  "Translate TilingIdentificationSystemNames in accordance with UMM Spec v1.10"
+  [tiling-identification-systems]
+  (let [tiling-id-systems (mapv
+                           (fn [tiling-id-system]
+                             (update tiling-id-system
+                                     :TilingIdentificationSystemName
+                                     translate-tile-id-system-name))
+                           tiling-identification-systems)]
+    (when-not (empty? tiling-id-systems)
+      tiling-id-systems)))
+
 (defn boundary->ring
   "Create a ring from a set of boundary points"
   [coord-sys boundary]

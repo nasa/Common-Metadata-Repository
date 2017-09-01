@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.granule-grid-search-test
   "Integration test for CMR granule grid search"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -16,7 +16,7 @@
                                                                             :Version "V1"
                                                                             :EntryTitle "E1"
                                                                             :TilingIdentificationSystems
-                                                [{:TilingIdentificationSystemName "one CALIPSO"
+                                                [{:TilingIdentificationSystemName "CALIPSO"
                                                   :Coordinate1 {:MinimumValue 100
                                                                 :MaximumValue 200}
                                                   :Coordinate2 {:MinimumValue 300
@@ -25,7 +25,7 @@
                                                                             :Version "V2"
                                                                             :EntryTitle "E2"
                                                                             :TilingIdentificationSystems
-                                                [{:TilingIdentificationSystemName "BRAVO"
+                                                [{:TilingIdentificationSystemName "MISR"
                                                   :Coordinate1 {:MinimumValue 100
                                                                 :MaximumValue 200}
                                                   :Coordinate2 {:MinimumValue 300
@@ -33,7 +33,7 @@
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 300
@@ -41,7 +41,7 @@
         gran2 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 320
@@ -49,7 +49,7 @@
         gran3 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 150
                                                              :end-coordinate-1 170
                                                              :start-coordinate-2 328
@@ -57,7 +57,7 @@
         gran4 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 150
                                                              :end-coordinate-1 170
                                                              :start-coordinate-2 330
@@ -65,7 +65,7 @@
         gran5 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 350
@@ -73,7 +73,7 @@
         gran6 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 361
@@ -81,28 +81,28 @@
         gran7 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 328})}))
         gran8 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 331})}))
         gran9 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                            {:name "one CALIPSO"
+                                                            {:name "CALIPSO"
                                                              :start-coordinate-1 110
                                                              :end-coordinate-1 130
                                                              :start-coordinate-2 361})}))
         gran10 (d/ingest "PROV1"
                          (dg/granule-with-umm-spec-collection
                            coll1 (:concept-id coll1) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                             {:name "one CALIPSO"
+                                                             {:name "CALIPSO"
                                                               :start-coordinate-1 110
                                                               :end-coordinate-1 130
                                                               :start-coordinate-2 329
@@ -110,7 +110,7 @@
         gran11 (d/ingest "PROV1"
                          (dg/granule-with-umm-spec-collection
                            coll2 (:concept-id coll2) {:two-d-coordinate-system (dg/two-d-coordinate-system
-                                                             {:name "BRAVO"
+                                                             {:name "MISR"
                                                               :start-coordinate-1 100
                                                               :end-coordinate-1 120
                                                               :start-coordinate-2 300
@@ -123,20 +123,20 @@
            (d/refs-match? items (search/find-refs :granule {"grid[]" two-d}))
 
            ;; search by grid name
-           [gran11] "BRAVO"
+           [gran11] "MISR"
            ;; search by grid value
-           [gran1] "one CALIPSO:110,300"
+           [gran1] "CALIPSO:110,300"
            ;; search by grid range
-           [gran3] "one CALIPSO:160-170,350-360"
-           [gran2 gran3 gran4, gran5 gran8 gran10] "one CALIPSO:,329-360"
-           [gran1 gran2 gran3 gran4 gran5 gran7 gran8 gran10] "one CALIPSO:,-360"
-           [gran3 gran5 gran6 gran9 gran10] "one CALIPSO:,360-"
+           [gran3] "CALIPSO:160-170,350-360"
+           [gran2 gran3 gran4, gran5 gran8 gran10] "CALIPSO:,329-360"
+           [gran1 gran2 gran3 gran4 gran5 gran7 gran8 gran10] "CALIPSO:,-360"
+           [gran3 gran5 gran6 gran9 gran10] "CALIPSO:,360-"
            ;; search by multiple grid ranges
-           [gran3 gran5 gran6 gran9 gran10] "one CALIPSO:160-170,350-360:,360-"
-           [gran3 gran4] "one CALIPSO:160-170,350-360:150-160,330-340"
-           [gran3 gran4 gran5 gran6 gran9 gran10] "one CALIPSO:160-170,350-360:150-160,330-340:,360-"
+           [gran3 gran5 gran6 gran9 gran10] "CALIPSO:160-170,350-360:,360-"
+           [gran3 gran4] "CALIPSO:160-170,350-360:150-160,330-340"
+           [gran3 gran4 gran5 gran6 gran9 gran10] "CALIPSO:160-170,350-360:150-160,330-340:,360-"
            ;; search by multiple grids
-           [gran3 gran11] ["one CALIPSO:160-170,350-360" "BRAVO:100,310"]))
+           [gran3 gran11] ["CALIPSO:160-170,350-360" "MISR:100,310"]))
 
     (testing "invalid grid parameters"
       (are [two-d error]
@@ -158,19 +158,19 @@
                                  search-params)]
              (d/refs-match? items (search/find-refs :granule search-params)))
            ;; search by grid name
-           [gran11] "BRAVO" nil
+           [gran11] "MISR" nil
            ;; search by grid value
-           [gran1] "one CALIPSO" "110-110:300-300"
+           [gran1] "CALIPSO" "110-110:300-300"
            ;; search by grid range
-           [gran3] "one CALIPSO" "160-170:350-360"
-           [gran2 gran3 gran4, gran5 gran8 gran10] "one CALIPSO" "-:329-360"
-           [gran1 gran2 gran3 gran4 gran5 gran7 gran8 gran10] "one CALIPSO" "-:-360"
-           [gran3 gran5 gran6 gran9 gran10] "one CALIPSO" "-:360-"
+           [gran3] "CALIPSO" "160-170:350-360"
+           [gran2 gran3 gran4, gran5 gran8 gran10] "CALIPSO" "-:329-360"
+           [gran1 gran2 gran3 gran4 gran5 gran7 gran8 gran10] "CALIPSO" "-:-360"
+           [gran3 gran5 gran6 gran9 gran10] "CALIPSO" "-:360-"
            ;; search by multiple grid ranges
-           [gran3 gran5 gran6 gran9 gran10] "one CALIPSO" "160-170:350-360,-:360-"
-           [gran3 gran4] "one CALIPSO" "160-170:350-360,150-160:330-340"
+           [gran3 gran5 gran6 gran9 gran10] "CALIPSO" "160-170:350-360,-:360-"
+           [gran3 gran4] "CALIPSO" "160-170:350-360,150-160:330-340"
            [gran3 gran4 gran5 gran6 gran9 gran10]
-           "one CALIPSO" "160-170:350-360,150-160:330-340,-:360-"))
+           "CALIPSO" "160-170:350-360,150-160:330-340,-:360-"))
 
     (testing "invalid catalog-rest two-d-coordinate-system parameters"
       (are [two-d-name coords error]
@@ -194,22 +194,22 @@
                           (search/find-refs-with-aql :granule
                                                      [{:TwoDCoordinateSystem two-d}]))
            ;; search by grid name
-           [gran11] {:name "BRAVO" :coord-1 nil :coord-2 nil}
-           [] {:name "bravo" :coord-1 nil :coord-2 nil}
+           [gran11] {:name "MISR" :coord-1 nil :coord-2 nil}
+           [] {:name "misr" :coord-1 nil :coord-2 nil}
            ;; ignore-case
-           [] {:name "bravo" :coord-1 nil :coord-2 nil :ignore-case false}
-           [gran11] {:name "bravo" :coord-1 nil :coord-2 nil :ignore-case true}
-           [gran11] {:name "BRAVO" :coord-1 nil :coord-2 nil :ignore-case false}
-           [gran11] {:name "BRAVO" :coord-1 nil :coord-2 nil :ignore-case true}
+           [] {:name "misr" :coord-1 nil :coord-2 nil :ignore-case false}
+           [gran11] {:name "MISR" :coord-1 nil :coord-2 nil :ignore-case true}
+           [gran11] {:name "MISR" :coord-1 nil :coord-2 nil :ignore-case false}
+           [gran11] {:name "MISR" :coord-1 nil :coord-2 nil :ignore-case true}
            ;; search by grid value
-           [gran1] {:name "one CALIPSO" :coord-1 110 :coord-2 300}
+           [gran1] {:name "CALIPSO" :coord-1 110 :coord-2 300}
            ;; search by grid range
-           [gran3] {:name "one CALIPSO" :coord-1 [160 170] :coord-2 [350 360]}
+           [gran3] {:name "CALIPSO" :coord-1 [160 170] :coord-2 [350 360]}
            [gran2 gran3 gran4, gran5 gran8 gran10]
-           {:name "one CALIPSO" :coord-1 nil :coord-2 [329 360]}
+           {:name "CALIPSO" :coord-1 nil :coord-2 [329 360]}
            [gran1 gran2 gran3 gran4 gran5 gran7 gran8 gran10]
-           {:name "one CALIPSO" :coord-1 nil :coord-2 [nil 360]}
-           [gran3 gran5 gran6 gran9 gran10] {:name "one CALIPSO" :coord-1 nil :coord-2 [360 nil]}))
+           {:name "CALIPSO" :coord-1 nil :coord-2 [nil 360]}
+           [gran3 gran5 gran6 gran9 gran10] {:name "CALIPSO" :coord-1 nil :coord-2 [360 nil]}))
 
     (testing "invalid AQL two-d-coordinate-system"
       (are [two-d-name coord-1 coord-2 error]
@@ -227,5 +227,3 @@
            "TwoDCoordinateSystem coordinate1 range lower [5.0] should be smaller than upper [1.0]"
            "name" nil [5 1]
            "TwoDCoordinateSystem coordinate2 range lower [5.0] should be smaller than upper [1.0]"))))
-
-
