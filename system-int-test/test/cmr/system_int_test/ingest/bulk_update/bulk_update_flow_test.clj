@@ -19,13 +19,13 @@
   (format "C120000000%s-%s" index provider))
 
 (deftest bulk-update-success
-  (let [concept-ids (for [x (range 3)]
-                      (:concept-id (ingest/ingest-concept
-                                     (assoc
-                                       (data-umm-c/collection-concept
-                                         (data-umm-c/collection x {}))
-                                       :concept-id
-                                       (generate-concept-id x "PROV1")))))
+  (let [concept-ids (doall (for [x (range 3)]
+                             (:concept-id (ingest/ingest-concept
+                                            (assoc
+                                              (data-umm-c/collection-concept
+                                                (data-umm-c/collection x {}))
+                                              :concept-id
+                                              (generate-concept-id x "PROV1"))))))
         _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :update-type "ADD_TO_EXISTING"
