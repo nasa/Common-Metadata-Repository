@@ -34,7 +34,7 @@
 
 (defmethod cqv/supported-result-formats :variable
   [_]
-  (into #{:json
+  (into #{:xml :json
           ;; umm-json supported with and without versions
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :variable)))

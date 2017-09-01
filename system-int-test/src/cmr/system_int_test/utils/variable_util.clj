@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.utils.variable-util
   "This contains utilities for testing variables."
   (:require
+   [cheshire.core :as json]
    [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
@@ -112,7 +113,7 @@
   ([variable-concept opts]
     (let [result (ingest-util/ingest-concept variable-concept opts)
           attrs (select-keys variable-concept
-                             [:provider-id :native-id])]
+                             [:provider-id :native-id :metadata])]
       (merge result attrs))))
 
 (defn ingest-variable-with-attrs
@@ -212,22 +213,34 @@
 
 (defn assert-variable-search
   "Verifies the variable search results"
-  ([variables response]
-   (assert-variable-search nil variables response))
-  ([expected-hits variables response]
-   (let [expected-items (->> variables
-                             (map #(select-keys % variable-names-in-expected-response))
-                             seq
-                             set)
-         expected-response {:status 200
-                            :hits (or expected-hits (count variables))
-                            :items expected-items}]
-     (is (:took response))
-     (is (= expected-response
-            (-> response
-                (select-keys [:status :hits :items])
-                (util/update-in-each [:items] dissoc :name :long-name)
-                (update :items set)))))))
+  [variables response]
+  (let [expected-items (->> variables
+                            (map #(select-keys % variable-names-in-expected-response))
+                            seq
+                            set)
+        expected-response {:status 200
+                           :hits (count variables)
+                           :items expected-items}]
+    (is (:took response))
+    (is (= expected-response
+           (-> response
+               (select-keys [:status :hits :items])
+               (util/update-in-each [:items] dissoc :name :long-name)
+               (update :items set))))))
+
+(defn- add-name-to-variable
+  "Add the Name field of the variable to itself.
+  This function is used for checking if the result references match the response."
+  [variable]
+  (let [{:keys [metadata]} variable
+        parsed (json/parse-string metadata true)]
+    (assoc variable :variable-name (:Name parsed))))
+
+(defn assert-variable-references-match
+  "Verifies the variable references"
+  [variables response]
+  (let [variables (map add-name-to-variable variables)]
+    (d/refs-match? variables response)))
 
 (defn assert-variable-search-order
   "Verifies the searcch results are in the correct order"
