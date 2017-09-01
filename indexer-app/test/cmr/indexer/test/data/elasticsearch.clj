@@ -31,6 +31,8 @@
                      :settings i/tag-setting}],
           :mapping i/tag-mapping},
     :variable {:indexes [{:name "variables",
+                          :settings i/variable-setting}
+                         {:name "all-variable-revisions",
                           :settings i/variable-setting}],
                :mapping i/variable-mapping},
     :concepts {:collection {:collections "1_collections_v2",

@@ -4,11 +4,13 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.variable-util :as variables]))
+   [cmr.system-int-test.utils.variable-util :as variables]
+   [cmr.umm-spec.versioning :as umm-version]))
 
 (use-fixtures :each
               (join-fixtures
@@ -23,7 +25,8 @@
         var1-1 (variables/ingest-variable var1-concept)
         var1-2-tombstone (merge (ingest/delete-concept var1-concept {:token token})
                                 var1-concept
-                                {:deleted true})
+                                {:deleted true
+                                 :user-id "user1"})
         var1-3 (variables/ingest-variable var1-concept)
 
         var2-1-concept (variables/make-variable-concept {:native-id "var2"
@@ -38,7 +41,8 @@
         var2-2 (variables/ingest-variable var2-2-concept)
         var2-3-tombstone (merge (ingest/delete-concept var2-2-concept {:token token})
                                 var2-2-concept
-                                {:deleted true})
+                                {:deleted true
+                                 :user-id "user1"})
         var3 (variables/ingest-variable-with-attrs {:native-id "var3"
                                                     :Name "Variable1"
                                                     :LongName "LongName3"
@@ -49,8 +53,14 @@
         (do
           ;; find references with all revisions
           (variables/assert-variable-references-match variables (search/find-refs :variable params))
+
           ;; search in JSON with all-revisions
-          (variables/assert-variable-search variables (variables/search params)))
+          (variables/assert-variable-search variables (variables/search params))
+
+          ;; search in UMM JSON with all-revisions
+          (du/assert-variable-umm-jsons-match
+           umm-version/current-variable-version variables
+           (search/find-concepts-umm-json :variable params)))
 
         "provider-id all-revisions=false"
         [var1-3]
