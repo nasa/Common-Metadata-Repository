@@ -24,30 +24,36 @@
              {ctx :request-context}
              (pages/home ctx))
         (GET "/sitemap.xml"
-             {ctx :request-context}
-             (content-service/retrieve-page ctx "/sitemap.xml"))
+             {ctx :request-context params :params}
+             (content-service/retrieve-page ctx params "/sitemap.xml"))
         (GET "/site/sitemap.xml"
-             {ctx :request-context}
-             (content-service/retrieve-page ctx "/site/sitemap.xml"))
+             {ctx :request-context params :params}
+             (content-service/retrieve-page ctx params "/site/sitemap.xml"))
         (GET "/site/collections/directory"
              {ctx :request-context}
              (pages/collections-directory ctx))
         (GET "/site/collections/directory/eosdis"
-             {ctx :request-context}
+             {ctx :request-context params :params}
              (content-service/retrieve-page
-              ctx "/site/collections/directory/eosdis"))
+              ctx params "/site/collections/directory/eosdis"))
         (GET "/site/collections/directory/:provider-id/:tag"
-             [provider-id tag :as {ctx :request-context}]
+             [provider-id tag :as {ctx :request-context params :params}]
              (content-service/retrieve-page
               ctx
-              (format "/site/collections/directory/%s/%s" provider-id tag)))
+              params
+              (format "/site/collections/directory/%s/%s" provider-id tag)
+              provider-id
+              tag))
         (GET "/site/collections/directory/:provider-id/:tag/sitemap.xml"
-             [provider-id tag :as {ctx :request-context}]
+             [provider-id tag :as {ctx :request-context params :params}]
              (content-service/retrieve-page
               ctx
+              params
               (format "/site/collections/directory/%s/%s/sitemap.xml"
                       provider-id
-                      tag)))
+                      tag)
+              provider-id
+              tag))
         ;; Backwards comapatibility for old docs URLs
         (GET "/site/search_api_docs.html"
              {ctx :request-context}
