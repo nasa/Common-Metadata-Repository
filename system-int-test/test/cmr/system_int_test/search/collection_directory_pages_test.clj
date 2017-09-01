@@ -15,67 +15,17 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.site-util :as site]
    [cmr.system-int-test.utils.tag-util :as tags]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as cm]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Constants and general utility functions for the tests
+;;; Constants for the tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:private test-collections (atom {}))
-
-(defn- add-token-header
-  ([token]
-   (add-token-header token {}))
-  ([token options]
-   (assoc-in options [:headers transmit-config/token-header] token)))
-
-(defn- get-response
-  ([url-path]
-   (get-response url-path {}))
-  ([url-path options]
-   (-> (transmit-config/application-public-root-url :search)
-       (str url-path)
-       (client/get options))))
-
-(defn- do-permission-assertions
-  [test-section url-path]
-  (testing test-section
-    (let [no-perms-error ["You do not have permission to perform that action."]]
-      (testing "anonymous"
-        (let [response (get-response url-path {:throw-exceptions? false})]
-          (is (= 401 (:status response)))
-          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
-      (testing "nil token"
-        (let [response (get-response
-                        url-path
-                        (add-token-header nil {:throw-exceptions? false}))]
-          (is (= 401 (:status response)))
-          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
-      (testing "fake token"
-        (let [response (get-response
-                        url-path
-                        (add-token-header "ABC" {:throw-exceptions? false}))]
-          (is (= 401 (:status response)))
-          (is (= ["Token ABC does not exist"]
-                 (search/safe-parse-error-xml (:body response))))))
-      (testing "regular user token"
-        (let [response (get-response
-                        url-path
-                        (add-token-header (e/login (s/context) "user")
-                                          {:throw-exceptions? false}))]
-          (is (= 401 (:status response)))
-          (is (= no-perms-error (search/safe-parse-error-xml (:body response))))))
-      (testing "admin"
-        (let [admin-group-id (e/get-or-create-group (s/context) "admin-group")
-              admin-user-token (e/login (s/context) "admin-user" [admin-group-id])
-              _ (e/grant-group-admin (s/context) admin-group-id :update)
-              ;; Need to clear the ACL cache to get the latest ACLs from mock-echo
-              _ (search/clear-caches)
-              response (get-response url-path (add-token-header admin-user-token))]
-          (is (= 200 (:status response))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Exepcted results check functions
@@ -245,12 +195,12 @@
 
 (deftest header-link
   (testing "check the link for landing pages in the header"
-    (let [response (get-response "")]
+    (let [response (site/get-search-response "")]
       (is (= 200 (:status response)))
       (is (expected-header-link? (:body response))))))
 
 (deftest top-level-links
-  (let [response (get-response "site/collections/directory")
+  (let [response (site/get-search-response "site/collections/directory")
         body (:body response)]
     (testing "check top level status and links"
       (is (= 200 (:status response)))
@@ -260,7 +210,7 @@
 
 (deftest eosdis-level-links
   (Thread/sleep 1000)
-  (let [response (get-response "site/collections/directory/eosdis")
+  (let [response (site/get-search-response "site/collections/directory/eosdis")
         body (:body response)]
     (testing "check eosdis level status and links"
       (is (= 200 (:status response)))
@@ -284,7 +234,7 @@
         url-path (format
                   "site/collections/directory/%s/%s"
                   provider tag)
-        response (get-response url-path)
+        response (site/get-search-response url-path)
         body (:body response)]
     (testing "check the status and links for PROV1"
       (is (= 200 (:status response)))
@@ -300,7 +250,7 @@
         url-path (format
                   "site/collections/directory/%s/%s"
                   provider tag)
-        response (get-response url-path)
+        response (site/get-search-response url-path)
         body (:body response)]
     (testing "check the status and links for PROV2"
       (is (= 200 (:status response)))
@@ -316,7 +266,7 @@
         url-path (format
                   "site/collections/directory/%s/%s"
                   provider tag)
-        response (get-response url-path)
+        response (site/get-search-response url-path)
         body (:body response)]
     (testing "check the status and links for PROV3"
       (is (= 200 (:status response)))
@@ -327,10 +277,10 @@
       (is (expected-header-link? body)))))
 
 (deftest regeneration-permissions
-  (do-permission-assertions
+  (site/assert-search-directory-regen-permissions
    "eosdis directory level"
    "site/collections/directory/eosdis?regenerate=true")
-  (do-permission-assertions
+  (site/assert-search-directory-regen-permissions
    "provider/tag level"
    "site/collections/directory/PROV1/gov.nasa.eosdis?regenerate=true"))
 
@@ -345,7 +295,7 @@
 ;; set up.
 (deftest eosdis-collections-directory-page
   (testing "eosdis collections collections directory page returns content"
-    (let [response (get-response "site/collections/directory/eosdis")]
+    (let [response (site/get-search-response "site/collections/directory/eosdis")]
       (is (= (:status response) 200))
       (is (string/includes?
            (:body response)
