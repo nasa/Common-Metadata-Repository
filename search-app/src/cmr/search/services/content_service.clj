@@ -18,17 +18,13 @@
    [cmr.transmit.metadata-db :as mdb]))
 
 (def cache-key
-  "The key used to store the humanizer report cache in the system cache map."
+  "The key used to store the static content cache in the system cache map."
   :static-content-cache)
 
-(defconfig job-delay
-  "Number of seconds the `static-content-generator-job` needs to wait after
-  collection cache refresh job starts.
-
-  We need to add the delay so that the collection cache can be populated first
-  (collections are one of the key things queried when generating static
-  content)."
-  {:default 400
+(defconfig static-content-generation-job-delay
+  "Number of seconds the `static-content-generator-job` should wait after
+  collection cache refresh job starts."
+  {:default 0
    :type Long})
 
 (defconfig generation-interval
@@ -81,6 +77,11 @@
                 route
                 (get-page-content context route provider-id tag))))
 
+(defn- create-lookup-fn
+  [args]
+  (debug "Route" (second args) "not found in cache")
+  (fn [] (apply get-page-content args)))
+
 (defn retrieve-page
   "Attempt to retrieve from the cache the page data for a given route. If no
   value is found in the cache, genereate the content, cache it, and then return
@@ -99,13 +100,9 @@
       (acl/verify-ingest-management-permission context :update)
       (debug "Forcing resource regeneration/cache update" route)
       (apply cache-page args))
-    (if-let [content (cache/get-value
-                      (cache/context->cache context cache-key) route)]
-      content
-      (do
-        (debug "Route" route "not found in cache")
-        (apply cache-page args)
-        (retrieve-page context params route)))))
+    (cache/get-value (cache/context->cache context cache-key)
+                     route
+                     (create-lookup-fn args))))
 
 (defn- cache-top-level-content
   "Cache all the content for the expensive, top-level routes."
@@ -154,4 +151,4 @@
   "The job definition used by the system job scheduler."
   {:job-type StaticContentGeneratorJob
    :interval (generation-interval)
-   :start-delay (+ (default-job-start-delay) (job-delay))})
+   :start-delay (+ (default-job-start-delay) (static-content-generation-job-delay))})

@@ -183,7 +183,6 @@
   ;; Prevent jobs from blocking calls to reset
   (humanizer-report-service/set-retry-count! 0)
   (humanizer-report-service/set-humanizer-report-generator-job-wait! 0)
-  (content-service/set-job-delay! 0)
   (content-service/set-generation-interval! 60)
 
   ;; uncomment this line to start gorilla repl.
