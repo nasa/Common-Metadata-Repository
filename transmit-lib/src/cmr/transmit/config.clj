@@ -71,19 +71,18 @@
                "application is deployed in an environment where it is accessed through a VIP.")
          {:default ~(get defaults :relative-root-url "")}))))
 
-(def-app-conn-config metadata-db {:port 3001})
-(def-app-conn-config ingest {:port 3002})
-(def-app-conn-config search {:port 3003})
-(def-app-conn-config indexer {:port 3004})
-(def-app-conn-config index-set {:port 3005})
+(def-app-conn-config access-control {:port 3011})
 (def-app-conn-config bootstrap {:port 3006})
 (def-app-conn-config cubby {:port 3007})
-(def-app-conn-config virtual-product {:port 3009})
-;; CMR open search is 3010
-(def-app-conn-config access-control {:port 3011})
+(def-app-conn-config index-set {:port 3005})
+(def-app-conn-config indexer {:port 3004})
+(def-app-conn-config ingest {:port 3002})
 (def-app-conn-config kms {:port 2999, :relative-root-url "/kms"})
-
+(def-app-conn-config metadata-db {:port 3001})
+;; CMR open search is 3010
+(def-app-conn-config search {:port 3003})
 (def-app-conn-config urs {:port 3008, :relative-root-url "/urs"})
+(def-app-conn-config virtual-product {:port 3009})
 
 (defconfig urs-username
   "Defines the username that is sent from the CMR to URS to authenticate the CMR."
@@ -248,15 +247,18 @@
   {:connection-manager (conn/conn-mgr connection)
    :socket-timeout (http-socket-timeout)})
 
-(defn- format-public-root-url
-  [{:keys [protocol host port relative-root-url]}]
-  (let [port (if (empty? relative-root-url) port (format "%s%s" port relative-root-url))]
-    (format "%s://%s:%s/" protocol host port)))
+(defn format-public-root-url
+  "Format the public root URL differently if a port is provided or not."
+  [{:keys [protocol host port relative-root-url]
+    :or {relative-root-url ""}}]
+  (if port
+    (format "%s://%s:%s%s/" protocol host port relative-root-url)
+    (format "%s://%s%s/" protocol host relative-root-url)))
 
 (defmulti application-public-root-url
   "Returns the public root url for an application given a context. Assumes
   public configuration is stored in a :public-conf key of the system."
-   type)
+  type)
 
 (defmethod application-public-root-url clojure.lang.Keyword
   [app-key]

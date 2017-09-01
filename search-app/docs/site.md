@@ -26,7 +26,7 @@ Note that in production, the base CMR Search URL is `/search`, while in developm
 
 ### <a name="routes"></a> Cached Content
 
-Some of the dynamic routes listed above may potentially generate content based on time-consuming queries, thus requiring longer rendering times. This can have a negative impact on search engine optimization (SEO) and thus the ability of our users to find the appropriate content using web search engines. As such, we have selectively cached such "expensive" pages in CMR's memory and reguularly regenerate them.
+Some of the dynamic routes listed above may potentially generate content based on time-consuming queries, thus requiring longer rendering times. This can have a negative impact on search engine optimization (SEO) and thus the ability of our users to find the appropriate content using web search engines. As such, we have selectively cached such "expensive" pages in CMR's memory and regularly regenerate them.
 
 These are the routes that have been selected for caching:
 

@@ -15,7 +15,7 @@
   {"gov.nasa.eosdis" "EOSDIS"})
 
 (defn get-app-url
-  "A utility function for gettin the app's root URL.
+  "A utility function for getting the app's root URL.
 
   When called from the CLI, the key `:cmr-application` will have a value
   matching the application (in this case, `:search`). When called from a
@@ -94,14 +94,13 @@
   (get-provider-resource base provider-id tag "index.html"))
 
 (defn endpoint-get
-  "A utilitye function that performs an HTTP `GET` and a few consistently used
+  "A utility function that performs an HTTP `GET` and a few consistently used
   processing steps."
   [& args]
   (try
     (-> (apply client/get args)
         :body
         (json/parse-string true))
-    (catch ConnectException
-           e
+    (catch ConnectException e
            (warn (.getMessage e))
            {})))
