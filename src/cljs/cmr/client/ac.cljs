@@ -3,7 +3,8 @@
    [cmr.client.ac.impl :as ac :refer [->CMRAccessControlClientData
                                       CMRAccessControlClientData]]
    [cmr.client.ac.protocol :refer [CMRAccessControlAPI]]
-   [cmr.client.base :refer [make-options CMRClientAPI]]
+   [cmr.client.base :refer [make-options]]
+   [cmr.client.base.protocol :refer [CMRClientAPI]]
    [cmr.client.base.impl :as base]
    [cmr.client.common.const :as const]
    [cmr.client.common.util :as util]

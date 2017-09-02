@@ -1,7 +1,8 @@
 (ns cmr.client.ingest
   (:require
-   [cmr.client.base :refer [make-options CMRClientAPI]]
+   [cmr.client.base :refer [make-options]]
    [cmr.client.base.impl :as base]
+   [cmr.client.base.protocol :refer [CMRClientAPI]]
    [cmr.client.common.const :as const]
    [cmr.client.common.util :as util]
    [cmr.client.http.core :as http]

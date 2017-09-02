@@ -86,7 +86,9 @@
       ["cljsbuild" "once" "cmr-dev"]
     "build-cljs-prod"
       ^{:doc "Build just the prod version of the ClojureScript code"}
-      ["cljsbuild" "once" "cmr-prod"]
+      ["do"
+        ["shell" "rm" "resources/public/js/cmr_client.js"]
+        ["cljsbuild" "once" "cmr-prod"]]
     "run-tests"
       ^{:doc "Use the ltest runner for verbose, colourful test output"}
       ["with-profile" "+test"
@@ -113,7 +115,9 @@
         ["test"]
         ["compile"]
         ["docs"]
-        ["uberjar"]]
+        ["uberjar"]
+        ["build-cljs-dev"]
+        ["build-cljs-prod"]]
     "npm"
       ^{:doc "Publish compiled JavaScript client"}
       ["do"
