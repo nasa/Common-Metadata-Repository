@@ -54,14 +54,14 @@
       :codox {
         :project {
           :name "CMR Client"
-          :description "A Clojure(Script) Client for NASA's Common Metadata Repository"}
-        :namespaces [#"^cmr\.(?!dev)"]
-        :themes [:rdash]
-        :output-path "docs/current"
-        :doc-paths ["resources/docs"]
+          :description "A Clojure(Script)+JavaScript Client for NASA's Common Metadata Repository"}
+        :namespaces [#"^cmr\.client\..*"]
         :metadata {
           :doc/format :markdown
-          :doc "Documentation forthcoming"}}}}
+          :doc "Documentation forthcoming"}
+        :themes [:rdash]
+        :doc-paths ["docs/md"]
+        :output-path "docs/current"}}}
   :cljsbuild {
     :builds [
       {:id "cmr-dev"
@@ -104,7 +104,7 @@
         ; ["marg" "--dir" "docs/current"
         ;         "--file" "marginalia.html"
         ;         "--name" "sockets"]
-        ]
+        ["shell" "cp" "resources/public/cdn.html" "docs"]]
     "build"
       ^{:doc "Perform the build tasks"}
       ["with-profile" "+test" "do"
