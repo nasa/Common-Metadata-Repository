@@ -22,7 +22,8 @@
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
         [lein-cljsbuild "1.1.7" :exclusions [org.clojure/clojure]]
-        [lein-figwheel "0.5.13" :exclusions [org.clojure/clojure]]]
+        [lein-figwheel "0.5.13" :exclusions [org.clojure/clojure]]
+        [lein-shell "0.5.0"]]
       :resource-paths ["dev-resources"]
       :source-paths ["dev-resources/src"]
       :repl-options {
@@ -81,10 +82,10 @@
          :output-to "resources/public/js/cmr_client.js"}}]}
   :aliases {
     "build-cljs-dev"
-      ^{:doc "Build just the dev version of the ClojureScript code."}
+      ^{:doc "Build just the dev version of the ClojureScript code"}
       ["cljsbuild" "once" "cmr-dev"]
     "build-cljs-prod"
-      ^{:doc "Build just the prod version of the ClojureScript code."}
+      ^{:doc "Build just the prod version of the ClojureScript code"}
       ["cljsbuild" "once" "cmr-prod"]
     "run-tests"
       ^{:doc "Use the ltest runner for verbose, colourful test output"}
@@ -93,17 +94,35 @@
     "check-deps"
       ^{:doc "Check to see if any dependencies are out of date"}
       ["with-profile" "lint" "ancient" "all"]
-    "lint" ["with-profile" "+test" "kibit"]
-    "docs" ["with-profile" "+docs" "do"
-      ["codox"]
-      ; ["marg" "--dir" "docs/current"
-      ;         "--file" "marginalia.html"
-      ;         "--name" "sockets"]
-      ]
-    "build" ["with-profile" "+test" "do"
-      ["check-deps"]
-      ["lint"]
-      ["test"]
-      ["compile"]
-      ["docs"]
-      ["uberjar"]]})
+    "lint"
+      ^{:doc "Run linting tools against the source"}
+      ["with-profile" "+test" "kibit"]
+    "docs"
+      ^{:doc "Generate API documentation"}
+      ["with-profile" "+docs" "do"
+        ["codox"]
+        ; ["marg" "--dir" "docs/current"
+        ;         "--file" "marginalia.html"
+        ;         "--name" "sockets"]
+        ]
+    "build"
+      ^{:doc "Perform the build tasks"}
+      ["with-profile" "+test" "do"
+        ["check-deps"]
+        ["lint"]
+        ["test"]
+        ["compile"]
+        ["docs"]
+        ["uberjar"]]
+    "npm"
+      ^{:doc "Publish compiled JavaScript client"}
+      ["do"
+        ["shell" "mkdir" "dist"]
+        ["shell" "cp" "resources/public/js/cmr_client.js" "dist"]
+        ["shell" "npm" "publish" "--access" "public"]
+        ["shell" "rm" "-rf" "dist"]]
+    "publish"
+      ^{:doc "Publish to Clojars and npm"}
+      ["do"
+        ["deploy" "clojars"]
+        ["npm"]]})

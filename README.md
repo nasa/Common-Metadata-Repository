@@ -9,7 +9,7 @@
 [![Tag][tag-badge]][tag]
 /-->
 
-*A Clojure(Script) Client for NASA's Common Metadata Repository*
+*A Clojure(Script)+JavaScript Client for NASA's Common Metadata Repository*
 
 [![][logo]][logo]
 
@@ -205,13 +205,19 @@ client:
 (with-callback ch #(println "Got body:" %))
 ```
 ```
-Got body: [{:provider-id LARC_ASDC, :short-name LARC_ASDC, :cmr-only false ...}
+Got body: [{:provider-id LARC_ASDC, :short-name LARC_ASDC ...}
 ```
 
 
 ## JavaScript [&#x219F;](#contents)
 
-You can use the compiled ClojureScript client in the browser like so:
+You can use the compiled ClojureScript client in the browser by including the
+library `cmr_client.js` file in a `<script>` tag in one of these two ways:
+
+* `<script src="js/cmr_client.js" type="text/javascript"></script>`
+* `<script src="//unpkg.com/@nasa-earthdata/cmr@latest" type="text/javascript"></script>`
+
+Then, from the console, in the page, or in a `.js` file, you can do:
 
 ```js
 var client = cmr.client.ingest.create_client({"return-body?": true});
@@ -221,9 +227,9 @@ cmr.client.common.util.with_callback(channel, function(data) {
   document.getElementById("data").innerHTML = formatted_output;
 });
 ```
-Then you'll get an `alert` dialog with the following content:
+Then you'll the page get updated with the following content:
 ```clj
-Got body: [{:provider-id LARC_ASDC, :short-name LARC_ASDC, :cmr-only false ...}
+[{:provider-id LARC_ASDC, :short-name LARC_ASDC ...}
 ```
 
 
