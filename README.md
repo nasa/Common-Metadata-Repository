@@ -56,7 +56,7 @@ and feature requests to documentation updates and code), see the
 [contributing docs][contributing-docs]
 
 
-## License [&#x219F;](#contents)
+## License
 
 Copyright © 2017 Duncan McGreggor
 
