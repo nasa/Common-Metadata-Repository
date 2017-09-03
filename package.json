@@ -1,8 +1,8 @@
 {
   "name": "@nasa-earthdata/cmr",
-  "version": "0.1.0-dev6",
+  "version": "0.1.0-dev7",
   "description": "A JavaScript Client for NASA's Common Metadata Repository",
-  "main": "lib/cmr_client.js",
+  "main": "dist/cmr_client.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
