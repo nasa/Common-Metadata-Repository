@@ -1,4 +1,5 @@
 (ns cmr.client.http.core
+  "A ClojureScript HTTP client API for use by the CMR service clients."
   (:require
    [cljs.core.async :as async]
    [cmr.client.common.util :as util]

@@ -1,4 +1,5 @@
 (ns cmr.client.http.impl
+  "The Clojure implementation of the CMR service HTTP client."
   (:require
    [cljs-http.client :as http]
    [cljs.core.async :as async]
@@ -10,27 +11,37 @@
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def default-options
+  "Default HTTP client options."
+  {:with-credentials? false
+   :headers {"Accept" "application/json"}})
+
 (def result-xducer
+  "A transducer for use with the HTTP client that is used to transform inputs
+  from Clojure data structures to JavaScript ones."
   (map clj->js))
 
 (def result-body-xducer
+  "A transducer for use with the HTTP client that is used to extract the body
+  from the inputs and transform it from a Clojure data structure to JavaScript
+  one."
   (map (comp clj->js :body)))
 
-(defn make-channel
+(defn create-channel
+  "Create a promise channel used by the third-party HTTP client library to
+  receive responses."
   [client]
   (if (get-in client [:parent-client-options :return-body?])
     (async/promise-chan result-body-xducer)
     (async/promise-chan result-xducer)))
 
-(defn get-default-options
-  [client]
-  {:with-credentials? false
-   :headers {"Accept" "application/json"}})
-
-(defn make-http-options
+(defn create-http-options
+  "This function is intended to be used with every call, giving the call the
+  opportunity to override the HTTP client options saved when the client was
+  instantiated."
   [client call-options]
-  (merge (get-default-options client)
-         {:channel (make-channel client)}
+  (merge default-options
+         {:channel (create-channel client)}
          (:http-options client)
          call-options))
 
@@ -43,5 +54,6 @@
   http-options])
 
 (defn get
+  "Perform an HTTP `GET`."
   [this url options]
-  (http/get url (make-http-options this options)))
+  (http/get url (create-http-options this options)))

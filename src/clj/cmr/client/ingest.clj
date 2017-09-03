@@ -1,6 +1,7 @@
 (ns cmr.client.ingest
  (:require
-  [cmr.client.base :as base]
+  [cmr.client.base.impl :as base-impl]
+  [cmr.client.base.protocol :as base-api]
   [cmr.client.common.util :as util]
   [cmr.client.http.core :as http]
   [cmr.client.ingest.impl :as impl]
@@ -22,8 +23,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend CMRIngestClientData
-        base/CMRClientAPI
-        base/client-behaviour)
+        base-api/CMRClientAPI
+        base-impl/client-behaviour)
 
 (extend CMRIngestClientData
         api/CMRIngestAPI
@@ -38,5 +39,5 @@
    :ingest
    #'cmr.client.ingest/create-client
    impl/->CMRIngestClientData
-   base/make-options
+   base-impl/create-options
    http/create-client))

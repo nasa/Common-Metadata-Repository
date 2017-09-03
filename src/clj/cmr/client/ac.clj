@@ -1,6 +1,7 @@
 (ns cmr.client.ac
  (:require
-  [cmr.client.base :as base]
+  [cmr.client.base.impl :as base-impl]
+  [cmr.client.base.protocol :as base-api]
   [cmr.client.common.util :as util]
   [cmr.client.http.core :as http]
   [cmr.client.ac.impl :as impl]
@@ -25,8 +26,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (extend CMRAccessControlClientData
-        base/CMRClientAPI
-        base/client-behaviour)
+        base-api/CMRClientAPI
+        base-impl/client-behaviour)
 
 (extend CMRAccessControlClientData
         api/CMRAccessControlAPI
@@ -41,5 +42,5 @@
    :access-control
    #'cmr.client.ac/create-client
    impl/->CMRAccessControlClientData
-   base/make-options
+   base-impl/create-options
    http/create-client))

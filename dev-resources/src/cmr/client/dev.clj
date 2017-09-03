@@ -1,4 +1,5 @@
 (ns cmr.client.dev
+  "The CMR client Clojure REPL development namespace."
   (:require
    [clojure.core.async :as async]
    [clojure.data.json :as json]
@@ -21,6 +22,14 @@
 
 ;;; Aliases
 
-(def reload #'repl/refresh)
-(def refresh #'repl/refresh)
-(def reset #'repl/refresh)
+(def reload
+   "An alias for `repl/refresh`"
+   #'repl/refresh)
+
+(def refresh
+   "An alias for `repl/refresh`"
+   #'repl/refresh)
+
+(def reset
+   "An alias for `repl/refresh`"
+   #'repl/refresh)

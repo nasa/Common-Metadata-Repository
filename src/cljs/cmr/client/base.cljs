@@ -1,4 +1,11 @@
 (ns cmr.client.base
+  "A base client for the CMR services.
+
+  This client defines basic options, data, and methods that all clients will
+  share in common.
+
+  This ClojureScript namespace uses the generic protocol and implementation
+  that is also shared by Clojure. ClojureScript-specific code is defined here."
   (:require
    [cmr.client.base.impl :as base :refer [->CMRClientOptions
                                           CMRClientData]]
@@ -22,14 +29,3 @@
   (get-url
     [this segment]
     (base/get-url this segment)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Client Options   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn make-options
-  [options]
-  (let [options (if (object? options)
-                 (js->clj options :keywordize-keys true)
-                 options)]
-    (->CMRClientOptions (:return-body? options))))

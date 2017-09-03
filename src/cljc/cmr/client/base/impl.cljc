@@ -1,7 +1,16 @@
 (ns cmr.client.base.impl
+  "This namespace defines the implementation of the base CMR client protocols.
+
+  Note that the implementation includes the definitions of the data records
+  used for storing client-specific state.
+
+  It is not expected that application developers who want to use the CMR client
+  will ever use this namespace directly. It is indended for use by the three
+  CMR service API clients."
  (:require
    [cmr.client.http.util :as http-util]
-   [cmr.client.http.core :as http]))
+   [cmr.client.http.core :as http]
+   #?(:clj [clj-http.conn-mgr :as conn-mgr])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,3 +33,25 @@
 
 (defrecord CMRClientOptions [
   return-body?])
+
+#?(:clj
+(defn create-options
+  "A constructor for client options, selecting legal keys from the passed
+  options map to instantiate the options record."
+  [options]
+  (->CMRClientOptions
+    (:return-body? options)
+    (conn-mgr/make-reusable-conn-manager
+     ;; Use the same defaults that the `with-connection-pool` uses
+     {:timeout 5
+      :threads 4}))))
+
+#?(:cljs
+(defn create-options
+  "A constructor for client options, selecting legal keys from the passed
+  options map to instantiate the options record."
+  [options]
+  (let [options (if (object? options)
+                 (js->clj options :keywordize-keys true)
+                 options)]
+    (->CMRClientOptions (:return-body? options)))))

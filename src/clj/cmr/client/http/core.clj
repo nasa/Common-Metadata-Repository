@@ -1,4 +1,5 @@
 (ns cmr.client.http.core
+  "A Clojure HTTP client API for use by the CMR service clients."
   (:require
    [cmr.client.common.util :as util]
    [cmr.client.http.impl :as impl]

@@ -3,7 +3,7 @@
    [cmr.client.ac.impl :as ac :refer [->CMRAccessControlClientData
                                       CMRAccessControlClientData]]
    [cmr.client.ac.protocol :refer [CMRAccessControlAPI]]
-   [cmr.client.base :refer [make-options]]
+   [cmr.client.base.impl :as base-impl]
    [cmr.client.base.protocol :refer [CMRClientAPI]]
    [cmr.client.base.impl :as base]
    [cmr.client.common.const :as const]
@@ -31,7 +31,7 @@
   CMRClientAPI
   (get-url
     [this segment]
-    (base/get-url this segment)))
+    (base-impl/get-url this segment)))
 
 (extend-type CMRAccessControlClientData
   CMRAccessControlAPI
@@ -65,5 +65,5 @@
    :access-control
    #'cmr.client.ac/create-client
    ->CMRAccessControlClientData
-   make-options
+   base-impl/create-options
    http/create-client))

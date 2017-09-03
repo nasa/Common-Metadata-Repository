@@ -1,7 +1,6 @@
 (ns cmr.client.search
   (:require
-   [cmr.client.base :refer [make-options]]
-   [cmr.client.base.impl :as base]
+   [cmr.client.base.impl :as base-impl]
    [cmr.client.base.protocol :refer [CMRClientAPI]]
    [cmr.client.common.const :as const]
    [cmr.client.common.util :as util]
@@ -35,7 +34,7 @@
   CMRClientAPI
   (get-url
     [this segment]
-    (base/get-url this segment)))
+    (base-impl/get-url this segment)))
 
 (extend-type CMRSearchClientData
   CMRSearchAPI
@@ -91,5 +90,5 @@
    :search
    #'cmr.client.search/create-client
    ->CMRSearchClientData
-   make-options
+   base-impl/create-options
    http/create-client))

@@ -1,4 +1,5 @@
 (ns cmr.client.http.impl
+  "The Clojure implementation of the CMR service HTTP client."
   (:require
    [clj-http.client :as http]
    [clojure.data.json :as json]
@@ -10,30 +11,39 @@
 ;;;   Utility Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn get-default-options
-  [client]
+(def default-options
+  "The default HTTP option for the Clojure implementation of the CMR HTTP
+  client."
   {})
 
 (defn get-conn-mgr-option
+  "Given a client object, return a connection manager based on the client
+  options set in the parent service API client."
   [client]
   (if-let [conn-mgr (get-in client
                             [:parent-client-options :connection-manager])]
     {:connection-manager conn-mgr}
     {}))
 
-(defn make-http-options
+(defn create-http-options
+  "This function is intended to be used with every call, giving the call the
+  opportunity to override the HTTP client options saved when the client was
+  instantiated."
   [client call-options]
-  (merge (get-default-options client)
+  (merge default-options
          (get-conn-mgr-option client)
          (:options client)
          call-options))
 
-(defn make-http-client-args
+(defn create-http-client-args
+  "Create a list of args that can be usd with the CMR HTTP client by applying
+  them."
   [client url options]
   [url
-   (make-http-options client options)])
+   (create-http-options client options)])
 
 (defn parse-content-type
+  "Parse the content type of the given response."
   [response]
   (let [content-type (get-in response [:headers "Content-Type"])]
     (cond
@@ -41,28 +51,24 @@
       (string/includes? content-type "xml") :xml
       :else :unsupported)))
 
-(defn read-json-str
-  [string-data]
-  (json/read-str string-data :key-fn keyword))
-
-(defn read-xml-str
-  [string-data]
-  (xml/parse-str string-data))
-
 (defn convert-body
+  "Given a response and a content type, convert the body according to the type. d"
   [response content-type]
   (case content-type
-     :json (read-json-str (:body response))
-     :xml (read-xml-str (:body response))
+     :json (json/read-str (:body response) :key-fn keyword)
+     :xml (xml/parse-str (:body response))
      :unsupported (:body response)))
 
 (defn parse-body!
+  "Parse the body of a response, converting the body based on the provided
+  content type."
   ([response]
    (parse-body! response (parse-content-type response)))
   ([response content-type]
    (assoc response :body (convert-body response content-type))))
 
 (defn- handle-response
+  "A callback function for handling response data when it is returned."
   ([client response]
    (handle-response client {} response))
   ([client options response]
@@ -87,7 +93,7 @@
   ([this url]
     (get this url {}))
   ([this url options]
-    (->> (make-http-client-args this url options)
+    (->> (create-http-client-args this url options)
          (apply http/get)
          (handle-response this options))))
 

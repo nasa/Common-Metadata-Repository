@@ -1,6 +1,12 @@
 (ns cmr.client.base
+  "A base client for the CMR services.
+
+  This client defines basic options, data, and methods that all clients will
+  share in common.
+
+  This Clojure namespace uses the generic protocol and implementation that is
+  also shared by ClojureScript. Clojure-specific code is defined here."
  (:require
-  [clj-http.conn-mgr :as conn-mgr]
   [cmr.client.base.impl :as impl]
   [cmr.client.base.protocol :as api]
   [potemkin :refer [import-vars]])
@@ -23,15 +29,3 @@
         api/CMRClientAPI
         impl/client-behaviour)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Client Options   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn make-options
-  [options]
-  (impl/->CMRClientOptions
-    (:return-body? options)
-    (conn-mgr/make-reusable-conn-manager
-     ;; Use the same defaults that the `with-connection-pool` uses
-     {:timeout 5
-      :threads 4})))
