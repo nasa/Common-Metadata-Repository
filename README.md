@@ -77,6 +77,8 @@ Distributed under the Apache License, Version 2.0.
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-client
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-client.svg
 
+[cmr-project]: https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository
+[eosdis]: https://earthdata.nasa.gov/about
 [cmr-github]: https://github.com/nasa/Common-Metadata-Repository
 [clojure]: https://clojure.org/
 [clojurescript]: https://clojurescript.org/
