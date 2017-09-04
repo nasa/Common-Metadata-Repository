@@ -71,8 +71,8 @@ Distributed under the Apache License, Version 2.0.
 [travis badge]: https://img.shields.io/travis/oubiwann/cmr-client.svg
 [deps]: http://jarkeeper.com/oubiwann/cmr-client
 [deps-badge]: http://jarkeeper.com/oubiwann/cmr-client/status.svg
-[tag-badge]: https://img.shields.io/github/tag/gov.nasa.earthdata/cmr-client.svg
-[tag]: https://github.com/clojusc/dragon/tags
+[tag-badge]: https://img.shields.io/github/tag/oubiwann/cmr-client.svg
+[tag]: https://github.com/oubiwann/cmr-client/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.8.0-blue.svg
 [jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-client
