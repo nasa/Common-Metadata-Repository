@@ -1,25 +1,33 @@
 (ns cmr.client.common.util
+  "Utility functions for general use by both the Clojure client and the
+  ClojureScript client."
   (:require
    [cmr.client.common.const :as const]
    #?(:clj [clojure.core.async :as async :refer [go go-loop]]
       :cljs [cljs.core.async :as async]))
   #?(:cljs (:require-macros [cljs.core.async.macros :refer [go go-loop]])))
 
-(def default-environment-type :prod)
-
 (defn get-endpoint
-  [environment-type service-key]
-  (->> (environment-type const/deployment-type)
-       (vector service-key)
-       (get-in const/endpoints)
-       (str (environment-type const/hosts))))
+  "Get the default endpoint for a given CMR service. If an environment type
+  is provided, override the default and get the endpoint for that type."
+  ([service-key]
+    (service-key const/default-endpoints))
+  ([environment-type service-key]
+   (->> (environment-type const/deployment-type)
+        (vector service-key)
+        (get-in const/endpoints)
+        (str (environment-type const/hosts)))))
 
 (defn get-default-endpoint
+  "Get the default endpoint; if the client options specify an endpoint, then
+  use that one."
   [options service-key]
   (or (:endpoint options)
-      (get-endpoint default-environment-type service-key)))
+      (get-endpoint service-key)))
 
 (defn parse-endpoint
+  "Given a string or a deployment environment and a service key, retur the
+  service endpoint."
   ([endpoint]
    (parse-endpoint endpoint nil))
   ([endpoint service-key]
@@ -28,6 +36,8 @@
      (get-endpoint endpoint service-key))))
 
 (defn ^:export with-callback
+  "A utility function for running a callback function when a channel receives
+  data."
   [chan callback]
   (go-loop []
     (if-let [response (async/<! chan)]
@@ -96,7 +106,7 @@
 
 (defmacro import-def
   "Import a single function or var:
-  ```clj
+  ```
   (import-def a b) => (def b a/b)
   ```"
   [from-ns def-name]
@@ -108,7 +118,7 @@
 
    This works for vars and functions, but not macros. Uses the same syntax as
    `potemkin.namespaces/import-vars`, namely:
-   ```clj
+   ```
    (import-vars
      [m.n.ns1 a b]
      [x.y.ns2 d e f])
