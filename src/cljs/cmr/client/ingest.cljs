@@ -1,7 +1,6 @@
 (ns cmr.client.ingest
   "The ClojureScript implementation of the CMR ingest client."
   (:require
-   [cmr.client.base :refer [make-options]]
    [cmr.client.base.impl :as base-impl]
    [cmr.client.base.protocol :refer [CMRClientAPI]]
    [cmr.client.common.const :as const]
