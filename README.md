@@ -4,7 +4,9 @@
 [![Build Status][travis badge]][travis]
 [![Dependencies Status][deps-badge]][deps]
 /-->
-[![Clojars Project][clojars-badge]][clojars] [![Clojure version][clojure-v]](project.clj)
+[![Clojars Project][clojars-badge]][clojars]
+[![Clojure Version][clojure-v]](project.clj)
+[![npm Release][npm-badge]][npm]
 <!--
 [![Tag][tag-badge]][tag]
 /-->
@@ -76,6 +78,8 @@ Distributed under the Apache License, Version 2.0.
 [jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
 [clojars]: https://clojars.org/gov.nasa.earthdata/cmr-client
 [clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-client.svg
+[npm-badge]: https://img.shields.io/npm/v/@nasa-earthdata/cmr.svg
+[npm]: https://www.npmjs.com/package/@nasa-earthdata/cmr
 
 [cmr-project]: https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository
 [eosdis]: https://earthdata.nasa.gov/about
