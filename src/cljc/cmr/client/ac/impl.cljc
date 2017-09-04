@@ -20,6 +20,7 @@
   http-client])
 
 (defn get-acls
+  "See protocol defintion for docstring."
   ([this http-options]
    (get-acls this {} http-options))
   ([this query-params http-options]
@@ -29,6 +30,7 @@
                  (http-util/query+options query-params http-options)))))
 
 (defn get-groups
+  "See protocol defintion for docstring."
   ([this http-options]
    (get-groups this {} http-options))
   ([this query-params http-options]
@@ -38,6 +40,7 @@
                  (http-util/query+options query-params http-options)))))
 
 (defn get-health
+  "See protocol defintion for docstring."
   ([this]
    (get-health this {}))
   ([this http-options]
@@ -47,6 +50,7 @@
                  http-options))))
 
 (defn get-permissions
+  "See protocol defintion for docstring."
   ([this http-options]
    (get-permissions this {} http-options))
   ([this query-params http-options]
