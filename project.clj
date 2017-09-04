@@ -122,6 +122,7 @@
     "npm"
       ^{:doc "Publish compiled JavaScript client"}
       ["do"
+        ["shell" "rm" "-rf" "dist"]
         ["shell" "mkdir" "dist"]
         ["shell" "cp" "resources/public/js/cmr_client.js" "dist"]
         ["shell" "npm" "publish" "--access" "public"]
