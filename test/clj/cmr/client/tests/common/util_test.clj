@@ -3,9 +3,6 @@
    [clojure.test :refer :all]
    [cmr.client.common.util :as util]))
 
-(deftest default-environment-type
-  (is (= :prod util/default-environment-type)))
-
 (deftest get-endpoint
   (testing "public hosts"
     (is (= "https://cmr.earthdata.nasa.gov/access-control"
