@@ -30,7 +30,8 @@
         :init-ns cmr.client.dev}}
     :test {
       :dependencies [
-        [clojusc/ltest "0.2.0-SNAPSHOT"]]
+        ;[clojusc/ltest "0.2.0-SNAPSHOT"]
+        ]
       :source-paths ["test/clj"]
     }
     :lint {
@@ -87,7 +88,7 @@
     "build-cljs-prod"
       ^{:doc "Build just the prod version of the ClojureScript code"}
       ["do"
-        ["shell" "rm" "resources/public/js/cmr_client.js"]
+        ["shell" "rm" "-f" "resources/public/js/cmr_client.js"]
         ["cljsbuild" "once" "cmr-prod"]]
     "run-tests"
       ^{:doc "Use the ltest runner for verbose, colourful test output"}
@@ -111,7 +112,7 @@
       ^{:doc "Perform the build tasks"}
       ["with-profile" "+test" "do"
         ["check-deps"]
-        ["lint"]
+        ;["lint"]
         ["test"]
         ["compile"]
         ["docs"]
