@@ -2,8 +2,8 @@
 
 <!--
 [![Build Status][travis badge]][travis]
-[![Dependencies Status][deps-badge]][deps]
 /-->
+[![Dependencies Status][deps-badge]][deps]
 [![Clojars Project][clojars-badge]][clojars]
 [![Clojure Version][clojure-v]](project.clj)
 [![npm Release][npm-badge]][npm]
@@ -70,8 +70,8 @@ Distributed under the Apache License, Version 2.0.
 [logo]: misc/images/ohboyohboyohboy.gif
 [travis]: https://travis-ci.org/oubiwann/cmr-client
 [travis badge]: https://img.shields.io/travis/oubiwann/cmr-client.svg
-[deps]: http://jarkeeper.com/gov.nasa.earthdata/cmr-client
-[deps-badge]: http://jarkeeper.com/clojusc/gov.nasa.earthdata/cmr-client.svg
+[deps]: http://jarkeeper.com/oubiwann/cmr-client
+[deps-badge]: http://jarkeeper.com/oubiwann/cmr-client/status.svg
 [tag-badge]: https://img.shields.io/github/tag/gov.nasa.earthdata/cmr-client.svg
 [tag]: https://github.com/clojusc/dragon/tags
 [clojure-v]: https://img.shields.io/badge/clojure-1.8.0-blue.svg
