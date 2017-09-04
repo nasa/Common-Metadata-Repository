@@ -1,9 +1,9 @@
 (ns cmr.client.testing.runner
-  (:require
+  #_(:require
    [ltest.core :as ltest])
-  (:gen-class))
+  #_(:gen-class))
 
-(defn run-tests
+#_(defn run-tests
   ([]
    (ltest/run-all-tests #"cmr.client.tests.*"))
   ([arg]
@@ -11,7 +11,7 @@
     (coll? arg) (ltest/run-tests arg)
     (var? arg) (ltest/run-test arg))))
 
-(defn -main
+#_(defn -main
   [& args]
   (println "main args:" args)
   (if (nil? args)
