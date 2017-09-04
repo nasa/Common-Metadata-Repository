@@ -1,4 +1,5 @@
-(ns cmr.client.search.protocol)
+(ns cmr.client.search.protocol
+  "This namespace defines the protocols used by CMR search client.")
 
 (defprotocol CMRSearchAPI
   (^:export get-collections

@@ -1,4 +1,9 @@
 (ns cmr.client.search.impl
+  "This namespace defines the implementation of the CMR search client
+  protocols.
+
+  Note that the implementation includes the definitions of the data records
+  used for storing client-specific state."
  (:require
    [cmr.client.http.util :as http-util]
    [cmr.client.http.core :as http]
@@ -96,6 +101,9 @@
 
 #?(:clj
 (def client-behaviour
+  "A map of method names to implementations.
+
+  Intended for use by the `extend` protocol function."
   {:get-collections get-collections
    :get-concept get-concept
    :get-granules get-granules

@@ -37,6 +37,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def create-client
+  "HTTP client constructor."
   (util/create-http-client-constructor
     #'cmr.client.http.core/create-client
     impl/->HTTPClientData))

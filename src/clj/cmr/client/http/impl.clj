@@ -146,6 +146,9 @@
     :not-implemented))
 
 (def client-behaviour
+  "A map of method names to implementations.
+
+  Intended for use by the `extend` protocol function."
   {:get get
    :head head
    :put put

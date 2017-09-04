@@ -1,4 +1,5 @@
 (ns cmr.client.ingest
+  "The ClojureScript implementation of the CMR ingest client."
   (:require
    [cmr.client.base :refer [make-options]]
    [cmr.client.base.impl :as base-impl]
@@ -41,6 +42,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:export create-client
+  "The CMR ingest client constructor."
   (util/create-service-client-constructor
    :ingest
    #'cmr.client.ingest/create-client

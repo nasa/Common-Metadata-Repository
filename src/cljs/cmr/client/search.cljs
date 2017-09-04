@@ -1,4 +1,5 @@
 (ns cmr.client.search
+  "The ClojureScript implementation of the CMR search client."
   (:require
    [cmr.client.base.impl :as base-impl]
    [cmr.client.base.protocol :refer [CMRClientAPI]]
@@ -86,6 +87,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:export create-client
+  "The CMR search client constructor."
   (util/create-service-client-constructor
    :search
    #'cmr.client.search/create-client

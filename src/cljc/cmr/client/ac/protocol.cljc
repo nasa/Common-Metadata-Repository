@@ -1,4 +1,5 @@
-(ns cmr.client.ac.protocol)
+(ns cmr.client.ac.protocol
+  "This namespace defines the protocols used by CMR access-control client.")
 
 (defprotocol CMRAccessControlAPI
   (^:export get-acls [this http-options] [this query-params http-options])

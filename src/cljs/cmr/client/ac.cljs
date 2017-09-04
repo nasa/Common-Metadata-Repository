@@ -1,4 +1,5 @@
 (ns cmr.client.ac
+  "The Clojure implementation of the CMR access control client."
   (:require
    [cmr.client.ac.impl :as ac :refer [->CMRAccessControlClientData
                                       CMRAccessControlClientData]]
@@ -61,6 +62,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def ^:export create-client
+  "The CMR access control client constructor."
   (util/create-service-client-constructor
    :access-control
    #'cmr.client.ac/create-client
