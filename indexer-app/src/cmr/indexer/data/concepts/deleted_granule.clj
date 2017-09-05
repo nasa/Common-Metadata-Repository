@@ -5,7 +5,7 @@
 
 (def deleted-granule-index-name
   "The name of the index in elastic search."
-  "deleted-granules")
+  "1_deleted_granules")
 
 (def deleted-granule-type-name
   "The name of the mapping type within the cubby elasticsearch index."
@@ -25,7 +25,7 @@
   (let [{:keys [concept-id provider-id extra-fields revision-date]} concept
         {:keys [granule-ur parent-collection-id]} extra-fields]
     {:concept-id concept-id
-     :delete-time revision-date
+     :revision-date revision-date
      :provider-id provider-id
      :granule-ur granule-ur
      :parent-collection-id parent-collection-id}))

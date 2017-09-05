@@ -14,7 +14,7 @@
                            {:name "all-collection-revisions",
                             :settings i/collection-setting-v1},]
                  :mapping i/collection-mapping},
-    :deleted-granule {:indexes [{:name "deleted-granules",
+    :deleted-granule {:indexes [{:name "deleted_granules",
                                  :settings i/deleted-granule-setting}]
                       :mapping i/deleted-granule-mapping}
     :granule {:indexes
