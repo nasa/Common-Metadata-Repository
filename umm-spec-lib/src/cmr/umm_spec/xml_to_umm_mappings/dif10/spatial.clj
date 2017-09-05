@@ -2,6 +2,7 @@
   "Defines mappings from DIF 10 XML spatial elements into UMM records"
   (:require
    [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
@@ -55,8 +56,9 @@
      :HorizontalSpatialDomain      (let [[geom] (select spatial "Geometry")]
                                      {:Geometry (parse-geometry geom)
                                       :ZoneIdentifier (value-of spatial "Zone_Identifier")})
-     :VerticalSpatialDomains       (for [vert-elem (select spatial "Vertical_Spatial_Info")]
-                                     (fields-from vert-elem :Type :Value))
+     :VerticalSpatialDomains       (->> (select spatial "Vertical_Spatial_Info")
+                                        spatial-conversion/convert-vertical-spatial-domains-from-xml
+                                        (map #(update % :Type (fn [x] (string/replace x "_" " ")))))
      :OrbitParameters              (let [[o] (select spatial "Orbit_Parameters")]
                                      {:SwathWidth (value-of o "Swath_Width")
                                       :Period (value-of o "Period")

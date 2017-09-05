@@ -1,6 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :as u]))
+  (:require
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.util :as u]))
 
 (defn- point-contents
   "Returns the inner lon/lat elements for an ECHO Point from a UMM PointType
@@ -56,7 +58,8 @@
            (map bounding-rect-element (:BoundingRectangles geom))
            (map polygon-element (:GPolygons geom))
            (map line-element (:Lines geom))])])
-     (for [vert (:VerticalSpatialDomains sp)]
+     (for [vert (spatial-conversion/drop-invalid-vertical-spatial-domains
+                 (:VerticalSpatialDomains sp))]
        [:VerticalSpatialDomain
         (elements-from vert :Type :Value)])
      [:OrbitParameters

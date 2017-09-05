@@ -1,9 +1,11 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.spatial
   "Defines mappings from ECHO10 XML spatial elements into UMM records"
   (:require
-   [clojure.string :as str]
+   [camel-snake-kebab.internals.misc :as csk-misc]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]))
 
 (defn- parse-point
@@ -47,13 +49,13 @@
   [doc sanitize?]
   (if-let [[spatial] (select doc "/Collection/Spatial")]
     {:SpatialCoverageType          (when-let [sct (value-of spatial "SpatialCoverageType")]
-                                     (str/upper-case sct))
+                                     (string/upper-case sct))
      :GranuleSpatialRepresentation (value-of spatial "GranuleSpatialRepresentation")
      :HorizontalSpatialDomain      (let [[horiz] (select spatial "HorizontalSpatialDomain")]
                                      {:ZoneIdentifier (value-of horiz "ZoneIdentifier")
                                       :Geometry       (parse-geometry (first (select horiz "Geometry")))})
-     :VerticalSpatialDomains       (for [vert (select spatial "VerticalSpatialDomain")]
-                                     (fields-from vert :Type :Value))
+     :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
+                                    (select spatial "VerticalSpatialDomain"))
      :OrbitParameters              (fields-from (first (select spatial "OrbitParameters"))
                                                 :SwathWidth
                                                 :Period

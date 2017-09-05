@@ -6,6 +6,7 @@
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as iso-shared-distrib]))
 
 (def coordinate-system-xpath
@@ -93,7 +94,7 @@
     (into {} (for [[k ^String v] (partition 2 (str/split orbit-string #":? "))]
                [(keyword k) (Double/parseDouble v)]))))
 
-(defn- parse-vertical-domains
+(defn parse-vertical-domains
   "Parse the vertical domain from the ISO XML document. Vertical domains are encoded in an ISO XML
   document as a single string like this:
   \"Type: Some type Value: Some value\""
@@ -120,5 +121,6 @@
                                      (when sanitize? "NO_SPATIAL"))
    :HorizontalSpatialDomain {:Geometry (parse-geometry doc extent-info sanitize?)
                              :ZoneIdentifier (value-of doc zone-identifier-xpath)}
-   :VerticalSpatialDomains (parse-vertical-domains doc)
+   :VerticalSpatialDomains (spatial-conversion/drop-invalid-vertical-spatial-domains
+                            (parse-vertical-domains doc))
    :OrbitParameters (parse-orbit-parameters doc)})

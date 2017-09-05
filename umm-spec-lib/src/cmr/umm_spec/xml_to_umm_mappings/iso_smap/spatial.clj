@@ -2,6 +2,8 @@
   "Functions for parsing UMM spatial records out of ISO SMAP XML documents."
   (:require
    [cmr.common.xml.parse :refer :all]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as iso-19115-2-spatial]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.util :as su]))
 
@@ -27,11 +29,13 @@
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from SMAP ISO data identifier XML document."
-  [data-id-el sanitize?]
+  [doc data-id-el sanitize?]
   (if-let [bounding-rectangles (parse-bounding-rectangles data-id-el)]
     {:SpatialCoverageType "HORIZONTAL"
      :GranuleSpatialRepresentation "GEODETIC"
      :HorizontalSpatialDomain {:Geometry {:CoordinateSystem "GEODETIC"
-                                          :BoundingRectangles bounding-rectangles}}}
+                                          :BoundingRectangles bounding-rectangles}}
+     :VerticalSpatialDomains (spatial-conversion/drop-invalid-vertical-spatial-domains
+                              (iso-19115-2-spatial/parse-vertical-domains doc))}
     (when sanitize?
       su/not-provided-spatial-extent)))

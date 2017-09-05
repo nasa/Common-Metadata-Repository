@@ -2,6 +2,7 @@
   "Functions for generating ISO19115-2 XML elements from UMM spatial records."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cmr.common.util :as util]
    [cmr.spatial.derived :as d]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.spatial.line-string :as ls]
@@ -10,8 +11,8 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.umm.umm-spatial :as umm-s]
-   [cmr.common.util :as util]))
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (defn spatial-point
   [umm-point]
@@ -114,7 +115,8 @@
 (defn generate-vertical-domain
   "Returns a geographic element for the vertical domain"
   [c]
-  (when-let [vertical-domains (get-in c [:SpatialExtent :VerticalSpatialDomains])]
+  (when-let [vertical-domains (spatial-conversion/drop-invalid-vertical-spatial-domains
+                               (get-in c [:SpatialExtent :VerticalSpatialDomains]))]
     (for [x (range (count vertical-domains))
            :let [vertical-domain (nth vertical-domains x)]]
       [:gmd:geographicElement
