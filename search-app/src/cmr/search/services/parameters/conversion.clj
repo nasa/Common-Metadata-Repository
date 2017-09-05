@@ -122,6 +122,12 @@
    :concept-id :string
    :keyword :keyword})
 
+(defmethod common-params/param-mappings :deleted-granule
+  [_]
+  {:collection-concept-id :string
+   :delete-time :multi-date-range
+   :provider :string})
+
 (defmethod common-params/always-case-sensitive-fields :granule
   [_]
   #{:concept-id :collection-concept-id})

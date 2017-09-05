@@ -16,6 +16,12 @@
    [clj-time.format :as time-format]
    [clojure.set :as set]
    [clojure.string :as string]
+   [clojurewerkz.elastisch.rest.document :as esd]
+   [clojurewerkz.elastisch.query :as esq]
+   [cmr.indexer.data.elasticsearch :as es]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as query-results]
+   [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
+   [cmr.common-app.services.search.datetime-helper :as datetime-helper]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -132,24 +138,24 @@
 (defn make-concepts-query
   "Utility function for generating an elastic-ready query."
   ([context concept-type params]
-    (->> params
-         (make-concepts-tag-data)
-         (make-concepts-query
-           context concept-type params)))
+   (->> params
+        (make-concepts-tag-data)
+        (make-concepts-query
+          context concept-type params)))
   ([context concept-type params tag-data]
-    (->> params
-         common-params/sanitize-params
-         (add-tag-data-to-params tag-data)
-         ;; CMR-2553 remove the following line
-         drop-ignored-params
-         ;; handle legacy parameters
-         lp/replace-parameter-aliases
-         (lp/process-legacy-multi-params-conditions concept-type)
-         (lp/replace-science-keywords-or-option concept-type)
-         (psn/replace-provider-short-names context)
-         (pv/validate-parameters concept-type)
-         (common-params/parse-parameter-query
-           context concept-type))))
+   (->> params
+        common-params/sanitize-params
+        (add-tag-data-to-params tag-data)
+        ;; CMR-2553 remove the following line
+        drop-ignored-params
+        ;; handle legacy parameters
+        lp/replace-parameter-aliases
+        (lp/process-legacy-multi-params-conditions concept-type)
+        (lp/replace-science-keywords-or-option concept-type)
+        (psn/replace-provider-short-names context)
+        (pv/validate-parameters concept-type)
+        (common-params/parse-parameter-query
+         context concept-type))))
 
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
@@ -408,8 +414,10 @@
                                    (set coll-concept-ids)
                                    (set visible-concept-ids)))
         results (get-highest-visible-revisions context deleted-concept-ids result-format)
+        hits (or (get-in results [:hits :total]) 0)
+        items (or (count (get-in results [:hits :hits])) [])
         ;; when results is nil, hits is 0
-        results (or results {:hits 0 :items []})
+        results {:hits hits :items items}
         total-took (- (System/currentTimeMillis) start-time)
         ;; construct the response results string
         results-str (common-search/search-results->response
@@ -426,6 +434,44 @@
     {:results results-str
      :hits (:hits results)
      :result-format result-format}))
+
+(defn get-deleted-granules
+  ""
+  [context params]
+  (pv/validate-deleted-granules-params params)
+  (let [start-time (System/currentTimeMillis)
+        {:keys [parent-collection-id provider-id result-format revision-date result-format]} (common-params/sanitize-params params)
+        filters [{:range {:revision-date {:gte revision-date}}}]
+        filters (if (seq provider-id)
+                  (conj filters {:term {:provider-id provider-id}})
+                  filters)
+        filters (if (seq parent-collection-id)
+                  (conj filters {:term {:parent-collection-id parent-collection-id}})
+                  filters)
+        results (esd/search (common-idx/context->conn context)
+                            deleted-granule/deleted-granule-index-name
+                            deleted-granule/deleted-granule-type-name
+                            {:query {:filtered {:query (esq/match-all)
+                                                :filter {:and {:filters filters}}}}
+                             :fields [:concept-id :revision-date :provider-id
+                                      :granule-ur :parent-collection-id]})
+        _ (proto-repl.saved-values/save 11)
+
+        results (or (get results :hits)
+                    {:hits 0 :items []})
+        total-took (- (System/currentTimeMillis) start-time)
+        results-str (common-search/search-results->response
+                     context
+                     (qm/query {:concept-type :granule
+                                :result-format result-format})
+                     (assoc results :took total-took))]
+    (info (format "Found %d deleted collections in %d ms in format %s with params %s."
+                  (:hits results) total-took
+                  (rfh/printable-result-format result-format (pr-str params))))
+
+    {:results results-str
+     :hits (:hits results)
+     :result-format (:result-format params)}))
 
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"

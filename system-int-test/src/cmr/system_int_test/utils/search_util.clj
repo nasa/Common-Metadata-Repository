@@ -463,7 +463,7 @@
 
 (defmethod parse-reference-response :default
   [_ response]
-  (let [parsed (-> response :body fx/parse-str)
+  (let [parsed (-> response :body fx/parse-str prn)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
@@ -636,6 +636,19 @@
    (let [accept (when format-key
                   (mime-types/format->mime-type format-key))
          response (client/get (url/search-deleted-collections-url)
+                              {:query-params params
+                               :connection-manager (s/conn-mgr)
+                               :accept accept})]
+     (parse-reference-response false response))))
+
+(defn find-deleted-granules
+  "Returns the references that are found by searching deleted granules"
+  ([params]
+   (find-deleted-granules params nil))
+  ([params format-key]
+   (let [accept (when format-key
+                  (mime-types/format->mime-type format-key))
+         response (client/get (url/search-deleted-granules-url)
                               {:query-params params
                                :connection-manager (s/conn-mgr)
                                :accept accept})]

@@ -132,8 +132,11 @@
 
 (defmethod common-esi/concept-type->index-info :granule
   [context _ query]
-  {:index-name (get-granule-indexes context query)
-   :type-name "granule"})
+  (if (:deleted-granules? query)
+    {:index-name "1_deleted_granules"
+     :type-name "deleted-granule"}
+    {:index-name (get-granule-indexes context query)
+     :type-name "granule"}))
 
 (defmethod common-esi/concept-type->index-info :collection
   [context _ query]

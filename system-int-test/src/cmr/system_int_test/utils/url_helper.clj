@@ -322,6 +322,11 @@
   []
   (format "http://localhost:%s/deleted-collections" (transmit-config/search-port)))
 
+(defn search-deleted-granules-url
+  "URL to search for deleted granules"
+  []
+  (format "http://localhost:%s/deleted-granules" (transmit-config/search-port)))
+
 (defn provider-holdings-url
   "Returns the URL for retrieving provider holdings."
   []

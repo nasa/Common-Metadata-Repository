@@ -438,11 +438,24 @@
 
 (defmapping deleted-granule-mapping :deleted-granule
   "Defines the elasticsearch mapping for storing granules"
+<<<<<<< 0a60f2052d6b9f9a57f9e770c6e5e62dade667f5
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
    :revision-date (-> m/date-field-mapping m/stored m/doc-values)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
    :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
    :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
+=======
+  ; {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
+  ;  :revision-date (-> m/date-field-mapping m/stored m/doc-values)
+  ;  :provider-id (-> m/string-field-mapping m/stored m/doc-values)
+  ;  :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
+  ;  :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)
+  {:concept-id (-> m/string-field-mapping m/stored)
+   :revision-date (-> m/date-field-mapping m/stored)
+   :provider-id (-> m/string-field-mapping m/stored)
+   :granule-ur (-> m/string-field-mapping m/stored)
+   :parent-collection-id (-> m/string-field-mapping m/stored)})
+>>>>>>> CMR-4300 temp commit
 
 (defmapping granule-mapping :granule
   "Defines the elasticsearch mapping for storing collections"
