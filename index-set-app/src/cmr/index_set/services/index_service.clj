@@ -17,7 +17,7 @@
   (:import clojure.lang.ExceptionInfo))
 
 ;; configured list of cmr concepts
-(def concept-types [:collection :granule :tag :variable])
+(def concept-types [:collection :granule :deleted-granule :tag :variable])
 
 (defn context->es-store
   [context]

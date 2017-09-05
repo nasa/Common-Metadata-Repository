@@ -439,7 +439,7 @@
 (defmapping deleted-granule-mapping :deleted-granule
   "Defines the elasticsearch mapping for storing granules"
   {:concept-id (-> m/string-field-mapping m/stored m/doc-values)
-   :delete-time (-> m/date-field-mapping m/stored m/doc-values)
+   :revision-date (-> m/date-field-mapping m/stored m/doc-values)
    :provider-id (-> m/string-field-mapping m/stored m/doc-values)
    :granule-ur (-> m/string-field-mapping m/stored m/doc-values)
    :parent-collection-id (-> m/string-field-mapping m/stored m/doc-values)})
@@ -662,7 +662,7 @@
                               :settings collection-setting-v1}]
                             :mapping collection-mapping}
                :deleted-granule {:indexes
-                                 [{:name "deleted-granules"
+                                 [{:name "deleted_granules"
                                    :settings deleted-granule-setting}]
                                  :mapping deleted-granule-mapping}
                :granule {:indexes
