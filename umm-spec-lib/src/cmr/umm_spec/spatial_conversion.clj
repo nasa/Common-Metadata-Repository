@@ -1,8 +1,10 @@
 (ns cmr.umm-spec.spatial-conversion
   "Defines functions that convert umm spec spatial types to spatial lib spatial shapes."
   (:require
+   [clojure.string :as string]
    [cmr.spatial.line-string :as ls]
    [cmr.spatial.mbr :as mbr]
+   [cmr.common.xml.parse :as xml-parse]
    [cmr.spatial.point :as point]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]))
@@ -42,6 +44,49 @@
                            tiling-identification-systems)]
     (when-not (empty? tiling-id-systems)
       tiling-id-systems)))
+(def valid-vertical-spatial-domain-types
+  "Valid values for VerticalSpatialDomainType according to UMM spec v1.10.0"
+  ["Atmosphere Layer"
+   "Maximum Altitude"
+   "Maximum Depth"
+   "Minimum Altitude"
+   "Minimum Depth"])
+
+(def squished-valid-vertical-spatial-domain-types
+  "Valid values for VerticalSpatialDomainType. Split and joined by \"\" to make
+   validation easier. DIF10 values are separated by `_` and all others are separated
+   by spaces."
+  ["AtmosphereLayer"
+   "MaximumAltitude"
+   "MaximumDepth"
+   "MinimumAltitude"
+   "MinimumDepth"])
+
+(defn vertical-spatial-domain-type-is-valid?
+  "Return true or false based on whether or not the given value matches
+   one of the valid values in valid-vertical-spatial-domain-types."
+  [vs-domain-type]
+  (let [squished-vs-domain-type (-> vs-domain-type
+                                    (string/split #"( |_)")
+                                    string/join)]
+   (some #(= squished-vs-domain-type %) squished-valid-vertical-spatial-domain-types)))
+
+(defn drop-invalid-vertical-spatial-domains
+  "Any VerticalSpatialDomain with a Type not in valid-vertical-spatial-domain-types
+   is not considered valid according to UMM spec v1.10.0 and should be dropped.
+   This behavior will eventually generate errors"
+  [vertical-spatial-domains]
+  (filter
+   #(vertical-spatial-domain-type-is-valid? (:Type %))
+   vertical-spatial-domains))
+
+(defn convert-vertical-spatial-domains-from-xml
+  "Given a name to key into an xml file, extract Vertical Spatial Domains
+   and drop those that are invalid."
+  [vertical-spatial-domains]
+  (->> vertical-spatial-domains
+       (map #(xml-parse/fields-from % :Type :Value))
+       drop-invalid-vertical-spatial-domains))
 
 (defn boundary->ring
   "Create a ring from a set of boundary points"

@@ -23,8 +23,8 @@
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
     [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
-    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]))
+    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
+    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]))
 
 (defn- propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
@@ -330,6 +330,8 @@
       (assoc :DirectoryNames nil)
       fix-bounding-rectangles
       (update :SpatialExtent update-iso-spatial)
+      (update-in [:SpatialExtent :VerticalSpatialDomains]
+                 spatial-conversion/drop-invalid-vertical-spatial-domains)
       (update :TemporalExtents expected-iso-19115-2-temporal)
       (update :DataDates expected-iso19115-data-dates)
       (update :DataLanguage #(or % "eng"))

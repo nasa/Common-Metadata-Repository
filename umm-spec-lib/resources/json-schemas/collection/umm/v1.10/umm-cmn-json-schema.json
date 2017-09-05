@@ -1275,9 +1275,7 @@
       "properties": {
         "Type": {
           "description": "Describes the type of the area of vertical space covered by the collection locality.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "$ref": "#/definitions/VerticalSpatialDomainTypeEnum"
         },
         "Value": {
           "description": "Describes the extent of the area of vertical space covered by the collection. Must be accompanied by an Altitude Encoding Method description. The datatype for this attribute is the value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of either DepthDistanceUnits or AltitudeDistanceUnits.",
@@ -1507,6 +1505,10 @@
       "type": "number",
       "minimum": -180,
       "maximum": 180
+    },
+    "VerticalSpatialDomainTypeEnum": {
+      "type": "string",
+      "enum": ["Atmosphere Layer", "Maximum Altitude", "Maximum Depth", "Minimum Altitude", "Minimum Depth"]
     },
     "GranuleSpatialRepresentationEnum": {
       "type": "string",
