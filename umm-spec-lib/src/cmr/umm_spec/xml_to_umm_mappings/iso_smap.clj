@@ -162,7 +162,7 @@
                             (when sanitize? u/not-provided-temporal-extents))
        :ScienceKeywords (parse-science-keywords data-id-el sanitize?)
        :LocationKeywords (kws/parse-location-keywords data-id-el)
-       :SpatialExtent (spatial/parse-spatial data-id-el sanitize?)
+       :SpatialExtent (spatial/parse-spatial doc data-id-el sanitize?)
        :TilingIdentificationSystems (tiling/parse-tiling-system data-id-el)
        :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
        ;; Required by UMM-C

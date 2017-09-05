@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.spatial
   (:require
+   [camel-snake-kebab.core :as csk]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.util :as u]))
 
@@ -58,6 +59,14 @@
      [:Minimum_Value (:MinimumValue coord)]
      [:Maximum_Value (:MaximumValue coord)]]))
 
+(defn- convert-vertical-spatial-domains
+  "Validate and convert vertical spatial domains to UMM-C v1.10.0"
+  [vertical-spatial-domains]
+  (map
+   (fn [spatial-domain]
+    (update spatial-domain :Type #(csk/->Camel_Snake_Case %)))
+   vertical-spatial-domains))
+
 (defn spatial-element
   "Returns DIF10 Spatial_Coverage element from given UMM-C record."
   [c]
@@ -83,7 +92,7 @@
         [:Inclination_Angle (:InclinationAngle o)]
         [:Number_Of_Orbits (:NumberOfOrbits o)]
         [:Start_Circular_Latitude (:StartCircularLatitude o)]])
-     (for [vert (:VerticalSpatialDomains sp)]
+     (for [vert (convert-vertical-spatial-domains (:VerticalSpatialDomains sp))]
        [:Vertical_Spatial_Info
         (elements-from vert :Type :Value)])
      [:Spatial_Info

@@ -93,6 +93,7 @@
         spatial-extent)
       (update-in [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] conversion-util/fix-echo10-dif10-polygon)
+      (update [:VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       conversion-util/prune-empty-maps))
 
 (defn- expected-dif10-contact-mechanisms

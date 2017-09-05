@@ -6,6 +6,7 @@
     [cmr.umm-spec.date-util :as du]
     [cmr.umm-spec.iso-keywords :as kws]
     [cmr.umm-spec.iso19115-2-util :as iso]
+    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as iso19115-spatial-conversion]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
     [cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url :as sdru]
@@ -164,6 +165,7 @@
          [:gmd:extent
           [:gmd:EX_Extent
            (generate-spatial-extent (:SpatialExtent c))
+           (iso19115-spatial-conversion/generate-vertical-domain c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]
              [:gmd:temporalElement
