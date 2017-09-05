@@ -29,5 +29,6 @@
                                                :C4-PROV3 "3_c4_prov3"
                                                :C5-PROV5 "3_c5_prov5"}
                                      :tag {}
-                                     :variable {}}}]
+                                     :variable {}
+                                     :deleted-granule {}}}]
     (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))
