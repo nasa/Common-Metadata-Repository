@@ -57,15 +57,15 @@
         (are3 [accept-format]
           (let [response (ingest/bulk-update-provider-status "PROV1"
                           {:accept-format accept-format})]
-            (is (= [{:task-id task-id-1,
-                     :status-message "All collection updates completed successfully.",
-                     :status "COMPLETE",
-                     :request-json-body json-body}
-                    {:task-id task-id-2,
-                     :status-message "All collection updates completed successfully.",
-                     :status "COMPLETE",
-                     :request-json-body json-body}]
-                   (:tasks response))))
+            (is (= (set [{:task-id task-id-1,
+                          :status-message "All collection updates completed successfully.",
+                          :status "COMPLETE",
+                          :request-json-body json-body}
+                         {:task-id task-id-2,
+                          :status-message "All collection updates completed successfully.",
+                          :status "COMPLETE",
+                          :request-json-body json-body}])
+                   (set (:tasks response)))))
           "JSON" :json
           "XML" :xml))
 
