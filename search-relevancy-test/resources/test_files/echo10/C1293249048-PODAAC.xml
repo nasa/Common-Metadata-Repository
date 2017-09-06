@@ -1,0 +1,129 @@
+<Collection>
+  <ShortName>CCMP_MEASURES_ATLAS_L3_OW_L2_5_WINDSAT_WIND_VECTORS_FLK</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2011-08-05T02:56:29.219Z</InsertTime>
+  <LastUpdate>2011-08-05T02:56:29.219Z</LastUpdate>
+  <LongName>Cross-Calibrated Multi-Platform Ocean Surface Wind Vector L2.5 First-Look WindSat Microwave Analyses</LongName>
+  <DataSetId>PODAAC-CCF25-01WSC</DataSetId>
+  <Description>Cross-Calibrated Multi-Platform Ocean Surface Wind Vector L2.5 First-Look WindSat Microwave Analyses</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2015-11-06T18:31:20.812Z</RevisionDate>
+  <ProcessingCenter>NASA/GSFC/NOAA</ProcessingCenter>
+  <ProcessingLevelId>3</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>BINARY</DataFormat>
+  <SpatialKeywords>
+    <Keyword>Global</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2010-01-01T00:00:00.000Z</BeginningDateTime>
+      <EndingDateTime>2011-12-31T23:59:59.000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number>(818) 393-7165</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>podaac@podaac.jpl.nasa.gov</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>User</FirstName>
+          <MiddleName>null</MiddleName>
+          <LastName>Services</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>OCEAN WINDS</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>SURFACE WINDS</Value>
+      </VariableLevel1Keyword>
+      <DetailedVariableKeyword>OCEAN SURFACE WIND VECTORS</DetailedVariableKeyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>Coriolis</ShortName>
+      <LongName>Coriolis</LongName>
+      <Type>SPACECRAFT</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>WindSat</ShortName>
+          <LongName>WindSat</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>WindSat</ShortName>
+              <LongName>WindSat</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/ccmp/L2.5/flk</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-CCF25-01WSC&amp;apidoc</URL>
+      <Description>(Search Granule)</Description>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/ccmp/L2.5/doc/ccmp_users_guide.pdf</URL>
+      <Description>Dataset User Guide</Description>
+      <Type>Reference Materials</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/Cross-Calibrated_Multi-Platform_OceanSurfaceWindVectorAnalyses</URL>
+      <Description>MEaSUREs Project Information Page for CCMP</Description>
+      <Type>Web Page</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>89.875</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-89.875</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

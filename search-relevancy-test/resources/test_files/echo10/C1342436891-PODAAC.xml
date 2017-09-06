@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>RSCAT_COLOCATED_RSS_RADIOMETER_LEVEL_2B_V1</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2016-08-24T20:37:48.167Z</InsertTime>
+    <LastUpdate>2016-08-24T20:37:48.167Z</LastUpdate>
+    <LongName>Remote Sensing Systems Radiometer Rain Collocations with JPL RapidScat L2B Swath Grid</LongName>
+    <DataSetId>PODAAC-RSR12-L2C10</DataSetId>
+    <Description>This dataset contains the multi-sourced radiometer wind speed, rain and liquid cloud water data collocated to RapidScat Level 2B wind vector cell (WVC) locations. This dataset is produced by Remote Sensing Systems (RSS) with direct funding from the JPL RapidScat project. All of the co-located radiometer data is produced by RSS.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-11-08T16:01:01.054Z</RevisionDate>
+    <ProcessingCenter>ISS-RapidScat</ProcessingCenter>
+    <ProcessingLevelId>2</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2014-10-03T00:00:00.000Z</BeginningDateTime>
+            <EndingDateTime>2016-08-19T15:01:24.000Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>SeaWinds Processing and Analysis Center (SeaPAC)</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>(818) 354-5329</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>Bryan.W.Stiles@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Bryan</FirstName>
+                    <LastName>Stiles</LastName>
+                    <JobPosition>Science Data Systems Lead</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>818-354-2038</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>David.F.Moroni@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>David</FirstName>
+                    <LastName>Moroni</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Atmosphere</TopicKeyword>
+            <TermKeyword>Clouds</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Cloud Liquid Water/Ice</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Cloud Liquid Water Content</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Atmosphere</TopicKeyword>
+            <TermKeyword>Precipitation</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Precipitation Rate</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Rain Rate</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Winds</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Surface Winds</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Ocean Surface Wind Speed</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>GPM_Core</ShortName>
+            <LongName>Global Precipitation Measurement Core Observatory</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>GMI</ShortName>
+                    <LongName>GPM Microwave Imager</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>GMI</ShortName>
+                            <LongName>GPM Microwave Imager</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>Coriolis</ShortName>
+            <LongName>Coriolis</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>WindSat</ShortName>
+                    <LongName>WindSat</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>WindSat</ShortName>
+                            <LongName>WindSat</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>GCOM-W1</ShortName>
+            <LongName>Global Change Observation Mission 1st - Water (SHIZUKU)</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>AMSR2</ShortName>
+                    <LongName>Advanced Microwave Scanning Radiometer 2</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>AMSR2</ShortName>
+                            <LongName>Advanced Microwave Scanning Radiometer 2</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>DMSP-F18</ShortName>
+            <LongName>Defense Meteorological Satellite Program F18</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SSMIS</ShortName>
+                    <LongName>Special Sensor Microwave Imager/Sounder</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SSMIS</ShortName>
+                            <LongName>Special Sensor Microwave Imager/Sounder</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>DMSP-F16</ShortName>
+            <LongName>Defense Meteorological Satellite Program F16</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SSMIS</ShortName>
+                    <LongName>Special Sensor Microwave Imager/Sounder</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SSMIS</ShortName>
+                            <LongName>Special Sensor Microwave Imager/Sounder</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>DMSP-F17</ShortName>
+            <LongName>Defense Meteorological Satellite Program-F17</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SSMIS</ShortName>
+                    <LongName>Special Sensor Microwave Imager/Sounder</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SSMIS</ShortName>
+                            <LongName>Special Sensor Microwave Imager/Sounder</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>DMSP-F15</ShortName>
+            <LongName>Defense Meteorological Satellite Program-F15</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SSMI</ShortName>
+                    <LongName>Special Sensor Microwave Imager</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SSMI</ShortName>
+                            <LongName>Special Sensor Microwave Imager</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>ISS</ShortName>
+            <LongName>International Space Station</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>RapidScat</ShortName>
+                    <LongName>Rapid Scatterometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>RapidScat</ShortName>
+                            <LongName>Rapid Scatterometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/rapidscat/L2B12/colocated/rss/radiometer/v1.0/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/rapidscat/L2B12/colocated/rss/radiometer/v1.0</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://www.jpl.nasa.gov/news/fact_sheets/issrapidscat_factsheet.pdf</URL>
+            <Description>Summary of Facts on the ISS-RapidScat Mission</Description>
+            <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/rapidscat/L2B12/sw/IDL</URL>
+            <Description>Generic netCDF Reader</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://manati.star.nesdis.noaa.gov/rscat_images/monitor/RapidScat_Scheduled_Outages.txt</URL>
+            <Description>Text file containing reverse chronological list of future scheduled outages and past outages. A start/stop date/time and description is provided for each outage. This list is maintained by NOAA/NESDIS to service near-real-time data users.</Description>
+            <Type>PORTAL_DOC_KNOWN_ISSUES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/rapidscat/ancillary/revtime.csv</URL>
+            <Description>ASCII CSV orbital revolution time tables with quality assurance information.</Description>
+            <Type>PORTAL_DOC_KNOWN_ISSUES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/rapidscat/L2B12/sw/MATLAB</URL>
+            <Description>Generic netCDF Reader</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/dataset/RSCAT_LEVEL_2B_OWV_CLIM_12_V1</URL>
+            <Description>Access to Climate quality L2B data record.</Description>
+            <Type>PORTAL_DA</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://directory.eoportal.org/web/eoportal/satellite-missions/i/iss-rapidscat</URL>
+            <Description>Detailed background information on the ISS-RapidScat mission published by the eoPortal.</Description>
+            <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://winds.jpl.nasa.gov/missions/RapidScat/</URL>
+            <Description>Website providing more detailed information about the ISS-RapidScat Mission.</Description>
+            <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/rapidscat/L2B12/sw/Python</URL>
+            <Description>Generic netCDF Reader</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/rapidscat/L2B12/sw/R</URL>
+            <Description>Generic netCDF Reader</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>56</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-56</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>
