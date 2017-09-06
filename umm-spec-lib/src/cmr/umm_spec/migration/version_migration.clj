@@ -294,7 +294,7 @@
       distance-units-migration/migrate-distance-units-to-enum
       ;; Remove the possible empty maps after setting geographic coordinate units and/or distance-units to nil.
       util/remove-empty-maps
-      (update :VerticalSpatialDomains spatial-conversion/drop-invalid-vertical-spatial-domains)
+      (update-in [:SpatialExtent :VerticalSpatialDomains] spatial-conversion/drop-invalid-vertical-spatial-domains)
       char-data-type-normalization/migrate-up))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
