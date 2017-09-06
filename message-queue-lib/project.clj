@@ -1,13 +1,14 @@
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
-                 [com.novemberain/langohr "3.4.0"]
-                 [com.amazonaws/aws-java-sdk "1.10.60"]]
+  :dependencies [
+    [com.amazonaws/aws-java-sdk "1.10.60"]
+    [com.novemberain/langohr "3.4.0"]
+    [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+    [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+    [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+    [org.clojure/clojure "1.8.0"]]
 
   :plugins [[lein-shell "0.4.0"]
             [test2junit "1.2.1"]]
