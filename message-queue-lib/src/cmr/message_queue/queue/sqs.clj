@@ -419,6 +419,11 @@
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
           queue-url (get-queue-url sqs-client queue-name)]
+      (info "Publishing to queue ...")
+      (info "msg:" msg)
+      (info "queue-name:" queue-name)
+      (info "queue-url:" queue-url)
+      (info "client:" sqs-client)
       (.sendMessage sqs-client queue-url msg)))
 
   (get-queues-bound-to-exchange
