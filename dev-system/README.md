@@ -42,7 +42,15 @@ can do the following:
   to `false`
 * Start the REPL, e.g. `lein repl`
 * Turn on AWS mode: `(set-aws true)`
-* Reset the REPL (which reloads the code and starts up the system components)
+* Reset the REPL (which reloads the code and starts up the system components): `(reset)`
+
+If you want to do any debugging of the local service, you'll probably want to
+install the AWS cli. On a Mac, just do `brew install awscli`. You can use this
+to make sure that the local SQS/SNS has started:
+
+```
+$ aws --endpoint-url http://localhost:4100 sqs list-queues
+```
 
 ## Setting up profiles.clj
 
