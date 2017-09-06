@@ -749,7 +749,7 @@
     :result-format})
 
 (def ^:private valid-deleted-granules-search-params
-  "Valid parameters for deleted collections search"
+  "Valid parameters for deleted granules search"
   #{:revision-date
     :provider
     :parent-collection-id

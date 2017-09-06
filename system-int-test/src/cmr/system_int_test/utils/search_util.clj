@@ -463,7 +463,7 @@
 
 (defmethod parse-reference-response :default
   [_ response]
-  (let [parsed (-> response :body fx/parse-str prn)
+  (let [parsed (-> response :body fx/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])

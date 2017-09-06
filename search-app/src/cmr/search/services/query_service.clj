@@ -15,15 +15,9 @@
    [cheshire.core :as json]
    [clj-time.format :as time-format]
    [clojure.set :as set]
-   [cmr.search.results-handlers.atom-json-results-handler :as results-handler]
-   [cmr.common.util :as util]
    [clojure.string :as string]
-   [clojurewerkz.elastisch.rest.document :as esd]
    [clojurewerkz.elastisch.query :as esq]
-   [cmr.indexer.data.elasticsearch :as es]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as query-results]
-   [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
-   [cmr.common-app.services.search.datetime-helper :as datetime-helper]
+   [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -35,6 +29,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
+   [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.provider-holdings :as ph]
@@ -439,6 +434,7 @@
   "Executes elasticsearch searches to find collections that are deleted from a given revision-date.
    This only finds granules that are truly deleted and not searchable.
    granules that are deleted, then later ingested again are not included in the result."
+
   [context params]
   (pv/validate-deleted-granules-params params)
   (let [start-time (System/currentTimeMillis)

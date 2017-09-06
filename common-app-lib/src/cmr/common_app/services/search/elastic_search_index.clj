@@ -107,7 +107,7 @@
     (scroll-search context scroll-id)
     (esd/search (context->conn context) (:index-name index-info) [(:type-name index-info)] query)))
 
-(defn send-query
+(defn- send-query
   "Send the query to ES using either a normal query or a scroll query. Handle socket exceptions
   by retrying."
   [context index-info query]
