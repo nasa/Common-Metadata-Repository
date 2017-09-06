@@ -139,4 +139,9 @@
             "check-deps" ["with-profile" "lint" "ancient" "all"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
-            "generate-static" ["with-profile" "static" "shell" "echo"]})
+            "generate-static" ["with-profile" "static" "shell" "echo"]
+            ;; Run a local copy of SQS/SNS
+            "start-sqs-sns" ["do" ["shell" "docker" "pull" "pafortin/goaws"]
+                                  ["shell" "docker" "run" "-d" "--name"
+                                           "goaws" "-p" "4100:4100"
+                                           "pafortin/goaws"]]})
