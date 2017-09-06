@@ -15,6 +15,8 @@
    [cheshire.core :as json]
    [clj-time.format :as time-format]
    [clojure.set :as set]
+   [cmr.search.results-handlers.atom-json-results-handler :as results-handler]
+   [cmr.common.util :as util]
    [clojure.string :as string]
    [clojurewerkz.elastisch.rest.document :as esd]
    [clojurewerkz.elastisch.query :as esq]
@@ -414,10 +416,8 @@
                                    (set coll-concept-ids)
                                    (set visible-concept-ids)))
         results (get-highest-visible-revisions context deleted-concept-ids result-format)
-        hits (or (get-in results [:hits :total]) 0)
-        items (or (count (get-in results [:hits :hits])) [])
         ;; when results is nil, hits is 0
-        results {:hits hits :items items}
+        results (or results {:hits 0 :items []})
         total-took (- (System/currentTimeMillis) start-time)
         ;; construct the response results string
         results-str (common-search/search-results->response
@@ -436,14 +436,16 @@
      :result-format result-format}))
 
 (defn get-deleted-granules
-  ""
+  "Executes elasticsearch searches to find collections that are deleted from a given revision-date.
+   This only finds granules that are truly deleted and not searchable.
+   granules that are deleted, then later ingested again are not included in the result."
   [context params]
   (pv/validate-deleted-granules-params params)
   (let [start-time (System/currentTimeMillis)
-        {:keys [parent-collection-id provider-id result-format revision-date result-format]} (common-params/sanitize-params params)
+        {:keys [parent-collection-id provider revision-date result-format]} (common-params/sanitize-params params)
         filters [{:range {:revision-date {:gte revision-date}}}]
-        filters (if (seq provider-id)
-                  (conj filters {:term {:provider-id provider-id}})
+        filters (if (seq provider)
+                  (conj filters {:term {:provider-id provider}})
                   filters)
         filters (if (seq parent-collection-id)
                   (conj filters {:term {:parent-collection-id parent-collection-id}})
@@ -455,23 +457,21 @@
                                                 :filter {:and {:filters filters}}}}
                              :fields [:concept-id :revision-date :provider-id
                                       :granule-ur :parent-collection-id]})
-        _ (proto-repl.saved-values/save 11)
-
-        results (or (get results :hits)
-                    {:hits 0 :items []})
+        hits (or (get-in results [:hits :total]) 0)
+        items (map :fields (get-in results [:hits :hits]))
         total-took (- (System/currentTimeMillis) start-time)
-        results-str (common-search/search-results->response
-                     context
-                     (qm/query {:concept-type :granule
-                                :result-format result-format})
-                     (assoc results :took total-took))]
+        results {:hits hits :items items :took total-took}
+
+        ;; construct the response results string
+        results-str (json/generate-string (:items results))]
+
     (info (format "Found %d deleted collections in %d ms in format %s with params %s."
                   (:hits results) total-took
                   (rfh/printable-result-format result-format (pr-str params))))
 
     {:results results-str
      :hits (:hits results)
-     :result-format (:result-format params)}))
+     :result-format (:result-format result-format)}))
 
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"

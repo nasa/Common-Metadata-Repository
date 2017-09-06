@@ -751,10 +751,9 @@
 (def ^:private valid-deleted-granules-search-params
   "Valid parameters for deleted collections search"
   #{:revision-date
-    :provider-id
+    :provider
     :parent-collection-id
     :revision_date
-    :provider_id
     :parent_collection_id
     :result-format})
 
@@ -803,9 +802,9 @@
 (defn- deleted-grans-result-format-validation
   "Validates that the only result format support by deleted granules search is :xml"
   [params]
-  (when-not (= :xml (:result-format params))
+  (when-not (= :json (:result-format params))
     [(format (str "Result format [%s] is not supported by deleted granules search. "
-                  "The only format that is supported is xml.")
+                  "The only format that is supported is json")
              (name (:result-format params)))]))
 
 (defn- unrecognized-deleted-grans-params-validation
@@ -854,7 +853,6 @@
   (let [errors (mapcat #(% params)
                        [unrecognized-deleted-grans-params-validation
                         deleted-grans-result-format-validation
-                        deleted-grans-revision-required-validation
                         deleted-grans-revision-required-validation
                         deleted-grans-revision-date-range-validation])]
     (when (seq errors)
