@@ -28,6 +28,22 @@ Furthermore, there is a second (and optional) test runner you can use for
 running suites, test namespaces, and individual test functions. See the
 docstring for `run-suites` in `dev/user.clj` for usage information.
 
+### Testing with a Local SQS/SNS
+
+If you would like to test messaging against a local clone of SQS/SNS, then you
+can do the following:
+
+* Be sure that Docker is installed on your system and running
+* Run `lein start-sqs-sns`
+* From the shell where you will start the REPL, you will need the
+  `CMR_SNS_ENDPOINT` and `CMR_SQS_ENDPOINT` environment variables set;
+  in most cases you will want both of these set to `http://localhost:4100`
+* You will also need to set the env var `CMR_SQS_EXTEND_POLICY_REMAINING_EXCHANGES`
+  to `false`
+* Start the REPL, e.g. `lein repl`
+* Turn on AWS mode: `(set-aws true)`
+* Reset the REPL (which reloads the code and starts up the system components)
+
 ## Setting up profiles.clj
 
 As noted above, you will need to create a `profiles.clj` in the `dev-system`

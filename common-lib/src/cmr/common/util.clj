@@ -5,6 +5,8 @@
    [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
    [clojure.java.io :as io]
+   [clojure.pprint :refer [print-table]]
+   [clojure.reflect :refer [reflect]]
    [clojure.set :as set]
    [clojure.string :as str]
    [clojure.template :as template]
@@ -888,3 +890,12 @@
   ([data fun]
     (fun data)
     (kebab-case-data data)))
+
+(defn show-methods
+  "Display a Java object's public methods."
+  [obj]
+  (print-table
+    (sort-by :name
+      (filter (fn [x]
+                (contains? (:flags x) :public))
+              (:members (reflect obj))))))
