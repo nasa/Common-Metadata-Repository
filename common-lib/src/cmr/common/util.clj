@@ -5,10 +5,10 @@
    [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
    [clojure.java.io :as io]
-   [clojure.pprint :refer [print-table]]
+   [clojure.pprint :refer [pprint print-table]]
    [clojure.reflect :refer [reflect]]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.template :as template]
    [clojure.test :as test]
    [clojure.walk :as w]
@@ -115,12 +115,12 @@
 (defn safe-lowercase
   "Returns the given string in lower case safely."
   [v]
-  (when v (str/lower-case v)))
+  (when v (string/lower-case v)))
 
 (defn safe-uppercase
   "Returns the given string in upper case safely."
   [v]
-  (when v (str/upper-case v)))
+  (when v (string/upper-case v)))
 
 (defn match-enum-case
   "Given a string and a collection of valid enum values, return the proper-cased
@@ -823,7 +823,7 @@
   digit and non-digit subsequences. Digits are returned as integers and the
   vector is guaranteed to start with a (potentially empty) string."
   [s]
-  (let [lower-s (str/lower-case s)
+  (let [lower-s (string/lower-case s)
         result (map #(if (re-matches #"\d+" %)
                        (Integer/parseInt % 10)
                        %)
@@ -899,3 +899,36 @@
       (filter (fn [x]
                 (contains? (:flags x) :public))
               (:members (reflect obj))))))
+
+(defn show-env
+  "Show the system environment currently available to Clojure.
+
+  Example usage:
+  ```
+  (show-env)
+  (show-env keyword)
+  (show-env (comp keyword string/lower-case))
+  ```"
+  ([]
+   (show-env identity))
+  ([key-fn]
+   (show-env key-fn (constantly true)))
+  ([key-fn filter-fn]
+   (show-env key-fn filter-fn (System/getenv)))
+  ([key-fn filter-fn data]
+   (->> data
+        (filter filter-fn)
+        (map (fn [[k v]] [(key-fn k) v]))
+        (into (sorted-map))
+        (pprint))
+   :ok))
+
+(defn show-cmr-env
+  "Show just the system environment variables with the `CMR_` prefix."
+  []
+  (show-env
+    (comp keyword
+          string/lower-case
+          #(string/replace % "_" "-")
+          #(string/replace % #"^CMR_" ""))
+    #(string/starts-with? %1 "CMR_")))
