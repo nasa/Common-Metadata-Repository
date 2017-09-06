@@ -56,9 +56,8 @@
      :HorizontalSpatialDomain      (let [[geom] (select spatial "Geometry")]
                                      {:Geometry (parse-geometry geom)
                                       :ZoneIdentifier (value-of spatial "Zone_Identifier")})
-     :VerticalSpatialDomains       (->> (select spatial "Vertical_Spatial_Info")
-                                        spatial-conversion/convert-vertical-spatial-domains-from-xml
-                                        (map #(update % :Type (fn [x] (string/replace x "_" " ")))))
+     :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
+                                    (select spatial "Vertical_Spatial_Info"))
      :OrbitParameters              (let [[o] (select spatial "Orbit_Parameters")]
                                      {:SwathWidth (value-of o "Swath_Width")
                                       :Period (value-of o "Period")

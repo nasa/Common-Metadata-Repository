@@ -1522,18 +1522,21 @@
            (vm/migrate-umm {} :collection "1.9" "1.10"
                           {:CollectionProgress "COMPLETE"}))))
   (testing "VerticalSpatialDomains migration from 1.9.0 to 1.10.0"
-    (let [vsds {:VerticalSpatialDomains [{:Type "An Invalid Type"
-                                          :Value "I can't believe I'm going down for this too"}
-                                         {:Type "Atmosphere Layer"
-                                          :Value "The Earth has one of these"}
-                                         {:Type "Maximum Altitude"
-                                          :Value "There is no limit if you believe -Bob Ross"}]}
+    (let [vsds {:SpatialExtent
+                {:VerticalSpatialDomains [{:Type "An Invalid Type"
+                                           :Value "I can't believe I'm going down for this too"}
+                                          {:Type "AtmosphereLayer"
+                                           :Value "I am invalid"}
+                                          {:Type "Atmosphere Layer"
+                                           :Value "The Earth has one of these"}
+                                          {:Type "Maximum Altitude"
+                                           :Value "There is no limit if you believe -Bob Ross"}]}}
           result (vm/migrate-umm {} :collection "1.9" "1.10" vsds)]
-      (is (= [{:Value "The Earth has one of these", 
+      (is (= [{:Value "The Earth has one of these",
                :Type "Atmosphere Layer"}
               {:Value "There is no limit if you believe -Bob Ross",
                :Type "Maximum Altitude"}]
-           (:VerticalSpatialDomains result)))))))
+           (get-in result [:SpatialExtent :VerticalSpatialDomains])))))))
 
 (deftest migrate-1_10-down-to-1_9
   (testing "CollectionProgress migration from version 1.10 to 1.9"
