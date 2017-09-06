@@ -111,11 +111,11 @@
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
   [spatial-extent]
  (as-> spatial-extent se
-     (conversion-util/prune-empty-maps se)
-     (update se :VerticalSpatialDomains spatial-conversion/drop-invalid-vertical-spatial-domains)
-     (if (get-in se [:HorizontalSpatialDomain :Geometry])
-       (update-in se [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
-       se)))
+       (conversion-util/prune-empty-maps se)
+       (update se :VerticalSpatialDomains spatial-conversion/drop-invalid-vertical-spatial-domains)
+       (if (get-in se [:HorizontalSpatialDomain :Geometry])
+         (update-in se [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
+         se)))
 
 (defn- expected-echo10-platform-longname-with-default-value
   "Returns the expected ECHO10 LongName with default value."

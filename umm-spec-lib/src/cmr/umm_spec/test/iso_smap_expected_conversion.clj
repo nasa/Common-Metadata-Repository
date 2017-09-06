@@ -294,9 +294,10 @@
    be compared to the actual translation."
   [umm-coll]
   (-> umm-coll
-<<<<<<< HEAD
       (assoc :DirectoryNames nil)
       (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
+      (update-in [:SpatialExtent :VerticalSpatialDomains]
+                 spatial-conversion/drop-invalid-vertical-spatial-domains)
       (update-in [:DataDates] expected-smap-data-dates)
       (update :DataLanguage #(or % "eng"))
       (update :TemporalExtents expected-temporal)
@@ -327,37 +328,3 @@
       (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)))
-=======
-        (assoc :DirectoryNames nil)
-        (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
-        (update-in [:SpatialExtent :VerticalSpatialDomains]
-                   spatial-conversion/drop-invalid-vertical-spatial-domains)
-        (update-in [:DataDates] expected-smap-data-dates)
-        (update :DataLanguage #(or % "eng"))
-        (update :TemporalExtents expected-temporal)
-        (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-        (update :ISOTopicCategories iso-shared/expected-iso-topic-categories)
-        (update :DataCenters expected-data-centers)
-        (assoc :VersionDescription nil)
-        (assoc :ContactGroups nil)
-        (assoc :ContactPersons (expected-contact-persons
-                                 (iso-shared/update-contact-persons-from-collection-citation
-                                   (:ContactPersons umm-coll)
-                                   (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll))))
-                                 "Technical Contact"))
-        (update :CollectionCitations expected-collection-citations)
-        (assoc :UseConstraints nil)
-        (assoc :AccessConstraints nil)
-        (assoc :SpatialKeywords nil)
-        (assoc :TemporalKeywords nil)
-        (assoc :AdditionalAttributes nil)
-        (update :ProcessingLevel su/convert-empty-record-to-nil)
-        (assoc :Distributions nil)
-        (assoc :PublicationReferences nil)
-        (assoc :AncillaryKeywords nil)
-        (update :RelatedUrls expected-iso-smap-related-urls)
-        (update :ScienceKeywords expected-science-keywords)
-        (assoc :PaleoTemporalCoverages nil)
-        (assoc :MetadataDates nil)
-        (assoc :CollectionProgress (conversion-util/expected-coll-progress umm-coll))))
->>>>>>> CMR-3365 Convert VerticalSpatialDomainType to an enum

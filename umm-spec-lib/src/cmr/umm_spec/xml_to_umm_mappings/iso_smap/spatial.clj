@@ -2,10 +2,10 @@
   "Functions for parsing UMM spatial records out of ISO SMAP XML documents."
   (:require
    [cmr.common.xml.parse :refer :all]
-   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
-   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as iso-19115-2-spatial]
    [cmr.common.xml.simple-xpath :refer [select]]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as iso-19115-2-spatial]))
 
 (def bounding-rectangles-xpath-str
   "gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicBoundingBox")

@@ -60,7 +60,7 @@
      [:Maximum_Value (:MaximumValue coord)]]))
 
 (defn- convert-vertical-spatial-domains
-  "Validate and convert vertical spatial domains to UMM-C v1.10.0"
+  "Validate and convert vertical spatial domains to dif10"
   [vertical-spatial-domains]
   (map
    (fn [spatial-domain]
