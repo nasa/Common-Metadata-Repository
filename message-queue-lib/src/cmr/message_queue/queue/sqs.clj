@@ -24,9 +24,11 @@
    (clojure.lang Keyword Reflector)
    (cmr.message_queue.test ExitException)
    (com.amazonaws ClientConfiguration)
+   (com.amazonaws.auth BasicAWSCredentials)
    (com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
    (com.amazonaws.auth.policy.actions SQSActions)
    (com.amazonaws.auth.policy.conditions ConditionFactory)
+   (com.amazonaws.regions InMemoryRegionImpl)
    (com.amazonaws.services.sns AmazonSNSClient)
    (com.amazonaws.services.sqs AmazonSQSClient)
    (com.amazonaws.services.sns.util Topics)
@@ -67,13 +69,6 @@
   {:default nil
    :type String})
 
-(defconfig sns-endpoint
-  "By default the SNS client will not explicitly set the SNS endpoint. This
-  configuration is provided for use in situations where explicitly setting
-  the SNS endpoint is desirable or required."
-  {:default nil
-   :type String})
-
 (defconfig sqs-extend-policy-remaining-exchanges
   "When subscribing a queue to a topic, one may override the AWS policy or
   extend it. CMR's default behaviour for AWS is to not extend the policy
@@ -84,6 +79,13 @@
   do not want to extend the policies."
   {:default true
    :type Boolean})
+
+(defconfig sns-endpoint
+  "By default the SNS client will not explicitly set the SNS endpoint. This
+  configuration is provided for use in situations where explicitly setting
+  the SNS endpoint is desirable or required."
+  {:default nil
+   :type String})
 
 (defn queue-visibility-timeout
   "Number of seconds SQS should wait after a message is read from a provider queue before making
@@ -287,11 +289,13 @@
   (memoize -get-queue-url))
 
 (defn set-aws-client-attr!
-  "Conditionally configure the AWS client instance based passed as an argument."
-  [client-obj [method value]]
-  (when (complement (nil? value))
+  "Conditionally configure the AWS client instance with by calling the given
+  method with the given args."
+  [client-obj method args]
+  (when-not (nil? (first args))
+    (info "\tConfig:" method "=" args)
     (Reflector/invokeInstanceMethod
-     client-obj (name method) (object-array [value]))))
+     client-obj (name method) (object-array args))))
 
 (defn configure-aws-client
   "Configure an AWS service client with values passed pair-wise to the methods
@@ -319,27 +323,35 @@
   it is best to define the default configuration value as nil, so as to avoid
   unexpected client behaviour."
   [client-obj & args]
-  (doall
-    (->> args
-         (partition 2)
-         (map (partial set-aws-client-attr! client-obj))))
+  (info "Configuring client" client-obj)
+  (doseq [[config-key config-vals] (partition 2 args)]
+    (set-aws-client-attr! client-obj config-key config-vals))
   client-obj)
 
 (defmulti create-aws-client
-  "Create an AWS service client, conditionally setting any configured values."
+  "Create an AWS service client, conditionally setting any configured values.
+
+  Note that if the configuration calls (e.g., `(sqs-endpoint)`) return `nil`,
+  the configuration operation doesn't actually take place."
   identity)
 
 (defmethod create-aws-client :sqs
   [^Keyword type]
-  (configure-aws-client
-    (new AmazonSQSClient)
-    :setEndpoint (sqs-endpoint)))
+  (let [endpoint (sqs-endpoint)]
+    (if (nil? endpoint)
+      (new AmazonSQSClient)
+      (configure-aws-client
+        (new AmazonSQSClient (new BasicAWSCredentials "unused" "unused"))
+        :setEndpoint [endpoint]))))
 
 (defmethod create-aws-client :sns
   [^Keyword type]
-  (configure-aws-client
-    (new AmazonSNSClient)
-    :setEndpoint (sns-endpoint)))
+  (let [endpoint (sns-endpoint)]
+    (if (nil? endpoint)
+      (new AmazonSNSClient)
+      (configure-aws-client
+        (new AmazonSNSClient (new BasicAWSCredentials "unused" "unused"))
+        :setEndpoint [endpoint]))))
 
 (defrecord SQSQueueBroker
   ;; A record containing fields related to accessing SNS/SQS exchanges and queues.
