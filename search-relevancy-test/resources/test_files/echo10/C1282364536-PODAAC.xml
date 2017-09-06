@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>MUR-JPL-L4-GLOB-v4.1</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2014-10-31T16:30:37.998Z</InsertTime>
+    <LastUpdate>2014-10-31T16:30:37.998Z</LastUpdate>
+    <LongName>GHRSST Level 4 MUR Global Foundation Sea Surface Temperature Analysis (v4.1)</LongName>
+    <DataSetId>PODAAC-GHGMR-4FJ04</DataSetId>
+    <Description>A Group for High Resolution Sea Surface Temperature (GHRSST) Level 4 sea surface temperature analysis produced as a retrospective dataset (four day latency) and near-real-time dataset (one day latency) at the JPL Physical Oceanography DAAC using wavelets as basis functions in an optimal interpolation approach on a global 0.01 degree grid. The version 4 Multiscale Ultrahigh Resolution (MUR) L4 analysis is based upon nighttime GHRSST L2P skin and subskin SST observations from several instruments including the NASA Advanced Microwave Scanning Radiometer-EOS (AMSRE), the Moderate Resolution Imaging Spectroradiometer (MODIS) on the NASA Aqua and Terra platforms, the US Navy microwave WindSat radiometer, Advanced Very High Resolution Radiometer (AVHRR) on several NOAA satellites, and in situ SST observations from the NOAA iQuam project. The ice concentration data are from the archives at the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSI SAF) High Latitude Processing Center and are also used for an improved SST parameterization for the high-latitudes.  This data set is funded by the NASA MEaSUREs program(http://earthdata.nasa.gov/our-community/community-data-system-programs/measures-projects), and created by a team led by Dr. Toshio M. Chin from JPL. This dataset adheres to the GHRSST Data Processing Specification (GDS) version 2 format specifications.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-10-05T18:28:25.380Z</RevisionDate>
+    <ProcessingCenter>Jet Propulsion Laboratory</ProcessingCenter>
+    <ProcessingLevelId>4</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2002-06-01T09:00:00.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>818-393-6710</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>edward.m.armstrong@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Edward</FirstName>
+                    <MiddleName>none</MiddleName>
+                    <LastName>Armstrong</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Jet Propulsion Laboratory</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number> 1-818-393-2510</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>mike.chin@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Mike</FirstName>
+                    <MiddleName>noen</MiddleName>
+                    <LastName>Chin</LastName>
+                    <JobPosition>Investigator</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Temperature</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Sea Surface Temperature</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Foundation Sea Surface Temperature</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>NOAA-18</ShortName>
+            <LongName>National Oceanic &amp; Atmospheric Administration-18</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>AVHRR-3</ShortName>
+                    <LongName>Advanced Very High Resolution Radiometer-3</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>AVHRR-3</ShortName>
+                            <LongName>Advanced Very High Resolution Radiometer-3</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>Coriolis</ShortName>
+            <LongName>Coriolis</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>WindSat</ShortName>
+                    <LongName>WindSat</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>WindSat</ShortName>
+                            <LongName>WindSat</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>TERRA</ShortName>
+            <LongName>Earth Observing System, TERRA</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>MODIS</ShortName>
+                    <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+        <Platform>
+            <ShortName>AQUA</ShortName>
+            <LongName>Earth Observing System, AQUA</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>AMSR-E</ShortName>
+                    <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>AMSR-E</ShortName>
+                            <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+                <Instrument>
+                    <ShortName>MODIS</ShortName>
+                    <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://data.nodc.noaa.gov/cgi-bin/nph-dods/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://ftp.nodc.noaa.gov/pub/data.nodc/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L4/GLOB/JPL/MUR/v4.1/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://science.nasa.gov/earth-science/earth-science-data/Earth-Science-Data-Records-Programs/MEaSUREs-Projects/</URL>
+            <Description>Homepage for the NASA MEaSUREs projects</Description>
+            <Type>Website</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/idl/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/python/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://ghrsst.jpl.nasa.gov</URL>
+            <Description>Portal to the GHRSST Global Data Assembly Center and data access</Description>
+            <Type>Get Data</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://journals.ametsoc.org/doi/abs/10.1175/1520-0426%281998%29015%3C0741:BSHWSS%3E2.0.CO;2</URL>
+            <Description>Chin T.M., Milliff R.F., Large W.G. (1998). Basin-scale, high-wavenumber sea surface wind fields from a multiresolution analysis of scatterometer data. Journal of Atmospheric and Oceanic Technology, 15: 741-763</Description>
+            <Type>PORTAL_DOC_JOURNAL_REFERENCES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://mur.rsmas.miami.edu</URL>
+            <Description>MUR Project homepage</Description>
+            <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHGMR-4FJ04</URL>
+            <Description>(Search Granule)</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.ghrsst.org</URL>
+            <Description>GHRSST Project website</Description>
+            <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac-uat.jpl.nasa.gov/las/UI.vm</URL>
+            <Description>Live Access Server</Description>
+            <Type>PORTAL_DA_TOOLS_AND_SERVICES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>https://podaac.jpl.nasa.gov/forum/viewtopic.php?f=5&amp;t=219</URL>
+            <Description>Python Subsetting Script</Description>
+            <Type>PORTAL_DA_TOOLS_AND_SERVICES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://thredds.jpl.nasa.gov/thredds/catalog_ghrsst_gds2.html?dataset=MUR-JPL-L4-GLOB-v4.1</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://onlinelibrary.wiley.com/doi/10.1002/2016GL069485/full</URL>
+            <Description>Tidal mixing signatures in the Indonesian seas from high-resolution sea surface temperature data</Description>
+            <Type>PORTAL_DOC_JOURNAL_REFERENCES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/OceanTemperature/ghrsst/docs/GDS20r5.pdf</URL>
+            <Description>Documentation on the GDS version 2 format specification</Description>
+            <Type>PORTAL_DOC_USERS_GUIDE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/matlab/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://mariana.jpl.nasa.gov/mur_sst/tmchin/docs/ATBD/atbd_1.1.pdf</URL>
+            <Description>Algorithm Theoretical Basis Document</Description>
+            <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/ghrsst/sw/generic_nc_readers/R/</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

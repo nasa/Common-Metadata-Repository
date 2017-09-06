@@ -11,6 +11,9 @@
    [search-relevancy-test.result-logger :as result-logger]
    [clojure.set :as set]))
 
+(def page-size
+  30)
+
 (def base-search-path
   "http://localhost:3003/collections")
 
@@ -19,7 +22,10 @@
   of the base search path. Return results in JSON and parse."
   [anomaly-test search-params]
   (let [response (client/get
-                  (str base-search-path (:search anomaly-test) search-params)
+                  (str base-search-path
+                       (:search anomaly-test)
+                       search-params
+                       (format "&page_size=%d" page-size))
                   {:headers {"Accept" "application/json"}})]
     (json/parse-string (:body response) true)))
 
