@@ -43,6 +43,11 @@
   and \"aws\""
   {:default "rabbit-mq"})
 
+(defconfig messaging-retry-delay
+  "This configuration value is used to determine how long to wait before
+  retrying a messaging operation."
+  {:default 2000 :type Long})
+
 (defn default-config
   "Returns a default config map for connecting to the message queue"
   []
