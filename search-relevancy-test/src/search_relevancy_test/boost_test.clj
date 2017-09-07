@@ -84,16 +84,6 @@
     (println "No field specified for boosts tests. Must specify a field to
              test boosts with the '-field' argument")))
 
-; (def boost-fields
-;   "All the fields that we will test boosting"
-;   [
-;   ;  :short-name
-;    :project
-;    :platform
-;    :science-keywords
-;    :instrument
-;    :entry-title])
-
 (def boost-fields
   "All the fields that can be boosted"
   [:short-name
@@ -144,20 +134,35 @@
                                       (for [field boost-fields
                                             :let [random-value (+ min-value (rand value-range))]]
                                         [field (Float. (format "%.1f" random-value))]))
-                  test-results (run-boost-test-all-fields random-boosts)]]
-      (when (or (nil? @best-run) ; Save the earliest best run
-                (> (:average-dcg test-results)
-                   (:average-dcg @best-run)))
-        (reset! best-run test-results)))
+                  test-results (run-boost-test-all-fields random-boosts)
+                  all-dcgs (conj (:dcgs @best-run) (max (get @best-run :average-dcg 0.0)
+                                                        (get test-results :average-dcg 0)))]]
+      (if (or (nil? (:average-dcg @best-run)) ; Save the earliest best run
+              (> (:average-dcg test-results)
+                 (:average-dcg @best-run)))
+        (reset! best-run (assoc test-results :dcgs all-dcgs))
+        (reset! best-run (assoc @best-run :dcgs all-dcgs))))
     (println result-separator)
     (println (format "Boosts tests complete. Best run %s, DCG: %.3f, Boosts: %s."
                     (:result-description @best-run)
                     (:average-dcg @best-run)
-                    (:boosts @best-run)))))
+                    (:boosts @best-run)))
+    @best-run))
 
 (comment
- (random-boost-tests 0.5 5.0 2)
+ (def results (random-boost-tests 0.5 30.0 10))
+ (do
+   (require '[proto-repl-charts.charts :as charts])
+   (charts/line-chart "Best discounted cumulative gain by iteration"
+                      {:Discounted_cumulative_gain (:dcgs results)}))
+ (do
+   (require '[criterium.core :as criterium])
+   (criterium/with-progress-reporting
+    (criterium/quick-bench
+     (run-boost-test-all-fields {:short-name 0.7, :instrument 0.6, :version-id 4.6,
+                                 :science-keywords 1.5, :data-center 4.5, :project 0.7,
+                                 :spatial-keyword 1.2, :entry-id 3.1, :temporal-keyword 4.0,
+                                 :provider 2.9, :entry-title 5.1, :two-d-coord-name 5.1,
+                                 :platform 1.2, :processing-level-id 2.8}))))
  (run-boost-test-all-fields {:platform 1.2 :science-keywords 2.2 :instrument 0.95 :entry-title 2.2})
- (run-boost-test-all-fields {:project 1.075587172044085, :platform 1.2628006024473089, :science-keywords 3.0838207093401193, :instrument 0.5083374230703495, :entry-title 3.6715428529654934}))
-(comment
  (boost-tests-with-args ["-field" "entry-title" "-min-value" "1" "-max-value" "20"]))
