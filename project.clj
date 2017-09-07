@@ -50,5 +50,8 @@
        "dev-system/support/start-local-sqs-sns.sh"]
     "stop-sqs-sns"
       ["shell"
-       "dev-system/support/stop-local-sqs-sns.sh"]})
+       "dev-system/support/stop-local-sqs-sns.sh"]
+    "repl"
+      ["shell"
+       "echo" "You need to be in the `dev-system` directory for that."]})
 

@@ -21,6 +21,7 @@
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
    [cmr.ingest.system :as ingest-system]
+   [cmr.message-queue.config :as q-config]
    [cmr.search.services.content-service :as content-service]
    [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.search.system :as search-system]
@@ -200,7 +201,7 @@
     (system/set-dev-system-db-type! (:db run-modes))
     ;; If you would like to run CMR with :aws instead of :in-memory or :external,
     ;; be sure to call `(set-aws true)` in the REPL.
-    (if @settings/aws?
+    (if (or @settings/aws? (= "aws" (q-config/queue-type)))
       (system/set-dev-system-message-queue-type! :aws)
       (system/set-dev-system-message-queue-type! (:messaging run-modes))))
 
