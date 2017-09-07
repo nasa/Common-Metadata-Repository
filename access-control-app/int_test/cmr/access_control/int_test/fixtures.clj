@@ -1,35 +1,49 @@
 (ns cmr.access-control.int-test.fixtures
   (:require
-    [clojure.test :as ct]
-    [cmr.access-control.config :as access-control-config]
-    [cmr.access-control.system :as system]
-    [cmr.access-control.test.util :as test-util :refer [conn-context]]
-    [cmr.common-app.test.client-util :as common-client-test-util]
-    [cmr.common.jobs :as jobs]
-    [cmr.elastic-utils.test-util :as elastic-test-util]
-    [cmr.message-queue.config :as rmq-conf]
-    [cmr.message-queue.queue.memory-queue :as mem-queue]
-    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-    [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
-    [cmr.metadata-db.config :as mdb-config]
-    [cmr.metadata-db.data.memory-db :as memory]
-    [cmr.metadata-db.system :as mdb-system]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
-    [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
-    [cmr.mock-echo.system :as mock-echo-system]
-    [cmr.transmit.access-control :as ac]
-    [cmr.transmit.config :as config]
-    [cmr.transmit.metadata-db2 :as mdb]))
+   [clojure.test :as ct]
+   [cmr.access-control.config :as access-control-config]
+   [cmr.access-control.system :as system]
+   [cmr.access-control.test.util :as test-util :refer [conn-context]]
+   [cmr.common-app.test.client-util :as common-client-test-util]
+   [cmr.common.jobs :as jobs]
+   [cmr.elastic-utils.test-util :as elastic-test-util]
+   [cmr.message-queue.config :as q-conf]
+   [cmr.message-queue.queue.memory-queue :as mem-queue]
+   [cmr.message-queue.queue.sqs :as sqs]
+   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+   [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]
+   [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.data.memory-db :as memory]
+   [cmr.metadata-db.system :as mdb-system]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
+   [cmr.mock-echo.system :as mock-echo-system]
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.metadata-db2 :as mdb]))
 
 (defn queue-config
+  "Create the message queue configuration needed by access-control."
   []
-  (rmq-conf/merge-configs (mdb-config/queue-config)
-                          (access-control-config/queue-config)))
+  (q-conf/merge-configs (mdb-config/queue-config)
+                        (access-control-config/queue-config)))
 
-(defn create-memory-queue-broker
+(defn get-broker-backend
+  "Create the appropriate broker backend. If an SQS endpoint is defined,
+  an SQS broker will be used."
   []
-  (mem-queue/create-memory-queue-broker (queue-config)))
+  (let [aws? (= "aws" (q-conf/queue-type))
+        cfg (queue-config)]
+    (if aws?
+      (sqs/create-queue-broker cfg)
+      (mem-queue/create-memory-queue-broker cfg))))
+
+(defn create-broker
+  "Create the testing broker, wrapping the appropriate backend."
+  []
+  (queue-broker-wrapper/create-queue-broker-wrapper
+   (get-broker-backend)))
 
 (defn create-mdb-system
   "Creates an in memory version of metadata db."
@@ -50,7 +64,7 @@
    are running these fixtures won't do anything. If it isn't running these fixtures will start up the
    applications and the test will work."
   []
-  (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper (create-memory-queue-broker))]
+  (let [queue-broker (create-broker)]
     (ct/join-fixtures
       [elastic-test-util/run-elastic-fixture
        (common-client-test-util/run-app-fixture
