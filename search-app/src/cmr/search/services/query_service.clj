@@ -474,9 +474,9 @@
         results {:hits hits :items items :took total-took}
         ;; construct the response results string
         results-str (json/generate-string (:items results))]
-    (info (format "Found %d deleted collections in %d ms in format %s with params %s."
+    (info (format "Found %d deleted granules in %d ms in format %s with params %s."
                   (:hits results) total-took
-                  (rfh/printable-result-format result-format (pr-str params))))
+                  (rfh/printable-result-format result-format) (pr-str params)))
     {:results results-str
      :hits (:hits results)
      :result-format (:result-format result-format)}))
