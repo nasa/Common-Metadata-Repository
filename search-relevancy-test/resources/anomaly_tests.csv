@@ -33,4 +33,3 @@ Anomaly,Test,Search,Concept-ids,Description
 40,1,?keyword=ocean*%20wind*,"C1293249048-PODAAC,C1237113465-GES_DISC",CCMP Scat should come before turbulent flux collections
 40,2,?keyword=ocean*%20wind*,"C1214055327-SCIOPS,C1237113465-GES_DISC",QuikScat should come before turbulent flux collections
 41,1,?keyword=salinity*,"C1000001583-NSIDC_ECS,C1293892873-PODAAC",Aquarius data before SPURS
-42,1,?keyword=L3U*%20VIIRS*%20SST*,"C1332404870-PODAAC,C1332331108-PODAAC",Level 3 data should come before level 2
