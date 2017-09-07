@@ -332,7 +332,7 @@
 (defn- get-deleted-granules
   "Invokes query service to search for granules that are deleted and returns the response"
   [ctx path-w-extension params headers]
-  (let [params (process-params params path-w-extension headers mt/xml)]
+  (let [params (process-params nil params path-w-extension headers mt/xml)]
     (info (format "Searching for deleted granules from client %s in format %s with params %s."
                   (:client-id ctx) (rfh/printable-result-format (:result-format params))
                   (pr-str params)))

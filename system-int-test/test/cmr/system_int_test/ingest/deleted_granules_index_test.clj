@@ -28,8 +28,7 @@
                       concept-id))
 
 (defn- find-deleted-granules
-  "Calls get-deleted-granules endpoint and returns parsed items from response or status and error code if
-   parameter validation fails"
+  "Calls get-deleted-granules endpoint and returns parsed items from response"
   [params]
   (map #(first (get % "concept-id"))
        (json/parse-string
