@@ -131,6 +131,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * [Search for Tiles](#search-for-tiles)
   * [Retrieve Controlled Keywords](#retrieve-controlled-keywords)
   * [Find collections that have been deleted after a given date](#deleted-collections)
+  * [Find granules that have been deleted after a given date](#deleted-granules)
   * [Tagging](#tagging)
     * [Tag Access Control](#tag-access-control)
     * [Creating a Tag](#creating-a-tag)
@@ -2674,6 +2675,40 @@ CMR-Hits: 3
         </reference>
     </references>
 </results>
+```
+
+Tagging allows arbitrary sets of collections to be grouped under a single namespaced value. The sets of collections can be recalled later when searching by tag fields.
+
+Tags have the following fields:
+
+* tag_key (REQUIRED): free text specifying the key of the tag. Tag key cannot contain `/` character. Tag key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag key is 1030 characters.
+* description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
+* originator_id (REQUIRED): the Earthdata Login ID of the person who created the tag.
+
+### <a name="deleted-granules"></a> Find granules that have been deleted after a given date
+
+To support metadata harvesting, a harvesting client can search CMR for granules that are deleted after a given date. The only search parameter supported is `revision_date` and its format is slightly different from the `revision_date` parameter in regular granule search in that only one revision date can be provided and it can only be a starting date, not a date range. The only supported result format is json. The revision_date is limited to 1 year in the past.
+
+Additionally, deleted granules search can be filtered by the provider parameter, which takes the provider id, and parent_collection_id which takes the granule's parent collection concept id.
+
+The following search will return the concept-id, parent-collection-id, granule-ur, revision-date, and provider-id of the granules that are deleted since 01/20/2017.
+
+    curl -i "%CMR-ENDPOINT%/deleted-granules?revision_date=2017-01-20T00:00:00Z&pretty=true"
+
+__Example Response__
+
+```
+HTTP/1.1 200 OK
+Date: Thu, 07 Sep 2017 18:52:04 GMT
+Content-Type: ; charset=utf-8
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id
+Access-Control-Allow-Origin: *
+CMR-Hits: 4
+CMR-Request-Id: 03da8f3d-57b3-4ce8-bbc0-29970a4a8b30
+Content-Length: 653
+Server: Jetty(9.2.10.v20150310)
+
+[{"granule-ur":["ur2"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000009-PROV1"],"concept-id":["G2-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur1"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000009-PROV1"],"concept-id":["G1-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur3"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000010-PROV1"],"concept-id":["G3-PROV1"],"provider-id":["PROV1"]},{"granule-ur":["ur4"],"revision-date":["2017-09-07T18:51:39+0000"],"parent-collection-id":["C1200000011-PROV2"],"concept-id":["G4-PROV2"],"provider-id":["PROV2"]}]
 ```
 
 ### <a name="tagging"></a> Tagging

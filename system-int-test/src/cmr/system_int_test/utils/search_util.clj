@@ -641,6 +641,19 @@
                                :accept accept})]
      (parse-reference-response false response))))
 
+(defn find-deleted-granules
+  "Returns the references that are found by searching deleted granules"
+  ([params]
+   (find-deleted-granules params :json))
+  ([params format-key]
+   (let [accept (when format-key
+                  (mime-types/format->mime-type format-key))
+         response (client/get (url/search-deleted-granules-url)
+                              {:query-params params
+                               :connection-manager (s/conn-mgr)
+                               :accept accept})]
+     response)))
+
 (defn clear-caches
   "Clears caches in the search application"
   []

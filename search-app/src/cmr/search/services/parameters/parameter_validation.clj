@@ -748,6 +748,13 @@
     :revision_date
     :result-format})
 
+(def ^:private valid-deleted-granules-search-params
+  "Valid parameters for deleted granules search"
+  #{:revision-date
+    :provider
+    :parent-collection-id
+    :result-format})
+
 (defn- unrecognized-deleted-colls-params-validation
   "Validates that no invalid parameters were supplied to deleted collections search"
   [params]
@@ -787,5 +794,61 @@
                        [unrecognized-deleted-colls-params-validation
                         deleted-colls-result-format-validation
                         deleted-colls-revision-date-validation])]
+    (when (seq errors)
+      (errors/throw-service-errors :bad-request errors))))
+
+(defn- deleted-grans-result-format-validation
+  "Validates that the only result format support by deleted granules search is :json"
+  [params]
+  (when-not (= :json (:result-format params))
+    [(format (str "Result format [%s] is not supported by deleted granules search. "
+                  "The only format that is supported is json")
+             (name (:result-format params)))]))
+
+(defn- unrecognized-deleted-grans-params-validation
+  "Validates that no invalid parameters were supplied to deleted granules search"
+  [params]
+  (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
+       (set/difference (set (keys params)) valid-deleted-granules-search-params)))
+
+(defn- validate-deleted-grans-revision-date-str
+  [revision-date]
+  (when (.contains revision-date ",")
+    [(format (str "Invalid format for revision date, only a starting date is allowed "
+                  "for deleted granules search, but was [%s]") revision-date)]))
+
+(defn- deleted-grans-revision-date-validation
+  "Validates that deleted time can only have a start date for deleted collections search"
+  [params]
+  (when-let [revision-date (:revision-date params)]
+    (if (sequential? revision-date)
+      (if (> (count revision-date) 1)
+        [(format "Only one deleted time is allowed, but %s were provided." (count revision-date))]
+        (validate-deleted-grans-revision-date-str (first revision-date)))
+      (validate-deleted-grans-revision-date-str revision-date))))
+
+(defn- deleted-grans-revision-date-range-validation
+  "Validates that deleted time can only have a start date for deleted collections search"
+  [params]
+  (when-let [revision-date (:revision-date params)]
+    (when (t/before? (dt-parser/parse-datetime revision-date) (t/minus- (t/now) (t/days 365)))
+      [(format "Revision date must be within one year of today.")])))
+
+(defn- deleted-grans-revision-required-validation
+  "Validates that deleted time can only have a start date for deleted collections search"
+  [params]
+  (let [revision-date (:revision-date params)]
+    (when-not (seq revision-date)
+      [(format "One revision date is required for deleted granules search.")])))
+
+(defn validate-deleted-granules-params
+  "Validates the query parameters passed in with deleted collections search.
+   Throws exceptions to send to the user if a validation fails."
+  [params]
+  (let [errors (mapcat #(% params)
+                       [unrecognized-deleted-grans-params-validation
+                        deleted-grans-result-format-validation
+                        deleted-grans-revision-required-validation
+                        deleted-grans-revision-date-range-validation])]
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors))))

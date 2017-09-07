@@ -16,6 +16,8 @@
    [clj-time.format :as time-format]
    [clojure.set :as set]
    [clojure.string :as string]
+   [clojurewerkz.elastisch.query :as esq]
+   [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common-app.services.search :as common-search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -92,6 +94,14 @@
   (-> (select-keys params (filter keyword? (keys params)))
       common-params/sanitize-params))
 
+(def deleted-granule-index-name
+  "The name of the index in elastic search. Duplicated from indexer app."
+  "1_deleted_granules")
+
+(def deleted-granule-type-name
+  "The name of the mapping type within the cubby elasticsearch index. Duplicated from indexer app."
+  "deleted-granule")
+
 ;; CMR-2553 Remove this function.
 (defn- drop-ignored-params
   "At times, there are unsupported search params in parameter search that we simply want to ignore
@@ -132,24 +142,24 @@
 (defn make-concepts-query
   "Utility function for generating an elastic-ready query."
   ([context concept-type params]
-    (->> params
-         (make-concepts-tag-data)
-         (make-concepts-query
-           context concept-type params)))
+   (->> params
+        (make-concepts-tag-data)
+        (make-concepts-query
+          context concept-type params)))
   ([context concept-type params tag-data]
-    (->> params
-         common-params/sanitize-params
-         (add-tag-data-to-params tag-data)
-         ;; CMR-2553 remove the following line
-         drop-ignored-params
-         ;; handle legacy parameters
-         lp/replace-parameter-aliases
-         (lp/process-legacy-multi-params-conditions concept-type)
-         (lp/replace-science-keywords-or-option concept-type)
-         (psn/replace-provider-short-names context)
-         (pv/validate-parameters concept-type)
-         (common-params/parse-parameter-query
-           context concept-type))))
+   (->> params
+        common-params/sanitize-params
+        (add-tag-data-to-params tag-data)
+        ;; CMR-2553 remove the following line
+        drop-ignored-params
+        ;; handle legacy parameters
+        lp/replace-parameter-aliases
+        (lp/process-legacy-multi-params-conditions concept-type)
+        (lp/replace-science-keywords-or-option concept-type)
+        (psn/replace-provider-short-names context)
+        (pv/validate-parameters concept-type)
+        (common-params/parse-parameter-query
+         context concept-type))))
 
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
@@ -426,6 +436,50 @@
     {:results results-str
      :hits (:hits results)
      :result-format result-format}))
+
+(defn- make-deleted-granules-query
+  "With given params, construct query for deleted granules"
+  [params]
+  (let [{:keys [parent-collection-id provider revision-date]} params
+        filters [{:range {:revision-date {:gte revision-date}}}]
+        filters (if (seq provider)
+                  (conj filters {:term {:provider-id provider}})
+                  filters)
+        filters (if (seq parent-collection-id)
+                  (conj filters {:term {:parent-collection-id parent-collection-id}})
+                  filters)]
+    {:query {:filtered {:query (esq/match-all)
+                        :filter {:and {:filters filters}}}}
+     :fields [:concept-id :revision-date :provider-id
+              :granule-ur :parent-collection-id]}))
+
+
+(defn get-deleted-granules
+  "Executes elasticsearch searches to find collections that are deleted from a given revision-date.
+   This only finds granules that are truly deleted and not searchable.
+   granules that are deleted, then later ingested again are not included in the result."
+  [context params]
+  (let [start-time (System/currentTimeMillis)
+        params (dissoc (common-params/sanitize-params params) :sort-key)
+        _ (pv/validate-deleted-granules-params params)
+        query (make-deleted-granules-query params)
+        results (esd/search (common-idx/context->conn context)
+                            deleted-granule-index-name
+                            deleted-granule-type-name
+                            query)
+        result-format (:result-format params)
+        hits (or (get-in results [:hits :total]) 0)
+        items (map :fields (get-in results [:hits :hits]))
+        total-took (- (System/currentTimeMillis) start-time)
+        results {:hits hits :items items :took total-took}
+        ;; construct the response results string
+        results-str (json/generate-string (:items results))]
+    (info (format "Found %d deleted granules in %d ms in format %s with params %s."
+                  (:hits results) total-took
+                  (rfh/printable-result-format result-format) (pr-str params)))
+    {:results results-str
+     :hits (:hits results)
+     :result-format (:result-format result-format)}))
 
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"

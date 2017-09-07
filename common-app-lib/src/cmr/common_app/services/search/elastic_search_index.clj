@@ -92,7 +92,7 @@
   [ex _]
   (throw ex))
 
-(defn- scroll-search 
+(defn- scroll-search
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
   (try
@@ -106,7 +106,7 @@
   (if-let [scroll-id (:scroll-id query)]
     (scroll-search context scroll-id)
     (esd/search (context->conn context) (:index-name index-info) [(:type-name index-info)] query)))
-      
+
 (defn- send-query
   "Send the query to ES using either a normal query or a scroll query. Handle socket exceptions
   by retrying."
@@ -122,8 +122,8 @@
 (defmethod send-query-to-elastic :default
   [context query]
   (let [elastic-query (q2e/query->elastic query)
-        {sort-params :sort-params 
-         aggregations :aggs 
+        {sort-params :sort-params
+         aggregations :aggs
          highlights :highlight :as execution-params} (query->execution-params query)
         concept-type (:concept-type query)
         index-info (concept-type->index-info context concept-type query)
