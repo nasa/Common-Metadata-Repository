@@ -1134,7 +1134,7 @@
 
 (deftest migrate-1_9-up-to-1_10
   (testing "Characteristics data type migration from version 1.9 to 1.10"
-  (is (= [(umm-cmn/map->PlatformType
+    (is (= [(umm-cmn/map->PlatformType
           {:ShortName "Platform 1"
            :LongName "Example Platform Long Name 1"
            :Type "Aircraft"
@@ -1352,7 +1352,7 @@
                                                                           :Value "10"}]
                                                        :Technique "Drunken Fist"}]}]}]})))))
   (testing "GeographicCoordinateUnits migration from version 1.9 to 1.10"
-  (is (= {:HorizontalCoordinateSystem
+    (is (= {:HorizontalCoordinateSystem
            {:GeographicCoordinateSystem 
             {:GeographicCoordinateUnits "Decimal Degrees"}}}
        (:SpatialInformation
@@ -1361,7 +1361,7 @@
                            {:HorizontalCoordinateSystem
                              {:GeographicCoordinateSystem 
                                {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
-  (is (= {:HorizontalCoordinateSystem
+    (is (= {:HorizontalCoordinateSystem
            {:GeographicCoordinateSystem 
             {:GeographicCoordinateUnits "Kilometers"}}}
        (:SpatialInformation
@@ -1370,7 +1370,7 @@
                            {:HorizontalCoordinateSystem
                              {:GeographicCoordinateSystem 
                                {:GeographicCoordinateUnits "kiLometers"}}}}))))
-  (is (= {:HorizontalCoordinateSystem
+    (is (= {:HorizontalCoordinateSystem
            {:GeographicCoordinateSystem 
             {:GeographicCoordinateUnits "Meters"}}}
        (:SpatialInformation
@@ -1379,7 +1379,7 @@
                            {:HorizontalCoordinateSystem
                              {:GeographicCoordinateSystem 
                                {:GeographicCoordinateUnits "mEters"}}}}))))
-  (is (= nil 
+    (is (= nil 
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:SpatialInformation
@@ -1387,7 +1387,7 @@
                              {:GeographicCoordinateSystem 
                                {:GeographicCoordinateUnits "randomstring"}}}}))))) 
   (testing "DistanceUnits migration from version 1.9 to 1.10"
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
             :DepthSystemDefinition {:DistanceUnits "Fathoms"}}}
        (:SpatialInformation
@@ -1396,7 +1396,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
                               :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "Millibars"}
             :DepthSystemDefinition {:DistanceUnits "Feet"}}}
        (:SpatialInformation
@@ -1405,7 +1405,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
                               :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
             :DepthSystemDefinition {:DistanceUnits "HectoPascals"}}}
        (:SpatialInformation
@@ -1414,7 +1414,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
                               :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
             :DepthSystemDefinition {:DistanceUnits "Meters"}}}
        (:SpatialInformation
@@ -1423,7 +1423,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
                               :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
             :DepthSystemDefinition {:DistanceUnits "Millibars"}}}
        (:SpatialInformation
@@ -1432,7 +1432,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
                               :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:DepthSystemDefinition {:DistanceUnits "Meters"}}}
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
@@ -1440,7 +1440,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
                               :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}}}
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
@@ -1448,7 +1448,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
                               :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
-  (is (= nil 
+    (is (= nil 
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:SpatialInformation
@@ -1456,7 +1456,7 @@
                              {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
                               :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
   (testing "EncodingMethod migration from version 1.9 to 1.10"
-  (is (= {:VerticalCoordinateSystem
+    (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
             :DepthSystemDefinition {:DistanceUnits "Meters"}}}
        (:SpatialInformation
@@ -1468,7 +1468,7 @@
                               :DepthSystemDefinition {:DistanceUnits "meTers"
                                                       :EncodingMethod "testing"}}}})))))
   (testing "TemporalRangeType migration from version 1.9 to 1.10"
-  (is (= [{:PrecisionOfSeconds "3"
+    (is (= [{:PrecisionOfSeconds "3"
            :EndsAtPresentFlag "false"
            :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
                              :EndingDateTime "2001-01-01T00:00:00.000Z"}
@@ -1497,50 +1497,50 @@
                                                               {:BeginningDateTime "2002-01-01T00:00:00.000Z"
                                                                :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})))))
   (testing "CollectionProgress migration from version 1.9 to 1.10"
-  (is (= u/NOT-PROVIDED
+    (is (= u/NOT-PROVIDED
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "ACTIVE"}))))
-  (is (= "PLANNED"
+    (is (= "PLANNED"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "planned"}))))
-  (is (= "ACTIVE"
+    (is (= "ACTIVE"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "IN WORK"}))))
-  (is (= u/NOT-PROVIDED
+    (is (= u/NOT-PROVIDED
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "NOT PROVIDED"}))))
-  (is (= "NOT APPLICABLE"
+    (is (= "NOT APPLICABLE"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:CollectionProgress "NOT APPLICABLE"}))))
-  (is (= "COMPLETE"
+    (is (= "COMPLETE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.9" "1.10"
                           {:CollectionProgress "COMPLETE"}))))))
 
 (deftest migrate-1_10-down-to-1_9
   (testing "CollectionProgress migration from version 1.10 to 1.9"
-  (is (= "PLANNED"
+    (is (= "PLANNED"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.10" "1.9"
                          {:CollectionProgress "PLANNED"}))))
-  (is (= "IN WORK"
+    (is (= "IN WORK"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.10" "1.9"
                          {:CollectionProgress "ACTIVE"}))))
-  (is (= u/NOT-PROVIDED
+    (is (= u/NOT-PROVIDED
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.10" "1.9"
                          {:CollectionProgress "NOT PROVIDED"}))))
-  (is (= "NOT APPLICABLE"
+    (is (= "NOT APPLICABLE"
         (:CollectionProgress
           (vm/migrate-umm {} :collection "1.10" "1.9"
                          {:CollectionProgress "NOT APPLICABLE"}))))
-  (is (= "COMPLETE"
+    (is (= "COMPLETE"
          (:CollectionProgress
            (vm/migrate-umm {} :collection "1.10" "1.9"
                           {:CollectionProgress "COMPLETE"}))))))
