@@ -287,6 +287,8 @@
       migrate-tiling-identification-systems
       coll-progress-migration/migrate-up
       (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)
+      (update-in [:SpatialInformation :VerticalCoordinateSystem :AltitudeSystemDefinition] dissoc :EncodingMethod)
+      (update-in [:SpatialInformation :VerticalCoordinateSystem :DepthSystemDefinition] dissoc :EncodingMethod)
       distance-units-migration/migrate-distance-units-to-enum
       char-data-type-normalization/migrate-up))
 

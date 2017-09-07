@@ -144,12 +144,6 @@
           "description": "The units in which measurements are recorded.",
           "$ref": "#/definitions/AltitudeDistanceUnitsEnum" 
         },
-        "EncodingMethod": {
-          "description": "The means used to encode measurements.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048
-        },
         "Resolutions": {
           "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
           "type": "array",
@@ -174,12 +168,6 @@
         "DistanceUnits": {
           "description": "The units in which measurements are recorded.",
           "$ref": "#/definitions/DepthDistanceUnitsEnum" 
-        },
-        "EncodingMethod": {
-          "description": "The means used to encode measurements.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048
         },
         "Resolutions": {
           "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
