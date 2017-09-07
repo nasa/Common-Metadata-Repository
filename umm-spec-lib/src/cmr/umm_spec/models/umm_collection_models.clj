@@ -291,6 +291,25 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ChronostratigraphicUnitType)
 
+;; The reference frame or system from which altitude is measured. The term 'altitude' is used
+;; instead of the common term 'elevation' to conform to the terminology in Federal Information
+;; Processing Standards 70-1 and 173. The information contains the datum name, distance units and
+;; encoding method, which provide the definition for the system.
+(defrecord AltitudeSystemDefinitionType
+  [
+   ;; The identification given to the level surface taken as the surface of reference from which
+   ;; measurements are compared.
+   DatumName
+
+   ;; The units in which measurements are recorded.
+   DistanceUnits
+
+   ;; The minimum distance possible between two adjacent values, expressed in distance units of
+   ;; measure for the collection.
+   Resolutions
+  ])
+(record-pretty-printer/enable-record-pretty-printing AltitudeSystemDefinitionType)
+
 ;; This element contains the Processing Level Id and the Processing Level Description
 (defrecord ProcessingLevelType
   [
@@ -323,28 +342,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing GeographicCoordinateSystemType)
 
-;; The reference frame or system from which altitude or depths are measured. The term 'altitude' is
-;; used instead of the common term 'elevation' to conform to the terminology in Federal Information
-;; Processing Standards 70-1 and 173. The information contains the datum name, distance units and
-;; encoding method, which provide the definition for the system.
-(defrecord VerticalSystemDefinitionType
-  [
-   ;; The identification given to the level surface taken as the surface of reference from which
-   ;; measurements are compared.
-   DatumName
-
-   ;; The units in which measurements are recorded.
-   DistanceUnits
-
-   ;; The means used to encode measurements.
-   EncodingMethod
-
-   ;; The minimum distance possible between two adjacent values, expressed in distance units of
-   ;; measure for the collection.
-   Resolutions
-  ])
-(record-pretty-printer/enable-record-pretty-printing VerticalSystemDefinitionType)
-
 (defrecord GeodeticModelType
   [
    ;; The identification given to the reference system used for defining the coordinates of points.
@@ -360,6 +357,23 @@
    DenominatorOfFlatteningRatio
   ])
 (record-pretty-printer/enable-record-pretty-printing GeodeticModelType)
+
+;; The reference frame or system from which depth is measured. The information contains the datum
+;; name, distance units and encoding method, which provide the definition for the system.
+(defrecord DepthSystemDefinitionType
+  [
+   ;; The identification given to the level surface taken as the surface of reference from which
+   ;; measurements are compared.
+   DatumName
+
+   ;; The units in which measurements are recorded.
+   DistanceUnits
+
+   ;; The minimum distance possible between two adjacent values, expressed in distance units of
+   ;; measure for the collection.
+   Resolutions
+  ])
+(record-pretty-printer/enable-record-pretty-printing DepthSystemDefinitionType)
 
 ;; This entity stores the reference frame or system from which horizontal and vertical spatial
 ;; domains are measured. The horizontal reference frame includes a Geodetic Model, Geographic

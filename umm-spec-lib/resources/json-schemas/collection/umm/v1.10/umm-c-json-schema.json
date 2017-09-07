@@ -112,17 +112,27 @@
       "additionalProperties": false,
       "properties": {
         "AltitudeSystemDefinition": {
-          "$ref": "#/definitions/VerticalSystemDefinitionType"
+          "$ref": "#/definitions/AltitudeSystemDefinitionType"
         },
         "DepthSystemDefinition": {
-          "$ref": "#/definitions/VerticalSystemDefinitionType"
+          "$ref": "#/definitions/DepthSystemDefinitionType"
         }
       }
     },
-    "VerticalSystemDefinitionType": {
+    "AltitudeDistanceUnitsEnum": {
+      "description": "The units in which altitude measurements are recorded.",
+      "type": "string",
+      "enum": ["HectoPascals", "Kilometers", "Millibars"]
+    },
+    "DepthDistanceUnitsEnum": {
+      "description": "The units in which depth measurements are recorded.",
+      "type": "string",
+      "enum": ["Fathoms", "Feet", "HectoPascals", "Meters", "Millibars"]
+    },
+    "AltitudeSystemDefinitionType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The reference frame or system from which altitude or depths are measured. The term 'altitude' is used instead of the common term 'elevation' to conform to the terminology in Federal Information Processing Standards 70-1 and 173. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
+      "description": "The reference frame or system from which altitude is measured. The term 'altitude' is used instead of the common term 'elevation' to conform to the terminology in Federal Information Processing Standards 70-1 and 173. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
       "properties": {
         "DatumName": {
           "description": "The identification given to the level surface taken as the surface of reference from which measurements are compared.",
@@ -132,15 +142,32 @@
         },
         "DistanceUnits": {
           "description": "The units in which measurements are recorded.",
+          "$ref": "#/definitions/AltitudeDistanceUnitsEnum" 
+        },
+        "Resolutions": {
+          "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "DepthSystemDefinitionType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The reference frame or system from which depth is measured. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
+      "properties": {
+        "DatumName": {
+          "description": "The identification given to the level surface taken as the surface of reference from which measurements are compared.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
-        "EncodingMethod": {
-          "description": "The means used to encode measurements.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048
+        "DistanceUnits": {
+          "description": "The units in which measurements are recorded.",
+          "$ref": "#/definitions/DepthDistanceUnitsEnum" 
         },
         "Resolutions": {
           "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
@@ -212,15 +239,18 @@
         }
       }
     },
+    "GeographicCoordinateUnitsEnum": {
+      "description": "Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal degrees).",
+      "type": "string",
+      "enum": ["Decimal Degrees", "Kilometers", "Meters"]
+    },
     "GeographicCoordinateSystemType": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "GeographicCoordinateUnits": {
           "description": "Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal degrees).",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "$ref": "#/definitions/GeographicCoordinateUnitsEnum" 
         },
         "LatitudeResolution": {
           "description": "The minimum difference between two adjacent latitude values in the Geographic Coordinate System,  expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal number, e.g., 0.01",

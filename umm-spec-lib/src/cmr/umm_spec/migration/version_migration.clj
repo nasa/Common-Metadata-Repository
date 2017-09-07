@@ -10,6 +10,8 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
+   [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
+   [cmr.umm-spec.migration.geographic-coordinate-units-migration :as geographic-coordinate-units-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
@@ -286,6 +288,12 @@
       migrate-tiling-identification-systems
       coll-progress-migration/migrate-up
       (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)
+      (update-in [:SpatialInformation :VerticalCoordinateSystem :AltitudeSystemDefinition] dissoc :EncodingMethod)
+      (update-in [:SpatialInformation :VerticalCoordinateSystem :DepthSystemDefinition] dissoc :EncodingMethod)
+      geographic-coordinate-units-migration/migrate-geographic-coordinate-units-to-enum
+      distance-units-migration/migrate-distance-units-to-enum
+      ;; Remove the possible empty maps after setting geographic coordinate units and/or distance-units to nil.
+      util/remove-empty-maps
       char-data-type-normalization/migrate-up))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]
