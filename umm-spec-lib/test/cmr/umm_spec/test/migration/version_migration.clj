@@ -1351,6 +1351,75 @@
                                                                           :Unit "dB"
                                                                           :Value "10"}]
                                                        :Technique "Drunken Fist"}]}]}]})))))
+  (testing "DistanceUnits migration from version 1.9 to 1.10"
+  (is (= {:VerticalCoordinateSystem
+           {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
+            :DepthSystemDefinition {:DistanceUnits "Fathoms"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "hecToPascals"}
+                              :DepthSystemDefinition {:DistanceUnits "FathOMs"}}}}))))
+  (is (= {:VerticalCoordinateSystem
+           {:AltitudeSystemDefinition {:DistanceUnits "Millibars"}
+            :DepthSystemDefinition {:DistanceUnits "Feet"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "mIllIbARs"}
+                              :DepthSystemDefinition {:DistanceUnits "fEEt"}}}}))))
+  (is (= {:VerticalCoordinateSystem
+           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+            :DepthSystemDefinition {:DistanceUnits "HectoPascals"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                              :DepthSystemDefinition {:DistanceUnits "hectoPascals"}}}}))))
+  (is (= {:VerticalCoordinateSystem
+           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+            :DepthSystemDefinition {:DistanceUnits "Meters"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                              :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+  (is (= {:VerticalCoordinateSystem
+           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+            :DepthSystemDefinition {:DistanceUnits "Millibars"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                              :DepthSystemDefinition {:DistanceUnits "millibars"}}}}))))
+  (is (= {:VerticalCoordinateSystem
+           {:DepthSystemDefinition {:DistanceUnits "Meters"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                              :DepthSystemDefinition {:DistanceUnits "meTERs"}}}}))))
+  (is (= {:VerticalCoordinateSystem
+           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
+                              :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
+  (is (= nil 
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
+                              :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
   (testing "TemporalRangeType migration from version 1.9 to 1.10"
   (is (= [{:PrecisionOfSeconds "3"
            :EndsAtPresentFlag "false"
