@@ -109,9 +109,10 @@
   (testing "Humanizer report batches"
     (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
       (is (= (count report-lines) (+ 2 (hrs/humanizer-report-collection-batch-size))))
-      (for [actual-line (rest report-lines)
-            n (inc hrs/humanizer-report-collection-batch-size)]
-        (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra"))))))
+      (doall
+        (for [actual-line (rest report-lines)
+              n (inc hrs/humanizer-report-collection-batch-size)]
+          (is (= actual-line) (str "PROV1,C1200000001-PROV1,B,"n",AM-1,Terra")))))))
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}))
