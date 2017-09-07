@@ -115,6 +115,11 @@
   [v]
   (when v (str/lower-case v)))
 
+(defn safe-uppercase
+  "Returns the given string in upper case safely."
+  [v]
+  (when v (str/upper-case v)))
+
 (defn sequence->fn
   [vals]
   "Creates a stateful function that returns individual values from the

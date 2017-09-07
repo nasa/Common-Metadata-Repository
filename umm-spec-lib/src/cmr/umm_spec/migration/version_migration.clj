@@ -292,6 +292,8 @@
       (update-in [:SpatialInformation :VerticalCoordinateSystem :DepthSystemDefinition] dissoc :EncodingMethod)
       geographic-coordinate-units-migration/migrate-geographic-coordinate-units-to-enum
       distance-units-migration/migrate-distance-units-to-enum
+      ;; Remove the possible empty maps after setting geographic coordinate units and/or distance-units to nil.
+      util/remove-empty-maps
       char-data-type-normalization/migrate-up))
 
 (defmethod migrate-umm-version [:collection "1.10" "1.9"]

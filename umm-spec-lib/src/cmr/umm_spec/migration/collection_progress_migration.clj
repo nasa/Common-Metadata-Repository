@@ -2,7 +2,7 @@
   "Contains helper functions for migrating between different versions of UMM collection progress"
   (:require
    [clojure.set :as set] 
-   [clojure.string :as string]
+   [cmr.common.util :as util]
    [cmr.umm-spec.util :as umm-spec-util]))
 
 (def mapping-up
@@ -18,8 +18,7 @@
   [c]
   (assoc c :CollectionProgress
            (get mapping-up
-                (when-let [c-progress (:CollectionProgress c)]
-                  (string/upper-case c-progress)) 
+                (util/safe-uppercase (:CollectionProgress c)) 
                 umm-spec-util/NOT-PROVIDED))) 
 
 (defn migrate-down
@@ -27,6 +26,5 @@
   [c]
   (assoc c :CollectionProgress
            (get (set/map-invert mapping-up)
-                (when-let [c-progress (:CollectionProgress c)]
-                  (string/upper-case c-progress)))))
+                (util/safe-uppercase (:CollectionProgress c)))))
 
