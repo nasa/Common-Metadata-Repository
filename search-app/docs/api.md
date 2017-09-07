@@ -2677,8 +2677,6 @@ CMR-Hits: 3
 </results>
 ```
 
-### <a name="tagging"></a> Tagging
-
 Tagging allows arbitrary sets of collections to be grouped under a single namespaced value. The sets of collections can be recalled later when searching by tag fields.
 
 Tags have the following fields:
