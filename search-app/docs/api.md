@@ -2641,7 +2641,7 @@ To support metadata harvesting, a harvesting client can search CMR for collectio
 
 The following search will return the last revision of the collections that are deleted since 01/20/2017.
 
-    curl -i "%CMR-ENDPOINT%/deleted-granules?revision_date=2017-01-20T00:00:00Z&pretty=true"
+    curl -i "%CMR-ENDPOINT%/deleted-collections?revision_date=2017-01-20T00:00:00Z&pretty=true"
 
 __Example Response__
 
