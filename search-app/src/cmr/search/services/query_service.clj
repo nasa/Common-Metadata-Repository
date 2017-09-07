@@ -29,7 +29,6 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
-   [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.provider-holdings :as ph]
@@ -94,6 +93,14 @@
   [params]
   (-> (select-keys params (filter keyword? (keys params)))
       common-params/sanitize-params))
+
+(def deleted-granule-index-name
+  "The name of the index in elastic search. Duplicated from indexer app."
+  "1_deleted_granules")
+
+(def deleted-granule-type-name
+  "The name of the mapping type within the cubby elasticsearch index. Duplicated from indexer app."
+  "deleted-granule")
 
 ;; CMR-2553 Remove this function.
 (defn- drop-ignored-params
@@ -430,41 +437,46 @@
      :hits (:hits results)
      :result-format result-format}))
 
-(defn get-deleted-granules
-  "Executes elasticsearch searches to find collections that are deleted from a given revision-date.
-   This only finds granules that are truly deleted and not searchable.
-   granules that are deleted, then later ingested again are not included in the result."
-
-  [context params]
-  (pv/validate-deleted-granules-params params)
-  (let [start-time (System/currentTimeMillis)
-        {:keys [parent-collection-id provider revision-date result-format]} (common-params/sanitize-params params)
+(defn- make-deleted-granules-query
+  "With given params, construct query for deleted granules"
+  [params]
+  (let [{:keys [parent-collection-id provider revision-date]} params
         filters [{:range {:revision-date {:gte revision-date}}}]
         filters (if (seq provider)
                   (conj filters {:term {:provider-id provider}})
                   filters)
         filters (if (seq parent-collection-id)
                   (conj filters {:term {:parent-collection-id parent-collection-id}})
-                  filters)
+                  filters)]
+    {:query {:filtered {:query (esq/match-all)
+                        :filter {:and {:filters filters}}}}
+     :fields [:concept-id :revision-date :provider-id
+              :granule-ur :parent-collection-id]}))
+
+
+(defn get-deleted-granules
+  "Executes elasticsearch searches to find collections that are deleted from a given revision-date.
+   This only finds granules that are truly deleted and not searchable.
+   granules that are deleted, then later ingested again are not included in the result."
+  [context params]
+  (let [start-time (System/currentTimeMillis)
+        params (dissoc (common-params/sanitize-params params) :sort-key)
+        _ (pv/validate-deleted-granules-params params)
+        query (make-deleted-granules-query params)
         results (esd/search (common-idx/context->conn context)
-                            deleted-granule/deleted-granule-index-name
-                            deleted-granule/deleted-granule-type-name
-                            {:query {:filtered {:query (esq/match-all)
-                                                :filter {:and {:filters filters}}}}
-                             :fields [:concept-id :revision-date :provider-id
-                                      :granule-ur :parent-collection-id]})
+                            deleted-granule-index-name
+                            deleted-granule-type-name
+                            query)
+        result-format (:result-format params)
         hits (or (get-in results [:hits :total]) 0)
         items (map :fields (get-in results [:hits :hits]))
         total-took (- (System/currentTimeMillis) start-time)
         results {:hits hits :items items :took total-took}
-
         ;; construct the response results string
         results-str (json/generate-string (:items results))]
-
     (info (format "Found %d deleted collections in %d ms in format %s with params %s."
                   (:hits results) total-took
                   (rfh/printable-result-format result-format (pr-str params))))
-
     {:results results-str
      :hits (:hits results)
      :result-format (:result-format result-format)}))

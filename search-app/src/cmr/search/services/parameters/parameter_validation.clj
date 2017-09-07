@@ -753,8 +753,6 @@
   #{:revision-date
     :provider
     :parent-collection-id
-    :revision_date
-    :parent_collection_id
     :result-format})
 
 (defn- unrecognized-deleted-colls-params-validation
@@ -800,7 +798,7 @@
       (errors/throw-service-errors :bad-request errors))))
 
 (defn- deleted-grans-result-format-validation
-  "Validates that the only result format support by deleted granules search is :xml"
+  "Validates that the only result format support by deleted granules search is :json"
   [params]
   (when-not (= :json (:result-format params))
     [(format (str "Result format [%s] is not supported by deleted granules search. "
@@ -822,8 +820,7 @@
 (defn- deleted-grans-revision-date-validation
   "Validates that deleted time can only have a start date for deleted collections search"
   [params]
-  (when-let [revision-date (or (:revision-date params)
-                               (:revision_date params))]
+  (when-let [revision-date (:revision-date params)]
     (if (sequential? revision-date)
       (if (> (count revision-date) 1)
         [(format "Only one deleted time is allowed, but %s were provided." (count revision-date))]
@@ -833,17 +830,15 @@
 (defn- deleted-grans-revision-date-range-validation
   "Validates that deleted time can only have a start date for deleted collections search"
   [params]
-  (when-let [revision-date (or (:revision-date params)
-                               (:revision_date params))]
+  (when-let [revision-date (:revision-date params)]
     (when (t/before? (dt-parser/parse-datetime revision-date) (t/minus- (t/now) (t/days 365)))
-      [(format "Revision date must be withing one year of today.")])))
+      [(format "Revision date must be within one year of today.")])))
 
 (defn- deleted-grans-revision-required-validation
   "Validates that deleted time can only have a start date for deleted collections search"
   [params]
-  (let [revision-date (or (:revision-date params)
-                          (:revision_date params))]
-    (when (not (seq revision-date))
+  (let [revision-date (:revision-date params)]
+    (when-not (seq revision-date)
       [(format "One revision date is required for deleted granules search.")])))
 
 (defn validate-deleted-granules-params

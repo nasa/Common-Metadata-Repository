@@ -110,11 +110,11 @@
                (set (find-deleted-granules params))))
 
         "after tomorrow"
-        {:revision-date (t/plus- (t/now) (t/days 1))}
+        {:revision_date (t/plus- (t/now) (t/days 1))}
         []
 
         "after yesterday"
-        {:revision-date (t/minus- (t/now) (t/days 1))}
+        {:revision_date (t/minus- (t/now) (t/days 1))}
         [granule1-prov1 granule2-prov1 granule3-prov1-2 granule4-prov2]))
 
     (testing "Search for all after date for provider"
@@ -123,11 +123,11 @@
                (set (find-deleted-granules params))))
 
         "PROV1"
-        {:revision-date (t/minus- (t/now) (t/days 1)) :provider "PROV1"}
+        {:revision_date (t/minus- (t/now) (t/days 1)) :provider "PROV1"}
         [granule1-prov1 granule2-prov1 granule3-prov1-2]
 
         "PROV2"
-        {:revision-date (t/minus- (t/now) (t/days 1)) :provider "PROV2"}
+        {:revision_date (t/minus- (t/now) (t/days 1)) :provider "PROV2"}
         [granule4-prov2]))
 
     (testing "Search for all after date for parent-collection-id"
@@ -136,18 +136,18 @@
                (set (find-deleted-granules params))))
 
         "in PROV1, parent collection 1"
-        {:revision-date (t/minus- (t/now) (t/days 1))
-         :parent-collection-id (:concept-id collection-prov1)}
+        {:revision_date (t/minus- (t/now) (t/days 1))
+         :parent_collection_id (:concept-id collection-prov1)}
         [granule1-prov1 granule2-prov1]
 
         "in PROV1, parent collection 2"
-        {:revision-date (t/minus- (t/now) (t/days 1))
-         :parent-collection-id (:concept-id collection-prov1-2)}
+        {:revision_date (t/minus- (t/now) (t/days 1))
+         :parent_collection_id (:concept-id collection-prov1-2)}
         [granule3-prov1-2]
 
         "in PROV2, parent collection 1"
-        {:revision-date (t/minus- (t/now) (t/days 1))
-         :parent-collection-id (:concept-id collection-prov2)}
+        {:revision_date (t/minus- (t/now) (t/days 1))
+         :parent_collection_id (:concept-id collection-prov2)}
         [granule4-prov2]))))
 
 (deftest deleted-granule-parameter-validation
@@ -158,22 +158,22 @@
       (is (= errors (:errors response))))
 
     "Revision date range validation"
-    '("Revision date must be withing one year of today.")
-    {:revision-date (t/minus- (t/now) (t/days 366))}
+    ["Revision date must be within one year of today."]
+    {:revision_date (t/minus- (t/now) (t/days 366))}
 
 
     "Unrecognized paramter validation"
-    '("Parameter [not_a_valid_parameter] was not recognized.")
-    {:revision-date (t/minus- (t/now) (t/days 1)) :Not-a-valid-parameter "test"}
+    ["Parameter [not_a_valid_parameter] was not recognized."]
+    {:revision_date (t/minus- (t/now) (t/days 1)) :Not-a-valid-parameter "test"}
 
 
     "Revision date is required"
-    '("One revision date is required for deleted granules search.")
+    ["One revision date is required for deleted granules search."]
     {})
 
   (testing "Invalid result format"
     (let [response (search/get-search-failure-xml-data
-                    (search/find-deleted-granules {:revision-date (t/minus- (t/now) (t/days 1))} :xml))]
+                    (search/find-deleted-granules {:revision_date (t/minus- (t/now) (t/days 1))} :xml))]
       (is (= (:status response) 400))
-      (is (= '("Result format [xml] is not supported by deleted granules search. The only format that is supported is json")
+      (is (= ["Result format [xml] is not supported by deleted granules search. The only format that is supported is json"]
              (:errors response))))))
