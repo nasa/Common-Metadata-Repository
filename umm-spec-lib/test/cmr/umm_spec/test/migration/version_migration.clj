@@ -1420,6 +1420,18 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "randomstring"}
                               :DepthSystemDefinition {:DistanceUnits "randomstring"}}}})))))
+  (testing "EncodingMethod migration from version 1.9 to 1.10"
+  (is (= {:VerticalCoordinateSystem
+           {:AltitudeSystemDefinition {:DistanceUnits "Kilometers"}
+            :DepthSystemDefinition {:DistanceUnits "Meters"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:VerticalCoordinateSystem
+                             {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"
+                                                         :EncodingMethod "testing"}
+                              :DepthSystemDefinition {:DistanceUnits "meTers"
+                                                      :EncodingMethod "testing"}}}})))))
   (testing "TemporalRangeType migration from version 1.9 to 1.10"
   (is (= [{:PrecisionOfSeconds "3"
            :EndsAtPresentFlag "false"

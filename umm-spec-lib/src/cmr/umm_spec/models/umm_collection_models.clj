@@ -304,9 +304,6 @@
    ;; The units in which measurements are recorded.
    DistanceUnits
 
-   ;; The means used to encode measurements.
-   EncodingMethod
-
    ;; The minimum distance possible between two adjacent values, expressed in distance units of
    ;; measure for the collection.
    Resolutions
@@ -371,9 +368,6 @@
 
    ;; The units in which measurements are recorded.
    DistanceUnits
-
-   ;; The means used to encode measurements.
-   EncodingMethod
 
    ;; The minimum distance possible between two adjacent values, expressed in distance units of
    ;; measure for the collection.
