@@ -112,17 +112,17 @@
       "additionalProperties": false,
       "properties": {
         "AltitudeSystemDefinition": {
-          "$ref": "#/definitions/VerticalSystemDefinitionType"
+          "$ref": "#/definitions/AltitudeSystemDefinitionType"
         },
         "DepthSystemDefinition": {
-          "$ref": "#/definitions/VerticalSystemDefinitionType"
+          "$ref": "#/definitions/DepthSystemDefinitionType"
         }
       }
     },
-    "VerticalSystemDefinitionType": {
+    "AltitudeSystemDefinitionType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The reference frame or system from which altitude or depths are measured. The term 'altitude' is used instead of the common term 'elevation' to conform to the terminology in Federal Information Processing Standards 70-1 and 173. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
+      "description": "The reference frame or system from which altitude is measured. The term 'altitude' is used instead of the common term 'elevation' to conform to the terminology in Federal Information Processing Standards 70-1 and 173. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
       "properties": {
         "DatumName": {
           "description": "The identification given to the level surface taken as the surface of reference from which measurements are compared.",
@@ -132,9 +132,38 @@
         },
         "DistanceUnits": {
           "description": "The units in which measurements are recorded.",
+          "$ref": "#/definitions/AltitudeDistanceUnitsEnum" 
+        },
+        "EncodingMethod": {
+          "description": "The means used to encode measurements.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Resolutions": {
+          "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "DepthSystemDefinitionType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The reference frame or system from which depth is measured. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
+      "properties": {
+        "DatumName": {
+          "description": "The identification given to the level surface taken as the surface of reference from which measurements are compared.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
+        },
+        "DistanceUnits": {
+          "description": "The units in which measurements are recorded.",
+          "$ref": "#/definitions/DepthDistanceUnitsEnum" 
         },
         "EncodingMethod": {
           "description": "The means used to encode measurements.",
@@ -259,6 +288,16 @@
       "description": "This element describes the production status of the data set. There are four choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a fifth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.", 
       "type": "string",
       "enum": ["ACTIVE", "PLANNED", "COMPLETE", "NOT APPLICABLE", "NOT PROVIDED"]
+    },
+    "AltitudeDistanceUnitsEnum": {
+      "description": "The units in which altitude measurements are recorded.",
+      "type": "string",
+      "enum": ["HectoPascals", "Kilometers", "Millibars"]
+    },
+    "DepthDistanceUnitsEnum": {
+      "description": "The units in which depth measurements are recorded.",
+      "type": "string",
+      "enum": ["Fathoms", "Feet", "HectoPascals", "Meters", "Millibars"]
     },
     "LocationKeywordType": {
       "description": "This element defines a mapping to the GCMD KMS hierarchical location list. It replaces SpatialKeywords. Each tier must have data in the tier above it.",
