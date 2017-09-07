@@ -10,10 +10,11 @@
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
+   [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
+   [cmr.umm-spec.migration.geographic-coordinate-units-migration :as geographic-coordinate-units-migration]
    [cmr.umm-spec.migration.organization-personnel-migration :as op]
    [cmr.umm-spec.migration.related-url-migration :as related-url]
    [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
-   [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :refer [versions current-version]]
@@ -289,6 +290,7 @@
       (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)
       (update-in [:SpatialInformation :VerticalCoordinateSystem :AltitudeSystemDefinition] dissoc :EncodingMethod)
       (update-in [:SpatialInformation :VerticalCoordinateSystem :DepthSystemDefinition] dissoc :EncodingMethod)
+      geographic-coordinate-units-migration/migrate-geographic-coordinate-units-to-enum
       distance-units-migration/migrate-distance-units-to-enum
       char-data-type-normalization/migrate-up))
 

@@ -239,15 +239,18 @@
         }
       }
     },
+    "GeographicCoordinateUnitsEnum": {
+      "description": "Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal degrees).",
+      "type": "string",
+      "enum": ["Decimal Degrees", "Kilometers", "Meters"]
+    },
     "GeographicCoordinateSystemType": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "GeographicCoordinateUnits": {
           "description": "Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal degrees).",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "$ref": "#/definitions/GeographicCoordinateUnitsEnum" 
         },
         "LatitudeResolution": {
           "description": "The minimum difference between two adjacent latitude values in the Geographic Coordinate System,  expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal number, e.g., 0.01",

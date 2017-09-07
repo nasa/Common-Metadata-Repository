@@ -1351,6 +1351,41 @@
                                                                           :Unit "dB"
                                                                           :Value "10"}]
                                                        :Technique "Drunken Fist"}]}]}]})))))
+  (testing "GeographicCoordinateUnits migration from version 1.9 to 1.10"
+  (is (= {:HorizontalCoordinateSystem
+           {:GeographicCoordinateSystem 
+            {:GeographicCoordinateUnits "Decimal Degrees"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:HorizontalCoordinateSystem
+                             {:GeographicCoordinateSystem 
+                               {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
+  (is (= {:HorizontalCoordinateSystem
+           {:GeographicCoordinateSystem 
+            {:GeographicCoordinateUnits "Kilometers"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:HorizontalCoordinateSystem
+                             {:GeographicCoordinateSystem 
+                               {:GeographicCoordinateUnits "kiLometers"}}}}))))
+  (is (= {:HorizontalCoordinateSystem
+           {:GeographicCoordinateSystem 
+            {:GeographicCoordinateUnits "Meters"}}}
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:HorizontalCoordinateSystem
+                             {:GeographicCoordinateSystem 
+                               {:GeographicCoordinateUnits "mEters"}}}}))))
+  (is (= nil 
+       (:SpatialInformation
+         (vm/migrate-umm {} :collection "1.9" "1.10"
+                         {:SpatialInformation
+                           {:HorizontalCoordinateSystem
+                             {:GeographicCoordinateSystem 
+                               {:GeographicCoordinateUnits "randomstring"}}}}))))) 
   (testing "DistanceUnits migration from version 1.9 to 1.10"
   (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
