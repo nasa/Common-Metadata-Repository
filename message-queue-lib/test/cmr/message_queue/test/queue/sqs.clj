@@ -12,6 +12,17 @@
    (com.amazonaws.services.sqs.model GetQueueUrlResult)
    (com.amazonaws.services.sqs.model ReceiveMessageResult)))
 
+(def ^:private get-test-queue-type
+  "Get the system queue type. This is used by this test to determine which
+  backend to use.
+
+  Note that this particular approach is used due to the fact that the
+  dev-system may not be available to the `cmr.message-queue` library
+  at the time the function is called. If that's the case, the old, original
+  behaviour is selected."
+  (or (ns-resolve (create-ns 'cmr.dev-system.config) 'dev-system-queue-type)
+      (constantly "local")))
+
 (defconfig testing-queue-name
   "This is used to set the queue name for tests, since:
   1) we need to reference the queue name in a global scope while simultaneously
@@ -107,29 +118,29 @@
 (defn- proxy-constructor
   "Creates a client proxy.
 
-  If the default configuration for the `sqs/sqs-endpoint` (`nil`) has not been
-  overridden, a 'fake' proxy will be used, one that just returns a constant
-  when getting queue URLs.
+  If the queue type configuration has been set to AWS (e.g., by setting the
+  `CMR_QUEUE_TYPE` env variable), then an actual SQS endpoint should be used,
+  in which case the Java client will either user the default (and attempt to
+  connect to Amazon's endpoints) or it will use the endpoint defined by the
+  `CMR_SQS_ENDPOINT` env variable.
 
-  If the default configuration _has_ been overridden (e.g., by setting the
-  `CMR_SQS_ENDPOINT` ENV variable), then it is assumed an actual SQS endpoint
-  should be used, in which case the client will set the endpoint to what has
-  been overridden in the configuration."
+  Otherwise, a mocked proxy will be used."
   [receive-fn-index]
   (let [endpoint (sqs/sqs-endpoint)
         ex-fn #(throw (Exception. "Receive failed!"))
         next-get-msgs-fn (constantly (ReceiveMessageResult.))]
-    (if (nil? endpoint)
-      (fake-client-proxy "foo"
-                         receive-fn-index
-                         ;; Throw an exception on the first call to getMessages
-                         ex-fn
-                         ;; Return an empty message on the next call to getMessages
-                         next-get-msgs-fn)
+    (if (= :aws (get-test-queue-type))
       (let [client (local-client-proxy receive-fn-index ex-fn next-get-msgs-fn)]
         (sqs/configure-aws-client
          client
-         :setEndpoint endpoint)))))
+         :setEndpoint endpoint))
+      (fake-client-proxy
+       "foo"
+       receive-fn-index
+       ;; Throw an exception on the first call to getMessages
+       ex-fn
+       ;; Return an empty message on the next call to getMessages
+       next-get-msgs-fn))))
 
 (defn- wait-for-reads
   "Wait until the expected number of readMessage calls have occurred. If it takes
