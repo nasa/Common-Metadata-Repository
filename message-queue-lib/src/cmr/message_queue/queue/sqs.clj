@@ -32,9 +32,9 @@
    (com.amazonaws.services.sns AmazonSNSClient)
    (com.amazonaws.services.sqs AmazonSQSClient)
    (com.amazonaws.services.sns.util Topics)
-   (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlResult PurgeQueueRequest
-                                     ReceiveMessageRequest SendMessageResult
-                                     SetQueueAttributesRequest)
+   (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlRequest GetQueueUrlResult
+                                     PurgeQueueRequest ReceiveMessageRequest
+                                     SendMessageResult SetQueueAttributesRequest)
    (java.io IOException)
    (java.util ArrayList)
    (java.util HashMap)))
@@ -110,6 +110,20 @@
   "Convert an Amazon Resource Name (ARN) to a name (topic, queue, etc.)."
   [arn]
   (string/replace arn #".*:" ""))
+
+(defn- http-url->name
+  "Convert an Amazon HTTP queue endpoint URL to a queue name."
+  [endpoint]
+  (last (string/split endpoint #"/")))
+
+(defn- subscription-endpoint->name
+  "Given a subscription endpoint (which may be an ARN or an HTTP URL), convert
+  it to a queue name."
+  [endpoint]
+  (debug "Converting endpoint:" endpoint)
+  (if (string/starts-with? endpoint "http")
+    (http-url->name endpoint)
+    (arn->name endpoint)))
 
 (defn- normalize-queue-name
   "Ensure all queues start with gsfc-eosdis-cmr since the permissions in NGAP specify that CMR
@@ -280,7 +294,7 @@
 
 (defn- -get-queue-url
   "Returns the queue url for the given queue name."
-  [sqs-client queue-name]
+  [sqs-client normalized-lookup queue-name]
   (info "Calling SQS to get URL for queue " queue-name)
   (.getQueueUrl (.getQueueUrl sqs-client queue-name)))
 
@@ -293,7 +307,7 @@
   method with the given args."
   [client-obj method args]
   (when-not (nil? (first args))
-    (info "\tConfig:" method "=" args)
+    (debug "\tConfig:" method "=" args)
     (Reflector/invokeInstanceMethod
      client-obj (name method) (object-array args))))
 
@@ -323,9 +337,9 @@
   it is best to define the default configuration value as nil, so as to avoid
   unexpected client behaviour."
   [client-obj & args]
-  (info "Configuring client" client-obj)
-  (doseq [[config-key config-vals] (partition 2 args)]
-    (set-aws-client-attr! client-obj config-key config-vals))
+  (debug "Configuring client" client-obj)
+  (doseq [[config-key config-val] (partition 2 args)]
+    (set-aws-client-attr! client-obj config-key [config-val]))
   client-obj)
 
 (defmulti create-aws-client
@@ -337,21 +351,15 @@
 
 (defmethod create-aws-client :sqs
   [^Keyword type]
-  (let [endpoint (sqs-endpoint)]
-    (if (nil? endpoint)
-      (new AmazonSQSClient)
-      (configure-aws-client
-        (new AmazonSQSClient (new BasicAWSCredentials "unused" "unused"))
-        :setEndpoint [endpoint]))))
+  (configure-aws-client
+    (new AmazonSQSClient)
+    :setEndpoint (sqs-endpoint)))
 
 (defmethod create-aws-client :sns
   [^Keyword type]
-  (let [endpoint (sns-endpoint)]
-    (if (nil? endpoint)
-      (new AmazonSNSClient)
-      (configure-aws-client
-        (new AmazonSNSClient (new BasicAWSCredentials "unused" "unused"))
-        :setEndpoint [endpoint]))))
+  (configure-aws-client
+    (new AmazonSNSClient)
+    :setEndpoint (sns-endpoint)))
 
 (defrecord SQSQueueBroker
   ;; A record containing fields related to accessing SNS/SQS exchanges and queues.
@@ -418,12 +426,9 @@
     [this queue-name msg]
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
-          queue-url (get-queue-url sqs-client queue-name)]
-      (info "Publishing to queue ...")
-      (info "msg:" msg)
-      (info "queue-name:" queue-name)
-      (info "queue-url:" queue-url)
-      (info "client:" sqs-client)
+          queue-url (get-queue-url
+                     sqs-client (:normalized-queue-names this) queue-name)]
+      (debug "Publishing message" msg "to queue" queue-name)
       (.sendMessage sqs-client queue-url msg)))
 
   (get-queues-bound-to-exchange
@@ -435,7 +440,7 @@
       (map (fn [sub]
                (->> sub
                     .getEndpoint
-                    arn->name
+                    subscription-endpoint->name
                     (normalized-queue-name->original-queue-name this)))
            subs)))
 
@@ -445,6 +450,8 @@
           exchange-name (normalize-queue-name exchange-name)
           topic (get-topic sns-client exchange-name)
           topic-arn (.getTopicArn topic)]
+      ;; XXX keep but change to debug
+      (info "Publishing message" msg "to exchange" exchange-name)
       (.publish sns-client topic-arn msg)))
 
   (subscribe
