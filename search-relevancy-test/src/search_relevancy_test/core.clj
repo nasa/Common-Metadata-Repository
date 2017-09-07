@@ -7,7 +7,7 @@
    [clojure.string :as string]))
 
 (def test-collection-formats
- [:iso-smap :echo10 :dif10 :dif9 :iso19115 :umm-json])
+ [:iso-smap :echo10 :dif10 :dif :iso19115 :umm-json])
 
 (defn- test-files-for-format
   "Returns a set of test collection files in the given format."
