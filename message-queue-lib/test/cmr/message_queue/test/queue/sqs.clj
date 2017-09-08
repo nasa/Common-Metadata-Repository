@@ -83,7 +83,7 @@
     #(throw (ExitException.))))
 
 (defn- fake-client-proxy
-  "Creates a proxy for AWSSQSClient. This prox does the following:
+  "Creates a proxy for AWSSQSClient. This proxy does the following:
 
   * Returns a `GetQueueUrlRequest` proxy for calls to getQueueUrl.
   * For calls to `receiveMessages`, it calls the functions in receive-fns

@@ -18,6 +18,11 @@
   {:default "abc"
    :type String})
 
+(defconfig test-string-with-nil
+  "This is a test string configuration parameter with a nil default"
+  {:default nil
+   :type String})
+
 (defconfig test-long
   "This is a test long configuration parameter"
   {:default 5
@@ -63,7 +68,13 @@
       (testing "env variable value"
         (with-env-vars
           {"CMR_TEST_STRING" "foo"}
-          (is (= "foo" (test-string)))))))
+          (is (= "foo" (test-string))))))
+    (testing "String configs with default nil"
+      (testing "default value"
+        (is (nil? (test-string-with-nil))))
+      (testing "override"
+        (set-test-string-with-nil! "quux")
+        (is (= "quux" (test-string-with-nil))))))
 
   (testing "Long configs"
     (testing "default value"
