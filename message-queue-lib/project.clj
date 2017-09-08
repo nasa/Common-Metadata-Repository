@@ -66,4 +66,8 @@
        "../dev-system/support/start-local-sqs-sns.sh"]
     "stop-sqs-sns"
       ["shell"
-       "../dev-system/support/stop-local-sqs-sns.sh"]})
+       "../dev-system/support/stop-local-sqs-sns.sh"]
+    "restart-sqs-sns"
+      ["do"
+        ["stop-sqs-sns"]
+        ["start-sqs-sns"]]})
