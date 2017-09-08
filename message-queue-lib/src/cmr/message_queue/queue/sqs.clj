@@ -294,7 +294,7 @@
 
 (defn- -get-queue-url
   "Returns the queue url for the given queue name."
-  [sqs-client normalized-lookup queue-name]
+  [sqs-client queue-name]
   (info "Calling SQS to get URL for queue " queue-name)
   (.getQueueUrl (.getQueueUrl sqs-client queue-name)))
 
@@ -426,8 +426,7 @@
     [this queue-name msg]
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
-          queue-url (get-queue-url
-                     sqs-client (:normalized-queue-names this) queue-name)]
+          queue-url (get-queue-url sqs-client queue-name)]
       (debug "Publishing message" msg "to queue" queue-name)
       (.sendMessage sqs-client queue-url msg)))
 
