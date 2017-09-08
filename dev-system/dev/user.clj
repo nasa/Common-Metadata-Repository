@@ -136,6 +136,11 @@
   (dev-config/set-dev-system-queue-type!
     (keyword (dev-config/dev-system-queue-type))))
 
+;; If the ENV var for the dev queue type was set to use AWS, let's make the
+;; `set-aws` call.
+(when (= :aws (dev-config/dev-system-queue-type))
+  (set-aws true))
+
 (defn set-logging-level!
   "Sets the logging level to the given setting. Puts the level in refresh-persistent-settings
    so that the level will be kept through refreshes. "
