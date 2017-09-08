@@ -163,4 +163,8 @@
        "support/start-local-sqs-sns.sh"]
     "stop-sqs-sns"
       ["shell"
-       "support/stop-local-sqs-sns.sh"]})
+       "support/stop-local-sqs-sns.sh"]
+    "restart-sqs-sns"
+      ["do"
+        ["stop-sqs-sns"]
+        ["start-sqs-sns"]]})
