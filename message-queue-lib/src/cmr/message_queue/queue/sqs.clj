@@ -450,8 +450,7 @@
           exchange-name (normalize-queue-name exchange-name)
           topic (get-topic sns-client exchange-name)
           topic-arn (.getTopicArn topic)]
-      ;; XXX keep but change to debug
-      (info "Publishing message" msg "to exchange" exchange-name)
+      (debug "Publishing message" msg "to exchange" exchange-name)
       (.publish sns-client topic-arn msg)))
 
   (subscribe

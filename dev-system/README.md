@@ -38,11 +38,15 @@ can do the following:
 * From the shell where you will start the REPL, you will need the
   `CMR_SNS_ENDPOINT` and `CMR_SQS_ENDPOINT` environment variables set;
   in most cases you will want both of these set to `http://localhost:4100`
-* You will also need to set the env var `CMR_SQS_EXTEND_POLICY_REMAINING_EXCHANGES`
-  to `false`
-* Start the REPL, e.g. `lein repl`
-* Turn on AWS mode: `(set-aws true)`
-* Reset the REPL (which reloads the code and starts up the system components): `(reset)`
+* You will also need to set the env var
+  `CMR_SQS_EXTEND_POLICY_REMAINING_EXCHANGES` to `false` and to set the
+  standard AWS credential environment variables, `AWS_ACCESS_KEY_ID` and
+  `AWS_SECRET_ACCESS_KEY` (it doesn't matter what the actual values are).
+* For CMR to use the local SQS/SNS, it needs to have the
+  `CMR_DEV_SYSTEM_QUEUE_TYPE` environment variable set to "aws".
+* Start the REPL, e.g. `lein repl`.
+* Reset the REPL (which reloads the code and starts up the system components):
+  `(reset)`
 
 If you want to do any debugging of the local service, you'll probably want to
 install the AWS cli. On a Mac, just do `brew install awscli`. You can use this
