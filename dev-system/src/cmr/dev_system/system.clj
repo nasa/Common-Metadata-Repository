@@ -97,8 +97,6 @@
        (map (fn [[app-name app-system]]
               [app-name (update-app-web-server-options app-system)]))
        (into {})))
-  ; (into {} (for [[app-name app-system] app-map]
-  ;            [app-name (update-app-web-server-options app-system)])))
 
 (defn- set-all-web-server-options
   "Modifies all app server instances to configure web server options. Takes the system
