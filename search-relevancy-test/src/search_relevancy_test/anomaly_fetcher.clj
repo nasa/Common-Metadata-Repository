@@ -16,7 +16,7 @@
 (def format-string->directory
   "Map of metadata-format to the directory name where those formats are saved. TODO - add umm-json."
   {"application/echo10+xml" "echo10"
-   "application/dif+xml" "dif9"
+   "application/dif+xml" "dif"
    "application/dif10+xml" "dif10"
    "application/iso:smap+xml" "iso-smap"
    "application/iso19115+xml" "iso19115"

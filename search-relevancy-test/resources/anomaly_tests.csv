@@ -22,3 +22,14 @@ Anomaly,Test,Search,Concept-ids,Description
 33,1,?keyword=L3U%20VIIRS%20SST,"C1332404870-PODAAC,C1332331108-PODAAC",
 35,1,?keyword=NDVI*,"C194001237-LPDAAC_ECS,C203234517-LAADS",MOD13A1 (Vegetation Indices) should be before MOD04_L2
 35,2,?keyword=NDVI*,"C1328403374-LPDAAC_ECS,C203234517-LAADS",VIP01 should show up before MOD04_L2
+36,1,?keyword=ocean*%20temperature*,"C1282364536-PODAAC,C1237113442-GES_DISC",SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles
+36,2,?keyword=ocean*%20temperature*,"C1282364536-PODAAC,C1306209695-LARC_ASDC",SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles
+37,1,?keyword=sea*%20surface*%20temperature*,"C1282364536-PODAAC,C1237113442-GES_DISC",SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles
+37,2,?keyword=sea*%20surface*%20temperature*,"C1284548356-PODAAC,C1238517250-GES_DISC",SST product vs. non-SST product
+38,1,?keyword=sea*%20level*,"C1000000260-SEDAC,C1206500991-ASF",SEASAT SAR collections should be after sea level collections
+38,2,?keyword=sea*%20level*,"C1000000260-SEDAC,C1239900200-GES_DISC",SeaWiFs collections should be after sea level collections
+39,1,?keyword=wind*%20speed*,"C1342436891-PODAAC,C1379379633-PODAAC",RapidScat should come before GHRSST
+39,2,?keyword=wind*%20speed*,"C1280641454-PODAAC,C1379379633-PODAAC",QuikScat should come before GHRSST
+40,1,?keyword=ocean*%20wind*,"C1293249048-PODAAC,C1237113465-GES_DISC",CCMP Scat should come before turbulent flux collections
+40,2,?keyword=ocean*%20wind*,"C1214055327-SCIOPS,C1237113465-GES_DISC",QuikScat should come before turbulent flux collections
+41,1,?keyword=salinity*,"C1000001583-NSIDC_ECS,C1293892873-PODAAC",Aquarius data before SPURS

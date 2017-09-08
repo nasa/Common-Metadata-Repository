@@ -83,3 +83,86 @@
       (boost-tests boost-field min-value max-value))
     (println "No field specified for boosts tests. Must specify a field to
              test boosts with the '-field' argument")))
+
+(def boost-fields
+  "All the fields that can be boosted"
+  [:short-name
+   :entry-id
+   :project
+   :platform
+   :instrument
+   :science-keywords
+   :spatial-keyword
+   :temporal-keyword
+   :version-id
+   :entry-title
+   :provider
+   :two-d-coord-name
+   :processing-level-id
+   :data-center])
+
+(defn- create-boost-query-string
+  "Creates the query string to use to pass in all of the boost-values to the CMR search API.
+  boost-values - map with a key being the field name and value being the boost for that field."
+  [boost-values]
+  (reduce-kv (fn [orig-query-str field boost-value]
+               (str orig-query-str (format "&boosts[%s]=%.2f" (name field) boost-value)))
+             ""
+             boost-values))
+
+(defn- run-boost-test-all-fields
+  "Runs a single test with random boost values between min-value and min-value + max-value."
+  [boost-values]
+  (let [query-string (create-boost-query-string boost-values)] ; append to search request
+    (println result-separator)
+    (println (format "Running boost test with boosts %s" boost-values))
+    (-> (relevancy-test/run-anomaly-tests (create-test-args "fake" 3.14)
+                                          query-string
+                                          false)
+        (reporter/generate-result-summary)
+        (assoc :boosts boost-values))))
+
+(defn random-boost-tests
+  "Sets all of the boost values to random one decimal floats between the provided min-value and
+  min-value + value-range. Runs num-iterations of the anomaly tests and tracks the best boost
+  values to use based on the highest discounted cumulative gain."
+  [min-value value-range num-iterations]
+  (relevancy-test/test-setup) ; Run the setup once
+  (let [best-run (atom nil)]
+    (doseq [n (range num-iterations)
+            :let [random-boosts (into {}
+                                      (for [field boost-fields
+                                            :let [random-value (+ min-value (rand value-range))]]
+                                        [field (Float. (format "%.1f" random-value))]))
+                  test-results (run-boost-test-all-fields random-boosts)
+                  all-dcgs (conj (:dcgs @best-run) (max (get @best-run :average-dcg 0.0)
+                                                        (get test-results :average-dcg 0)))]]
+      (if (or (nil? (:average-dcg @best-run)) ; Save the earliest best run
+              (> (:average-dcg test-results)
+                 (:average-dcg @best-run)))
+        (reset! best-run (assoc test-results :dcgs all-dcgs))
+        (reset! best-run (assoc @best-run :dcgs all-dcgs))))
+    (println result-separator)
+    (println (format "Boosts tests complete. Best run %s, DCG: %.3f, Boosts: %s."
+                    (:result-description @best-run)
+                    (:average-dcg @best-run)
+                    (:boosts @best-run)))
+    @best-run))
+
+(comment
+ (def results (random-boost-tests 0.5 30.0 10))
+ (do
+   (require '[proto-repl-charts.charts :as charts])
+   (charts/line-chart "Best discounted cumulative gain by iteration"
+                      {:Discounted_cumulative_gain (:dcgs results)}))
+ (do
+   (require '[criterium.core :as criterium])
+   (criterium/with-progress-reporting
+    (criterium/quick-bench
+     (run-boost-test-all-fields {:short-name 0.7, :instrument 0.6, :version-id 4.6,
+                                 :science-keywords 1.5, :data-center 4.5, :project 0.7,
+                                 :spatial-keyword 1.2, :entry-id 3.1, :temporal-keyword 4.0,
+                                 :provider 2.9, :entry-title 5.1, :two-d-coord-name 5.1,
+                                 :platform 1.2, :processing-level-id 2.8}))))
+ (run-boost-test-all-fields {:platform 1.2 :science-keywords 2.2 :instrument 0.95 :entry-title 2.2})
+ (boost-tests-with-args ["-field" "entry-title" "-min-value" "1" "-max-value" "20"]))
