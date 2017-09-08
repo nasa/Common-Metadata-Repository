@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>AMSRE-REMSS-L2P-v7a</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2014-10-07T22:41:20.867Z</InsertTime>
+    <LastUpdate>2014-10-07T22:41:20.867Z</LastUpdate>
+    <LongName>GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Scanning Microwave Radiometer - Earth  Observing System (AMSR-E) on the NASA Aqua Satellite</LongName>
+    <DataSetId>PODAAC-GHAMS-2GR07</DataSetId>
+    <Description>The Advanced Microwave Scanning Radiometer (AMSR-E) was launched on 4 May 2002, aboard NASA's Aqua spacecraft. The National Space Development Agency of Japan (NASDA) provided AMSR-E to NASA as an indispensable part of Aqua's global hydrology mission. Over the oceans, AMSR-E is measuring a number of important geophysical parameters, including sea surface temperature (SST), wind speed, atmospheric water vapor, cloud water, and rain rate. A key feature of AMSR-E is its capability to see through clouds, thereby providing an uninterrupted view of global SST and surface wind fields. Remote Sensing Systems (RSS, or REMSS)  is the provider of these SST data for the Group for High Resolution Sea Surface Temperature (GHRSST) Project, performs a detailed processing of AMSR-E instrument data in two stages. The first stage produces a near-real-time (NRT) product (identified by "_rt_" within the file name) which is made as available as soon as possible. This is generally within 3 hours of when the data are recorded. Although suitable for many timely uses the NRT products are not intended to be archive quality. "Final" data (currently identified by "v7" within the file name) are processed when RSS receives the atmospheric model National Center for Environmental Prediction (NCEP) Final Analysis (FNL) Operational Global Analysis. The NCEP wind directions are particularly useful for retrieving more accurate SSTs and wind speeds. This dataset adheres to the GHRSST Data Processing Specification (GDS) version 2 format specifications.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-10-05T18:01:02.085Z</RevisionDate>
+    <ProcessingCenter>Remote Sensing Systems</ProcessingCenter>
+    <ProcessingLevelId>2P</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2002-06-01T12:06:00.000Z</BeginningDateTime>
+            <EndingDateTime>2011-10-04T06:51:45.000Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Remote Sensing Systems</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>001 707 545 2904</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>tremble@remss.com</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Sharon</FirstName>
+                    <MiddleName>none</MiddleName>
+                    <LastName>Tremble</LastName>
+                    <JobPosition>Primary Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Temperature</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Sea Surface Temperature</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Sub-skin Sea Surface Temperature</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>AQUA</ShortName>
+            <LongName>Earth Observing System, AQUA</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>AMSR-E</ShortName>
+                    <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>AMSR-E</ShortName>
+                            <LongName>Advanced Microwave Scanning Radiometer-EOS</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/ghrsst/data/GDS2/L2P/AMSRE/REMSS/v7</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://data.nodc.noaa.gov/cgi-bin/nph-dods/ghrsst/GDS2/L2P/AMSRE/REMSS/v7/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L2P/AMSRE/REMSS/v7/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://ftp.nodc.noaa.gov/pub/data.nodc/ghrsst/GDS2/L2P/AMSRE/REMSS/v7</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://thredds.jpl.nasa.gov/thredds/catalog/ncml_aggregation/OceanTemperature/ghrsst/catalog.html?dataset=ncml_aggregation/OceanTemperature/ghrsst/aggregate__ghrsst_REMSS-L2P_GRIDDED_25-AMSRE.ncml</URL>
+            <Description></Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.ghrsst.org</URL>
+            <Description>GHRSST Project homepage</Description>
+            <Type>Project Home Page</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://aqua.nasa.gov/</URL>
+            <Description>Full details of the AQUA mission</Description>
+            <Type>Project Home Page</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://ghrsst.jpl.nasa.gov</URL>
+            <Description>Portal to the GHRSST Global Data Assembly Center and data access</Description>
+            <Type>Get Data</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.remss.com</URL>
+            <Description>AMSR-E calibration description</Description>
+            <Type>Calibration/validation data</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.remss.com</URL>
+            <Description>AMSR-E SSTs: algorithm description, browsing of data, and ftp of data</Description>
+            <Type>Reference Materials</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHAMS-2GR07</URL>
+            <Description>(Search Granule)</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

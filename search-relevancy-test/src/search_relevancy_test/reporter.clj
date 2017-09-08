@@ -61,7 +61,7 @@
   "Given the list of result concept ids in order and the order from the test,
   analyze the results to determine if the concept ids came back in the correct
   position. Print a message if not."
-  [anomaly-test test-concept-ids result-ids]
+  [anomaly-test test-concept-ids result-ids print-results]
   (let [description (format "...............Test %s: %s"
                             (:test anomaly-test)
                             (:description anomaly-test))
@@ -69,23 +69,25 @@
         colored-items (vec (colorize-positional-order items-in-positional-order))]
     (if (not= (count test-concept-ids) (count result-ids))
       (do
-        (println (ansi/style (format "%s ERROR - missing test data" description) :magenta))
-        (doseq [concept-id test-concept-ids
-                :let [result-position (.indexOf result-ids concept-id)]]
-          (when (= -1 result-position)
-            (println (ansi/style (format "...............Concept %s was not found in the result set"
-                                         concept-id)
-                                 :magenta))))
+        (when print-results
+          (println (ansi/style (format "%s ERROR - missing test data" description) :magenta))
+          (doseq [concept-id test-concept-ids
+                  :let [result-position (.indexOf result-ids concept-id)]]
+            (when (= -1 result-position)
+              (println (ansi/style (format "...............Concept %s was not found in the result set"
+                                           concept-id)
+                                   :magenta)))))
         (merge anomaly-test
                {:pass false
                 :positional-order items-in-positional-order
                 :result-description "Missing data"}))
       (do
         (let [pass (= (sort items-in-positional-order) items-in-positional-order)]
-          (if pass
-            (println (ansi/style (format "%s OK" description) :green))
-            (println (ansi/style (str description " FAILED - out of order") :red)
-                     colored-items))
+          (when print-results
+            (if pass
+              (println (ansi/style (format "%s OK" description) :green))
+              (println (ansi/style (str description " FAILED - out of order") :red)
+                       colored-items)))
           (merge anomaly-test
                  {:pass pass
                   :result-description (when (not pass) "Out of order")
@@ -109,6 +111,7 @@
                                  (count (filter #(= true (:pass %)) results))
                                  (count results))
      :pass (empty? failed-results)
+     :num-passing (count (filter #(= true (:pass %)) results))
      :average-dcg (average (remove nil? (map :discounted-cumulative-gain results)))
      :average-failed-dcg (average (remove nil? (map :discounted-cumulative-gain failed-results)))
      :mean-reciprocal-rank (double (average (remove nil? (map :reciprocal-rank results))))}))

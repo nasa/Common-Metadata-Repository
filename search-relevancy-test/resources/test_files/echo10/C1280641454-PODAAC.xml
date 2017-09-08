@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>QSCAT_L1C_NONSPINNING_SIGMA0_WINDS_V1</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2016-02-03T11:40:56.329Z</InsertTime>
+    <LastUpdate>2016-02-03T11:40:56.329Z</LastUpdate>
+    <LongName>QuikSCAT Level 1C Averaged Sigma-0 and Winds from Non-spinning Variable Incidence and Re-pointed Beam Version 1</LongName>
+    <DataSetId>PODAAC-QSNON-L1CA1</DataSetId>
+    <Description>This dataset contains geo-located and averaged Level 1B Sigma-0 measurements and wind retrievals from the SeaWinds on QuikSCAT platform, initiated in the months following the failure of the rotating antenna motor on 22 November 2009, using the various incidence angles at which QuikSCAT was pointed during the time period from November 2009 until present. Incidence angles were varied in order to cross-calibrate the Oceansat-2 and RapidScat scatterometers and to extend the known Ku-band geophysical model function. The averaging of the L1B input data combined with the wind vector processing results are both contained in this product referred to hereafter as Level 1C (L1C). The fixed and repointed beam processing is relative to either the one corresponding to the vertically polarized "outer" beam or the other corresponding to the horizontally polarized "inner" beam. The Sigma-0 values from the fixed operating beam for each frame are averaged to a single value representing approximately 50 samples. The data points are land flagged, collocated with ECMWF surface winds, and have climatological nadir attenuations provided for the location and time of the data (not applied to the sigma0). Furthermore, the RapidSCAT geophysical model function (GMF) has been used to compute wind speed and direction, which is provided at each discrete sampling point corresponding to the averaged Sigma-0 locations. The wind speed were computed from QuikSCAT Sigma0 values by assuming the ECMWF wind direction as a first step and then refining those directions slightly to minimize differences between ECMWF and QuikSCAT wind vectors. Retrieved wind directions, thus obtained, were reported but are only slightly different from ECMWF values and should not be considered an independent measurement of wind direction. Retrieved wind speeds do not depend significantly on ECMWF speeds as evidenced by the fact that they agree closely with WindSAT polarimetric radiometer speeds whenever WindSAT and ECMWF disagree. The Sigma0 values have also been corrected for scan loss (actually lack thereof, since the antenna does not scan), and for X-factor changes due to repointing.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-06-27T18:38:33.192Z</RevisionDate>
+    <ProcessingCenter>SeaWinds Processing and Analysis Center (SeaPAC)</ProcessingCenter>
+    <ProcessingLevelId>1C</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>RAW</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2010-07-16T23:06:19.000Z</BeginningDateTime>
+            <EndingDateTime>2015-11-12T16:02:01.000Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>SeaWinds Processing and Analysis Center (SeaPAC)</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>(818) 354-5329</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>Bryan.W.Stiles@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Bryan</FirstName>
+                    <LastName>Stiles</LastName>
+                    <JobPosition>Science Data Systems Lead</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>818-354-2038</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>David.F.Moroni@jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>David</FirstName>
+                    <LastName>Moroni</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Winds</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Surface Winds</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Ocean Surface Wind Vectors</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Spectral/Engineering</TopicKeyword>
+            <TermKeyword>Radar</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Sigma Naught</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>None</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>QUIKSCAT</ShortName>
+            <LongName>QUIKSCAT</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SEAWINDS</ShortName>
+                    <LongName>SeaWinds Scatterometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SEAWINDS</ShortName>
+                            <LongName>SeaWinds Scatterometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/quikscat/L1C/v1</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/OceanWind/QuikSCAT/SeaWinds-QuikSCAT_KnownProblems</URL>
+            <Description>Web Page Consisting of Known Problems, Issues, and Data Gaps</Description>
+            <Type>PORTAL_DOC_KNOWN_ISSUES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/quikscat/L1B/v2/docs/L1B_SIS_200609.pdf</URL>
+            <Description>Software Interface Specifications for L1B</Description>
+            <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac.jpl.nasa.gov/allData/quikscat/L1C/sw</URL>
+            <Description>Read software provided in MATLAB and Python.</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>89.875</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-89.875</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

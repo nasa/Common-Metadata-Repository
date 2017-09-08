@@ -1,0 +1,160 @@
+<Collection>
+  <ShortName>SPURS1_DRIFTER</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2015-04-07T00:41:19.303Z</InsertTime>
+  <LastUpdate>2015-04-07T00:41:19.303Z</LastUpdate>
+  <LongName>SPURS-I Drifter trajectory surface salinity and temperature observations</LongName>
+  <DataSetId>PODAAC-SPUR1-DRIFT</DataSetId>
+  <Description>ECHO collection for the SPURS-I field campaign Drifter dataset</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2015-05-07T17:06:05.122Z</RevisionDate>
+  <ProcessingCenter>SPURS Project</ProcessingCenter>
+  <ProcessingLevelId>2</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>NETCDF</DataFormat>
+  <SpatialKeywords>
+    <Keyword>SPURS-1  N.Atlantic Salinity maximum region</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2011-10-19T00:00:00.000Z</BeginningDateTime>
+      <EndingDateTime>2015-04-07T00:00:00.000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number>(818) 393-7165</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>podaac@podaac.jpl.nasa.gov</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>User</FirstName>
+          <MiddleName>null</MiddleName>
+          <LastName>Services</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>SALINITY/DENSITY</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>SALINITY</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>OCEAN TEMPERATURE</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>TEMPERATURE PROFILES</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>SPURS1_Drifter</ShortName>
+      <LongName>SPURS-I SVP Drifters</LongName>
+      <Type>BUOY</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>DRIFTER_CTD</ShortName>
+          <LongName>SVP Drifter temperature and salinity probes</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>DRIFTER_CTD</ShortName>
+              <LongName>SVP Drifter temperature and salinity probes</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/insitu/L2/spurs1/drifter/</URL>
+      <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/insitu/L2/spurs1/drifter</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/insitu/L2/spurs1/sw/R</URL>
+      <Description>R Reader and calling routines</Description>
+      <Type>PORTAL_DA_READ_SOFTWARE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/spurs</URL>
+      <Description>Field Campaign and Instrument Overview</Description>
+      <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/insitu/L2/spurs1/docs/SpursWebsiteContent/</URL>
+      <Description>Meeting Materials, Cruise Blogs, and other archive artifacts</Description>
+      <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/insitu/L2/spurs1/docs/CruiseReports/</URL>
+      <Description>Cruise Reports</Description>
+      <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/insitu/L2/spurs1/sw/Matlab</URL>
+      <Description>MATLAB Reader and calling routines</Description>
+      <Type>PORTAL_DA_READ_SOFTWARE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/insitu/L2/spurs1/docs/DataDocumentation/</URL>
+      <Description>Data Submission Report, Instrument Calibration Report, etc</Description>
+      <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://spurs.jpl.nasa.gov/</URL>
+      <Description>Project Website for SPURS</Description>
+      <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-66.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>35</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>-28.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>16</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

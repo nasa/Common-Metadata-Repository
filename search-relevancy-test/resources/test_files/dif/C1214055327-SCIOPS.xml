@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF 
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>NCAR_DS744.4</Entry_ID>
+   <Entry_Title>QSCAT/NCEP Blended Ocean Winds from Colorado Research Associates (version 5.0)</Entry_Title>
+   <Data_Set_Citation>
+      <Dataset_Creator>UCAR/NCAR/CISL/DSS > Data Support Section, Computational and Information Systems Laboratory, National Center for Atmospheric Research, University Corporation for Atmospheric Research</Dataset_Creator>
+      <Dataset_Title>QSCAT/NCEP Blended Ocean Winds from Colorado Research Associates (version 5.0)</Dataset_Title>
+      <Dataset_Publisher>UCAR/NCAR/CISL/DSS > Data Support Section, Computational and Information Systems Laboratory, National Center for Atmospheric Research, University Corporation for Atmospheric Research</Dataset_Publisher>
+      <Online_Resource>http://rda.ucar.edu/datasets/ds744.4/</Online_Resource>
+   </Data_Set_Citation>
+   <Personnel>
+      <Role>TECHNICAL CONTACT</Role>
+      <First_Name>ZAIHUA</First_Name>
+      <Last_Name>JI</Last_Name>
+      <Email>zji@ucar.edu</Email>
+      <Phone>(303)-497-1819</Phone>
+      <Fax>(303)-497-1291</Fax>
+      <Contact_Address>
+         <Address>National Center for Atmospheric Research</Address>
+         <Address>CISL/DSS</Address>
+         <Address>P.O. Box 3000</Address>
+         <City>Boulder</City>
+         <Province_or_State>CO</Province_or_State>
+         <Postal_Code>80307</Postal_Code>
+         <Country>U.S.A.</Country>
+      </Contact_Address>
+   </Personnel>
+   <Personnel>
+      <Role>DIF AUTHOR</Role>
+      <First_Name>BOB</First_Name>
+      <Last_Name>DATTORE</Last_Name>
+      <Email>dattore@ucar.edu</Email>
+      <Phone>(303)-497-1825</Phone>
+      <Fax>(303)-497-1291</Fax>
+      <Contact_Address>
+         <Address>National Center for Atmospheric Research</Address>
+         <Address>CISL/DSS</Address>
+         <Address>P.O. Box 3000</Address>
+         <City>Boulder</City>
+         <Province_or_State>CO</Province_or_State>
+         <Postal_Code>80307</Postal_Code>
+         <Country>U.S.A.</Country>
+      </Contact_Address>
+   </Personnel>
+   <Parameters uuid="fbc53539-ce4e-4e3e-bbd2-8270386616b4">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>OCEANS</Topic>
+      <Term>OCEAN WINDS</Term>
+      <Variable_Level_1>SURFACE WINDS</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="91d73256-925d-4d04-9b55-aaf088080cac">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>OCEANS</Topic>
+      <Term>OCEAN WINDS</Term>
+      <Variable_Level_1>WIND STRESS</Variable_Level_1>
+   </Parameters>
+   <ISO_Topic_Category uuid="dbff9ea9-3b00-4cd4-b3ed-21790a797207">OCEANS</ISO_Topic_Category>
+   <Keyword>GRIDDING METHODS</Keyword>
+   <Temporal_Coverage>
+      <Start_Date>1999-07-01</Start_Date>
+      <Stop_Date>2009-07-31</Stop_Date>
+   </Temporal_Coverage>
+   <Data_Set_Progress>COMPLETE</Data_Set_Progress>
+   <Data_Set_Language>English</Data_Set_Language>
+   <Data_Center>
+      <Data_Center_Name uuid="7bd27ea3-f09d-47ca-8659-bbf0a4d17144">
+         <Short_Name>UCAR/NCAR/CISL/RDA</Short_Name>
+         <Long_Name>Research Data Archive, Computational and Information Systems Laboratory, National Center for Atmospheric Research, University Corporation for Atmospheric Research</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>http://rda.ucar.edu/</Data_Center_URL>
+      <Data_Set_ID>744.4</Data_Set_ID>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <Last_Name>RDA HELP DESK</Last_Name>
+         <Email>rdahelp@ucar.edu</Email>
+         <Phone>(303)-497-1231</Phone>
+         <Fax>(303)-497-1291</Fax>
+         <Contact_Address>
+            <Address>National Center for Atmospheric Research</Address>
+            <Address>CISL/DSS</Address>
+            <Address>P.O. Box 3000</Address>
+            <City>Boulder</City>
+            <Province_or_State>CO</Province_or_State>
+            <Postal_Code>80307</Postal_Code>
+            <Country>U.S.A.</Country>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Distribution>
+      <Distribution_Size>134.028 Gbytes</Distribution_Size>
+   </Distribution>
+   <Reference>
+      Milliff, R. F., J. Morzel, D. B. Chelton, and M. H. Freilich, 2004:             Wind Stress Curl and Wind Stress Divergence Biases from Rain Effects             on QSCAT Surface Wind Retrievals. J. Atmos. Ocean. Tech., 21,             1216-1231, URL:             http://rda.ucar.edu/datasets/ds744.4/docs/JAOT.MILLIFF.2004.pdf.              
+
+Chin, T. M., R. F. Milliff, and W. G. Large, 1998: Basin-Scale             High-Wavenumber Sea Surface Wind Fields from Multiresolution             Analysis of Scatterometer Data. J. Atmos. Ocean. Technology, 15,             741-763, URL:             http://rda.ucar.edu/datasets/ds744.4/docs/JAOT.CHIN.1998.pdf.   </Reference>
+   <Summary>
+      <Abstract>Ocean surface wind data are derived from spatial blending of             high-resolution satellite data (SeaWinds instrument on the QuikSCAT             satellite - QSCAT) and global weather center re-analyses (NCEP),             resulting in high temporal and spatial resolution datasets             (6-hourly, and 0.5 by 0.5 degree) of u- and v- wind vector             components and windstress curl. The global coverage datasets begin             in July 1999 and ends in July 2009.               
+
+Surface wind component and wind stress curl fields are available in             three forms: 1) a product that is the blended wind field output, 2)             fields consisting of the NCEP re-analyses spline interpolated to the             0.5 by 0.5 degree grid (i.e. no QSCAT data blended), and 3) a             product that is output from an intermediate step in the blending             process that consists of the superposition of QSCAT observations on             NCEP before blending. This product is useful to identify the             satellite data swaths in each composite of 12-hours of QSCAT             observations.               
+
+CAUTION: This blended wind product was developed for general             circulation scale analyses - see these cautionary notes             [http://rda.ucar.edu/datasets/ds744.4/docs/Blended_Winds_Caution].             
+
+The blending methodology is summarized in this document             [http://rda.ucar.edu/datasets/ds744.4/docs/Blended_Winds_Summary].               
+NOTE: The QSCAT satellite has permanent failed so this data time             series has ended.</Abstract>
+   </Summary>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://rda.ucar.edu/datasets/ds744.2/</URL>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://rda.ucar.edu/datasets/ds744.5/</URL>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://rda.ucar.edu/datasets/ds744.6/</URL>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://rda.ucar.edu/datasets/ds744.8/</URL>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://rda.ucar.edu/datasets/ds744.9/</URL>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://podaac.jpl.nasa.gov/quikscat/</URL>
+      <Description>
+         NASA JPL PO.DAAC
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://www.esrl.noaa.gov/psd/data/reanalysis/</URL>
+      <Description>
+         The re-analyses winds are from the NCEP/NCAR Reanalysis project
+      </Description>
+   </Related_URL>
+   <IDN_Node uuid="0653ebf8-bd12-4bb3-b080-d45bb0b388db">
+      <Short_Name>USA/NCAR</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.9.3</Metadata_Version>
+   <Last_DIF_Revision_Date>2017-04-20</Last_DIF_Revision_Date>
+   <Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-11-20 21:54:51</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>
