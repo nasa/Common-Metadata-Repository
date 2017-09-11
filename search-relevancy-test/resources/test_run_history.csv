@@ -190,40 +190,40 @@ Processing Level Id Sort,2017-08-15T12:54,32,1,,FAIL,Out of order,2 1,0.86,0.5,
 Processing Level Id Sort,2017-08-15T12:54,33,1,,PASS,,1 2,1,1,"YES (DCG 0.860, RR: 0.500, Position: 2 1)"
 Processing Level Id Sort,2017-08-15T12:54,35,1,MOD13A1 (Vegetation Indices) should be before MOD04_L2,FAIL,Out of order,2 1,0.86,0.5,
 Processing Level Id Sort,2017-08-15T12:54,35,2,VIP01 should show up before MOD04_L2,FAIL,Out of order,2 1,0.86,0.5,
-Processing Level Id Sort,2017-08-15T12:54,SUMMARY,,,FAIL,10 tests passed out of 23,,0.925,0.717,"YES (DCG 0.919, RR: 0.696, Position: )""
-"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,1,1,Snow cover should come before clouds when searching for snow cover,PASS,,1 2,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,2,1,V006 dataset should come before version 005,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,3,1,Soil moisture products should come before salinity products when searching for SMAP,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,4,1,Ancillary products should be below data products (can't reproduce locally),FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,5,1,OMI products should be above TOMS products because OMI is a later generation.,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,6,1,Collections with Leaf area index in the titles should show up before others when searching for leaf area index,PASS,,1 2,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,9,1,ABoVE project collections should be ahead of collections with above in the description,PASS,,1 2,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,10,1,NPP should return ecology results first,PASS,,1 2,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,11,1,SMAP soil moisture searches should return L2-L4 SMAP above salinity products,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,11,2,SMAP soil moisture searches should return L2-L4 SMAP above L1 products,PASS,,1 2,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,11,3,SMAP soil moisture searches should return L2-L4 SMAP above SMAPVEX products,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,12,1,SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw,PASS,,1 2,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,14,1,World glacier inventory should be a top 3 collection when searching for glacier,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,14,2,GLIMS should be a top 3 collection when searching for glacier,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,15,1,Northern Hemisphere EASE-Grid 2.0 Version 4 should be ranked high because temporal coverage is very long and community usage is high.,PASS,,1 2 3,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2 3)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,15,2,"MODIS/Terra Snow Cover 5-Min L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high.",PASS,,1 2 3,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2 3)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,15,3,"NOTE: Found an L3 slightly different - MODIS/Terra Snow Cover Daily L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high.",PASS,,1 2 3,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2 3)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,20,1,Sea ice extent,FAIL,Out of order,2 1 3 4,0.950,0.500,"YES (DCG 0.95, RR: 0.5, Position: 2 1 3 4)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,26,1,Collections from ASDC data center above other data centers,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,32,1,,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,33,1,,PASS,,1 2,1.000,1.000,"YES (DCG 1, RR: 1, Position: 1 2)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,35,1,MOD13A1 (Vegetation Indices) should be before MOD04_L2,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,35,2,VIP01 should show up before MOD04_L2,FAIL,Out of order,2 1,0.860,0.500,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,36,1,SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles,FAIL,Out of order,2 1,0.860,0.500,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,36,2,SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles,PASS,,1 2,1.000,1.000,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,37,1,SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles,FAIL,Out of order,2 1,0.860,0.500,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,37,2,SST product vs. non-SST product,FAIL,Out of order,2 1,0.860,0.500,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,38,1,SEASAT SAR collections should be after sea level collections,FAIL,Out of order,2 1,0.860,0.500,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,38,2,SeaWiFs collections should be after sea level collections,FAIL,Out of order,2 1,0.860,0.500,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,39,1,RapidScat should come before GHRSST,FAIL,Out of order,2 1,0.860,0.500,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,39,2,QuikScat should come before GHRSST,FAIL,Out of order,2 1,0.860,0.500,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,40,1,CCMP Scat should come before turbulent flux collections,PASS,,1 2,1.000,1.000,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,40,2,QuikScat should come before turbulent flux collections,PASS,,1 2,1.000,1.000,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,41,1,Aquarius data before SPURS,PASS,,1 2,1.000,1.000,
-Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,SUMMARY,,,FAIL,14 tests passed out of 34,,0.920,0.706,"YES (DCG 0.925, RR: 0.717, Position: )"
+Processing Level Id Sort,2017-08-15T12:54,SUMMARY,,,FAIL,10 tests passed out of 23,,0.925,0.717,"YES (DCG 0.919, RR: 0.696, Position: )"""
+,,,,,,,,,,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,1,1,Snow cover should come before clouds when searching for snow cover,PASS,,1 2,1,1,"YES (DCG 1, RR: 1, Position: 1 2)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,2,1,V006 dataset should come before version 005,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,3,1,Soil moisture products should come before salinity products when searching for SMAP,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,4,1,Ancillary products should be below data products (can't reproduce locally),FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,5,1,OMI products should be above TOMS products because OMI is a later generation.,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,6,1,Collections with Leaf area index in the titles should show up before others when searching for leaf area index,PASS,,1 2,1,1,"YES (DCG 1, RR: 1, Position: 1 2)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,9,1,ABoVE project collections should be ahead of collections with above in the description,PASS,,1 2,1,1,"YES (DCG 1, RR: 1, Position: 1 2)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,10,1,NPP should return ecology results first,PASS,,1 2,1,1,"YES (DCG 1, RR: 1, Position: 1 2)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,11,1,SMAP soil moisture searches should return L2-L4 SMAP above salinity products,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,11,2,SMAP soil moisture searches should return L2-L4 SMAP above L1 products,PASS,,1 2,1,1,"YES (DCG 1, RR: 1, Position: 1 2)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,11,3,SMAP soil moisture searches should return L2-L4 SMAP above SMAPVEX products,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,12,1,SMAP L3 freeze/thaw products before anything else when searching for SMAP freeze/thaw,PASS,,1 2,1,1,"YES (DCG 1, RR: 1, Position: 1 2)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,14,1,World glacier inventory should be a top 3 collection when searching for glacier,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,14,2,GLIMS should be a top 3 collection when searching for glacier,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,15,1,Northern Hemisphere EASE-Grid 2.0 Version 4 should be ranked high because temporal coverage is very long and community usage is high.,PASS,,1 2 3,1,1,"YES (DCG 1, RR: 1, Position: 1 2 3)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,15,2,"MODIS/Terra Snow Cover 5-Min L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high.",PASS,,1 2 3,1,1,"YES (DCG 1, RR: 1, Position: 1 2 3)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,15,3,"NOTE: Found an L3 slightly different - MODIS/Terra Snow Cover Daily L2 Swath 500m V006 should be ranked high because Global spatial coverage and long temporal coverage, continuously updated, and community usage is high.",PASS,,1 2 3,1,1,"YES (DCG 1, RR: 1, Position: 1 2 3)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,20,1,Sea ice extent,FAIL,Out of order,2 1 3 4,0.95,0.5,"YES (DCG 0.95, RR: 0.5, Position: 2 1 3 4)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,26,1,Collections from ASDC data center above other data centers,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,32,1,,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,33,1,,PASS,,1 2,1,1,"YES (DCG 1, RR: 1, Position: 1 2)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,35,1,MOD13A1 (Vegetation Indices) should be before MOD04_L2,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,35,2,VIP01 should show up before MOD04_L2,FAIL,Out of order,2 1,0.86,0.5,"YES (DCG 0.86, RR: 0.5, Position: 2 1)"
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,36,1,SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles,FAIL,Out of order,2 1,0.86,0.5,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,36,2,SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles,PASS,,1 2,1,1,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,37,1,SST product vs. SST-incidental product: title boosting would work if PO.DAAC datasets have/had sensible titles,FAIL,Out of order,2 1,0.86,0.5,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,37,2,SST product vs. non-SST product,FAIL,Out of order,2 1,0.86,0.5,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,38,1,SEASAT SAR collections should be after sea level collections,FAIL,Out of order,2 1,0.86,0.5,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,38,2,SeaWiFs collections should be after sea level collections,FAIL,Out of order,2 1,0.86,0.5,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,39,1,RapidScat should come before GHRSST,FAIL,Out of order,2 1,0.86,0.5,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,39,2,QuikScat should come before GHRSST,FAIL,Out of order,2 1,0.86,0.5,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,40,1,CCMP Scat should come before turbulent flux collections,PASS,,1 2,1,1,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,40,2,QuikScat should come before turbulent flux collections,PASS,,1 2,1,1,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,41,1,Aquarius data before SPURS,PASS,,1 2,1,1,
+Base run for CMR-4411 tests anomalies 36-41,2017-09-07T15:11,SUMMARY,,,FAIL,14 tests passed out of 34,,0.92,0.706,"YES (DCG 0.925, RR: 0.717, Position: )"
