@@ -120,6 +120,16 @@
   [v]
   (when v (str/upper-case v)))
 
+(defn match-enum-case
+  "Given a string and a collection of valid enum values, return the proper-cased
+   value from the enum. The values will not differ, but this ensures that the
+   one returned is the proper case, even if that is a crazy mix"
+  [value enum-values]
+  (->> enum-values
+       (filter #(re-matches (re-pattern (str "(?i)" value)) %))
+       seq
+       first))
+
 (defn sequence->fn
   [vals]
   "Creates a stateful function that returns individual values from the

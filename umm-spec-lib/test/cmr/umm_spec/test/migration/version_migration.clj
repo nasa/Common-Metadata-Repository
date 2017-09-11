@@ -1527,9 +1527,9 @@
                                            :Value "I can't believe I'm going down for this too"}
                                           {:Type "AtmosphereLayer"
                                            :Value "I am invalid"}
-                                          {:Type "Atmosphere Layer"
+                                          {:Type "AtMoSphErE LAYER"
                                            :Value "The Earth has one of these"}
-                                          {:Type "Maximum Altitude"
+                                          {:Type "MaximuM Altitude"
                                            :Value "There is no limit if you believe -Bob Ross"}]}}
           result (vm/migrate-umm {} :collection "1.9" "1.10" vsds)]
       (is (= [{:Value "The Earth has one of these",
@@ -1573,7 +1573,7 @@
                                             :MaximumValue 20}
                               :Coordinate2 {:MinimumValue 11
                                             :MaximumValue 20}}
-                            {:TilingIdentificationSystemName "CALIPSO"
+                            {:TilingIdentificationSystemName "cALIpSO"
                               :Coordinate1 {:MinimumValue 1
                                             :MaximumValue 10}}
                             {:TilingIdentificationSystemName "MODIS Tile EASE"
@@ -1582,10 +1582,9 @@
                             {:TilingIdentificationSystemName "WRS-1"
                               :Coordinate1 {:MinimumValue 1
                                             :MaximumValue 10}}]}
-        result (vm/migrate-umm {} :collection "1.9" "1.10" tiling-id-systems)
-        other-result (vm/migrate-tiling-identification-systems tiling-id-systems)]
+        result (vm/migrate-umm {} :collection "1.9" "1.10" tiling-id-systems)]
     (is (= (:TilingIdentificationSystems result)
-           [{:TilingIdentificationSystemName "misr",
+           [{:TilingIdentificationSystemName "MISR",
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10},
              :Coordinate2 {:MinimumValue 1, :MaximumValue 10}}
             {:TilingIdentificationSystemName "CALIPSO",
