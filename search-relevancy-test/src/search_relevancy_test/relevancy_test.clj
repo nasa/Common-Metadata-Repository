@@ -17,7 +17,7 @@
 (def base-search-path
   "http://localhost:3003/collections")
 
-(defn- perform-search
+(defn perform-search
   "Perform the search from the anomaly test by appending the search to the end
   of the base search path. Return results in JSON and parse."
   [anomaly-test search-params]
