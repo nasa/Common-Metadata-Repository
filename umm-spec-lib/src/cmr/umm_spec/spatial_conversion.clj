@@ -36,19 +36,23 @@
    in the list of valid ones"
   [tile-identification-system-name]
   (when (tile-id-system-name-is-valid? tile-identification-system-name)
-    tile-identification-system-name))
+    (util/match-enum-case tile-identification-system-name valid-tile-identification-system-names)))
 
 (defn expected-tiling-id-systems-name
   "Translate TilingIdentificationSystemNames in accordance with UMM Spec v1.10"
   [tiling-identification-systems]
-  (let [tiling-id-systems (mapv
-                           (fn [tiling-id-system]
-                             (update tiling-id-system
-                                     :TilingIdentificationSystemName
-                                     translate-tile-id-system-name))
-                           tiling-identification-systems)]
-    (when-not (empty? tiling-id-systems)
-      tiling-id-systems)))
+  (->> tiling-identification-systems
+       (mapv
+        #(update % :TilingIdentificationSystemName translate-tile-id-system-name))
+       seq))
+
+(defn filter-and-translate-tiling-id-systems
+  "Drop invalid TilingIdentificationSystems, and ensure that valid ones are cased
+   properly."
+  [tiling-identification-systems]
+  (->> tiling-identification-systems
+       (filter #(tile-id-system-name-is-valid? (:TilingIdentificationSystemName %)))
+       expected-tiling-id-systems-name))
 
 (def valid-vertical-spatial-domain-types
   "Valid values for VerticalSpatialDomainType according to UMM spec v1.10.0"
@@ -74,9 +78,12 @@
    is not considered valid according to UMM spec v1.10.0 and should be dropped.
    This behavior will eventually generate errors"
   [vertical-spatial-domains]
-  (seq (filter
-         #(vertical-spatial-domain-type-is-valid? (:Type %))
-         vertical-spatial-domains)))
+  (->> vertical-spatial-domains
+       (filter #(vertical-spatial-domain-type-is-valid? (:Type %)))
+       (map (fn [domain]
+              (update domain :Type #(util/match-enum-case
+                                     % valid-vertical-spatial-domain-types))))
+       seq))
 
 (defn convert-vertical-spatial-domains-from-xml
   "Given a name to key into an xml file, extract Vertical Spatial Domains
