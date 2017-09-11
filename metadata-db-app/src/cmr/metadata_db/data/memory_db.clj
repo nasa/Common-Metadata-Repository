@@ -52,8 +52,11 @@
   [db concepts concept]
   (if-not (:deleted concept)
     concepts
-    (let [variable-associations (variable/get-associations-for-variable-tombstone
-                                 db concept)
+    (let [variable-associations (concepts/find-latest-concepts
+                                 db
+                                 {:provider-id "CMR"}
+                                 {:concept-type :variable-association
+                                  :variable-concept-id (:concept-id concept)})
           tombstones (map (fn [ta] (-> ta
                                        (assoc :metadata "" :deleted true)
                                        (update :revision-id inc)))
@@ -61,8 +64,8 @@
       ;; publish variable-association delete events
       (doseq [tombstone tombstones]
         (ingest-events/publish-event
-          (:context db)
-          (ingest-events/concept-delete-event tombstone)))
+         (:context db)
+         (ingest-events/concept-delete-event tombstone)))
       (concat concepts tombstones))))
 
 (defmethod after-save :default
