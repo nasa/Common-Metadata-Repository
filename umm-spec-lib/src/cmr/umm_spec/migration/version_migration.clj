@@ -245,17 +245,6 @@
      (dissoc :ComposedOf)
      (dissoc :NumberOfInstruments)))
 
-(defn migrate-tiling-identification-systems
-  "Migrate TilingIdentificationSystems from 1.9 up to 1.10
-   If a TilingIdentificationSystemName is not valid, the entire
-   TilingIdentificationSystem will be dropped."
-  [collection]
-  (let [tiling-id-systems (filter
-                           #(spatial-conversion/tile-id-system-name-is-valid?
-                             (:TilingIdentificationSystemName %))
-                           (:TilingIdentificationSystems collection))]
-   (assoc collection :TilingIdentificationSystems (seq tiling-id-systems))))
-
 (defmethod migrate-umm-version [:collection "1.8" "1.9"]
   [context c & _]
   (-> c
@@ -285,7 +274,7 @@
 (defmethod migrate-umm-version [:collection "1.9" "1.10"]
   [context c & _]
   (-> c
-      migrate-tiling-identification-systems
+      (update :TilingIdentificationSystems spatial-conversion/filter-and-translate-tiling-id-systems)
       coll-progress-migration/migrate-up
       (update-in-each [:TemporalExtents] dissoc :TemporalRangeType)
       (update-in [:SpatialInformation :VerticalCoordinateSystem :AltitudeSystemDefinition] dissoc :EncodingMethod)
