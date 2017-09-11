@@ -585,7 +585,7 @@
         (when (= :collection concept-type)
           ;; delete the related tag associations and variable associations
           (delete-associated-tag-associations context concept-id revision-id)
-          (delete-associated-variable-associations context concept-id revision-id)
+          (delete-associated-variable-associations context concept-type concept-id revision-id)
           (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id))
         (c/force-delete db concept-type provider concept-id revision-id))
       (cmsg/data-error :not-found
@@ -701,7 +701,7 @@
         (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
           ;; delete the related tag associations and variable associations
           (delete-associated-tag-associations context concept-id (long revision-id))
-          (delete-associated-variable-associations context concept-id (long revision-id))
+          (delete-associated-variable-associations context concept-type concept-id (long revision-id))
           (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id)))
       (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
 
