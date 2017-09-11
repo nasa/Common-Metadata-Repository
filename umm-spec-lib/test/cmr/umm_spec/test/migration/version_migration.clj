@@ -1353,39 +1353,39 @@
                                                        :Technique "Drunken Fist"}]}]}]})))))
   (testing "GeographicCoordinateUnits migration from version 1.9 to 1.10"
     (is (= {:HorizontalCoordinateSystem
-           {:GeographicCoordinateSystem 
+           {:GeographicCoordinateSystem
             {:GeographicCoordinateUnits "Decimal Degrees"}}}
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:SpatialInformation
                            {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem 
+                             {:GeographicCoordinateSystem
                                {:GeographicCoordinateUnits "Decimal degrees"}}}}))))
     (is (= {:HorizontalCoordinateSystem
-           {:GeographicCoordinateSystem 
+           {:GeographicCoordinateSystem
             {:GeographicCoordinateUnits "Kilometers"}}}
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:SpatialInformation
                            {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem 
+                             {:GeographicCoordinateSystem
                                {:GeographicCoordinateUnits "kiLometers"}}}}))))
     (is (= {:HorizontalCoordinateSystem
-           {:GeographicCoordinateSystem 
+           {:GeographicCoordinateSystem
             {:GeographicCoordinateUnits "Meters"}}}
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:SpatialInformation
                            {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem 
+                             {:GeographicCoordinateSystem
                                {:GeographicCoordinateUnits "mEters"}}}}))))
-    (is (= nil 
+    (is (= nil
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:SpatialInformation
                            {:HorizontalCoordinateSystem
-                             {:GeographicCoordinateSystem 
-                               {:GeographicCoordinateUnits "randomstring"}}}}))))) 
+                             {:GeographicCoordinateSystem
+                               {:GeographicCoordinateUnits "randomstring"}}}})))))
   (testing "DistanceUnits migration from version 1.9 to 1.10"
     (is (= {:VerticalCoordinateSystem
            {:AltitudeSystemDefinition {:DistanceUnits "HectoPascals"}
@@ -1448,7 +1448,7 @@
                            {:VerticalCoordinateSystem
                              {:AltitudeSystemDefinition {:DistanceUnits "kiLOmeters"}
                               :DepthSystemDefinition {:DistanceUnits "randomstring"}}}}))))
-    (is (= nil 
+    (is (= nil
        (:SpatialInformation
          (vm/migrate-umm {} :collection "1.9" "1.10"
                          {:SpatialInformation
@@ -1563,7 +1563,7 @@
 
 (deftest migrate-1-9-tiling-identification-systems-to-1-10
   (let [tiling-id-systems {:TilingIdentificationSystems
-                           [{:TilingIdentificationSystemName "MISR"
+                           [{:TilingIdentificationSystemName "misr"
                              :Coordinate1 {:MinimumValue 1
                                            :MaximumValue 10}
                              :Coordinate2 {:MinimumValue 1
@@ -1585,7 +1585,7 @@
         result (vm/migrate-umm {} :collection "1.9" "1.10" tiling-id-systems)
         other-result (vm/migrate-tiling-identification-systems tiling-id-systems)]
     (is (= (:TilingIdentificationSystems result)
-           [{:TilingIdentificationSystemName "MISR",
+           [{:TilingIdentificationSystemName "misr",
              :Coordinate1 {:MinimumValue 1, :MaximumValue 10},
              :Coordinate2 {:MinimumValue 1, :MaximumValue 10}}
             {:TilingIdentificationSystemName "CALIPSO",

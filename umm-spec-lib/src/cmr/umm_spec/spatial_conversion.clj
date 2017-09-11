@@ -2,6 +2,7 @@
   "Defines functions that convert umm spec spatial types to spatial lib spatial shapes."
   (:require
    [clojure.string :as string]
+   [cmr.common.util :as util]
    [cmr.common.xml.parse :as xml-parse]
    [cmr.spatial.line-string :as ls]
    [cmr.spatial.mbr :as mbr]
@@ -20,11 +21,15 @@
    "WRS-1"
    "WRS-2"])
 
+(def upcase-valid-tile-identification-system-names
+  "Upcase values to allow for case-insenitive validation"
+  (map util/safe-uppercase valid-tile-identification-system-names))
+
 (defn tile-id-system-name-is-valid?
   "Return whether or not the given TileIdentificationSystemName is one of the
    valid-tile-identification-system-names"
   [tile-system-id-name]
-  (some #(= tile-system-id-name %) valid-tile-identification-system-names))
+  (some #(= (util/safe-uppercase tile-system-id-name) %) upcase-valid-tile-identification-system-names))
 
 (defn translate-tile-id-system-name
   "Return nil or equivalent value if the given name does not match any
@@ -53,11 +58,16 @@
    "Minimum Altitude"
    "Minimum Depth"])
 
+(def upcase-valid-vertical-spatial-domain-types
+  "Upcase values to allow for case-insenitive validation"
+  (map util/safe-uppercase valid-vertical-spatial-domain-types))
+
 (defn vertical-spatial-domain-type-is-valid?
   "Return true or false based on whether or not the given value matches
    one of the valid values in valid-vertical-spatial-domain-types."
   [vs-domain-type]
-  (some #(= vs-domain-type %) valid-vertical-spatial-domain-types))
+  (some #(= (util/safe-uppercase vs-domain-type) %)
+        upcase-valid-vertical-spatial-domain-types))
 
 (defn drop-invalid-vertical-spatial-domains
   "Any VerticalSpatialDomain with a Type not in valid-vertical-spatial-domain-types
