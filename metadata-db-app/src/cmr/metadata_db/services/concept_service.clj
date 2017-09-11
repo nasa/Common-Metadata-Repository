@@ -427,6 +427,19 @@
     (boolean (:deleted concept))))
 
 (defn- delete-associations
+  "Delete the associations that matches the given search params,
+  skip-publication? flag controls if association deletion event should be generated,
+  skip-publication? true means no association deletion event should be generated."
+  [context assoc-type search-params skip-publication?]
+  (let [associations (search/find-concepts context search-params)]
+    (doseq [association associations]
+      (save-concept-revision context {:concept-type assoc-type
+                                      :concept-id (:concept-id association)
+                                      :deleted true
+                                      :user-id "cmr"
+                                      :skip-publication skip-publication?}))))
+
+(defn- delete-associations-for-collection-concept
   "Delete the associations associated with the given collection revision and association type,
   no association deletion event is generated."
   [context assoc-type coll-concept-id coll-revision-id]
@@ -435,20 +448,32 @@
                         :associated-concept-id coll-concept-id
                         :associated-revision-id coll-revision-id
                         :exclude-metadata true
-                        :latest true})
-        associations (search/find-concepts context search-params)]
-    (doseq [association associations]
-      (save-concept-revision context {:concept-type assoc-type
-                                      :concept-id (:concept-id association)
-                                      :deleted true
-                                      :user-id "cmr"
-                                      :skip-publication true}))))
+                        :latest true})]
+    (delete-associations context assoc-type search-params true)))
 
-(defn- delete-associated-variable-associations
-  "Delete the variable associations associated with the given collection revision,
-  no variable association deletion event is generated."
-  [context coll-concept-id coll-revision-id]
-  (delete-associations context :variable-association coll-concept-id coll-revision-id))
+(defmulti delete-associated-variable-associations
+  "Delete the variable associations associated with the given concept type and concept id."
+  (fn [context concept-type concept-id revision-id]
+    concept-type))
+
+(defmethod delete-associated-variable-associations :default
+  [context concept-type concept-id revision-id]
+  ;; does nothing by default
+  nil)
+
+(defmethod delete-associated-variable-associations :collection
+  [context concept-type concept-id revision-id]
+  (delete-associations-for-collection-concept context :variable-association concept-id revision-id))
+
+(defmethod delete-associated-variable-associations :variable
+  [context concept-type concept-id revision-id]
+  (let [search-params (cutil/remove-nil-keys
+                       {:concept-type :variable-association
+                        :variable-concept-id concept-id
+                        :exclude-metadata true
+                        :latest true})]
+    ;; create variable association tombstones and queue the variable association delete events
+    (delete-associations context :variable-association search-params false)))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
@@ -479,10 +504,10 @@
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
                                           (try-to-save db provider))]
-            ;; delete the variable associations associated with the collection
-            (when (= :collection concept-type)
-              (delete-associated-variable-associations context concept-id nil))
-            ;; skip publication flag is only set for tag/variable association when its associated
+            ;; delete the associated variable associations if applicable
+            (delete-associated-variable-associations context concept-type concept-id nil)
+
+            ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
             ;; We can't let the message get published because by the time indexer get the message,
@@ -492,6 +517,10 @@
             ;; association is no longer needed. People might want to see what is in the old
             ;; association potentially and force deleting it seems to run against the rationale
             ;; that we introduced revisions in the first place.
+            ;; skip publication flag is also set for variable association when its associated
+            ;; collection revision is deleted. Indexer will index the variables associated with
+            ;; the collection through the collection delete event. Not the variable association
+            ;; delete event.
             (when-not skip-publication
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
@@ -541,7 +570,8 @@
   "Delete the tag associations associated with the given collection revision,
   no tag association deletion event is generated."
   [context coll-concept-id coll-revision-id]
-  (delete-associations context :tag-association coll-concept-id coll-revision-id))
+  (delete-associations-for-collection-concept
+   context :tag-association coll-concept-id coll-revision-id))
 
 (defn force-delete
   "Remove a revision of a concept from the database completely."
