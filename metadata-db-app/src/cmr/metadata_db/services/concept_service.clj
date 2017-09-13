@@ -426,8 +426,8 @@
   (fn [context concept]
     (boolean (:deleted concept))))
 
-(defn- delete-associations
-  "Delete the associations that matches the given search params,
+(defn- tombstone-associations
+  "Tombstone the associations that matches the given search params,
   skip-publication? flag controls if association deletion event should be generated,
   skip-publication? true means no association deletion event should be generated."
   [context assoc-type search-params skip-publication?]
@@ -449,7 +449,7 @@
                         :associated-revision-id coll-revision-id
                         :exclude-metadata true
                         :latest true})]
-    (delete-associations context assoc-type search-params true)))
+    (tombstone-associations context assoc-type search-params true)))
 
 (defmulti delete-associated-variable-associations
   "Delete the variable associations associated with the given concept type and concept id."
@@ -473,7 +473,7 @@
                         :exclude-metadata true
                         :latest true})]
     ;; create variable association tombstones and queue the variable association delete events
-    (delete-associations context :variable-association search-params false)))
+    (tombstone-associations context :variable-association search-params false)))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
