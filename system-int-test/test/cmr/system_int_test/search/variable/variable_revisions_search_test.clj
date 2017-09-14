@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.utility :as metadata-db]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.system :as s]
@@ -109,7 +110,21 @@
 
         "all-revisions true"
         [var1-1 var1-2-tombstone var1-3 var2-1 var2-2 var2-3-tombstone var3]
-        {:all-revisions true}))))
+        {:all-revisions true}))
+    
+    (testing "force delete variable revision"
+      ;; force delete a revision
+      (metadata-db/force-delete-concept
+        (:concept-id var1-1) (:revision-id var1-1))
+      ;; force delete a tombstone revision
+      (metadata-db/force-delete-concept
+        (:concept-id var2-3-tombstone) (:revision-id var2-3-tombstone))
+      (index/wait-until-indexed)
+
+      ;; force deleted revisions are no longer in the search result
+      (variables/assert-variable-references-match
+       [var1-2-tombstone var1-3 var2-1 var2-2 var3]
+       (search/find-refs :variable {:all-revisions true})))))
 
 (deftest search-all-revisions-error-cases
   (testing "variable search with all_revisions bad value"
