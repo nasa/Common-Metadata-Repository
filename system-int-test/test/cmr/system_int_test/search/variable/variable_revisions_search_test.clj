@@ -3,12 +3,12 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
-   [cmr.metadata-db.int-test.utility :as metadata-db]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as metadata-db]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.variable-util :as variables]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -111,7 +111,7 @@
         "all-revisions true"
         [var1-1 var1-2-tombstone var1-3 var2-1 var2-2 var2-3-tombstone var3]
         {:all-revisions true}))
-    
+
     (testing "force delete variable revision"
       ;; force delete a revision
       (metadata-db/force-delete-concept
