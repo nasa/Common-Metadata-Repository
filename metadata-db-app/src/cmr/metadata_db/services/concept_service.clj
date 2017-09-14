@@ -469,7 +469,8 @@
                                                      :concept-id concept-id
                                                      :exclude-metadata true
                                                      :latest true})]
-    (when (= revision-id (:revision-id latest-coll))
+    (when (or (nil? revision-id)
+              (= revision-id (:revision-id latest-coll)))
       (delete-associations-for-collection-concept context :variable-association concept-id nil))))
 
 (defmethod delete-associated-variable-associations :variable
