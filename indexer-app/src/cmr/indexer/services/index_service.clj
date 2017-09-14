@@ -488,10 +488,11 @@
   ;; This is the same thing we do when a variable association is update. So we call the same function.
   (index-association-concept context concept-id revision-id options))
 
-(defn force-delete-all-collection-revision
-  "Removes a collection revision from the all revisions index"
+(defn force-delete-all-concept-revision
+  "Removes a concept revision from the all revisions index"
   [context concept-id revision-id]
-  (let [index-names (idx-set/get-concept-index-names
+  (let [concept-type (cs/concept-id->type concept-id)
+        index-names (idx-set/get-concept-index-names
                       context concept-id revision-id {:all-revisions-index? true})
         concept-mapping-types (idx-set/get-concept-mapping-types context)
         elastic-options {:ignore-conflict? false
@@ -499,11 +500,11 @@
     (es/delete-document
       context
       index-names
-      (concept-mapping-types :collection)
+      (concept-mapping-types concept-type)
       concept-id
       revision-id
       nil ;; Null is sent in as the elastic version because we don't want to set a version for this
-      ;; delete. The collection is going to be gone now and should never be indexed again.
+      ;; delete. The concept is going to be gone now and should never be indexed again.
       elastic-options)))
 
 (defn delete-provider
