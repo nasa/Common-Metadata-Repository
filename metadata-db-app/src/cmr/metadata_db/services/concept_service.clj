@@ -463,7 +463,14 @@
 
 (defmethod delete-associated-variable-associations :collection
   [context concept-type concept-id revision-id]
-  (delete-associations-for-collection-concept context :variable-association concept-id revision-id))
+  ;; only delete the associated variable associations
+  ;; if the given revision-id is the latest revision of the collection
+  (let [[latest-coll] (search/find-concepts context {:concept-type :collection
+                                                     :concept-id concept-id
+                                                     :exclude-metadata true
+                                                     :latest true})]
+    (when (= revision-id (:revision-id latest-coll))
+      (delete-associations-for-collection-concept context :variable-association concept-id nil))))
 
 (defmethod delete-associated-variable-associations :variable
   [context concept-type concept-id revision-id]
@@ -573,6 +580,29 @@
   (delete-associations-for-collection-concept
    context :tag-association coll-concept-id coll-revision-id))
 
+(defmulti force-delete-cascading-events
+  "Performs the cascading events of the force deletion of a concept"
+  (fn [context concept-type concept-id revision-id]
+    concept-type))
+
+(defmethod force-delete-cascading-events :collection
+  [context concept-type concept-id revision-id]
+  ;; delete the related tag associations and variable associations
+  (delete-associated-tag-associations context concept-id revision-id)
+  (delete-associated-variable-associations context concept-type concept-id revision-id)
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
+(defmethod force-delete-cascading-events :variable
+  [context concept-type concept-id revision-id]
+  ;; delete the related variable associations
+  (delete-associated-variable-associations context concept-type concept-id revision-id)
+  (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
+
+(defmethod force-delete-cascading-events :default
+  [context concept-type concept-id revision-id]
+  ;; does nothing in default
+  nil)
+
 (defn force-delete
   "Remove a revision of a concept from the database completely."
   [context concept-id revision-id]
@@ -582,11 +612,7 @@
         concept (c/get-concept db concept-type provider concept-id revision-id)]
     (if concept
       (do
-        (when (= :collection concept-type)
-          ;; delete the related tag associations and variable associations
-          (delete-associated-tag-associations context concept-id revision-id)
-          (delete-associated-variable-associations context concept-type concept-id revision-id)
-          (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id))
+        (force-delete-cascading-events context concept-type concept-id revision-id)
         (c/force-delete db concept-type provider concept-id revision-id))
       (cmsg/data-error :not-found
                        msg/concept-with-concept-id-and-rev-id-does-not-exist
@@ -689,21 +715,18 @@
   [context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder]
   (let [db (util/context->db context)]
     (cutil/while-let
-      [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
-      (info "Deleting" (count concept-id-revision-id-tuples)
-            "old concept revisions for provider" (:provider-id provider))
-      (when (and tombstone-delete?
-                 (= :granule concept-type))
-        ;; Remove any reference to granule from deleted-granule index
-        (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-          (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
-      (when (= :collection concept-type)
-        (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-          ;; delete the related tag associations and variable associations
-          (delete-associated-tag-associations context concept-id (long revision-id))
-          (delete-associated-variable-associations context concept-type concept-id (long revision-id))
-          (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id)))
-      (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
+     [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
+     (info "Deleting" (count concept-id-revision-id-tuples)
+           "old concept revisions for provider" (:provider-id provider))
+     (when (and tombstone-delete?
+                (= :granule concept-type))
+       ;; Remove any reference to granule from deleted-granule index
+       (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+         (ingest-events/publish-tombstone-delete-msg context concept-type concept-id revision-id)))
+     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+       ;; performs the cascading delete actions first
+       (force-delete-cascading-events context concept-type concept-id (long revision-id)))
+     (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
 
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that

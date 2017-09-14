@@ -80,7 +80,7 @@
           (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
                        "index.  concept-id: %s revision-id: %s")
                   concept-id revision-id)))
-      (indexer/force-delete-all-collection-revision context concept-id revision-id))))
+      (indexer/force-delete-all-concept-revision context concept-id revision-id))))
 
 (defn subscribe-to-events
   "Subscribe to event messages on various queues"

@@ -67,10 +67,10 @@
    :variable ingest-exchange-name
    :variable-association ingest-exchange-name})
 
-(defconfig deleted-collection-revision-exchange-name
-  "An exchange that will have messages passed to it whenever a collection revision is removed
+(defconfig deleted-concept-revision-exchange-name
+  "An exchange that will have messages passed to it whenever a concept revision is removed
   from metadata db."
-  {:default "cmr_deleted_collection_revision.exchange"})
+  {:default "cmr_deleted_concept_revision.exchange"})
 
 (defconfig deleted-granule-exchange-name
   "An exchange that will have messages passed to it whenever a granule revision is removed
@@ -85,6 +85,6 @@
   "Returns the queue configuration for the metadata db application."
   []
   (assoc (rmq-conf/default-config)
-         :exchanges [(deleted-collection-revision-exchange-name)
+         :exchanges [(deleted-concept-revision-exchange-name)
                      (ingest-exchange-name)
                      (access-control-exchange-name)]))

@@ -53,10 +53,10 @@
   "The ingest exchange to which provider change messages are published."
   {:default "cmr_ingest_provider.exchange"})
 
-(defconfig deleted-collection-revision-exchange-name
-  "An exchange that will have messages passed to it whenever a collection revision is removed
+(defconfig deleted-concept-revision-exchange-name
+  "An exchange that will have messages passed to it whenever a concept revision is removed
   from metadata db."
-  {:default "cmr_deleted_collection_revision.exchange"})
+  {:default "cmr_deleted_concept_revision.exchange"})
 
 (defconfig deleted-granule-exchange-name
   "An exchange that will have messages passed to it whenever a granule revision is removed
@@ -72,7 +72,7 @@
                   (deleted-granule-index-queue-name)
                   (provider-queue-name)]
          :exchanges [(ingest-exchange-name)
-                     (deleted-collection-revision-exchange-name)
+                     (deleted-concept-revision-exchange-name)
                      (deleted-granule-exchange-name)
                      (provider-exchange-name)]
          :queues-to-exchanges
@@ -80,9 +80,9 @@
           (provider-queue-name) [(provider-exchange-name)]
           (deleted-granule-index-queue-name) [(deleted-granule-exchange-name)]
           ;; The all revisions index  queue will be bound to both the ingest exchange and the
-          ;; deleted collection revision exchange
+          ;; deleted concept revision exchange
           (all-revisions-index-queue-name) [(ingest-exchange-name)
-                                            (deleted-collection-revision-exchange-name)]}))
+                                            (deleted-concept-revision-exchange-name)]}))
 
 (defconfig indexer-nrepl-port
   "Port to listen for nREPL connections"
