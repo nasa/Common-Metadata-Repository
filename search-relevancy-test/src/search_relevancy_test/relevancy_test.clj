@@ -7,12 +7,13 @@
    [clojure.string :as string]
    [search-relevancy-test.core :as core]
    [search-relevancy-test.ingest :as ingest]
+   [search-relevancy-test.edsc-log-parser :as edsc-log-parser]
    [search-relevancy-test.reporter :as reporter]
    [search-relevancy-test.result-logger :as result-logger]
    [clojure.set :as set]))
 
 (def page-size
-  30)
+  100)
 
 (def base-search-path
   "http://localhost:3003/collections")
@@ -47,9 +48,9 @@
 
 (defn- perform-tests
   "Read the anomaly test CSV and perform each test"
-  [search-params print-results]
+  [anomaly-filename search-params print-results]
   (for [tests-by-anomaly (sort string-key-to-int-sort
-                                 (group-by :anomaly (core/read-anomaly-test-csv)))
+                                 (group-by :anomaly (core/read-anomaly-test-csv anomaly-filename)))
           :let [test-count (count (val tests-by-anomaly))]]
     (do
       (when print-results
@@ -60,12 +61,15 @@
         (for [individual-test (val tests-by-anomaly)]
           (perform-search-test individual-test search-params print-results))))))
 
+(def provider-anomaly-filename
+  "anomaly_tests.csv")
+
 (defn run-anomaly-tests
   "Run all of the anomaly tests from the CSV file"
-  ([args search-params]
-   (run-anomaly-tests args search-params true))
-  ([args search-params print-results]
-   (let [test-results (flatten (doall (perform-tests search-params print-results)))]
+  ([filename args search-params]
+   (run-anomaly-tests filename args search-params true))
+  ([filename args search-params print-results]
+   (let [test-results (flatten (doall (perform-tests filename search-params print-results)))]
      (when print-results
        (println "Running tests")
        (reporter/print-result-summary test-results)
@@ -73,9 +77,15 @@
        (result-logger/log-test-run test-results args))
      test-results)))
 
-(defn test-setup
-  "Reset the system, ingest community usage metrics and ingest all of the test data"
-  []
+(defmulti test-setup
+  "Reset the system, ingest community usage metrics and ingest all of the test data. Right
+  now there is only a default implementation because we don't separate out which test files
+  are needed for the provider and edsc anomaly test cases separately."
+  (fn [test-type]
+    test-type))
+
+(defmethod test-setup :default
+  [_]
   (let [test-files (core/test-files)]
     (println "Creating providers")
     (ingest/create-providers test-files)
@@ -90,9 +100,21 @@
   ([args]
    (relevancy-test args nil))
   ([args search-params]
-   (test-setup)
-   (run-anomaly-tests args search-params)
+   (test-setup :provider)
+   (run-anomaly-tests provider-anomaly-filename args search-params)
    nil)) ; Return nil so the return value is not printed to the REPL
+
+(defn edsc-relevancy-test
+  "Reset the system, ingest all of the test data, and perform the searches from
+  the EDSC anomaly testing CSV. Can specify additional search params to append to the
+  search via search-params"
+  ([args]
+   (edsc-relevancy-test args nil))
+  ([args search-params]
+   (test-setup :edsc)
+   (run-anomaly-tests edsc-log-parser/anomaly-filename args search-params)
+   nil)) ; Return nil so the return value is not printed to the REPL
+
 
 (comment
  (relevancy-test ["-log-run-description" "Base Run"]))

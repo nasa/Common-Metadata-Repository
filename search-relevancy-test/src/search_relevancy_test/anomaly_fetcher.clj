@@ -35,8 +35,10 @@
   "Returns a map of concept-id to the metadata format for that collection."
   [concept-ids]
   (let [url (str (source-url) "/collections.umm-json")
-        response (client/get url {:query-params {:concept-id concept-ids
+        response (client/post url {:form-params {:concept-id concept-ids
                                                  :page-size 2000}})
+                                  ;; Uncomment when collections are only visible for a certain token
+                                  ;  :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}})
         items (:items (json/parse-string (:body response) true))]
     (into {}
           (for [item items
@@ -48,6 +50,8 @@
   [concept-id fmt]
   (let [url (format "%s/concepts/%s" (source-url) concept-id)
         params {:query-params {:concept-id concept-id}}
+                ;; Uncomment when collections are only visible for a certain token
+                ; :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}}
         params (if (= fmt "application/vnd.nasa.cmr.umm+json")
                  (assoc params :accept "application/vnd.nasa.cmr.umm+json") ; want latest version of umm
                  params)
@@ -76,15 +80,14 @@
             filename (str concept-id (file-extension fmt))
             full-path (format "%s/%s/%s" collections-dir directory filename)]
         (if (.exists (io/as-file full-path))
-          (info "Skipping already downloaded concept" concept-id)
+          (debug "Skipping already downloaded concept" concept-id)
           (let [collection-metadata (download-concept-metadata concept-id fmt)]
             (info "Saving" filename "to" directory)
             (spit full-path collection-metadata)))))))
-
 
 (comment
  (download-and-save-all-collections)
  (find-collection-ids-to-download)
  (formats-for-collections ["C1200196931-SCIOPS" "C1000000803-DEV08"]) ;; SIT
- (formats-for-collections ["C194001237-LPDAAC_ECS"]) ;; Prod
+ (formats-for-collections ["C1397496671-NSIDC_ECS"]) ;; Prod
  (download-concept-metadata "C1237114193-GES_DISC"))
