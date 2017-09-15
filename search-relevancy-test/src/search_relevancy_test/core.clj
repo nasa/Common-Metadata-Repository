@@ -44,11 +44,10 @@
        csv/read-csv
        csv-data->maps))
 
-
 (defn read-anomaly-test-csv
   "Read the anomaly test CSV and convert data to clojure map"
-  []
-  (read-csv "anomaly_tests.csv"))
+  [filename]
+  (read-csv filename))
 
 (defn get-argument-value
   "Get the value of the argument or nil if the argument does not exist"
