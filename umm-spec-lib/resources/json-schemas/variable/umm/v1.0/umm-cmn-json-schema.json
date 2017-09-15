@@ -1530,7 +1530,7 @@
                "LAADS", "LANCE", "LAS", "MIRADOR", "MODAPS", "NOAA CLASS", "ON-LINE ARCHIVE", "REVERB",
                "ACCESS MAP VIEWER", "ACCESS MOBILE APP", "ACCESS WEB SERVICE", "DIF", "MAP SERVICE", "NOMADS",
                "OPENDAP DATA", "OPENDAP DATA (DODS)", "OPENDAP DIRECTORY (DODS)", "OpenSearch", "SERF", "SOFTWARE PACKAGE",
-               "SSW", "SUBSETTER", "THREADS CATALOG", "THREADS DATA", "THREDDS DIRECTORY", "WEB COVERAGE SERVICE (WCS)",
+               "SSW", "SUBSETTER", "THREDDS CATALOG", "THREDDS DATA", "THREDDS DIRECTORY", "WEB COVERAGE SERVICE (WCS)",
                "WEB FEATURE SERVICE (WFS)", "WEB MAP FOR TIME SERIES", "WEB MAP SERVICE (WMS)", "WORKFLOW (SERVICE CHAIN)",
                "GIBS", "MAP", "ALGORITHM THEORETICAL BASIS DOCUMENT", "CALIBRATION DATA DOCUMENTATION", "DATA QUALITY",
                "CASE STUDY", "DATA USAGE", "DELIVERABLES CHECKLIST", "GENERAL DOCUMENTATION", "HOW-TO", "PI DOCUMENTATION",
@@ -1542,7 +1542,7 @@
     "URLMimeTypeEnum": {
       "type": "string",
       "enum": ["application/json", "application/xml", "application/x-netcdf", "application/gml+xml",
-               "application/vnd.google-earch.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
+               "application/vnd.google-earth.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
                "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
                "image/vnd.collada+xml", "text/html", "text/plain", "Not provided"]
