@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>CIESIN_SEDAC_HANPP_NPP</Short_Name>
+    <Version>1.0</Version>
+  </Entry_ID>
+  <Entry_Title>HANPP Collection: Global Patterns in Net Primary Productivity (NPP)</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>Imhoff, M.L., L. Bounoua, T. Ricketts, C. Loucks, R. Harriss, and W.T. Lawrence.</Dataset_Creator>
+    <Dataset_Title>HANPP Collection: Global Patterns in Net   Primary Productivity (NPP)</Dataset_Title>
+    <Dataset_Release_Date>2004-01-01</Dataset_Release_Date>
+    <Dataset_Release_Place>Palisades, NY</Dataset_Release_Place>
+    <Dataset_Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Dataset_Publisher>
+    <Version>1.0</Version>
+    <Data_Presentation_Form>raster, map</Data_Presentation_Form>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H40Z715X</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://dx.doi.org/10.7927/H40Z715X</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Group>
+      <Name>CIESIN METADATA ADMINISTRATION</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8988</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>metadata@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>SEDAC USER SERVICES</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8920</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>ciesin.info@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>ENVIRONMENTAL IMPACTS</Term>
+    <Variable_Level_1>CONSERVATION</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>SUSTAINABILITY</Term>
+    <Variable_Level_1>ENVIRONMENTAL SUSTAINABILITY</Variable_Level_1>
+  </Science_Keywords>
+  <ISO_Topic_Category>SOCIETY</ISO_Topic_Category>
+  <Ancillary_Keyword>Eggs</Ancillary_Keyword>
+  <Ancillary_Keyword>Fiber</Ancillary_Keyword>
+  <Ancillary_Keyword>Human Appropriation</Ancillary_Keyword>
+  <Ancillary_Keyword>Human Consumption</Ancillary_Keyword>
+  <Ancillary_Keyword>Meat</Ancillary_Keyword>
+  <Ancillary_Keyword>Milk</Ancillary_Keyword>
+  <Ancillary_Keyword>Net Primary Productivity</Ancillary_Keyword>
+  <Ancillary_Keyword>Paper</Ancillary_Keyword>
+  <Ancillary_Keyword>Vegetal Food</Ancillary_Keyword>
+  <Ancillary_Keyword>Wood</Ancillary_Keyword>
+  <Platform>
+    <Type>Models/Analyses</Type>
+    <Short_Name>MODELS</Short_Name>
+    <Instrument>
+      <Short_Name>Computer</Short_Name>
+      <Long_Name>Computer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Single_DateTime>1995-01-01</Single_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>COMPLETE</Dataset_Progress>
+  <Spatial_Coverage>
+    <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-55.00000</Southernmost_Latitude>
+        <Northernmost_Latitude>90.00000</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.00000</Westernmost_Longitude>
+        <Easternmost_Longitude>180.00000</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+    <Spatial_Info>
+      <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+      <Horizontal_Coordinate_System>
+        <Geodetic_Model>
+          <Horizontal_DatumName>WGS84</Horizontal_DatumName>
+          <Ellipsoid_Name>WGS84</Ellipsoid_Name>
+          <Semi_Major_Axis>6378137</Semi_Major_Axis>
+          <Denominator_Of_Flattening_Ratio>298.257224</Denominator_Of_Flattening_Ratio>
+        </Geodetic_Model>
+        <Geographic_Coordinate_System>
+          <GeographicCoordinateUnits>Decimal Degrees</GeographicCoordinateUnits>
+          <LatitudeResolution>0.008333</LatitudeResolution>
+          <LongitudeResolution>0.008333</LongitudeResolution>
+        </Geographic_Coordinate_System>
+      </Horizontal_Coordinate_System>
+    </Spatial_Info>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Project>
+    <Short_Name>HANPP</Short_Name>
+    <Long_Name>Human Appropriation of Net Primary Productivity</Long_Name>
+  </Project>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>Users are free to use, copy, distribute, transmit, and adapt the work for commercial and non-commercial purposes, without restriction, as long as clear attribution of the source is provided.</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>SEDAC</Originating_Center>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>SEDAC</Short_Name>
+      <Long_Name>Socioeconomic Data and Applications Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://sedac.ciesin.columbia.edu/</Organization_URL>
+    <Dataset_ID>CIESIN_SEDAC_HANPP_NPP</Dataset_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>SEDAC USER SERVICES</Name>
+        <Address>
+          <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+          <City>Palisades</City>
+          <State_Province>NY</State_Province>
+          <Postal_Code>10964</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>+1 845-365-8920</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>+1 845-365-8922</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>ciesin.info@ciesin.columbia.edu</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>Arc/Info GRID</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>GeoTIFF</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PDF</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PNG</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Multimedia_Sample>
+    <URL>http://sedac.ciesin.columbia.edu/downloads/maps/hanpp/hanpp-net-primary-productivity/net-primary-productivity.png</URL>
+    <Format>PNG</Format>
+    <Caption>Spatial Distribution of Net Primary Productivity</Caption>
+    <Description>Sample browse graphic of the data set.</Description>
+  </Multimedia_Sample>
+  <Reference>
+    <Author>Imhoff, M.L., L. Bounoua, T. Ricketts, C. Loucks, R. Harriss, and W.T. Lawrence</Author>
+    <Publication_Date>2004-01-01</Publication_Date>
+    <Title>HANPP Collection: Global Patterns in Human Appropriation of Net Primary Productivity (HANPP)</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H44Q7RWV</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H44Q7RWV</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>Imhoff, M.L., L. Bounoua, T. Ricketts, C. Loucks, R. Harriss, and W.T. Lawrence</Author>
+    <Publication_Date>2004-01-01</Publication_Date>
+    <Title>HANPP Collection: Human Appropriation of Net Primary Productivity (HANPP) by Country and Product</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H48G8HMK</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H48G8HMK</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>Imhoff, M.L., L. Bounoua, T. Ricketts, C. Loucks, R. Harriss, and W.T. Lawrence</Author>
+    <Publication_Date>2004-01-01</Publication_Date>
+    <Title>HANPP Collection: Human Appropriation of Net Primary Productivity as a Percentage of Net Primary Productivity</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4W66HPJ</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4W66HPJ</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>Imhoff, M. L. and L. Bounoua</Author>
+    <Publication_Date>2006-01-01</Publication_Date>
+    <Title>Exploring Global Patterns of Net Primary Production Carbon Supply and Demand Using Satellite Observations and Statistical Data</Title>
+    <Series>Journal of Geophysical Research</Series>
+    <Edition>111</Edition>
+    <Issue>D22S12</Issue>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.1029/2006JD007377</Identifier>
+    </Persistent_Identifier>
+  </Reference>
+  <Reference>
+    <Author>Imhoff, M.L., L. Bounoua, T. Ricketts, C. Loucks, R. Harriss, and W.T. Lawrence</Author>
+    <Publication_Date>2004-01-01</Publication_Date>
+    <Title>Global Patterns in Human Consumption of Net Primary Production</Title>
+    <Series>Nature</Series>
+    <Volume>429</Volume>
+    <Report_Number>870-873</Report_Number>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.1038/nature02619</Identifier>
+    </Persistent_Identifier>
+  </Reference>
+  <Summary>
+    <Abstract>The Global Patterns in Net Primary Productivity (NPP) portion of the Human Appropriation of Net Primary Productivity (HANPP) Collection maps the net amount of solar energy converted to plant organic matter through photosynthesis. NPP is measured in units of elemental carbon and represents the primary food energy source for the world's ecosystems.</Abstract>
+    <Purpose>To be utilized in conjunction with a data set of human appropriation of net primary productivity (HANPP) in order to understand global energy flows and localized impacts on the environment.</Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW DATA SET LANDING PAGE</Type>
+    </URL_Content_Type>
+    <URL>https://doi.org/10.7927/H40Z715X</URL>
+    <Description>Data Set DOI URL and Homepage</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>ON-LINE ARCHIVE</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/hanpp-net-primary-productivity/data-download</URL>
+    <Description>Data Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET RELATED VISUALIZATION</Type>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/hanpp-net-primary-productivity/maps</URL>
+    <Description>Maps Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/hanpp-net-primary-productivity/docs</URL>
+    <Description>Documentation Page</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>USA/CIESIN</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2006-12-29</Metadata_Creation>
+    <Metadata_Last_Revision>2017-09-08</Metadata_Last_Revision>
+    <Data_Creation>2004-01-01</Data_Creation>
+    <Data_Last_Revision>2004-01-01</Data_Last_Revision>
+  </Metadata_Dates>
+  <Private>False</Private>
+  <Product_Level_Id>4</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.tool</Name>
+      <Value>2017-09-07:docbuilder;2017-09-08:docbuilder</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

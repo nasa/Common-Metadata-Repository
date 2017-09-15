@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>GPM_3GPROFGCOMW1AMSR2</Short_Name>
+        <Version>05</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>GPM AMSR-2 on GCOM-W1 (GPROF) Radiometer Precipitation Profiling L3 1 month 0.25 degree x 0.25 degree V05 (GPM_3GPROFGCOMW1AMSR2) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>GPM Science Team</Dataset_Creator>
+        <Dataset_Title>GPM AMSR-2 on GCOM-W1 (GPROF) Radiometer Precipitation Profiling L3 1 month 0.25 degree x 0.25 degree V05</Dataset_Title>
+        <Dataset_Series_Name>GPM_3GPROFGCOMW1AMSR2</Dataset_Series_Name>
+        <Dataset_Release_Date>2016-05-20</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>05</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/GPM/AMSR2/GCOMW1/3A-MONTH/05</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/GPM_3GPROFGCOMW1AMSR2_05.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>GEORGE</First_Name>
+            <Last_Name>HUFFMAN</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 612</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6308</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5492</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>George.J.Huffman@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>Atmosphere, Precipitation, Water Vapor</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>GCOM-W1</Short_Name>
+        <Long_Name>Global Change Observation Mission 1st-Water</Long_Name>
+        <Instrument>
+            <Short_Name>AMSR2</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer 2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2014-02-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>TROPICS</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>25 km</Latitude_Resolution>
+        <Longitude_Resolution>25 km</Longitude_Resolution>
+        <Vertical_Resolution>125-250 m</Vertical_Resolution>
+        <Temporal_Resolution>1 month</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>GPM</Short_Name>
+        <Long_Name>Global Precipitation Measurement</Long_Name>
+    </Project>
+    <Quality>The primary limitation of the 3GPROF product is the reliance on a single sensor for each output file, thus limiting the available sampling to two times a month or less, except at high latitudes. In addition, with the exception of the GMI, TMI, and SAPHIR sensors, all of the other sensors are in Sun-synchronous orbits, meaning that they observe a given point on the Earth's surface at the same local times each month. Over land regions in particular, this can lead to large sampling errors associated with the diurnal cycle. Errors due to the limited sampling and differences in the sampling times between Sun-synchronous satellites (e.g., F18, F18, F18, NOAA-18, NOAA-19, NPP, METOP-A, METOP-B, and GCOM-W1) can lead to significant differences in the monthly mean values between satellites/sensors. The sampling errors are largest over land regions with large diurnal cycles in precipitation. Other sources of error that can significantly impact the 3GPROF products include difficulties over certain surface types such as sea ice, snow, frozen ground, and deserts, and limited sensitivity of the sounder instruments (in particular to light precipitation and/or shallow warm rain systems). The sounders include the ATMS, MHS, and SAPHIR sensors, which do not have channels with sensitivity to the surface and/or lower atmosphere.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>Precipitation Processing System (PPS)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>16 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>GPM</File>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/GPM/browse/3A-MO-BR.GCOMW1.AMSR2.GRID2017R1.20150101-S000000-E235959.01.V05A.PNG</URL>
+        <Format>PNG</Format>
+        <Caption>Surface Precipitation</Caption>
+        <Description>Surface Precipitation from AMSR2 (25 km x 25 km)(GPM_3GPROFGCOMW1AMSR2)</Description>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract> Version 5 is the current version of the data set. Version 4 is no longer available and has been superseded by Version 5.
+
+3GPROF products provide global gridded monthly/daily precipitation averages from multiple satellites that can be used for climate studies. The 3GPROF products are based on retrievals from high-quality microwave sensors, which are sensitive to liquid and ice-phase precipitation hydrometeors in the atmosphere.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/data/GPM_L3/GPM_3GPROFGCOMW1AMSR2.05/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=GPM_3GPROFGCOMW1AMSR2</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/opendap/GPM_L3/GPM_3GPROFGCOMW1AMSR2.05/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=GPM_3GPROFGCOMW1AMSR2</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://pmm.gsfc.nasa.gov/GPM</URL>
+        <Description>GPM Project Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/data/doc/README.GPM.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)</Subtype>
+        </URL_Content_Type>
+        <URL>http://rain.atmos.colostate.edu/ATBD/</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>FILE SPECIFICATION DOCUMENT</Subtype>
+        </URL_Content_Type>
+        <URL>ftp://gpmweb2.pps.eosdis.nasa.gov/pub/GPMfilespec/filespec.GPM.pdf</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://pps.gsfc.nasa.gov/Documents/V05ReleaseNotes/GPROFV05_releasenotes.pdf</URL>
+        <Description>Release Notes</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2017-05-08</Metadata_Creation>
+        <Metadata_Last_Revision>2017-05-08</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-12-01</Metadata_Future_Review>
+        <Data_Creation>2017-05-03</Data_Creation>
+        <Data_Last_Revision>2017-05-08</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 month</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

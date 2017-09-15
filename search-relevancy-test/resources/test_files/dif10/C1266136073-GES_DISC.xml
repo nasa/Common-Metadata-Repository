@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>OMUVBG</Short_Name>
+        <Version>003</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L2 Global Gridded 0.25 degree x 0.25 degree V3 (OMUVBG) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Jari Hovila, Antii Arola, and Johanna Tamminen</Dataset_Creator>
+        <Dataset_Title>OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L2 Global Gridded 0.25 degree x 0.25 degree V3</Dataset_Title>
+        <Dataset_Series_Name>OMUVBG</Dataset_Series_Name>
+        <Dataset_Release_Date>2014-01-26</Dataset_Release_Date>
+        <Dataset_Release_Place>NASA Goddard Space Flight Center</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>003</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/Aura/OMI/DATA2028</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/OMUVBG_003.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>JARI</First_Name>
+            <Last_Name>HOVILA, PH. D</Last_Name>
+            <Address>
+                <Street_Address>Finnish Meteorological Institute</Street_Address>
+                <City>Helsinki</City>
+                <Postal_Code>FIN-00101</Postal_Code>
+                <Country>Finland</Country>
+            </Address>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>ANTII</First_Name>
+            <Last_Name>AROLA, PH. D</Last_Name>
+            <Address>
+                <Street_Address>Finnish Meteorological Institute</Street_Address>
+                <City>Helsinki</City>
+                <Postal_Code>FIN-00101</Postal_Code>
+                <Country>Finland</Country>
+            </Address>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JENNIFER</First_Name>
+            <Middle_Name>C</Middle_Name>
+            <Last_Name>WEI</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center, Code 610.2, NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6558</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>jennifer.c.wei@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>ULTRAVIOLET RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+    <ISO_Topic_Category>HEALTH</ISO_Topic_Category>
+    <Ancillary_Keyword>Surface UV Irradiance</Ancillary_Keyword>
+    <Ancillary_Keyword>Erythemally Weighted Daily Dose</Ancillary_Keyword>
+    <Ancillary_Keyword>Erythemal Dose Rate at satellite Overpass Time</Ancillary_Keyword>
+    <Ancillary_Keyword>BEDI</Ancillary_Keyword>
+    <Ancillary_Keyword>Agriculture and Forestry</Ancillary_Keyword>
+    <Ancillary_Keyword>Climate</Ancillary_Keyword>
+    <Ancillary_Keyword>Disasters</Ancillary_Keyword>
+    <Ancillary_Keyword>Human Health</Ancillary_Keyword>
+    <Ancillary_Keyword>Transportation</Ancillary_Keyword>
+    <Ancillary_Keyword>Weather</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System, Aura</Long_Name>
+        <Instrument>
+            <Short_Name>OMI</Short_Name>
+            <Long_Name>Ozone Monitoring Instrument</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2004-10-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.25 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.25 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System (EOS), AURA</Long_Name>
+    </Project>
+    <Quality>This data set is the second public release of version 003. Quality of data is better than the earlier version. However, this reprocessed data is not fully validated yet.</Quality>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>FMI (Finnish Meteorological Institute)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>130 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddc1e01b045fab4ed0fe/file</URL>
+        <Format>PNG</Format>
+        <Caption>OMUVBG sample image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Ahmad, S. P., P. F. Levelt, P. K. Bhartia, E. Hilsenrath, G. W. Leppelmeier,and J. E. Johnson, &amp;Atmospheric Products from the Ozone Monitoring Instrument(OMI), Proceedings of SPIE conference on Earth Observing Systems VIII, San Diego, California, Aug 3-8, 2003.</Citation>
+        <Author>Ahmad, S. P., P. F. Levelt, P. K. Bhartia, E. Hilsenrath, G. W. Leppelmeier,and J. E. Johnson</Author>
+        <Publication_Date>2003/08</Publication_Date>
+        <Title>Atmospheric Products from the Ozone Monitoring Instrument(OMI)</Title>
+        <Series>Proceedings of SPIE conference on Earth Observing Systems VIII, San Diego, California</Series>
+    </Reference>
+    <Reference>
+        <Citation>Bhartia, P. K., P. F. Levelt, J. Tamminen, O. Torres, Recent results from the Ozone Monitoring Instrument (OMI) on EOS Aura, Proceedings of SPIE conference on Remote Sensing of the Atmosphere and Clouds, Volume 6408, Si-Chee Tsay et al. (Ed.), 64080Y, Goa, India, Nov 28, 2006</Citation>
+        <Author>Bhartia, P. K., P. F. Levelt, J. Tamminen, O. Torres</Author>
+        <Publication_Date>Nov 28, 2006</Publication_Date>
+        <Title>Recent results from the Ozone Monitoring Instrument (OMI) on EOS Aura</Title>
+        <Series>Proceedings of SPIE conference on Remote Sensing of the Atmosphere and Clouds</Series>
+        <Volume>6408</Volume>
+    </Reference>
+    <Reference>
+        <Citation>Brinksma, E. J., K. F. Boersma, and P. F. Levelt, OMI-Validation Requirements, May 16, 2003.</Citation>
+        <Author>Brinksma, E. J., K. F. Boersma, and P. F. Levelt</Author>
+        <Publication_Date>May 16, 2003</Publication_Date>
+        <Title>OMI-Validation Requirements</Title>
+    </Reference>
+    <Reference>
+        <Citation>Dirksen, R., M.R. Dobber, R. Voors and P. Levelt, Pre-launch characterization of the Ozone Monitoring Instrument transfer function in the spectral domain, Appl. Optics, 2006, 45, no 17, 3972-3981 .</Citation>
+        <Author>Dirksen, R., M.R. Dobber, R. Voors and P. Level</Author>
+        <Publication_Date>2006-06-10</Publication_Date>
+        <Title>Pre-launch characterization of the Ozone Monitoring Instrument transfer function in the spectral domain</Title>
+        <Series>Appl. Optics</Series>
+        <Volume>45</Volume>
+        <Issue>17</Issue>
+        <Pages>3972-81</Pages>
+    </Reference>
+    <Reference>
+        <Citation>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross, M. Kowalewski, E. Hilsenrath, G. Leppelmeier, J. de Vries, W. Dierssen and N. Rozemeijer, Ozone Monitoring Instrument calibration, IEEE Trans. Geo. Rem. Sens., 2006, Vol. 44, No. 5, 1209-1238, doi:10.1109/TGRS.2006.869987.</Citation>
+        <Author>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross, M. Kowalewski, E. Hilsenrath, G. Leppelmeier, J. de Vries, W. Dierssen and N. Rozemeijer</Author>
+        <Publication_Date>2006/05</Publication_Date>
+        <Title>Ozone Monitoring Instrument Calibrtation</Title>
+        <Series>IEEE Trans. Geo. Rem. Sens</Series>
+        <Volume>44</Volume>
+        <Issue>5</Issue>
+        <Pages>1209-1238</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2006.869987</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross en M. Kowalewski, Ozone Monitoring Instrument in-flight performance and calibration, Proceedings SPIE Optical Systems Design 2005, 12-16 September 2005, Jena, Germany, 2006</Citation>
+        <Author>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross en M. Kowalewski</Author>
+        <Publication_Date>2005/09</Publication_Date>
+        <Title>Ozone Monitoring Instrument in-flight performance and calibration</Title>
+        <Series>Proceedings SPIE Optical Systems Design 2005, 12-16 September 2005, Jena, Germany, 2006</Series>
+    </Reference>
+    <Reference>
+        <Citation>Kowalewski, J.M.G., G.R. Jaross, R.P Cebula, S.L. Taylor, G.H.J. van den Oord, M.R. Dobber, R.J. Dirksen, Evaluation of OMI pre-launch radiometric calibration and on-orbit performance using in-flight data, Proceedings SPIE's Annual Meeting, San Diego (U.S.A.), 31 July - 4 August 2005, Optical Science, Engineering, and Instrumentation. Earth observing systems X (vol. 5882).</Citation>
+        <Author>Kowalewski, J.M.G., G.R. Jaross, R.P Cebula, S.L. Taylor, G.H.J. van den Oord, M.R. Dobber, R.J. Dirksen</Author>
+        <Publication_Date>2005/08</Publication_Date>
+        <Title>Evaluation of OMI pre-launch radiometric calibration and on-orbit performance using in-flight data</Title>
+        <Series>Proceedings SPIE's Annual Meeting, San Diego (U.S.A.), 31 July - 4 August 2005, Optical Science, Engineering, and Instrumentation. Earth observing systems</Series>
+        <Edition>X</Edition>
+        <Volume>5882</Volume>
+    </Reference>
+    <Reference>
+        <Citation>Levelt, P.F., J. P. Veefkind, R. H. M. Voors, and J. de Vries, Instrument Description, Algorithm Theoretical Baseline Document: OMI Instrument, Level 0 - 1B processor, Calibration &amp; Operations, P. F. Levelt (ed.), vol. I, ATBD-OMI-01, version 2, Aug. 2002.</Citation>
+        <Author>Levelt, P.F., J. P. Veefkind, R. H. M. Voors, and J. de Vries</Author>
+        <Publication_Date>2002/08</Publication_Date>
+        <Title>Instrument Description, Algorithm Theoretical Baseline Document: OMI Instrument, Level 0 - 1B processor, Calibration &amp; Operations</Title>
+    </Reference>
+    <Reference>
+        <Citation>Oord, G.H.J. van den, N.C. Rozemeijer, V. Schenkelaars, P.F. Levelt, M.R. Dobber, R.H.M. Voors, J. Claas, J. de Vries, M. ter Linden, C. De Haan and T. van den Berg, OMI level 0 to 1b processing and operational aspects, IEEE Trans. Geo. Rem. Sens., 2006, Vol. 44, No. 5, 1380-1397, doi:10.1109/TGRS.2006.872935.</Citation>
+        <Author>Oord, G.H.J. van den, N.C. Rozemeijer, V. Schenkelaars, P.F. Levelt, M.R. Dobber, R.H.M. Voors, J. Claas, J. de Vries, M. ter Linden, C. De Haan and T. van den Berg</Author>
+        <Publication_Date>2006</Publication_Date>
+        <Title>OMI level 0 to 1b processing and operational aspects</Title>
+        <Series>IEEE Trans. Geo. Rem. Sens.</Series>
+        <Volume>44</Volume>
+        <Issue>5</Issue>
+        <Pages>1380-1397</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2006.872935</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Vries, J. de, R.H.M. Voors, R.J. Dirksen, and M.R. Dobber, In-orbit performance of the Ozone Monitoring Instrument, Proceedings SPIE Remote Sensing Europe conference, Bruges, Belgium, 19-22 September 2005.</Citation>
+        <Author>Vries, J. de, R.H.M. Voors, R.J. Dirksen, and M.R. Dobber</Author>
+        <Publication_Date>2005/10</Publication_Date>
+        <Title>In-orbit performance of the Ozone Monitoring Instrument</Title>
+        <Series>Proceedings of SPIE - The International Society for Optical Engineering</Series>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1117/12.627013</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>This is Level-2G daily global gridded Aura-OMI Spectral Surface UVB Irradiance and Erythemal Dose product (OMUVBG).  The OMUVBG is a special Level-2 Global Gridded type data Product (referred as Level 2G or L2G) where Level-2 or swath pixel data are binned (but not averaged)into 0.25x0.25 degree global grids. It contains the data for all L2 scenes that have observation time between UTC times of 00:00:00 and 23:59:59.9999. All ancillary parameters such as Lat, Long, time, solar and viewing angles are also saved for each pixel. First two dimensions of each parameter correspond to spatial (Lat/Lon based) Grid ID and third dimension idenifies the pixel or observed scene (referred as 'candidates' ID). Scientist can apply data filtering scheme of their choice, average good quality pixels data in each grid and create their Level-3 products.     OMUVBG files are available in EOS Hierarchical Data Format(HDF5-EOS). Each file contains daily data from the day lit portion of the globe. The maximum file size for the OMUVBG data product is about 128 MBytes.           (The shortname for this Level-2G Global Gridded Product is OMUVBG)</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gsfc.nasa.gov/data/Aura_OMI_Level2G/OMUVBG.003/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/#keywords=OMUVBG</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=OMUVBG</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=OMUVBG</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/OMI/3.3_ScienceDataProductDocumentation/3.3.2_ProductRequirements_Designs/README.OMI_DUG.pdf</URL>
+        <Description>User's Guide for OMI Data Products</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level2G/OMUVBG.003/doc/OMUVBG_README_V003.pdf</URL>
+        <Description>ReadMe for OMUVBG</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/OMI/3.3_ScienceDataProductDocumentation/3.3.2_ProductRequirements_Designs/OMUVBG_FileSpec_V003.pdf</URL>
+        <Description>FileSpec for OMUVBG</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://aura.gsfc.nasa.gov/</URL>
+        <Description>AURA OMI Atmospheric Chemistry home page.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://projects.knmi.nl/omi/research/news/newsWrap.php?language=only_enhttp://www.knmi.nl/omi/research/news/index.htmltimeFrame=latesthttp://www.knmi.nl/omi/research/news/index.htmlchoise=page</URL>
+        <Description>KNMI OMI Site</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://promote.fmi.fi/</URL>
+        <Description>FMI OMI Site</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>http://www.fmi.fi/research/</URL>
+        <Description>FMI OMI Site</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>http://promote.fmi.fi/OMUVB/AGU2005_poster_OMUVB.pdf</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://ozoneaq.gsfc.nasa.gov/</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level2G/OMUVBG.003/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PUBLICATIONS</Subtype>
+        </URL_Content_Type>
+        <URL>http://projects.knmi.nl/omi/research/documents/</URL>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2009-11-04, S. Ritz updated Data Resolution from 1 deg to 0.25 deg.                                          2014-05-12, J. Wei updated DIF following DIF guide                  2015-06-02, J. Johnson cleaned up Science Keywords and Project.  2017-03-30, Ed Esfandiari - Added BEDI SBA related ancillary keywords. 2017-08-10, J. Alfred - Cleaned up related URLs.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2009-10-04</Metadata_Creation>
+        <Metadata_Last_Revision>2017-02-06</Metadata_Last_Revision>
+        <Metadata_Future_Review>2015-01-30</Metadata_Future_Review>
+        <Data_Creation>2004-10-01</Data_Creation>
+        <Data_Last_Revision>2014-01-26</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>2G</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>9178e279-f528-4c3c-9c02-1287246b82c6</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:21:43</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:01:05Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>CEOS</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>edff0791-121c-40aa-adf2-33feb2bc30e5</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/Aura/OMI/DATA2028</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Collection>
+<ShortName>A2_Land_NRT</ShortName>
+<VersionId>0</VersionId>
+<InsertTime>2016-06-20T10:46:18Z</InsertTime>
+<LastUpdate>2017-08-20T11:46:18Z</LastUpdate>
+<LongName>NRT AMSR2 UNIFIED L2B HALF-ORBIT 25 KM EASE-GRID SURFACE SOIL MOISTURE</LongName>
+<DataSetId>NRT AMSR2 UNIFIED L2B HALF-ORBIT 25 KM EASE-GRID SURFACE SOIL MOISTURE V0</DataSetId>
+<Description>The Advanced Microwave Scanning Radiometer 2 (AMSR2) instrument on the Global Change Observation Mission - Water 1 (GCOM-W1) provides global passive microwave measurements of terrestrial, oceanic, and atmospheric parameters for the investigation of global water and energy cycles.  Near real-time (NRT) products are generated within 3 hours of the last observations in the file, by the Land Atmosphere Near real-time Capability for EOS (LANCE) at the AMSR Science Investigator-led Processing System (AMSR SIPS), which is collocated with the Global Hydrology Resource Center (GHRC) DAAC.  The GCOM-W1 NRT AMSR2 Unified L2B Half-Orbit 25 km EASE-Grid Surface Soil Moisture product is a daily measurement of surface soil moisture produced by two retrieval algorithms using resampled Tb (Level-1R) data provided by JAXA: the Normalized Polarization Difference (NPD) algorithm developed by JPL and the Single Channel Algorithm (SCA) developed by USDA.  Ancillary data include time, geolocation, and quality assessment.  Data are stored in HDF-EOS5 format and are available via HTTP from the EOSDIS LANCE system at https://lance.nsstc.nasa.gov/amsr2-science/data/level2/land/R00/hdfeos5/.  If data latency is not a primary concern, please consider using science quality products.  Science products are created using the best available ancillary, calibration and ephemeris information.  Science quality products are an internally consistent, well-calibrated record of the Earth's geophysical properties to support science.  The AMSR SIPS will produce AMSR2 standard science quality data products and they will be available from the NSIDC DAAC.  Notice: All LANCE AMSR2 data should be used with the understanding that these are preliminary products.  Cross calibration with AMSR-E products may have not been performed.  As updates are made to the L1R data set, those changes will be reflected in this higher level product. Note:  The LANCE NRT AMSR2 Unified L2B Half-Orbit 25 km EASE-Grid Surface Soil Moisture Preliminary v0 dataset will only be available until October 31, 2017.  Please start using the new LANCE NRT AMSR2 Unified L2B Half-Orbit 25 km EASE-Grid Surface Soil Moisture Beta V1, available in both HDF-EOS5 and netCDF with CF metadata.</Description>
+<CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
+<Orderable>false</Orderable>
+<Visible>true</Visible>
+<ProcessingLevelId>2B</ProcessingLevelId>
+<ArchiveCenter>NASA/MSFC/GHRC</ArchiveCenter>
+<CitationForExternalPublication>Njoku, Eni, Tom Jackson and Steven Chan. 2016. NRT AMSR2 UNIFIED L2B HALF-ORBIT 25 KM EASE-GRID SURFACE SOIL MOISTURE [indicate subset used]. Dataset available online from the NASA Global Hydrology Center DAAC, Huntsville, Alabama, U.S.A.  DOI: http://dx.doi.org/10.5067/AMSR2/A2_Land_NRT</CitationForExternalPublication>
+<CollectionState>IN WORK</CollectionState>
+<Price>0.0</Price>
+<DataFormat>HDF-EOS5</DataFormat><SpatialKeywords>
+<Keyword>GLOBAL</Keyword></SpatialKeywords><TemporalKeywords>
+<Keyword>Daily</Keyword></TemporalKeywords><Temporal><RangeDateTime>
+<BeginningDateTime>2016-06-15T14:37:57Z</BeginningDateTime></RangeDateTime></Temporal><Contacts><Contact>
+      <Role>ARCHIVER</Role>
+      <OrganizationName>Global Hydrology Resource Center, Marshall Space Flight Center, NASA</OrganizationName>
+      <OrganizationAddresses>
+        <Address>
+          <StreetAddress>320 Sparkman Drive</StreetAddress>
+          <City>Huntsville</City>
+          <StateProvince>Alabama</StateProvince>
+          <PostalCode>35805</PostalCode>
+          <Country>USA</Country>
+        </Address>
+      </OrganizationAddresses>
+      <OrganizationPhones>
+        <Phone>
+          <Number>+1 256-961-7932</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>+1 256-824-5149</Number>
+          <Type>Fax</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>support-ghrc@earthdata.nasa.gov</Email>
+      </OrganizationEmails>
+</Contact></Contacts><ScienceKeywords><ScienceKeyword>
+<CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+<TopicKeyword>LAND SURFACE</TopicKeyword>
+<TermKeyword>SOILS</TermKeyword><VariableLevel1Keyword>
+<Value>SOIL MOISTURE/WATER CONTENT</Value></VariableLevel1Keyword></ScienceKeyword></ScienceKeywords><Platforms><Platform>
+<ShortName>GCOM-W1</ShortName>
+<LongName>GCOM-W1</LongName>
+<Type>EARTH OBSERVATION SATELLITES</Type><Instruments><Instrument>
+<ShortName>AMSR2</ShortName>
+<Sensors><Sensor>
+<ShortName>AMSR2</ShortName></Sensor></Sensors>
+</Instrument></Instruments></Platform></Platforms>
+<AdditionalAttributes>
+<AdditionalAttribute>
+<Name>identifier_product_doi</Name>
+<DataType>STRING</DataType>
+<Description>product DOI</Description>
+<Value>10.5067/AMSR2/A2_Land_NRT</Value>
+</AdditionalAttribute>
+<AdditionalAttribute>
+<Name>identifier_product_doi_authority</Name>
+<DataType>STRING</DataType>
+<Description>DOI authority</Description>
+<Value>http://dx.doi.org</Value>
+</AdditionalAttribute>
+<AdditionalAttribute>
+<Name>AscendingDescendingFlg</Name>
+<DataType>STRING</DataType>
+<Description>flag to indicate ascending or descending</Description>
+<Value>Ascending and Descending</Value>
+</AdditionalAttribute>
+</AdditionalAttributes>
+<Campaigns><Campaign>
+<ShortName>LANCE</ShortName></Campaign></Campaigns><OnlineAccessURLs><OnlineAccessURL>
+<URL>https://lance.nsstc.nasa.gov/amsr2-science/data/level2/land/R00/hdfeos5/</URL><URLDescription></URLDescription><MimeType></MimeType></OnlineAccessURL></OnlineAccessURLs><OnlineResources><OnlineResource>
+<URL>https://lance.itsc.uah.edu/amsr2-science/data/level2/land/R00/hdfeos5/</URL><Description></Description>
+<Type>Alternate Data Access</Type></OnlineResource><OnlineResource>
+<URL>https://lance.nsstc.nasa.gov/amsr2-science/browse_png/level2/land/R00/</URL><Description></Description>
+<Type>Browse</Type></OnlineResource><OnlineResource>
+<URL>https://earthdata.nasa.gov/earth-observation-data/near-real-time</URL><Description></Description>
+<Type>Homepage</Type></OnlineResource><OnlineResource>
+<URL>http://dx.doi.org/10.5067/AMSR2/A2_Land_NRT</URL><Description></Description>
+<Type>DOI</Type></OnlineResource><OnlineResource>
+<URL>https://worldview.earthdata.nasa.gov/</URL><Description></Description>
+<Type>Worldview Imagery</Type></OnlineResource><OnlineResource>
+<URL>https://ghrc.nsstc.nasa.gov/home/about-ghrc/citing-ghrc-daac-data</URL><Description></Description>
+<Type>Citing GHRC Data</Type></OnlineResource></OnlineResources><AssociatedDIFs><DIF>
+<EntryId>A2_Land_NRT</EntryId></DIF></AssociatedDIFs><Spatial><SpatialCoverageType>Horizontal</SpatialCoverageType><HorizontalSpatialDomain><Geometry>
+<CoordinateSystem>CARTESIAN</CoordinateSystem><BoundingRectangle>
+<WestBoundingCoordinate>-180</WestBoundingCoordinate>
+<NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+<EastBoundingCoordinate>180</EastBoundingCoordinate>
+<SouthBoundingCoordinate>-90</SouthBoundingCoordinate></BoundingRectangle></Geometry></HorizontalSpatialDomain>
+<GranuleSpatialRepresentation>NO_SPATIAL</GranuleSpatialRepresentation></Spatial>
+<MetadataStandardName>ECHO</MetadataStandardName>
+<MetadataStandardVersion>10</MetadataStandardVersion>
+</Collection>

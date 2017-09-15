@@ -1,0 +1,1657 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>CIESIN_SEDAC_LECZ_URPEV1</Short_Name>
+    <Version>1.0</Version>
+  </Entry_ID>
+  <Entry_Title>Low Elevation Coastal Zone (LECZ) Urban-Rural Population Estimates, Global Rural-Urban Mapping Project (GRUMP), Alpha Version</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>McGranahan, G., D. Balk,  and B. Anderson.</Dataset_Creator>
+    <Dataset_Title>Low Elevation Coastal Zone (LECZ)   Urban-Rural Population Estimates, Global Rural-  Urban Mapping Project (GRUMP), Alpha Version</Dataset_Title>
+    <Dataset_Release_Date>2007-01-01</Dataset_Release_Date>
+    <Dataset_Release_Place>Palisades, NY</Dataset_Release_Place>
+    <Dataset_Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Dataset_Publisher>
+    <Version>1.0</Version>
+    <Data_Presentation_Form>tabular, map</Data_Presentation_Form>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4TM782G</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4TM782G</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Group>
+      <Name>CIESIN METADATA ADMINISTRATION</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8988</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>metadata@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>SEDAC USER SERVICES</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8920</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>ciesin.info@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>HUMAN SETTLEMENTS</Term>
+    <Variable_Level_1>COASTAL AREAS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>POPULATION</Term>
+    <Variable_Level_1>POPULATION DENSITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>POPULATION</Term>
+    <Variable_Level_1>POPULATION DISTRIBUTION</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>POPULATION</Term>
+    <Variable_Level_1>POPULATION ESTIMATES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>POPULATION</Term>
+    <Variable_Level_1>POPULATION SIZE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>SUSTAINABILITY</Term>
+    <Variable_Level_1>ENVIRONMENTAL SUSTAINABILITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>OCEANS</Topic>
+    <Term>COASTAL PROCESSES</Term>
+    <Variable_Level_1>COASTAL ELEVATION</Variable_Level_1>
+  </Science_Keywords>
+  <ISO_Topic_Category>PLANNING CADASTRE</ISO_Topic_Category>
+  <ISO_Topic_Category>SOCIETY</ISO_Topic_Category>
+  <Ancillary_Keyword>Cities</Ancillary_Keyword>
+  <Ancillary_Keyword>Global Population</Ancillary_Keyword>
+  <Ancillary_Keyword>Gridded Population of the World</Ancillary_Keyword>
+  <Ancillary_Keyword>GRUMP</Ancillary_Keyword>
+  <Ancillary_Keyword>Population Density</Ancillary_Keyword>
+  <Ancillary_Keyword>Population Estimates</Ancillary_Keyword>
+  <Ancillary_Keyword>Population Projections</Ancillary_Keyword>
+  <Ancillary_Keyword>Population Studies</Ancillary_Keyword>
+  <Ancillary_Keyword>Urban Areas</Ancillary_Keyword>
+  <Platform>
+    <Type>Models/Analyses</Type>
+    <Short_Name>MODELS</Short_Name>
+    <Instrument>
+      <Short_Name>Computer</Short_Name>
+      <Long_Name>Computer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Single_DateTime>1990-01-01</Single_DateTime>
+    <Single_DateTime>1995-01-01</Single_DateTime>
+    <Single_DateTime>2000-01-01</Single_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>COMPLETE</Dataset_Progress>
+  <Spatial_Coverage>
+    <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-58.000000</Southernmost_Latitude>
+        <Northernmost_Latitude>85.000000</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.000000</Westernmost_Longitude>
+        <Easternmost_Longitude>180.000000</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+    <Spatial_Info>
+      <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+      <Horizontal_Coordinate_System>
+        <Geodetic_Model>
+          <Horizontal_DatumName>WGS84</Horizontal_DatumName>
+          <Ellipsoid_Name>WGS84</Ellipsoid_Name>
+          <Semi_Major_Axis>6378137</Semi_Major_Axis>
+          <Denominator_Of_Flattening_Ratio>298.257224</Denominator_Of_Flattening_Ratio>
+        </Geodetic_Model>
+        <Geographic_Coordinate_System>
+          <GeographicCoordinateUnits>Decimal Degrees</GeographicCoordinateUnits>
+          <LatitudeResolution>0.008333</LatitudeResolution>
+          <LongitudeResolution>0.008333</LongitudeResolution>
+        </Geographic_Coordinate_System>
+      </Horizontal_Coordinate_System>
+    </Spatial_Info>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>AFGHANISTAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>ALBANIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>NORTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>ALGERIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>CENTRAL PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>AMERICAN SAMOA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>ANDORRA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>ANGOLA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>ANGUILLA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>ARGENTINA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>ARMENIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>ARUBA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AUSTRALIA/NEW ZEALAND</Location_Type>
+    <Location_Subregion1>AUSTRALIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>AUSTRIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>AZERBAIJAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>BAHAMAS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>BAHRAIN</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>BANGLADESH</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>BARBADOS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>BELARUS</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>BELGIUM</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+    <Location_Subregion2>BELIZE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>BENIN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>BERMUDA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>BHUTAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>BOLIVIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>BOSNIA AND HERZEGOVINA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>SOUTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>BOTSWANA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>BRAZIL</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>BULGARIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>BURKINA FASO</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>BURUNDI</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHEASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>CAMBODIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>CAMEROON</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CAPE VERDE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>CARIBBEAN</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>CAYMAN ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>CENTRAL AFRICAN REPUBLIC</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>CHAD</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>CHILE</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>EASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>CHINA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>COLOMBIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>CONGO</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>CONGO, DEMOCRATIC REPUBLIC</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>POLYNESIA</Location_Subregion2>
+    <Location_Subregion3>COOK ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+    <Location_Subregion2>COSTA RICA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>COTE D'IVOIRE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>CROATIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>CUBA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>CZECH REPUBLIC</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SCANDINAVIA</Location_Subregion2>
+    <Location_Subregion3>DENMARK</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>DJIBOUTI</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>DOMINICA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>DOMINICAN REPUBLIC</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>EASTERN ASIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>ECUADOR</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>NORTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>EGYPT</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+    <Location_Subregion2>EL SALVADOR</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>EQUATORIAL GUINEA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>ERITREA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>ESTONIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>ETHIOPIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>NORWEGIAN SEA</Location_Subregion2>
+    <Location_Subregion3>FAEROE ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>FALKLAND ISLANDS</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>FRANCE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>FRENCH GUIANA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>POLYNESIA</Location_Subregion2>
+    <Location_Subregion3>FRENCH POLYNESIA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>CENTRAL AFRICA</Location_Subregion1>
+    <Location_Subregion2>GABON</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>GAMBIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>GERMANY</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>GHANA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SPAIN</Location_Subregion2>
+    <Location_Subregion3>GIBRALTAR</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>GREECE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>GREENLAND</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>GRENADA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>GUADELOUPE</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>WESTERN PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MICRONESIA</Location_Subregion2>
+    <Location_Subregion3>GUAM</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+    <Location_Subregion2>GUATEMALA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>GUINEA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>GUINEA-BISSAU</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>GUYANA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>HAITI</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+    <Location_Subregion2>HONDURAS</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>EASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>CHINA</Location_Subregion2>
+    <Location_Subregion3>HONG KONG</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>HUNGARY</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>ICELAND</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>INDIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>INDONESIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>IRAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>IRAQ</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>BRITISH ISLES</Location_Subregion2>
+    <Location_Subregion3>IRELAND</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>ISRAEL</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>ITALY</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>JAMAICA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>JORDAN</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>KAZAKHSTAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>KENYA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>CENTRAL PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>KIRIBATI</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>KUWAIT</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>KYRGYZSTAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHEASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>LAO PEOPLE'S DEMOCRATIC REPUBLIC</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>LATVIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>LEBANON</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>SOUTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>LESOTHO</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>LIBERIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>NORTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>LIBYA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>LIECHTENSTEIN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>LITHUANIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>LUXEMBOURG</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>EASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>CHINA</Location_Subregion2>
+    <Location_Subregion3>MACAU</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>MACEDONIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>MADAGASCAR</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>MALAWI</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>MALAYSIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>MALI</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MEDITERRANEAN SEA</Location_Subregion2>
+    <Location_Subregion3>MALTA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>WESTERN PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MICRONESIA</Location_Subregion2>
+    <Location_Subregion3>MARSHALL ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>MARTINIQUE</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>MAURITANIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>MAURITIUS</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>MEXICO</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>WESTERN PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MICRONESIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>MOLDOVA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>MONACO</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>EASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MONGOLIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>MONTSERRAT</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>NORTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>MOROCCO</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>MOZAMBIQUE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>SOUTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>NAMIBIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>WESTERN PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MICRONESIA</Location_Subregion2>
+    <Location_Subregion3>NAURU</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>NEPAL</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>NETHERLANDS</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>NETHERLANDS ANTILLES</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MELANESIA</Location_Subregion2>
+    <Location_Subregion3>NEW CALEDONIA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AUSTRALIA/NEW ZEALAND</Location_Type>
+    <Location_Subregion1>NEW ZEALAND</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+    <Location_Subregion2>NICARAGUA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>NIGER</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>NIGERIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>EASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>NORTH KOREA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>NORTHERN AFRICA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SCANDINAVIA</Location_Subregion2>
+    <Location_Subregion3>NORWAY</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>OCEANIA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>OMAN</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>PAKISTAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>WESTERN PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MICRONESIA</Location_Subregion2>
+    <Location_Subregion3>PALAU</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>PALESTINE</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CENTRAL AMERICA</Location_Subregion1>
+    <Location_Subregion2>PANAMA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MELANESIA</Location_Subregion2>
+    <Location_Subregion3>PAPUA NEW GUINEA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>PARAGUAY</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>PERU</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>WESTERN PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>PHILIPPINES</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>POLYNESIA</Location_Subregion2>
+    <Location_Subregion3>PITCAIRN ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>POLAND</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>PORTUGAL</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>PUERTO RICO</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>QATAR</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>REUNION</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>ROMANIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>RUSSIAN FEDERATION</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>RWANDA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>POLYNESIA</Location_Subregion2>
+    <Location_Subregion3>SAMOA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>SAO TOME AND PRINCIPE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>SAUDI ARABIA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>SEYCHELLES</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>SINGAPORE</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SLOVAKIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SLOVENIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>SOMALIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>SOUTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>SOUTH AFRICA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>EASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>SOUTH KOREA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHEASTERN ASIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHERN ASIA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>SOUTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SPAIN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>INDIAN OCEAN</Location_Type>
+    <Location_Subregion1>SRI LANKA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>ST HELENA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>ST KITTS AND NEVIS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>ST LUCIA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>ST PIERRE AND MIQUELON</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>ST VINCENT AND THE GRENADINES</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>NORTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>SUDAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>SURINAME</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>SVALBARD AND JAN MAYEN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>SOUTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>SWAZILAND</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SCANDINAVIA</Location_Subregion2>
+    <Location_Subregion3>SWEDEN</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>WESTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>SWITZERLAND</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>SYRIAN ARAB REPUBLIC</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>TAJIKISTAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>TANZANIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHEASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>THAILAND</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>TOGO</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>POLYNESIA</Location_Subregion2>
+    <Location_Subregion3>TONGA</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>TRINIDAD AND TOBAGO</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>NORTHERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>TUNISIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>TURKEY</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHCENTRAL ASIA</Location_Subregion1>
+    <Location_Subregion2>TURKMENISTAN</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>TURKS AND CAICOS ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>POLYNESIA</Location_Subregion2>
+    <Location_Subregion3>TUVALU</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>UGANDA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>EASTERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>UKRAINE</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>UNITED ARAB EMIRATES</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+    <Location_Subregion1>NORTHERN EUROPE</Location_Subregion1>
+    <Location_Subregion2>BRITISH ISLES</Location_Subregion2>
+    <Location_Subregion3>UNITED KINGDOM</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>URUGUAY</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>MELANESIA</Location_Subregion2>
+    <Location_Subregion3>VANUATU</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+    <Location_Subregion1>VENEZUELA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>SOUTHEASTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>VIETNAM</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>ATLANTIC OCEAN</Location_Type>
+    <Location_Subregion1>NORTH ATLANTIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>CARIBBEAN SEA</Location_Subregion2>
+    <Location_Subregion3>VIRGIN ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>OCEAN</Location_Category>
+    <Location_Type>PACIFIC OCEAN</Location_Type>
+    <Location_Subregion1>SOUTH PACIFIC OCEAN</Location_Subregion1>
+    <Location_Subregion2>POLYNESIA</Location_Subregion2>
+    <Location_Subregion3>WALLIS AND FUTUNA ISLANDS</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>WESTERN AFRICA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+    <Location_Subregion1>WESTERN ASIA</Location_Subregion1>
+    <Location_Subregion2>MIDDLE EAST</Location_Subregion2>
+    <Location_Subregion3>YEMEN</Location_Subregion3>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>ZAMBIA</Location_Subregion2>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+    <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    <Location_Subregion2>ZIMBABWE</Location_Subregion2>
+  </Location>
+  <Project>
+    <Short_Name>LECZ</Short_Name>
+    <Long_Name>Low Elevation Coastal Zone</Long_Name>
+  </Project>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>The Trustees of Columbia University in the City of New York hold the copyright of this dataset. Users are prohibited from any commercial, non-free resale, or redistribution without explicit written permission from CIESIN. Users should acknowledge CIESIN as the source used in the creation of any reports, publications, new datasets, derived products, or services resulting from the use of this dataset. CIESIN also requests reprints of any publications and notification of any redistributing efforts.</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>SEDAC</Originating_Center>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>SEDAC</Short_Name>
+      <Long_Name>Socioeconomic Data and Applications Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://sedac.ciesin.columbia.edu/</Organization_URL>
+    <Dataset_ID>CIESIN_SEDAC_LECZ_URPEV1</Dataset_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>SEDAC USER SERVICES</Name>
+        <Address>
+          <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+          <City>Palisades</City>
+          <State_Province>NY</State_Province>
+          <Postal_Code>10964</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>+1 845-365-8920</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>+1 845-365-8922</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>ciesin.info@ciesin.columbia.edu</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>Excel</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PDF</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PNG</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Multimedia_Sample>
+    <URL>http://sedac.ciesin.columbia.edu/downloads/maps/lecz/lecz-urban-rural-population-estimates-v1/usa-ne-population-density-and-lecz.png</URL>
+    <Format>PNG</Format>
+    <Caption>Population Density &amp; LECZ: Northeastern U.S.A.</Caption>
+    <Description>Sample browse graphic of the data set.</Description>
+  </Multimedia_Sample>
+  <Reference>
+    <Author>Center for International Earth Science Information Network - CIESIN - Columbia University</Author>
+    <Publication_Date>2005-01-01</Publication_Date>
+    <Title>Low Elevation Coastal Zone (LECZ) Urban-Rural Population and Land Area Estimates, Version 2</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4MW2F2J</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4MW2F2J</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>Center for International Earth Science and Information Network - CIESIN - Columbia University</Author>
+    <Publication_Date>2005-01-01</Publication_Date>
+    <Title>Sea Level Rise Impacts on Ramsar Wetlands of International Importance</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4CC0XMD</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4CC0XMD</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>McGranahan, G., D. Balk and B. Anderson, B.</Author>
+    <Publication_Date>2007-01-01</Publication_Date>
+    <Title>The Rising Tide: Assessing the Risks of Climate Change and Human Settlements in Low Eevation Coastal Zones</Title>
+    <Series>Environment &amp; Urbanization</Series>
+    <Volume>19</Volume>
+    <Issue>1</Issue>
+    <Publisher>International Institute for Environment and Development (IIED)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.1177/0956247807076960</Identifier>
+    </Persistent_Identifier>
+  </Reference>
+  <Reference>
+    <Author>McGranahan, G., D. Balk , D. and B. Anderson</Author>
+    <Publication_Date>2006-01-01</Publication_Date>
+    <Title>Low Coastal Zone Settlements</Title>
+    <Series>Tiempo</Series>
+    <Edition>April 2006</Edition>
+    <Issue>59</Issue>
+    <Online_Resource>http://sedac.ciesin.columbia.edu/downloads/docs/lecz/coastal_tiempo.pdf</Online_Resource>
+  </Reference>
+  <Summary>
+    <Abstract>The Low Elevation Coastal Zone (LECZ) Urban-Rural Population Estimates consists of country-level estimates of urban, rural and total population and land area country-wide and in the LECZ, if applicable. Additionally, the data set provides the number of urban extents, their population and land area that intersect the LECZ, by city-size population classifications of less than 100,000, 100,000 to 500,000, 500,000 to 1,000,000, 1,000,000 to 5,000,000, and more than 5,000,000. All estimates are based on GRUMP Alpha data products. The LECZ was generated using SRTM Digital Elevation Model data and includes all land area that is contiguous with the coast and 10 meters or less in elevation. All grids used for population, land area, urban mask, and LECZ were of 30 arc-second (~1 km ) resolution. This data set is produced by the Columbia  University Center for International Earth Science Information Network (CIESIN) in collaboration with the International Institute for Environment and Development (IIED).</Abstract>
+    <Purpose>To provide estimates of urban and rural populations and land areas in the low elevation coastal zone.</Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW DATA SET LANDING PAGE</Type>
+    </URL_Content_Type>
+    <URL>https://doi.org/10.7927/H4TM782G</URL>
+    <Description>Data Set DOI URL and Homepage</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>ON-LINE ARCHIVE</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/lecz-urban-rural-population-estimates-v1/data-download</URL>
+    <Description>Data Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET RELATED VISUALIZATION</Type>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/lecz-urban-rural-population-estimates-v1/maps</URL>
+    <Description>Maps Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/lecz-urban-rural-population-estimates-v1/docs</URL>
+    <Description>Documentation Page</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>USA/CIESIN</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2007-05-08</Metadata_Creation>
+    <Metadata_Last_Revision>2017-09-08</Metadata_Last_Revision>
+    <Data_Creation>2007-01-01</Data_Creation>
+    <Data_Last_Revision>2007-01-01</Data_Last_Revision>
+  </Metadata_Dates>
+  <Private>False</Private>
+  <Product_Level_Id>3</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+<Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.tool</Name>
+      <Value>2017-09-08:docbuilder</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

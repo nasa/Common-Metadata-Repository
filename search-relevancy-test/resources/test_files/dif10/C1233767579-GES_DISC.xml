@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>NLDAS_FOR0125_H</Short_Name>
+        <Version>001</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>NLDAS Forcing Data L4 Hourly 0.125 x 0.125 degree V001 (NLDAS_FOR0125_H) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Mitchell, K. E., et al., NCEP/EMC</Dataset_Creator>
+        <Dataset_Editor>David Mocko, NASA/GSFC/HSL</Dataset_Editor>
+        <Dataset_Title>NLDAS Forcing Data L4 Hourly 0.125 x 0.125 degree V001</Dataset_Title>
+        <Dataset_Series_Name>NLDAS_FOR0125_H</Dataset_Series_Name>
+        <Dataset_Release_Date>2009-08-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, Maryland, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>001</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/H3CJY2R7C1RU</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/NLDAS_FOR0125_H_001.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>DAVID</First_Name>
+            <Last_Name>SILBERSTEIN</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5183</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>david.s.silberstein@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PRESSURE</Term>
+        <Variable_Level_1>SURFACE PRESSURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>LONGWAVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>SHORTWAVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>HUMIDITY</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>CONVECTION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>SURFACE WINDS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>LIQUID PRECIPITATION</Variable_Level_1>
+        <Variable_Level_2>RAIN</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>VEGETATION</Term>
+        <Variable_Level_1>PHOTOSYNTHETICALLY ACTIVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SURFACE THERMAL PROPERTIES</Term>
+        <Variable_Level_1>LAND SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL/ENGINEERING</Topic>
+        <Term>INFRARED WAVELENGTHS</Term>
+        <Variable_Level_1>BRIGHTNESS TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>Hydrology</Ancillary_Keyword>
+    <Platform>
+        <Type>Models/Analyses</Type>
+        <Short_Name>Forcing-LSM</Short_Name>
+        <Long_Name>Forcing data for Land Surface Model</Long_Name>
+        <Instrument>
+            <Short_Name>NOT APPLICABLE</Short_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1996-08-01</Beginning_Date_Time>
+            <Ending_Date_Time>2008-01-01</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>25.0</Southernmost_Latitude>
+                <Northernmost_Latitude>53.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-125.0</Westernmost_Longitude>
+                <Easternmost_Longitude>-67.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>NORTH AMERICA</Location_Type>
+        <Location_Subregion1>UNITED STATES OF AMERICA</Location_Subregion1>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.125 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.125 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 hour</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>NLDAS</Short_Name>
+        <Long_Name>North American Land Data Assimilation System</Long_Name>
+    </Project>
+    <Quality>The data are provisional and subject to change as model improvements are implemented and new input data sets become available.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>None</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>NCEP/EMC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>2 MB per file</Distribution_Size>
+        <Distribution_Format>GRIB</Distribution_Format>
+        <Fees>No Fee</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>Precipitation</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:45:18 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/hydrology/images/NLDAS_FOR0125_H_001.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddb8e01b045fab4ecf48/file</URL>
+        <Format>PNG</Format>
+        <Caption>Precipitation hourly total</Caption>
+        <Description>NLDAS-1 Forcing Daily 0.125 degree Precipitation Hourly Total  [kg/m^2] at 18Z on July 01, 2007.</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Mitchell, K. E., et al. (2004), The multi-institution North American Land Data Assimilation System (NLDAS): Utilizing multiple GCIP products and partners in a continental distributed hydrological modeling system. J. Geophys. Res., 109, D07S90, doi:10.1029/2003JD003823.</Citation>
+        <Author>Mitchell, K. E., et al.</Author>
+        <Publication_Date>2004</Publication_Date>
+        <Title>The multi-institution North American Land Data Assimilation System (NLDAS): Utilizing multiple GCIP products and partners in a continental distributed hydrological modeling system</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>doi:10.1029/2003JD003823</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Cosgrove, B. A., D. Lohmann, K. E. Mitchell, P. R. Houser, E. F. Wood, J. Schaake, A. Robock, C. Marshall, J. Sheffield, L. Luo, Q. Duan, R. T. Pinker, J. D. Tarpley, R. W. Higgins, and J. Meng (2003), Real-time and retrospective forcing in the North American Land Data Assimilation System (NLDAS) project, J. Geophys. Res., 108(D22), 8842, doi:10.1029/2002JD003118.</Citation>
+        <Author>Cosgrove, B. A., D. Lohmann, K. E. Mitchell, P. R. Houser, et al.</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Real-time and retrospective forcing in the North American Land Data Assimilation System (NLDAS) project</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>doi:10.1029/2002JD003118</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Higgins, R. W., W. Shi, E. Yarosh, and R. Joyce (2000), Improved United States precipitation quality control system and analysis, NCEP/Clim. Predict. Cent. Atlas 7, Clim. Predict. Cent., Camp Springs, Md.</Citation>
+        <Author>Higgins, R. W., W. Shi, E. Yarosh, and R. Joyce</Author>
+        <Publication_Date>2000</Publication_Date>
+        <Title>Improved United States precipitation quality control system and analysis</Title>
+    </Reference>
+    <Reference>
+        <Citation>Pinker, R. T., J. D. Tarpley, I. Laszlo, K. E. Mitchell, P. R. Houser, E. F. Wood, J. C. Schaake, A. Robock, D. Lohmann, B. A. Cosgrove, J. Sheffield, Q. Duan, L. Luo, and R. W. Higgins (2003), Surface radiation budgets in support of the GEWEX Continental-Scale International Project (GCIP) and the GEWEX Americas Prediction Project (GAPP), including the North American Land Data Assimilation System (NLDAS) project, J. Geophys. Res., 108(D22), 8844, doi:10.1029/2002JD003301.</Citation>
+        <Author>inker, R. T., J. D. Tarpley, I. Laszlo, et al.</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Surface radiation budgets in support of the GEWEX Continental-Scale International Project (GCIP) and the GEWEX Americas Prediction Project (GAPP), including the North American Land Data Assimilation System (NLDAS) project</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>doi:10.1029/2002JD003301.</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Rogers, E., D. Deaven and G. J. DiMego, 1995: The regional analysis system for the operational "early" Eta model: original 80-km configuration and recent changes. Wea. Forecasting, 10, 810-825.</Citation>
+        <Author>Rogers, E., D. Deaven and G. J. DiMego</Author>
+        <Publication_Date>1995</Publication_Date>
+        <Title>The regional analysis system for the operational "early" Eta model: original 80-km configuration and recent changes</Title>
+    </Reference>
+    <Summary>
+        <Abstract>This data set contains the forcing data for Phase 1 of the North American Land Data Assimilation System (NLDAS-1). The data are in 1/8th degree grid spacing and range from 29 Sep 1996 to 31 Dec 2007. The temporal resolution is hourly. The file format is WMO GRIB-1.The chief source of NLDAS-1 forcing is NCEP's Eta model-based Data Assimilation System (EDAS) [Rogers et al., 1995], a continuously cycled North American 4DDA system. It utilizes 3-hourly analysis-forecast cycles to derive atmospheric states by assimilating many types of observations, including station observations of surface pressure and screen-level atmospheric temperature, humidity, and U and V wind components.
+ 
+EDAS 3-hourly fields of the latter five variables plus surface downward shortwave and longwave radiation and total and convective precipitation are provided on a 40-km grid, and then interpolated spatially to the NLDAS grid and temporally to one hour. Last, to account for NLDAS versus EDAS surface-elevation differences, a terrain-height adjustment is applied to the air temperature and surface pressure using a standard lapse rate (6.5 K/km), then to specific humidity (keeping original relative humidity) and downward longwave radiation (for new air temperature, specific humidity). The details of the spatial interpolation, temporal disaggregation, and vertical adjustment are presented by Cosgrove et al. (2003).
+ 
+GOES-based solar insolation (Pinker et al., 2003) provides the primary insolation forcing (shorwave down at the surface) for NLDAS-1. GOES insolation is not retrieved for zenith angles below 75 degrees and so is supplemented with EDAS insolation near the day/night terminator. Last from the GOES-based product suite, Photosynthetically Active Radiation (PAR) and surface brightness temperature fields are included in the NLDAS-1 forcing files.
+ 
+NLDAS-1 precipitation forcing over CONUS is anchored to NCEP's 1/4th degree gauge-only daily precipitation analyses of Higgins et al. [2000]. In NLDAS-1, this daily analysis is interpolated to 1/8th degree, then temporally disaggregated to hourly values by applying hourly weights derived from hourly, 4-km, radar-based (WSR-88D) precipitation fields. The latter radar-based fields are used only to derive disaggregation weights and do not change the daily total precipitation. Last, convective precipitation is estimated by multiplying NLDAS-1 total precipitation by the ratio of EDAS convective to EDAS total precipitation. The Convective Available Potential Energy (CAPE) is the final variable in the forcing data set, also interpolated from EDAS.
+ 
+The data set applies a user-defined parameter table to indicate the contents and parameter number. The GRIBTAB file shows a list of parameters for this data set, along with their Product Definition Section (PDS) IDs and units.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/NLDAS_FOR0125_H.001/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=NLDAS_FOR0125_H</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/#keywords=NLDAS_FOR0125_H</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=NLDAS_FOR0125_H</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET RELATED VISUALIZATION</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>http://giovanni.gsfc.nasa.gov/giovanni/#dataKeyword=NLDAS_FOR0125_H</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GDS</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/dods/NLDAS_FOR0125_H.001</URL>
+        <Description>The GrADS Data Server (GDS) is another form of OPeNDAP that provides subsetting and some analysis services across the Internet.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW EXTENDED METADATA</Type>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/NLDAS_FOR0125_H.001/doc/gribtab_NLDAS_FOR_hourly.001.txt</URL>
+        <Description>The GRIBTAB file that contains a list of variables, along with the GRIB Product Definition Section (PDS) ID, variable short name, long names, and unit.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW EXTENDED METADATA</Type>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/gds/NLDAS/NLDAS_FOR0125_H.001.ctl</URL>
+        <Description>The Grid Analysis and Display System (GrADS) data descriptor file contains a complete description of the binary data as well as instructions for GrADS on where to find the data and how to read it.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/NLDAS/README.NLDAS1.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://ldas.gsfc.nasa.gov/nldas/</URL>
+        <Description>NLDAS Project Web Site</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>HOW-TO</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/howto</URL>
+        <Description>GES DISC Services Cookbook main page</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2014-05-12: Hualan Rui
+                                          
+                                          Removed the parameter list in the Summary and added a link to the corresponding GRIBTAB; Updated the Data Set Citation, Related URL, and Personnel.
+
+2016-10-12 Hualan:  Changed the Multimedia Sample URL to the image in a central repository.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2009-06-03</Metadata_Creation>
+        <Metadata_Last_Revision>2017-01-10</Metadata_Last_Revision>
+        <Metadata_Future_Review>2015-04-30</Metadata_Future_Review>
+        <Data_Creation>2009-08-01</Data_Creation>
+        <Data_Last_Revision>2009-08-01</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>4</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 hour</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>5b7b3bf7-77d2-4012-a3da-fbfe8f9fd066</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:21:30</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:40Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>SOOS</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>51f5487c-098e-4387-b0f0-09eb9d55b0d5</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/H3CJY2R7C1RU</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

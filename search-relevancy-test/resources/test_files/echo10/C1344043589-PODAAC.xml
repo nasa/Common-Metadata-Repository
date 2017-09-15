@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>SMAP_RSS_L3_SSS_SMI_8DAY-RUNNINGMEAN_V2</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2016-10-22T01:48:59.786Z</InsertTime>
+    <LastUpdate>2016-10-22T01:48:59.786Z</LastUpdate>
+    <LongName>RSS SMAP Level 3 Sea Surface Salinity Standard Mapped Image 8-Day Running Mean V2.0 Validated Dataset</LongName>
+    <DataSetId>PODAAC-SMP20-3SPCS</DataSetId>
+    <Description>The version 2.0 SMAP-SSS level 3, 8-Day running mean gridded product is based on the first release of the validated standard mapped sea surface salinity (SSS) data from the NASA Soil Moisture Active Passive (SMAP) observatory, produced operationally by Remote Sensing Systems (RSS). This release builds upon the legacy of the Aquarius/SAC mission and the official NASA salinity retrieval algorithm applied now to observations from the SMAP mission. Daily data files for this product are based on SSS averages spanning an 8-day moving time window.  SMAP data begins on April 1,2015 and is ongoing, with a one-month latency in processing and availability. L3 products are global in extent and gridded at 0.25degree x 0.25degree with an approximate spatial resolution of 40km.
+  
+The SMAP satellite is in a near-polar orbit at an inclination of 98 degrees and an altitude of 685 km. It has an ascending node time of 6 pm and is sun-synchronous. With its 1000km swath, SMAP achieves global coverage in approximately 3 days, but has an exact orbit repeat cycle of 8 days.  On board instruments include a highly sensitive L-band radiometer operating at 1.41GHz and an L-band 1.26GHz radar sensor providing complementary active and passive sensing capabilities.  Malfunction of the SMAP scatterometer on 7 July, 2015, has necessitated the use of collocated wind speed, primarily from WindSat, for the surface roughness correction required for the surface salinity retrieval.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-11-15T22:10:15.013Z</RevisionDate>
+    <ProcessingCenter>Aquarius Project NASA/CONAE</ProcessingCenter>
+    <ProcessingLevelId>3</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2015-03-27T12:00:00.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>(818) 393-7165</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>podaac@podaac.jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>User</FirstName>
+                    <MiddleName>null</MiddleName>
+                    <LastName>Services</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Salinity/Density</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Salinity</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>None</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>SMAP</ShortName>
+            <LongName>NASA Soil Moisture Active Passive (SMAP)</LongName>
+            <Type>null</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SMAP_RADIOMETER</ShortName>
+                    <LongName>SMAP L-Band Radiometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SMAP_RADIOMETER</ShortName>
+                            <LongName>SMAP L-Band Radiometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+                <Instrument>
+                    <ShortName>SMAP_RADAR</ShortName>
+                    <LongName>SMAP L-band 1.26GHz SAR</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SMAP_RADAR</ShortName>
+                            <LongName>SMAP L-band 1.26GHz SAR</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/smap/L3/RSS/V2/8day_running/SCI/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/L3/RSS/V2/8day_running/SCI</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://thredds.jpl.nasa.gov/thredds/catalog/ncml_aggregation/SalinityDensity/smap/catalog.html</URL>
+            <Description>THREDDS SERVER</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.remss.com/missions/smap</URL>
+            <Description>Remote Sensing Systems SMAP Sea Surface Salinity Website</Description>
+            <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/smap</URL>
+            <Description>SMAP-SSS Project and Instrument Overview</Description>
+            <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/docs/v2/RSS_SMAP-SSS_V2.0_TechnicalDocumentation.pdf</URL>
+            <Description>SMAP-SSS V2.0 Technical Guide (ATBD, Validation Analysis, Product Format Specification)</Description>
+            <Type>PORTAL_DOC_USERS_GUIDE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/sw/r/</URL>
+            <Description>R Reader and calling routines</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/las</URL>
+            <Description>Live Access Server</Description>
+            <Type>PORTAL_DA_TOOLS_AND_SERVICES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://smap.jpl.nasa.gov/</URL>
+            <Description>NASA SMAP Mission Website</Description>
+            <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/sw/matlab/</URL>
+            <Description>MATLAB Reader and calling routines</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/docs/v2/</URL>
+            <Description>ATBD, Validation Analysis, Product Specifications, etc</Description>
+            <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/smap/sw/idl/</URL>
+            <Description>IDL Reader and calling routines</Description>
+            <Type>PORTAL_DA_READ_SOFTWARE</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>SSBUVIRR</Short_Name>
+        <Version>008</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>Shuttle SBUV (SSBUV) Solar Spectral Irradiance V008 (SSBUVIRR) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Hilsenrath, E.</Dataset_Creator>
+        <Dataset_Title>Shuttle SBUV (SSBUV) Solar Spectral Irradiance V008</Dataset_Title>
+        <Dataset_Series_Name>SSBUVIRR</Dataset_Series_Name>
+        <Dataset_Release_Date>2009-09-08</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>008</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/SSBUVIRR_008.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>ERNEST</First_Name>
+            <Last_Name>HILSENRATH, PH.D</Last_Name>
+            <Address>
+                <Street_Address>NASA</Street_Address>
+                <Street_Address>HQ:DF000</Street_Address>
+                <City>Washington</City>
+                <State_Province>DC</State_Province>
+                <Postal_Code>20546-0001</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>202-358-7231</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Ernest.Hilsenrath@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <First_Name>RICHARD</First_Name>
+            <Last_Name>CEBULA, PH.D</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 613.3</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-867-2160</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Richard.P.Cebula@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JAMES</First_Name>
+            <Middle_Name>EDWARD</Middle_Name>
+            <Last_Name>JOHNSON</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5121</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>James.Johnson@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SUN-EARTH INTERACTIONS</Topic>
+        <Term>SOLAR ACTIVITY</Term>
+        <Variable_Level_1>SOLAR IRRADIANCE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>ATLAS-1</Ancillary_Keyword>
+    <Ancillary_Keyword>ATLAS-2</Ancillary_Keyword>
+    <Ancillary_Keyword>ATLAS-3</Ancillary_Keyword>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-34</Short_Name>
+        <Long_Name>Space Transport System STS-34</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-41</Short_Name>
+        <Long_Name>Space Transport System STS-41</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-43</Short_Name>
+        <Long_Name>Space Transport System STS-43</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-45</Short_Name>
+        <Long_Name>Space Transport System STS-45</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-56</Short_Name>
+        <Long_Name>Space Transport System STS-56</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-62</Short_Name>
+        <Long_Name>Space Transport System STS-62</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-66</Short_Name>
+        <Long_Name>Space Transport System STS-66</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Space Stations/Manned Spacecraft</Type>
+        <Short_Name>STS-72</Short_Name>
+        <Long_Name>Space Transport System STS-72</Long_Name>
+        <Instrument>
+            <Short_Name>SSBUV</Short_Name>
+            <Long_Name>Shuttle Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1989-10-19</Beginning_Date_Time>
+            <Ending_Date_Time>1996-01-18</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1989-10-19</Beginning_Date_Time>
+            <Ending_Date_Time>1989-10-21</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1990-10-07</Beginning_Date_Time>
+            <Ending_Date_Time>1990-10-09</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1991-08-03</Beginning_Date_Time>
+            <Ending_Date_Time>1991-08-06</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1992-03-29</Beginning_Date_Time>
+            <Ending_Date_Time>1992-03-31</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1993-04-09</Beginning_Date_Time>
+            <Ending_Date_Time>1993-04-16</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1994-03-14</Beginning_Date_Time>
+            <Ending_Date_Time>1994-03-17</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1994-11-05</Beginning_Date_Time>
+            <Ending_Date_Time>1994-11-13</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1996-01-12</Beginning_Date_Time>
+            <Ending_Date_Time>1996-01-18</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>NO_SPATIAL</Granule_Spatial_Representation>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>ATLAS</Short_Name>
+        <Long_Name>Atmospheric Laboratory for Applications and Science</Long_Name>
+    </Project>
+    <Project>
+        <Short_Name>COLUMBIA</Short_Name>
+        <Long_Name>Space Shuttle Columbia</Long_Name>
+    </Project>
+    <Project>
+        <Short_Name>DISCOVERY</Short_Name>
+        <Long_Name>Space Shuttle Discovery</Long_Name>
+    </Project>
+    <Project>
+        <Short_Name>ENDEAVOUR</Short_Name>
+        <Long_Name>Space Shuttle Endeavour</Long_Name>
+    </Project>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>GSFC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>0.8 MB</Distribution_Size>
+        <Distribution_Format>ASCII</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>https://disc.gsfc.nasa.gov/acdisc/images/SSBUVIRR.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:47:49 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/acdisc/images/SSBUVIRR.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddc6e01b045fab4ed1ce/file</URL>
+        <Format>PNG</Format>
+        <Caption>SSBUV Ozone Sample Image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Hilsenrath, E., R.P. Cebula, M.C. Bories, P.W. DeCamp, L.-K. Huang, C.N. Hui, S.J. Janz, T.J. Kelly, K.R. McCullough, J.J. Mederios, J.T. Riley, B.K. Rice, and C.D. Thorpe, 1996: Contributions of the SSBUV Experiment to Long-Term Ozone Monitoring, in Proc. 18th Quadrennial Ozone Symposium, L'Aquila 1996.Hilsenrath, E., P.A. Newman, R.P. Cebula, P.W. DeCamp, T.J. Kelly and L. Coy, "Ozone Change from 1992 to 1993 as Observed from SSBUV on the Atlas-1 and Atlas-2 Missions," Geophy. Res. Lett., 23 2305-2308, 1996.Hilsenrath, E., R.P. Cebula, M.T. Deland, K. Laamann, S. Taylor, C. Wellemeyer, and P.K. Bhartia, 1995: Calibration of the NOAA-11 Solar Backscatter Ultraviolet (SBUV/2) Ozone Data Set from 1989 to 1993 using In-Flight Calibration Data and SSBUV, J. Geophys. Res., 100, 1351-1366, 1995.Hilsenrath, E., D.E. Williams, R.T. Caffrey, R.P. Cebula, and S.J. Hynes, "Calibration and Radiometric Stability of the Shuttle Solar Backscatter Ultraviolet (SSBUV) Experiment," Metrologia, 30, 243-248, 1993.Cebula, R. P., E. Hilsenrath, T. J. Kelly, G. Batluck, "On the Radiometric Stability of the Shuttle Borne Solar Backscatter Ultraviolet Spectrometer", Proc. SPIE, 1493, 91-99, (1991)Hilsenrath, E., R.P. Cebula, S.J. Hynes, and R.T. Caffrey, "Implications of Space Shuttle Flight on the Calibration of Instruments Observing Atmospheric Ozone and the Solar Irradiance," Metrologia, 28, 301-308, 1991.Hilsenrath, E., D. Williams, and J. Frederick, "Calibration of Long Term Data Sets from Operational Satellites using the Space Shuttle," SPIE Proc., 924, 215-222, 1988.</Citation>
+    </Reference>
+    <Summary>
+        <Abstract>The Shuttle Solar Backscatter Ultraviolet (SSBUV) level-2 irradiance data are available for eight space shuttle missions flown between 1989 and 1996. SSBUV, a successor to the SBUV flown on the Nimbus-7 satellite, is nearly identical to the SBUV/2 instruments flown on the NOAA polar orbiting satellites. Data are available in an ASCII text format. UV irradiance data are available for the following days from the eight missions:      Flight #1: 1989 October 19, 20, 21      Flight #2: 1990 October 7, 8, 9      Flight #3: 1991 August 3, 4, 5, 6      Flight #4: 1992 March 29, 30      Flight #5: 1993 April 9, 11, 13, 15, 16      Flight #6: 1994 March 14, 15, 17      Flight #7: 1994 November 5, 7, 10, 13      Flight #8: 1996 January 12, 16, 18            The Shuttle SBUV (SSBUV) instrument measured solar spectral UV irradiance during the maximum and declining phase of solar cycle 22. The SSBUV data accurately represent the absolute solar UV irradiance between 200-405 nm, and also show the long-term variations during eight flights between October 1989 and January 1996. These data have been used to correct long-term sensitivity changes in the NOAA-11 SBUV/2 data, which provide a near-daily record of solar UV variations over the 170-400 nm region between December 1988 and October 1994. These data demonstrate the evolution of short-term solar UV activity during solar cycle 22.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://acdisc.gesdisc.eosdis.nasa.gov/data/Shuttle_SBUV_Level2/SSBUVIRR.008/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=SSBUVIRR</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2014-07-18, J. Johnson Changes made for GES DISC landing page support.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2009-08-27</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-17</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-06-01</Metadata_Future_Review>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>2</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>4532c8bb-3308-47c5-b37d-253a394aa4d2</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:21:39</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:51Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Discipline</Name>
+            <Value>SOLAR PHYSICS</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>MSTMNXMLD</Short_Name>
+        <Version>5.2.0</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>tavgM_2d_mld_Nx: MERRA Simulated 2D Incremental Analysis Update (IAU) MERRA-Land reanalysis, GEOSldas-MERRALand, Time Average Monthly Mean  1.25 x 1.25 degree V5.2.0 (MSTMNXMLD) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Global Modeling and Assimilation Office (GMAO)</Dataset_Creator>
+        <Dataset_Title>tavgM_2d_mld_Nx: MERRA Simulated 2D Incremental Analysis Update (IAU) MERRA-Land reanalysis, GEOSldas-MERRALand, Time Average Monthly Mean  V5.2.0</Dataset_Title>
+        <Dataset_Series_Name>MSTMNXMLD</Dataset_Series_Name>
+        <Dataset_Release_Date>2008-07-23</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>5.2.0</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/K9PCGOMQ1XP1</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.sci.gsfc.nasa.gov/datacollection/MSTMNXMLD_5.2.0.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <Last_Name>GLOBAL MODELING AND ASSIMILATION OFFICE</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.1</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6142</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>data@gmao.gsfc.nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>DANA</First_Name>
+            <Last_Name>OSTRENGA</Last_Name>
+            <Address>
+                <Street_Address>Code 610.2 Bldg 32 Rm S151</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>21230</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5475</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>dana.ostrenga@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>MICHAEL</First_Name>
+            <Last_Name>BOSILOVICH</Last_Name>
+            <Address>
+                <Street_Address>NASA/Goddard Space Flight Center</Street_Address>
+                <Street_Address>Global Modeling and Assimilation Office</Street_Address>
+                <Street_Address>Code 610.1</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Email>Michael.Bosilovich@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>CLOUDS</Term>
+        <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>HEAT FLUX</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>LONGWAVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>HUMIDITY</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>PRECIPITABLE WATER</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>WATER VAPOR</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>PRECIPITATION RATE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+    <ISO_Topic_Category>ELEVATION</ISO_Topic_Category>
+    <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+    <ISO_Topic_Category>IMAGERY/BASE MAPS/EARTH COVER</ISO_Topic_Category>
+    <Platform>
+        <Type>Models/Analyses</Type>
+        <Short_Name>MERRA</Short_Name>
+        <Long_Name>Modern-Era Retrospective Analysis for Research and Applications</Long_Name>
+        <Instrument>
+            <Short_Name>NOT APPLICABLE</Short_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1979-01-01</Beginning_Date_Time>
+            <Ending_Date_Time>2016-02-29</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>NO_SPATIAL</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>89.375</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>179.375</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>1/2 degree</Latitude_Resolution>
+        <Longitude_Resolution>2/3 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 month</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>MERRA</Short_Name>
+        <Long_Name>Modern Era Retrospective-analysis for Research and Applications</Long_Name>
+    </Project>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>Global Modeling and Assimilation Office (GMAO)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Ex
+ploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>10 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS</Distribution_Format>
+        <Fees>Free</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <!--Modified by Change List Tool on Mon Jun 26 16:44:04 EDT 2017. Old value is "https://disc.sci.gsfc.nasa.gov/MERRA/images/MSTMNXMLD_5_2_0.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/594c9b11e01b04e7193d6de0/file</URL>
+        <Caption>MSTMNXMLD</Caption>
+        <Description>MSTMNXMLD variable</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Author>Bloom, S., L. Takacs, A. DaSilva, and D. Ledvina</Author>
+        <Publication_Date>1996</Publication_Date>
+        <Title>Data assimilation using incremental analysis updates</Title>
+        <Series>Monthly Weather Review</Series>
+        <Issue>124</Issue>
+        <Pages>1256-1271</Pages>
+    </Reference>
+    <Reference>
+        <Author>Bloom, S., A. da Silva, D. Dee, M. Bosilovich, J.-D. Chern, S. Pawson, S. Schubert, M. Sienkiewicz, I. Stajner, W.-W. Tan, M.-L. Wu</Author>
+        <Publication_Date>2005</Publication_Date>
+        <Title>Documentation and Validation of the Goddard Earth Observing System (GEOS) Data Assimilation System - Version 4</Title>
+        <Series>Technical Report Series on Global Modeling and Data Assimilation</Series>
+        <Edition>104606</Edition>
+        <Volume>26</Volume>
+    </Reference>
+    <Reference>
+        <Author>Collins, N., G. Theurich, C. DeLuca, M. Suarez, A. Trayanov, V. Balaji, P. Li, W. Yang, C. Hill, and A. da Silva</Author>
+        <Publication_Date>2005</Publication_Date>
+        <Title>Design and implementation of components in the Earth System Modeling Framework</Title>
+        <Series>International Journal of High Performance Computing Applications</Series>
+        <Volume>19</Volume>
+        <Pages>341-350</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1177/1094342005056120</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Author>Koster, R. D., M. J. Suarez, A. Ducharne, M. Stieglitz, and P. Kumar</Author>
+        <Publication_Date>2000</Publication_Date>
+        <Title>A catchment-based approach to modeling land surface processes in a GCM, Part 1, Model Structure</Title>
+        <Series>Journal of Geophysical Res.</Series>
+        <Edition>105</Edition>
+        <Pages>24809-24822</Pages>
+    </Reference>
+    <Reference>
+        <Author>Purser, R. J., W.-S. Wu, D. F. Parrish, and N. M. Roberts</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Numerical aspects of the application of recursive filters to variational statistical analysis. Part I: Spatially homogeneous and isotropic Gaussian covarianc
+es</Title>
+        <Series>Monthly Weather Review</Series>
+        <Edition>131</Edition>
+        <Pages>1524-1535</Pages>
+    </Reference>
+    <Reference>
+        <Author>Purser, R. J., W.-S. Wu, D. F. Parrish, and N. M. Roberts</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Numerical aspects of the application of recursive filters to variational statistical analysis. Part II: Spatially inhomogeneous and anisotropic general covar
+iances</Title>
+        <Series>Monthly Weather Review</Series>
+        <Edition>131</Edition>
+        <Pages>1536-1548</Pages>
+    </Reference>
+    <Reference>
+        <Author>Wu, W.-S., R.J. Purser and D.F. Parrish</Author>
+        <Publication_Date>2002</Publication_Date>
+        <Title>Three-dimensional variational analysis with spatially inhomogeneous covariances</Title>
+        <Series>Monthly Weather Review</Series>
+        <Edition>130</Edition>
+        <Pages>2905-2916</Pages>
+    </Reference>
+    <Summary>
+        <Abstract>The Modern-Era Retrospective Analysis for Research and Applications (MERRA) is a state-of-the-art reanalysis data product that provides, in addition to atmospheric fields, global estimates of soil moisture, latent heat flux, snow, and runoff for 1979-present. A supplemental and improved set of land surface hydrological fields (MERRA-Land) was generated by re-running a revised version of the land component of the MERRA system (Reichle et al., 2012). Specifically, the MERRA-Land estimates benefit from corrections to the precipitation forcing with the global gauge-based NOAA Climate Prediction Center Unified (CPCU) precipitation product and from revised parameter values in the rainfall interception model, changes that effectively correct for known limitations in the MERRA surface meteorological forcings. With a few exceptions, the MERRA-Land data appear more accurate than the original MERRA estimates and are thus recommended for those interested in using MERRA output for land surface hydrological studies.
+
+The MERRA-Land product, MSTMNXMLD or tavgM_2d_mld_Nx, is a simulated 2-Dimensional monthly mean at the native resolution. All collections from this group are at reduced horizontal resolution.
+
+The data are on the GEOS-5 native 540 x 361 grid with 2/3 degree longitude x 1/2 degree latitude resolution. Data are archived in the HDF-EOS (Grid) format, based on HDF4.
+
+Sign Up for the MERRA-2 Mailing List
+
+Sign up for the MERRA-2 listserv to receive announcements on the latest data information, tools and services that become available, data announcements from GMAO and more! Contact the GES DISC User Services (gsfc-help-disc@lists.nasa.gov) to be added to the list.
+
+MERRA-2 Science Data and Data Processing Questions
+
+Do you have a question about MERRA/MERRA-2? Take a look at the File Specification Document and if that doesn't answer your question, users can contact staff with questions on the data, data processing and science. Send questions to merra-questions@lists.nasa.gov.
+    </Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://goldsmr2.gesdisc.eosdis.nasa.gov/data/MERRA_MONTHLY/MSTMNXMLD.5.2.0/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SUBSETTER</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/daac-bin/FTPSubset.pl?LOOKUPID_List=MSTMNXMLD</URL>
+        <Description>MERRA Data specific subsetter which allows users to subset based on temporal, spatial, time, vertical and variable. Users have options to calculate the mean, reformat and regrid the data to NetCDF.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET RELATED VISUALIZATION</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>https://giovanni.gsfc.nasa.gov/giovanni/#variableFacets=dataProductPlatformInstrument%3AMERRA Model%3B</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=MSTMNXMLD</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=MSTMNXMLD</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GDS</Subtype>
+        </URL_Content_Type>
+        <URL>https://goldsmr2.gesdisc.eosdis.nasa.gov/dods/MSTMNXMLD.info</URL>
+        <Description>The GrADS Data Server (GDS) is another form of OPeNDAP that provides subsetting and some analysis services across the Internet.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://goldsmr2.gesdisc.eosdis.nasa.gov/opendap/MERRA_MONTHLY/MSTMNXMLD.5.2.0/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://gmao.gsfc.nasa.gov/</URL>
+        <Description>The GMAO home page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://gmao.gsfc.nasa.gov/products/documents/MERRA_File_Specification.pdf</URL>
+        <Description>MERRA File Specification Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://goldsmr2.gesdisc.eosdis.nasa.gov/data/MERRA_MONTHLY/MSTMNXMLD.5.2.0/doc/MERRA.README.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2007-06-14</Metadata_Creation>
+        <Metadata_Last_Revision>2015-07-07</Metadata_Last_Revision>
+        <Data_Creation>2007-06-14</Data_Creation>
+        <Data_Last_Revision>2015-07-07</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>4</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>42a420d8-04bd-4b2f-ad2a-8adc138faa04</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2015-11-10 09:19:54</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2015-11-18T21:11:33Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>CEOS</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>edff0791-121c-40aa-adf2-33feb2bc30e5</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/8D4LU4390C4S</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.4</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

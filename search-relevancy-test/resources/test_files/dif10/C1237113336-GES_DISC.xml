@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>GSSTF</Short_Name>
+        <!--using Version from Dataset_Citation-->
+        <Version>2c</Version>
+    </Entry_ID>
+    <!--added-->
+    <Version_Description>Not provided</Version_Description>
+    <!--Entry_Title was trimmed-->
+    <Entry_Title>Surface Turbulent Fluxes, 1x1 deg Daily Grid, Set1 V2c (GSSTF) at GES DISC</Entry_Title>
+    <!--renamed from Data_Set_Citation to Dataset_Citation-->
+    <Dataset_Citation>
+        <Dataset_Creator>Shie, C.-L., K. Hilburn, L. S. Chiu, R. Adler, I-I Lin, E. Nelkin, and J. Ardizzone</Dataset_Creator>
+        <Dataset_Editor>Andrey Savtchenko</Dataset_Editor>
+        <!--Dataset_Title was trimmed-->
+        <Dataset_Title>Surface Turbulent Fluxes, 1x1 deg Daily Grid, Set1 V2c</Dataset_Title>
+        <Dataset_Series_Name>GSSTF</Dataset_Series_Name>
+        <Dataset_Release_Date>2011-11-18</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>2c</Version>
+        <Issue_Identification>GSSTF_2c</Issue_Identification>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/GSSTF_2c.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>DAVID</First_Name>
+            <Last_Name>SILBERSTEIN</Last_Name>
+            <!--renamed from Contact_Address to Address-->
+            <Address>
+                <!--renamed from Address to Street_Address-->
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <!--renamed from Address to Street_Address-->
+                <Street_Address>Code 610.2</Street_Address>
+                <!--renamed from Address to Street_Address-->
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <!--renamed from Province_or_State to State_Province-->
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5183</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>david.s.silberstein@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>CHUNG-LIN</First_Name>
+            <Last_Name>SHIE</Last_Name>
+            <!--renamed from Contact_Address to Address-->
+            <Address/>
+            <Email>chung-lin.shie-1@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="07ce145c-9936-4675-b4a7-8710e39aa391">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PRESSURE</Term>
+        <Variable_Level_1>SEA LEVEL PRESSURE</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="f634ab55-de40-4d0b-93bc-691bf5408ccb">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+        <Variable_Level_2>AIR TEMPERATURE</Variable_Level_2>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="25fcdcb7-efd2-4d2f-ba57-92bbcc7ba69a">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+        <Variable_Level_2>SKIN TEMPERATURE</Variable_Level_2>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="5a7bb095-4d12-4232-bc75-b8e82197cb92">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="b68ab978-6db6-49ee-84e2-5f37b461a998">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>EVAPORATION</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="427e5121-a142-41cb-a8e9-a70b7f98eb6a">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>HUMIDITY</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="c3a4eb4a-4619-43cd-b890-b567d01324ea">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>PRECIPITABLE WATER</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="15029eb0-6342-4066-8ac9-c50f7dbfb392">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>WATER VAPOR</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="10685919-bc01-43e7-901a-b62ac44627f3">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>SURFACE WINDS</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="226d05da-dd0b-4314-919a-0b259ce724b5">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>TURBULENCE</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="ef034881-8bf4-403f-a4ee-c68771769c93">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>WIND STRESS</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="06a24fd2-38b6-4a4a-a0cf-1abf149283e2">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>ATMOSPHERIC HEATING</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="46a3c823-727d-4c3c-b09d-e3e3fcaa43a5">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>HEAT FLUX</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="107582ef-a356-4afa-a9a4-4e1d2200c134">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>RADIATIVE FLUX</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="2ef42281-1e38-4391-b578-ba6a6158f0c2">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN HEAT BUDGET</Term>
+        <Variable_Level_1>CONDUCTION</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="881eea51-e32c-4174-a73f-d56c94122c2e">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN HEAT BUDGET</Term>
+        <Variable_Level_1>EVAPORATION</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="ee2cb9eb-f960-4e23-9e7c-be64d44a64e7">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN HEAT BUDGET</Term>
+        <Variable_Level_1>HEAT FLUX</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="e5bca08d-ecb3-4b85-8acd-fed782875aa2">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN PRESSURE</Term>
+        <Variable_Level_1>SEA LEVEL PRESSURE</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="bd24a9a9-7d52-4c29-b2a0-6cefd216ae78">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN TEMPERATURE</Term>
+        <Variable_Level_1>SEA SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="fbc53539-ce4e-4e3e-bbd2-8270386616b4">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN WINDS</Term>
+        <Variable_Level_1>SURFACE WINDS</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="13aeaea0-ab45-4148-abcf-c6becf7a8934">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN WINDS</Term>
+        <Variable_Level_1>TURBULENCE</Variable_Level_1>
+    </Science_Keywords>
+    <!--renamed from Parameters to Science_Keywords-->
+    <Science_Keywords uuid="91d73256-925d-4d04-9b55-aaf088080cac">
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN WINDS</Term>
+        <Variable_Level_1>WIND STRESS</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category uuid="1ebf71bd-d007-42f8-8f9b-8c44a6b65a28">CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <ISO_Topic_Category uuid="dbff9ea9-3b00-4cd4-b3ed-21790a797207">OCEANS</ISO_Topic_Category>
+    <!--renamed from Keyword to Ancillary_Keyword-->
+    <Ancillary_Keyword>fluxes</Ancillary_Keyword>
+    <!--renamed from Keyword to Ancillary_Keyword-->
+    <Ancillary_Keyword>oceanic surface fluxes</Ancillary_Keyword>
+    <!--renamed from Keyword to Ancillary_Keyword-->
+    <Ancillary_Keyword>latent heat flux</Ancillary_Keyword>
+    <!--renamed from Keyword to Ancillary_Keyword-->
+    <Ancillary_Keyword>climate</Ancillary_Keyword>
+    <!--renamed from Keyword to Ancillary_Keyword-->
+    <Ancillary_Keyword>hydrological cycle</Ancillary_Keyword>
+    <!--renamed from Keyword to Ancillary_Keyword-->
+    <Ancillary_Keyword>hydrology</Ancillary_Keyword>
+    <!--renamed from Keyword to Ancillary_Keyword-->
+    <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+    <!--renamed from Sensor_Name to Instrument-->
+    <!--renamed from Source_Name to Platform-->
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>DMSP</Short_Name>
+        <Long_Name>Defense Meteorological Satellite Program</Long_Name>
+        <Instrument>
+            <Short_Name>SSM/I</Short_Name>
+            <Long_Name>Special Sensor Microwave/Imager</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <!--renamed from Temporal_Coverage to Range_DateTime-->
+        <Range_DateTime>
+            <!--renamed from Start_Date to Beginning_Date_Time-->
+            <Beginning_Date_Time>1987-07-09</Beginning_Date_Time>
+            <!--renamed from Stop_Date to Ending_Date_Time-->
+            <Ending_Date_Time>2009-01-01</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <!--renamed from Data_Set_Progress to Dataset_Progress-->
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <!--renamed from Spatial_Coverage to Bounding_Rectangle-->
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location uuid="3d4e44c4-5d99-4a9b-8388-43c63533ee97">
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL OCEAN</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>1 degree</Latitude_Resolution>
+        <Longitude_Resolution>1 degree</Longitude_Resolution>
+        <Horizontal_Resolution_Range uuid="2207b375-113b-4499-a5a6-0ae6edc2aae8">100 km - &lt; 250 km or approximately 1 degree - &lt; 2.5 degrees</Horizontal_Resolution_Range>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+        <Temporal_Resolution_Range uuid="1ac968ef-a90a-4ffc-adbf-ea0c0d69a7f9">Daily - &lt; Weekly</Temporal_Resolution_Range>
+    </Data_Resolution>
+    <Project uuid="4dac8541-0c69-4cd5-ae70-eb8819f39715">
+        <Short_Name>EOSDIS</Short_Name>
+        <Long_Name>Earth Observing System Data Information System</Long_Name>
+    </Project>
+    <Project uuid="5f139d40-4050-4a8e-bd2b-fcae1cfe3d01">
+        <Short_Name>ESIP</Short_Name>
+        <Long_Name>Earth Science Information Partners Program</Long_Name>
+    </Project>
+    <Project uuid="e3544d46-2f00-4f7b-ab04-0f7a60dbf52b">
+        <Short_Name>MEaSUREs</Short_Name>
+        <Long_Name>Making Earth Science Data Records for Use in Research Environments</Long_Name>
+    </Project>
+    <Project uuid="90246f7d-8153-4ed4-92ec-16235bde5c71">
+        <Short_Name>CWIC</Short_Name>
+        <Long_Name>CEOS WGISS Integrated Catalog</Long_Name>
+    </Project>
+    <Quality>
+      See Related URL here for links to quality-related documents
+   </Quality>
+    <Access_Constraints>
+      None
+   </Access_Constraints>
+    <Use_Constraints>
+      None
+   </Use_Constraints>
+    <!--renamed from Data_Set_Language to Dataset_Language-->
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>GES DISC</Originating_Center>
+    <!--renamed from Data_Center to Organization-->
+    <Organization>
+        <!--added - assumption-->
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <!--renamed from Data_Center_Name to Organization_Name-->
+        <Organization_Name uuid="51a7f454-defc-47c2-ba6a-f95847962b7e">
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <!--renamed from Data_Center_URL to Organization_URL-->
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <!--renamed from Contact_Address to Address-->
+                <Address>
+                    <!--renamed from Address to Street_Address-->
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <!--renamed from Address to Street_Address-->
+                    <Street_Address>Code 610.2</Street_Address>
+                    <!--renamed from Address to Street_Address-->
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <!--renamed from Province_or_State to State_Province-->
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>4 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>Fluxes</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:45:24 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/measures/Fluxes/images/GSSTF.2c_TotPrecipWater_01_01_2001.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915dd53e01b045fab4ec2dd/file</URL>
+        <Format>PNG</Format>
+        <Caption>Total Precipitable Water</Caption>
+        <Description>
+      Goddard Satellite-based Surface Turbulent Fluxes (GSSTF) Total Precipitable Water 1 x 1 degree 01/01/2001 [g/cm2]
+      </Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>
+      Brunke, A. M., Z. Wang, X. Zeng, M. Bosilovich, and C.-L. Shie, 2011: An assessment of the uncertainties in ocean surface turbulent fluxes in 11 reanalysis, satellite-derived, and combined global data sets. J. Climate, Vol. 24, 5469-5493. doi: 10.1175/2011JCLI4223.1
+
+Chiu, L. S., S. Gao, and C.-L. Shie, 2012: Oceanic evaporation: Trends and variations (book chapter title), Book title: Remote Sensing / Book 2.  InTech - Open Access Publisher. (accepted)
+
+Chiu, L. S., S. Gao, and C.-L. Shie, 2012: Satellite-based ocean surface turbulent fluxes (book chapter title), Book title: Satellite-based Applications of Climate Change, Editors: J. Qu and A. Powell. CRC Press. (in review)
+
+Hilburn, K. A., and C.-L. Shie, 2011: Decadal trends and variability in Special Sensor Microwave Imager (SSM/I) brightness temperatures and Earth incidence angle, report number 092811, Remote Sensing Systems, 53 pp. (Available online at:
+http://www.remss.com/papers/tech_reports/hilburn_SSMI_EIA_TB_RSS_Tech_Rpt_092811.pdf)
+
+Hilburn, K., and C.-L. Shie, 2011: Decadal trends and variability in Special Sensor Microwave / Imager (SSM/I) brightness temperatures and Earth incidence angle, Abstract IN21A-1418, the 2011 AGU Fall Meeting, 5-9 December 2011, San Francisco, CA, 2011. 
+
+Lai, Q., L. Wu, L., and C.-L. Shie, 2012: Sea Surface Response to Typhoon Morakot (2009) and the Influence on its Activity, Journal of Tropical Meteorology. (in press)
+
+Shie, C.-L., and K. Hilburn, 2011: A newly revived satellite-based global air-sea surface turbulent fluxes dataset and its dependence on the SSM/I brightness temperature, the 2011 IEEE IGARSS, Vancouver, Canada, 25-29 July. Extended Abstract (4 pp), Proceedings (published in CD).
+
+Shie, C.-L., and K. Hilburn, 2011: A satellite-based global ocean surface turbulent fluxes dataset and the impact of the associated SSM/I brightness temperature, the 2011 EUMESAT Meteorological Satellite Conference, Oslo, Norway, 5-9 September. Proceedings, 8 pp. (Available online at:
+http://www.eumetsat.int/website/home/News/ConferencesandEvents/PreviousEvents/DAT_2039705.html)
+
+Shie, C.-L., K. Hilburn, &amp; L. S. Chiu, R. Adler, I-I Lin, E. Nelkin, J. Ardizzone, S. Gao, A. Savtchenko, 2011: The Goddard Satellite-based Surface Turbulent Fluxes (GSSTF) Datasets and the uncertainties/impact due to the SSM/I brightness temperature, Abstract IN21A-1417, the 2011 AGU Fall Meeting, 5-9 December 2011, San Francisco, CA, 2011. 
+
+Shie, C.-L., and collaborators, 2012: The Goddard Satellite-based Surface Turbulent Fluxes (GSSTF) datasets: updates, improvements and applications, the 18th Conference on Satellite Meteorology, Oceanography and Climatology (SatMOC) Conference, New Orleans, LA, 22-26 Jan 2012. (invited talk) (Abstract available at http://ams.confex.com/ams/92Annual/webprogram/Paper192220.html)
+
+
+Chou, S.-H., E. Nelkin, J. Ardizzone, R. Atlas, and C.-L. Shie (2003) Surface turbulent heat and momentum fluxes over global oceans based on the Goddard satellite retrieval, version 2 (GSSTF2). J. Climate, 16, pp. 3256-3273, 2003.
+
+Hilburn, K. A., and C-L. Shie (2011a) The impact of incidence angle variations on climate trends from simple water vapor retrieval algorithms, The 2011 EUMETSAT Meteorological Satellite Conference, Oslo, Norway, 5-9 September, 2011.
+
+Hilburn, K. A., and C.-L. Shie (2011b) Decadal trends and variability in Special Sensor Microwave Imager (SSM/I) brightness temperatures and Earth incidence angle, report number 092811, Remote Sensing Systems, 53 pp.
+
+Shie, C.-L., L. S. Chiu, R. Adler, P. Xie, I-I Lin, F.-C. Wang, E. Nelkin, R. Chokngamwong, W. S. Olson, and D. A. Chu (2009) A note on reviving the Goddard Satellite-based Surface Turbulent Fluxes (GSSTF) dataset, Advances in Atmospheric Sciences, 26(6), 1071-1080.
+
+
+Shie, C.-L., (2010b) A recently revived dataset of satellite-based global air-sea surface turbulent fluxes (GSSTF2b) - features and applications, paper presented at 17th AMS Conference on Satellite Meteorology and Oceanography, Annapolis, MD. 
+Available online: https://docserver.gesdisc.eosdis.nasa.gov/public/project/MEaSUREs/GSSTF/2010-Sat-Air-Sea-Shie.pdf
+
+Shie, C.-L, and K. A. Hilburn, (2011) A Satellite-based Global Ocean Surface Turbulent Fluxes Dataset and the Impact of the Associated SSM/I Brightness Temperature, The 2011 EUMETSAT Meteorological Satellite Conference, Oslo, Norway, 5-9 September, 2011.
+
+Shie, C.-L., K. A. Hilburn, L. S. Chiu, R. Adler, I-I Lin, E. Nelkin, and J. Ardizzone (2011) The Goddard Satellite-Based Surface Turbulent Fluxes Dataset --- Version 2c (GSSTF 2c).  GSSTF2c of HDF-EOS5 format is scheduled for official distribution via NASA GES DISC by October 2011.   </Citation>
+    </Reference>
+    <Summary>
+        <Abstract>These data are the Goddard Satellite-based Surface Turbulent Fluxes Version-2c (GSSTF2c) Dataset recently produced through a MEaSUREs funded project led by Dr. Chung-Lin Shie (UMBC/GEST, NASA/GSFC), converted to HDF-EOS5 format. The stewardship of this HDF-EOS5 dataset is part of the MEaSUREs project. 
+
+GSSTF version 2b (Shie et al. 2010, Shie et al. 2009) generally agreed better with available ship measurements obtained from several field experiments in 1999 than GSSTF2 (Chou et al. 2003) did in all three flux components, i.e., latent heat flux [LHF], sensible heat flux [SHF], and wind stress [WST] (Shie 2010a,b).  GSSTF2b was also found favorable, particularly for LHF and SHF, in an intercomparison study that accessed eleven products of ocean surface turbulent fluxes, in which GSSTF2 and GSSTF2b were also included (Brunke et al. 2011).  However, a temporal trend appeared in the globally averaged LHF of GSSTF2b, particularly post year 2000.  Shie (2010a,b) attributed the LHF trend to the trends originally found in the globally averaged SSM/I Tb's, i.e., Tb(19v), Tb(19h), Tb(22v) and Tb(37v), which were used to retrieve the GSSTF2b bottom-layer (the lowest atmospheric 500 meter layer) precipitable water [WB], then the surface specific humidity [Qa], and subsequently LHF. The SSM/I Tb's trends were recently found mainly due to the variations/trends of Earth incidence angle (EIA) in the SSM/I satellites (Hilburn and Shie 2011a,b).  They have further developed an algorithm properly resolving the EIA problem and successfully reproducing the corrected Tb's by genuinely removing the "artifactitious" trends.  An upgraded production of GSSTF2c (Shie et al. 2011) using the corrected Tb's has been completed very recently. 
+
+GSSTF2c shows a significant improvement in the resultant WB, and subsequently the retrieved LHF - the temporal trends of WB and LHF are greatly reduced after the proper adjustments/treatments in the SSM/I Tb's (Shie and Hilburn 2011).  In closing, we believe that the insightful "Rice Cooker Theory" by Shie (2010a,b), i.e., "To produce a good and trustworthy 'output product' (delicious 'cooked rice') depends not only on a well-functioned 'model/algorithm' ('rice cooker'), but also on a genuine and reliable 'input data' ('raw rice') with good quality" should help us better comprehend the impact of the improved Tb on the subsequently retrieved LHF of GSSTF2c. 
+
+This is the Daily (24-hour) product; data are projected to equidistant Grid that covers the globe at 1x1 degree cell size, resulting in data arrays of 360x180 size. 
+
+A finer resolution, 0.25 deg,  of this product has been released as Version 3. 
+
+The GSSTF, Version 2c, daily fluxes have first been produced for each individual available SSM/I satellite tapes (e.g., F08, F10, F11, F13, F14 and F15). Then, the Combined daily fluxes are produced by averaging (equally weighted) over available flux data/files from various satellites.  These Combined daily flux data are considered as the "final" GSSTF, Version 2c, and are stored in this HDF-EOS5 collection.
+      
+There are only one set of GSSTF, Version 2c, Combined data, "Set1" 
+            
+The "individual" daily flux data files, produced for each individual satellite, are also available in HDF-EOS5, although from different collections:
+      GES_DISC_GSSTF_xxx_2c, where xxx are the individual satellites (F08, F10, etc..)
+      
+      The input data sets used for this recent GSSTF production include the upgraded and improved datasets such as the Special Sensor Microwave Imager (SSM/I) Version-6 (V6) product of brightness temperature [Tb], total precipitable water [W], and wind speed [U] produced by the Wentz of Remote Sensing Systems (RSS), as well as the NCEP/DOE Reanalysis-2 (R2) product of sea skin temperature [SKT], 2-meter air temperature [Tair], and sea level pressure [SLP]. Relevant to this MEaSUREs project, these are converted to HDF-EOS5, and are stored in the GES_DISC_GSSTF_NCEP_2c collection. 
+      
+      Please use these products with care and proper citations, i.e., properly indicating your applications with, e.g., "using the combined 2001 data file of Set1" or "using the 2001 F13 data file". 
+            
+      APPENDIX SET1
+      ---------------
+      The following list summarizes individual satellites used to produce the Combined SET1. 
+      
+      (1) Y1987/:
+          F08/
+          1987/07-12:  F08  (Note: 1987/12 is filled with missing value due to data scarcity)
+      
+      (2) Y1988/:
+          F08/
+          1988/01-12:  F08
+      
+      (3) Y1989/:
+          F08/
+          1989/01-12:  F08
+      
+      (4) Y1990:
+          F08/ F10/
+          1990/01-12:  F08 (Note: F10 started in 1990/12, but N/A due to data scarcity)
+      
+      (5) Y1991/:
+          F08/  F10/
+          1991/01-12:  F08+F10
+      
+      (6) Y1992/:
+          F10/  F11/
+          1992/01-12:  F10+F11
+      
+      (7) Y1993/:
+          F10/  F11/
+          1993/01-12:  F10+F11
+      
+      (8) Y1994/:
+          F10/  F11/
+          1994/01-12:  F10+F11
+      
+      (9) Y1995/:
+          F10/  F11/  F13/
+          1995/01-12:  01-04: F10+F11
+                       05-12: F10+F11+F13
+      
+      (10) Y1996/:
+           F10/  F11/  F13/
+           1996/01-12:  F10+F11+F13
+      
+      (11) Y1997/:
+           F10/  F11/  F13/  F14/
+           1997/01-12:  01-04: F10+F11+F13
+                        05/01-11/14: F10+F11+F13+F14
+                        11/15-12/31: F11+F13+F14
+      
+      (12) Y1998/:
+           F11/  F13/  F14/
+           1998/01-12:  F11+F13+F14
+      
+      (13) Y1999/:
+           F11/  F13/  F14/
+           1999/01-12:  F11+F13+F14
+      
+      (14) Y2000/:
+           F11/  F13/  F14/  F15/
+           2000/01-12:  01/01-05/16: F11+F13+F14+F15
+                        05/17-12/31: F13+F14+F15
+      
+      (15) Y2001/:
+           F13/  F14/  F15/
+           2001/01-12: F13+F14+F15
+      
+      (16) Y2002/:
+           F13/  F14/  F15/
+           2002/01-12: F13+F14+F15
+      
+      (17) Y2003/:
+           F13/  F14/  F15/
+           2003/01-12: F13+F14+F15
+      
+      (18) Y2004/:
+           F13/  F14/  F15/
+           2004/01-12: F13+F14+F15
+      
+      (19) Y2005/:
+           F13/  F14/  F15/
+           2005/01-12: F13+F14+F15
+      
+      (20) Y2006/:
+           F13/  F14/  F15/
+           2006/01-12: F13+F14 
+      
+      (21) Y2007/:
+           F13/  F14/  F15/
+           2007/01-12: F13+F14 
+      
+      (22) Y2008/:
+           F13/  F14/  F15/
+           2008/01-12: 01-07: F13+F14 
+                       08-12: F13 
+      
+      Special notes:
+      
+        (a) For Y2006, Y2007 and Y2008, the current Combined daily data files do not include the F15 Individual daily data files due to problematic calibration in F15. The Combined daily files will be updated for those three years once an improved set of Individual daily data files are produced using corrected and updated SSM/I F15 input files.
+      
+        (b) The current Combined daily data files are produced with at most 4 combined satellites,
+             i.e., F10, F11, F13 and F14 for May-Nov 1997,
+               and F11, F13, F14 and F15 for Jan-May 2000.
+</Abstract>
+        <Purpose>The daily temporal and one-degree spatial resolution of the product can be used to examining climate variability at these scales. The global water cycle's provision of water to terrestrial storage, reservoirs, and rivers rests upon the global excess of evaporation to precipitation over the oceans.  Variations in the magnitude of this ocean evaporation excess will ultimately lead to variations in the amount of freshwater that is transported (by the atmosphere) and precipitated over continental regions.  The air-sea fluxes of momentum, radiation, and freshwater (precipitation-evaporation) play a very essential role in a wide variety of atmospheric and oceanic problems (e.g., oceanic evaporation contributes to the net fresh water input to the oceans and drives the upper ocean density structure and consequently the circulation of the oceans).  Information on these fluxes is crucial in understanding the interactions between the atmosphere and oceans, global energy, and water cycle variability, and in improving model simulations of climate variations. 
+
+The GSSTF dataset has been widely used by scientific communities for global energy and water cycle research and regional and short period data analysis since its official release in 2000/2001. Accurate sea surface fluxes measurements are crucial to understanding the global water and energy cycles. The oceanic evaporation that is a major component of the global oceanic fresh water flux is particularly useful to predicting oceanic circulation and transport. Remote sensing is a valuable tool for global monitoring of these flux measurements. The GSSTF algorithm has been developed and applied to remote sensing research and applications.  We are looking forward to serving the scientific communities with another useful dataset in GSSTF2c.</Purpose>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type uuid="9b05d2a3-9a5a-425c-b6ed-59e0e56814fa">
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=GSSTF_2c</URL>
+        <Description>
+         Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC
+      </Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type uuid="3c2a68a6-d8c2-4f14-8208-e57a4446ad71">
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/data/GSSTF/GSSTF.2c/</URL>
+        <Description>
+         Access the data via HTTP.
+   </Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type uuid="d1996d91-e824-4b24-b94e-3aae4543b63b">
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/data/GSSTF/GSSTF.2c/doc/Readme.GSSTF2c.pdf</URL>
+        <Description>
+     README Document
+   </Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type uuid="aebf20eb-39c7-4f4f-aecf-a628f703867b">
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/MEaSUREs/GSSTF/Science_of_the_data.GSSTF2c.pdf</URL>
+        <Description>
+         Science of the data
+      </Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://earthdata.nasa.gov/community/community-data-system-programs/measures-projects</URL>
+        <Description>
+MEaSUREs Project Home Page
+</Description>
+    </Related_URL>
+    <!--Moved IDN_Node=USA/NASA to name-value.-->
+    <!--Moved IDN_Node=ECHO to name-value.-->
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2011-10-04</Metadata_Creation>
+        <Metadata_Last_Revision>2014-05-05</Metadata_Last_Revision>
+        <Metadata_Future_Review>2015-05-01</Metadata_Future_Review>
+        <Data_Creation>2011-11-18</Data_Creation>
+        <Data_Last_Revision>2011-11-18</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>4</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Update_Date>2014-05-05 15:23:46</Update_Date>
+            <Value>5a9095ad-5098-42aa-a2cc-9ab9f6b9aae9</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:24:13</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:06Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.4</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

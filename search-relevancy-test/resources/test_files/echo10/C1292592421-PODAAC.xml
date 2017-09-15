@@ -1,0 +1,171 @@
+<Collection>
+  <ShortName>ALT_TIDE_GAUGE_L4_OST_SLA_US_WEST_COAST</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2010-08-12T00:51:48.954Z</InsertTime>
+  <LastUpdate>2011-01-21T17:10:13.000Z</LastUpdate>
+  <LongName>Gridded Altimeter Fields with Enhanced Coastal Coverage</LongName>
+  <DataSetId>PODAAC-USWCO-ALT01</DataSetId>
+  <Description>This data set contains sea level anomalies and alongshore ocean currents (U and V) derived from satellite altimeters and tide gauge data.  Currents and heights near the coast are calculated using tide</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2014-07-24T16:32:15.804Z</RevisionDate>
+  <ProcessingCenter>Craig Risin and P. Ted Strub</ProcessingCenter>
+  <ProcessingLevelId>4</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>NETCDF</DataFormat>
+  <SpatialKeywords>
+    <Keyword>Eastern Pacific Ocean</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>1992-10-14T00:00:00.000Z</BeginningDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number>(818) 393-7165</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>podaac@podaac.jpl.nasa.gov</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>User</FirstName>
+          <MiddleName>null</MiddleName>
+          <LastName>Services</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>SEA SURFACE TOPOGRAPHY</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>SEA SURFACE HEIGHT</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>OCEAN CIRCULATION</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>OCEAN CURRENTS</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>OSTM/Jason-2</ShortName>
+      <LongName>Ocean Surface Topography Mission/Jason-2</LongName>
+      <Type>unknown</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>POSEIDON-3</ShortName>
+          <LongName>OSTM/Jason-2 RADAR alitmieter</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>POSEIDON-3</ShortName>
+              <LongName>OSTM/Jason-2 RADAR alitmieter</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+    <Platform>
+      <ShortName>TOPEX/POSEIDON</ShortName>
+      <LongName>Topography Experiment/Poseidon</LongName>
+      <Type>spacecraft</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>POSEIDON ALTIMETER</ShortName>
+          <LongName>POSEIDON ALTIMETER</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>POSEIDON ALTIMETER</ShortName>
+              <LongName>POSEIDON ALTIMETER</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+    <Platform>
+      <ShortName>JASON-1</ShortName>
+      <LongName>JASON-1</LongName>
+      <Type>spacecraft</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>POSEIDON-2</ShortName>
+          <LongName>JASON-1 RADAR ALTIMETER</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>POSEIDON-2</ShortName>
+              <LongName>JASON-1 RADAR ALTIMETER</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/coastal_alt/preview/L4/OSU_COAS/weekly/</URL>
+      <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/coastal_alt/preview/L4/OSU_COAS/weekly</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-USWCO-ALT01&amp;apidoc</URL>
+      <Description>(Search Granule)</Description>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-133.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>49.0</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>-111.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>35.0</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

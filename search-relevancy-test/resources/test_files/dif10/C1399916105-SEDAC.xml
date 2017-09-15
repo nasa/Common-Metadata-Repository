@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>CIESIN_SEDAC_SDEI_LST2013</Short_Name>
+    <Version>1.0</Version>
+  </Entry_ID>
+  <Entry_Title>Global Summer Land Surface Temperature (LST) Grids, 2013</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>Center for International Earth Science Information Network - CIESIN - Columbia University</Dataset_Creator>
+    <Dataset_Title>Global Summer Land Surface Temperature (LST) Grids, 2013</Dataset_Title>
+    <Dataset_Release_Date>2016-11-18</Dataset_Release_Date>
+    <Dataset_Release_Place>Palisades, NY</Dataset_Release_Place>
+    <Dataset_Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Dataset_Publisher>
+    <Version>1.0</Version>
+    <Data_Presentation_Form>raster, map, map service</Data_Presentation_Form>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H408638T</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H408638T</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Group>
+      <Name>CIESIN METADATA ADMINISTRATION</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8988</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>metadata@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>SEDAC USER SERVICES</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8920</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>ciesin.info@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC TEMPERATURE</Term>
+    <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+    <Variable_Level_2>MAXIMUM/MINIMUM TEMPERATURE</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>INFRASTRUCTURE</Term>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>NATURAL HAZARDS</Term>
+    <Variable_Level_1>HEAT</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>PUBLIC HEALTH</Term>
+    <Variable_Level_1>ENVIRONMENTAL HEALTH FACTORS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>SUSTAINABILITY</Term>
+    <Variable_Level_1>ENVIRONMENTAL SUSTAINABILITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>LAND USE/LAND COVER</Term>
+    <Variable_Level_1>LAND USE/LAND COVER CLASSIFICATION</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>SURFACE THERMAL PROPERTIES</Term>
+    <Variable_Level_1>LAND SURFACE TEMPERATURE</Variable_Level_1>
+  </Science_Keywords>
+  <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <Ancillary_Keyword>Climate</Ancillary_Keyword>
+  <Ancillary_Keyword>Land Surface Temperatures</Ancillary_Keyword>
+  <Ancillary_Keyword>LST</Ancillary_Keyword>
+  <Platform>
+    <Type>Models/Analyses</Type>
+    <Short_Name>MODELS</Short_Name>
+    <Instrument>
+      <Short_Name>Computer</Short_Name>
+      <Long_Name>Computer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Range_DateTime>
+      <Beginning_Date_Time>2013-01-01</Beginning_Date_Time>
+      <Ending_Date_Time>2013-12-31</Ending_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>COMPLETE</Dataset_Progress>
+  <Spatial_Coverage>
+    <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-60.009337</Southernmost_Latitude>
+        <Northernmost_Latitude>80.007046</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.00000</Westernmost_Longitude>
+        <Easternmost_Longitude>179.990288</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+    <Spatial_Info>
+      <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+      <Horizontal_Coordinate_System>
+        <Geodetic_Model>
+          <Horizontal_DatumName>WGS84</Horizontal_DatumName>
+          <Ellipsoid_Name>WGS84</Ellipsoid_Name>
+          <Semi_Major_Axis>6378137</Semi_Major_Axis>
+          <Denominator_Of_Flattening_Ratio>298.257224</Denominator_Of_Flattening_Ratio>
+        </Geodetic_Model>
+        <Geographic_Coordinate_System>
+          <GeographicCoordinateUnits>Decimal Degrees</GeographicCoordinateUnits>
+          <LatitudeResolution>0.008365</LatitudeResolution>
+          <LongitudeResolution>0.008365</LongitudeResolution>
+        </Geographic_Coordinate_System>
+      </Horizontal_Coordinate_System>
+    </Spatial_Info>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>AFRICA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ASIA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>EUROPE</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>OCEANIA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>SOUTH AMERICA</Location_Type>
+  </Location>
+  <Project>
+    <Short_Name>SDEI</Short_Name>
+    <Long_Name>Satellite-Derived Environmental Indicators</Long_Name>
+  </Project>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>This work is licensed under the Creative Commons Attribution 4.0 International License (http://creativecommons.org/licenses/by/4.0). Users are free to use, copy, distribute, transmit, and adapt the work for commercial and non-commercial purposes, without restriction, as long as clear attribution of the source is provided.</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>SEDAC</Originating_Center>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>SEDAC</Short_Name>
+      <Long_Name>Socioeconomic Data and Applications Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://sedac.ciesin.columbia.edu/</Organization_URL>
+    <Dataset_ID>CIESIN_SEDAC_SDEI_LST2013</Dataset_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>SEDAC USER SERVICES</Name>
+        <Address>
+          <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+          <City>Palisades</City>
+          <State_Province>NY</State_Province>
+          <Postal_Code>10964</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>+1 845-365-8920</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>+1 845-365-8922</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>ciesin.info@ciesin.columbia.edu</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>GeoTIFF</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PDF</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PNG</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Multimedia_Sample>
+    <URL>http://sedac.ciesin.columbia.edu/downloads/maps/sdei/sdei-global-summer-lst-2013/sdei-global-summer-lst-grids-2013-day-max-global.png</URL>
+    <Format>PNG</Format>
+    <Caption>Global Summer Daytime Maximum LST (2013)</Caption>
+    <Description>Sample browse graphic of the data set.</Description>
+  </Multimedia_Sample>
+  <Reference>
+    <Author>Center for International Earth Science Information Network - CIESIN - Columbia University</Author>
+    <Publication_Date>2016-11-18</Publication_Date>
+    <Title>Documentation for Global Summer Land Surface Temperature (LST) Grids, 2013</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H48C9T68</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H48C9T68</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>Center for International Earth Science Information Network - CIESIN - Columbia University</Author>
+    <Publication_Date>2016-11-18</Publication_Date>
+    <Title>Global Urban Heat Island (UHI), 2013</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4H70CRF</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4H70CRF</Online_Resource>
+  </Reference>
+  <Summary>
+    <Abstract>The Global Summer Land Surface Temperature (LST) Grids, 2013, represent daytime maximum temperature and nighttime minimum temperature in degree Celsius at a spatial resolution of 30 arc-seconds (~1 km) during summer months of the northern and southern hemisphere for the year 2013. The grids are produced using Aqua Level-3 Moderate Resolution Imaging Spectroradiometer (MODIS) Version 5 global daytime and nighttime LST 8-day composite data (MYD11A2). For most regions, the LST grids provide the daytime maximum (1:30 p.m. overpass) and nighttime minimum (1:30 a.m. overpass) LST values for each grid cell from a 40-day time-span during July-August (Julian days 185-224) 2013 in the northern hemisphere and January-February (Julian days 001-040) 2013 in the southern hemisphere. LST grid cells with missing values resulting from high cloud cover in tropical regions were filled with daytime maximum and nighttime minimum LST values from April-May 2013 in the northern hemisphere and December 2013-January 2014 in the southern hemisphere, where available. Some data gaps remain in areas where data were insufficient (e.g., Central Africa).</Abstract>
+    <Purpose>To provide raster representations of global summer daytime maximum and nighttime minimum surface temperature for studies related to human health and climate change.</Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW DATA SET LANDING PAGE</Type>
+    </URL_Content_Type>
+    <URL>https://doi.org/10.7927/H408638T</URL>
+    <Description>Data Set DOI URL and Homepage</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>ON-LINE ARCHIVE</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-summer-lst-2013/data-download</URL>
+    <Description>Data Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET RELATED VISUALIZATION</Type>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-summer-lst-2013/maps</URL>
+    <Description>Maps Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET SERVICE</Type>
+      <Subtype>GET WEB MAP SERVICE (WMS)</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-summer-lst-2013/maps/services</URL>
+    <Description>Web Map Service Page</Description>
+    <Mime_Type>application/gml+xml</Mime_Type>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-summer-lst-2013/docs</URL>
+    <Description>Documentation Page</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>USA/CIESIN</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2016-11-23</Metadata_Creation>
+    <Metadata_Last_Revision>2017-09-08</Metadata_Last_Revision>
+    <Data_Creation>2016-11-18</Data_Creation>
+    <Data_Last_Revision>2016-11-18</Data_Last_Revision>
+  </Metadata_Dates>
+  <Private>False</Private>
+  <Product_Level_Id>4</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+<Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.tool</Name>
+      <Value>2017-09-08:docbuilder</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

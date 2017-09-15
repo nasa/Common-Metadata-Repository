@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>VNP14IMGTDL_NRT</Short_Name>
+    <Version>1</Version>
+  </Entry_ID>
+  <Entry_Title>VIIRS 375m, I-Band Active Fire Product NRT (Vector Data)</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>LANCEMODIS</Dataset_Creator>
+    <Dataset_Title>VIIRS 375m, I-Band  Active Fire Product NRT (Vector Data)</Dataset_Title>
+    <Dataset_Release_Date>2016-02-16</Dataset_Release_Date>
+    <Dataset_Release_Place>NASA GSFC LANCE</Dataset_Release_Place>
+    <Dataset_Publisher>LANCEMODIS</Dataset_Publisher>
+    <Version>1</Version>
+    <Data_Presentation_Form>Formats: TXT, SHP, KML, WMS (TXT and SHP files contain all the attributes).</Data_Presentation_Form>
+    <Other_Citation_Details>This data set was provided by LANCE FIRMS operated by NASA/GSFC/ESDIS with funding provided by NASA/HQ</Other_Citation_Details>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.5067/FIRMS/VIIRS/VNP14IMGTDL_NRT.NRT.001</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://earthdata.nasa.gov/earth-observation-data/near-real-time/firms/viirs-i-band-active-fire-data</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <Last_Name>LANCEMODIS</Last_Name>
+      <Email>support@earthdata.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Contact_Person>
+      <First_Name>Wilfrid</First_Name>
+      <Last_Name>Schroeder</Last_Name>
+      <Address>
+        <Street_Address>Department of Geographical Sciences</Street_Address>
+        <Street_Address>University of Maryland</Street_Address>
+        <City>College Park</City>
+        <State_Province>MD</State_Province>
+        <Postal_Code>20740</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>301-314-1467</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Email>wschroed@umd.edu</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>ECOLOGICAL DYNAMICS</Term>
+    <Variable_Level_1>FIRE ECOLOGY</Variable_Level_1>
+    <Variable_Level_2>FIRE DYNAMICS</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>SURFACE RADIATIVE PROPERTIES</Term>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>SURFACE THERMAL PROPERTIES</Term>
+    <Variable_Level_1>LAND SURFACE TEMPERATURE</Variable_Level_1>
+  </Science_Keywords>
+  <Ancillary_Keyword>Near Real Time (NRT)</Ancillary_Keyword>
+  <Ancillary_Keyword>FIRMS</Ancillary_Keyword>
+  <Ancillary_Keyword>LANCE</Ancillary_Keyword>
+  <Ancillary_Keyword>Fire</Ancillary_Keyword>
+  <Ancillary_Keyword>hotspots</Ancillary_Keyword>
+  <Ancillary_Keyword>RELATIVE_START_DATE: -8</Ancillary_Keyword>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>SUOMI-NPP</Short_Name>
+    <Long_Name>Suomi National Polar-orbiting Partnership</Long_Name>
+    <Instrument>
+      <Short_Name>VIIRS</Short_Name>
+      <Long_Name>Visible-Infrared Imager-Radiometer Suite</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Time_Type>UTC</Time_Type>
+    <Date_Type>Gregorian</Date_Type>
+    <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+    <Precision_Of_Seconds>1</Precision_Of_Seconds>
+    <Range_DateTime>
+      <Beginning_Date_Time>2016-01-01T00:00:00.000Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-80.0</Southernmost_Latitude>
+        <Northernmost_Latitude>80.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>180.0</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Data_Resolution>
+    <Latitude_Resolution>375m</Latitude_Resolution>
+    <Longitude_Resolution>375m</Longitude_Resolution>
+    <Temporal_Resolution>1 day</Temporal_Resolution>
+    <Temporal_Resolution_Range>Daily - &lt; Weekly</Temporal_Resolution_Range>
+  </Data_Resolution>
+  <Project>
+    <Short_Name>FIRMS</Short_Name>
+    <Long_Name>Fire Information for Resource Management System</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>LANCE</Short_Name>
+    <Long_Name>Land, Atmosphere Near real-time Capability for EOS</Long_Name>
+  </Project>
+  <Quality>This is a near real-time (NRT) product that has undergone expedited processing to make it available within 3 hours of observation time to meet the needs of the NRT applications community. NRT data are subject to geolocation errors or reprocessing. Usually the geolocationalerrors are minimal (less than 100 meters), however, there are situations, particularly before and after spacecraft maneuvers and during space weather events, when the difference can increase up to several kilometers.</Quality>
+  <Access_Constraints>No constraints but users need to be registered with the ESDIS User Registration system (https://urs.eosdis.nasa.gov/users/new) to download files via the FTP site.</Access_Constraints>
+  <Use_Constraints>None. See disclaimer: https://earthdata.nasa.gov/data/near-real-time-data/about-lance/disclaimer</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>MODIS Adaptive Processing System (MODAPS)</Originating_Center>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/EOS/ESDIS/LANCEMODIS</Short_Name>
+      <Long_Name>Land, Atmosphere Near real-time Capability for EOS (LANCE)Moderate Resolution Imaging Spectroradiometer (MODIS)</Long_Name>
+    </Organization_Name>
+    <Organization_URL>https://earthdata.nasa.gov/data/near-real-time-data/firms</Organization_URL>
+    <Dataset_ID>VNP14IMGTDL_NRT</Dataset_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <Last_Name>NASA FIRMS SUPPORT</Last_Name>
+        <Email>support@earthdata.nasa.gov</Email>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>https, ftp</Distribution_Media>
+    <Distribution_Format>TXT, SHP, KML, WMS and as email alerts</Distribution_Format>
+    <Fees>n/a</Fees>
+  </Distribution>
+  <Reference>
+    <Citation>Schroeder, W., Oliva, P., Giglio, L., &amp; Csiszar, I. A. (2014). The New VIIRS 375m active fire detection data product: algorithm description and initial assessment. Remote Sensing of Environment, 143, 85-96. doi:10.1016/j.rse.2013.12.008</Citation>
+    <Author>Schroeder, W., Oliva, P., Giglio, L., &amp; Csiszar, I. A.</Author>
+    <Publication_Date>2014</Publication_Date>
+    <Title>The New VIIRS 375m active fire detection data product: algorithm description and initial assessment.</Title>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.1016/j.rse.2013.12.008</Identifier>
+    </Persistent_Identifier>
+  </Reference>
+  <Reference>
+    <Citation>Justice, C. O., L. Giglio, et al. 2011. MODIS-Derived Global Fire Products. Land Remote Sensing and Global Environmental Change. B. Ramachandran, C. O. Justice and M. J. Abrams, Springer New York. 11: 661-679. doi:10.1007/978-1-4419-6749-7_29.</Citation>
+    <Author>Justice, C. O., L. Giglio, et al.</Author>
+    <Publication_Date>2011</Publication_Date>
+    <Title>MODIS-Derived Global Fire Products.</Title>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.1007/978-1-4419-6749-7_29</Identifier>
+    </Persistent_Identifier>
+  </Reference>
+  <Summary>
+    <Abstract>The VIIRS 375m active fire product is the latest product to be added to FIRMS. It provides data from the Visible Infrared Imaging Radiometer Suite (VIIRS) sensor aboard the Suomi-National Polar-orbiting Partnership (S-NPP) satellite. The 375m data compliments MODIS fire detections; they both show good agreement in hotspot detection but the improved spatial resolution of the 375m data provides a greater response over fires of relatively small areas and provides improved mapping of large fire perimeters. The 375m data also has improved nighttime performance. Consequently, these data are well suited for use in support of fire management (e.g., near real-time alert systems), as well as otherscience applications requiring improved fire mapping fidelity. Recommendedreading: VIIRS 375m Active Fire Algorithm User Guide(https://earthdata.nasa.gov/files/VIIRS_375m_Users_guide_Dec15_v2.pdf)(updated December 2015).Fire Radiative Power (FRP): The 375m product does not have an FRP value at this time. It is understood that this will be an issue for some users and there are plans to add it in the near future.Other Fire products from VIIRSA complimentary VIIRS M-Band 750m active fire data product is available from the University of Maryland VIIRS Active Fire Web page(http://viirsfire.geog.umd.edu/). FIRMS has opted to distribute the 375mproduct rather than the 750m product as the increased spatial resolution and increased number of fires detected is of interest to the to thebroader fire management community.</Abstract>
+    <Purpose>To provide VIIRS 375m active fire locations in Near Real-Time in easy to use formats.</Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>ON-LINE ARCHIVE</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://nrt1.modaps.eosdis.nasa.gov/FIRMS/viirs/Global/</URL>
+    <Description>Access VIIRS data set from the MODAPS/NRT FTP server.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>https://earthdata.nasa.gov/earth-observation-data/near-real-time/firms/active-fire-data</URL>
+    <Description>NASA LANCE Near Real Time Data Product Information</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET RELATED VISUALIZATION</Type>
+    </URL_Content_Type>
+    <URL>https://firms.modaps.eosdis.nasa.gov/wms/viirs/?SERVICE=WMS&amp;VERSION=1.1.1&amp;REQUEST=GetMap&amp;LAYERS=fires24&amp;width=1024&amp;height=512&amp;BBOX=-180,-90,180,90&amp;SRS=EPSG:4326</URL>
+    <Description>BlueMarble_ShadedRelief_Bathymetry GIBS Image for testing purposes</Description>
+  </Related_URL>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2016-02-03</Metadata_Creation>
+    <Metadata_Last_Revision>2016-12-13</Metadata_Last_Revision>
+    <Data_Creation>2016-02-15</Data_Creation>
+    <Data_Last_Revision>present</Data_Last_Revision>
+  </Metadata_Dates>
+  <Collection_Data_Type>NEAR_REAL_TIME</Collection_Data_Type>
+</DIF>

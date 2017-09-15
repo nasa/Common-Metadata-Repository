@@ -1,0 +1,170 @@
+<Collection>
+            <ShortName>ISLSCP_II_MODISLC_968</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2017-07-06T00:00:00Z</InsertTime>
+            <LastUpdate>2017-07-06T00:00:00Z</LastUpdate>
+            <LongName>ISLSCP II MODIS (Collection 4) IGBP Land Cover, 2000-2001</LongName>
+            <DataSetId>ISLSCP II MODIS (Collection 4) IGBP Land Cover, 2000-2001</DataSetId>
+            <Description>This data set, ISLSCP II MODIS (Collection 4) IGBP Land Cover, 2000-2001, contains  global land cover classifications (dominant type, classification confidence and fractional cover) generated using a full year of MODerate Resolution Imaging Spectroradiometer (MODIS) data covering the period from October 2000 to October 2001. The objective of the MODIS Land Cover Product is to provide a suite of land cover types useful to global system science modelers by exploiting the information content of MODIS data in the spectral, temporal, spatial, and directional domains. These products describe the geographic distribution of the 17 land cover classification scheme proposed by the International Geosphere-Biosphere Programme (IGBP).</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/968</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2017-07-06T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Friedl, M.A., A.H. Strahler, J. Hodges, F.G. Hall, G.J. Collatz, B.W. Meeson, S.O. Los, E.Brown De Colstoun, and D.R. Landis. 2010. ISLSCP II MODIS (Collection 4) IGBP Land Cover, 2000-2001. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/968</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <SpatialKeywords>
+                <Keyword>GLOBAL</Keyword>
+            </SpatialKeywords>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2000-10-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2001-10-01T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL_DAAC</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VEGETATION COVER</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>LAND USE/LAND COVER</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LAND USE CLASSES</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>LAND USE/LAND COVER</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LAND USE/LAND COVER CLASSIFICATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SURFACE RADIATIVE PROPERTIES</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ALBEDO</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>TERRA</ShortName>
+                    <LongName>Earth Observing System, TERRA (AM-1)</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>ISLSCP II</ShortName>
+                    <LongName>International Satellite Land Surface Climatology Project II</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/vegetation/modis_landcover_xdeg/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/ISLSCP_II/guides/modis_landcover_xdeg.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/968</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DATA SET LANDING PAGE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/vegetation/modis_landcover_xdeg//comp/0_modis_landcover_readme.txt</URL>
+                    <Description>Data set text file containing the file naming convention and data formats of the granules in this collection.</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/vegetation/modis_landcover_xdeg//comp/1_modis_landcover_doc.pdf</URL>
+                    <Description>Data set documentation PDF.</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/968_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>GET RELATED VISUALIZATION</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/wcsdown/dataset.jsp?ds_id=968</URL>
+                    <Description>Web Coverage Service for this collection.</Description>
+                    <Type>WEB COVERAGE SERVICE (WCS)</Type>
+                    <MimeType>application/gml+xml</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/968/catalog.html</URL>
+                    <Description>The THREDDS location for this Collection.</Description>
+                    <Type>THREDDS DIRECTORY</Type>
+                    <MimeType>text/html</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>180.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-90.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

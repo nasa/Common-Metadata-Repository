@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>AMSR2-REMSS-L2P-v7.2</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2014-10-07T21:25:07.008Z</InsertTime>
+    <LastUpdate>2014-10-07T21:25:07.008Z</LastUpdate>
+    <LongName>GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite</LongName>
+    <DataSetId>PODAAC-GHAM2-2PR72</DataSetId>
+    <Description>The Advanced Microwave Scanning Radiometer 2 (AMSR2) was launched on 18 May 2012, onboard the Global Change Observation Mission - Water (GCOM-W) satellite developed by the Japan Aerospace Exploration Agency (JAXA). The GCOM-W mission aims to establish the global and long-term observation system to collect data, which is needed to understand mechanisms of climate and water cycle variations, and demonstrate its utilization. AMSR2 onboard the first generation of the GCOM-W satellite will continue Aqua/AMSR-E observations of water vapor, cloud liquid water, precipitation, SST, sea surface wind speed, sea ice concentration, snow depth, and soil moisture. AMSR2 is a remote sensing instrument for measuring weak microwave emission from the surface and the atmosphere of the Earth. From about 700 km above the Earth, AMSR2 will provide us highly accurate measurements of the intensity of microwave emission and scattering. The antenna of AMSR2 rotates once per 1.5 seconds and obtains data over a 1450 km swath. This conical scan mechanism enables AMSR2 to acquire a set of daytime and nighttime data with more than 99% coverage of the Earth every 2 days. Remote Sensing Systems (RSS, or REMSS), providers of these SST data for the Group for High Resolution Sea Surface Temperature (GHRSST) Project, performs a detailed processing of AMSR2 instrument data in two stages. The first stage produces a near-real-time (NRT) product (identified by "_rt_" within the file name) which is made as available as soon as possible. This is generally within 3 hours of when the data are recorded. Although suitable for many timely uses the NRT products are not intended to be archive quality. "Final" data (currently identified by "v7.2" within the file name) are processed when RSS receives the atmospheric model National Center for Environmental Prediction (NCEP) Final Analysis (FNL) Operational Global Analysis. The NCEP wind directions are particularly useful for retrieving more accurate SSTs and wind speeds. This dataset adheres to the GHRSST Data Processing Specification (GDS) version 2 format specifications.</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-10-27T16:31:28.583Z</RevisionDate>
+    <ProcessingCenter>Remote Sensing Systems</ProcessingCenter>
+    <ProcessingLevelId>2P</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Global</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>2012-07-02T19:00:44.000Z</BeginningDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Remote Sensing Systems</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>001 707 545 2904</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>tremble@remss.com</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>Sharon</FirstName>
+                    <MiddleName>none</MiddleName>
+                    <LastName>Tremble</LastName>
+                    <JobPosition>Primary Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Temperature</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Sea Surface Temperature</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>Sub-skin Sea Surface Temperature</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>GCOM-W1</ShortName>
+            <LongName>Global Change Observation Mission 1st - Water (SHIZUKU)</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>AMSR2</ShortName>
+                    <LongName>Advanced Microwave Scanning Radiometer 2</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>AMSR2</ShortName>
+                            <LongName>Advanced Microwave Scanning Radiometer 2</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>ftp://ftp.nodc.noaa.gov/pub/data.nodc/ghrsst/GDS2/L2P/AMSR2/REMSS/v7.2</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://data.nodc.noaa.gov/cgi-bin/nph-dods/ghrsst/GDS2/L2P/AMSR2/REMSS/v7.2/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ghrsst/data/GDS2/L2P/AMSR2/REMSS/v7.2/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/ghrsst/data/GDS2/L2P/AMSR2/REMSS/v7.2</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>http://ghrsst.jpl.nasa.gov</URL>
+            <Description>Portal to the GHRSST Global Data Assembly Center and data access</Description>
+            <Type>Get Data</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHAM2-2PR72</URL>
+            <Description>(Search Granule)</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://aqua.nasa.gov</URL>
+            <Description>Full details of the AQUA AMSR-E</Description>
+            <Type>Project Home Page</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.remss.com</URL>
+            <Description>AMSR2 SSTs: algorithm description, browsing of data, and ftp of data</Description>
+            <Type>Reference Materials</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://www.remss.com</URL>
+            <Description>AMSR2 calibration description</Description>
+            <Type>Calibration/validation data</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac-tools.jpl.nasa.gov/hitide/</URL>
+            <Description>HIgh-level Tool for Interactive Data Extraction</Description>
+            <Type>PORTAL_DA_TOOLS_AND_SERVICES</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

@@ -1,0 +1,122 @@
+<Collection>
+  <ShortName>GRACE_AOD1B_GRAV_GFZ_RL05</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2012-03-15T18:54:14.579Z</InsertTime>
+  <LastUpdate>2012-03-15T18:54:14.579Z</LastUpdate>
+  <LongName>GRACE ATMOSPHERE AND OCEAN DE-ALIASING GFZ RELEASE 5.0</LongName>
+  <DataSetId>PODAAC-GRAOD-1BG05</DataSetId>
+  <Description>The GRACE Atmosphere and Ocean De-aliasing dataset contains spherical harmonic coefficients of combined barotropic or baroclinic sea level and vertical integrated pressure variations at 6-hour sample rate.  It is used as a correction product for the Level 2 GRACE datasets.</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2016-02-04T23:56:14.157Z</RevisionDate>
+  <ProcessingCenter>GRACE/GFZ</ProcessingCenter>
+  <ProcessingLevelId>1B</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>ASCII</DataFormat>
+  <SpatialKeywords>
+    <Keyword>Global</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>1976-01-01T00:00:00.000Z</BeginningDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number>818-354-4588</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>Jessica.K.Hausman@jpl.nasa.gov</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>Jessica</FirstName>
+          <MiddleName>none</MiddleName>
+          <LastName>Hausman</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>SOLID EARTH</TopicKeyword>
+      <TermKeyword>GEODETICS/GRAVITY</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>GRAVITY</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>GRACE</ShortName>
+      <LongName>Gravity Recovery and Climate Experiment</LongName>
+      <Type>unknown</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>GRACE KBR</ShortName>
+          <LongName>K-Band Ranging System</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>GRACE KBR</ShortName>
+              <LongName>K-Band Ranging System</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/grace/L1B/GFZ/AOD1B/RL05</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GRAOD-1BG05</URL>
+      <Description>(Search Granule)</Description>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/grace/L1B/GFZ/AOD1B/RL05/docs</URL>
+      <Description>AOD1B Product Description Document for Product Release 05</Description>
+      <Type>Guide Document</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>65</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-75</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

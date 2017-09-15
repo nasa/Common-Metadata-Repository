@@ -1,0 +1,1375 @@
+<Collection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="">
+    <ShortName>ALOS_PSR_L1.0</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2010-03-01T21:23:55Z</InsertTime>
+    <LastUpdate>2017-09-11T22:51:58Z</LastUpdate>
+    <LongName>ALOS PALSAR Level 1.0</LongName>
+    <DataSetId>ALOS_PALSAR_LEVEL1.0</DataSetId>
+    <Description>ALOS PALSAR Level 1.0</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <ProcessingCenter>Alaska Satellite Facility</ProcessingCenter>
+    <ProcessingLevelId>0</ProcessingLevelId>
+    <ProcessingLevelDescription>Data expanded from original packed L0 data. Bit realignment and other editing performed. Multi-polarized data aligned in time series for respective polarization. Single-polarization SCANSAR data aligned in time series for respective scanning.</ProcessingLevelDescription>
+    <ArchiveCenter>Alaska Satellite Facility</ArchiveCenter>
+    <Temporal>
+        <TimeType>UTC</TimeType>
+        <DateType>Gregorian</DateType>
+        <TemporalRangeType>Continuous Range</TemporalRangeType>
+        <PrecisionOfSeconds>1</PrecisionOfSeconds>
+        <EndsAtPresentFlag>false</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>2006-05-16T03:36:19Z</BeginningDateTime>
+            <EndingDateTime>2011-04-22T20:23:36Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>User Services</Role>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>907-474-5041</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>uso@asf.alaska.edu</Email>
+            </OrganizationEmails>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>AGRICULTURE</TopicKeyword>
+            <TermKeyword>FOREST SCIENCE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>REFORESTATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>AGRICULTURAL LANDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ALPINE/TUNDRA</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>BEACHES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>DESERTS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>DUNES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>FORESTS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GRASSLANDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ISLANDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>URBAN LANDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>BIOSPHERE</TopicKeyword>
+            <TermKeyword>TERRESTRIAL ECOSYSTEMS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>WETLANDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>FROZEN GROUND</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PERIGLACIAL PROCESSES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>FROZEN GROUND</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PERMAFROST</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>FROZEN GROUND</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ROCK GLACIERS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIER ELEVATION/ICE SHEET ELEVATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIER MOTION/ICE SHEET MOTION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIER THICKNESS/ICE SHEET THICKNESS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIER TOPOGRAPHY/ICE SHEET TOPOGRAPHY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIERS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE SHEETS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICEBERGS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE DEFORMATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE DEPTH/THICKNESS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE EDGES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE EXTENT</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE FLOES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE GROWTH/MELT</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE ROUGHNESS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE TEMPERATURE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE TYPES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICEBERGS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LEADS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PACK ICE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>POLYNYAS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>REFLECTANCE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SEA ICE MOTION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE EXTENT</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE GROWTH/MELT</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE MOTION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE VELOCITY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LAKE ICE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PERMAFROST</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>RIVER ICE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>CRYOSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SNOW COVER</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>EROSION/SEDIMENTATION</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LANDSLIDES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>AEOLIAN LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>COASTAL LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>FLUVIAL LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIAL LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>KARST LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>LAND USE/LAND COVER</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LAND USE/LAND COVER CLASSIFICATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>LANDSCAPE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LANDSCAPE ECOLOGY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>LANDSCAPE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LANDSCAPE ECOLOGY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>LANDSCAPE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LANDSCAPE PATTERNS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>LANDSCAPE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LANDSCAPE PROCESSES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>LANDSCAPE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>REFORESTATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>TOPOGRAPHY</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>TOPOGRAPHY</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>TOPOGRAPHY</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SURFACE ROUGHNESS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>TOPOGRAPHY</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TERRAIN ELEVATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>TOPOGRAPHY</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TOPOGRAPHIC EFFECTS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>TOPOGRAPHY</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TOPOGRAPHIC EFFECTS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>BARRIER ISLANDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>BEACHES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>DELTAS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>DUNES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ESTUARIES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>FJORDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>INLETS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LAGOONS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>MANGROVES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>MARSHES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ROCKY COASTS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>COASTAL PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SHORELINES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>OCEAN WAVES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>WIND WAVES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>OCEAN WINDS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SURFACE WINDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE DEFORMATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE DEPTH/THICKNESS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE EDGES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE EXTENT</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE FLOES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE ROUGHNESS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE TYPES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICEBERGS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LEADS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PACK ICE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>POLYNYAS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>OCEANS</TopicKeyword>
+            <TermKeyword>SEA ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>SEA ICE MOTION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIAL LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>CALDERA</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>CINDER CONE</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>FAULTS</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>FOLDS</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>GEYSER</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>GRABEN</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>HORST</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>LAVA DOME</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>LAVA PLAIN</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>MAAR</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>MOUNTAINS</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>PLATEAU</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>RIDGE</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>RIFT VALLEY</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>TUYA</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+                <VariableLevel2Keyword>
+                    <Value>VOLCANO</Value>
+                </VariableLevel2Keyword>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>GEOMORPHIC LANDFORMS/PROCESSES</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>TECTONIC LANDFORMS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>TECTONICS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>EARTHQUAKES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>TECTONICS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>EARTHQUAKES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>TECTONICS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PLATE TECTONICS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>TECTONICS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PLATE TECTONICS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>TECTONICS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>VOLCANIC ACTIVITY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>TECTONICS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>VOLCANIC ACTIVITY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIER ELEVATION/ICE SHEET ELEVATION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIER MOTION/ICE SHEET MOTION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIER TOPOGRAPHY/ICE SHEET TOPOGRAPHY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>GLACIERS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE SHEETS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>GLACIERS/ICE SHEETS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICEBERGS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE EXTENT</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE GROWTH/MELT</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE MOTION</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>ICE VELOCITY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LAKE ICE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>PERMAFROST</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SNOW/ICE</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>RIVER ICE</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+            <TermKeyword>SURFACE WATER</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>WETLANDS</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+          <ShortName>ALOS</ShortName>
+          <LongName>Advanced Land Observation Satellite</LongName>
+          <Type>Spacecraft</Type>
+          <Instruments>
+            <Instrument>
+              <ShortName>PALSAR</ShortName>
+              <LongName>Phased Array type L-band Synthetic Aperture Radar</LongName>
+                <Sensors>
+                    <Sensor>
+                      <ShortName>DSN</ShortName>
+                    </Sensor>
+                    <Sensor>
+                      <ShortName>FBD</ShortName>
+                    </Sensor>
+                    <Sensor>
+                      <ShortName>FBS</ShortName>
+                    </Sensor>
+                    <Sensor>
+                      <ShortName>PLR</ShortName>
+                    </Sensor>
+                    <Sensor>
+                      <ShortName>WB1</ShortName>
+                    </Sensor>
+                    <Sensor>
+                      <ShortName>WB2</ShortName>
+                    </Sensor>
+                </Sensors>
+              <OperationModes>
+                <OperationMode>Arctic</OperationMode>
+                <OperationMode>Antarctic</OperationMode>
+              </OperationModes>
+            </Instrument>
+          </Instruments>
+        </Platform>
+    </Platforms>
+    <AdditionalAttributes>
+        <AdditionalAttribute>
+          <Name>FLIGHT_LINE</Name>
+          <DataType>STRING</DataType>
+          <Description>Flight line identifies where the aircraft/instument has flown to acquire data.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>GROUP_ID</Name>
+          <DataType>STRING</DataType>
+          <Description>ID that helps ASF group products</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>OFF_NADIR_ANGLE</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The angle the sensor points away from the satellite&#39;s nadir (off to the side. Larger angles correspond to imaging farther away from the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>MD5SUM</Name>
+          <DataType>STRING</DataType>
+          <Description>Checksum</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>GRANULE_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>Identifies the type of data by combining platform, beam mode type, and coverage (frame/swath</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ASCENDING_DESCENDING</Name>
+          <DataType>STRING</DataType>
+          <Description>Describes whether the satellite travel direction was ascending towards the north pole, or descending towards the south pole.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_END_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging ended farthest from the satellite. For an ascending satellite, it locates the upper right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_STACK_SIZE</Name>
+          <DataType>INT</DataType>
+          <Description>The number of SAR images over the same location in the entire ASF archive. Used for data that may be used for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>In most cases the same as beam mode. For Radarsat indicates both resolution and off-nadir pointing angle. Standard beam mode becomes ST1 though ST7 beammodetype, with ST7 pointing farthest from the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_BASELINE</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The perpendicular distance between two satellites when they took the related two images. Useful for identifying image pairs to use for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_FRAME_ID</Name>
+          <DataType>STRING</DataType>
+          <Description>ID of the center frame</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_ESA_FRAME</Name>
+          <DataType>INT</DataType>
+          <Description>The Europenan Space Agency equivalent to the value in the FRAME_NUMBER field</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ACQUISITION_DATE</Name>
+          <DataType>STRING</DataType>
+          <Description>Date the data was acquired by the satellite or aircraft + instrument.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>MISSION_NAME</Name>
+          <DataType>STRING</DataType>
+          <Description>The sitenames where AIRSAR, AIMOSS, and UAVSAR acqusitions were taken.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the center of the scene or frame.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_START_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began nearest to the satellite. For an ascending satellite, it locates the lower left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE</Name>
+          <DataType>STRING</DataType>
+          <Description>The general type of active sensor used. Values indicate image resolution: such as standard, fine, wide, scansar wide, SM (strip mode, EW(extra wide. OR indicate resolution + polarization: FBS (fine beam dual polarization, FBD (fine beam dual pol. OR atipically the type of product: TOPSAR (high resolution DEM, RPI (repeat pass interferometry, XTI (across track interferometry. OR resolution and product type IW (interferometric wide.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE_DESC</Name>
+          <DataType>STRING</DataType>
+          <Description>Text that describes the beam mode</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>Indicates the type of product, such as browse, metadata, L1, complex, amplitude, projected, terrain corrected.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_DESCRIPTION</Name>
+          <DataType>STRING</DataType>
+          <Description>Describes what the data was processed to. For example: low resolution terrain corrected ALOS data.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FRAME_NUMBER</Name>
+          <DataType>INT</DataType>
+          <Description>The designated frame or scene as defined by various space agencies (ESA, JAXA, CSA each of which have their own scheme. The frame describes a box over the Earth at a fixed latitude. Combined with a path number (for longitude it identifies a specific piece of ground.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_LEVEL</Name>
+          <DataType>STRING</DataType>
+          <Description>Indicates how much processing has been done to the data: L1, L1.0 unprocessed; L1.1 single look complex; L1, L1.5 amplitude image</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_DATE</Name>
+          <DataType>STRING</DataType>
+          <Description>The date the data was processed</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_START_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging began nearest the satellite. For an ascending satellite, it locates the lower left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>DOPPLER</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The doppler centroid frequency - Useful for sar processing and interferometry. Related to the squint of the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_START_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began farthest from the satellite. For an ascending satellite, it locates the lower right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_END_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging ended nearest to the satellite. For an ascending satellite, it locates the upper left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_TYPE_DISPLAY</Name>
+          <DataType>STRING</DataType>
+          <Description>Label that will be displayed in ASF&#39;s Vertex interface</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>POLARIZATION</Name>
+          <DataType>STRING</DataType>
+          <Description>Radar transmissions are polarized, with components normally termed vertical (V and horizontal (H. Vertical means that the electric vector is in the plane of incidence; horizontal means the electric vector is perpendicular to the plane of incidence.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_START_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began farthest from the satellite. For an ascending satellite, it locates the lower right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>THUMBNAIL_URL</Name>
+          <DataType>STRING</DataType>
+          <Description>URL that points to this granule&#39;s thumbnail image</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ASF_PLATFORM</Name>
+          <DataType>STRING</DataType>
+          <Description>Internal ASF platform name</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_STACK_ID</Name>
+          <DataType>INT</DataType>
+          <Description>An ASF-assigned unique number used internally to unifiy SAR images over the same location. Used for data that might be used for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>LOOK_DIRECTION</Name>
+          <DataType>STRING</DataType>
+          <Description>SAR imagery is taken with the sensor pointing either left or right of the satellite. Most data is right-looking. A small amount of Radarsat is left-looking.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PATH_NUMBER</Name>
+          <DataType>INT</DataType>
+          <Description>The path describes a path the satellite will follow over the earth similar to longitude; each path has an assigned number. Combined with a frame number is identifies a specific piece of ground.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_END_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging ended nearest to the satellite. For an ascending satellite, it locates the upper left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FARADAY_ROTATION</Name>
+          <DataType>STRING</DataType>
+          <Description>An effect of the ionisphere that rotates polarizations from HH or VV or HV or VH. Significant for L or P band. Rotation over 5 degrees reduces usefulness for applications such as forest biomass. Effect is reduced at solar minimum.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_END_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging ended farthest from the satellite. For an ascending satellite, it locates the upper right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BYTES</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Product size in bytes.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the center of the scene or frame.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ARCHIVE_DATATAKE_ID</Name>
+          <DataType>STRING</DataType>
+          <Description>The ARCHIVE_DATATAKE_ID for this collection</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>DEM_REGION</Name>
+          <DataType>STRING</DataType>
+          <Description>The DEM_REGION for this collection</Description>
+        </AdditionalAttribute>
+    </AdditionalAttributes>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+          <URL>https://vertex.daac.asf.alaska.edu/</URL>
+                <URLDescription>The ASF Search and Ordering Interface</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <Spatial>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>90.0</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>-90.0</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>GEODETIC</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>
