@@ -113,6 +113,13 @@
             gran-count
             provider-id)))
 
+(defn- bulk-index-variable-batches
+  "Bulk index the given variable batches in both regular index and all revisions index."
+  [system concept-batches]
+  (let [indexer-context {:system (helper/get-indexer system)}]
+    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches {})))
+
 (defn- index-variables-by-provider
   "Bulk index variables for the given provider."
   [system provider]
@@ -122,10 +129,7 @@
                          db provider
                          {:concept-type :variable}
                          (:db-batch-size system))
-        num-variables (index/bulk-index
-                       {:system (helper/get-indexer system)}
-                       concept-batches
-                       {})]
+        num-variables (bulk-index-variable-batches system concept-batches)]
     (info (format "Indexing of %s variables completed." num-variables))))
 
 (defn index-variables
