@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>MAC04S0</Short_Name>
+        <Version>002</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>MODIS/Aqua Aerosol 10km 5-Min L2 Narrow Swath Subset along CloudSat V002 (MAC04S0) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>MODIS Science Team</Dataset_Creator>
+        <Dataset_Editor>GES DISC</Dataset_Editor>
+        <Dataset_Title>MODIS/Aqua Aerosol 10km 5-Min L2 Narrow Swath Subset along CloudSat</Dataset_Title>
+        <Dataset_Series_Name>MAC04S0</Dataset_Series_Name>
+        <Dataset_Release_Date>2006-10-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>002</Version>
+        <Issue_Identification>MAC04S0</Issue_Identification>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/MAC04S0_002.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL BACKSCATTER</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL EXTINCTION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL PARTICLE PROPERTIES</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL RADIANCE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>CLOUD CONDENSATION NUCLEI</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>RADIATIVE FLUX</Variable_Level_1>
+        <Detailed_Variable>REFLECTED FLUX</Detailed_Variable>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>RADIATIVE FLUX</Variable_Level_1>
+        <Detailed_Variable>TRANSMITTED FLUX</Detailed_Variable>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>AEROSOL INDEX</Ancillary_Keyword>
+    <Ancillary_Keyword>AEROSOL OPTICAL DEPTH</Ancillary_Keyword>
+    <Ancillary_Keyword>AEROSOL OPTICAL THICKNESS</Ancillary_Keyword>
+    <Ancillary_Keyword>AEROSOL TYPE</Ancillary_Keyword>
+    <Ancillary_Keyword>AIR MONITORING</Ancillary_Keyword>
+    <Ancillary_Keyword>ANGSTROM COEFFICIENT</Ancillary_Keyword>
+    <Ancillary_Keyword>ASYMMETRY FACTOR</Ancillary_Keyword>
+    <Ancillary_Keyword>ATMOSPHERIC CORRECTION</Ancillary_Keyword>
+    <Ancillary_Keyword>ATMOSPHERIC MODELS</Ancillary_Keyword>
+    <Ancillary_Keyword>BACKSCATTERING RATIO</Ancillary_Keyword>
+    <Ancillary_Keyword>DESERT DUST</Ancillary_Keyword>
+    <Ancillary_Keyword>EFFECTIVE OPTICAL DEPTH</Ancillary_Keyword>
+    <Ancillary_Keyword>EFFECTIVE RADIUS</Ancillary_Keyword>
+    <Ancillary_Keyword>EMISSIONS</Ancillary_Keyword>
+    <Ancillary_Keyword>HAZE</Ancillary_Keyword>
+    <Ancillary_Keyword>MASS CONCENTRATION</Ancillary_Keyword>
+    <Ancillary_Keyword>MIE PARTICLES</Ancillary_Keyword>
+    <Ancillary_Keyword>MYD04</Ancillary_Keyword>
+    <Ancillary_Keyword>MYD04_L2</Ancillary_Keyword>
+    <Ancillary_Keyword>PARTICULATE</Ancillary_Keyword>
+    <Ancillary_Keyword>POLLUTANTS</Ancillary_Keyword>
+    <Ancillary_Keyword>RADIATION BUDGET</Ancillary_Keyword>
+    <Ancillary_Keyword>RADIATIVE COOLING</Ancillary_Keyword>
+    <Ancillary_Keyword>RADIATIVE TRANSFER MODELS</Ancillary_Keyword>
+    <Ancillary_Keyword>REFELCTED FLUX</Ancillary_Keyword>
+    <Ancillary_Keyword>SCATTERING ANGLE</Ancillary_Keyword>
+    <Ancillary_Keyword>SEA SALT</Ancillary_Keyword>
+    <Ancillary_Keyword>SMOG</Ancillary_Keyword>
+    <Ancillary_Keyword>SPECTRAL OPTICAL DEPTH</Ancillary_Keyword>
+    <Ancillary_Keyword>STRATOSPHERIC AEROSOL</Ancillary_Keyword>
+    <Ancillary_Keyword>SURFACE REFLECTANCE</Ancillary_Keyword>
+    <Ancillary_Keyword>TOTAL COLUMN OPTICAL THICKNESS</Ancillary_Keyword>
+    <Ancillary_Keyword>TRANSMITTED FLUX</Ancillary_Keyword>
+    <Ancillary_Keyword>TROPOSPHERIC AEROSOL</Ancillary_Keyword>
+    <Ancillary_Keyword>TURBIDITY</Ancillary_Keyword>
+    <Ancillary_Keyword>VISIBILITY</Ancillary_Keyword>
+    <Ancillary_Keyword>VOLCANIC AEROSOL</Ancillary_Keyword>
+    <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+    <Ancillary_Keyword>A-Train</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AQUA</Short_Name>
+        <Long_Name>Earth Observing System, AQUA</Long_Name>
+        <Instrument>
+            <Short_Name>MODIS</Short_Name>
+            <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2006-06-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>GEODETIC</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>10 km at nadir</Latitude_Resolution>
+        <Longitude_Resolution>10 km at nadir</Longitude_Resolution>
+        <Horizontal_Resolution_Range>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>ATDD</Short_Name>
+        <Long_Name>A-Train Data Depot</Long_Name>
+    </Project>
+    <Quality>See Related URL here for links to Quality-related documents</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>Acknowledge the Data Creator as provided here in the Data Citation section. 
+Acknowledge the data distributor, Goddard Earth Sciences Data and Information Services Center (GES DISC)</Use_Constraints>
+    <Originating_Center>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>2.10 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-4</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>MAC04S0.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:44:37 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/atdd/images/MAC04S0.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddabe01b045fab4ecded/file</URL>
+        <Format>PNG</Format>
+        <Caption>A-Train Sample Image</Caption>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>This is the narrow-swath MODIS/Aqua subset along CloudSat field of view track. The goal of the narrow-swath subset is to select and return MODIS data that are within +-5 km across the CloudSat track. I.e. the resultant MODIS subset swath is sought to be about 10 km cross-track.However, the original MYD04_L2 has 10-km pixels. Thus, MAC04S0 cross-track width is 2 pixels, the closest on either side of CloudSat track, and the resultant cross-track swath width is about 20 km.Along-track, all MODIS pixels from the original product are preserved.
+      
+In the stardard product, the MODIS level-2 atmospheric aerosol product provides retrieved ambient aerosol optical properties (e.g., optical thickness and size distribution), mass concentration, look-up table derived reflected and transmitted fluxes, as well as quality assurance and other ancillary parameters, globally over ocean and near globally over land.
+      
+      
+(The shortname for this product is MAC04S0).</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=MAC04S0</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>https://atrain.gesdisc.eosdis.nasa.gov/data/MAC/MAC04S0.002/</URL>
+        <Description>Access the data via HTTP</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>https://modis.gsfc.nasa.gov/</URL>
+        <Description>MODIS Project Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://www.cloudsat.cira.colostate.edu/</URL>
+        <Description>CloudSat Data Processing Center</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://modis-atmos.gsfc.nasa.gov/data-issues/aerosol</URL>
+        <Description>Quality Assurance for the original product.</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2006-09-22</Metadata_Creation>
+        <Metadata_Last_Revision>2017-07-26</Metadata_Last_Revision>
+        <Metadata_Future_Review>2018-07-26</Metadata_Future_Review>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>2</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>5 minute</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:18:01</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:01:08Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

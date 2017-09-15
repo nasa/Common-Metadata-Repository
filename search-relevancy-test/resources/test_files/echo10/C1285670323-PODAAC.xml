@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Collection>
+    <ShortName>QSCAT_OSUCOAS_L3_OW_USWestCoast</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2010-12-03T00:38:44.441Z</InsertTime>
+    <LastUpdate>2011-01-21T17:10:13.000Z</LastUpdate>
+    <LongName>SeaWinds on QuikSCAT Level 3 Near-Coast Wind and Stress Fields with Enhanced Coverage for the US West Coast (OSU/COAS)</LongName>
+    <DataSetId>PODAAC-QSOSU-L3WC0</DataSetId>
+    <Description>This high-resolution, gridded QuikSCAT scatterometer dataset with enhanced coastal coverage of the United States West Coast contains ocean surface wind and stress vector retrievals (magnitude and direction and zonal/meridional components) and derived quantities (wind speed squared, wind speed cubed, surface relative vorticity, vector wind divergence, wind stress curl, and wind stress divergence). The spatial coverage domain extends from latitude 30 degrees North to 50 degrees North and longitude 135 degrees West to 115 degrees West. The coastal wind vector retrieval algorithm developed by Barry Vanhoff and Michael Freilich has been utilized to provide improved coastal wind vector retrievals from QuikSCAT, resulting in retrievals as close as 5 km from coastlines. This dataset was developed by Barry Vanhoff, Craig Risien and Ted Strub and is made possible by funding provided by the NASA Research Opportunities in Space and Earth Science (ROSES) program and NOAA funded, Cooperative Institute for Oceanographic Satellite Studies (CIOSS) at the Oregon State University (OSU) College of Earth, Ocean and Atmospheric Sciences (CEOAS). PO.DAAC has agreed to provide this dataset as a special service to its users with the mutual understanding that issues or problems may remain in the data set, as noted below. All new users considering this dataset are strongly encouraged to first read the user guide and then to take full advantage of all potential dataset announcements through registration with PO.DAAC by emailing podaac@podaac.jpl.nasa.gov. It is further suggested that users examine a sequence of multiple parameter fields for the region and period of interest to ensure sufficient data quality and continuity. At present, it is worth noting the following known issues with regard to this dataset: a) data fields were produced using a modification of QuikSCAT Version 2 (i.e., previous version) winds, b) median-pass filter ambiguity removal is employed, hence not achieving the potential improvements from DIRTH, which affect the directional quality of the wind vector and stress data, c) does not incorporate the latest QuikSCAT re-processing improvements (i.e., Version 3 is most recent), d) different model winds (improved compared to Version 2 QuikSCAT L2B) are used in the ambiguity removal process for the entire dataset, and e) because of the lack of usable rain flags within 30 km of the coast, the rain flag value closest to the coast from the standard processing is applied between that rain flag location and the coast.  There are some consequences in light of the above issues, notably: a) the wind vector fields should not be merged with any other existing QuikSCAT dataset, b) there is more inherent structure to the data (in both signal and noise) compared to Version 3 data, c) data fields are smoother in comparison to the Version 2 data, and d) potentially spurious wind vectors may arise within ~30 km of the coast due to unflagged rain contaminated data and/or residual land reflections. More information including known problems/issues and important dataset updates can be found in the dataset user guide: ftp://podaac.jpl.nasa.gov/allData/quikscat/preview/L3/osu_coas/docs/qscat_vanhoff_uswc_userguide.pdf .</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <RevisionDate>2016-10-06T13:57:00.093Z</RevisionDate>
+    <ProcessingCenter>OSU/COAS</ProcessingCenter>
+    <ProcessingLevelId>3</ProcessingLevelId>
+    <ArchiveCenter>PO.DAAC</ArchiveCenter>
+    <DataFormat>NETCDF</DataFormat>
+    <SpatialKeywords>
+        <Keyword>Eastern Pacific Ocean</Keyword>
+    </SpatialKeywords>
+    <Temporal>
+        <RangeDateTime>
+            <BeginningDateTime>1999-07-20T02:26:00.000Z</BeginningDateTime>
+            <EndingDateTime>2009-11-21T14:34:00.000Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>Archiver</Role>
+            <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>(818) 393-7165</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>podaac@podaac.jpl.nasa.gov</Email>
+            </OrganizationEmails>
+            <ContactPersons>
+                <ContactPerson>
+                    <FirstName>User</FirstName>
+                    <MiddleName>null</MiddleName>
+                    <LastName>Services</LastName>
+                    <JobPosition>Technical Contact</JobPosition>
+                </ContactPerson>
+            </ContactPersons>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Winds</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Wind Stress</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>None</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Winds</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Surface Winds</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>None</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Winds</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Convergence/Divergence</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>None</DetailedVariableKeyword>
+        </ScienceKeyword>
+        <ScienceKeyword>
+            <CategoryKeyword>Earth Science</CategoryKeyword>
+            <TopicKeyword>Oceans</TopicKeyword>
+            <TermKeyword>Ocean Winds</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>Vorticity</Value>
+            </VariableLevel1Keyword>
+            <DetailedVariableKeyword>None</DetailedVariableKeyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+            <ShortName>QUIKSCAT</ShortName>
+            <LongName>QUIKSCAT</LongName>
+            <Type>SPACECRAFT</Type>
+            <Instruments>
+                <Instrument>
+                    <ShortName>SEAWINDS</ShortName>
+                    <LongName>SeaWinds Scatterometer</LongName>
+                    <Sensors>
+                        <Sensor>
+                            <ShortName>SEAWINDS</ShortName>
+                            <LongName>SeaWinds Scatterometer</LongName>
+                        </Sensor>
+                    </Sensors>
+                </Instrument>
+            </Instruments>
+        </Platform>
+    </Platforms>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/quikscat/preview/L3/osu_coas/us_west_coast</URL>
+            <URLDescription>The FTP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+        <OnlineAccessURL>
+            <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/quikscat/preview/L3/osu_coas/us_west_coast/</URL>
+            <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <OnlineResources>
+        <OnlineResource>
+            <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/quikscat/preview/L3/osu_coas/docs/qscat_vanhoff_uswc_userguide.pdf</URL>
+            <Description>Dataset User Guide</Description>
+            <Type>Reference Materials</Type>
+        </OnlineResource>
+        <OnlineResource>
+            <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-QSOSU-L3WC0</URL>
+            <Description>(Search Granule)</Description>
+            <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+        </OnlineResource>
+    </OnlineResources>
+    <Spatial>
+        <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                <BoundingRectangle>
+                    <WestBoundingCoordinate>-135.0</WestBoundingCoordinate>
+                    <NorthBoundingCoordinate>50</NorthBoundingCoordinate>
+                    <EastBoundingCoordinate>-115.0</EastBoundingCoordinate>
+                    <SouthBoundingCoordinate>30</SouthBoundingCoordinate>
+                </BoundingRectangle>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

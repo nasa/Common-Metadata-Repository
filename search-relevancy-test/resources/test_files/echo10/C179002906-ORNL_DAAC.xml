@@ -1,0 +1,139 @@
+<Collection>
+            <ShortName>model_archive_pnet_4_and_5_817</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2005-12-06T00:00:00Z</InsertTime>
+            <LastUpdate>2005-12-06T00:00:00Z</LastUpdate>
+            <LongName>PnET Models: Carbon, Nitrogen, Water Dynamics in Forest Ecosystems (Vers. 4 and 5)</LongName>
+            <DataSetId>PnET Models: Carbon, Nitrogen, Water Dynamics in Forest Ecosystems (Vers. 4 and 5)</DataSetId>
+            <Description>PnET (Photosynthetic / EvapoTranspiration model) is a nested series of models of carbon, water, and nitrogen dynamics in forest ecosystems. The models can be used to predict transient responses in net primary production (NPP), carbon and water balances, net nitrogen (N) mineralization and nitrification and N leaching losses, resulting from changes in climate, N deposition, tropospheric ozone and land use as well as variation in species composition. The models have been developed and validated in the Northeastern U.S. at both the site and grid level (to 1-km resolution) at the Complex Systems Research Center, University of New Hampshire, by John Aber and colleagues.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/817</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2005-12-06T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>4</ProcessingLevelId>
+            <ProcessingLevelDescription>model products</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Aber, J.D., S.V. Ollinger, C.T. Driscoll, C.A. Federer, and P.B. Reich. 2005. PnET Models: Carbon, Nitrogen, Water Dynamics in Forest Ecosystems (Vers. 4 and 5). ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/817</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1992-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2003-04-21T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>PHOTOSYNTHESIS</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CANOPY CHARACTERISTICS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>NOT APPLICABLE</ShortName>
+                    <LongName> </LongName>
+                    <Type>NOT APPLICABLE</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>NOT APPLICABLE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>NOT APPLICABLE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>model archive</ShortName>
+                    <LongName>Model Archive</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/PnET/pnet_4_and_5/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/MODELS/guides/pnet_guide.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/817</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/PnET/pnet_4_and_5/comp/PnET_changelog.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/model_archive/PnET/pnet_4_and_5/comp/pnet_guide.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <Point>
+                            <PointLongitude>-72.25</PointLongitude>
+                            <PointLatitude>42.37</PointLatitude>
+                        </Point>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

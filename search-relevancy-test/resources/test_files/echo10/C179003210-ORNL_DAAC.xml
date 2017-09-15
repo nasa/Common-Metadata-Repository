@@ -1,0 +1,155 @@
+<Collection>
+            <ShortName>LBA-ECO_LC23_AMFD_839</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2007-01-10T00:00:00Z</InsertTime>
+            <LastUpdate>2007-01-10T00:00:00Z</LastUpdate>
+            <LongName>LBA-ECO LC-23 ASTER and MODIS Fire Data Comparison for Brazil: 2003-2004</LongName>
+            <DataSetId>LBA-ECO LC-23 ASTER and MODIS Fire Data Comparison for Brazil: 2003-2004</DataSetId>
+            <Description>This data set contains data associated with MODIS fire maps generated using two different algorithms and compared against fire maps produced by ASTER. These data relate to a paper (Morisette et al., 2005) that describes the use of high spatial resolution ASTER data to evaluate the characteristics of two fire detection algorithms, both applied to MODIS-Terra data and both operationally producing publicly available fire locations. The two algorithms are NASA's operational Earth Observing System MODIS fire detection product and Brazil's National Institute for Space Research (INPE) algorithm. These data are the ASCII files used in the logistic regression and error matrices presented in the paper. </Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/839</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2007-01-10T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Morisette, J.T., L. Giglio, I.A. Csiszar, A. Setzer, W. Schroeder, D.C. Morton, and C.O. Justice. 2006. LBA-ECO LC-23 ASTER and MODIS Fire Data Comparison for Brazil: 2003-2004. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/839</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2003-01-19T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2004-02-07T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>HUMAN DIMENSIONS</TopicKeyword>
+                    <TermKeyword>NATURAL HAZARDS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>WILDFIRES</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>AQUA</ShortName>
+                    <LongName>Earth Observing System, AQUA</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>MODIS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>TERRA</ShortName>
+                    <LongName>Earth Observing System, TERRA (AM-1)</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>ASTER</ShortName>
+                            <LongName>Advanced Spaceborne Thermal Emission and Reflection Radiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>ASTER</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>MODIS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>LBA-ECO</ShortName>
+                    <LongName>Large Scale Biosphere-Atmosphere Experiment - Ecology</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/lba/land_use_land_cover_change/LC23_MODIS_ASTER_Fire_Comparisons/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/LBA/guides/LC23_MODIS_ASTER_Fire_Comparisons.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/839</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/lba/land_use_land_cover_change/LC23_MODIS_ASTER_Fire_Comparisons/comp/filelist.csv</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/lba/land_use_land_cover_change/LC23_MODIS_ASTER_Fire_Comparisons/comp/LC23_MODIS_ASTER_Fire_Comparisons.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-68.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>5.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-54.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-11.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

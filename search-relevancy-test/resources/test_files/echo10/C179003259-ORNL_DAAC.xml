@@ -1,0 +1,174 @@
+<Collection>
+            <ShortName>NPP_VAST_576</ShortName>
+            <VersionId>2</VersionId>
+            <InsertTime>2013-08-28T00:00:00Z</InsertTime>
+            <LastUpdate>2013-08-28T00:00:00Z</LastUpdate>
+            <LongName>NPP Multi-Biome: VAST Calibration Data, 1965-1998, R1</LongName>
+            <DataSetId>NPP Multi-Biome: VAST Calibration Data, 1965-1998, R1</DataSetId>
+            <Description>This data set contains one data file in comma-delimited (.csv format) that provides observations from Australia for use in parameterizing the Vegetation and Soil-carbon Transfer (VAST) Model (version 1.1). The observations include net primary productivity (NPP), biomass, litter mass, surface horizon soil carbon concentration (i.e., mass fraction) and bulk density, and soil carbon and bulk density measurements at various depths. The data consist of 33 estimates of above-ground NPP based on cut grass swards and visual assessment of growth, 150 measurements of litterfall (leaf and fine twig), 76 measurements of above-ground biomass (phytomass), 91 determinations of fine litter mass, 341 measurements of soil carbon concentration in surface layers (to 15 cm depth), and 50 determinations of soil bulk density (to 15 cm depth). All these data were derived from 174 original literature references describing study sites throughout Australia. VAST is a conceptual carbon (C) cycle model that depicts large scale dynamics of terrestrial C pools and the net exchange of C between the land surface and the atmosphere at a resolution of 0.05 degrees. The model consists of 10 C pools comprising two above-ground biomass pools, two litter pools, and three pools each of below-ground biomass and soil C. Below-ground pools are distributed among three soil layers (0-20, 20-50, and 50-100 cm). Revision Notes: Only the documentation for this data set has been modified. The data files have been checked for accuracy and are identical to those originally published in 2001. </Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/576</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2013-08-28T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Barrett, D.J. 2013. NPP Multi-Biome: VAST Calibration Data, 1965-1998, R1. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/576</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1955-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>1998-12-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>BIOMASS DYNAMICS</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>PRIMARY PRODUCTION</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>BIOMASS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>FIELD INVESTIGATION</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>QUADRATS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>QUADRATS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>CORING DEVICES</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>CORING DEVICES</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>STEEL MEASURING TAPE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>STEEL MEASURING TAPE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>BALANCE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>BALANCE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>NPP</ShortName>
+                    <LongName>Net Primary Productivity</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/npp/multi_biome/NPP_VAST/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/NPP/guides/NPP_VAST.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/576</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/npp/multi_biome/NPP_VAST/comp/NPP_VAST.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>115.16</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>-11.15</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>153.45</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-43.42</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

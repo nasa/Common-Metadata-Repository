@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?><gmd:DS_Series xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gsr="http://www.isotc211.org/2005/gsr" xmlns:gss="http://www.isotc211.org/2005/gss" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.isotc211.org/2005/gmi http://cdn.earthdata.nasa.gov/iso/schema/1.0/ISO19115-2_EOS.xsd">
+<gmd:composedOf gco:nilReason="inapplicable"/>
+<gmd:seriesMetadata>
+<gmi:MI_Metadata>
+<gmd:fileIdentifier>
+<gco:CharacterString>L1C_TB_E</gco:CharacterString>
+</gmd:fileIdentifier>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+<gmd:characterSet>
+<gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+</gmd:characterSet>
+<gmd:hierarchyLevel>
+<gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+</gmd:hierarchyLevel>
+<gmd:contact>
+<gmd:CI_ResponsibleParty>
+<gmd:organisationName>
+<gco:CharacterString>NSIDC DAAC &gt; National Snow and Ice Data Center DAAC</gco:CharacterString>
+</gmd:organisationName>
+<gmd:contactInfo>
+<gmd:CI_Contact>
+<gmd:address>
+<gmd:CI_Address>
+<gmd:electronicMailAddress>
+<gco:CharacterString>nsidc@nsidc.org</gco:CharacterString>
+</gmd:electronicMailAddress>
+</gmd:CI_Address>
+</gmd:address>
+<gmd:onlineResource>
+<gmd:CI_OnlineResource>
+<gmd:linkage>
+<gmd:URL>http://nsidc.org/daac/</gmd:URL>
+</gmd:linkage>
+</gmd:CI_OnlineResource>
+</gmd:onlineResource>
+</gmd:CI_Contact>
+</gmd:contactInfo>
+<gmd:role>
+<gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+</gmd:role>
+</gmd:CI_ResponsibleParty>
+</gmd:contact>
+<gmd:dateStamp>
+<gco:Date>2014-04-15</gco:Date>
+</gmd:dateStamp>
+<gmd:metadataStandardName>
+<gco:CharacterString>ISO 19115-2 Geographic information - Metadata - Part 2: Extensions for imagery and gridded data</gco:CharacterString>
+</gmd:metadataStandardName>
+<gmd:metadataStandardVersion>
+<gco:CharacterString>ISO 19115-2:2009-02-15</gco:CharacterString>
+</gmd:metadataStandardVersion>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<!-- The product Long Name required by the ECS. -->
+<gco:CharacterString>SMAP Enhanced L1C Radiometer Half-Orbit 9 km EASE-Grid Brightness Temperatures</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<!-- The date of a particular release or build. For the ECS, this is the RevisionDate -->
+<gco:Date>2016-10-31</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<!-- Specifies the SMAP Release ID -->
+<gco:CharacterString>R14</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier>
+<gmd:MD_Identifier>
+<gmd:code>
+<!-- This is the ECS Short Name rather than the SMAP Short Name.  -->
+<gco:CharacterString>SPL1CTB_E</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<!-- The namespace identifier for SMAP data product Short Names. Team should devise an identifier. -->
+<gco:CharacterString>smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>The ECS Short Name</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:identifier>
+<gmd:MD_Identifier>
+<!-- This field provides the ECS Version ID. -->
+<gmd:code>
+<gco:CharacterString>001</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<!-- This field is intended to provide the namespace for ECS Version IDs for the SMAP mission.  Team should devise an identifier.-->
+<gco:CharacterString>gov.nasa.esdis</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>The ECS Version ID</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:identifier>
+<gmd:MD_Identifier>
+<!-- This field provides the Digital Object Identifier (DOI). -->
+<gmd:code>
+<gmx:Anchor xlink:actuate="onRequest" xlink:href="http://dx.doi.org/10.5067/2C9O9KT6JAWS">doi:10.5067/2C9O9KT6JAWS</gmx:Anchor>
+</gmd:code>
+<!-- This field is intended to provide a namespace identifier for DOIs.  What would be best specification?-->
+<gmd:codeSpace>
+<gco:CharacterString>gov.nasa.esdis</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>A Digital Object Identifier (DOI)</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:citedResponsibleParty>
+<gmd:CI_ResponsibleParty>
+<gmd:organisationName>
+<gco:CharacterString>National Aeronautics and Space Administration (NASA)</gco:CharacterString>
+</gmd:organisationName>
+<gmd:role>
+<gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="resourceProvider">resourceProvider</gmd:CI_RoleCode>
+</gmd:role>
+</gmd:CI_ResponsibleParty>
+</gmd:citedResponsibleParty>
+<gmd:citedResponsibleParty>
+<gmd:CI_ResponsibleParty>
+<gmd:organisationName>
+<!-- This field provides the ProcessingCenter, a required field for the ECS. The ECS will need to check the roleCode to ensure they're viewing the correct field.-->
+<gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+</gmd:organisationName>
+<gmd:role>
+<gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="originator">originator</gmd:CI_RoleCode>
+</gmd:role>
+</gmd:CI_ResponsibleParty>
+</gmd:citedResponsibleParty>
+<gmd:presentationForm>
+<gmd:CI_PresentationFormCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+</gmd:presentationForm>
+<gmd:otherCitationDetails>
+<gco:CharacterString>Enhanced resolution Calibration/Validation Version 2 Release of the Level 1C Radiometer Science Processing Software.</gco:CharacterString>
+</gmd:otherCitationDetails>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<!-- This field contains the CollectionDescription required by the ECS. -->
+<gco:CharacterString>The SMAP Level 1C_TB_E product provides radiometer brightness temperatures in half-orbit granules, gridded at 9 km grid resolution, on 3 EASE2 Earth-fixed grids - 1) Cylindrical projection, 2) Northern polar projection, 3) Southern polar projection.</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>The SMAP Level 1C Radiometer product delivers the basic radiometer brightness temperature measurements at 9-km grid resolution to meet SMAP soil moisture retrieval requirements.</gco:CharacterString>
+</gmd:purpose>
+<gmd:credit>
+<!-- This field can name individuals or organizations for credit. For now, it specifies NASA. -->
+<gco:CharacterString>The software that generates the Level 1C Radiometer product and the data system that automates its production were designed and implemented at the Jet Propulsion Laboratory, California Institute of Technology in Pasadena, California.</gco:CharacterString>
+</gmd:credit>
+<gmd:status>
+<gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="onGoing">onGoing</gmd:MD_ProgressCode>
+</gmd:status>
+<gmd:pointOfContact>
+<gmd:CI_ResponsibleParty>
+<gmd:organisationName>
+<!-- This field provides the ArchiveCenter, a required entry for the ECS. -->
+<gco:CharacterString>NSIDC</gco:CharacterString>
+</gmd:organisationName>
+<gmd:role>
+<gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+</gmd:role>
+</gmd:CI_ResponsibleParty>
+</gmd:pointOfContact>
+<gmd:resourceMaintenance>
+<gmd:MD_MaintenanceInformation>
+<gmd:maintenanceAndUpdateFrequency>
+<gmd:MD_MaintenanceFrequencyCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="asNeeded">asNeeded</gmd:MD_MaintenanceFrequencyCode>
+</gmd:maintenanceAndUpdateFrequency>
+<gmd:dateOfNextUpdate>
+<gco:Date>2017-04-01</gco:Date>
+</gmd:dateOfNextUpdate>
+<gmd:updateScope>
+<gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+</gmd:updateScope>
+</gmd:MD_MaintenanceInformation>
+</gmd:resourceMaintenance>
+<gmd:resourceFormat>
+<gmd:MD_Format>
+<gmd:name>
+<gco:CharacterString>HDF5</gco:CharacterString>
+</gmd:name>
+<gmd:version>
+<gco:CharacterString>1.8.13</gco:CharacterString>
+</gmd:version>
+</gmd:MD_Format>
+</gmd:resourceFormat>
+<gmd:descriptiveKeywords>
+<gmd:MD_Keywords>
+<gmd:keyword>
+<gco:CharacterString>EARTH SCIENCE &gt; SPECTRAL/ENGINEERING &gt; MICROWAVE &gt; BRIGHTNESS TEMPERATURE</gco:CharacterString>
+</gmd:keyword>
+<gmd:type>
+<gmd:MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+</gmd:type>
+<gmd:thesaurusName>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>NASA/GCMD Earth Science Keywords</gco:CharacterString>
+</gmd:title>
+<gmd:date gco:nilReason="unknown"/>
+</gmd:CI_Citation>
+</gmd:thesaurusName>
+</gmd:MD_Keywords>
+</gmd:descriptiveKeywords>
+<gmd:descriptiveKeywords>
+<gmd:MD_Keywords>
+<gmd:keyword>
+<gco:CharacterString>Earth Remote Sensing Instruments &gt; Passive Remote Sensing &gt; Spectrometers/Radiometers &gt; Imaging Spectrometers/Radiometers &gt; SMAP L-BAND RADIOMETER &gt; SMAP L-Band Radiometer</gco:CharacterString>
+</gmd:keyword>
+<gmd:type>
+<gmd:MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+</gmd:type>
+<gmd:thesaurusName>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>NASA/GCMD Earth Science Keywords</gco:CharacterString>
+</gmd:title>
+<gmd:date gco:nilReason="unknown"/>
+</gmd:CI_Citation>
+</gmd:thesaurusName>
+</gmd:MD_Keywords>
+</gmd:descriptiveKeywords>
+<gmd:descriptiveKeywords>
+<gmd:MD_Keywords>
+<gmd:keyword>
+<gco:CharacterString>Earth Observation Satellites &gt; NASA Decadal Survey &gt; SMAP &gt; Soil Moisture Active and Passive Observatory</gco:CharacterString>
+</gmd:keyword>
+<gmd:type>
+<gmd:MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+</gmd:type>
+<gmd:thesaurusName>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>NASA/GCMD Earth Science Keywords</gco:CharacterString>
+</gmd:title>
+<gmd:date gco:nilReason="unknown"/>
+</gmd:CI_Citation>
+</gmd:thesaurusName>
+</gmd:MD_Keywords>
+</gmd:descriptiveKeywords>
+<gmd:descriptiveKeywords>
+<gmd:MD_Keywords>
+<gmd:keyword>
+<gco:CharacterString>GEOGRAPHIC REGION &gt; GLOBAL</gco:CharacterString>
+</gmd:keyword>
+<gmd:type>
+<gmd:MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+</gmd:type>
+<gmd:thesaurusName>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>NASA/GCMD Earth Science Keywords</gco:CharacterString>
+</gmd:title>
+<gmd:date gco:nilReason="unknown"/>
+</gmd:CI_Citation>
+</gmd:thesaurusName>
+</gmd:MD_Keywords>
+</gmd:descriptiveKeywords>
+<gmd:aggregationInfo>
+<gmd:MD_AggregateInformation>
+<gmd:aggregateDataSetIdentifier>
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:aggregateDataSetIdentifier>
+<gmd:associationType>
+<gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="largerWorkCitation">largerWorkCitation</gmd:DS_AssociationTypeCode>
+</gmd:associationType>
+<gmd:initiativeType>
+<gmd:DS_InitiativeTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="mission">mission</gmd:DS_InitiativeTypeCode>
+</gmd:initiativeType>
+</gmd:MD_AggregateInformation>
+</gmd:aggregationInfo>
+<gmd:spatialRepresentationType>
+<gmd:MD_SpatialRepresentationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">grid</gmd:MD_SpatialRepresentationTypeCode>
+</gmd:spatialRepresentationType>
+<gmd:spatialResolution>
+<gmd:MD_Resolution>
+<gmd:distance>
+<gco:Distance uom="km">9</gco:Distance>
+</gmd:distance>
+</gmd:MD_Resolution>
+</gmd:spatialResolution>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+<gmd:characterSet>
+<gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+</gmd:characterSet>
+<gmd:topicCategory>
+<gmd:MD_TopicCategoryCode>geoscientificInformation</gmd:MD_TopicCategoryCode>
+</gmd:topicCategory>
+<gmd:environmentDescription>
+<gco:CharacterString>Data product generated by the SMAP mission in HDF5 format with metadata that conforms to the ISO 19115 model.</gco:CharacterString>
+</gmd:environmentDescription>
+<gmd:extent>
+<gmd:EX_Extent>
+<gmd:description>
+<gco:CharacterString>Major characteristics for the acquisition and collection of SMAP radiometer data are as follows:
+                                    1) The SMAP spacecraft collects radiometer data over a 1000 km wide swath.
+                                    2) The SMAP instrument acquires and collect data in full-band and sub-band mode over all sites.
+                                    3) The SMAP spacecraft downlinks sub-band data over land and over calibration targets.  Calibration targets include selected regions of the mid-Pacific ocean and Antarctica.
+                                    4) The SMAP spacecraft downlinks sub-band data whenever the instrument is acquiring cold sky data.
+                                    5) The SMAP spacecraft always downlinks full-band data.</gco:CharacterString>
+</gmd:description>
+<gmd:geographicElement>
+<!-- This defines the bounding box for all SMAP Level 1 Radiometer Brightness Temperature data products. -->
+<gmd:EX_GeographicBoundingBox id="swathBoundingBox">
+<gmd:extentTypeCode>
+<gco:Boolean>1</gco:Boolean>
+</gmd:extentTypeCode>
+<gmd:westBoundLongitude>
+<gco:Decimal>-180.00</gco:Decimal>
+</gmd:westBoundLongitude>
+<gmd:eastBoundLongitude>
+<gco:Decimal>180.00</gco:Decimal>
+</gmd:eastBoundLongitude>
+<gmd:southBoundLatitude>
+<gco:Decimal>-85.0445</gco:Decimal>
+</gmd:southBoundLatitude>
+<gmd:northBoundLatitude>
+<gco:Decimal>85.0445</gco:Decimal>
+</gmd:northBoundLatitude>
+</gmd:EX_GeographicBoundingBox>
+</gmd:geographicElement>
+<gmd:temporalElement>
+<gmd:EX_TemporalExtent>
+<!-- Mimics use in GHRSST. See no evidence of conformance to standard -->
+<gmd:extent>
+<gml:TimePeriod gml:id="swathTemporalExtent">
+<!-- This defines the time period covered by all SMAP Level 1C Radiometer Brightness Temperature data products. 
+                                            ECS indicates that they will automatically extend the final time based on receipt of data products. -->
+<gml:beginPosition>2015-03-31T00:00:00.000Z</gml:beginPosition>
+<gml:endPosition/>
+</gml:TimePeriod>
+</gmd:extent>
+</gmd:EX_TemporalExtent>
+</gmd:temporalElement>
+</gmd:EX_Extent>
+</gmd:extent>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<!-- This field is used to reference the Product Specification Document. If and when the model moves to ISO 19115-1, move this reference to additional Documentation.  -->
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>Soil Moisture Active Passive Mission L1C_TB_E Product Specification Document</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:Date>2012-11-08</gco:Date>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:edition>
+<gco:CharacterString>1.0</gco:CharacterString>
+</gmd:edition>
+<gmd:identifier>
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>L1C_TB_E</gco:CharacterString>
+</gmd:code>
+<gmd:codeSpace>
+<!-- This field is intended to provide a namespace identifier for SMAP data product Short Names. Team should devise an identifier. -->
+<gco:CharacterString>smap.jpl.nasa.gov</gco:CharacterString>
+</gmd:codeSpace>
+<gmd:description>
+<gco:CharacterString>Short name used by the Soil Moisture Active Passive (SMAP) mission to identify the Level 1C Brightness Temperature product.</gco:CharacterString>
+</gmd:description>
+</gmd:MD_Identifier>
+</gmd:identifier>
+<gmd:presentationForm>
+<gmd:CI_PresentationFormCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+</gmd:presentationForm>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>The Product Specification Document that fully describes the content and format of this data product.</gco:CharacterString>
+</gmd:abstract>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+<gmd:characterSet>
+<gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+</gmd:characterSet>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>DataSetId</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2016-11-15T15:32:07.851Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>DataSetId</gco:CharacterString>
+</gmd:abstract>
+<gmd:aggregationInfo>
+<gmd:MD_AggregateInformation>
+<gmd:aggregateDataSetIdentifier>
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SMAP Enhanced L1C Radiometer Half-Orbit 9 km EASE-Grid Brightness Temperatures V001</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:aggregateDataSetIdentifier>
+<gmd:associationType/>
+</gmd:MD_AggregateInformation>
+</gmd:aggregationInfo>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>InsertTime</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2016-11-15T11:33:07.283Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>InsertTime</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>InsertTime</gco:CharacterString>
+</gmd:purpose>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>UpdateTime</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2016-11-15T15:32:07.851Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>UpdateTime</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>UpdateTime</gco:CharacterString>
+</gmd:purpose>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+<gmd:identificationInfo>
+<gmd:MD_DataIdentification>
+<gmd:citation>
+<gmd:CI_Citation>
+<gmd:title>
+<gco:CharacterString>DIFID</gco:CharacterString>
+</gmd:title>
+<gmd:date>
+<gmd:CI_Date>
+<gmd:date>
+<gco:DateTime>2016-11-15T15:32:07.851Z</gco:DateTime>
+</gmd:date>
+<gmd:dateType>
+<gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+</gmd:dateType>
+</gmd:CI_Date>
+</gmd:date>
+<gmd:identifier>
+<gmd:MD_Identifier>
+<gmd:code>
+<gco:CharacterString>SPL1CTB_E_001</gco:CharacterString>
+</gmd:code>
+</gmd:MD_Identifier>
+</gmd:identifier>
+</gmd:CI_Citation>
+</gmd:citation>
+<gmd:abstract>
+<gco:CharacterString>DIFID</gco:CharacterString>
+</gmd:abstract>
+<gmd:purpose>
+<gco:CharacterString>DIFID</gco:CharacterString>
+</gmd:purpose>
+<gmd:language>
+<gco:CharacterString>eng</gco:CharacterString>
+</gmd:language>
+</gmd:MD_DataIdentification>
+</gmd:identificationInfo>
+</gmi:MI_Metadata>
+</gmd:seriesMetadata>
+</gmd:DS_Series>

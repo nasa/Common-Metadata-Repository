@@ -1,0 +1,144 @@
+<Collection>
+            <ShortName>Snowmelt_timing_maps_1504</ShortName>
+            <VersionId>V1</VersionId>
+            <InsertTime>2017-06-15T00:00:00Z</InsertTime>
+            <LastUpdate>2017-06-15T00:00:00Z</LastUpdate>
+            <LongName>Snowmelt Timing Maps Derived from MODIS for North America, 2001-2015</LongName>
+            <DataSetId>Snowmelt Timing Maps Derived from MODIS for North America, 2001-2015</DataSetId>
+            <Description>This data set provides snowmelt timing maps (STMs), cloud interference maps, and a map with the count of calculated snowmelt timing values for North America. The STMs are based on the Moderate Resolution Imaging Spectroradiometer (MODIS) standard 8-day composite snow-cover product MOD10A2 for the period 2001-01-01 to 2015-09-06. The STMs were created by conducting a time-series analysis of the MOD10A2 snow maps to identify the DOY of snowmelt on a per-pixel basis. Snowmelt timing (no-snow) was defined as a snow-free reading following two consecutive snow-present readings for a given 500-m pixel. The count of STM values is also reported, which represents the number of years on record in the STMs from 2001-2015.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1504</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2017-06-15T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>O'Leary III, D., D.K. Hall, M. Medler, R. Matthews, and A. Flower. 2017. Snowmelt Timing Maps Derived from MODIS for North America, 2001-2015. ORNL DAAC, Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1504</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2001-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2015-09-06T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CRYOSPHERE</TopicKeyword>
+                    <TermKeyword>SNOW/ICE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SNOW MELT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>TERRESTRIAL HYDROSPHERE</TopicKeyword>
+                    <TermKeyword>SNOW/ICE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SNOW MELT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>TERRA</ShortName>
+                    <LongName>Earth Observing System, TERRA (AM-1)</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>MODIS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>climate</ShortName>
+                    <LongName>Climate Collection</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/global_climate/Snowmelt_timing_maps/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/CLIMATE/guides/Snowmelt_timing_maps.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1504</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_climate/Snowmelt_timing_maps/comp/Snowmelt_timing_maps.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_climate/Snowmelt_timing_maps/comp/Snowmelt_timing_maps_Fig1.png</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_climate/Snowmelt_timing_maps/comp/Snowmelt_timing_maps_Fig1.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>0.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>10.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

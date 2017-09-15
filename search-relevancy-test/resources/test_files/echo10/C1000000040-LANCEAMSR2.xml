@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<Collection>
+  <ShortName>A2_SI6_NRT</ShortName>
+  <VersionId>0</VersionId>
+  <InsertTime>2015-10-01T00:00:00Z</InsertTime>
+  <LastUpdate>2017-06-05T13:14:00Z</LastUpdate>
+  <LongName>NRT AMSR2 DAILY L3 6.25 KM 89 GHZ BRIGHTNESS TEMPERATURE (TB) POLAR GRIDS</LongName>
+  <DataSetId>NRT AMSR2 DAILY L3 6.25 KM 89 GHZ BRIGHTNESS TEMPERATURE (TB) POLAR GRIDS V0</DataSetId>
+  <Description>The Advanced Microwave Scanning Radiometer 2 (AMSR2) instrument on the Global Change Observation Mission - Water 1 (GCOM-W1) provides global passive microwave measurements of terrestrial, oceanic, and atmospheric parameters for the investigation of global water and energy cycles.  Near real-time (NRT) products are generated within 3 hours of the last observations in the file, by the Land Atmosphere Near real-time Capability for EOS (LANCE) at the AMSR Science Investigator-led Processing System (AMSR SIPS), which is collocated with the Global Hydrology Resource Center (GHRC) DAAC.  The NRT AMSR2 Daily L3 6.25 km 89 GHz Brightness Temperature (Tb) Polar Grids uses as input the resampled brightness temperature (Level-1R) data provided by the Japanese Aerospace Exploration Agency (JAXA).  This Level-3 gridded product includes brightness temperatures at 89.0 GHz.  Data are mapped to a polar stereographic grid at 6.25 km spatial resolution.  This product is an intermediate product during processing of LANCE AMSR2 Level-3 sea ice products at 12.5 km and 25 km resolution.  Data are stored in HDF-EOS5 format and are available via HTTP from the EOSDIS LANCE system at https://lance.nsstc.nasa.gov/amsr2-science/data/level3/seaice6.  If data latency is not a primary concern, please consider using science quality products.  Science products are created using the best available ancillary, calibration and ephemeris information.  Science quality products are an internally consistent, well-calibrated record of the Earth's geophysical properties to support science.  The AMSR SIPS plans to start producing initial AMSR2 standard science quality data products in 2016 and they will be available from the NSIDC DAAC.  Notice: All LANCE AMSR2 data should be used with the understanding that these are preliminary products.  Cross calibration with AMSR-E products has not been performed.  As updates are made to the L1R data set, those changes will be reflected in this higher level product.</Description>
+  <CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <ProcessingLevelId>3</ProcessingLevelId>
+  <ArchiveCenter>NASA/MSFC/GHRC</ArchiveCenter>
+  <CitationForExternalPublication>Markus, Thorsten, Josefino C Comiso, Donald J Cavalieri and Alvaro Ivanoff.2015. NRT AMSR2 DAILY L3 6.25 KM 89 GHZ BRIGHTNESS TEMPERATURE (TB) POLAR GRIDS [indicate subset used]. Dataset available online from the NASA Global Hydrology Resource Center DAAC, Huntsville, Alabama, U.S.A. DOI: http://dx.doi.org/10.5067/AMSR2/A2_SI6_NRT</CitationForExternalPublication>
+  <CollectionState>IN WORK</CollectionState>
+  <Price>0.0</Price>
+  <SpatialKeywords>
+    <Keyword>POLAR REGIONS</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords>
+    <Keyword>DAILY</Keyword>
+  </TemporalKeywords>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2017-05-22T23:05:14Z</BeginningDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>DISTRIBUTOR</Role>
+      <OrganizationName>Global Hydrology Resource Center, Marshall Space Flight Center, NASA</OrganizationName>
+      <OrganizationAddresses>
+        <Address>
+          <StreetAddress>320 Sparkman Drive</StreetAddress>
+          <City>Huntsville</City>
+          <StateProvince>Alabama</StateProvince>
+          <PostalCode>35805</PostalCode>
+          <Country>USA</Country>
+        </Address>
+      </OrganizationAddresses>
+      <OrganizationPhones>
+        <Phone>
+          <Number>+1 256-961-7932</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>+1 256-824-5149</Number>
+          <Type>Fax</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>support-ghrc@earthdata.nasa.gov</Email>
+      </OrganizationEmails>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>SPECTRAL/ENGINEERING</TopicKeyword>
+      <TermKeyword>MICROWAVE</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>BRIGHTNESS TEMPERATURE</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>GCOM-W1</ShortName>
+      <LongName>Global Change Observation Mission 1st-Water</LongName>
+      <Type>Earth Observation Satellites</Type>
+      <Instruments>
+        <Instrument>
+          <ShortName>AMSR2</ShortName><Sensors><Sensor>
+<ShortName>AMSR2</ShortName></Sensor></Sensors>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes>
+    <AdditionalAttribute>
+      <Name>identifier_product_doi</Name>
+      <DataType>STRING</DataType>
+      <Description>product DOI</Description>
+      <Value>10.5067/AMSR2/A2_SI6_NRT</Value>
+    </AdditionalAttribute>
+    <AdditionalAttribute>
+      <Name>identifier_product_doi_authority</Name>
+      <DataType>STRING</DataType>
+      <Description>DOI authority</Description>
+      <Value>http://dx.doi.org/</Value>
+    </AdditionalAttribute>
+<AdditionalAttribute>
+<Name>AscendingDescendingFlg</Name>
+<DataType>STRING</DataType>
+<Description>flag to indicate ascending or descending</Description>
+<Value>Ascending and Descending</Value>
+</AdditionalAttribute>
+  </AdditionalAttributes>
+  <Campaigns>
+    <Campaign>
+      <ShortName>LANCE</ShortName>
+    </Campaign>
+  </Campaigns>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>https://lance.nsstc.nasa.gov/amsr2-science/data/level3/seaice6/R00/hdfeos5/</URL>
+      <URLDescription>Files may be downloaded directly to your workstation from this link</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>https://ghrc.nsstc.nasa.gov/pub/browse_sample/lance/AMSR_2_L3_SeaIce6km_P00_20160705_S_89H.png</URL>
+      <Description>Sample browse image</Description>
+      <Type>BROWSE SAMPLE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://ghrc.nsstc.nasa.gov/pub/browse_sample/lance/AMSR_2_L3_SeaIce6km_P00_20160705_S_89H.png</URL>
+      <Description>Sample browse image</Description>
+      <Type>BROWSE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://ghrc.nsstc.nasa.gov/pub/browse_sample/lance/AMSR_2_L3_SeaIce6km_P00_20160705_N_89V.png</URL>
+      <Description>Sample browse image</Description>
+      <Type>BROWSE SAMPLE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://ghrc.nsstc.nasa.gov/pub/browse_sample/lance/AMSR_2_L3_SeaIce6km_P00_20160705_N_89H.png</URL>
+      <Description>Sample browse image</Description>
+      <Type>BROWSE SAMPLE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://ghrc.nsstc.nasa.gov/pub/browse_sample/lance/AMSR_2_L3_SeaIce6km_P00_20160705_S_89V.png</URL>
+      <Description>Sample browse image</Description>
+      <Type>BROWSE SAMPLE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lance.itsc.uah.edu/amsr2-science/data/level3/seaice6/R00/hdfeos5/</URL>
+      <Description>Files may be downloaded directly to your workstation from this link</Description>
+      <Type>ALTERNATE ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://lance.nsstc.nasa.gov/amsr2-science/browse_png/level3/seaice6/R00/</URL>
+      <Description>Browse images illustrate the nature and coverage of the data</Description>
+      <Type>VIEW IMAGES</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://lance.nsstc.nasa.gov/amsr2-science/doc/LANCE_A2_SeaIce6_NRT_dataset.pdf</URL>
+      <Description>The guide document contains detailed information about the dataset</Description>
+      <Type>USER'S GUIDE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://worldview.earthdata.nasa.gov/</URL>
+      <Description>Interactively browse imagery in EOSDIS Worldview</Description>
+      <Type>WORLDVIEW</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://earthdata.nasa.gov/earth-observation-data/near-real-time</URL>
+      <Description>The home page for the project or program which sponsored the dataset</Description>
+      <Type>VIEW PROJECT HOME PAGE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>https://ghrc.nsstc.nasa.gov/home/about-ghrc/citing-ghrc-daac-data</URL>
+      <Description>Instructions for citing GHRC data</Description>
+      <Type>Citing GHRC data</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs>
+    <DIF>
+      <EntryId>A2_SI6_NRT</EntryId>
+    </DIF>
+  </AssociatedDIFs>
+  <Spatial>
+    <SpatialCoverageType>Horizontal</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>89</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-89</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

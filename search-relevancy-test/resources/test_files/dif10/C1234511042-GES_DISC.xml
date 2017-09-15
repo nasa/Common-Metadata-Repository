@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>FLDAS_NOAH01_C_EA_M</Short_Name>
+        <Version>001</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>FLDAS Noah Land Surface Model L4 monthly 0.1 x 0.1 degree for Eastern Africa (MERRA-2 and CHIRPS) V001 (FLDAS_NOAH01_C_EA_M) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Amy McNally NASA/GSFC/HSL</Dataset_Creator>
+        <Dataset_Title>FLDAS Noah Land Surface Model L4 monthly 0.1 x 0.1 degree for Eastern Africa (MERRA-2 and CHIRPS) V001</Dataset_Title>
+        <Dataset_Series_Name>FLDAS_NOAH01_C_EA_M</Dataset_Series_Name>
+        <Dataset_Release_Date>2016-01-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>001</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/XLNQ30KMZVHX</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/FLDAS_NOAH01_C_EA_M_001.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>HUALAN</First_Name>
+            <Last_Name>RUI</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5200</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>Hualan.Rui@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC PRESSURE</Term>
+        <Variable_Level_1>SURFACE PRESSURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>HEAT FLUX</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>LONGWAVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>SHORTWAVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>EVAPOTRANSPIRATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+        <Variable_Level_1>HUMIDITY</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>SURFACE WINDS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>LIQUID PRECIPITATION</Variable_Level_1>
+        <Variable_Level_2>RAIN</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SOILS</Term>
+        <Variable_Level_1>SOIL MOISTURE/WATER CONTENT</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SOILS</Term>
+        <Variable_Level_1>SOIL TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SURFACE THERMAL PROPERTIES</Term>
+        <Variable_Level_1>LAND SURFACE TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+        <Term>SURFACE WATER</Term>
+        <Variable_Level_1>RUNOFF</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>Hydrology</Ancillary_Keyword>
+    <Ancillary_Keyword>BEDI</Ancillary_Keyword>
+    <Ancillary_Keyword>Agriculture and Forestry</Ancillary_Keyword>
+    <Ancillary_Keyword>Climate</Ancillary_Keyword>
+    <Ancillary_Keyword>Disasters</Ancillary_Keyword>
+    <Ancillary_Keyword>Terrestrial and Freshwater Ecosystems</Ancillary_Keyword>
+    <Ancillary_Keyword>Energy and Mineral Resources</Ancillary_Keyword>
+    <Ancillary_Keyword>Human Health</Ancillary_Keyword>
+    <Ancillary_Keyword>Water Resources</Ancillary_Keyword>
+    <Ancillary_Keyword>Weather</Ancillary_Keyword>
+    <Ancillary_Keyword>Transportation</Ancillary_Keyword>
+    <Platform>
+        <Type>Models/Analyses</Type>
+        <Short_Name>Noah-LSM</Short_Name>
+        <Long_Name>Noah Land Surface Model</Long_Name>
+        <Instrument>
+            <Short_Name>NOT APPLICABLE</Short_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1982-01-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-11.8</Southernmost_Latitude>
+                <Northernmost_Latitude>23.0</Northernmost_Latitude>
+                <Westernmost_Longitude>22.0</Westernmost_Longitude>
+                <Easternmost_Longitude>51.4</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>CONTINENT</Location_Category>
+        <Location_Type>AFRICA</Location_Type>
+        <Location_Subregion1>EASTERN AFRICA</Location_Subregion1>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.1 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.1 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 month</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>FLDAS</Short_Name>
+        <Long_Name>Famine Early Warning Systems Network (FEWS NET) Land Data Assimilation System</Long_Name>
+    </Project>
+    <Quality>The data are provisional and subject to change as model improvements are implemented and new input data sets become available.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>None</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>NASA/GSFC/HSL</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>10 MB per file</Distribution_Size>
+        <Distribution_Format>netCDF-4</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>Soil moisture</File>
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915dd4fe01b045fab4ec210/file</URL>
+        <Format>PNG</Format>
+        <Caption>Average 0-10 cm Soil Moisture</Caption>
+        <Description>FLDAS Noah (MERRA-2 and CHIRPS) Eastern Africa Monthly 0.25 degree (0-10 cm) Soil Moisture [m^3 m-3] January 1982</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>McNally, A. et al. A land data assimilation system for sub-Saharan Africa food and water security applications. Sci. Data 4:170012 doi: 10.1038/sdata.2017.12 (2017).</Citation>
+        <Author>McNally, A. et al.</Author>
+        <Publication_Date>2017</Publication_Date>
+        <Title>A land data assimilation system for sub-Saharan Africa food and water security applications</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1038/sdata.2017.12</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>This data set contains a series of land surface parameters simulated from the Noah 3.3 model in the Famine Early Warning Systems Network (FEWS NET) Land Data Assimilation System (FLDAS). The data are in 0.10 degree resolution and range from January 1982 to the present. The temporal resolution is monthly and spatial coverage is Eastern Africa (11.8S, 22.0E, 23.0N, 51.4E). The files are in NetCDF format. 
+
+This simulation was forced by combination of New version of the Modern Era Retrospective-analysis for Research and Applications (MERRA-2) and Climate Hazards Group InfraRed Precipitation with Station data (CHIRPS).
+
+The simulation was initialized on 1 January 1982 using soil moisture and other state fields from a FLDAS/Noah model climatology for that day of the year.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/FLDAS/FLDAS_NOAH01_C_EA_M.001/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=FLDAS_NOAH01_C_EA_M</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=FLDAS_NOAH01_C_EA</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET RELATED VISUALIZATION</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>http://giovanni.gsfc.nasa.gov/giovanni/#dataKeyword=FLDAS_NOAH01_C_EA_M</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/opendap/FLDAS/FLDAS_NOAH01_C_EA_M.001/</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/FLDAS/FLDAS_NOAH01_C_EA_M.001/doc/README_FLDAS.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+        </URL_Content_Type>
+        <URL>http://ldas.gsfc.nasa.gov/FLDAS/</URL>
+        <Description>FLDAS Project Web Site</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>HOW-TO</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/howto</URL>
+        <Description>GES DISC Services Cookbook main page</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2016-10-10 Hualan: Changed the Multimedia Sample URL to a central repository.
+      2017-02-16, Ed Esfandiari - Added BEDI related ancillary keywords.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2016-03-25</Metadata_Creation>
+        <Metadata_Last_Revision>2017-07-06</Metadata_Last_Revision>
+        <Metadata_Future_Review>2016-08-01</Metadata_Future_Review>
+        <Data_Creation>2016-03-28</Data_Creation>
+        <Data_Last_Revision>2016-03-29</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>4</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 month</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>edee15d2-e961-4e68-98de-e260bf66bc3c</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:31:33</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:02Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>ARCTIC</Value>
+            <Value>SOOS</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>d711d9ad-686b-4665-9213-322bf9956caa</Value>
+            <Value>51f5487c-098e-4387-b0f0-09eb9d55b0d5</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.4</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>
