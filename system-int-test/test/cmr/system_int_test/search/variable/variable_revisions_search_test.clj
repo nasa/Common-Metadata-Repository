@@ -4,7 +4,9 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -20,6 +22,9 @@
 
 (deftest search-variable-all-revisions
   (let [token (e/login (s/context) "user1")
+        coll1 (d/ingest-umm-spec-collection "PROV1"
+                                            (data-umm-c/collection 1 {})
+                                            {:token token})
         var1-concept (variables/make-variable-concept {:native-id "var1"
                                                        :Name "Variable1"
                                                        :provider-id "PROV1"})
@@ -124,7 +129,22 @@
       ;; force deleted revisions are no longer in the search result
       (variables/assert-variable-references-match
        [var1-2-tombstone var1-3 var2-1 var2-2 var3]
-       (search/find-refs :variable {:all-revisions true})))))
+       (search/find-refs :variable {:all-revisions true}))
+
+      (testing "force delete cascade to variable association"
+        (variables/associate-by-concept-ids token
+                                            (:concept-id var1-3)
+                                            [{:concept-id (:concept-id coll1)}])
+        (index/wait-until-indexed)
+        ;; search collections by variable native-id found the collection
+        (d/refs-match? [coll1] (search/find-refs :collection {:variable_native_id "var1"}))
+
+        ;; force delete the latest revision of the variable cascade to variable association
+        (metadata-db/force-delete-concept (:concept-id var1-3) (:revision-id var1-3))
+        (index/wait-until-indexed)
+        
+        ;; search collections by variable native-id no longer found the collection
+        (d/refs-match? [] (search/find-refs :collection {:variable_native_id "var1"}))))))
 
 (deftest search-all-revisions-error-cases
   (testing "variable search with all_revisions bad value"
