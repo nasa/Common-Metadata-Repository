@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>TRMM_3B42RT</Short_Name>
+        <Version>7</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>TRMM (TMPA-RT) Near Real-Time Precipitation L3 3 hour 0.25 degree x 0.25 degree V7 (TRMM_3B42RT) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Dr. George Huffman</Dataset_Creator>
+        <Dataset_Editor>Kyle MacRitchie</Dataset_Editor>
+        <Dataset_Title>TRMM (TMPA-RT) Near Real-Time Precipitation L3 3 hour 0.25 degree x 0.25 degree V7</Dataset_Title>
+        <Dataset_Series_Name>TRMM_3B42RT</Dataset_Series_Name>
+        <Dataset_Release_Date>2016-03-15</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>7</Version>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/TRMM_3B42RT_7.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>GEORGE</First_Name>
+            <Last_Name>HUFFMAN</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 612</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6308</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>George.J.Huffman@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>PRECIPITATION RATE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>TRMM</Short_Name>
+        <Long_Name>Tropical Rainfall Measuring Mission</Long_Name>
+        <Instrument>
+            <Short_Name>PR</Short_Name>
+            <Long_Name>TRMM Precipitation Radar</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>TMI</Short_Name>
+            <Long_Name>TRMM Microwave Imager</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2000-02-29T22:30:00</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-60.0</Southernmost_Latitude>
+                <Northernmost_Latitude>60.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.25 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.25 degree</Longitude_Resolution>
+        <Temporal_Resolution>3 hours</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>TRMM</Short_Name>
+        <Long_Name>Tropical Rainfall Measuring Mission Project</Long_Name>
+    </Project>
+    <Quality>The quality of the 3B42RT product is worse than the research product (3B42). It is highly sensitive to the availability and quality of the input data, e.g. TMI (product 2A12), as well as other input datasets listed in the provider's documentation. Check the the most recent assessment, TMPA-to-IMERG_transition.pdf, issued after the decommissioning of the TRMM satellite, in the Realated URL section here.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>Best used in Real Time applications/monitoring, where long-term accuracy and biases are not of issue.</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>Precipitation Processing System (PPS)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>700 KB</Distribution_Size>
+        <Distribution_Format>netCDF-4</Distribution_Format>
+        <Fees>none</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>TRMM_3B42RT.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:47:40 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/TRMM/images/TRMM_3B42RT.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddede01b045fab4ed839/file</URL>
+        <Format>PNG</Format>
+        <Caption>TRMM Sample Image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>NOTICE: ftp://meso-a.gsfc.nasa.gov/pub/trmmdocs/rt/3B4XRT_notice_V7.pdf
+
+TMPA citation: ftp://meso-a.gsfc.nasa.gov/pub/trmmdocs/rt/TMPA_citations.pdf
+
+Huffman, G.J., 1997: "Estimates of Root-Mean-Square Random Error for Finite Samples of Estimated Precipitation," J. Appl. Meteor., 1191-1201.
+      
+Huffman, G.J., R.F. Adler, D.T. Bolvin, G. Gu, E.J. Nelkin, K.P. Bowman, Y. Hong, E.F. Stocker, D.B. Wolff, 2007:  The TRMM Multi-satellite Precipitation Analysis: Quasi- Global, Multi-Year, Combined-Sensor Precipitation Estimates at Fine Scale.  J. Hydrometeor., 8(1), 38-55.  PDF available at ftp://meso.gsfc.nasa.gov/agnes/huffman/papers/ TMPA_jhm_07.pdf.gz 
+
+Huffman, G.J., R.F. Adler, D.T. Bolvin, E.J. Nelkin, 2010:  The TRMM Multi-satellite Precipitation Analysis (TMPA).  Chapter 1 in Satellite Rainfall Applications for Surface Hydrology, F. Hossain and M. Gebremichael, Eds.  Springer Verlag, ISBN: 978-90-481-2914-0, 3-22.</Citation>
+    </Reference>
+    <Summary>
+        <Abstract>These data are output from the TRMM Multi-satellite Precipitation Analysis (TMPA), the Near Real-Time (RT) processing stream.  The latency is about seven hours from the observation time, although processing issues may delay or prevent this schedule. Users should be mindful that the price for the short latency of these data is the reduced quality as compared to the research quality product.
+
+Each file is a snapshot considered to represent the three-hour period centered on the "nominal" file time.  So, e.g., 00 UTC nominally represents the period from 2230 UTC of the previous day to 0130 UTC of the current day. Estimates outside the band 50 degree N-S are considered highly experimental. 
+
+GES DISC initially receives these data from the Precipitation Processing System (PPS) in binary format.  However, before archiving, the data are scaled to real numbers, and re-arranged to a standard grid so that the first grid cell is at 180W, 60S. Thus formatted, data are stored  into CF-1.6 compliant netCDF-4 files and archived. This format is machine-independent, self-explanatory,  provides extremely efficient seamless compression, and gives various options for previewing the data without downloading it.
+
+Apart from these technical differences, all other science content details remain the same, and users are strongly encouraged to read the provider's documentation that is linked to from here.</Abstract>
+        <Purpose>The NASA Goddard Space Flight Center (GSFC) system to produce the TMPA-RT estimates in real time for use by the operational research community was developed to apply new concepts in merging quasi-global precipitation estimates and to take advantage of the increasing availability of input data sets in near real time.</Purpose>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc2.gesdisc.eosdis.nasa.gov/data/TRMM_RT/TRMM_3B42RT.7</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GDS</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc2.gesdisc.eosdis.nasa.gov/dods/TRMM_3B42RT_7.info</URL>
+        <Description>The GrADS Data Server (GDS) is another form of OPeNDAP that provides subsetting and some analysis services across the Internet.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA (DODS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc2.gesdisc.eosdis.nasa.gov/opendap/TRMM_RT/TRMM_3B42RT.7/</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>ftp://trmmopen.gsfc.nasa.gov/pub/merged/V7Documents/3B4XRT_doc_V7.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://pmm.nasa.gov/TRMM</URL>
+        <Description>Precipitation Measurement Missions Project Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>ftp://gpmweb2.pps.eosdis.nasa.gov/tsdis/AB/docs/anomalous.html</URL>
+        <Description>TRMM Data Gaps</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2013-02-28: Creation
+                                    2013-08-07: Revision based on the latest info</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2016-02-28</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-22</Metadata_Last_Revision>
+        <Metadata_Future_Review>2016-07-31</Metadata_Future_Review>
+        <Data_Creation>2016-03-15</Data_Creation>
+        <Data_Last_Revision>2016-04-15</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>3 hours</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>25638f09-cab4-491f-adca-bae8f041c534</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:26:01</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:32Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Discipline</Name>
+            <Value>EARTH SCIENCE</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>SOOS</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>51f5487c-098e-4387-b0f0-09eb9d55b0d5</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

@@ -1,0 +1,135 @@
+<Collection>
+            <ShortName>CARVE_L1_FlightPath_Winds_1427</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2017-02-24T00:00:00Z</InsertTime>
+            <LastUpdate>2017-02-24T00:00:00Z</LastUpdate>
+            <LongName>CARVE: L1 Daily Flight Path and Winds Data, Alaska, 2015</LongName>
+            <DataSetId>CARVE: L1 Daily Flight Path and Winds Data, Alaska, 2015</DataSetId>
+            <Description>This data set provides high-frequency wind speed and direction data for the C-23 Sherpa aircraft during airborne campaigns over the Alaskan and Canadian Arctic as part of the Carbon in Arctic Reservoirs Vulnerability Experiment (CARVE). The data were collected in situ using the Aventech AIMMS-30 Airborne Wind Sensor onboard the aircraft and are presented at 1-second intervals throughout each flight. The Winds instrument was available for flights in year 2015 only. The measurements included in this data set are most useful when paired with the scientific data collected by other CARVE airborne instruments.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1427</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2017-02-24T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>CARVE Science Team . 2017. CARVE: L1 Daily Flight Path and Winds Data, Alaska, 2015. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1427</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2015-04-15T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2016-09-27T23:59:59Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC WINDS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>UPPER LEVEL WINDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>FLIGHT LEVEL WINDS</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>C-23 Sherpa</ShortName>
+                    <LongName>Short Brothers C-23 Sherpa</LongName>
+                    <Type>Aircraft</Type>
+                    <Instruments>
+					</Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>CARVE</ShortName>
+                    <LongName>Carbon in Arctic Reservoirs Vulnerability Experiment</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/carve/campaign/CARVE_L1_FlightPath_Winds/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1427</URL>
+                    <URLDescription>ORNL DAAC Landing Page URL for this Collection</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/CARVE/guides/CARVE_L1_FlightPath_Winds.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1427</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/carve/campaign/CARVE_L1_FlightPath_Winds/comp/CARVE_L1_FlightPath_Winds.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/1427_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/1427/catalog.html</URL>
+                    <Description>The THREDDS location for this Collection.</Description>
+                    <Type>THREDDS DIRECTORY</Type>
+                    <MimeType>text/html</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-168.07</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>71.32</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-132.24</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>58.84</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

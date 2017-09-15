@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>CIESIN_SEDAC_ICWQ_ACHLOA</Short_Name>
+    <Version>1.0</Version>
+  </Entry_ID>
+  <Entry_Title>Indicators of Coastal Water Quality: Annual Chlorophyll-a Concentration 1998-2007</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>Goddard Space Flight Center - GSFC, and Center for International Earth Science Information Network - CIESIN - Columbia University</Dataset_Creator>
+    <Dataset_Title>Indicators of Coastal Water Quality: Annual Chlorophyll-a Concentration 1998-2007</Dataset_Title>
+    <Dataset_Release_Date>2009-01-01</Dataset_Release_Date>
+    <Dataset_Release_Place>Palisades, NY</Dataset_Release_Place>
+    <Dataset_Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Dataset_Publisher>
+    <Version>1.0</Version>
+    <Data_Presentation_Form>raster, map</Data_Presentation_Form>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4DN4300</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4DN4300</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Group>
+      <Name>CIESIN METADATA ADMINISTRATION</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8988</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>metadata@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>SEDAC USER SERVICES</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8920</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>ciesin.info@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>ECOSYSTEMS</Term>
+    <Variable_Level_1>AQUATIC ECOSYSTEMS</Variable_Level_1>
+    <Variable_Level_2>WETLANDS</Variable_Level_2>
+    <Variable_Level_3>MARINE</Variable_Level_3>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>ENVIRONMENTAL GOVERNANCE/MANAGEMENT</Term>
+    <Variable_Level_1>WATER MANAGEMENT</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>SUSTAINABILITY</Term>
+    <Variable_Level_1>ENVIRONMENTAL SUSTAINABILITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>OCEANS</Topic>
+    <Term>OCEAN CHEMISTRY</Term>
+    <Variable_Level_1>CHLOROPHYLL</Variable_Level_1>
+  </Science_Keywords>
+  <ISO_Topic_Category>OCEANS</ISO_Topic_Category>
+  <Ancillary_Keyword>Environment</Ancillary_Keyword>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>SEASTAR</Short_Name>
+    <Long_Name>Orbital Sciences Corporation OrbView-2 Satellite</Long_Name>
+    <Instrument>
+      <Short_Name>SEAWIFS</Short_Name>
+      <Long_Name>Sea-Viewing Wide Field-of-View Sensor</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Range_DateTime>
+      <Beginning_Date_Time>1998-01-01</Beginning_Date_Time>
+      <Ending_Date_Time>2007-12-31</Ending_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>COMPLETE</Dataset_Progress>
+  <Spatial_Coverage>
+    <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+        <Northernmost_Latitude>89.99928</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>179.99857</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+    <Spatial_Info>
+      <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+      <Horizontal_Coordinate_System>
+        <Geodetic_Model>
+          <Horizontal_DatumName>WGS84</Horizontal_DatumName>
+          <Ellipsoid_Name>WGS84</Ellipsoid_Name>
+          <Semi_Major_Axis>6378137</Semi_Major_Axis>
+          <Denominator_Of_Flattening_Ratio>298.257224</Denominator_Of_Flattening_Ratio>
+        </Geodetic_Model>
+        <Geographic_Coordinate_System>
+          <GeographicCoordinateUnits>Decimal Degrees</GeographicCoordinateUnits>
+          <LatitudeResolution>0.08333</LatitudeResolution>
+          <LongitudeResolution>0.08333</LongitudeResolution>
+        </Geographic_Coordinate_System>
+      </Horizontal_Coordinate_System>
+    </Spatial_Info>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Project>
+    <Short_Name>ICWQ</Short_Name>
+    <Long_Name>Indicators of Coastal Water Quality</Long_Name>
+  </Project>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>The Goddard Space Flight Center (GSFC) and Trustees of Columbia University in the City of New York hold the copyright of this dataset. Users are prohibited from any commercial, non-free resale, or redistribution without explicit written permission from GSFC or CIESIN. Users should acknowledge GSFC and CIESIN as the source used in the creation of any reports, publications, new data sets, derived products, or services resulting from the use of this data set. GSFC or CIESIN also request reprints of any publications and notification of any redistributing efforts.</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>SEDAC</Originating_Center>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>SEDAC</Short_Name>
+      <Long_Name>Socioeconomic Data and Applications Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://sedac.ciesin.columbia.edu/</Organization_URL>
+    <Dataset_ID>CIESIN_SEDAC_ICWQ_ACHLOA</Dataset_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>SEDAC USER SERVICES</Name>
+        <Address>
+          <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+          <City>Palisades</City>
+          <State_Province>NY</State_Province>
+          <Postal_Code>10964</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>+1 845-365-8920</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>+1 845-365-8922</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>ciesin.info@ciesin.columbia.edu</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>GRID</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>GeoTIFF</Distribution_Format>
+  </Distribution>
+  <Reference>
+    <Author>Goddard Space Flight Center - GSFC, and Center for International Earth Science Information Network - CIESIN - Columbia University</Author>
+    <Publication_Date>2009-01-01</Publication_Date>
+    <Title>Indicators of Coastal Water Quality: Ancillary Data</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4J96490</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4J96490</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>Goddard Space Flight Center - GSFC, and Center for International Earth Science Information Network - CIESIN - Columbia University</Author>
+    <Publication_Date>2009-01-01</Publication_Date>
+    <Title>Indicators of Coastal Water Quality: Change in Chlorophyll-a Concentration 1998-2007</Title>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H48W3B88</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H48W3B88</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>VLIZ</Author>
+    <Publication_Date>2006-01-01</Publication_Date>
+    <Title>Maritime Boundaries Geodatabase</Title>
+    <Online_Resource>http://www.marineregions.org</Online_Resource>
+  </Reference>
+  <Summary>
+    <Abstract>The Annual Chlorophyll-a Concentrations component of the Indicators of Coastal Water Quality Collection consists of gridded satellite measurements of chlorophyll-a concentrations (in nanogram/cubic meter) in a band extending between 10 and 100 km from the shoreline. Chlorophyll-a concentrations are derived from NASA's Sea-viewing Wide Field-of-view Sensor (SeaWiFS). The grids are based on annual composites of SeaWiFS satellite data provided by the SeaWiFS Project, NASA/Goddard Space Flight Center and GeoEye in the form of HDF files at a resolution of 5 arc-minutes (approximately 9 x 9 km at the equator). The source files are true-color images generated from sub-sampled, calibrated, Rayleigh-corrected level-2 data, which are derived from raw radiance counts by applying sensor calibration, atmospheric corrections, and bio-optical algorithms. To arrive at chlorophyll-a concentrations, radiance counts were converted using the conversion formula provided as part of the original data files. The gridding is done by the Columbia University Center for International Earth Science Information Network (CIESIN).</Abstract>
+    <Purpose>To provide a gridded version of existing SeaWiFS data in GIS-compatible formats in order to determine concentrations of chlorophyll-a in the coastal water column and to facilitate the integration with other data.</Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW DATA SET LANDING PAGE</Type>
+    </URL_Content_Type>
+    <URL>https://doi.org/10.7927/H4DN4300</URL>
+    <Description>Data Set DOI URL and Homepage</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>ON-LINE ARCHIVE</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/icwq-annual-chlorophyll-a-concentration-1998-2007/data-download</URL>
+    <Description>Data Download Page</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>USA/CIESIN</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>SEDAC</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2010-05-28</Metadata_Creation>
+    <Metadata_Last_Revision>2017-09-08</Metadata_Last_Revision>
+    <Data_Creation>2009-01-01</Data_Creation>
+    <Data_Last_Revision>2009-01-01</Data_Last_Revision>
+  </Metadata_Dates>
+  <Private>False</Private>
+  <Product_Level_Id>3</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+<Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.tool</Name>
+      <Value>2017-09-08:docbuilder</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

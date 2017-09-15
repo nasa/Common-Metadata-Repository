@@ -1,0 +1,1142 @@
+<Collection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="">
+    <ShortName>UAVSAR_POL_DEM</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2012-05-15T00:06:55Z</InsertTime>
+    <LastUpdate>2017-09-13T21:26:42Z</LastUpdate>
+    <LongName>UAVSAR PolSAR Scene DEM TIFF</LongName>
+    <DataSetId>UAVSAR_POLSAR_DEM</DataSetId>
+    <Description>UAVSAR PolSAR Scene DEM TIFF</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <ProcessingCenter>Jet Propulsion Laboratory</ProcessingCenter>
+    <ProcessingLevelId>1</ProcessingLevelId>
+    <ProcessingLevelDescription>UAVSAR PolSAR Scene DEM as a TIFF image file</ProcessingLevelDescription>
+    <ArchiveCenter>Alaska Satellite Facility</ArchiveCenter>
+    <Temporal>
+        <TimeType>UTC</TimeType>
+        <DateType>Gregorian</DateType>
+        <TemporalRangeType>Continuous Range</TemporalRangeType>
+        <PrecisionOfSeconds>1</PrecisionOfSeconds>
+        <EndsAtPresentFlag>true</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>2008-07-30T23:48:42Z</BeginningDateTime>
+            <EndingDateTime>2017-09-06T18:25:49Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>User Services</Role>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>907-474-5041</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>uso@asf.alaska.edu</Email>
+            </OrganizationEmails>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>SOLID EARTH</TopicKeyword>
+            <TermKeyword>TECTONICS</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>VOLCANIC ACTIVITY</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+          <ShortName>G-III</ShortName>
+          <LongName>Gulfstream III</LongName>
+          <Type>Aircraft</Type>
+          <Instruments>
+            <Instrument>
+              <ShortName>UAVSAR</ShortName>
+              <LongName>Uninhabited Aerial Vehicle Synthetic Aperture Radar</LongName>
+                <Sensors>
+                    <Sensor>
+                      <ShortName>POL</ShortName>
+                    </Sensor>
+                </Sensors>
+              <OperationModes>
+                <OperationMode>Arctic</OperationMode>
+                <OperationMode>Antarctic</OperationMode>
+              </OperationModes>
+            </Instrument>
+          </Instruments>
+        </Platform>
+    </Platforms>
+    <AdditionalAttributes>
+        <AdditionalAttribute>
+          <Name>FLIGHT_LINE</Name>
+          <DataType>STRING</DataType>
+          <Description>Flight line identifies where the aircraft/instument has flown to acquire data.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>GROUP_ID</Name>
+          <DataType>STRING</DataType>
+          <Description>ID that helps ASF group products</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>OFF_NADIR_ANGLE</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The angle the sensor points away from the satellite&#39;s nadir (off to the side. Larger angles correspond to imaging farther away from the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>MD5SUM</Name>
+          <DataType>STRING</DataType>
+          <Description>Checksum</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>GRANULE_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>Identifies the type of data by combining platform, beam mode type, and coverage (frame/swath</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ASCENDING_DESCENDING</Name>
+          <DataType>STRING</DataType>
+          <Description>Describes whether the satellite travel direction was ascending towards the north pole, or descending towards the south pole.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_END_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging ended farthest from the satellite. For an ascending satellite, it locates the upper right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_STACK_SIZE</Name>
+          <DataType>INT</DataType>
+          <Description>The number of SAR images over the same location in the entire ASF archive. Used for data that may be used for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>In most cases the same as beam mode. For Radarsat indicates both resolution and off-nadir pointing angle. Standard beam mode becomes ST1 though ST7 beammodetype, with ST7 pointing farthest from the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_BASELINE</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The perpendicular distance between two satellites when they took the related two images. Useful for identifying image pairs to use for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_FRAME_ID</Name>
+          <DataType>STRING</DataType>
+          <Description>ID of the center frame</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_ESA_FRAME</Name>
+          <DataType>INT</DataType>
+          <Description>The Europenan Space Agency equivalent to the value in the FRAME_NUMBER field</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ACQUISITION_DATE</Name>
+          <DataType>STRING</DataType>
+          <Description>Date the data was acquired by the satellite or aircraft + instrument.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>MISSION_NAME</Name>
+          <DataType>STRING</DataType>
+          <Description>The sitenames where AIRSAR, AIMOSS, and UAVSAR acqusitions were taken.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the center of the scene or frame.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_START_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began nearest to the satellite. For an ascending satellite, it locates the lower left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE</Name>
+          <DataType>STRING</DataType>
+          <Description>The general type of active sensor used. Values indicate image resolution: such as standard, fine, wide, scansar wide, SM (strip mode, EW(extra wide. OR indicate resolution + polarization: FBS (fine beam dual polarization, FBD (fine beam dual pol. OR atipically the type of product: TOPSAR (high resolution DEM, RPI (repeat pass interferometry, XTI (across track interferometry. OR resolution and product type IW (interferometric wide.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE_DESC</Name>
+          <DataType>STRING</DataType>
+          <Description>Text that describes the beam mode</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>Indicates the type of product, such as browse, metadata, L1, complex, amplitude, projected, terrain corrected.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_DESCRIPTION</Name>
+          <DataType>STRING</DataType>
+          <Description>Describes what the data was processed to. For example: low resolution terrain corrected ALOS data.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FRAME_NUMBER</Name>
+          <DataType>INT</DataType>
+          <Description>The designated frame or scene as defined by various space agencies (ESA, JAXA, CSA each of which have their own scheme. The frame describes a box over the Earth at a fixed latitude. Combined with a path number (for longitude it identifies a specific piece of ground.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_LEVEL</Name>
+          <DataType>STRING</DataType>
+          <Description>Indicates how much processing has been done to the data: L1, L1.0 unprocessed; L1.1 single look complex; L1, L1.5 amplitude image</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_DATE</Name>
+          <DataType>STRING</DataType>
+          <Description>The date the data was processed</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_START_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging began nearest the satellite. For an ascending satellite, it locates the lower left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>DOPPLER</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The doppler centroid frequency - Useful for sar processing and interferometry. Related to the squint of the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_START_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began farthest from the satellite. For an ascending satellite, it locates the lower right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_END_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging ended nearest to the satellite. For an ascending satellite, it locates the upper left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_TYPE_DISPLAY</Name>
+          <DataType>STRING</DataType>
+          <Description>Label that will be displayed in ASF&#39;s Vertex interface</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>POLARIZATION</Name>
+          <DataType>STRING</DataType>
+          <Description>Radar transmissions are polarized, with components normally termed vertical (V and horizontal (H. Vertical means that the electric vector is in the plane of incidence; horizontal means the electric vector is perpendicular to the plane of incidence.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_START_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began farthest from the satellite. For an ascending satellite, it locates the lower right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>THUMBNAIL_URL</Name>
+          <DataType>STRING</DataType>
+          <Description>URL that points to this granule&#39;s thumbnail image</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ASF_PLATFORM</Name>
+          <DataType>STRING</DataType>
+          <Description>Internal ASF platform name</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_STACK_ID</Name>
+          <DataType>INT</DataType>
+          <Description>An ASF-assigned unique number used internally to unifiy SAR images over the same location. Used for data that might be used for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>LOOK_DIRECTION</Name>
+          <DataType>STRING</DataType>
+          <Description>SAR imagery is taken with the sensor pointing either left or right of the satellite. Most data is right-looking. A small amount of Radarsat is left-looking.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PATH_NUMBER</Name>
+          <DataType>INT</DataType>
+          <Description>The path describes a path the satellite will follow over the earth similar to longitude; each path has an assigned number. Combined with a frame number is identifies a specific piece of ground.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_END_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging ended nearest to the satellite. For an ascending satellite, it locates the upper left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FARADAY_ROTATION</Name>
+          <DataType>STRING</DataType>
+          <Description>An effect of the ionisphere that rotates polarizations from HH or VV or HV or VH. Significant for L or P band. Rotation over 5 degrees reduces usefulness for applications such as forest biomass. Effect is reduced at solar minimum.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_END_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging ended farthest from the satellite. For an ascending satellite, it locates the upper right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BYTES</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Product size in bytes.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the center of the scene or frame.</Description>
+        </AdditionalAttribute>
+    </AdditionalAttributes>
+    <Campaigns>
+        <Campaign>
+          <ShortName>Hayward Fault, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gulf Coast, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Laurentides Reserve, QC, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Andreas Fault, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Aleutians, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Big Island, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Langjokull/Hofsjokull Glaciers, Iceland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Hofsjokull Glacier, Iceland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Salton Trough, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cochise County, AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Central Valley, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sacramento-San Joaquin Delta, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Salton Sea, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>La Selva, Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>La Avispa, Guatemala</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nicaragua Volcanoes</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Isla de Coiba, Panama</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glaciers, Iceland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Howard Hanson Dam, WA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Joaquin Valley, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Slumgullion, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>El Salvador Volcanoes</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Capitol Forest, WA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Howland Forest, ME</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>California Coast - southern</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Andreas Fault - Salton Trough, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Andreas Fault - LA Basin, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Langley, NC</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Boquete, Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mississippi River Levees, LA/MS/AR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Oahu, HI southeast</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Redwood Forest, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Owens Lake, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Everglades, FL</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Louisiana Marsh/Mississippi Delta, LA/MS</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Dominican Republic</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sabine Refuge, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>East Central Coast, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Winnipeg, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Huila Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tolima Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Blodgett Forest, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Honshu Volcanoes, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Langjokull Glacier, Iceland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Manu National Park, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>PiSAR-L2 Kumamoto - Aso, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>West Central Coast, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Long Valley, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Joaquin Valley/Chowchilla Levee, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Panama Canal forests, Panama</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cerro Negro Volcano, Colombia/Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chaiten Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chilean Volcanoes, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Parana River, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cerro Mercedario, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Robledo Volcano, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Galeras Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>La Flojera, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cordon del Azufre Volcano, Chile/Argenti</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chillan Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tacora Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sierra Del Lacandn NP, Guatemala</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Volcanoes, Guatemala</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cerro El Condor Volcano, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Socompa Volcano, Chile/Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Dona Juana Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Antonio de Areco, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Campo del Cielo, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yacamane Volcano, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Churute Mangroves, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Campana, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SMAP Drought, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>New Orleans Levee, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Askja Caldera, Iceland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cascade Volcanoes, OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Alaska borehole sites, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rabi Forest, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lope National Park, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ogooue River, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tuolumne River, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Shreveport, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Monroe, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Telluride, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Corcovado National Park, Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Copan, Honduras</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>China Lake, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lost Hills, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pascagoula, MS</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Joaquin Valley/Delano Vineyards, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gulf Coast Oil Spill - Franklin Eddy</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SMAP MOISST Flux Tower Site, OK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cascade Volcanoes, WA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cascade Volcanoes, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Moche Archaeological Site, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Reidsville, NC</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sairecabur Volcano, Chile/Bolivia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glaciar San Francisco, Chile/Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Central San Andreas Fault, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glaciers, Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Aleutian Volcanoes, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sitka, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>North Sea, Norway</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Panhandle, FL/AL</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Aguateca, Guatemala</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Eastern Coast, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Isluga Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SMAP Drought, NM</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Iceland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Barataria Bay, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Traunstein, Germany</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Catlow Valley, OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Northwest Coast, FL</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Descabezado Grande Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Jar2 Swiss Camp, Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Florida Keys, FL</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Andes-Antioquia, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pacifico Bajo Mira, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rio Limari, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SMAP Drought, CA/AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Libreville, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pongara, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yukon Delta, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Innoko River, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Wolf Creek, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Poorman, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sabine River, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Brazos River, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Neches River, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Trinity River, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Circumpolar Active Layer Measurement, Al</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Duarte, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Borehole Sites, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rosamond, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glaciers and Ice, Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Haiti Earthquake</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Transect ALOS Track, Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Francisco Delta, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Galapagos Islands, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sierpe Mangroves, Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Channel Islands, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kings Canyon, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gulf of Fonseca, Honduras</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cascade Volcanoes, CA/OR/WA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yellowstone National Park, WY</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Andreas Fault - North, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>La Amistad International Park, Panama</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>L-Band Megatransect, Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Barro Colorado Island, Panama</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Harvard Forest, MA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Joaquin Valley - SMAP, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bartlett/Hubbard Brook, NH</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sierra, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kenaston, SK, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Greenland, southeast</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Andreas Fault - Central, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Purace Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Napo River, Peru/Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ponderosa Forest, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kyushu Volcanoes, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tupungatito Volcano, Chile/Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pichincha Volcano, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tinguiririca Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Quetrupillan Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Duke Forest, NC</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ruiz Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Volcanoes, Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sanquianga National Park, Columbia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>El Misti Volcano, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Coropuna Volcano, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Reventador Volcano, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Antuco Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cordoba Province, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Venado Tuerto, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lascar Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Maipo Volcano, Chile/Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tutupaca Volcano, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Copahue Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rosario, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tumaco Mangroves, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bermejo River, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Machin Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Laguna Del Maule Volcano, Chile/Argentin</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glaciar Quetrupillan-Lanin, Chile/Argent</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Azufral Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ubinas Volcano, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sollipulli Volcano, Chile/Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cayambe Volcano, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nazca Lines, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Irruputuncu Volcano, Chile/Bolivia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tonzi Ranch, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Atchafalaya Delta, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cumbal Volcano, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mouilla, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ogooue River Basin, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mondah, Gabon</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Longview, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Eel River, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Grand Mesa, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Southern California Coast, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yosemite National Park, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Grand County, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Potential Carbon Sequestration Site, PA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Virginia Barrier Island, VA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Barrier Islands, MS</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Vatnajokull Glacier - SW, Iceland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sangay Volcano, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Northern Arizona</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Phoenix, AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Imbabura Volcano, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glaciar Tapado, Chile/Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pacific Mangrove, Colombia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Hokkaido Volcanoes, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>PiSAR-L2 CR, Hokkaido Tomakomai, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lost Aircraft Site in Telire, Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>PiSAR-L2 Nara Totsukawa-mura, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Beaufort Sea, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Uturuncu Volcano, Bolivia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gulf Coast Oil Spill</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Desembocadura, Centro, Nacimiento, Panam</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lanai/Maui/Molokai/Oahu, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gulf Coast, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Central West Coast, FL</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Buenos Aires Province, Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Pedro Volcano, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cotopaxi Volcano, Ecuador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mount Fuji, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pacaya-Samiria National Park, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Madre de Dios, Peru</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Amboy Crater, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Andreas Fault - Central/San Joaquin</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mojave, Coyote &amp; Nelson Lakes, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cape Canaveral</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Munich, Germany</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Iceland mid-ocean ridge</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>PPA Test, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Boreal Forest, SK, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Panhandle, FL</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glaciar Universidad, Chile/Argentina</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Walnut Gulch, AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>ABoVE</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Southern California coast</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sierra Madre, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SMAP Drought, LA to MN</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rio Elqui, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SMAP, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SMAP Drought, AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Trout Lake, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Fort Liard, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Denali, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Katmai National Park, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ocean East of Florida Keys</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Delta Junction, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Watson Lake, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kluane Lake, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tonzi Ranch, California</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Houston, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Jacinto River, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Colorado River, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yukon Flats, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Toolik, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Permafrost legacy line</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Bernard River, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Noatak, Alaska</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Old Crow, Canada</ShortName>
+        </Campaign>
+    </Campaigns>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+          <URL>https://vertex.daac.asf.alaska.edu/</URL>
+                <URLDescription>The ASF Search and Ordering Interface</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <Spatial>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>GEODETIC</CoordinateSystem>
+            <GPolygon>
+                <Boundary>
+                    <Point>
+                      <PointLongitude>-52.382812</PointLongitude>
+                      <PointLatitude>-37.160317</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-64.687500</PointLongitude>
+                      <PointLatitude>-47.989922</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-76.640625</PointLongitude>
+                      <PointLatitude>-47.989922</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-159.433594</PointLongitude>
+                      <PointLatitude>18.646245</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>129.023438</PointLongitude>
+                      <PointLatitude>29.840644</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>127.968750</PointLongitude>
+                      <PointLatitude>36.456636</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>137.636719</PointLongitude>
+                      <PointLatitude>45.583290</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>165.585938</PointLongitude>
+                      <PointLatitude>55.776573</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-150.996094</PointLongitude>
+                      <PointLatitude>64.320872</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-124.804688</PointLongitude>
+                      <PointLatitude>77.915669</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-78.925781</PointLongitude>
+                      <PointLatitude>83.559717</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-34.453125</PointLongitude>
+                      <PointLatitude>83.848810</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-7.734375</PointLongitude>
+                      <PointLatitude>81.898451</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-9.140625</PointLongitude>
+                      <PointLatitude>64.623877</PointLatitude>
+                    </Point>
+                </Boundary>
+            </GPolygon>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>GEODETIC</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

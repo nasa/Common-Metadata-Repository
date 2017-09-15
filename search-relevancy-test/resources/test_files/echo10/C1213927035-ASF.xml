@@ -1,0 +1,1226 @@
+<Collection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="">
+    <ShortName>AIRSAR_TOP_C-DEM_STOKES</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>2012-02-20T20:04:10Z</InsertTime>
+    <LastUpdate>2012-02-20T20:04:53Z</LastUpdate>
+    <LongName>AIRSAR topographic SAR digital elevation model C_Stokes product</LongName>
+    <DataSetId>AIRSAR_TOPSAR_C-BAND_DEM_AND_STOKES</DataSetId>
+    <Description>AIRSAR topographic SAR digital elevation model C_Stokes product</Description>
+    <Orderable>false</Orderable>
+    <Visible>true</Visible>
+    <ProcessingCenter>Jet Propulsion Laboratory</ProcessingCenter>
+    <ProcessingLevelId>1</ProcessingLevelId>
+    <ProcessingLevelDescription>AIRSAR topographic SAR digital elevation model product: TOPSAR mode is interferometric AIRSAR data collected using C- and L-band vertically-displaced antenna pairs to produce digital elevation models (DEMs). The radars which are not being used for interferometry collect quad-pol data co-registered with the C-band DEM. Interferometric data can be collected in &#34;ping-pong&#34; mode, where each antenna is used alternately to transmit and the effective baseline is doubled, and in &#34;common-transmitter&#34; mode where only one antenna is used to transmit.</ProcessingLevelDescription>
+    <ArchiveCenter>Alaska Satellite Facility</ArchiveCenter>
+    <Temporal>
+        <TimeType>UTC</TimeType>
+        <DateType>Gregorian</DateType>
+        <TemporalRangeType>Continuous Range</TemporalRangeType>
+        <PrecisionOfSeconds>1</PrecisionOfSeconds>
+        <EndsAtPresentFlag>false</EndsAtPresentFlag>
+        <RangeDateTime>
+            <BeginningDateTime>1993-06-08T00:00:00Z</BeginningDateTime>
+            <EndingDateTime>2004-12-04T23:59:59Z</EndingDateTime>
+        </RangeDateTime>
+    </Temporal>
+    <Contacts>
+        <Contact>
+            <Role>User Services</Role>
+            <OrganizationPhones>
+                <Phone>
+                    <Number>907-474-5041</Number>
+                    <Type>Primary</Type>
+                </Phone>
+            </OrganizationPhones>
+            <OrganizationEmails>
+                <Email>uso@asf.alaska.edu</Email>
+            </OrganizationEmails>
+        </Contact>
+    </Contacts>
+    <ScienceKeywords>
+        <ScienceKeyword>
+            <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+            <TopicKeyword>LAND SURFACE</TopicKeyword>
+            <TermKeyword>LAND USE/LAND COVER</TermKeyword>
+            <VariableLevel1Keyword>
+                <Value>LAND RESOURCES</Value>
+            </VariableLevel1Keyword>
+        </ScienceKeyword>
+    </ScienceKeywords>
+    <Platforms>
+        <Platform>
+          <ShortName>DC-8</ShortName>
+          <LongName>Douglas DC-8</LongName>
+          <Type>Aircraft</Type>
+          <Instruments>
+            <Instrument>
+              <ShortName>AIRSAR</ShortName>
+              <LongName>Airborne Synthetic Aperture Radar</LongName>
+                <Sensors>
+                    <Sensor>
+                      <ShortName>XTI</ShortName>
+                    </Sensor>
+                </Sensors>
+              <OperationModes>
+                <OperationMode>Arctic</OperationMode>
+                <OperationMode>Antarctic</OperationMode>
+              </OperationModes>
+            </Instrument>
+          </Instruments>
+        </Platform>
+    </Platforms>
+    <AdditionalAttributes>
+        <AdditionalAttribute>
+          <Name>FLIGHT_LINE</Name>
+          <DataType>STRING</DataType>
+          <Description>Flight line identifies where the aircraft/instument has flown to acquire data.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>GROUP_ID</Name>
+          <DataType>STRING</DataType>
+          <Description>ID that helps ASF group products</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>OFF_NADIR_ANGLE</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The angle the sensor points away from the satellite&#39;s nadir (off to the side. Larger angles correspond to imaging farther away from the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>MD5SUM</Name>
+          <DataType>STRING</DataType>
+          <Description>Checksum</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>GRANULE_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>Identifies the type of data by combining platform, beam mode type, and coverage (frame/swath</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ASCENDING_DESCENDING</Name>
+          <DataType>STRING</DataType>
+          <Description>Describes whether the satellite travel direction was ascending towards the north pole, or descending towards the south pole.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_END_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging ended farthest from the satellite. For an ascending satellite, it locates the upper right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_STACK_SIZE</Name>
+          <DataType>INT</DataType>
+          <Description>The number of SAR images over the same location in the entire ASF archive. Used for data that may be used for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>In most cases the same as beam mode. For Radarsat indicates both resolution and off-nadir pointing angle. Standard beam mode becomes ST1 though ST7 beammodetype, with ST7 pointing farthest from the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_BASELINE</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The perpendicular distance between two satellites when they took the related two images. Useful for identifying image pairs to use for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_FRAME_ID</Name>
+          <DataType>STRING</DataType>
+          <Description>ID of the center frame</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_ESA_FRAME</Name>
+          <DataType>INT</DataType>
+          <Description>The Europenan Space Agency equivalent to the value in the FRAME_NUMBER field</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ACQUISITION_DATE</Name>
+          <DataType>STRING</DataType>
+          <Description>Date the data was acquired by the satellite or aircraft + instrument.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>MISSION_NAME</Name>
+          <DataType>STRING</DataType>
+          <Description>The sitenames where AIRSAR, AIMOSS, and UAVSAR acqusitions were taken.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the center of the scene or frame.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_START_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began nearest to the satellite. For an ascending satellite, it locates the lower left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE</Name>
+          <DataType>STRING</DataType>
+          <Description>The general type of active sensor used. Values indicate image resolution: such as standard, fine, wide, scansar wide, SM (strip mode, EW(extra wide. OR indicate resolution + polarization: FBS (fine beam dual polarization, FBD (fine beam dual pol. OR atipically the type of product: TOPSAR (high resolution DEM, RPI (repeat pass interferometry, XTI (across track interferometry. OR resolution and product type IW (interferometric wide.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BEAM_MODE_DESC</Name>
+          <DataType>STRING</DataType>
+          <Description>Text that describes the beam mode</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_TYPE</Name>
+          <DataType>STRING</DataType>
+          <Description>Indicates the type of product, such as browse, metadata, L1, complex, amplitude, projected, terrain corrected.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_DESCRIPTION</Name>
+          <DataType>STRING</DataType>
+          <Description>Describes what the data was processed to. For example: low resolution terrain corrected ALOS data.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FRAME_NUMBER</Name>
+          <DataType>INT</DataType>
+          <Description>The designated frame or scene as defined by various space agencies (ESA, JAXA, CSA each of which have their own scheme. The frame describes a box over the Earth at a fixed latitude. Combined with a path number (for longitude it identifies a specific piece of ground.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_LEVEL</Name>
+          <DataType>STRING</DataType>
+          <Description>Indicates how much processing has been done to the data: L1, L1.0 unprocessed; L1.1 single look complex; L1, L1.5 amplitude image</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_DATE</Name>
+          <DataType>STRING</DataType>
+          <Description>The date the data was processed</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_START_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging began nearest the satellite. For an ascending satellite, it locates the lower left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>DOPPLER</Name>
+          <DataType>FLOAT</DataType>
+          <Description>The doppler centroid frequency - Useful for sar processing and interferometry. Related to the squint of the satellite.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_START_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began farthest from the satellite. For an ascending satellite, it locates the lower right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_END_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging ended nearest to the satellite. For an ascending satellite, it locates the upper left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PROCESSING_TYPE_DISPLAY</Name>
+          <DataType>STRING</DataType>
+          <Description>Label that will be displayed in ASF&#39;s Vertex interface</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>POLARIZATION</Name>
+          <DataType>STRING</DataType>
+          <Description>Radar transmissions are polarized, with components normally termed vertical (V and horizontal (H. Vertical means that the electric vector is in the plane of incidence; horizontal means the electric vector is perpendicular to the plane of incidence.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_START_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging began farthest from the satellite. For an ascending satellite, it locates the lower right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>THUMBNAIL_URL</Name>
+          <DataType>STRING</DataType>
+          <Description>URL that points to this granule&#39;s thumbnail image</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>ASF_PLATFORM</Name>
+          <DataType>STRING</DataType>
+          <Description>Internal ASF platform name</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>INSAR_STACK_ID</Name>
+          <DataType>INT</DataType>
+          <Description>An ASF-assigned unique number used internally to unifiy SAR images over the same location. Used for data that might be used for interferometry.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>LOOK_DIRECTION</Name>
+          <DataType>STRING</DataType>
+          <Description>SAR imagery is taken with the sensor pointing either left or right of the satellite. Most data is right-looking. A small amount of Radarsat is left-looking.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>PATH_NUMBER</Name>
+          <DataType>INT</DataType>
+          <Description>The path describes a path the satellite will follow over the earth similar to longitude; each path has an assigned number. Combined with a frame number is identifies a specific piece of ground.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>NEAR_END_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the granule where imaging ended nearest to the satellite. For an ascending satellite, it locates the upper left corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FARADAY_ROTATION</Name>
+          <DataType>STRING</DataType>
+          <Description>An effect of the ionisphere that rotates polarizations from HH or VV or HV or VH. Significant for L or P band. Rotation over 5 degrees reduces usefulness for applications such as forest biomass. Effect is reduced at solar minimum.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>FAR_END_LON</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Longitude of the granule where imaging ended farthest from the satellite. For an ascending satellite, it locates the upper right corner of a north-oriented image.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>BYTES</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Product size in bytes.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>CENTER_LAT</Name>
+          <DataType>FLOAT</DataType>
+          <Description>Latitude of the center of the scene or frame.</Description>
+        </AdditionalAttribute>
+        <AdditionalAttribute>
+          <Name>AIRSAR_FLIGHT_LINE</Name>
+          <DataType>STRING</DataType>
+          <Description>The AIRSAR_FLIGHT_LINE for this collection</Description>
+        </AdditionalAttribute>
+    </AdditionalAttributes>
+    <Campaigns>
+        <Campaign>
+          <ShortName>Big Sur Coastline, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Central Valley, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chiapas, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nashville, TN</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Central Ice Sheet, Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Belted Range, NV</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nifty, WA, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Normanby Is, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Belize - northern</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Patagonia - north</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>SSA, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Wanganui, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Web County, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pasadena, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Wolf Creek, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yellowstone, WY</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Fraser, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lake Coombabah, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ladue River, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lake Acraman, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lakekamu R, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>La Selva, Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Raco, MI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Raiatea, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Markham R, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ranong, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rapa, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ray Mine, AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Richardson, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kluic Labna, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Aniakchak Volc, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Aquateca, Guatamala</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Arenal Research Area,  Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Colorado River, CA/AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Aso, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Augustine Island, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Avenal, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Awaji, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bagley Icefield, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bishop, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bolivar Peninsula, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bora Bora, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Brunei</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cameron Highlands, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cebu, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Connolly, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cordillera Darwin, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Craters of the Moon, ID</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cunnamulla, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Daintree, Austrailia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Colorado Front Range, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Fort Irwin, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lawn Hill, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Long Valley, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Los Angeles, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lost Hills, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Macquarie Island, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Madison, WI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rosamond Lake, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ruapehu Volcano, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rum Jungle, Austrailia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Runnels County, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Salinas, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Saltville, VA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Samarahan, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Bernardino Mountains, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Northway Junction, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nuku Hiva, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Oakland, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ohakune, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Okmok Volcano, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Platte River, NB</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ostler Fault, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Palm Valley, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Palm Creek, Austrailia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Altamaha River, GA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gerstle River, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gong-ju,South Korea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gunung Beratus, Indonesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Marfa, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mary River, Austrailia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mauna Loa, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mayon Volcano, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Clemente Island, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Gabriel Mountains, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Joaquin Valley, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santa Barbara, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santa Clarita, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Stillman Creek, Winlock, WA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Strickland River, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sungai Wain, Indonesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Surat Thani, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sydney Coast, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sydney, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Table Butte, ID</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Marin County, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Dallas, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Daly River, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yazoo River, Delta NF, MS</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Denver, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Dot Lake, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cass Lake, MN</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ellery Creek, Austrailia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>El Paso, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Fairbanks, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Phetchaburi, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Prachuap Khiri Khan, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Hayward Fault, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Henbury Crater, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Hiva Oa, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>HJ Andrews Forest, OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Huon Pen, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Montezuma Hills, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Monticello, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Motane, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Fitton, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Toondina, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Fuji, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Pinatubo, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. St. Helens, Washington</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nakhon Ratchasima, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nakhon Si Thammarat, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Antarctic Penninsula - north</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santa Rosa,  Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sinoloa, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Songkhla, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sonora State, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Thunder Bay, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Trout Lake, WI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tutuila, Western Samoa</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Unzen, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Uthaithani, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Visayas, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Wairarapa, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Jameson Island, MO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>JKS</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bajo La Justa, Guatamala</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Feni Island, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Fly River, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kanlaon Volcano, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kellogg, MI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ken-Ting, Taiwan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kilauea, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Petermann Glacier, Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Barro Colorado Island, Panama</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Barrow Tower, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Beardstown, IL</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Belize</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Big Delta, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bintulu, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Taiwan - central</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chanthaburi, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chiang Mai, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chicxulub Impact, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Chunchucmil, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>North Channel, Great Lakes</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>North Park Site, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Southern Alps, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Patagonia - south</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>St. Charles, MO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Washington DC</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Austin - west, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Whitefish Bay, WI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>White Island, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Wind River, WA/OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kinabalu, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kings Canyon, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kinta, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kobe, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kona Coast, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kota Kinabalu, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kunoth, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kyungsang, South Korea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lake Michigan, MN/MI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lampang, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lander River, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rabbit Ears Site, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Reveille Peak, NV</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rio Grande, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rio Lempa Watershed, El Salvador</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rio Platano, Nicaragua/Honduras</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rivas Site,  Costa Rica</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rodeo Chediski Fire Scar, AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yuba County, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Yucca Ridge, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Angkor, Cambodia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Antioch, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Atchafalaya Basin, LA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Augustine volcano, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Blue Glacier, WA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bonanza Creek, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Bougainville, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Brady Glacier, Canada</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Camp Roberts, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cathedral Rapids, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Central Coast, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Columbia Glacier, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Cordillera Real, Bolivia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Crater Lake, OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Galveston, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santa Cruz Coast, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Long Beach, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Manila, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Lovea,Cambodia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mauna Kea, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Magat, Luzon, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rose Island, American Samoa</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Rotorua, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sabine Pass, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sacramento, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Salt Lake City, UT</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sambaliung, Indonesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Francisco, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Antonio, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Honolulu, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Oahu, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Northwest Greenland</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Otago, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Glickson, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Godley River, New Zealand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Guanajuato, Mexico</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Haleakala, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Manam Island, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Manua Island, American Samoa</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mayan B.R. Guatemala/Mexico/Belize</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Corvallis, OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mission Range Mountains, MT</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Diego, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>San Simeon, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santa Cruz Mountains, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santa Monica Mountains, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Strangways, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Taal Volcano, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tanami Desert, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tarcoola, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tarrawarra, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kuala Terengganu, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tetlin Junction, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Darien National Park, Panama</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Denali National Park, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Dietrich Valley, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Duke Forest, NC</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Dungun, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Eastern Mojave, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Emerald Lake, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tioman Island, Malaysia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Exit Glacier, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Fatu Hiva, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Panamint Range, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Parker Volcano, Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Pellston, MI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Plumas National Forest, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Hariharalaya, Cambodia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>North Coast of Hawaii, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Hualalai, HI</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Volcan Hudson, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Hunter Region, Austrailia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Injune, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Inyo Domes, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Volcanoes Mocho/Villarrica, Chile</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Montague County, TX</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Moorea, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Lofty, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Pinatubo,Philippines</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Franklin, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Rainier, WA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Mt. Wellington, Australia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Taipei area, Taiwan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Nabesca, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Narathiwat, Thailand</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santa Rosa Island, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santiam Pass, OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Santiam, OR</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Antarctic Penninsula - south</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Savaii, Western Samoa</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sehulea Is, Papua New Guinea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Sierra Ancha, AZ</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Snake River, ID</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tomakomai, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Tubuai, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ua Huka, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ua Pou, French Polynesia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ulua River, Honduras</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Upolu, Western Samoa</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Usu, Japan</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Usumacinta, Mexico/Guatemala</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>St. Francis Mountains, MO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Virginia Beach, VA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Iron Mtn, CA</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Ivotuk Tower, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Jeju Island,South Korea</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Finke River, Austrailia</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Gulf of Fonseca, Honduras</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Fort Collins, CO</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Katmai Volcano, AK</ShortName>
+        </Campaign>
+        <Campaign>
+          <ShortName>Kerang, Australia</ShortName>
+        </Campaign>
+    </Campaigns>
+    <OnlineAccessURLs>
+        <OnlineAccessURL>
+          <URL>https://vertex.daac.asf.alaska.edu/</URL>
+                <URLDescription>The ASF Search and Ordering Interface</URLDescription>
+        </OnlineAccessURL>
+    </OnlineAccessURLs>
+    <Spatial>
+        <HorizontalSpatialDomain>
+            <Geometry>
+                <CoordinateSystem>GEODETIC</CoordinateSystem>
+            <GPolygon>
+                <Boundary>
+                    <Point>
+                      <PointLongitude>-172.532316</PointLongitude>
+                      <PointLatitude>-27.388834</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-172.880269</PointLongitude>
+                      <PointLatitude>-27.021632</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-147.324715</PointLongitude>
+                      <PointLatitude>64.503195</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-147.320616</PointLongitude>
+                      <PointLatitude>64.601354</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-49.871916</PointLongitude>
+                      <PointLatitude>69.259250</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-49.704356</PointLongitude>
+                      <PointLatitude>69.178089</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-62.305960</PointLongitude>
+                      <PointLatitude>-18.867366</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-62.958179</PointLongitude>
+                      <PointLatitude>-23.096323</PointLatitude>
+                    </Point>
+                    <Point>
+                      <PointLongitude>-143.266130</PointLongitude>
+                      <PointLatitude>-26.198199</PointLatitude>
+                    </Point>
+                </Boundary>
+            </GPolygon>
+            </Geometry>
+        </HorizontalSpatialDomain>
+        <GranuleSpatialRepresentation>GEODETIC</GranuleSpatialRepresentation>
+    </Spatial>
+</Collection>

@@ -1,0 +1,160 @@
+<Collection>
+            <ShortName>white_phenoregions_799</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2005-09-08T00:00:00Z</InsertTime>
+            <LastUpdate>2005-09-08T00:00:00Z</LastUpdate>
+            <LongName>Phenoregions For Monitoring Vegetation Responses to Climate Change</LongName>
+            <DataSetId>Phenoregions For Monitoring Vegetation Responses to Climate Change</DataSetId>
+            <Description>The overall purpose in this research was to identify the regions of the world best suited for long-term monitoring of biospheric responses to climate change, i.e., monitoring land surface phenology. The user is referred to White et al. [2005] for further details. Using global 8 km 1982 to 1999 Normalized Difference Vegetation Index (NDVI) data and an eight-element monthly climatology, we identified pixels consistently dominated by annual cycles and then created phenologically and climatically self-similar clusters, which we term phenoregions. We then ranked and screened each phenoregion as a function of landcover homogeneity and consistency, evidence of human impacts, and political diversity.This dataset contains material providing users with direct access to data used to construct the figures in White et al. [2005]. Users are referred to this reference for additional information. Data files include ASCII and binary versions of the image files for the 500 elemental phenoregions and the 136 final monitoring phenoregions (shown in figure below) and a corresponding .jpg map. Also included are the classification data in tabular ACSII format for each of  the 500 elemental phenoregions.Selected monitoring phenoregions. Phenoregions with fewer than 100 pixels or dominated by crop, urban or barren landcover removed. The 136 remaining phenoregions are those passing the screening factors in Table 1 and are shown with normalized rankings by landcover. (From White et al., 2005)</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/799</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2005-09-08T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>White, M.A., F.M. Hoffman, W.W. Hargrove, and R.R. Nemani. 2005. Phenoregions For Monitoring Vegetation Responses to Climate Change. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/799</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1982-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>1999-12-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VEGETATION COVER</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VEGETATION INDEX</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>LANDSAT-7</ShortName>
+                    <LongName> </LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>TM</ShortName>
+                            <LongName>Thematic Mapper</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>TM</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>vegetation</ShortName>
+                    <LongName>Vegetation Collection</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/WhitePhenoregions/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/VEGETATION/guides/white_phenoregions.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/799</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/WhitePhenoregions/comp/White_140_screened_phenoregions.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/WhitePhenoregions/comp/White_500_elemental_phenoregions.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/WhitePhenoregions/comp/White_90_cluster_rankings.jpg</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/WhitePhenoregions/comp/white_phenoregions.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/799_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/wcsdown/dataset.jsp?ds_id=799</URL>
+                    <Description>Web Coverage Service for this collection.</Description>
+                    <Type>WEB COVERAGE SERVICE (WCS)</Type>
+                    <MimeType>application/gml+xml</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>180.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-90.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

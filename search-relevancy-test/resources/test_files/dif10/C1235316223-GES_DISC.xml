@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>LPRM_TMI_SOILM2</Short_Name>
+        <Version>001</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>TMI/TRMM surface soil moisture (LPRM) L2 V001 (LPRM_TMI_SOILM2) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Vrije Universiteit Amsterdam (Richard de Jeu) and NASA GSFC (Manfred Owe)</Dataset_Creator>
+        <Dataset_Editor>Goddard Earth Sciences Data and Information Services Center (GES DISC) (Bill Teng)</Dataset_Editor>
+        <Dataset_Title>TMI/TRMM surface soil moisture (LPRM) L2 V001</Dataset_Title>
+        <Dataset_Series_Name>LPRM_TMI_SOILM2</Dataset_Series_Name>
+        <Dataset_Release_Date>2012-04-16</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>doi:10.5067/DE73VGBNS01H</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/LPRM_TMI_SOILM2_001.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>RICHARD</First_Name>
+            <Last_Name>DE JEU</Last_Name>
+            <Address>
+                <Street_Address>Faculty of Earth and Life Sciences</Street_Address>
+                <Street_Address>Department of Hydrology and Geo-environmental Sciences</Street_Address>
+                <Street_Address>Vrije Universiteit Amsterdam</Street_Address>
+                <City>1081 HV Amsterdam</City>
+                <Country>NL</Country>
+            </Address>
+            <Phone>
+                <Number>31 20 598 7287</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Richard.de.jeu@falw.vu.nl</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>WILLIAM</First_Name>
+            <Middle_Name>L.</Middle_Name>
+            <Last_Name>TENG</Last_Name>
+            <Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center, Code 610.2, NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>(301) 614-5164</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>william.l.teng@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SURFACE THERMAL PROPERTIES</Term>
+        <Variable_Level_1>SKIN TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>LAND SURFACE</Topic>
+        <Term>SOILS</Term>
+        <Variable_Level_1>SOIL MOISTURE/WATER CONTENT</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>VEGETATION</Term>
+        <Variable_Level_1>PLANT CHARACTERISTICS</Variable_Level_1>
+        <Variable_Level_2>VEGETATION WATER CONTENT</Variable_Level_2>
+    </Science_Keywords>
+    <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+    <Ancillary_Keyword>Hydrology</Ancillary_Keyword>
+    <Ancillary_Keyword>TMI</Ancillary_Keyword>
+    <Ancillary_Keyword>Skin temperature</Ancillary_Keyword>
+    <Ancillary_Keyword>Surface soil moisture</Ancillary_Keyword>
+    <Ancillary_Keyword>Optical depth</Ancillary_Keyword>
+    <Ancillary_Keyword>Brightness temperature</Ancillary_Keyword>
+    <Ancillary_Keyword>Soil water content</Ancillary_Keyword>
+    <Ancillary_Keyword>Vegetation water content</Ancillary_Keyword>
+    <Ancillary_Keyword>Microwave</Ancillary_Keyword>
+    <Ancillary_Keyword>BEDI</Ancillary_Keyword>
+    <Ancillary_Keyword>Agriculture and Forestry</Ancillary_Keyword>
+    <Ancillary_Keyword>Climate</Ancillary_Keyword>
+    <Ancillary_Keyword>Disasters</Ancillary_Keyword>
+    <Ancillary_Keyword>Water Resources</Ancillary_Keyword>
+    <Ancillary_Keyword>Weather</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>TRMM</Short_Name>
+        <Long_Name>Tropical Rainfall Measuring Mission</Long_Name>
+        <Instrument>
+            <Short_Name>TMI</Short_Name>
+            <Long_Name>TRMM Microwave Imager</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1997-12-07</Beginning_Date_Time>
+            <Ending_Date_Time>2015-04-09</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-40.0</Southernmost_Latitude>
+                <Northernmost_Latitude>40.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL LAND</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>45 km</Latitude_Resolution>
+        <Longitude_Resolution>45 km</Longitude_Resolution>
+        <Horizontal_Resolution_Range>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>LPRM</Short_Name>
+        <Long_Name>Land Parameter Retrieval Model</Long_Name>
+    </Project>
+    <Quality>The LPRM/TMI data are sensitive to both internal model limitations and external processes and are screened for the presence of snow/frozen soils, water, and dense vegetation covers. All screened-out data pixels are flagged and indicated by a non-data value. A soil moisture uncertainty parameter at X band is included (Parinussa et al., 2011).</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>None</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC Help Desk Support Group</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>5.5 MB per file</Distribution_Size>
+        <Distribution_Format>netCDF-3</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <!--Modified by Change List Tool on Mon Jun 26 16:44:17 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/hydrology/images/lprm-tmi_sm_l2_77619_day_US_070111_for_dif.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915dde3e01b045fab4ed5a2/file</URL>
+        <Format>PNG</Format>
+        <Caption>LPRM/TMI volumetric soil moisture X-band</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Author>Owe, M., R. de Jeu, and T. Holmes</Author>
+        <Publication_Date>2008</Publication_Date>
+        <Title>Multisensor historical climatology of satellite-derived global land surface moisture</Title>
+        <Series>Journal of Geophysical Research</Series>
+        <Volume>113</Volume>
+        <Issue>F01002</Issue>
+        <Pages>17 pp.</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1029/2007JF000769</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Author>De Jeu, R.A.M., W. Wagner, T.R.H. Holmes, A.J. Dolman, N.C. van de Giesen, and J. Friesen</Author>
+        <Publication_Date>2008</Publication_Date>
+        <Title>Global soil moisture patterns observed by space borne microwave radiometers and scatterometers</Title>
+        <Series>Surveys in Geophysics</Series>
+        <Volume>29</Volume>
+        <Pages>399-420</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1007/s10712-008-9044-0</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Author>Holmes, T.R.H., R.A.M. De Jeu, M. Owe, and A.J. Dolman</Author>
+        <Publication_Date>2009</Publication_Date>
+        <Title>Land surface temperature from Ka band (37 GHz) passive microwave observations</Title>
+        <Series>Journal of Geophysical Research</Series>
+        <Volume>114</Volume>
+        <Issue>D04113</Issue>
+        <Pages>15 pp.</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1029/2008JD010257</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Author>Parinussa, R.M., A.G.C.A. Meesters, Y.Y. Liu, W. Dorigo, W. Wagner, and R.A.M. de Jeu</Author>
+        <Publication_Date>2011</Publication_Date>
+        <Title>Error estimates for near-real-time satellite soil moisture as derived from the Land Parameter Retrieval Model</Title>
+        <Series>IEEE Geoscience and Remote Sensing Letters</Series>
+        <Volume>8</Volume>
+        <Issue>4</Issue>
+        <Pages>779 - 783</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/LGRS.2011.2114872</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>This Level 2 (swath) data set's land surface parameters, surface soil moisture, land surface (skin) temperature, and vegetation water content, are derived from passive microwave remote sensing data from the Tropical Rainfall Measuring Mission (TRMM) Microwave Imager (TMI), using the Land Parameter Retrieval Model (LPRM). Each swath is packaged with associated geolocation fields. The data set covers the period from December 1997 to April 2015 (when the instruments on the TRMM satellite were shut down in preparation for its reentry into the earth's atmosphere), at the spatial resolution (nominally 45 km) of TMI's X band (10.7 GHz).
+
+The LPRM is based on a forward radiative transfer model to retrieve surface soil moisture and vegetation optical depth. The land surface temperature is derived separately from TMI's Ka-band (37 GHz). A unique feature of this method is that it can be applied at any microwave frequency, making it very suitable to exploit all the available passive microwave data from various satellites.
+
+Input data are from the TMI Brightness Temperatures (1B-11) product, archived at the Goddard Earth Sciences Data and Information Services Center (GES DISC).</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/data/WAOB/LPRM_TMI_SOILM2.001/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=LPRM_TMI_SOILM2</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=LPRM_TMI_SOILM2</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>http://hydro1.gesdisc.eosdis.nasa.gov/opendap/LPRM_TMI_SOILM2.001/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2017-03-29, Ed Esfandiari - Added BEDI SBA related ancillary keywords.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2012-03-29</Metadata_Creation>
+        <Metadata_Last_Revision>2017-05-23</Metadata_Last_Revision>
+        <Data_Creation>2012-04-04</Data_Creation>
+        <Data_Last_Revision>2012-04-04</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>2</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Update_Date>2014-01-15 16:47:45</Update_Date>
+            <Value>2016-01-20T13:00:40Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:24:42</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Reference.DOI</Name>
+            <Value>10.1029/2007JF000769</Value>
+            <Value>10.1007/s10712-008-9044-0</Value>
+            <Value>10.1029/2008JD010257</Value>
+            <Value>10.1109/LGRS.2011.2114872</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.2.2</Value>
+            <Value>10.1007/s10712-008-9044-0</Value>
+            <Value>10.1029/2008JD010257</Value>
+            <Value>10.1109/LGRS.2011.2114872</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules</Description>
+            <Value>91 min</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Collection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schemas/Collection.xsd">
+	<ShortName>SeaWiFS_L3m_LAND</ShortName>
+	<VersionId>2014</VersionId>
+	<InsertTime>2017-03-14T17:00:00Z</InsertTime>
+	<LastUpdate>2017-03-13T12:00:00Z</LastUpdate>
+	<LongName>Sea-Viewing WIde Field-of-view Sensor (SeaWiFS) Level-3 Mapped Normalized Difference Vegetation Index Land Reflectance</LongName>
+	<DataSetId>SeaWiFS_L3m_LAND</DataSetId>
+	<Description>The SeaWiFS instrument was launched by Orbital Sciences Corporation on the OrbView-2
+(a.k.a. SeaStar) satellite in August 1997, and collected data from September 1997 until
+the end of mission in December 2010. SeaWiFS had 8 spectral bands from 412 to 865 nm.
+It collected global data at 4 km resolution, and local data (limited onboard storage
+and direct broadcast) at 1 km. The mission and sensor were optimized for ocean color
+measurements, with a local noon (descending) equator crossing time orbit, fore-and-aft
+tilt capability, full dynamic range, and low polarization sensitivity.</Description>
+	<Orderable>false</Orderable>
+	<Visible>true</Visible>
+	<ProcessingLevelId>3</ProcessingLevelId>
+	<ArchiveCenter>OB.DAAC</ArchiveCenter>
+	<CollectionState>Complete</CollectionState>
+	<DataFormat>netCDF4</DataFormat>
+	<SpatialKeywords>
+		<Keyword>Global</Keyword>
+	</SpatialKeywords>
+	<Temporal>
+		<RangeDateTime>
+			<BeginningDateTime>1997-09-04T00:00:00Z</BeginningDateTime>
+			<EndingDateTime>2010-12-11T23:59:59Z</EndingDateTime>
+		</RangeDateTime>
+	</Temporal>
+	<Contacts>
+		<Contact>
+			<Role>Archive</Role>
+			<OrganizationName>Ocean Biology Distributed Active Archive Center (OB.DAAC)</OrganizationName>
+			<OrganizationEmails>
+				<Email>sdps@oceancolor.gsfc.nasa.gov</Email>
+			</OrganizationEmails>
+		</Contact>
+	</Contacts>
+	<ScienceKeywords>
+		<ScienceKeyword>
+			<CategoryKeyword>Earth Science</CategoryKeyword>
+			<TopicKeyword>Biosphere</TopicKeyword>
+			<TermKeyword>Vegetation</TermKeyword>
+			<VariableLevel1Keyword>
+				<Value>Vegetation Index</Value>
+			</VariableLevel1Keyword>
+		</ScienceKeyword>
+	</ScienceKeywords>
+	<Platforms>
+		<Platform>
+			<ShortName>OrbView-2</ShortName>
+			<LongName>OrbView-2</LongName>
+			<Type>Spacecraft</Type>
+			<Instruments>
+				<Instrument>
+					<ShortName>SeaWiFS</ShortName>
+					<LongName>Sea-Viewing WIde Field-of-view Sensor</LongName>
+				</Instrument>
+			</Instruments>
+		</Platform>
+	</Platforms>
+	<AdditionalAttributes>
+		<AdditionalAttribute>
+			<Name>identifier_product_doi</Name>
+			<DataType>STRING</DataType>
+			<Description>Digital Object Identifier (DOI) that uniquely describes this data product</Description>
+			<Value>10.5067/ORBVIEW-2/SEAWIFS/L3M/LAND/2014</Value>
+		</AdditionalAttribute>
+		<AdditionalAttribute>
+			<Name>identifier_product_doi_authority</Name>
+			<DataType>STRING</DataType>
+			<Description>URL of the DOI resolving authority</Description>
+			<Value>http://dx.doi.org</Value>
+		</AdditionalAttribute>
+	</AdditionalAttributes>
+	<OnlineAccessURLs>
+		<OnlineAccessURL>
+			<URL>https://oceandata.sci.gsfc.nasa.gov/SeaWiFS/L3SMI/</URL>
+			<URLDescription>OB.DAAC Data Distribution Website for SeaWiFS L3M Normalized Difference Vegetation Index Land Reflectance Product</URLDescription>
+			<MimeType>GET DATA</MimeType>
+		</OnlineAccessURL>
+		<OnlineAccessURL>
+			<URL>https://oceandata.sci.gsfc.nasa.gov/opendap/SeaWiFS/L3SMI/</URL>
+			<URLDescription>OPeNDAP Site for SeaWiFS Small Mapped Image (SMI) Product Suite</URLDescription>
+			<MimeType>GET DATA</MimeType>
+		</OnlineAccessURL>
+	</OnlineAccessURLs>
+	<OnlineResources>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/</URL>
+			<Description>Ocean Biology Processing Group (OBPG) Homepage</Description>
+			<Type>Home Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/data/seawifs</URL>
+			<Description>OB.DAAC SeaWiFS Description Website</Description>
+			<Type>Home Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/data/10.5067/ORBVIEW-2/SeaWiFS/L3M/LAND/2014</URL>
+			<Description>OB.DAAC SeaWiFS Landing Page</Description>
+			<Type>Landing Page</Type>
+		</OnlineResource>
+		<OnlineResource>
+			<URL>https://oceancolor.gsfc.nasa.gov/forum/oceancolor/forum_show.pl
+			</URL>
+			<Description>Ocean Biology Processing Group User Support Forum
+			</Description>
+			<Type>User Support</Type>
+		</OnlineResource>
+	</OnlineResources>
+	<Spatial>
+		<SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+		<HorizontalSpatialDomain>
+			<Geometry>
+				<CoordinateSystem>CARTESIAN</CoordinateSystem>
+				<BoundingRectangle>
+					<WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+					<NorthBoundingCoordinate>90.0</NorthBoundingCoordinate>
+					<EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+					<SouthBoundingCoordinate>-90.0</SouthBoundingCoordinate>
+				</BoundingRectangle>
+			</Geometry>
+		</HorizontalSpatialDomain>
+		<GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+	</Spatial>
+</Collection>

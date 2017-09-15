@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>BUVN4L1PDB</Short_Name>
+        <Version>001</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>BUV/Nimbus-4 Level 1 Radiance and Housekeeping Data in Telemetry Units V001 (BUVN4L1PDB) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Donald F. Heath, et al.</Dataset_Creator>
+        <Dataset_Title>BUV/Nimbus-4 Level 1 Radiance and Housekeeping Data in Telemetry Units V001</Dataset_Title>
+        <Dataset_Series_Name>BUVN4L1PDB</Dataset_Series_Name>
+        <Dataset_Release_Date>1977-03-12</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>001</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/BUVN4L1PDB_001.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JAMES</First_Name>
+            <Middle_Name>EDWARD</Middle_Name>
+            <Last_Name>JOHNSON</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5121</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>James.Johnson@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL/ENGINEERING</Topic>
+        <Term>ULTRAVIOLET WAVELENGTHS</Term>
+        <Variable_Level_1>SENSOR COUNTS</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>PDB</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>Nimbus-4</Short_Name>
+        <Instrument>
+            <Short_Name>BUV</Short_Name>
+            <Long_Name>Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1970-04-10</Beginning_Date_Time>
+            <Ending_Date_Time>1977-05-07</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-80.1</Southernmost_Latitude>
+                <Northernmost_Latitude>80.1</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>11.3 degrees at nadir</Latitude_Resolution>
+        <Longitude_Resolution>11.3 degrees at nadir</Longitude_Resolution>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>NIMBUS</Short_Name>
+    </Project>
+    <Quality>The data should be used with care and one should first read the Nimbus-4 BUV Dark Current Study document, as well as the Nimbus-4 User's Guide, section 7 describing the BUV experiment.  Users should cite this data product in their research.</Quality>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>NSSDC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>6.3 GB per file</Distribution_Size>
+        <Distribution_Format>binary</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>https://disc.sci.gsfc.nasa.gov/nimbus/images/BUVN4L1PDB.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:55:59 EDT 2017. Old value is "https://disc.sci.gsfc.nasa.gov/nimbus/images/BUVN4L1PDB.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915dd4be01b045fab4ec163/file</URL>
+        <Format>PNG</Format>
+        <Caption>BUV Sample Image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>D. F. Heath, and A. J. Kruger, "The Nimbus-4 User's Guide - Section: The Backscatter Ultraviolet Spectrometer (BUV) Experiment", NASA Goddard Space Flight Center, March 1970, Pages 149-172.</Citation>
+        <Author>D. F. Heath, and A. J. Kruger</Author>
+        <Publication_Date>1970</Publication_Date>
+        <Title>The Nimbus-4 User's Guide - Section 7: The Backscatter Ultraviolet Spectrometer (BUV) Experiment</Title>
+        <Publisher>NASA Goddard Space Flight Center</Publisher>
+        <Pages>149-172</Pages>
+    </Reference>
+    <Summary>
+        <Abstract>The Nimbus-4 BUV Level-1 Radiance and Housekeeping Data in Telemetry Units collection contains the raw counts measured by the Backscatter Ultraviolet Spectrometer every 32 seconds at 12 wavelengths between 250 and 340 nm during the daylit orbit portion. The data collection also contains ephemeris data, experiment subsystem status information, and spacecraft housekeeping and orbit data. This data collection was used to create the Level 1 Radiance U-Tape or RUT product.The data were originally created on IBM 360 machines and archived on magnetic tapes. The data have been restored from the tapes and are now archived on disk in their original IBM binary file format. Each file contains about one orbit of data. The data files consist of 850 2-byte word records which are blocked in up to ten records. The first record in the file is the header record, followed by a series of data records, and ends with a trailer record. A typical orbit file is about 260 kB in size.The BUV instrument was operational from April 10, 1970 until May 6, 1977. In July 1972 the Nimbus-4 solar power array partially failed such that BUV operations were curtailed. Thus data collected in the later years was increasingly sparse, particularly in the equatorial region.This product was previously available from the NSSDC with the identifier ESAC-00024 (old ID 70-025A-05E).</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/data/Nimbus4_BUV_Level1/BUVN4L1PDB.001/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=BUVN4L1PDB</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/data/Nimbus4_BUV_Level1/BUVN4L1PDB.001/doc/README.BUVN4L1PDB.001.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/NIMBUS/3.3_Product_Documentation/3.3.5_Product_Quality/N4_BUV_UsersGuide_19780013751.pdf</URL>
+        <Description>Nimbus 4 BUV User's Guide</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/NIMBUS/3.3_Product_Documentation/3.3.5_Product_Quality/NimbusIVUG.pdf</URL>
+        <Description>Nimbus 4 User's Guide</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/NIMBUS/3.3_Product_Documentation/3.3.5_Product_Quality/DataCatalogNimbus4.tar.gz
+</URL>
+        <Description>Nimbus 4 Data Catalog</Description>
+    </Related_URL>
+    <IDN_Node>
+        <Short_Name>USA/NASA</Short_Name>
+    </IDN_Node>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>
+      2015-11-03, J. Johnson wrote DIF.2016-04-20, J. Alfred updated to DIF 10.2 format.
+      2017-03-13, Ed Esfandiari - Updated/added User Guide links.
+    </DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2015-11-03</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-17</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-06-01</Metadata_Future_Review>
+        <Data_Creation>2015-12-03</Data_Creation>
+        <Data_Last_Revision>2015-12-03</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>1A</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The temporal coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>e77f12b4-3d4f-487d-a4d8-86029a860767</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:31:52</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:26Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

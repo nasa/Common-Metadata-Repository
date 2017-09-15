@@ -1,0 +1,137 @@
+<Collection>
+  <ShortName>QSCAT_L3_SFC_EASTWARD_WIND_1DEG_1MO</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2012-04-12T00:04:27.965Z</InsertTime>
+  <LastUpdate>2012-04-12T00:04:27.965Z</LastUpdate>
+  <LongName>SeaWinds on QuikSCAT Level 3 Surface Eastward Wind for Climate Model Comparison</LongName>
+  <DataSetId>PODAAC-QSSEW-CMIP1</DataSetId>
+  <Description>This dataset contains ocean surface Eastward wind from SeaWinds on QuikSCAT binned and averaged monthly on 1 degree grids. The coverage is from August 1999 through October 2009.</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2014-07-29T20:57:48.293Z</RevisionDate>
+  <ProcessingCenter>NASA</ProcessingCenter>
+  <ProcessingLevelId>3</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>NETCDF</DataFormat>
+  <SpatialKeywords>
+    <Keyword>Global</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>1999-08-01T00:00:00.000Z</BeginningDateTime>
+      <EndingDateTime>2009-10-31T23:59:59.000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number>(818) 393-7165</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>podaac@podaac.jpl.nasa.gov</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>User</FirstName>
+          <MiddleName>null</MiddleName>
+          <LastName>Services</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>OCEAN WINDS</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>SURFACE WINDS</Value>
+      </VariableLevel1Keyword>
+      <DetailedVariableKeyword>OCEAN SURFACE EASTWARD WIND</DetailedVariableKeyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>QUIKSCAT</ShortName>
+      <LongName>QUIKSCAT</LongName>
+      <Type>SPACECRAFT</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>SEAWINDS</ShortName>
+          <LongName>SeaWinds Scatterometer</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>SEAWINDS</ShortName>
+              <LongName>SeaWinds Scatterometer</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/quikscat/L3/wind_1deg_1mo</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+    <OnlineAccessURL>
+      <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/quikscat/L3/wind_1deg_1mo/</URL>
+      <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>http://thredds.jpl.nasa.gov/las/</URL>
+      <Description>Live Access Server</Description>
+      <Type>PORTAL_DA_TOOLS_AND_SERVICES</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://esg-gateway.jpl.nasa.gov/home.htm</URL>
+      <Description>Link to JPL Earth System Grid</Description>
+      <Type>JPL ESG Link</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-QSSEW-CMIP1&amp;apidoc</URL>
+      <Description>(Search Granule)</Description>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://thredds.jpl.nasa.gov/thredds/catalog/ncml_aggregation/OceanWinds/qscat/wind_1deg_1mo/catalog.html</URL>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>89.60</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-89.60</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

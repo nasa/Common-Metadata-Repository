@@ -1,0 +1,153 @@
+<Collection>
+            <ShortName>CMS_FOREST_PRODUCTIVITY_1221</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2014-05-28T00:00:00Z</InsertTime>
+            <LastUpdate>2014-05-28T00:00:00Z</LastUpdate>
+            <LongName>CMS: Forest Biomass and Productivity, 1-degree and 5-km, Conterminous US, 2005</LongName>
+            <DataSetId>CMS: Forest Biomass and Productivity, 1-degree and 5-km, Conterminous US, 2005</DataSetId>
+            <Description>Notice: This data set and guide were updated on June 30, 2014 to correct an error in the reported units. The data values were not changed.Spatially-gridded estimates of above ground biomass (AGB), net primary productivity (NPP), and net ecosystem productivity (NEP) are provided for forested areas of the conterminous United States (CONUS). Estimates of uncertainty are also provided for AGB and NEP. These data were derived by using Forest Inventory and Analysis (FIA) data to constrain forest growth rates in a Carnegie-Ames-Stanford Approach (CASA) carbon-cycle process model. Note that the data set does not include data for forests in the Northern Prairie States region (NPS; see Figure 3). These data provide a detailed estimate of carbon sources and sinks from recent forest disturbance and recovery across regions and forest types of the US.The data are presented as a series of ten NetCDF v4 (*.nc4) files at two spatial scales (1-degree and 5-km spatial resolution) for the nominal year of 2005.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1221</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2014-05-28T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Collatz, G.J., C. Williams, B. Ghimire, S. Goward, and J. Masek. 2014. CMS: Forest Biomass and Productivity, 1-degree and 5-km, Conterminous US, 2005. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1221</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2005-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2005-12-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>PRIMARY PRODUCTION</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOSYSTEMS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>TERRESTRIAL ECOSYSTEMS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>FORESTS</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>BIOMASS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>MODELS</ShortName>
+                    <LongName> </LongName>
+                    <Type>Models/Analyses</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>Computer</ShortName>
+                            <LongName>Computer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>Computer</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>CMS</ShortName>
+                    <LongName>Carbon Monitoring System</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/cms/CMS_Forest_Productivity//</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/CMS/guides/CMS_Forest_Productivity.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1221</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/cms/CMS_Forest_Productivity//comp/CMS_Forest_Productivity.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/1221/catalog.html</URL>
+                    <Description>The THREDDS location for this Collection.</Description>
+                    <Type>THREDDS DIRECTORY</Type>
+                    <MimeType>text/html</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-129.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>52.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-65.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>21.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

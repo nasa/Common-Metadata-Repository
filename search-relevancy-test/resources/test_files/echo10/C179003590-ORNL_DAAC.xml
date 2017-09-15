@@ -1,0 +1,138 @@
+<Collection>
+            <ShortName>seawifs_core_sites_624</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2002-02-04T00:00:00Z</InsertTime>
+            <LastUpdate>2002-02-04T00:00:00Z</LastUpdate>
+            <LongName>SAFARI 2000 SeaWiFS Images for Core Study Sites, 2000-2001</LongName>
+            <DataSetId>SAFARI 2000 SeaWiFS Images for Core Study Sites, 2000-2001</DataSetId>
+            <Description>This data set contains Sea-viewing Wide Field-of-view Sensor (SeaWiFS) imagery for the eight core study sites of Mongu, Etosha, Kasangu, Skukuza, Mutoko, Mzola, Nampula, and Ndola. There are two main sets of local area coverage (LAC) data: Level-1 and Level-2 200-km x 200-km image subsets for seven of the sites and 400-km x 400-km image subsets for the Etosha site. The data are provided in HDF format files.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/624</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2002-02-04T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Feldman, G. 2002. SAFARI 2000 SeaWiFS Images for Core Study Sites, 2000-2001. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/624</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2000-04-12T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2001-05-17T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>SPECTRAL/ENGINEERING</TopicKeyword>
+                    <TermKeyword>VISIBLE WAVELENGTHS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VISIBLE IMAGERY</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>SPECTRAL/ENGINEERING</TopicKeyword>
+                    <TermKeyword>VISIBLE WAVELENGTHS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VISIBLE RADIANCE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>SEASTAR</ShortName>
+                    <LongName>Orbital Sciences Corporation OrbView-2 Satellite</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>SEAWIFS</ShortName>
+                            <LongName>Sea-Viewing Wide Field-of-View Sensor</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>SEAWIFS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>SAFARI 2000</ShortName>
+                    <LongName>Southern African Regional Science Initiative Project</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/safari2k/remote_sensing/seawifs/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/S2K/guides/seawifs_core_sites.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/624</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/safari2k/remote_sensing/seawifs/comp/hdf_information.doc</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/safari2k/remote_sensing/seawifs/comp/seawifs_doc.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>8.73</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>-7.49</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>43.20</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-35.26</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

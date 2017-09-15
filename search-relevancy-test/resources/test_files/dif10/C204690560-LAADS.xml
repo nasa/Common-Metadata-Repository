@@ -1,0 +1,481 @@
+<?xml version="1.0"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>MYD04_3K</Short_Name>
+    <Version>6</Version>
+  </Entry_ID>
+  <Version_Description>Aqua MODIS Version 6 Data Collection Processing and Reprocessing</Version_Description>
+  <Entry_Title>MODIS/Aqua Aerosol 5-Min L2 Swath 3km V006</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>MODIS Science Team</Dataset_Creator>
+    <Dataset_Title>MODIS/Aqua Aerosol 5-Min L2 Swath 3km V006</Dataset_Title>
+    <Dataset_Release_Date>2015-05-11</Dataset_Release_Date>
+    <Dataset_Release_Place>MODAPS at NASA/GSFC</Dataset_Release_Place>
+    <Dataset_Publisher>L1 and Atmosphere Archive and Distribution System (LAADS)</Dataset_Publisher>
+    <Version>6</Version>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.5067/MODIS/MYD04_3K.006</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>http://modis.gsfc.nasa.gov/data/dataprod/dataproducts.php?MOD_NUMBER=04</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>MODAPS USER SUPPORT TEAM</Name>
+      <Address>
+        <Street_Address>MODAPS User Support Team</Street_Address>
+        <Street_Address>NASA/GSFC</Street_Address>
+        <Street_Address>Mail Code: 619</Street_Address>
+        <City>Greenbelt</City>
+        <State_Province>MD</State_Province>
+        <Postal_Code>20771</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>1-800-596-8132</Number>
+        <Type>U.S. toll free</Type>
+      </Phone>
+      <Phone>
+        <Number>301-794-7035</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASAD</First_Name>
+      <Last_Name>ULLAH</Last_Name>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL BACKSCATTER</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL EXTINCTION</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL PARTICLE PROPERTIES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL RADIANCE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>CARBONACEOUS AEROSOLS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>CLOUD CONDENSATION NUCLEI</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>DUST/ASH/SMOKE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>NITRATE PARTICLES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>ORGANIC PARTICLES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>PARTICULATE MATTER</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>SULFATE PARTICLES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>RADIATIVE FLUX</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC RADIATION</Term>
+    <Variable_Level_1>REFLECTANCE</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+    <Variable_Level_2>ANGSTROM EXPONENT</Variable_Level_2>
+  </Science_Keywords>
+  <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>AQUA</Short_Name>
+    <Long_Name>Earth Observing System, AQUA</Long_Name>
+    <Characteristics>
+      <Name>EquatorCrossingTime</Name>
+      <Description>Local time of the equator crossing and direction (ascending or descending)</Description>
+      <DataType>Time/direction (ascending)</DataType>
+      <Unit>Local Mean Time</Unit>
+      <Value>3:30, ascending</Value>
+    </Characteristics>
+    <Instrument>
+      <Short_Name>MODIS</Short_Name>
+      <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+      <Technique>Imaging Spectroradiometry</Technique>
+      <Sensor>
+        <Short_Name>MODIS</Short_Name>
+        <Long_Name>Cross-track Scanning Radiometer</Long_Name>
+        <Technique>Radiometry</Technique>
+      </Sensor>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Time_Type>UTC</Time_Type>
+    <Date_Type>Gregorian</Date_Type>
+    <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+    <Precision_Of_Seconds>1</Precision_Of_Seconds>
+    <Range_DateTime>
+      <Beginning_Date_Time>2002-05-04T00:00:00.000Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90</Southernmost_Latitude>
+        <Northernmost_Latitude>90</Northernmost_Latitude>
+        <Westernmost_Longitude>-180</Westernmost_Longitude>
+        <Easternmost_Longitude>180</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Data_Resolution>
+    <Latitude_Resolution>3km at nadir</Latitude_Resolution>
+    <Longitude_Resolution>3km at nadir</Longitude_Resolution>
+    <Temporal_Resolution>5 minutes</Temporal_Resolution>
+  </Data_Resolution>
+  <Project>
+    <Short_Name>EOSDIS</Short_Name>
+    <Long_Name>Earth Observing System Data Information System</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>ESIP</Short_Name>
+    <Long_Name>Earth Science Information Partners Program</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>AQUA</Short_Name>
+    <Long_Name>Earth Observing System (EOS), AQUA</Long_Name>
+  </Project>
+  <Quality>See http://modaps.nascom.nasa.gov/services/qa/</Quality>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>None</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>The MODIS Adaptive Processing System (MODAPS)</Originating_Center>
+  <Organization>
+    <Organization_Type>ORIGINATOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>PROCESSOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/LAADS</Short_Name>
+      <Long_Name>L1 and Atmosphere Archive and Distribution System,Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://ladsweb.nascom.nasa.gov/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>Online (FTP)</Distribution_Media>
+    <Distribution_Format>HDF-EOS</Distribution_Format>
+    <Fees>No Fee</Fees>
+  </Distribution>
+  <Summary>
+    <Abstract>The MODIS level-2 atmospheric aerosol product provides retrieved ambient aerosol optical properties (e.g., optical thickness and size distribution), mass concentration, look-up table derived reflected and transmitted fluxes, as well as quality assurance and other ancillary parameters, globally over ocean and near globally over land.In Collection 5, and earlier collections, there was only one aerosol product (MYD04_L2) at 10km at nadir spatial resolution. For C6, the Dark Target (DT) Aerosol algorithm team now provides a new 3 km spatial resolution product intended for the air quality community. The short name for this product is MYD04_3K. 
+
+The MYD04_3K product is based on the same algorithm and using the same Look Up Tables as the standard Dark Target aerosol product. Because of finer resolution, subtle differences are made in selecting pixels for retrieval and in determining QA. The only differences between the existing 10km algorithm and the new 3km algorithm are: 1) the size of the pixel-arrays defining each retrieval box (used 6x6 retrieval boxes of 36 pixels at 0.5km resolution for 3km algorithm as oppose to 20x20 retrieval boxes of 400 pixels at 0.5km resolution used for 10km product); 2) the minimum percentage of &#x201C;good&#x201D; pixels required for a retrieval (required a minimum of 5 pixels over ocean and 6 pixels over land instead of a minimum of 10 pixels over ocean or 12 pixels over land for (more for high quality) 10km product retrieval); 3) the 10km algorithm attempts a &#x201C;poor quality&#x201D; retrieval while 3km algorithm does not. Everything else is the same in two products.
+
+
+Recommendations:
+Global studies should continue to make use of the more robust and well-studied 10 km product. The 3 km product&#x2019;s use should be restricted to obvious situations that require finer resolution.
+
+Only the AOD at 550 nm has been studied in depth at this point. Difference in AOD at wavelengths, and differences in the size parameters over ocean are possible. More validation will be forthcoming.
+
+Aerosol-cloud studies with the 3 km product should proceed cautiously. At this time, we do not specifically know how the 3 km product is affected in the proximity of clouds.
+
+While the air quality community will be eager to apply the 3 km product across an urban landscape, this must proceed cautiously because of known artifacts in the product over urban surfaces.
+
+The power of the 3 km product is on local, not global, scales.
+
+List of SDSs available at 3 km 
+
+Spatial &amp;amp; Temporal Resolution:
+Longitude, Latitude, Scan_Start_Time
+
+Solar and Sensor Viewing Geometry:
+Solar_Zenith, Solar_Azimuth, Sensor_Zenith, Sensor_Azimuth
+
+Aerosol Parameters for Land &amp;amp; Ocean (Combined):
+Scattering_Angle, Land_sea_Flag,
+Optical_Depth_Land_And_Ocean, Image_Optical_Depth_Land_And_Ocean, Land_Ocean_Quality_Flag
+
+Aerosol Parameters from Land Retrieval Algorithm: 
+Aerosol_Type_Land, Fitting_Error_Land, Surface_Reflectance_Land, Corrected_Optical_Depth_Land, Corrected_Optical_Depth_Land_wav2p1, Optical_Depth_Ratio_Small_Land, Number_Pixels_Used_Land, Mean_Reflectance_Land, STD_Reflectance_Land, floatMass_Concentration_Land, Aerosol_Cloud_Fraction_Land, byteQuality_Assurance_Land, Topographic_Altitude_Land
+
+Aerosol Parameters from Ocean Retrieval Algorithm:
+Glint_Angle, Wind_Speed_Ncep_Ocean, Solution_Index_Ocean_Small, Solution_Index_Ocean_Large, Effective_Optical_Depth_Best_Ocean, Effective_Optical_Depth_Average_Ocean, Optical_Depth_Small_Best_Ocean, Optical_Depth_Small_Average_Ocean, Optical_Depth_Large_Best_Ocean, Optical_Depth_Large_Average_Ocean, floatMass_Concentration_Ocean, Aerosol_Cloud_Fraction_Ocean, Effective_Radius_Ocean, Cloud_Condensation_Nuclei_Ocean, Asymmetry_Factor_Best_Ocean, Asymmetry_Factor_Average_Ocean, Backscattering_Ratio_Best_Ocean, Backscattering_Ratio_Average_Ocean, Angstrom_Exponent_1_Ocean, Angstrom_Exponent_2_Ocean, Least_Squares_Error_Ocean, Optical_Depth_Ratio_Small_Ocean_0.55micron, Optical_Depth_by_models_ocean, Number_Pixels_Used_Ocean, Mean_Reflectance_Ocean, STD_Reflectance_Ocean, byteQuality_Assurance_Ocean
+                       
+See the MODIS Science Team homepage for more data set information: http://modis-atmos.gsfc.nasa.gov/Webinar2014/MODIS_Atmos_Webinar-2_Munchak_3kmaerosol.pdf or visit the MODIS Atmosphere Team homepage for 10km product information:
+http://modis-atmos.gsfc.nasa.gov/MOD04_L2/</Abstract>
+    <Purpose>Science Research </Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://modaps.nascom.nasa.gov/services/about/product_descriptions_aqua.html</URL>
+    <Description>Overview of MODIS</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>https://ladsweb.nascom.nasa.gov/data/search.html</URL>
+    <Description>Search and order products from LAADS website.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://ladsweb.nascom.nasa.gov/allData/6/MYD04_3K/</URL>
+    <Description>Direct access to the ftp site and directory hosting the MYD04_3K 6 data set.</Description>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2015-05-11</Metadata_Creation>
+    <Metadata_Last_Revision>2016-03-09</Metadata_Last_Revision>
+    <Data_Creation>2014-01-01</Data_Creation>
+    <Data_Last_Revision>present</Data_Last_Revision>
+  </Metadata_Dates>
+  <Additional_Attributes>
+    <Name>SuccessCloudPhaseRtrPct_IR</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessCloudOptPropRtrPct_VIS</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>IceCloudDetectedPct_VIS</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>CloudCoverFractionPct_VIS</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_NIR</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_IR</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_Ocean</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_Land</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SCI_STATE</Name>
+    <DataType>INT</DataType>
+    <Description>Flag set (to 0) if science_state, the L1A engineering data flag that indicates the Normal/Test configuration of the MODIS instrument, was set for at least one scan in the granule.</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SCI_ABNORM</Name>
+    <DataType>INT</DataType>
+    <Description>Flag set (to 0) if science_abnormal, the L1A engineering data ground-set flag thatindicates potentially abnormal science data due to things other than MODIS (such as maneuvers, data link, etc.), was set for at least one scan in the granule.</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>VeryHighConfidentClearPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>LowConfidentClearPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>HighConfidentClearPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>CloudCoverPct250m</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>ClearPct250m</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessCloudTopPropRtrPct_IR</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+  </Additional_Attributes>
+  <Product_Level_Id>2</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+</DIF>

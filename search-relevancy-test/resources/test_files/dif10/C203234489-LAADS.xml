@@ -1,0 +1,405 @@
+<?xml version="1.0"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>MODATML2</Short_Name>
+    <Version>6</Version>
+  </Entry_ID>
+  <Version_Description>Terra MODIS Version 6 Data Collection Processing and Reprocessing</Version_Description>
+  <Entry_Title>MODIS/Terra Aerosol, Cloud and Water Vapor Subset 5-Min L2 Swath 5km and 10km V006</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>MODIS Science Team</Dataset_Creator>
+    <Dataset_Title>MODIS/Terra Aerosol, Cloud and Water Vapor Subset 5-Min L2 Swath 5km and 10km V006</Dataset_Title>
+    <Dataset_Release_Date>2012-07-03</Dataset_Release_Date>
+    <Dataset_Release_Place>MODAPS at NASA/GSFC</Dataset_Release_Place>
+    <Dataset_Publisher>L1 and Atmosphere Archive and Distribution System (LAADS)</Dataset_Publisher>
+    <Version>6</Version>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.5067/MODIS/MODATML2.006</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>http://modis.gsfc.nasa.gov/sci_team/</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>MODAPS USER SUPPORT TEAM</Name>
+      <Address>
+        <Street_Address>MODAPS User Support Team</Street_Address>
+        <Street_Address>NASA/GSFC</Street_Address>
+        <Street_Address>Mail Code: 619</Street_Address>
+        <City>Greenbelt</City>
+        <State_Province>MD</State_Province>
+        <Postal_Code>20771</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>1-800-596-8132</Number>
+        <Type>U.S. toll free</Type>
+      </Phone>
+      <Phone>
+        <Number>301-794-7035</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASAD</First_Name>
+      <Last_Name>ULLAH</Last_Name>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL PARTICLE PROPERTIES</Variable_Level_1>
+    <Detailed_Variable>EFFECTIVE PARTICLE RADIUS</Detailed_Variable>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC WATER VAPOR</Term>
+    <Variable_Level_1>HUMIDITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC WATER VAPOR</Term>
+    <Variable_Level_1>WATER VAPOR</Variable_Level_1>
+    <Detailed_Variable>IR TOTAL COLUMN WATER</Detailed_Variable>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>ATMOSPHERIC WATER VAPOR</Term>
+    <Variable_Level_1>WATER VAPOR</Variable_Level_1>
+    <Detailed_Variable>NEAR-IR TOTAL COLUMN WATER</Detailed_Variable>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD MICROPHYSICS</Variable_Level_1>
+    <Variable_Level_2>CLOUD OPTICAL DEPTH/THICKNESS</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD RADIATIVE TRANSFER</Variable_Level_1>
+    <Variable_Level_2>CLOUD REFLECTANCE</Variable_Level_2>
+    <Detailed_Variable>CIRRUS REFLECTANCE</Detailed_Variable>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD TOP PRESSURE</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD TOP TEMPERATURE</Variable_Level_2>
+  </Science_Keywords>
+  <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+    <Characteristics>
+      <Name>EquatorCrossingTime</Name>
+      <Description>Local time of the equator crossing and direction (ascending or descending)</Description>
+      <DataType>Time/direction (descending)</DataType>
+      <Unit>Local Mean Time</Unit>
+      <Value>10:30, descending</Value>
+    </Characteristics>
+    <Instrument>
+      <Short_Name>MODIS</Short_Name>
+      <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+      <Technique>Imaging Spectroradiometry</Technique>
+      <Sensor>
+        <Short_Name>MODIS</Short_Name>
+        <Long_Name>Cross-track Scanning Radiometer</Long_Name>
+        <Technique>Radiometry</Technique>
+      </Sensor>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Time_Type>UTC</Time_Type>
+    <Date_Type>Gregorian</Date_Type>
+    <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+    <Precision_Of_Seconds>1</Precision_Of_Seconds>
+    <Range_DateTime>
+      <Beginning_Date_Time>1999-12-18T00:00:00.000Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90</Southernmost_Latitude>
+        <Northernmost_Latitude>90</Northernmost_Latitude>
+        <Westernmost_Longitude>-180</Westernmost_Longitude>
+        <Easternmost_Longitude>180</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Data_Resolution>
+    <Latitude_Resolution>5km at nadir</Latitude_Resolution>
+    <Longitude_Resolution>5km at nadir</Longitude_Resolution>
+    <Temporal_Resolution>5 minutes</Temporal_Resolution>
+  </Data_Resolution>
+  <Project>
+    <Short_Name>EOSDIS</Short_Name>
+    <Long_Name>Earth Observing System Data Information System</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>ESIP</Short_Name>
+    <Long_Name>Earth Science Information Partners Program</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System (EOS), TERRA</Long_Name>
+  </Project>
+  <Quality>See http://modaps.nascom.nasa.gov/services/qa/</Quality>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>None</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>The MODIS Adaptive Processing System (MODAPS)</Originating_Center>
+  <Organization>
+    <Organization_Type>ORIGINATOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>PROCESSOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/LAADS</Short_Name>
+      <Long_Name>L1 and Atmosphere Archive and Distribution System,Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://ladsweb.nascom.nasa.gov/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>Online (FTP)</Distribution_Media>
+    <Distribution_Format>HDF-EOS</Distribution_Format>
+    <Fees>No Fee</Fees>
+  </Distribution>
+  <Summary>
+    <Abstract>MODATML2 contains a combination of key high interest science parameters The ATML2 product provides a subset of datasets from the suite of atmosphere team products on both a 10 km scale (aerosols) and 5km scale (native 5 km cloud properties and a 5x5 pixel sample of the 1km cloud datasets). The sampling of 1 km datasets is consistent with the team&#x2019;s L3 algorithm (using the pixel 4, 9 in the along-track direction for each 10 km scan in order to avoid contiguous dead 500 m band 6 pixels on the Terra instrument. 
+
+C6 significantly increases the number of datasets included in the ATML2 product, including the full suite of QA datasets (see below). Since the ATML2 data granule file size is significantly smaller than the combined size of the individual L2 products, and because the 1 km pixel sampling is consistent with the L3 algorithm, the ATML2 product is a more practical means for the user community to develop research L3 algorithms for their own specific purposes.
+
+Link to the MODIS homepage for more data set information: 
+http://modis-atmos.gsfc.nasa.gov/JOINT/
+
+MOD06_L2 Data Parameters (SDS)
+
+Cloud_Optical_Thickness, Cloud_Effective_Radius, Cloud_Water_Path, Cloud_Optical_Thickness_1621, Cloud_Effective_Radius_1621, Cloud_Water_Path_1621, Cloud_Optical_Thickness_Uncertainty, Cloud_Effective_Radius_Uncertainty, Cloud_Water_Path_Uncertainty, Cloud_Optical_Thickness_Uncertainty_1621, Cloud_Effective_Radius_Uncertainty_1621, Cloud_Water_Path_Uncertainty_1621, Cloud_Phase_Optical_Properties, Cloud_Phase_Infrared, Cloud_Quality_Assurance, Cirrus_Reflectance, Cloud_Top_Pressure, Cloud_Top_Temperature, Cloud_Fraction, Precipitable_Water_Infrared_ClearSky, Cloud_Mask, Solar_Zenith_10km, Viewing_Zenith_10km, Relative_Azimuth_10km, Aerosol_Optical_Depth, Deep_Blue_Aerosol_Optical_Depth_550_Land, Deep_Blue_Angstrom_Exponent_Land, Total_Ozone, Lifted_Index, K_Index, Total_Totals_Index, Aerosol_Angstrom_Exponent_Ocean, Aerosol_Land_Sea_Flag, Aerosol_Cloud_Pixel_Distance_Land_Ocean, Aerosol_Cloud_Fraction_Ocean, Aerosol_Cloud_Fraction_Land, Aerosol_Land_Ocean_Quality_Flag, AOD_550_Dark_Target_Deep_Blue_Combined, AOD_550_Dark_Target_Deep_Blue_Combined_QA_Flag, AOD_550_Dark_Target_Deep_Blue_Combined_Algorithm_Flag, Deep_Blue_Aerosol_Optical_Depth_550_Land_Best_Estimate, Deep_Blue_Aerosol_Optical_Depth_550_Land_QA_Flag, Deep_Blue_Aerosol_Optical_Depth_550_Land_Estimated_Uncertainty, Aerosol_Quality_Assurance_Land, Aerosol_Quality_Assurance_Ocean, Deep_Blue_Single_Scattering_Albedo_412_Land, Longitude_10km, Latitude_10km, Precipitable_Water_Near_Infrared_ClearSky, Cloud_Optical_Thickness_PCL, Cloud_Optical_Thickness_16, Cloud_Optical_Thickness_16_PCL, Cloud_Optical_Thickness_37, Cloud_Optical_Thickness_37_PCL, Cloud_Optical_Thickness_Uncertainty_16, Cloud_Optical_Thickness_Uncertainty_37, Cloud_Effective_Radius_PCL, Cloud_Effective_Radius_16, Cloud_Effective_Radius_16_PCL, Cloud_Effective_Radius_37, Cloud_Effective_Radius_37_PCL, Cloud_Effective_Radius_Uncertainty_16, Cloud_Effective_Radius_Uncertainty_37, Cloud_Water_Path_PCL, Cloud_Water_Path_16, Cloud_Water_Path_16_PCL, Cloud_Water_Path_37, Cloud_Water_Path_37_PCL, Cloud_Water_Path_Uncertainty_16, Cloud_Water_Path_Uncertainty_37, Cloud_Top_Pressure_1km, Cloud_Top_Temperature_1km, Cloud_Top_Height_1km, Surface_Temperature_1km, OS_Top_Flag_1km, Cloud_Mask_SPI, Cloud_Multi_Layer_Flag, Cloud_Phase_Infrared_1km, Cloud_Top_Height, Cloud_Height_Method, Infrared_obs_minus_calc, Cloud_Optical_Thickness_1621_PCL, Cloud_Effective_Radius_1621_PCL, Cloud_Water_Path_1621_PCL, Retrieval_Failure_Metric, Retrieval_Failure_Metric_16, Retrieval_Failure_Metric_37, Retrieval_Failure_Metric_1621, Latitude, Longitude</Abstract>
+    <Purpose>Science Research </Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://modaps.nascom.nasa.gov/services/about/product_descriptions_terra.html</URL>
+    <Description>Overview of MODIS</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>https://ladsweb.nascom.nasa.gov/data/search.html</URL>
+    <Description>Search and order products from LAADS website.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://ladsweb.nascom.nasa.gov/allData/6/MODATML2/</URL>
+    <Description>Direct access to the ftp site and directory hosting the MODATML2 6 data set.</Description>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2012-07-03</Metadata_Creation>
+    <Metadata_Last_Revision>2016-03-09</Metadata_Last_Revision>
+    <Data_Creation>2015-01-01</Data_Creation>
+    <Data_Last_Revision>present</Data_Last_Revision>
+  </Metadata_Dates>
+  <Additional_Attributes>
+    <Name>HighConfidentClearPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>LowConfidentClearPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessCloudOptPropRtrPct_VIS</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessCloudTopPropRtrPct_IR</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_IR</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_Land</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_NIR</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct_Ocean</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>VeryHighConfidentClearPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Product_Level_Id>2</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+</DIF>

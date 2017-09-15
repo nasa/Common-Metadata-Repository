@@ -1,0 +1,193 @@
+<Collection>
+            <ShortName>SOIL1X1_418</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>1999-05-05T00:00:00Z</InsertTime>
+            <LastUpdate>1999-05-05T00:00:00Z</LastUpdate>
+            <LongName>Global Soil Types, 1-Degree Grid (Zobler)</LongName>
+            <DataSetId>Global Soil Types, 1-Degree Grid (Zobler)</DataSetId>
+            <Description>A global digital data base of soil properties is available at 1 degree longitude resolution.  For each land cell, the data base includes major and associated soil units, surface texture, and slope; phase and miscellaneous land units are included where available. The data base was compiled as part of an effort to improve modeling of the hydrologic cycle in the GISS Genreal Circulation Model.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/418</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>1999-05-05T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Zobler, L. 1999. Global Soil Types, 1-Degree Grid (Zobler). ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/418</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1972-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>1982-01-01T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>EROSION/SEDIMENTATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SUSPENDED SOLIDS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL CLASSIFICATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL TEXTURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>NOT APPLICABLE</ShortName>
+                    <LongName> </LongName>
+                    <Type>NOT APPLICABLE</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>NOT APPLICABLE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>NOT APPLICABLE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>soil</ShortName>
+                    <LongName>Soil Collection</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/SOILS/guides/ZoblerSoil1.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/418</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/NASATM100685.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/ordering_original_zobler_doc.htm</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/readme.txt</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/readme2.txt</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/README_images</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/soil1x1.help</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/zobler1x1.gif</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/ZoblerSoil1.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/ZoblerSoil/comp/Zobler_NASA_TM_87802_1986.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/418_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/wcsdown/dataset.jsp?ds_id=418</URL>
+                    <Description>Web Coverage Service for this collection.</Description>
+                    <Type>WEB COVERAGE SERVICE (WCS)</Type>
+                    <MimeType>application/gml+xml</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>180.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-90.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

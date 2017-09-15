@@ -1,0 +1,241 @@
+<Collection>
+            <ShortName>MD_CD03_MESOSCALE_944</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2009-09-29T00:00:00Z</InsertTime>
+            <LastUpdate>2009-09-29T00:00:00Z</LastUpdate>
+            <LongName>LBA-ECO CD-03 Mesoscale Meteorological Data, Santarem Region, Para, Brazil: 1998-2006</LongName>
+            <DataSetId>LBA-ECO CD-03 Mesoscale Meteorological Data, Santarem Region, Para, Brazil: 1998-2006</DataSetId>
+            <Description>A mesoscale network has been set up in the Santarem region of Para, Brazil. This network consists of eight meteorological stations named Belterra, Km 117 (Fazenda Sr. Davi), Mojui, Jamaraqua, Guarana, Embrapa (Cacoal Grande), Vila Franca and Sudam (Curua Una). Belterra and Km117 stations have been almost continuously collecting data since August, 1998, respectively. Mojui, Jamaraqua, and Guarana have been collecting data since July, 2000. Embrapa, Vila Franca and Sudam stations have been collecting data since 2002. Data are presented in 52 individual comma-separated ASCII files. Each file contains data from one calendar year for one site; both site and year are identified clearly in the data file name and all files follow the same header information and organizational structure. Measurements include air temperature and pressure, wind speed and direction, relative humidity, downward solar radiation, and at some stations soil temperature and moisture.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/944</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2009-09-29T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Fitzjarrald, D.R., R.K. Sakai, and O.L.L. de Moraes. 2009. LBA-ECO CD-03 Mesoscale Meteorological Data, Santarem Region, Para, Brazil: 1998-2006. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/944</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1998-08-20T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2006-12-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC RADIATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOLAR RADIATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC TEMPERATURE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SURFACE TEMPERATURE</Value>
+                        <VariableLevel2Keyword>
+                            <Value>AIR TEMPERATURE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC WATER VAPOR</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>WATER VAPOR INDICATORS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>HUMIDITY</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>PRECIPITATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PRECIPITATION AMOUNT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL MOISTURE/WATER CONTENT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL TEMPERATURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>METEOROLOGICAL STATIONS</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>THERMISTORS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>THERMISTORS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>TDR</ShortName>
+                            <LongName>Time Domain Reflectometry Probe</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>TDR</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>RAIN GAUGES</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>RAIN GAUGES</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>PRESSURE PROBE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>PRESSURE PROBE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>WIND VANES</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>WIND VANES</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>PYRANOMETERS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>PYRANOMETERS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>HUMIDITY SENSORS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>HUMIDITY SENSORS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>ANEMOMETERS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>ANEMOMETERS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>THERMOMETERS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>THERMOMETERS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>LBA-ECO</ShortName>
+                    <LongName>Large Scale Biosphere-Atmosphere Experiment - Ecology</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/lba/carbon_dynamics/CD03_Mesoscale_Meteorology/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/LBA/guides/CD03_Mesoscale_Meteorology.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/944</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/lba/carbon_dynamics/CD03_Mesoscale_Meteorology/comp/CD03_Mesoscale_Meteorology.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <Point>
+                            <PointLongitude>-54.92</PointLongitude>
+                            <PointLatitude>-3.35</PointLatitude>
+                        </Point>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

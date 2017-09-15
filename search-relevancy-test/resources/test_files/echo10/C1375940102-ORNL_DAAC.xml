@@ -1,0 +1,192 @@
+<Collection>
+            <ShortName>SOIL_CO2_Flux_Costa_Rica_1373</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2017-03-16T00:00:00Z</InsertTime>
+            <LastUpdate>2017-03-16T00:00:00Z</LastUpdate>
+            <LongName>Soil CO2 Flux, Moisture, Temperature, and Litterfall, La Selva, Costa Rica, 2003-2010</LongName>
+            <DataSetId>Soil CO2 Flux, Moisture, Temperature, and Litterfall, La Selva, Costa Rica, 2003-2010</DataSetId>
+            <Description>This data set provides measurements of soil carbon dioxide (CO2) emission rates, soil moisture, relative humidity (RH), temperature, and litterfall from six types of tree plantations at the La Selva Biological Station, Costa Rica. Soil CO2 flux and related measurements were made 1) hourly during 2-day diel field campaigns and 2) as single daytime measurements during multiple survey campaigns, over the period 2004-2010. All measurements were made at the same sites to compare hourly, monthly, and inter-annual variations. Most of the emissions data represent a single soil CO2 flux measurement, with three to five measurements per plot. Litterfall was collected monthly from 2003-2009 and was sorted into fractions prior to drying.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1373</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2017-03-16T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Raich, J.W., and O.J. Valverde-Barrantes. 2017. Soil CO2 Flux, Moisture, Temperature, and Litterfall, La Selva, Costa Rica, 2003-2010. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1373</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2003-10-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2010-02-25T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>CARBON DIOXIDE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LITTER CHARACTERISTICS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>VEGETATION SPECIES</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL CHEMISTRY</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL RESPIRATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL TEMPERATURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>FIELD SURVEYS</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>PROBES</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>PROBES</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>TRAPS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>TRAPS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>LICOR SOIL GAS CHAMBER</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>LICOR SOIL GAS CHAMBER</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>soil</ShortName>
+                    <LongName>Soil Collection</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/SOIL_CO2_Flux_Costa_Rica/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/SOILS/guides/SOIL_CO2_Flux_Costa_Rica.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1373</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/SOIL_CO2_Flux_Costa_Rica/comp/SOIL_CO2_Flux_Costa_Rica.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_soil/SOIL_CO2_Flux_Costa_Rica/comp/SOIL_CO2_Flux_Costa_Rica_Fig1.jpg</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-84.05</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>10.44</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-84.04</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>10.43</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

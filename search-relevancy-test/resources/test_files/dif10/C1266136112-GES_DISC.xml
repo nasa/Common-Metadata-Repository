@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>OMSO2e</Short_Name>
+        <Version>003</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>OMI/Aura Sulfur Dioxide (SO2) Total Column Daily L3 1 day Best Pixel in 0.25 degree x 0.25 degree V3 (OMSO2e) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Nickolay A. Krotkov, Can Li, and Peter Leonard</Dataset_Creator>
+        <Dataset_Title>OMI/Aura Sulfur Dioxide (SO2) Total Column L3 1 day Best Pixel in 0.25 degree x 0.25 degree V3</Dataset_Title>
+        <Dataset_Series_Name>OMSO2e</Dataset_Series_Name>
+        <Dataset_Release_Date>2015-02-26</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>003</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/Aura/OMI/DATA3008</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/OMSO2e_003.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>NICKOLAY</First_Name>
+            <Middle_Name>A</Middle_Name>
+            <Last_Name>KROTKOV, PH. D</Last_Name>
+            <Address>
+                <Street_Address>NASA</Street_Address>
+                <Street_Address>Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 613.3</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5553</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5903</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>Nickolay.A.Krotkov@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JENNIFER</First_Name>
+            <Middle_Name>C</Middle_Name>
+            <Last_Name>WEI</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center, Code 610.2, NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6558</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>jennifer.c.wei@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC CHEMISTRY</Term>
+        <Variable_Level_1>SULFUR COMPOUNDS</Variable_Level_1>
+        <Variable_Level_2>SULFUR DIOXIDE</Variable_Level_2>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>Atmospheric Chemistry</Ancillary_Keyword>
+    <Ancillary_Keyword>Total Column Sulfer Dioxide (SO2)</Ancillary_Keyword>
+    <Ancillary_Keyword>Pollutant</Ancillary_Keyword>
+    <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+    <Ancillary_Keyword>BEDI</Ancillary_Keyword>
+    <Ancillary_Keyword>Agriculture and Forestry</Ancillary_Keyword>
+    <Ancillary_Keyword>Climate</Ancillary_Keyword>
+    <Ancillary_Keyword>Disasters</Ancillary_Keyword>
+    <Ancillary_Keyword>Human Health</Ancillary_Keyword>
+    <Ancillary_Keyword>Transportation</Ancillary_Keyword>
+    <Ancillary_Keyword>Weather</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System, Aura</Long_Name>
+        <Instrument>
+            <Short_Name>OMI</Short_Name>
+            <Long_Name>Ozone Monitoring Instrument</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2004-10-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.25 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.25 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System (EOS), AURA</Long_Name>
+    </Project>
+    <Quality>This data set is the second public release of version 003. Quality of data is better than the earlier version. However, this reprocessed data is not fully validated yet.</Quality>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>OMI Science Investigator Processing System (SIPS)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>5 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>https://disc.gsfc.nasa.gov/OMI/images/OMSO2e.png</File>
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddc1e01b045fab4ed0e4/file</URL>
+        <Format>PNG</Format>
+        <Caption>OMSO2e sample image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Ahmad, S. P., P. F. Levelt, P. K. Bhartia, E. Hilsenrath, G. W. Leppelmeier,and J. E. Johnson, Atmospheric Products from the Ozone Monitoring Instrument(OMI). Proceedings of SPIE conference on Earth Observing Systems VIII, San Diego, California, Aug 3-8, 2003.</Citation>
+        <Author>Ahmad, S. P., P. F. Levelt, P. K. Bhartia, E. Hilsenrath, G. W. Leppelmeier,and J. E. Johnson</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Atmospheric Products from the Ozone Monitoring Instrument(OMI)</Title>
+    </Reference>
+    <Reference>
+        <Citation>Brinksma, E. J., K. F. Boersma, and P. F. Levelt, OMI-Validation Requirements, May 16, 2003.</Citation>
+        <Author>Brinksma, E. J., K. F. Boersma, and P. F. Levelt</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>OMI-Validation Requirements</Title>
+    </Reference>
+    <Reference>
+        <Citation>Bogumil, K., J. Orphal, T. Homann, S. Voigt, P. Spietz, O.C. Fleischmann, A. Vogel, M. Hartmann, H. Kromminga, H. Bovensmann, J. Frerick, J.P. Burrows, Measurements of molecular absorption spectra with the SCIAMACHY pre-flight model: instrument characterization and reference data for atmospheric remote-sensing in the 230-2380nm region, Journal of Photochemistry and Photobiology, A:Chemistry, 157 , 167-184, 2003.</Citation>
+        <Author>Bogumil, K., J. Orphal, T. Homann, S. Voigt, P. Spietz, O.C. Fleischmann, A. Vogel, M. Hartmann, H. Kromminga, H. Bovensmann, J. Frerick, J.P. Burrows</Author>
+        <Publication_Date>2003</Publication_Date>
+        <Title>Measurements of molecular absorption spectra with the SCIAMACHY pre-flight model: instrument characterization and reference data for atmospheric remote-sensing in the 230-2380nm region</Title>
+    </Reference>
+    <Reference>
+        <Citation>Krotkov, N.A., S.A. Carn, A.J. Krueger, P.K. Bhartia, and K. Yang: Band residual difference algorithm for retrieval of SO2 from the Aura Ozone Monitoring Instrument (OMI). IEEE Trans.Geosci. Remote Sensing, AURA special issue, 44(5), 1259-1266, doi:10.1109/TGRS.2005.861932, 2006</Citation>
+        <Author>Krotkov, N.A., S.A. Carn, A.J. Krueger, P.K. Bhartia, and K. Yang</Author>
+        <Publication_Date>2006</Publication_Date>
+        <Title>Band residual difference algorithm for retrieval of SO2 from the Aura Ozone Monitoring Instrument (OMI)</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2005.861932</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Krueger,A. J., N. A. Krotkov, S. Datta, D. Flittner, and O. Dubovik, SO2,  in Algorithm Theoretical Baseline Document: OMI Trace Gas Algorithms, K. Chance (ed.), vol. IV, ATBD-OMI-04, version 2.0,  Aug. 2002.</Citation>
+        <Author>Krueger,A. J., N. A. Krotkov, S. Datta, D. Flittner, and O. Dubovik</Author>
+        <Publication_Date>2002</Publication_Date>
+        <Title>SO2  in Algorithm Theoretical Baseline Document: OMI Trace Gas Algorithms</Title>
+    </Reference>
+    <Reference>
+        <Citation>Krueger, A.J., L.S. Walter, P.K. Bhartia, C.C. Schnetzler, N.A. Krotkov, I. Sprod, and G.J.S. Bluth (1995). Volcanic sulfur dioxide measurements from the total ozone mapping spectrometer instruments. J. Geophys. Res., 100(D7), 14057-14076, doi:10.1029/95JD01222.</Citation>
+        <Author>Krueger, A.J., L.S. Walter, P.K. Bhartia, C.C. Schnetzler, N.A. Krotkov, I. Sprod, and G.J.S. Bluth</Author>
+        <Publication_Date>1995</Publication_Date>
+        <Title>Volcanic sulfur dioxide measurements from the total ozone mapping spectrometer instruments</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1029/95JD01222</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Levelt, P.F., G.H.J. van den Oord, M.R. Dobber, A. Malkki, H. Visser, J. de Vries, P. Stammes, J. Lundell and H. Saari, The Ozone Monitoring Instrument, IEEE Trans. Geo. Rem. Sens., 2006, Vol. 44, No. 5, 1093-1101, doi:10.1109/TGRS.2006.872333.</Citation>
+        <Author>Levelt, P.F., G.H.J. van den Oord, M.R. Dobber, A. Malkki, H. Visser, J. de Vries, P. Stammes, J. Lundell and H. Saari</Author>
+        <Publication_Date>The Ozone Monitoring Instrument</Publication_Date>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2006.872333</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Levelt, P.F., E. Hilsenrath, G.W. Leppelmeier, G.H.J. van den Oord, P.K. Bhartia, J. Tamminen, J.F. de Haan en J.P. Veefkind, Science Objectives of the Ozone Monitoring Instrument, IEEE Trans. Geo. Rem. Sens., 2006, Vol. 44, No. 5, 1199-1208, doi:10.1109/TGRS.2006.872336.</Citation>
+        <Author>Levelt, P.F., E. Hilsenrath, G.W. Leppelmeier, G.H.J. van den Oord, P.K. Bhartia, J. Tamminen, J.F. de Haan en J.P. Veefkind</Author>
+        <Publication_Date>2006</Publication_Date>
+        <Title>Science Objectives of the Ozone Monitoring Instrument</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2006.872336</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Levelt, P.F., J. P. Veefkind, R. H. M. Voors, and J. de Vries, Instrument Description; Algorithm Theoretical Baseline Document: OMI Instrument, Level 0 - 1B processor, Calibration &amp; Operations, P. F. Levelt (ed.), vol. I, ATBD-OMI-01, version 2, Aug. 2002.</Citation>
+        <Author>Levelt, P.F., J. P. Veefkind, R. H. M. Voors, and J. de Vries</Author>
+        <Publication_Date>2002</Publication_Date>
+        <Title>Instrument Description; Algorithm Theoretical Baseline Document: OMI Instrument, Level 0 - 1B processor, Calibration &amp; Operation</Title>
+    </Reference>
+    <Reference>
+        <Citation>Schoeberl, M.R., A.R. Douglass, E. Hilsenrath, P.K. Bhartia, R. Beer, J.W. Waters, M.R. Gunson, L. Froidevaux, J.C. Gille, J.J. Barnett, P.F. Levelt and P. DeCola, Overview of the EOS aura mission, IEEE Trans. Geo. Rem. Sens., 2006, Vol. 44, No. 5, 1066-1074, doi:10.1109/TGRS.2005.861950.</Citation>
+        <Author>Schoeberl, M.R., A.R. Douglass, E. Hilsenrath, P.K. Bhartia, R. Beer, J.W. Waters, M.R. Gunson, L. Froidevaux, J.C. Gille, J.J. Barnett, P.F. Levelt and P. DeCola</Author>
+        <Publication_Date>2006</Publication_Date>
+        <Title>Overview of the EOS aura mission</Title>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2005.861950</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>The OMI science team produces this Level-3 Aura/OMI Global OMSO2e Data Products (0.25deg Lat/Lon grids). In this Level-3 daily global SO2 data product, each grid contains only one observation of Total Column Density of SO2 in the Planetary Boundary Layer (PBL,) based on an improved Band Residual Difference Algorithm (BRD). This single observation is the "best pixel", selected from all "good" L2 pixels of OMSO2 that overlap this grid and have UTC time betweeen UTC times of 00:00:00 and 23:59:59.9999. In addition to the SO2 Vertical column value some ancillary parameters e.g cloud fraction, terrain height, scene number, solar and satellite viewing angles, row anomaly flags, and quality flags have been also made available corresponding to the best selected SO2 data pixel in each grid.    OMSO2e files are stored in EOS Hierarchical Data Format (HDF-EOS5). The maximum file size for the OMTO3e data product is about 7 Mbytes.     (The shortname for this Level-3 OMI product is OMSO2e)</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level3/OMSO2e.003/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/#keywords=OMSO2e</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>https://giovanni.gsfc.nasa.gov/giovanni/#dataKeyword=OMSO2e</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=OMSO2e</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=OMSO2e</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMSO2e.003/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/OMI/3.3_ScienceDataProductDocumentation/3.3.2_ProductRequirements_Designs/README.OMI_DUG.pdf</URL>
+        <Description>OMI Data User's Guide</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level3/OMSO2e.003/doc/README.OMSO2e.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/OMI/OMSO2e_2017-02-02-fs.pdf</URL>
+        <Description>File Specification</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://so2.gsfc.nasa.gov/</URL>
+        <Description>SO2 Monitoring Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://aura.gsfc.nasa.gov</URL>
+        <Description>Project Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://ozoneaq.gsfc.nasa.gov/</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PUBLICATIONS</Subtype>
+        </URL_Content_Type>
+        <URL>http://projects.knmi.nl/omi/research/documents/</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB MAP SERVICE (WMS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc1.sci.gsfc.nasa.gov/daac-bin/wms_omi?service=WCS&amp;version=1.1.1&amp;request=getCapabilities</URL>
+        <Description>WEB MAP SERVICE (WMS) GetCapabilities operation</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB MAP SERVICE (WMS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc1.sci.gsfc.nasa.gov/daac-bin/wms_omi?version=1.1.1&amp;service=WMS&amp;request=GetMap&amp;SRS=EPSG:4326&amp;WIDTH=1440&amp;HEIGHT=720&amp;LAYERS=OMSO2e_ColumnAmountSO2_PBL&amp;TRANSPARENT=TRUE&amp;FORMAT=image/png&amp;bbox=-180,-90,180,90</URL>
+        <Description>Get data from the GES DISC OMI WMS service for variable OMSO2e:ColumnAmountSO2_PBL</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB COVERAGE SERVICE (WCS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsL3?service=WCS&amp;version=1.0.0&amp;request=getCCapabilities</URL>
+        <Description>The getCapabilities and describeCoverage operations for the WCS service for OMNS2e</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB COVERAGE SERVICE (WCS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.sci.gsfc.nasa.gov/daac-bin/wcsL3?service=WCS&amp;version=1.0.0&amp;request=getCoverage&amp;CRS=CRS:84&amp;format=netCDF&amp;resx=0.25&amp;resy=0.25&amp;bbox=-179.875,-89.875,179.875,89.875&amp;coverage=OMSO2e:ColumnAmountSO2_PBL</URL>
+        <Description>Get data from WCS the GES DISC OMI WCS service for variable OMSO2e:ColumnAmountSO2_PBL</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2015-06-02, J. Johnson cleaned up Science Keywords and Project.  2017-03-30, Ed Esfandiari - Added BEDI SBA related ancillary keywords. 2017-08-10, J. Alfred - Cleaned up related URLs.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2011-06-15</Metadata_Creation>
+        <Metadata_Last_Revision>2017-02-10</Metadata_Last_Revision>
+        <Metadata_Future_Review>2015-01-01</Metadata_Future_Review>
+        <Data_Creation>2004-10-01</Data_Creation>
+        <Data_Last_Revision>2015-02-26</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>12f9f985-f594-4e91-8154-55e029cd69c5</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:22:35</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:01:09Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>CEOS</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>edff0791-121c-40aa-adf2-33feb2bc30e5</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/Aura/OMI/DATA3008</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

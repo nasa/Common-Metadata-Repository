@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>TOMSN7L3</Short_Name>
+        <Version>008</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>TOMS Nimbus-7 Total Ozone Aerosol Index UV-Reflectivity UV-B Erythemal Irradiances Daily L3 Global 1 deg x 1.25 deg V008 (TOMSN7L3) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>TOMS Science Team</Dataset_Creator>
+        <Dataset_Title>TOMS Nimbus-7 Total Ozone Aerosol Index UV-Reflectivity UV-B Erythemal Irradiances Daily L3 Global 1 deg x 1.25 deg V008</Dataset_Title>
+        <Dataset_Series_Name>TOMSN7L3</Dataset_Series_Name>
+        <Dataset_Release_Place>Greenbelt, MD</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>008</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/TOMSN7L3_008.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>PAWAN</First_Name>
+            <Middle_Name>K</Middle_Name>
+            <Last_Name>BHARTIA, PH. D</Last_Name>
+            <Address>
+                <Street_Address>NASA</Street_Address>
+                <Street_Address>Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 613.3</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5731</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5903</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>Pawan.K.Bhartia@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>OMAR</First_Name>
+            <Middle_Name>O.</Middle_Name>
+            <Last_Name>TORRES, PH. D</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 614</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6776</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>omar.o.torres@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>JAY</First_Name>
+            <Middle_Name>R.</Middle_Name>
+            <Last_Name>HERMAN, PH. D</Last_Name>
+            <Address>
+                <Street_Address>NASA</Street_Address>
+                <Street_Address>Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 614.0</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Email>Jay.R.Herman@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>RICHARD</First_Name>
+            <Middle_Name>D</Middle_Name>
+            <Last_Name>MCPETERS, PH. D</Last_Name>
+            <Address>
+                <Street_Address>NASA</Street_Address>
+                <Street_Address>Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 613.3</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6038</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5903</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>richard.d.mcpeters@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>BETH</First_Name>
+            <Middle_Name>EILEEN</Middle_Name>
+            <Last_Name>STETZLER</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5607</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>beth.stetzler@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC CHEMISTRY</Term>
+        <Variable_Level_1>OXYGEN COMPOUNDS</Variable_Level_1>
+        <Variable_Level_2>OZONE</Variable_Level_2>
+        <Detailed_Variable>TOTAL OZONE</Detailed_Variable>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>REFLECTANCE</Variable_Level_1>
+        <Detailed_Variable>REFLECTIVITY</Detailed_Variable>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>CLIMATOLOGY</Ancillary_Keyword>
+    <Ancillary_Keyword>DAILY DATA</Ancillary_Keyword>
+    <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+    <Ancillary_Keyword>FTP</Ancillary_Keyword>
+    <Ancillary_Keyword>GRID DATA</Ancillary_Keyword>
+    <Ancillary_Keyword>STATISTICS</Ancillary_Keyword>
+    <Ancillary_Keyword>TOTAL COLUMN OZONE</Ancillary_Keyword>
+    <Ancillary_Keyword>Aerosol Index</Ancillary_Keyword>
+    <Ancillary_Keyword>UV Effective Surface Reflectivity</Ancillary_Keyword>
+    <Ancillary_Keyword>UV-B Erythemal Irradiance</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>Nimbus-7</Short_Name>
+        <Long_Name>Nimbus-7</Long_Name>
+        <Instrument>
+            <Short_Name>TOMS</Short_Name>
+            <Long_Name>Total Ozone Mapping Spectrometer</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1978-11-01</Beginning_Date_Time>
+            <Ending_Date_Time>1993-05-06</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>STRATOSPHERE</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>TROPOSPHERE</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>1.0 degree</Latitude_Resolution>
+        <Longitude_Resolution>1.25 degrees</Longitude_Resolution>
+        <Horizontal_Resolution_Range>100 km - &lt; 250 km or approximately 1 degree - &lt; 2.5 degrees</Horizontal_Resolution_Range>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+        <Temporal_Resolution_Range>Daily - &lt; Weekly</Temporal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>TOMS</Short_Name>
+        <Long_Name>Total Ozone Mapping Spectrometer</Long_Name>
+    </Project>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>GES DISC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>200 KB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS</Distribution_Format>
+        <Fees>none</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <!--Modified by Change List Tool on Mon Jun 26 16:48:31 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/acdisc/images/TOMSN7L3.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/594c9b13e01b04e7193d6f2d/file</URL>
+        <Format>PNG</Format>
+        <Caption>TOMS Sample Image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Bowman, K.P., and A.J. Krueger, August 20, 1985.  'A Global Climatology of                                    Total Ozone from the Nimbus-7 Total Ozone Mapping Spectrophotometer,'                                    J. Geophys. Res. 90:7967-7976.                                                                  Eck, T. F., Bhartia, P. K., Kerr, J. B., Satellite estimation of spectral UVB                                     irradiance using TOMS derived total ozone and UV reflectivity, Geophysical                                     Research Letters 1995, 22, 611-614                                                                              Fleig, A.J., D.S. Silberstein, C.G. Wellemeyer, R.P. Cebula, and P.K. Bhartia,                                    1988.  'An Assessment of the Long-Term Drift in TOMS Total Ozone data, Based on                                    Comparison with the Dobson Network,' Geophys. Res. Letters, 15:1133-1136.                                                                        Frederick, J.E. and G.N. Serafino, September 1985.  'The Detection of Long-Term                                    Changes in Stratospheric Ozone Scientific Requirements and Current Results from                                    Satellite-based Measurement Systems,' J. of Clim. and Appl. Meteor. 24:904-914.                                                                        Gleason, J.F., P.K. Bhartia, J.R.Herman, R.McPeters, P.Newman,                                    R.S.Stolarski, L.Flynn, G.Labow, D.Larko, C.Seftor, C.Wellemeyer,                                    W.D.Komhyr, A.J.Miller, and W.Planet, April 1993. 'Record Low Global                                    Ozone in 1992', Science, 260: 523-526 (23 April 1993)                                                                        Herman, J.R., et al., "Meteor-3 Total Ozone Mapping Spectrometer (TOMS)                                    Data Products User's Guide." NASA Reference Publication, 1996.                                                                        Herman,J.R., R.McPeters, R.Stolarski, D.Larko, and R.Hudson,  September 1991.                                    'Global Average Ozone Change from November 1978 to May 1990', J. Geophys.                                    Res., 96,D9:17,297-17,305.                                                                        Krueger, A., M. Schoeberl, P.Newman, and R.Stolarski, June 1992. ' The                                    1991 Antarctic Ozone Hole; TOMS Observations', Geophys. Res. Letters,                                    19: 1215-1218                                                                    McPeters, R.D., et al., "Nimbus-7 Total Ozone Mapping Spectrometer (TOMS)                                    Data Products User's Guide." NASA Reference Publication 1384, April 1996.                                    https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/TOMS/3.3_ScienceDataProductDocumentation/3.3.2_ProductRequirements_UsersGuide/NIMBUS7_USERGUIDE.PDF                                                                  McPeters, R.D., et al., "Eart-Probe Total Ozone Mapping Spectrometer (TOMS)                                    Data Products User's Guide." NASA Reference Publication 206895, April 1998.                                                                        Schoeberl, M.R., A.J. Krueger, and P.A. Newman, 1986.  'The Morphology of                                    Antarctic Total Ozone As Seen by TOMS,' Geophys. Res. Letters, 13:1217-1220.                                                                        Stolarski, R.S., A.J. Krueger, M.R. Schoeberl, R.D. McPeters, P.A. Newman,                                    and J.C. Alpert, 1986. 'Nimbus-7 Satellite Measurements of the Springtime                                    Antarctic Ozone Decrease,' Nature 322:808-811.                                                                        Stolarski, R.S., P. Bloomfield, R.D.McPeters, J.R.Herman, June 1991. '                                    Total Ozone Trands Deduced from Nimbus-7 TOMS Data', Geophys. Res.                                    Letters, 18: 1015-1018.</Citation>
+    </Reference>
+    <Summary>
+        <Abstract>The Total Ozone Mapping Spectrometer (TOMS) version 8 Daily Gridded Data consist of daily, global coverage of total column ozone, aerosol index, Lambertian effective reflectivity(Rayleigh corrected) and surface UV-B Erythemal irradiances.       Four TOMS instruments have been successfully flown in orbit aboard the Nimbus-7 (Nov. 1978 - May 1993), Meteor-3 (Aug. 1991 - Dec. 1994), ADEOS (Sep. 1996 - June 1997) and Earth Probe (July 1996 - 2005) satellites.       The temporal coverage of the Nimbus-7 TOMS data is from Nov 1978 to May 1993. Nimbus-7, Meteor-3, and Earth Probe TOMS data have been reprocessed using version-8 algorithm.      The total ozone, aerosol index, reflectivity data and UV-B Erythemal irradiances are mapped to a global grid of size 180 x 288 with a lat-lon resolution of 1.00 x 1.25 degrees. These data are stored in the EOS version of Hierarchical Data Format (HDF-EOS).       TOMS data are produced by the Laboratory for Atmospheres at NASA Goddard Space Flight Center (Code 613).      The Level-3 data from Nimbus-7 TOMS, Meteor-3 TOMS and Earth Probe TOMS are also made available from the Code 916 TOMS site in the ASCII format.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/data/Nimbus7_TOMS_Level3/TOMSN7L3.008/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=TOMSN7L3</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DIRECTORY (DODS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gsfc.nasa.gov/opendap/Nimbus7_TOMS_Level3/TOMSN7L3.008/contents.html</URL>
+        <Description>Access the Nimbus-7 TOMS Level-3 Data Product TOMSN7L3 through OPeNDAP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/#keywords=TOMSN7L3%20008</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?=TOMSN7L3</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB MAP SERVICE (WMS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc1.gesdisc.eosdis.nasa.gov/daac-bin/wms_acp?version=1.1.1&amp;service=WMS&amp;request=GetMap&amp;SRS=EPSG:4326&amp;WIDTH=600&amp;HEIGHT=300&amp;LAYERS=TOMSN7L3_Ozone&amp;TRANSPARENT=TRUE&amp;FORMAT=image/png&amp;bbox=-180,-90,180,90&amp;time=1993-04-21</URL>
+        <URL>https://disc1.gesdisc.eosdis.nasa.gov/daac-bin/wms_acp?version=1.1.1&amp;service=WMS&amp;request=GetMap&amp;SRS=EPSG:4326&amp;WIDTH=600&amp;HEIGHT=300&amp;LAYERS=TOMSN7L3_Aerosol&amp;TRANSPARENT=TRUE&amp;FORMAT=image/png&amp;bbox=-180,-90,180,90&amp;time=1993-04-21</URL>
+        <Description>Get map from NASA GES DISC Web Map Service for TOMSN7L3 data in the Atmospheric Composition Portal.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB COVERAGE SERVICE (WCS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsACP?service=WCS&amp;version=1.0.0&amp;request=GetCapabilities</URL>
+        <Description>The getCapabilities operation of the NASA GES DISC Web Coverage Service for Atmospheric Composition Portal data. The response provides a brief description of the coverage data offered by this service</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB COVERAGE SERVICE (WCS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsACP?service=WCS&amp;version=1.0.0&amp;request=describeCoverage&amp;Coverage=TOMSN7L3:Aerosol,TOMSN7L3:Ozone</URL>
+        <Description>The describeCoverage operation of the NASA GES DISC Web Coverage Service for TOMSN7L3 data in the Atmospheric Composition Portal. The response provides a detailed description of the coverage data offered by this service</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET SERVICE</Type>
+            <Subtype>GET WEB COVERAGE SERVICE (WCS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsACP?service=WCS&amp;version=1.0.0&amp;request=GetCoverage&amp;CRS=EPSG:4326&amp;format=netCDF&amp;resx=1.25&amp;resy=1.0&amp;BBOX=-179.375,-89.5,179.375,89.5&amp;Coverage=TOMSN7L3:Aerosol</URL>
+        <URL>https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsACP?service=WCS&amp;version=1.0.0&amp;request=GetCoverage&amp;CRS=EPSG:4326&amp;format=netCDF&amp;resx=1.25&amp;resy=1.0&amp;BBOX=-179.375,-89.5,179.375,89.5&amp;Coverage=TOMSN7L3::Ozone</URL>
+        <Description>Get Coverage data examples for NASA GES DISC Web Coverage Service for TOMSN7L3 data in the Atmospheric Composition Portal.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://ozoneaq.gsfc.nasa.gov/media/docs/n7usrguide.pdf</URL>
+        <Description>Information and access to TOMS data from the TOMS home page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PRODUCT HISTORY</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/documents?title=TOMS%20Mission%20Preservation%20Documents</URL>
+        <Description>All documentation related to legacy TOMS mission</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)</Subtype>
+        </URL_Content_Type>
+        <URL>https://ozoneaq.gsfc.nasa.gov/media/docs/v8toms_atbd.pdf</URL>
+        <Description>TOMS V8 ATBD document</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2006-04-14, S. Ritz updated links.                                          2008-06-03, S. Ritz updated Summary link.            2015-06-05, J. Johnson cleaned up Science Keywords, Project and Privacy.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2006-10-27</Metadata_Creation>
+        <Metadata_Last_Revision>2016-10-06</Metadata_Last_Revision>
+        <Metadata_Future_Review>2016-09-01</Metadata_Future_Review>
+        <Data_Creation>2004-04-30</Data_Creation>
+        <Data_Last_Revision>2004-04-30</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual datagranules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>83c4ecd2-d528-4d09-b7c1-5b74e5b1bc71</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:18:50</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:23Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Discipline</Name>
+            <Value>EARTH SCIENCE</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>AMD</Value>
+            <Value>CEOS</Value>
+            <Value>USA/NASA</Value>
+            <Value>AMD/US</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>47308f11-79b0-46c2-b0c9-06d0b15ae845</Value>
+            <Value>edff0791-121c-40aa-adf2-33feb2bc30e5</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+            <Value>e8e17a9b-c5aa-4924-b065-7a485d019299</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

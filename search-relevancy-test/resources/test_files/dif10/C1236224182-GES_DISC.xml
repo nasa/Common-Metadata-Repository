@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>AIRSM_CPR_MAT</Short_Name>
+        <Version>3.2</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>AIRS-AMSU variables-CloudSat cloud mask, radar reflectivities, and cloud classification matchups V3.2 (AIRSM_CPR_MAT) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Eric Fetzer, Brian Wilson, and Gerald Manipon</Dataset_Creator>
+        <Dataset_Title>AIRS-AMSU variables-CloudSat cloud mask, radar reflectivities, and cloud classification matchups V3.2</Dataset_Title>
+        <Dataset_Series_Name>AIRSM_CPR_MAT</Dataset_Series_Name>
+        <Dataset_Release_Date>2013-07-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>3.2</Version>
+        <Issue_Identification>AIRSM_CPR_MAT_3.2</Issue_Identification>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/MEASURES/WVCC/DATA201</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/AIRSM_CPR_MAT_3.2.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <First_Name>GERALD</First_Name>
+            <Last_Name>MANIPON</Last_Name>
+            <Email>Geraldjohn.M.Manipon@jpl.nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>ERIC</First_Name>
+            <Last_Name>FETZER</Last_Name>
+            <Email>eric.j.fetzer@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>CLOUDS</Term>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AQUA</Short_Name>
+        <Long_Name>Earth Observing System, AQUA</Long_Name>
+        <Instrument>
+            <Short_Name>AIRS</Short_Name>
+            <Long_Name>Atmospheric Infrared Sounder</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>CLOUDSAT</Short_Name>
+        <Instrument>
+            <Short_Name>CLOUDSAT-CPR</Short_Name>
+            <Long_Name>CLOUDSAT CLOUD PROFILING RADAR</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2006-06-15</Beginning_Date_Time>
+            <Ending_Date_Time>2012-12-15</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Data_Resolution>
+        <Latitude_Resolution>45 km</Latitude_Resolution>
+        <Longitude_Resolution>45 km</Longitude_Resolution>
+        <Horizontal_Resolution_Range>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+        <Vertical_Resolution>1 km</Vertical_Resolution>
+        <Temporal_Resolution_Range>Daily - &lt; Weekly</Temporal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>MEaSUREs</Short_Name>
+        <Long_Name>Making Earth Science Data Records for Use in Research Environments</Long_Name>
+    </Project>
+    <Dataset_Language>English</Dataset_Language>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>2 MB per file</Distribution_Size>
+        <Distribution_Format>netCDF-4</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>AIRSM_CPR_MAT.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:42:38 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/atdd/images/AIRSM_CPR_MAT.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915dd37e01b045fab4ec01e/file</URL>
+        <Format>PNG</Format>
+        <Caption>A-Train Sample Image</Caption>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>This is AIRS-CloudSat collocated subset, in NetCDF 4 format. These data contain collocated: AIRS/AMSU retrievals at AMSU footprints, CloudSat radar reflectivities, and MODIS cloud mask. These data are created within the frames of the MEaSUREs project.
+
+The basic task is to bring together retrievals of water vapor and cloud properties from multiple "A-train" instruments (AIRS, AMSR-E, MODIS, AMSU, MLS, CloudSat), classify each "scene" (instrument look) using the cloud information,
+and develop a merged, multi-sensor climatology of atmospheric water vapor as a
+function of altitude, stratified by the cloud classes. This is a large science
+analysis project that will require the use of SciFlo technologies to discover and organize all of the datasets, move and cache datasets as required, find
+space/time "matchups" between pairs of instruments, and process years of
+satellite data to produce the climate data records.
+
+The short name for this collection is AIRSM_CPR_MAT
+
+Parameters contained in the data files include the following:
+Variable Name|Description|Units 
+ CH4_total_column|Retrieved total column CH4| (molecules/cm2)
+ CloudFraction|CloudSat/CALIPSO Cloud Fraction| (None)
+ CloudLayers| Number of hydrometeor layers| (count)
+ clrolr|Clear-sky Outgoing Longwave Radiation|(Watts/m**2)
+ CO_total_column|Retrieved total column CO| (molecules/cm2)
+ CPR_Cloud_mask| CPR Cloud Mask |(None)
+ Data_quality| Data Quality |(None)
+ H2OMMRSat|Water vapor saturation mass mixing ratio|(gm/kg)
+ H2OMMRStd|Water Vapor Mass Mixing Ratio |(gm/kg dry air)
+ MODIS_Cloud_Fraction| MODIS 250m Cloud Fraction| (None)
+ MODIS_scene_var |MODIS scene variability| (None)
+ nSurfStd|1-based index of the first valid level|(None)
+ O3VMRStd|Ozone Volume Mixing Ratio|(vmr)
+ olr|All-sky Outgoing Longwave Radiation|(Watts/m**2)
+ Radar_Reflectivity| Radar Reflectivity Factor| (dBZe)
+ Sigma-Zero| Sigma-Zero| (dB*100)
+ TAirMWOnlyStd|Atmospheric Temperature retrieved using only MW|(K)
+ TCldTopStd|Cloud top temperature|(K)
+ totH2OStd|Total precipitable water vapor| (kg/m**2)
+ totO3Std|Total ozone burden| (Dobson)
+ TSurfAir|Atmospheric Temperature at Surface|(K)
+ TSurfStd|Surface skin temperature|(K)
+End of parameter information</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/data/AIRS_CloudSat/AIRSM_CPR_MAT.3.2/</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=AIRSM_CPR_MAT</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>http://search.earthdata.nasa.gov/search?q=AIRSM_CPR_MAT</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/MEaSUREs/Fetzer/README.AIRS_CloudSat.pdf</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://earthdata.nasa.gov/our-community/community-data-system-programs/measures-projects</URL>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2011-12-09</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-22</Metadata_Last_Revision>
+        <Metadata_Future_Review>2016-12-01</Metadata_Future_Review>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>2</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>6 minutes</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Update_Date>2014-05-05 15:23:42</Update_Date>
+            <Value>e029fc29-9274-4a8a-b562-85503e8a2f8b</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:24:27</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:05Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/MEASURES/WVCC/DATA201</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.4</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

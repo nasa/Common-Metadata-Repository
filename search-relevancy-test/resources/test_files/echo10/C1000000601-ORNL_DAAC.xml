@@ -1,0 +1,267 @@
+<Collection>
+            <ShortName>fire_emissions_v4_1293</ShortName>
+            <VersionId>4</VersionId>
+            <InsertTime>2015-10-14T00:00:00Z</InsertTime>
+            <LastUpdate>2015-10-14T00:00:00Z</LastUpdate>
+            <LongName>Global Fire Emissions Database, Version 4, (GFEDv4)</LongName>
+            <DataSetId>Global Fire Emissions Database, Version 4, (GFEDv4)</DataSetId>
+            <Description>This data set provides global estimates of monthly burned area, monthly emissions and fractional contributions of different fire types, daily/3-hourly fields to scale the monthly emissions to higher temporal resolutions, and data for monthly biosphere fluxes. The data are at 0.25-degree latitude by 0.25-degree longitude spatial resolution and are available from July 1997 through 2014. Emissions data are available for carbon (C), dry matter (DM), carbon dioxide (CO2), carbon monoxide (CO), methane (CH4), hydrogen (H2), nitrous oxide (N2O), nitrogen oxides (NOx), non-methane hydrocarbons (NMHC), organic carbon (OC), black carbon (BC), particulate matter 2.5 microns (PM2.5), total particulate matter (TPM), and sulfur dioxide (SO2) among others. These data are yearly totals by region, globally, and by fire source for each region.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1293</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2015-10-14T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Randerson, J.T., G.R. van der Werf, L. Giglio, G.J. Collatz, and P.S. Kasibhatla. 2015. Global Fire Emissions Database, Version 4, (GFEDv4). ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1293</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1995-06-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2015-02-28T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>AEROSOLS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBONACEOUS AEROSOLS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>AEROSOLS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PARTICULATE MATTER</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>AIR QUALITY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>EMISSIONS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>AIR QUALITY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PARTICULATES</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>HYDROGEN CYANIDE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CARBON AND HYDROCARBON COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>NON-METHANE HYDROCARBONS/VOLATILE ORGANIC COMPOUNDS</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>NITROGEN COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>AMMONIA</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>NITROGEN COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>NITROGEN OXIDES</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC CHEMISTRY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SULFUR COMPOUNDS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>SULFUR DIOXIDE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>FIRE ECOLOGY</Value>
+                        <VariableLevel2Keyword>
+                            <Value>FIRE OCCURRENCE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>TRMM</ShortName>
+                    <LongName>Tropical Rainfall Measuring Mission</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>VIRS</ShortName>
+                            <LongName>TRMM Visible Infrared Scanner</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>VIRS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>ERS-2</ShortName>
+                    <LongName>European Remote Sensing Satellite-2</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>ASTER</ShortName>
+                            <LongName>Advanced Spaceborne Thermal Emission and Reflection Radiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>ASTER</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>TERRA</ShortName>
+                    <LongName>Earth Observing System, TERRA (AM-1)</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>MODIS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>MODELS</ShortName>
+                    <LongName> </LongName>
+                    <Type>Models/Analyses</Type>
+                    <Instruments>
+					</Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>vegetation</ShortName>
+                    <LongName>Vegetation Collection</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/fire_emissions_v4/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/VEGETATION/guides/fire_emissions_v4.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1293</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/fire_emissions_v4/comp/fire_emissions_v4.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/global_vegetation/fire_emissions_v4/comp/GFED4.1s_map_emissions_fig1.png</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>180.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-90.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

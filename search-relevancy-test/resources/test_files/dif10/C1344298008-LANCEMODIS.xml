@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>VNP09_NRT</Short_Name>
+    <Version>1</Version>
+  </Entry_ID>
+  <Entry_Title>NPP/VIIRS Atmospherically Corrected Surface Reflectance 6-Min L2 Swath 375m, 750m NRT</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>LANCEMODIS</Dataset_Creator>
+    <Dataset_Title>NPP/VIIRS Atmospherically Corrected Surface Reflectance 6-Min L2 Swath 375m, 750m NRT</Dataset_Title>
+    <Dataset_Release_Date>2016-11-01</Dataset_Release_Date>
+    <Dataset_Release_Place>NASA GSFC LANCE</Dataset_Release_Place>
+    <Dataset_Publisher>LANCEMODIS</Dataset_Publisher>
+    <Version>1</Version>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>http://dx.doi.org/10.5067/VIIRS/VNP09_NRT.001</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://earthdata.nasa.gov/earth-observation-data/near-real-time/download-nrt-data/viirs-nrt</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <Last_Name>LANCEMODIS</Last_Name>
+      <Email>support@earthdata.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Contact_Person>
+      <First_Name>Eric</First_Name>
+      <Middle_Name>F.</Middle_Name>
+      <Last_Name>Vermote</Last_Name>
+      <Address>
+        <Street_Address>NASA GSFC</Street_Address>
+        <Street_Address>Terrestrial Information Systems Laboratory, Code 619</Street_Address>
+        <City>Greenbelt</City>
+        <State_Province>MD</State_Province>
+        <Postal_Code>20771</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>SURFACE RADIATIVE PROPERTIES</Term>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>SURFACE THERMAL PROPERTIES</Term>
+    <Variable_Level_1>LAND SURFACE TEMPERATURE</Variable_Level_1>
+  </Science_Keywords>
+  <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+  <Ancillary_Keyword>Near Real Time (NRT)</Ancillary_Keyword>
+  <Ancillary_Keyword>LANCE</Ancillary_Keyword>
+  <Ancillary_Keyword>Reflectance</Ancillary_Keyword>
+  <Ancillary_Keyword>RELATIVE_START_DATE: -8</Ancillary_Keyword>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>SUOMI-NPP</Short_Name>
+    <Long_Name>Suomi National Polar-orbiting Partnership</Long_Name>
+    <Instrument>
+      <Short_Name>VIIRS</Short_Name>
+      <Long_Name>Visible-Infrared Imager-Radiometer Suite</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Time_Type>UTC</Time_Type>
+    <Date_Type>Gregorian</Date_Type>
+    <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+    <Precision_Of_Seconds>1</Precision_Of_Seconds>
+    <Range_DateTime>
+      <Beginning_Date_Time>2016-11-01T00:00:00.000Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-80.0</Southernmost_Latitude>
+        <Northernmost_Latitude>80.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>180.0</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Data_Resolution>
+    <Latitude_Resolution>375m &amp; 750m</Latitude_Resolution>
+    <Longitude_Resolution>375m &amp; 750m</Longitude_Resolution>
+    <Temporal_Resolution>6 min</Temporal_Resolution>
+  </Data_Resolution>
+  <Project>
+    <Short_Name>LANCE</Short_Name>
+    <Long_Name>Land, Atmosphere Near real-time Capability for EOS</Long_Name>
+  </Project>
+  <Quality>This is a near real-time (NRT) product that has undergone expedited processing to make it available within 3 hours of observation time to meet the needs of the NRT applications community. NRT data are subject to geolocation errors or reprocessing. Usually the geolocationalerrors are minimal (less than 100 meters), however, there are situations, particularly before and after spacecraft maneuvers and during space weather events, when the difference can increase up to several kilometers.</Quality>
+  <Access_Constraints>No constraints but users need to be registered with the ESDIS User Registration system (https://urs.eosdis.nasa.gov/users/new) to download files via the FTP site.</Access_Constraints>
+  <Use_Constraints>None. See disclaimer: https://earthdata.nasa.gov/data/near-real-time-data/about-lance/disclaimer</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>MODIS Adaptive Processing System (MODAPS)</Originating_Center>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/EOS/ESDIS/LANCEMODIS</Short_Name>
+      <Long_Name>Land, Atmosphere Near real-time Capability for EOS (LANCE)Moderate Resolution Imaging Spectroradiometer (MODIS)</Long_Name>
+    </Organization_Name>
+    <Organization_URL>https://earthdata.nasa.gov/data/near-real-time-data/firms</Organization_URL>
+    <Dataset_ID>VNP09_NRT</Dataset_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <Last_Name>NASA LANCE SUPPORT</Last_Name>
+        <Email>support@earthdata.nasa.gov</Email>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>https, ftp</Distribution_Media>
+    <Distribution_Format>hdf</Distribution_Format>
+    <Fees>No Fee</Fees>
+  </Distribution>
+  <Summary>
+    <Abstract>The VNP09_NRT is a Near Real Time (NRT) S-NPP/VIIRS 375 m, 750 m Atmospherically Corrected Surface Reflectance product. The NPP/VIIRS surface reflectance products are estimates of surface reflectance in each of the VIIRS reflective bands I1-I3, M1-M5, M7, M8, M10, and M11. The VNP09 Level-2 surface reflectance product contains approximately 6 minutes' worth of data. Surface reflectance for each moderate-resolution (750m) or imagery-resolution (375m) pixel is retrieved separately for the Level-2 products.
+
+
+Surface reflectance is obtained by adjusting top-of-atmosphere reflectance to compensate for atmospheric effects. Corrections are made for the effects of molecular gases, including ozone and water vapor, and for the effects of atmospheric aerosols. The inputs to the surface reflectance algorithm include top-of-atmosphere reflectance for the VIIRS visible bands (VNP02MOD, VNP02IMG), the VIIRS cloud mask and aerosol product (NPP-CMIP_L2), aerosol optical thickness (NPP_VAOTIP_L2, NPP_VAMIP_L2), and atmospheric data obtained from a reanalysis (surface pressure, atmospheric precipitable water, and ozone concentration).
+
+
+All surface reflectance products are produced for daytime conditions only. The product is produced under all atmospheric conditions except for night and oceans. Pixels when not produced are replaced by fill values in the Level-2 and Level-2G products.
+
+file_naming_convention = "VNP09_NRT.AYYYYDDD.HHMM.VVV.YYYYDDDHHMMSS.hdf
+
+    AYYYYDDD = Acquisition Year and Day of Year
+    HHMM = Hour and minute of acquisition
+    VVV = Version number
+    YYYYDDDHHMMSS = Production Date and Time
+    hdf = Hierarchical Data Format (version 4)
+
+
+For more information read Suomi-NPP VIIRS Surface Reflectance User's Guide at https://viirsland.gsfc.nasa.gov/PDF/VIIRS_Surf_Refl_UserGuide_v1.1.pdf
+
+or 
+
+visit VIIRS Land website at https://viirsland.gsfc.nasa.gov/index.html</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>ON-LINE ARCHIVE</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://nrt3.modaps.eosdis.nasa.gov/allData/5000/VNP09_NRT/</URL>
+    <Description>Access VIIRS data set from the MODAPS/NRT FTP server.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>https://earthdata.nasa.gov/earth-observation-data/near-real-time/download-nrt-data/viirs-nrt</URL>
+    <Description>NASA LANCE Near Real Time Data Product Information</Description>
+  </Related_URL>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2016-11-07</Metadata_Creation>
+    <Metadata_Last_Revision>2016-11-16</Metadata_Last_Revision>
+    <Data_Creation>2016-11-01</Data_Creation>
+    <Data_Last_Revision>present</Data_Last_Revision>
+  </Metadata_Dates>
+  <Private>False</Private>
+  <Product_Level_Id>2</Product_Level_Id>
+  <Collection_Data_Type>NEAR_REAL_TIME</Collection_Data_Type>
+</DIF>

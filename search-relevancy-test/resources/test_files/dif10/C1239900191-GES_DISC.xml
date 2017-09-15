@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>SWDB_L3MC05</Short_Name>
+        <Version>004</Version>
+    </Entry_ID>
+    <Version_Description>This product is version 004 processed in June 2013</Version_Description>
+    <Entry_Title>SeaWiFS Deep Blue Aerosol Optical Thickness Monthly Level 3 Climatology Data Gridded at 0.5 Degrees V004 (SWDB_L3MC05) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>N. Christina Hsu, Andrew M. Sayer, M.-J. Jeong, and Corey Bettenhausen</Dataset_Creator>
+        <Dataset_Title>SeaWiFS Deep Blue Aerosol Optical Thickness Monthly Level 3 Climatology Data Gridded at 0.5 Degrees V004</Dataset_Title>
+        <Dataset_Series_Name>SWDB_L3MC05</Dataset_Series_Name>
+        <Dataset_Release_Date>2013-07-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>004</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/MEASURES/SWDB/DATA305</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/SWDB_L3MC05_004.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <First_Name>COREY</First_Name>
+            <Last_Name>BETTENHAUSEN</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 613.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5383</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>corey.bettenhausen@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>Suhung</First_Name>
+            <Last_Name>Shen</Last_Name>
+            <Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5088</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>suhung.shen@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>CHRISTINA</First_Name>
+            <Last_Name>HSU</Last_Name>
+            <Address>
+                <Street_Address>NASA/Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 613.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Email>Christina.Hsu@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+        <Detailed_Variable>AOD</Detailed_Variable>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+        <Variable_Level_2>ANGSTROM EXPONENT</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>AEROSOL INDEX</Ancillary_Keyword>
+    <Ancillary_Keyword>AEROSOL OPTICAL DEPTH</Ancillary_Keyword>
+    <Ancillary_Keyword>AEROSOL OPTICAL THICKNESS</Ancillary_Keyword>
+    <Ancillary_Keyword>ANGSTROM COEFFICIENT</Ancillary_Keyword>
+    <Ancillary_Keyword>AOT</Ancillary_Keyword>
+    <Ancillary_Keyword>AOD</Ancillary_Keyword>
+    <Ancillary_Keyword>DUST</Ancillary_Keyword>
+    <Ancillary_Keyword>ASH</Ancillary_Keyword>
+    <Ancillary_Keyword>SMOKE</Ancillary_Keyword>
+    <Ancillary_Keyword>EFFECTIVE OPTICAL DEPTH</Ancillary_Keyword>
+    <Ancillary_Keyword>SPECTRAL OPTICAL DEPTH</Ancillary_Keyword>
+    <Ancillary_Keyword>STRATOSPHERIC AEROSOL</Ancillary_Keyword>
+    <Ancillary_Keyword>TOTAL COLUMN OPTICAL THICKNESS</Ancillary_Keyword>
+    <Ancillary_Keyword>TROPOSPHERIC AEROSOL</Ancillary_Keyword>
+    <Ancillary_Keyword>SWDB</Ancillary_Keyword>
+    <Ancillary_Keyword>BEDI</Ancillary_Keyword>
+    <Ancillary_Keyword>Agriculture and Forestry</Ancillary_Keyword>
+    <Ancillary_Keyword>Climate</Ancillary_Keyword>
+    <Ancillary_Keyword>Disasters</Ancillary_Keyword>
+    <Ancillary_Keyword>Human Health</Ancillary_Keyword>
+    <Ancillary_Keyword>Weather</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>SEASTAR</Short_Name>
+        <Long_Name>Orbital Sciences Corporation OrbView-2 Satellite</Long_Name>
+        <Instrument>
+            <Short_Name>SEAWIFS</Short_Name>
+            <Long_Name>Sea-Viewing Wide Field-of-View Sensor</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1997-09-01</Beginning_Date_Time>
+            <Ending_Date_Time>2010-12-31</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.5 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.5 degree</Longitude_Resolution>
+        <Horizontal_Resolution_Range>50 km  - &lt; 100 km or approximately .5 degree - &lt; 1 degree</Horizontal_Resolution_Range>
+        <Temporal_Resolution>1 month</Temporal_Resolution>
+        <Temporal_Resolution_Range>Monthly Climatology</Temporal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>MEaSUREs</Short_Name>
+        <Long_Name>Making Earth Science Data Records for Use in Research Environments</Long_Name>
+    </Project>
+    <Quality>The monthly climatology product is simply the arithmetic mean of the monthly L3 gridded product, with requirement of at least 4 months of data when calculating the mean.</Quality>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>GES DISC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>16 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-5</Distribution_Format>
+        <Fees>Free</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>aot550.SWDB_L3MC05.04.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:47:46 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/SWDB/images/aot550.SWDB_L3MC05.04.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddc6e01b045fab4ed1bb/file</URL>
+        <Format>PNG</Format>
+        <Caption>Aerosol Optical Thickness 550nm</Caption>
+        <Description>Global monthly climatology SeaWiFS Deep Blue aerosol optical thickness at 0.5 degrees resolution, version 004 (SWDB_L3MC05.004), April</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Sayer, A. M., N. C. Hsu, C. Bettenhausen, Z. Ahmad, B. N. Holben, A. Smirnov, G. E. Thomas, and J. Zhang (2012), SeaWiFS Ocean Aerosol Retrieval (SOAR): Algorithm, validation, and comparison with other data sets, J. Geophys. Res., 117, D03206, doi:10.1029/2011JD016599</Citation>
+        <Author>Sayer, A. M., N. C. Hsu, C. Bettenhausen, Z. Ahmad, B. N. Holben, A. Smirnov, G. E. Thomas, and J. Zhang</Author>
+        <Publication_Date>2012</Publication_Date>
+        <Title>SeaWiFS Ocean Aerosol Retrieval (SOAR): Algorithm, validation, and comparison with other data sets</Title>
+        <Series>J. Geophys. Res.</Series>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1029/2011JD016599</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Sayer, A. M., Hsu, N. C., Bettenhausen, C., Jeong, M.-J., Holben, B. N., and Zhang, J. (2012): Global and regional evaluation of over-land spectral aerosol optical depth retrievals from SeaWiFS, Atmos. Meas. Tech., 5, 1761-1778, doi:10.5194/amt-5-1761-2012</Citation>
+        <Author>Sayer, A. M., Hsu, N. C., Bettenhausen, C., Jeong, M.-J., Holben, B. N., and Zhang, J.</Author>
+        <Publication_Date>2012</Publication_Date>
+        <Title>Global and regional evaluation of over-land spectral aerosol optical depth retrievals from SeaWiFS</Title>
+        <Series>Atmos. Meas. Tech.</Series>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5194/amt-5-1761-2012</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Hsu, N. C., Gautam, R., Sayer, A. M., Bettenhausen, C., Li, C., Jeong, M. J., Tsay, S.-C., and Holben, B. N.(2012): Global and regional trends of aerosol optical depth over land and ocean using SeaWiFS measurements from 1997 to 2010, Atmos. Chem. Phys. Discuss., 12, 8465-8501, doi:10.5194/acpd-12-8465-2012</Citation>
+        <Author>Hsu, N. C., Gautam, R., Sayer, A. M., Bettenhausen, C., Li, C., Jeong, M. J., Tsay, S.-C., and Holben, B. N.</Author>
+        <Publication_Date>2012</Publication_Date>
+        <Title>Global and regional trends of aerosol optical depth over land and ocean using SeaWiFS measurements from 1997 to 2010</Title>
+        <Series>Atmos. Chem. Phys. Discuss.</Series>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5194/acpd-12-8465-2012</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>The SeaWiFS Deep Blue Level 3 monthly climatology product contains monthly global climatology gridded (0.5 x 0.5 deg) data derived from SeaWiFS Deep Blue Level 3 monthly gridded data. 
+
+ The primary data parameters are aerosol optical thickness.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/data/DeepBlueSeaWiFS_Level3/SWDB_L3MC05.004/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=SWDB_L3MC05</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=SWDB_L3MC05</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/opendap/SWDB/SWDB_L3MC05.004/contents.html</URL>
+        <Description>Access to the data via OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>http://giovanni.gsfc.nasa.gov/giovanni/#dataKeyword=SWDB_L3MC05</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/data/DeepBlueSeaWiFS_Level3/README.DeepBlueSeaWiFS_V004.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>HOW-TO</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/howto</URL>
+        <Description>Data recipes for accessing and using data</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>
+      2016-04-05: S. Shen converted to DIF-10, removed variable list from Summary, added Quality and Extended_metadata:Data_Granularity
+      2017-02-15, Ed Esfandiari - Added BEDI related ancillary keywords.
+    </DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2011-12-14</Metadata_Creation>
+        <Metadata_Last_Revision>2017-01-25</Metadata_Last_Revision>
+        <Metadata_Future_Review>2016-06-30</Metadata_Future_Review>
+        <Data_Creation>2013-06-04</Data_Creation>
+        <Data_Last_Revision>2013-06-24</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>f95f983f-8838-4e50-9a30-388f9f470077</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:26:41</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:25Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/MEASURES/SWDB/DATA305</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>13 year</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

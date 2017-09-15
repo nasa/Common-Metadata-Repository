@@ -1,0 +1,350 @@
+<?xml version="1.0"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>MOD35_L2</Short_Name>
+    <Version>5</Version>
+  </Entry_ID>
+  <Version_Description>Terra MODIS Version 5 Data Collection, Fourth Atmosphere Reprocessing Campaign</Version_Description>
+  <Entry_Title>MODIS/Terra Cloud Mask and Spectral Test Results 5-Min L2 Swath 250m and 1km V005</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>MODIS Science Team</Dataset_Creator>
+    <Dataset_Title>MODIS/Terra Cloud Mask and Spectral Test Results 5-Min L2 Swath 250m and 1km V005</Dataset_Title>
+    <Dataset_Release_Date>2006-03-17</Dataset_Release_Date>
+    <Dataset_Release_Place>MODAPS at NASA/GSFC</Dataset_Release_Place>
+    <Dataset_Publisher>L1 and Atmosphere Archive and Distribution System (LAADS)</Dataset_Publisher>
+    <Version>5</Version>
+    <Online_Resource>http://modis.gsfc.nasa.gov/sci_team/</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>MODAPS USER SUPPORT TEAM</Name>
+      <Address>
+        <Street_Address>MODAPS User Support Team</Street_Address>
+        <Street_Address>NASA/GSFC</Street_Address>
+        <Street_Address>Mail Code: 619</Street_Address>
+        <City>Greenbelt</City>
+        <State_Province>MD</State_Province>
+        <Postal_Code>20771</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>1-800-596-8132</Number>
+        <Type>U.S. toll free</Type>
+      </Phone>
+      <Phone>
+        <Number>301-794-7035</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASAD</First_Name>
+      <Last_Name>ULLAH</Last_Name>
+      <Email>MODAPSUSO@lists.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD FREQUENCY</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+    <Variable_Level_1>CLOUD PROPERTIES</Variable_Level_1>
+    <Variable_Level_2>CLOUD HEIGHT</Variable_Level_2>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>CLOUDS</Term>
+  </Science_Keywords>
+  <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+    <Characteristics>
+      <Name>EquatorCrossingTime</Name>
+      <Description>Local time of the equator crossing and direction (ascending or descending)</Description>
+      <DataType>Time/direction (descending)</DataType>
+      <Unit>Local Mean Time</Unit>
+      <Value>10:30, descending</Value>
+    </Characteristics>
+    <Instrument>
+      <Short_Name>MODIS</Short_Name>
+      <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+      <Technique>Imaging Spectroradiometry</Technique>
+      <Sensor>
+        <Short_Name>MODIS</Short_Name>
+        <Long_Name>Cross-track Scanning Radiometer</Long_Name>
+        <Technique>Radiometry</Technique>
+      </Sensor>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Time_Type>UTC</Time_Type>
+    <Date_Type>Gregorian</Date_Type>
+    <Temporal_Range_Type>Continuous Range</Temporal_Range_Type>
+    <Precision_Of_Seconds>1</Precision_Of_Seconds>
+    <Range_DateTime>
+      <Beginning_Date_Time>1999-12-18T00:00:00.000Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90</Southernmost_Latitude>
+        <Northernmost_Latitude>90</Northernmost_Latitude>
+        <Westernmost_Longitude>-180</Westernmost_Longitude>
+        <Easternmost_Longitude>180</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Data_Resolution>
+    <Latitude_Resolution>250m, 1km at nadir</Latitude_Resolution>
+    <Longitude_Resolution>250m, 1km at nadir</Longitude_Resolution>
+    <Temporal_Resolution>5 minutes</Temporal_Resolution>
+  </Data_Resolution>
+  <Project>
+    <Short_Name>EOSDIS</Short_Name>
+    <Long_Name>Earth Observing System Data Information System</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>ESIP</Short_Name>
+    <Long_Name>Earth Science Information Partners Program</Long_Name>
+  </Project>
+  <Project>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System (EOS), TERRA</Long_Name>
+  </Project>
+  <Quality>See http://modaps.nascom.nasa.gov/services/qa/</Quality>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>None</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>The MODIS Adaptive Processing System (MODAPS)</Originating_Center>
+  <Organization>
+    <Organization_Type>ORIGINATOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>PROCESSOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS</Short_Name>
+      <Long_Name>MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://modaps.nascom.nasa.gov/services/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Organization>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>NASA/GSFC/SED/ESD/HBSL/BISB/LAADS</Short_Name>
+      <Long_Name>L1 and Atmosphere Archive and Distribution System,Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://ladsweb.nascom.nasa.gov/</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>MODAPS USER SUPPORT TEAM</Name>
+        <Address>
+          <Street_Address>MODAPS User Support Team</Street_Address>
+          <Street_Address>NASA/GSFC</Street_Address>
+          <Street_Address>Mail Code: 619</Street_Address>
+          <City>Greenbelt</City>
+          <State_Province>MD</State_Province>
+          <Postal_Code>20771</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>1-800-596-8132</Number>
+          <Type>U.S. toll free</Type>
+        </Phone>
+        <Phone>
+          <Number>301-794-7035</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>MODAPSUSO@lists.nasa.gov</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>Online (FTP)</Distribution_Media>
+    <Distribution_Format>HDF-EOS</Distribution_Format>
+    <Fees>No Fee</Fees>
+  </Distribution>
+  <Summary>
+    <Abstract>MODIS was launched aboard the Terra satellite on December 18, 1999
+                              (10:30 am equator crossing time) as part of NASA's Earth Observing
+                              System (EOS) mission. MODIS with its 2330 km viewing swath width
+                              provides almost daily global coverage. It acquires data in 36 high
+                              spectral resolution bands between 0.415 to 14.235 micron with spatial
+                              resolutions of 250m(2 bands), 500m(5 bands), and 1000m (29
+                              bands). MODIS sensor counts, calibrated radiances, geolocation
+                              products and all derived geophysical atmospheric and ocean products
+                              are archived at NASA Goddard DAAC and has been made available to
+                              public since April 2000.
+                              
+                              The MODIS level-2 cloud mask product is a global product generated for
+                              both daytime &amp; nighttime conditions at 1-km spatial resolution (at
+                              nadir) and for daytime at 250-m resolution. The algorithm employs a
+                              series of visible and infrared threshold and consistency tests to
+                              specify confidence levels that an unobstructed view of the Earth's
+                              surface is observed. An indication of shadows affecting the scene is
+                              also provided. The 250-m cloud mask flags are based on the visible
+                              channel data only. Radiometrically accurate radiances are required, so
+                              holes in the cloud mask will appear wherever the input radiances are
+                              incomplete or of poor quality.  The shortname for this Level-2 MODIS
+                              cloud mask product is MOD35_L2 and the principal investigator for this
+                              product is MODIS scientist Dr. Paul Menzel ( paulm@ssec.wisc.edu).
+                              
+                              MOD35_L2 product files are stored in Hierarchical Data Format
+                              (HDF-EOS). Each of the 9 gridded parameters is stored as a Scientific
+                              Data Set (SDS) within the HDF-EOS file. The Cloud Mask and Quality
+                              Assurance SDS's are stored at 1 kilometer pixel resolution. All other
+                              SDS's (those relating to time, geolocation, and viewing geometry) are
+                              stored at 5 kilometer pixel resolution. Each file is roughly 47.5 MB
+                              in size, and the total data volume is approximately 13.7 GB/day. 
+                              
+                              MOD35_L2 Data Group &amp; Parameters
+                              
+                              Spatial &amp; Temporal Resolution:
+                              Latitude &amp; Longitude
+                              Scan start time
+                              
+                              Solar and Sensor Viewing Geometry:
+                              Solar zenith &amp; Solar azimuth angle
+                              Sensor zenith &amp; Sensor azimuth angle
+                              
+                              Science Parameters
+                              Cloud Mask (1km)
+                              Cloud Mask (250 m)
+                              
+                              Quality Assurance Parameters:
+                              Quality Assurance Flags (1km)
+                              
+                              Link to the MODIS homepage for more data set information:
+                              http://modis-atmos.gsfc.nasa.gov/MOD35_L2/</Abstract>
+    <Purpose>Science Research </Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://modaps.nascom.nasa.gov/services/about/product_descriptions_terra.html</URL>
+    <Description>Overview of MODIS</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>https://ladsweb.nascom.nasa.gov/data/search.html</URL>
+    <Description>Search and order products from LAADS website.</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>LAADS</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://ladsweb.nascom.nasa.gov/allData/5/MOD35_L2/</URL>
+    <Description>Direct access to the ftp site and directory hosting the MOD35_L2 5 data set.</Description>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2006-03-17</Metadata_Creation>
+    <Metadata_Last_Revision>2016-03-09</Metadata_Last_Revision>
+    <Data_Creation>2000-02-14</Data_Creation>
+    <Data_Last_Revision>present</Data_Last_Revision>
+  </Metadata_Dates>
+  <Additional_Attributes>
+    <Name>ClearPct250m</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>CloudCoverPct250m</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Additional_Attributes>
+    <Name>SuccessfulRetrievalPct</Name>
+    <DataType>FLOAT</DataType>
+    <Description>None</Description>
+    <ParameterRangeBegin>-1e-06</ParameterRangeBegin>
+    <ParameterRangeEnd>100.000001</ParameterRangeEnd>
+  </Additional_Attributes>
+  <Product_Level_Id>2</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+</DIF>
