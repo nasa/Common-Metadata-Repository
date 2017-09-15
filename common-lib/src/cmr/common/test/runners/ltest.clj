@@ -11,7 +11,8 @@
 (import-vars
   [ltest.core
    run-test
-   run-tests])
+   run-tests
+   run-all-tests])
 
 (def unit-test-suite
   {:name "Unit Tests"

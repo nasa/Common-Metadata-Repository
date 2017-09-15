@@ -6,7 +6,9 @@
 ;;; Utility methods
 (defn context->db
   [context]
-  (-> context :system :db
+  (-> context
+      :system
+      :db
       ;; This is a temporary hack to be able to publish event in after-save.
       ;; This will be removed as part of CMR-2520 where we will change cascading delete
       ;; of tag-associations to be asynchronous.

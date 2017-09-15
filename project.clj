@@ -14,7 +14,9 @@
 ;; subdirectories, and then test-out in all project subdirectories.
 (defproject nasa-cmr/cmr "0.1.0-SNAPSHOT"
   :description "Top level project to support all CMR libraries and applications."
-  :plugins [[lein-modules "0.3.11"]]
+  :plugins [
+    [lein-modules "0.3.11"]
+    [lein-shell "0.4.0"]]
 
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
                                         "cubby-app"
@@ -27,12 +29,33 @@
                                         "virtual-product-app"
                                         "es-spatial-plugin"]}}}
   :aliases {
-    "kibit" ["modules" "kibit"]
-    "eastwood" ["modules" "eastwood"]
-    "lint" ["modules" "lint"]
-    "check-deps" ["modules" "check-deps"]
-    "generate-static" ["modules" "generate-static"]
-    "install!" ["modules" "do" "clean," "install," "clean"]
-    "install-with-content!" ["modules" "do"
-                             "clean," "install," "generate-static," "clean"]})
+    "kibit"
+      ["modules" "kibit"]
+    "eastwood"
+      ["modules" "eastwood"]
+    "lint"
+      ["modules" "lint"]
+    "check-deps"
+      ["modules" "check-deps"]
+    "generate-static"
+      ["modules" "generate-static"]
+    "install!"
+      ["modules" "do"
+       "clean," "install," "clean"]
+    "install-with-content!"
+      ["modules" "do"
+       "clean," "install," "generate-static," "clean"]
+    "start-sqs-sns"
+      ["shell"
+       "dev-system/support/start-local-sqs-sns.sh"]
+    "stop-sqs-sns"
+      ["shell"
+       "dev-system/support/stop-local-sqs-sns.sh"]
+    "restart-sqs-sns"
+      ["do"
+        ["stop-sqs-sns"]
+        ["start-sqs-sns"]]
+    "repl"
+      ["shell"
+       "echo" "You need to be in the `dev-system` directory for that."]})
 

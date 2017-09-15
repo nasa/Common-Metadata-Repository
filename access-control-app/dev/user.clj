@@ -72,7 +72,7 @@
   (let [queue-broker (queue-broker-wrapper/create-queue-broker-wrapper
                       (if use-external-mq?
                         (queue-broker/create-queue-broker (int-test-util/queue-config))
-                        (int-test-util/create-memory-queue-broker)))]
+                        (int-test-util/create-broker)))]
     ;; Start side api server
     (alter-var-root
      #'side-api-server

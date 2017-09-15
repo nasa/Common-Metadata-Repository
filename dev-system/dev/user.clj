@@ -18,9 +18,11 @@
    [cmr.common.test.runners.ltest :as ltest]
    [cmr.common.test.runners.util :as runner-util]
    [cmr.common.util :as u]
+   [cmr.dev-system.config :as dev-config]
    [cmr.dev-system.system :as system]
    [cmr.dev-system.tests :as tests]
    [cmr.ingest.system :as ingest-system]
+   [cmr.message-queue.config :as q-config]
    [cmr.search.services.content-service :as content-service]
    [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.search.system :as search-system]
@@ -123,7 +125,21 @@
   "Passing `true` to this function will cause AWS queues to be used during
   starts/resets."
   [bool]
-  (reset! settings/aws? bool))
+  (reset! settings/aws? bool)
+  (if bool
+    (q-config/set-queue-type! "aws")
+    (q-config/set-queue-type! "local")))
+
+;; If the ENV var was set, let's make it a keyword, which is what the config
+;; for dev-system expects.
+(when (string? (dev-config/dev-system-queue-type))
+  (dev-config/set-dev-system-queue-type!
+    (keyword (dev-config/dev-system-queue-type))))
+
+;; If the ENV var for the dev queue type was set to use AWS, let's make the
+;; `set-aws` call.
+(when (= :aws (dev-config/dev-system-queue-type))
+  (set-aws true))
 
 (defn set-logging-level!
   "Sets the logging level to the given setting. Puts the level in refresh-persistent-settings
@@ -192,17 +208,18 @@
     (when-not (empty? new-modes)
       (apply set-modes! (mapcat seq new-modes)))
 
-    (system/set-dev-system-elastic-type! (:elastic run-modes))
+    (dev-config/set-dev-system-elastic-type! (:elastic run-modes))
 
-    (system/set-dev-system-echo-type! (:echo run-modes))
+    (dev-config/set-dev-system-echo-type! (:echo run-modes))
     ;; IMPORTANT: MAKE SURE YOU DISABLE SYMANTEC ANTIVIRUS BEFORE STARTING THE
     ;; TESTS WITH EXTERNAL DB (re-enable them when you're done)
-    (system/set-dev-system-db-type! (:db run-modes))
+    (dev-config/set-dev-system-db-type! (:db run-modes))
     ;; If you would like to run CMR with :aws instead of :in-memory or :external,
     ;; be sure to call `(set-aws true)` in the REPL.
-    (if @settings/aws?
-      (system/set-dev-system-message-queue-type! :aws)
-      (system/set-dev-system-message-queue-type! (:messaging run-modes))))
+    (if (or @settings/aws?
+            (= "aws" (q-config/queue-type)))
+      (dev-config/set-dev-system-queue-type! :aws)
+      (dev-config/set-dev-system-queue-type! (:messaging run-modes))))
 
   (sit-sys/set-logging-level @settings/logging-level)
 

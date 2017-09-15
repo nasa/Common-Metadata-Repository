@@ -3,7 +3,7 @@
   a queue listener"
   (:require
    [clojail.core :as timeout]
-   [cmr.common.log :as log :refer [error warn]]
+   [cmr.common.log :as log :refer [debug error info warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.message-queue.config :as config]
@@ -19,7 +19,7 @@
 (defn- try-to-publish
   "Attempts to publish messages to the given exchange.
 
-  When the RabbitMQ server is down or unreachable, calls to publish will throw an exception. Rather
+  When the messaging service is down or unreachable, calls to publish will throw an exception. Rather
   than raise an error to the caller immediately, the publication will be retried indefinitely.
   By retrying, routine maintenance such as restarting the RabbitMQ server will not result in any
   ingest errors returned to the provider.
@@ -32,7 +32,7 @@
                 (error e)
                 false))
     (warn "Attempt to queue messaged failed. Retrying: " msg)
-    (Thread/sleep 2000)
+    (Thread/sleep (config/messaging-retry-delay))
     (recur queue-broker exchange-name msg)))
 
 (defn-timed publish-message
@@ -42,6 +42,8 @@
   Requests to publish a message are wrapped in a timeout to handle error cases with the Rabbit MQ
   server. Otherwise failures to publish will be retried indefinitely."
   [queue-broker exchange-name msg]
+  (debug "Publishing message" msg
+         "[broker =" queue-broker "exchange =" exchange-name "]")
   (let [start-time (System/currentTimeMillis)]
     (try
       (timeout/thunk-timeout #(try-to-publish queue-broker exchange-name msg)

@@ -5,13 +5,13 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.system :as bootstrap-system]
    [cmr.common-app.services.search.elastic-search-index :as es-search]
-   [cmr.common.config :as config :refer [defconfig]]
    [cmr.common.dev.gorilla-repl :as gorilla-repl]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as u]
    [cmr.cubby.system :as cubby-system]
+   [cmr.dev-system.config :as dev-config]
    [cmr.dev-system.control :as control]
    [cmr.elastic-utils.config :as elastic-config]
    [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
@@ -36,8 +36,6 @@
    [cmr.transmit.config :as transmit-config]
    [cmr.virtual-product.config :as vp-config]
    [cmr.virtual-product.system :as vp-system]))
-
-(def external-echo-port 10000)
 
 (defn external-echo-system-token
   "Returns the ECHO system token based on the value for ECHO_SYSTEM_READ_TOKEN in the ECHO
@@ -84,26 +82,27 @@
   "Defines the order in which applications should be started"
   [:mock-echo :cubby :metadata-db :access-control :index-set :indexer :ingest :search :virtual-product :bootstrap])
 
-(def use-compression?
-  "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
-  true)
-
-(defconfig use-access-log
-  "Indicates whether the servers will use the access log."
- {:type Boolean
-  :default false})
+(defn- update-app-web-server-options
+  "Update the web configuration options for the passed app system."
+  [app-system]
+  (-> app-system
+      (assoc-in [:web :use-compression?] (dev-config/use-web-compression?))
+      (assoc-in [:web :use-access-log?] (dev-config/use-access-log))))
 
 (defn- set-web-server-options
-  "Modifies the app server instances to configure web server options. Takes the system
-  and returns it with the updates made. Should be run a system before it is started"
-  [system]
-  (update-in system [:apps]
-             (fn [app-map]
-               (into {} (for [[app-name app-system] app-map]
-                          [app-name (-> app-system
-                                        (assoc-in [:web :use-compression?] use-compression?)
-                                        (assoc-in [:web :use-access-log?] (use-access-log)))])))))
+  "Modifies an app server instance to configure web server options, returning a
+  key/value pair that is the new (updated) app map."
+  [app-map]
+  (->> app-map
+       (map (fn [[app-name app-system]]
+              [app-name (update-app-web-server-options app-system)]))
+       (into {})))
 
+(defn- set-all-web-server-options
+  "Modifies all app server instances to configure web server options. Takes the system
+  and returns it with the updates made. Should be run a system before it is started."
+  [system]
+  (update-in system [:apps] set-web-server-options))
 
 (defmulti create-elastic
   "Sets elastic configuration values and returns an instance of an Elasticsearch component to run
@@ -147,7 +146,7 @@
 
 (defmethod create-echo :external
   [type]
-  (transmit-config/set-echo-rest-port! external-echo-port)
+  (transmit-config/set-echo-rest-port! (dev-config/external-echo-port))
   (transmit-config/set-echo-system-token! (external-echo-system-token))
   (transmit-config/set-echo-rest-context! "/echo-rest"))
 
@@ -252,56 +251,13 @@
               [:embedded-systems :metadata-db :queue-broker]
               queue-broker)))
 
-(defn- base-parse-dev-system-component-type
-  "Parse the component type and validate it against the given set."
-  [value valid-types-set]
-  (when-not (valid-types-set value)
-    (throw (Exception. (str "Unexpected component type value:" value))))
-  (keyword value))
-
-(defn parse-dev-system-component-type
-  "Parse the component type and validate it is either in-memory or external."
-  [value]
-  (base-parse-dev-system-component-type value #{"in-memory" "external"}))
-
-(defn parse-dev-system-message-queue-type
-  "Parse the component type and validate it one of the valid queue types."
-  [value]
-  (base-parse-dev-system-component-type value #{"in-memory" "aws" "external"}))
-
-(defconfig dev-system-echo-type
-  "Specifies whether dev system should run an in-memory mock ECHO or use an external ECHO."
-  {:default :in-memory
-   :parser parse-dev-system-component-type})
-
-(defconfig dev-system-db-type
-  "Specifies whether dev system should run an in-memory database or use an external database."
-  {:default :in-memory
-   :parser parse-dev-system-component-type})
-
-(defconfig dev-system-message-queue-type
-  "Specifies whether dev system should skip the use of a message queue or use a Rabbit MQ or
-  AWS SNS/SQS message queue"
-  {:default :in-memory
-   :parser parse-dev-system-message-queue-type})
-
-(defconfig dev-system-elastic-type
-  "Specifies whether dev system should run an in-memory elasticsearch or use an external instance."
-  {:default :in-memory
-   :parser parse-dev-system-component-type})
-
-(defconfig gorilla-repl-port
-  "Specifies the port gorilla repl should listen on. It will only be started if non-zero."
-  {:default 0
-   :type Long})
-
 (defn component-type-map
   "Returns a map of dev system components options to run in memory or externally."
   []
-  {:elastic (dev-system-elastic-type)
-   :echo (dev-system-echo-type)
-   :db (dev-system-db-type)
-   :message-queue (dev-system-message-queue-type)})
+  {:elastic (dev-config/dev-system-elastic-type)
+   :echo (dev-config/dev-system-echo-type)
+   :db (dev-config/dev-system-db-type)
+   :message-queue (dev-config/dev-system-queue-type)})
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -327,8 +283,9 @@
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})
      :post-components {:control-server control-server
-                       :gorilla-repl (when-not (zero? (gorilla-repl-port))
-                                       (gorilla-repl/create-gorilla-repl-server (gorilla-repl-port)))}}))
+                       :gorilla-repl (when-not (zero? (dev-config/gorilla-repl-port))
+                                       (gorilla-repl/create-gorilla-repl-server
+                                        (dev-config/gorilla-repl-port)))}}))
 
 (defn- stop-components
   [system components-key]
@@ -362,7 +319,7 @@
 
 (defn- start-apps
   [system]
-  (let [system (set-web-server-options system)]
+  (let [system (set-all-web-server-options system)]
     (reduce (fn [system app]
               (let [{start-fn :start} (app-control-functions app)]
                 (update-in system [:apps app]
