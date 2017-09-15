@@ -54,9 +54,10 @@
   {:default "cmr_ingest_provider.exchange"})
 
 (defconfig deleted-concept-revision-exchange-name
-  "An exchange that will have messages passed to it whenever a concept revision is removed
-  from metadata db."
-  {:default "cmr_deleted_concept_revision.exchange"})
+  "An exchange that will have messages passed to it whenever a concept revision is removed from
+  metadata db. This was originally only intended for collections and it is messy to change the
+  exchange name after it is in use, so we keep the old name even though it is no longer correct."
+  {:default "cmr_deleted_collection_revision.exchange"})
 
 (defconfig deleted-granule-exchange-name
   "An exchange that will have messages passed to it whenever a granule revision is removed
