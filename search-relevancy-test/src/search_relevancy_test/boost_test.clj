@@ -4,6 +4,7 @@
   [camel-snake-kebab.core :as csk]
   [search-relevancy-test.core :as core]
   [search-relevancy-test.relevancy-test :as relevancy-test]
+  [search-relevancy-test.edsc-log-parser :as edsc-log-parser]
   [search-relevancy-test.reporter :as reporter]))
 
 (def min-boost-value
@@ -40,11 +41,12 @@
   "Run the relevancy tests with the boost for the given field configured through
   search params. Return the result summary with the boost value assoc'd so we can
   reference it later"
-  [field boost]
+  [filename field boost]
   (let [params (create-search-params field boost)] ; append to search request
     (println result-separator)
     (println (format "Running boost test with %s at %.2f" field boost))
-    (-> (relevancy-test/run-anomaly-tests (create-test-args field boost)
+    (-> (relevancy-test/run-anomaly-tests filename
+                                          (create-test-args field boost)
                                           params)
         (reporter/generate-result-summary)
         (assoc (csk/->kebab-case-keyword field) boost))))
@@ -53,13 +55,13 @@
   "Run relevancy tests over a range for a particular field boost to determine
   the lowest boost value that increases relevancy. Can specify the boost range or
   use defaults. Each test increments the boost by 0.1."
-  ([field]
+  ([filename field]
    (boost-tests field min-boost-value max-boost-value))
-  ([field min-value max-value]
-   (relevancy-test/test-setup) ; Run the setup once
+  ([filename field min-value max-value]
+   (relevancy-test/test-setup :provider) ; Run the setup once
    (let [best-run (atom nil)]
      (doseq [x (range min-value (+ boost-increment max-value) boost-increment)
-             :let [test-results (run-boost-test field x)]]
+             :let [test-results (run-boost-test filename field x)]]
        (when (or (nil? @best-run) ; Save the earliest best run
                  (> (:average-dcg test-results)
                     (:average-dcg @best-run)))
@@ -79,8 +81,10 @@
                         min-boost-value)
           max-value (core/get-argument-value args "-max-value")
           max-value (or (when max-value (Double/parseDouble max-value))
-                        max-boost-value)]
-      (boost-tests boost-field min-value max-value))
+                        max-boost-value)
+          ;; Hardcoded to run the provider test suite
+          filename relevancy-test/provider-anomaly-filename]
+      (boost-tests filename boost-field min-value max-value))
     (println "No field specified for boosts tests. Must specify a field to
              test boosts with the '-field' argument")))
 
@@ -112,11 +116,12 @@
 
 (defn- run-boost-test-all-fields
   "Runs a single test with random boost values between min-value and min-value + max-value."
-  [boost-values]
+  [filename boost-values]
   (let [query-string (create-boost-query-string boost-values)] ; append to search request
     (println result-separator)
     (println (format "Running boost test with boosts %s" boost-values))
-    (-> (relevancy-test/run-anomaly-tests (create-test-args "fake" 3.14)
+    (-> (relevancy-test/run-anomaly-tests filename
+                                          (create-test-args "fake" 3.14)
                                           query-string
                                           false)
         (reporter/generate-result-summary)
@@ -127,14 +132,16 @@
   min-value + value-range. Runs num-iterations of the anomaly tests and tracks the best boost
   values to use based on the highest discounted cumulative gain."
   [min-value value-range num-iterations]
-  (relevancy-test/test-setup) ; Run the setup once
-  (let [best-run (atom nil)]
+  (relevancy-test/test-setup :edsc) ; Run the setup once
+  (let [best-run (atom nil)
+        ;; Harcoded to always run the EDSC test for now
+        filename edsc-log-parser/anomaly-filename]
     (doseq [n (range num-iterations)
             :let [random-boosts (into {}
                                       (for [field boost-fields
                                             :let [random-value (+ min-value (rand value-range))]]
                                         [field (Float. (format "%.1f" random-value))]))
-                  test-results (run-boost-test-all-fields random-boosts)
+                  test-results (run-boost-test-all-fields filename random-boosts)
                   all-dcgs (conj (:dcgs @best-run) (max (get @best-run :average-dcg 0.0)
                                                         (get test-results :average-dcg 0)))]]
       (if (or (nil? (:average-dcg @best-run)) ; Save the earliest best run
