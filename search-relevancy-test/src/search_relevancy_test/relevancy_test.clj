@@ -18,13 +18,20 @@
 (def base-search-path
   "http://localhost:3003/collections")
 
+(defn- add-concept-ids-to-search
+  "Takes a search string and adds concept-ids to the search."
+  [query-string concept-ids-string]
+  (let [concept-ids (string/split concept-ids-string #",")
+        concept-ids-query-string (string/join "&concept_id[]=" concept-ids)]
+    (format "%s&concept_id[]=%s" query-string concept-ids-query-string)))
+
 (defn perform-search
   "Perform the search from the anomaly test by appending the search to the end
   of the base search path. Return results in JSON and parse."
   [anomaly-test search-params]
   (let [response (client/get
                   (str base-search-path
-                       (:search anomaly-test)
+                       (add-concept-ids-to-search (:search anomaly-test) (:concept-ids anomaly-test))
                        search-params
                        (format "&page_size=%d" page-size))
                   {:headers {"Accept" "application/json"}})]
@@ -114,7 +121,6 @@
    (test-setup :edsc)
    (run-anomaly-tests edsc-log-parser/anomaly-filename args search-params)
    nil)) ; Return nil so the return value is not printed to the REPL
-
 
 (comment
  (relevancy-test ["-log-run-description" "Base Run"]))
