@@ -35,7 +35,7 @@
 
 (def expected-full-double-spatial-coverage
   {:GranuleSpatialRepresentation "CARTESIAN"
-   :SpatialCoverageType "HORIZONTAL"
+   :SpatialCoverageType "HORIZONTAL_VERTICAL"
    :HorizontalSpatialDomain
    {:Geometry {:CoordinateSystem "CARTESIAN"
                :BoundingRectangles [{:NorthBoundingCoordinate "-90"
@@ -86,7 +86,7 @@
 
 (def expected-full-single-spatial-coverage
   {:GranuleSpatialRepresentation "CARTESIAN"
-   :SpatialCoverageType "HORIZONTAL"
+   :SpatialCoverageType "HORIZONTAL_VERTICAL"
    :HorizontalSpatialDomain
    {:Geometry {:CoordinateSystem "CARTESIAN"
                :BoundingRectangles [{:NorthBoundingCoordinate "-90"
@@ -146,7 +146,7 @@
 
 (def expected-just-vertical-spatial-coverage
   {:GranuleSpatialRepresentation "CARTESIAN"
-   :SpatialCoverageType "HORIZONTAL"
+   :SpatialCoverageType "VERTICAL"
    :VerticalSpatialDomains [{:Type "Minimum Altitude"
                              :Value "0"}
                             {:Type "Maximum Altitude"
@@ -172,7 +172,7 @@
 
 (def expected-partial-vertical-spatial-coverage
   {:GranuleSpatialRepresentation "CARTESIAN"
-   :SpatialCoverageType "HORIZONTAL"
+   :SpatialCoverageType "VERTICAL"
    :VerticalSpatialDomains [{:Type "Minimum Altitude"
                              :Value "0"}
                             {:Type "Maximum Altitude"
