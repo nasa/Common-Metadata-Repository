@@ -68,9 +68,6 @@
         (for [individual-test (val tests-by-anomaly)]
           (perform-search-test individual-test search-params print-results))))))
 
-(def provider-anomaly-filename
-  "anomaly_tests.csv")
-
 (defn run-anomaly-tests
   "Run all of the anomaly tests from the CSV file"
   ([filename args search-params]
@@ -108,7 +105,7 @@
    (relevancy-test args nil))
   ([args search-params]
    (test-setup :provider)
-   (run-anomaly-tests provider-anomaly-filename args search-params)
+   (run-anomaly-tests core/provider-anomaly-filename args search-params)
    nil)) ; Return nil so the return value is not printed to the REPL
 
 (defn edsc-relevancy-test
@@ -119,7 +116,7 @@
    (edsc-relevancy-test args nil))
   ([args search-params]
    (test-setup :edsc)
-   (run-anomaly-tests edsc-log-parser/anomaly-filename args search-params)
+   (run-anomaly-tests core/edsc-anomaly-filename args search-params)
    nil)) ; Return nil so the return value is not printed to the REPL
 
 (comment

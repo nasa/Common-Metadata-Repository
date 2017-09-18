@@ -6,6 +6,14 @@
    [clojure.java.io :as io]
    [clojure.string :as string]))
 
+(def provider-anomaly-filename
+  "Provider anomaly filename"
+  "anomaly_tests.csv")
+
+(def edsc-anomaly-filename
+  "EDSC user anomaly filename."
+  "edsc_anomaly_tests.csv")
+
 (def test-collection-formats
  [:iso-smap :echo10 :dif10 :dif :iso19115 :umm-json])
 
