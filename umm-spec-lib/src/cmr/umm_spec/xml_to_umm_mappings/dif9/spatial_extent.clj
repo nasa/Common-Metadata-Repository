@@ -114,10 +114,15 @@
   (let [horizontal-domain (parse-horizontal-domain doc)
         vertical-domain (parse-vertical-domains doc)]
     (when (or horizontal-domain vertical-domain)
-      (into {}
-            [{:SpatialCoverageType "HORIZONTAL"}
+      (let [spatial-type (if (and horizontal-domain vertical-domain)
+                           "HORIZONTAL_VERTICAL"
+                           (if horizontal-domain
+                             "HORIZONTAL"
+                             "VERTICAL"))]
+        (into {}
+            [{:SpatialCoverageType spatial-type}
              horizontal-domain
-             vertical-domain]))))
+             vertical-domain])))))
 
 (defn parse-spatial-extent
   "Parse the spatial extent from the passed in document. Return the spatial extent record."
