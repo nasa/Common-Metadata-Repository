@@ -9,8 +9,7 @@
    [cmr.search.site.data :as data]
    [cmr.search.site.static.directory :as directory]
    [cmr.search.site.static.site :as site]
-   [cmr.search.site.util :as util]
-   [cmr.transmit.config :as transmit])
+   [cmr.search.site.util :as util])
   (:gen-class))
 
 ;; Contextual data that is used for static content in the absense of a system
@@ -69,6 +68,7 @@
   $ lein run -m cmr.search.site.static prep
   $ lein run -m cmr.search.site.static api
   $ lein run -m cmr.search.site.static site
+  $ lein run -m cmr.search.site.static static-site
   $ lein run -m cmr.search.site.static all"
   [doc-type]
   (case (keyword doc-type)
@@ -79,5 +79,4 @@
     :all (do
            (-main :prep)
            (-main :api)
-           (-main :site)
-           (-main :static-site))))
+           (-main :site))))
