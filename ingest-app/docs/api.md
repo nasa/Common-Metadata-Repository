@@ -580,7 +580,7 @@ The following update types are supported:
   * Find and remove - remove any instance from the list that matches the find value.
 
 Bulk update post request takes the following parameters:
- This is new one. 
+  
   * Concept-ids (required) - a list of concept ids to update
   * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
   * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
