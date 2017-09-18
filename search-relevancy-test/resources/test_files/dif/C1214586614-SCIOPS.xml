@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF 
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>CH-OG-1-GPS-10S</Entry_ID>
+   <Entry_Title>10 sec GPS ground tracking data</Entry_Title>
+   <Data_Set_Citation>
+      <Dataset_Creator>Rothacher, Markus</Dataset_Creator>
+      <Dataset_Title>GPS ground tracking data, Rinex formatted, 10 sec sample rate</Dataset_Title>
+      <Dataset_Series_Name>CHAMP Orbit and Gravity Field Products</Dataset_Series_Name>
+      <Dataset_Release_Date>2001 - 2010 </Dataset_Release_Date>
+      <Dataset_Release_Place>Potsdam, Germany</Dataset_Release_Place>
+      <Dataset_Publisher>GeoForschungsZentrum Potsdam</Dataset_Publisher>
+      <Version>0.0</Version>
+      <Data_Presentation_Form>digital</Data_Presentation_Form>
+      <Online_Resource>http://isdc.gfz-potsdam.de/</Online_Resource>
+   </Data_Set_Citation>
+   <Personnel>
+      <Role>INVESTIGATOR</Role>
+      <First_Name>MARKUS</First_Name>
+      <Last_Name>ROTHACHER</Last_Name>
+      <Email>rothacher@gfz-potsdam.de</Email>
+      <Phone>+49-331-288-1100</Phone>
+      <Fax>+49-331-288-1111</Fax>
+      <Contact_Address>
+         <Address>GeoForschungsZentrum Potsdam</Address>
+         <Address>Telegrafen berg A17</Address>
+         <City>Potsdam</City>
+         <Postal_Code>14473</Postal_Code>
+         <Country>GERMANY</Country>
+      </Contact_Address>
+   </Personnel>
+   <Personnel>
+      <Role>DIF AUTHOR</Role>
+      <Role>INVESTIGATOR</Role>
+      <First_Name>CHRISTOPH</First_Name>
+      <Last_Name>FOERSTE</Last_Name>
+      <Email>foer@gfz-potsdam.de</Email>
+      <Phone>+49-331-288-1737</Phone>
+      <Fax>+49-331-288-1169</Fax>
+      <Contact_Address>
+         <Address>GeoForschungsZentrum Potsdam</Address>
+         <Address>Telegrafenberg</Address>
+         <City>Potsdam</City>
+         <Postal_Code>14473</Postal_Code>
+         <Country>GERMANY</Country>
+      </Contact_Address>
+   </Personnel>
+   <Personnel>
+      <Role>TECHNICAL CONTACT</Role>
+      <First_Name>ROMAN</First_Name>
+      <Last_Name>GALAS</Last_Name>
+      <Email>galas@gfz-potsdam.de</Email>
+      <Phone>+49-331288-1179</Phone>
+      <Fax>+49-331288-1111</Fax>
+      <Contact_Address>
+         <Address>GeoForschungsZentrum Potsdam</Address>
+         <Address>Telegrafenberg</Address>
+         <City>Potsdam</City>
+         <Postal_Code>14473</Postal_Code>
+         <Country>GERMANY</Country>
+      </Contact_Address>
+   </Personnel>
+   <Discipline uuid="e9f67a66-e9fc-435c-b720-ae32a2c3d8f5">
+      <Discipline_Name>EARTH SCIENCE > Land</Discipline_Name>
+      <Detailed_Subdiscipline>Land</Detailed_Subdiscipline>
+   </Discipline>
+   <Parameters uuid="56b4cbe5-e5f7-4e61-8c48-bbb858b505e6">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>SOLID EARTH</Topic>
+      <Term>GRAVITY/GRAVITATIONAL FIELD</Term>
+      <Variable_Level_1>GRAVITATIONAL FIELD</Variable_Level_1>
+      <Detailed_Variable>RAPID SCIENCE GRAVITY FIELD</Detailed_Variable>
+   </Parameters>
+   <ISO_Topic_Category uuid="d9cd5b7e-e9e7-4746-bbc8-bc69f7b606c7">GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+   <Keyword>Satellite</Keyword>
+   <Keyword>Low Earth Orbiter</Keyword>
+   <Keyword>Orbit</Keyword>
+   <Keyword>Tracking</Keyword>
+   <Keyword>Occultation</Keyword>
+   <Keyword>Satellite Laser Ranging</Keyword>
+   <Keyword>GPS Ground Data</Keyword>
+   <Sensor_Name uuid="029feed6-79dc-4316-b8ac-be8f1e557f89">
+      <Short_Name>GPS RECEIVERS</Short_Name>
+   </Sensor_Name>
+   <Source_Name uuid="e66a90c4-3a5c-4e52-b039-bc93857642bf">
+      <Short_Name>GPS</Short_Name>
+      <Long_Name>Global Positioning System Satellites</Long_Name>
+   </Source_Name>
+   <Temporal_Coverage>
+      <Start_Date>2001-05-28</Start_Date>
+   </Temporal_Coverage>
+   <Data_Set_Progress>IN WORK</Data_Set_Progress>
+   <Spatial_Coverage>
+      <Southernmost_Latitude>-45.69</Southernmost_Latitude>
+      <Northernmost_Latitude>78.87</Northernmost_Latitude>
+      <Westernmost_Longitude>-63.51</Westernmost_Longitude>
+      <Easternmost_Longitude>170.42</Easternmost_Longitude>
+   </Spatial_Coverage>
+   <Location uuid="51e3593f-4b42-4141-972e-96666c479f9c">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>GLOBAL</Location_Type>
+   </Location>
+   <Project uuid="a449b571-1eb9-4cd4-8e45-9debe0a3aab4">
+      <Short_Name>CHAMP</Short_Name>
+      <Long_Name>Challenging Minisatellite Payload</Long_Name>
+   </Project>
+   <Quality>
+            This raw data passed no quality control.
+   </Quality>
+   <Access_Constraints>
+            Registration is required to access the data.
+   </Access_Constraints>
+   <Use_Constraints>
+            Data may not be used for commercial applications.
+   </Use_Constraints>
+   <Data_Set_Language>English</Data_Set_Language>
+   <Originating_Center>GeoForschungsZentrum Potsdam</Originating_Center>
+   <Data_Center>
+      <Data_Center_Name uuid="09fc17b0-6aa2-47a2-87e4-dd005c4d52ab">
+         <Short_Name>DE/GFZ/ISDC</Short_Name>
+         <Long_Name>Information System and Data Center, GeoForschungszentrum Potsdam, Germany</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>http://isdc.gfz-potsdam.de/</Data_Center_URL>
+      <Data_Set_ID>doi:10.1594/GFZ/ISDC/CHAMP/CH-OG-1-GPS-10S</Data_Set_ID>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>BERND</First_Name>
+         <Last_Name>RITSCHEL</Last_Name>
+         <Email>rit@gfz-potsdam.de</Email>
+         <Phone>+49-331-288-1685</Phone>
+         <Fax>+49-331-288-1703</Fax>
+         <Contact_Address>
+            <Address>GeoForschungsZentrum Potsdam</Address>
+            <Address>Daten- und Rechenzentrum</Address>
+            <Address>Telegrafenberg A3</Address>
+            <City>Potsdam</City>
+            <Postal_Code>14473</Postal_Code>
+            <Country>GERMANY</Country>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Distribution>
+      <Distribution_Media>FTP</Distribution_Media>
+      <Distribution_Format>ASCII</Distribution_Format>
+      <Fees>Free</Fees>
+   </Distribution>
+   <Summary>
+      <Abstract>This data set comprises GPS ground data of a sample rate of 10 sec, generated
+      by decoding and sampling GPS high  rate ground data. This raw data passed no
+      quality control. The data are given in the Rinex 2.1 format.</Abstract>
+   </Summary>
+   <Related_URL>
+      <URL_Content_Type uuid="750f6c61-0f15-4185-94d8-c029dec04bc5">
+     <Type>GET DATA</Type>
+      </URL_Content_Type>
+      <URL>http://isdc.gfz-potsdam.de/champ</URL>
+      <Description>
+         The CHAMP Rapid Science Orbit dataset are available via the ISDC
+         Homepage.
+      </Description>
+   </Related_URL>
+   <Related_URL>
+      <URL_Content_Type uuid="5ec1bb9d-0efc-4099-9b31-ec791bbd8145">
+     <Type>VIEW RELATED INFORMATION</Type>
+      </URL_Content_Type>
+      <URL>http://www.gfz-potsdam.de/en/section/global-geomonitoring-and-gravity-field/</URL>
+      <Description>
+         Section 1.2: Global Geomonitoring and Gravity Field
+      </Description>
+   </Related_URL>
+   <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+      <Short_Name>CEOS</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="b131a9e2-e994-41e2-9f61-afcf215f6c39">
+      <Short_Name>GERMANY/GFZ</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.7</Metadata_Version>
+   <DIF_Creation_Date>2007-03-30</DIF_Creation_Date>
+   <Last_DIF_Revision_Date>2017-04-20</Last_DIF_Revision_Date>
+   <Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-12-02 13:28:49</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>
