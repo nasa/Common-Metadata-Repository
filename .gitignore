@@ -1,10 +1,81 @@
-*/testreports.xml
-/target
+###############################
+### Dev Env Files
+###############################
 /.lein-*
+profiles.clj
+
+###############################
+### Test Files
+###############################
+*/testreports.xml
+
+###############################
+### Build Files
+###############################
+/target
+pom.xml
+/ingest-app/resources/public/
+
+###############################
+### macOS
+###############################
+.DS_Store
+
+###############################
+### IntelliJ
+###############################
 .idea/
 *.iml
-.DS_Store
+
+###############################
+### Visual Studio
+###############################
 .vscode
-profiles.clj
-/ingest-app/resources/public/
-pom.xml
+
+###############################
+### Emacs ignore pattersm
+###############################
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Org-mode
+.org-id-locations
+*_archive
+
+# flymake-mode
+*_flymake.*
+
+# eshell files
+/eshell/history
+/eshell/lastdir
+
+# elpa packages
+/elpa/
+
+# reftex files
+*.rel
+
+# AUCTeX auto folder
+/auto/
+
+# cask packages
+.cask/
+dist/
+
+# Flycheck
+flycheck_*.el
+
+# server auth directory
+/server/
+
+# projectiles files
+.projectile
+
+# directory configuration
+.dir-locals.el

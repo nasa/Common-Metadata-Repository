@@ -15,6 +15,7 @@
    [cmr.search.site.pages :as pages]
    [cmr.search.site.static :as static]
    [cmr.search.site.util :as site-utils]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as mdb]))
 
 (def cache-key
@@ -27,7 +28,7 @@
   {:default 0
    :type Long})
 
-(defconfig generation-interval
+(defconfig static-content-generation-interval
   "Number of seconds between `static-content-generator-job` runs."
   {:default (* 60 60 24)
    :type Long})
@@ -142,10 +143,12 @@
 ;;       particular ACL settings provided by the HTTP request context.
 (defjob StaticContentGeneratorJob
   [_job-context system]
-  (generate-content {:system system :execution-context :cli}))
+  (-> {:system system}
+      (transmit-config/with-echo-system-token)
+      (generate-content)))
 
 (def static-content-generator-job
   "The job definition used by the system job scheduler."
   {:job-type StaticContentGeneratorJob
-   :interval (generation-interval)
+   :interval (static-content-generation-interval)
    :start-delay (+ (default-job-start-delay) (static-content-generation-job-delay))})
