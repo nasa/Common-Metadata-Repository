@@ -35,11 +35,11 @@
   request context which contains the state of a running CMR."
   :execution-context)
 
-(defmethod get-providers :cli
-  [context]
-  (let [providers-url (format "%sproviders"
-                              (config/application-public-root-url :ingest))]
-    (util/endpoint-get providers-url {:accept mt/json})))
+;; (defmethod get-providers :cli
+;;   [context]
+;;   (let [providers-url (format "%sproviders"
+;;                               (config/application-public-root-url :ingest))]
+;;     (util/endpoint-get providers-url {:accept mt/json})))
 
 (defmethod get-providers :default
   [context]
@@ -55,16 +55,16 @@
   request context which contains the state of a running CMR."
   (fn [context & args] (:execution-context context)))
 
-(defmethod collection-data :cli
-  [context tag provider-id]
-  (as-> (config/application-public-root-url :search) data
-        (format "%scollections" data)
-        (util/endpoint-get data {:accept mt/umm-json-results
-                                 :query-params {:provider provider-id
-                                                :tag-key tag
-                                                :page-size 2000}})
-        (:items data)
-        (sort-by #(get-in % [:umm :EntryTitle]) data)))
+;; (defmethod collection-data :cli
+;;   [context tag provider-id]
+;;   (as-> (config/application-public-root-url :search) data
+;;         (format "%scollections" data)
+;;         (util/endpoint-get data {:accept mt/umm-json-results
+;;                                  :query-params {:provider provider-id
+;;                                                 :tag-key tag
+;;                                                 :page-size 2000}})
+;;         (:items data)
+;;         (sort-by #(get-in % [:umm :EntryTitle]) data)))
 
 (defmethod collection-data :default
   [context tag provider-id]
