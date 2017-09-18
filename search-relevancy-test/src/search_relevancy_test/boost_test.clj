@@ -135,7 +135,7 @@
   (relevancy-test/test-setup :edsc) ; Run the setup once
   (let [best-run (atom nil)
         ;; Harcoded to always run the EDSC test for now
-        filename edsc-log-parser/anomaly-filename]
+        filename core/edsc-anomaly-filename]
     (doseq [n (range num-iterations)
             :let [random-boosts (into {}
                                       (for [field boost-fields
@@ -158,6 +158,27 @@
 
 (comment
  (def results (random-boost-tests 0.5 30.0 10))
+
+ (run-boost-test-all-fields core/edsc-anomaly-filename {:short-name 0.9,
+                                                        :science-keywords 1.2,
+                                                        :entry-title 2.0,
+                                                        :project 0.6})
+ (run-boost-test-all-fields core/edsc-anomaly-filename {:short-name 1.1,
+                                                        :instrument 2.7,
+                                                        :version-id 1.7,
+                                                        :science-keywords 1.2,
+                                                        :data-center 2.9,
+                                                        ; :project 0.7,
+                                                        :spatial-keyword 0.5,
+                                                        ; :entry-id 0.6,
+                                                        :temporal-keyword 2.9,
+                                                        :provider 2.1,
+                                                        :entry-title 0.3,
+                                                        :two-d-coord-name 2.7,
+                                                        :platform 1.2,
+                                                        :processing-level-id 2.8})
+
+ (run-boost-test-all-fields core/edsc-anomaly-filename {:short-name 1.1, :instrument 2.7, :version-id 1.7, :science-keywords 1.2, :data-center 2.9, :project 0.7, :spatial-keyword 0.5, :entry-id 0.6, :temporal-keyword 2.9, :provider 2.1, :entry-title 2.6, :two-d-coord-name 2.7, :platform 1.2, :processing-level-id 2.8})
  (do
    (require '[proto-repl-charts.charts :as charts])
    (charts/line-chart "Best discounted cumulative gain by iteration"
