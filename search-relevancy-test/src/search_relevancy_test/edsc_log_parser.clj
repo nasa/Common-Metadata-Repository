@@ -6,9 +6,6 @@
    [clojure.java.io :as io]
    [clojure.string :as string]))
 
-(def output-filename
-  "edsc_anomaly_tests.csv")
-
 (defn- get-selected-index
   "Returns the index that was selected in the EDSC log line."
   [metrics]
