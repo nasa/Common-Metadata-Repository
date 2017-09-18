@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [debug error info warn]]
+   [cmr.common.util :as util]
    [search-relevancy-test.core :as core]))
 
 (defconfig source-url
@@ -37,10 +38,11 @@
   "Returns a map of concept-id to the metadata format for that collection."
   [concept-ids]
   (let [url (str (source-url) "/collections.umm-json")
-        response (client/post url {:form-params {:concept-id concept-ids
-                                                 :page-size 2000}})
-                                  ;; Uncomment when collections are only visible for a certain token
-                                  ;  :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}})
+        options (util/remove-nil-keys
+                 {:form-params {:concept-id concept-ids
+                                :page-size 2000}
+                  :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}})
+        response (client/post url)
         items (:items (json/parse-string (:body response) true))]
     (into {}
           (for [item items
@@ -51,9 +53,9 @@
   "Returns the metadata for the provided concept-id in its native format."
   [concept-id fmt]
   (let [url (format "%s/concepts/%s" (source-url) concept-id)
-        params {:query-params {:concept-id concept-id}}
-                ;; Uncomment when collections are only visible for a certain token
-                ; :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}}
+        params (util/remove-nil-keys
+                {:query-params {:concept-id concept-id}
+                 :headers {:echo-token (System/getenv "CMR_SYSTEM_TOKEN")}})
         params (if (= fmt "application/vnd.nasa.cmr.umm+json")
                  (assoc params :accept "application/vnd.nasa.cmr.umm+json") ; want latest version of umm
                  params)

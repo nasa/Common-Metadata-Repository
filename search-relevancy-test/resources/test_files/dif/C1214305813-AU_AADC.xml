@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+  <Entry_ID>ASAC_2201_HCL_0.5</Entry_ID>
+  <Entry_Title>0.5 hour 1 M HCl extraction data for the Windmill Islands marine sediments</Entry_Title>
+  <Data_Set_Citation>
+    <Dataset_Creator>Snape, I., Riddle, M.J., Gore, D., Stark, J.S., Scouller, R. and Stark, S.C.</Dataset_Creator>
+    <Dataset_Title>0.5 hour 1 M HCl extraction data for the Windmill Islands marine sediments</Dataset_Title>
+    <Dataset_Series_Name>CAASM Metadata</Dataset_Series_Name>
+    <Dataset_Release_Date>2004-08-02</Dataset_Release_Date>
+    <Dataset_Publisher>Australian Antarctic Data Centre</Dataset_Publisher>
+    <Dataset_DOI>doi:10.4225/15/5747A30D1F767</Dataset_DOI>
+    <Online_Resource>https://data.aad.gov.au/aadc/metadata/metadata_redirect.cfm?md=/AMD/AU/ASAC_2201_HCL_0.5</Online_Resource>
+  </Data_Set_Citation>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Role>TECHNICAL CONTACT</Role>
+    <First_Name>IAN</First_Name>
+    <Last_Name>SNAPE</Last_Name>
+    <Email>ian.snape@aad.gov.au</Email>
+    <Phone>+61 3 6232 3591</Phone>
+    <Fax>+61 3 6232 3158</Fax>
+    <Contact_Address>
+      <Address>Australian Antarctic Division</Address>
+      <Address>203 Channel Highway</Address>
+      <City>Kingston</City>
+      <Province_or_State>Tasmania</Province_or_State>
+      <Postal_Code>7050</Postal_Code>
+      <Country>Australia</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>MARTIN</First_Name>
+    <Middle_Name>J.</Middle_Name>
+    <Last_Name>RIDDLE</Last_Name>
+    <Email>martin.riddle@aad.gov.au</Email>
+    <Phone>+61 3 6232 3573</Phone>
+    <Fax>+61 3 6232 3351</Fax>
+    <Contact_Address>
+      <Address>Australian Antarctic Division</Address>
+      <Address>203 Channel Highway</Address>
+      <City>Kingston</City>
+      <Province_or_State>Tasmania</Province_or_State>
+      <Postal_Code>7050</Postal_Code>
+      <Country>Australia</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>DIF AUTHOR</Role>
+    <First_Name>DAVE</First_Name>
+    <Middle_Name>J.</Middle_Name>
+    <Last_Name>CONNELL</Last_Name>
+    <Email>dave.connell@aad.gov.au</Email>
+    <Phone>+61 3 6232 3244</Phone>
+    <Fax>+61 3 6232 3351</Fax>
+    <Contact_Address>
+      <Address>Australian Antarctic Division</Address>
+      <Address>203 Channel Highway</Address>
+      <City>Kingston</City>
+      <Province_or_State>Tasmania</Province_or_State>
+      <Postal_Code>7050</Postal_Code>
+      <Country>Australia</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>DAMIAN</First_Name>
+    <Last_Name>GORE</Last_Name>
+    <Email>damian.gore@mq.edu.au</Email>
+    <Phone>+61 2 9850 8391</Phone>
+    <Fax>+61 2 9850 8420</Fax>
+    <Contact_Address>
+      <Address>Department of Physical Geography</Address>
+      <Address>Macquarie University</Address>
+      <City>Marsfield</City>
+      <Province_or_State>New South Wales</Province_or_State>
+      <Postal_Code>2109</Postal_Code>
+      <Country>Australia</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>JONATHAN</First_Name>
+    <Middle_Name>SEAN</Middle_Name>
+    <Last_Name>STARK</Last_Name>
+    <Email>jonny.stark@aad.gov.au</Email>
+    <Phone>+61 3 6232 3589</Phone>
+    <Fax>+61 3 6232 3158</Fax>
+    <Contact_Address>
+      <Address>Australian Antarctic Division</Address>
+      <Address>203 Channel Highway</Address>
+      <City>Kingston</City>
+      <Province_or_State>Tasmania</Province_or_State>
+      <Postal_Code>7050</Postal_Code>
+      <Country>Australia</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Role>TECHNICAL CONTACT</Role>
+    <First_Name>REBECCA</First_Name>
+    <Last_Name>SCOULLER</Last_Name>
+    <Email>beck.scouller@aad.gov.au</Email>
+    <Contact_Address>
+      <Address>Australian Antarctic Division</Address>
+      <Address>203 Channel Highway</Address>
+      <City>Kingston</City>
+      <Province_or_State>Tasmania</Province_or_State>
+      <Postal_Code>7050</Postal_Code>
+      <Country>Australia</Country>
+    </Contact_Address>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <First_Name>SCOTT</First_Name>
+    <Middle_Name>CHARLES</Middle_Name>
+    <Last_Name>STARK</Last_Name>
+    <Email>scott.stark@aad.gov.au</Email>
+    <Phone>+61 3 6232 3169</Phone>
+    <Fax>+61 3 6232 3351</Fax>
+    <Contact_Address>
+      <Address>Australian Antarctic Division</Address>
+      <Address>203 Channel Highway</Address>
+      <City>Kingston</City>
+      <Province_or_State>Tasmania</Province_or_State>
+      <Postal_Code>7050</Postal_Code>
+      <Country>Australia</Country>
+    </Contact_Address>
+  </Personnel>
+  <Discipline>
+    <Discipline_Name>EARTH SCIENCE</Discipline_Name>
+  </Discipline>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>ENVIRONMENTAL IMPACTS</Term>
+    <Variable_Level_1>HEAVY METALS CONCENTRATION</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>OCEANS</Topic>
+    <Term>MARINE SEDIMENTS</Term>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>OCEANS</Topic>
+    <Term>MARINE SEDIMENTS</Term>
+    <Variable_Level_1>SEDIMENT CHEMISTRY</Variable_Level_1>
+  </Parameters>
+  <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+  <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+  <ISO_Topic_Category>OCEANS</ISO_Topic_Category>
+  <Keyword>ANTIMONY</Keyword>
+  <Keyword>ARSENIC</Keyword>
+  <Keyword>BIOAVAILABLE METALS</Keyword>
+  <Keyword>CADMIUM</Keyword>
+  <Keyword>CHROMIUM</Keyword>
+  <Keyword>COPPER</Keyword>
+  <Keyword>IRON</Keyword>
+  <Keyword>KINETICS</Keyword>
+  <Keyword>LEAD</Keyword>
+  <Keyword>LOCATION</Keyword>
+  <Keyword>MANGANESE</Keyword>
+  <Keyword>MESS</Keyword>
+  <Keyword>MULTIVARIATE ANALYSIS</Keyword>
+  <Keyword>NICKEL</Keyword>
+  <Keyword>PACS</Keyword>
+  <Keyword>REPLICATE</Keyword>
+  <Keyword>SILVER</Keyword>
+  <Keyword>SITE</Keyword>
+  <Keyword>TIN</Keyword>
+  <Keyword>WINDMILL ISLANDS</Keyword>
+  <Keyword>ZINC</Keyword>
+  <Sensor_Name>
+    <Short_Name>SEDIMENT CORERS</Short_Name>
+  </Sensor_Name>
+  <Source_Name>
+    <Short_Name>LABORATORY</Short_Name>
+  </Source_Name>
+  <Source_Name>
+    <Short_Name>FIELD SURVEYS</Short_Name>
+  </Source_Name>
+  <Temporal_Coverage>
+    <Start_Date>1997-10-01</Start_Date>
+    <Stop_Date>1999-03-31</Stop_Date>
+  </Temporal_Coverage>
+  <Data_Set_Progress>COMPLETE</Data_Set_Progress>
+  <Spatial_Coverage>
+    <Southernmost_Latitude>-66.0</Southernmost_Latitude>
+    <Northernmost_Latitude>-66.0</Northernmost_Latitude>
+    <Westernmost_Longitude>110.0</Westernmost_Longitude>
+    <Easternmost_Longitude>110.0</Easternmost_Longitude>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>ANTARCTICA</Location_Type>
+    <Detailed_Location>Windmill Islands</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>POLAR</Location_Type>
+  </Location>
+  <Quality>The dates provided in temporal coverage are approximate only.  Years are correct.
+
+See the referenced paper for full details on steps taken to ensure quality of data.
+
+To assess extraction efficiency for a range of sediment types, four marine sediments were analysed in detail.  Two international certified reference materials (CRMs) and two well-characterised Antarctic sediments were chosen to compare and contrast moderately to strongly contaminated samples (based on total metal digest), with clean samples of similar matrices.  One CRM was an uncontaminated continental shelf mud (MESS-2), and the other a contaminated harbour mud (PACS-2) (NRCC, 2002).  The two Antarctic sediments were collected as part of a regional hierarchical survey (Stark et al., 2003).  One Antarctic sample was from an area of known metal pollution in Brown Bay (BB), which is adjacent to the 'Old' Casey Station waste disposal site (Snape et al., 2001; Stark et al., 2003).  The second Antarctic sample was from a non-impacted control site from O'Brien Bay (OBB), 3 km south of Casey Station and the disposal site (Fig. 1).  The Antarctic samples, OBB and BB, have similar matrices, proportions of mud (less than 63 microns; 19% and 22% respectively) and total organic carbon contents (1.9% and 2.3% respectively). Both MESS and PACS are sieved, homogenised and dried CRMs that have been ground to ~50 microns (NRCC, 2002).  In contrast, OBB and BB were only sieved to less than 2 mm, thereby removing only the very largest particles (less than or equal to 3%).  The Antarctic samples were collected using acid-washed PVC coring tubes.  The samples were kept frozen at -20 degrees C until wet-sieved with a small amount of clean filtered (0.45 microns cellulose nitrate) O'Brien Bay seawater through 2 mm nylon mesh held in a plastic sieve unit.  The sediments were then oven-dried to constant weight at 103 degrees C (Loring and Rantala 1992), and stored in Nalgene HDPE bottles until analysis.</Quality>
+  <Access_Constraints>The data are available for download from the url given below.</Access_Constraints>
+  <Use_Constraints>This data set conforms to the PICCCBY Attribution License
+(http://creativecommons.org/licenses/by/3.0/).
+
+Please follow instructions listed in the citation reference provided at http://data.aad.gov.au/aadc/metadata/citation.cfm?entry_id=ASAC_2201_HCL_0.5 when using these data.</Use_Constraints>
+  <Data_Set_Language>ENGLISH</Data_Set_Language>
+  <Originating_Center>Australian Antarctic Division</Originating_Center>
+  <Data_Center>
+    <Data_Center_Name>
+      <Short_Name>AU/AADC</Short_Name>
+      <Long_Name>Australian Antarctic Data Centre, Australia</Long_Name>
+    </Data_Center_Name>
+    <Data_Center_URL>http://data.aad.gov.au</Data_Center_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <First_Name>DATA OFFICER</First_Name>
+      <Last_Name>AADC</Last_Name>
+      <Email>metadata@aad.gov.au</Email>
+      <Phone>+61 3 6232 3244</Phone>
+      <Fax>+61 3 6232 3351</Fax>
+      <Contact_Address>
+        <Address>Australian Antarctic Division</Address>
+        <Address>203 Channel Highway</Address>
+        <City>Kingston</City>
+        <Province_or_State>Tasmania</Province_or_State>
+        <Postal_Code>7050</Postal_Code>
+        <Country>Australia</Country>
+      </Contact_Address>
+    </Personnel>
+  </Data_Center>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Size>3 kb</Distribution_Size>
+    <Distribution_Format>csv</Distribution_Format>
+    <Fees>free</Fees>
+  </Distribution>
+  <Reference>
+    <Author>Snape, I., Scouller, R.C., Stark, S.C., Stark, J., Riddle, M.J., Gore, D.B.</Author>
+    <Publication_Date>2004</Publication_Date>
+    <Title>Characterisation of the dilute HCl extraction method for the identification of metal contamination in Antarctic marine sediments</Title>
+    <Series>Chemosphere</Series>
+    <Volume>57</Volume>
+    <Issue>6</Issue>
+    <Pages>491-504</Pages>
+    <DOI>doi:10.1016/j.chemosphere.2004.05.042</DOI></Reference>
+  <Summary>
+    <Abstract>These results are for the 0.5 hour extraction of HCl.
+
+See also the metadata records for the 4 hour extraction of HCl, and the time trial data for 1 M HCl extractions.
+
+A regional survey of potential contaminants in marine or estuarine sediments is often one of the first steps in a post-disturbance environmental impact assessment. Of the many different chemical extraction or digestion procedures that have been proposed to quantify metal contamination, partial acid extractions are probably the best overall compromise between selectivity, sensitivity, precision, cost and expediency.  The extent to which measured metal concentrations relate to the anthropogenic fraction that is bioavailable is contentious, but is one of the desired outcomes of an assessment or prediction of biological impact.  As part of a regional survey of metal contamination associated with Australia's past waste management activities in Antarctica, we wanted to identify an acid type and extraction protocol that would allow a reasonable definition of the anthropogenic bioavailable fraction for a large number of samples.  From a kinetic study of the 1 M HCl extraction of two certified Certified Reference Materials (MESS-2 and PACS-2) and two Antarctic marine sediments, we concluded that a 4 hour extraction time allows the equilibrium dissolution of relatively labile metal contaminants, but does not favour the extraction of natural geogenic metals.  In a regional survey of 88 marine samples from the Casey Station area of East Antarctica, the 4 h extraction procedure correlated best with biological data, and most clearly identified those sediments thought to be contaminated by runoff from abandoned waste disposal sites.  Most importantly the 4 hour extraction provided better definition of the low to moderately contaminated locations by picking up small differences in anthropogenic metal concentrations.  For the purposes of inter-regional comparison, we recommend a 4 hour 1 M HCl acid extraction as a standard method for assessing metal contamination in Antarctica.
+
+The fields in this dataset are
+
+Location
+Site
+Replicate
+Antimony
+Arsenic
+Cadmium
+Chromium
+Copper
+Iron
+Lead
+Manganese
+Nickel
+Silver
+Tin
+Zinc</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+    </URL_Content_Type>
+    <URL>http://data.aad.gov.au/aadc/portal/download_file.cfm?file_id=1677</URL>
+    <Description>Download point for the data</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW PROJECT HOME PAGE</Type>
+    </URL_Content_Type>
+    <URL>https://secure3.aad.gov.au/proms/public/projects/report_project_public.cfm?project_no=2201</URL>
+    <Description>Public information for ASAC project 2201</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://data.aad.gov.au/aadc/metadata/citation.cfm?entry_id=ASAC_2201_HCL_0.5</URL>
+    <Description>Citation reference for this metadata record and dataset</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>AMD/AU</Short_Name>
+  </IDN_Node>
+  <IDN_Node>
+    <Short_Name>CEOS</Short_Name>
+  </IDN_Node>
+  <IDN_Node>
+    <Short_Name>AMD</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>AADC</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 9.7</Metadata_Version>
+  <DIF_Creation_Date>2004-07-30</DIF_Creation_Date>
+  <Last_DIF_Revision_Date>2017-04-26</Last_DIF_Revision_Date>
+  <DIF_Revision_History>2016-03-10 - record updated by Dave Connell - basic updates.</DIF_Revision_History>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.uuid</Name>
+      <Value>f4d30361-f1bd-4c44-9d23-99208fe35b7d</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.extraction_date</Name>
+      <Value>2015-11-29 18:23:23</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.keyword_version</Name>
+      <Value>8.1</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

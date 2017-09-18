@@ -4,7 +4,9 @@
    [cheshire.core :as json]
    [clojure.data.csv :as csv]
    [clojure.java.io :as io]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [cmr.common.log :refer [warn]]
+   [search-relevancy-test.core :as core]))
 
 (defn- get-selected-index
   "Returns the index that was selected in the EDSC log line."
@@ -36,6 +38,7 @@
         (json/parse-string true)
         :data)
     (catch Exception e
+      (warn e)
       nil)))
 
 (defn create-test-from-line
@@ -101,20 +104,12 @@
      (csv/write-csv csv-file [anomaly-csv-columns])
      (csv/write-csv csv-file row-data))))
 
-(def anomaly-filename
-  "File to save EDSC anomaly tests to."
-  "edsc_anomaly_tests.csv")
-
 (defn parse-edsc-logs
   "Parses the provided EDSC relevancy log file and returns search relevancy tests."
   [log-file]
   (let [all-tests (remove-duplicate-tests (get-all-tests log-file))]
-    (write-edsc-anomaly-csv all-tests (str "resources/" anomaly-filename))
+    (write-edsc-anomaly-csv all-tests (str "resources/" core/edsc-anomaly-filename))
     all-tests))
 
 (comment
- (count (get-all-tests (io/resource "EDSC_Relevancy_metrics.log")))
- (count (remove-duplicate-tests (get-all-tests (io/resource "EDSC_Relevancy_metrics.log"))))
- (parse-edsc-logs (io/resource "one-ignored-request.log"))
- (parse-edsc-logs (io/resource "one-request.log"))
- (parse-edsc-logs (io/resource "EDSC_Relevancy_metrics.log")))
+ (parse-edsc-logs (io/resource "logs/EDSC_Relevancy_metrics.log")))

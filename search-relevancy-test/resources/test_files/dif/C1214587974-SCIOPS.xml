@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF 
+    xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>KUKRI_He</Entry_ID>
+   <Entry_Title>(U-Th)/He ages from the Kukri Hills of southern Victoria Land</Entry_Title>
+   <Personnel>
+      <Role>INVESTIGATOR</Role>
+      <First_Name>SUZANNE</First_Name>
+      <Last_Name>BALDWIN</Last_Name>
+      <Email>sbaldwin@syr.edu</Email>
+      <Contact_Address>
+         <Address>Department of Earth Sciences</Address>
+         <Address>204 Heroy</Address>
+         <Address>Syracuse University</Address>
+         <City>Syracuse</City>
+         <Province_or_State>NY</Province_or_State>
+         <Postal_Code>13244-1070</Postal_Code>
+         <Country>USA</Country>
+      </Contact_Address>
+   </Personnel>
+   <Personnel>
+      <Role>INVESTIGATOR</Role>
+      <Role>DIF AUTHOR</Role>
+      <First_Name>PAUL</First_Name>
+      <Last_Name>FITZGERALD</Last_Name>
+      <Email>pgfitzge@syr.edu</Email>
+      <Phone>+01 315 443 2619</Phone>
+      <Fax>+01 315 443 3363</Fax>
+      <Contact_Address>
+         <Address>Department of Earth Sciences</Address>
+         <Address>204 Heroy Geology Laboratory</Address>
+         <Address>Syracuse University</Address>
+         <City>Syracuse</City>
+         <Province_or_State>New York</Province_or_State>
+         <Postal_Code>13244-1070</Postal_Code>
+         <Country>USA</Country>
+      </Contact_Address>
+   </Personnel>
+   <Personnel>
+      <Role>INVESTIGATOR</Role>
+      <First_Name>KENNETH</First_Name>
+      <Middle_Name>A.</Middle_Name>
+      <Last_Name>FARLEY</Last_Name>
+      <Email>farley@gps.caltech.edu</Email>
+      <Phone>(626) 395-6005</Phone>
+      <Fax>(626) 568-0935</Fax>
+      <Contact_Address>
+         <Address>Division of Geological and Planetary Sciences</Address>
+         <Address>California Institute of Technology</Address>
+         <Address>MS 170-25</Address>
+         <City>Pasadena</City>
+         <Province_or_State>CA</Province_or_State>
+         <Postal_Code>91125</Postal_Code>
+         <Country>USA</Country>
+      </Contact_Address>
+   </Personnel>
+   <Personnel>
+      <Role>INVESTIGATOR</Role>
+      <First_Name>PAUL</First_Name>
+      <Last_Name>O'SULLIVAN</Last_Name>
+      <Email>OSullivan@apatite.com</Email>
+      <Contact_Address>
+         <Address>Apatite to Zircon, Inc.</Address>
+         <Address>1075 Matson Road</Address>
+         <City>Viola</City>
+         <Province_or_State>Idaho</Province_or_State>
+         <Postal_Code>83872-9709</Postal_Code>
+         <Country>USA</Country>
+      </Contact_Address>
+   </Personnel>
+   <Parameters uuid="441ce068-91f2-4412-8893-c0096d8f9079">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>SOLID EARTH</Topic>
+      <Term>GEOCHEMISTRY</Term>
+      <Variable_Level_1>GEOCHEMICAL PROPERTIES</Variable_Level_1>
+      <Variable_Level_2>ISOTOPES</Variable_Level_2>
+   </Parameters>
+   <Parameters uuid="d4ac49a1-9ba5-4a90-a033-2ef317028352">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>SOLID EARTH</Topic>
+      <Term>ROCKS/MINERALS/CRYSTALS</Term>
+      <Variable_Level_1>AGE DETERMINATIONS</Variable_Level_1>
+   </Parameters>
+   <ISO_Topic_Category uuid="d9cd5b7e-e9e7-4746-bbc8-bc69f7b606c7">GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+   <Keyword>THERMOCHRONOLOGY</Keyword>
+   <Keyword>KUKRI HILLS</Keyword>
+   <Keyword>SOUTHERN VICTORIA LAND</Keyword>
+   <Keyword>TRANSANTARCTIC MOUNTAINS</Keyword>
+   <Keyword>DENUDATION</Keyword>
+   <Keyword>COOLING HISTORY</Keyword>
+   <Keyword>U-Th/He AGES</Keyword>
+   <Spatial_Coverage>
+      <Southernmost_Latitude>-77.7</Southernmost_Latitude>
+      <Northernmost_Latitude>-77.7</Northernmost_Latitude>
+      <Westernmost_Longitude>162.7</Westernmost_Longitude>
+      <Easternmost_Longitude>162.7</Easternmost_Longitude>
+   </Spatial_Coverage>
+   <Location uuid="70fb5a3b-35b1-4048-a8be-56a0d865281c">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>ANTARCTICA</Location_Type>
+      <Detailed_Location>KUKRI HILLS</Detailed_Location>
+   </Location>
+   <Location uuid="3fedcf7c-7b0c-4b51-abd2-2c54de713061">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>POLAR</Location_Type>
+   </Location>
+   <Data_Set_Language>English</Data_Set_Language>
+   <Originating_Center>Thermochronology Research Group</Originating_Center>
+   <Data_Center>
+      <Data_Center_Name uuid="96223bcb-78de-49fb-a278-dbcf05141c64">
+         <Short_Name>SYRACUSE/ES/TGIGRG</Short_Name>
+         <Long_Name>Thermochronology, Geochronology, and Isotope Geochemistry Research Group, Department of Earth Sciences, Syracuse University</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>http://su-thermochronology.syr.edu/</Data_Center_URL>
+      <Data_Set_ID>KUKRI_He</Data_Set_ID>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>PAUL</First_Name>
+         <Last_Name>FITZGERALD</Last_Name>
+         <Email>pgfitzge@syr.edu</Email>
+         <Phone>+01 315 443 2619</Phone>
+         <Fax>+01 315 443 3363</Fax>
+         <Contact_Address>
+            <Address>Department of Earth Sciences</Address>
+            <Address>204 Heroy Geology Laboratory</Address>
+            <Address>Syracuse University</Address>
+            <City>Syracuse</City>
+            <Province_or_State>New York</Province_or_State>
+            <Postal_Code>13244-1070</Postal_Code>
+            <Country>USA</Country>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Summary>
+      <Abstract>The data set consists of (U-Th)/He ages collected from three vertical profiles
+      from the the Kukri Hills (north side of the Ferrar Glacier) of Southern
+      Victoria Land.  The data set provides information on the cooling history and
+      hence the denduation history of the Transantarctic Mountains in this area.
+      Analyses were all carried out at the (U-Th)/He lab of Ken Farley at the
+      Californai Institute of Technology.</Abstract>
+   </Summary>
+   <Related_URL>
+      <URL_Content_Type uuid="6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1">
+     <Type>VIEW PROJECT HOME PAGE</Type>
+      </URL_Content_Type>
+      <URL>http://su-thermochronology.syr.edu/</URL>
+      <Description>
+         Thermochronology and Tectonics Research Group at Syracuse University
+      </Description>
+   </Related_URL>
+   <IDN_Node uuid="e8e17a9b-c5aa-4924-b065-7a485d019299">
+      <Short_Name>AMD/US</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+      <Short_Name>CEOS</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="47308f11-79b0-46c2-b0c9-06d0b15ae845">
+      <Short_Name>AMD</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.7.1</Metadata_Version>
+   <DIF_Creation_Date>2003-03-26</DIF_Creation_Date>
+   <Last_DIF_Revision_Date>2017-04-20</Last_DIF_Revision_Date>
+   <DIF_Revision_History>
+      2003-03-26: New DIF
+   </DIF_Revision_History>
+   <Future_DIF_Review_Date>2004-03-26</Future_DIF_Review_Date>
+   <Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-12-02 13:35:00</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>

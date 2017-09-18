@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?><DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+  <Entry_ID>CANEMRCCRSMANCANMAP</Entry_ID>
+  <Entry_Title>1 Km Resolution Land Cover Map of Canada</Entry_Title>
+  <Data_Set_Citation>
+    <Dataset_Creator>Manitoba Remote Sensing Centre</Dataset_Creator>
+    <Dataset_Title>1 Km Resolution Land Cover Map of Canada</Dataset_Title>
+  </Data_Set_Citation>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Role>DIF AUTHOR</Role>
+    <First_Name>ROY</First_Name>
+    <Last_Name>DIXON</Last_Name>
+    <Email>rdixon@gov.mb.ca</Email>
+    <Phone>+01-204-945-6594</Phone>
+    <Fax>+01-204-945-1365</Fax>
+    <Contact_Address>
+      <Address>1007 Century Street</Address>
+      <City>Winnipeg</City>
+      <Province_or_State>Manitoba</Province_or_State>
+      <Postal_Code>R3H 0W4</Postal_Code>
+      <Country>Canada</Country>
+    </Contact_Address>
+  </Personnel>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>VEGETATION</Term>
+    <Variable_Level_1>VEGETATION COVER</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>CRYOSPHERE</Topic>
+    <Term>SNOW/ICE</Term>
+    <Variable_Level_1>SNOW COVER</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>INFRASTRUCTURE</Term>
+    <Variable_Level_1>CULTURAL FEATURES</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+    <Term>SNOW/ICE</Term>
+    <Variable_Level_1>SNOW COVER</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+    <Term>SURFACE WATER</Term>
+    <Variable_Level_1>SURFACE WATER FEATURES</Variable_Level_1>
+    <Variable_Level_2>LAKES/RESERVOIRS</Variable_Level_2>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+    <Term>SURFACE WATER</Term>
+    <Variable_Level_1>SURFACE WATER FEATURES</Variable_Level_1>
+    <Variable_Level_2>RIVERS/STREAMS</Variable_Level_2>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>LAND USE/LAND COVER</Term>
+    <Variable_Level_1>LAND USE/LAND COVER CLASSIFICATION</Variable_Level_1>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>LAND SURFACE</Topic>
+    <Term>SOILS</Term>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>ECOSYSTEMS</Term>
+    <Variable_Level_1>FRESHWATER ECOSYSTEMS</Variable_Level_1>
+    <Variable_Level_2>RIVERS/STREAM</Variable_Level_2>
+  </Parameters>
+  <Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>BIOSPHERE</Topic>
+    <Term>ECOSYSTEMS</Term>
+    <Variable_Level_1>FRESHWATER ECOSYSTEMS</Variable_Level_1>
+    <Variable_Level_2>LAKE/POND</Variable_Level_2>
+  </Parameters>
+  <ISO_Topic_Category>BIOTA</ISO_Topic_Category>
+  <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+  <ISO_Topic_Category>IMAGERY/BASE MAPS/EARTH COVER</ISO_Topic_Category>
+  <ISO_Topic_Category>INLAND WATERS</ISO_Topic_Category>
+  <ISO_Topic_Category>SOCIETY</ISO_Topic_Category>
+  <Keyword>GCMD</Keyword>
+  <Keyword>none</Keyword>
+  <Keyword>AGRICULTURE</Keyword>
+  <Keyword>CROPS</Keyword>
+  <Keyword>FORESTRY</Keyword>
+  <Keyword>ICE</Keyword>
+  <Keyword>MAPPING</Keyword>
+  <Keyword>SNOW</Keyword>
+  <Keyword>SOILS</Keyword>
+  <Keyword>SURFACE VEGETATION</Keyword>
+  <Sensor_Name>
+    <Short_Name>AVHRR</Short_Name>
+    <Long_Name>Advanced Very High Resolution Radiometer</Long_Name>
+  </Sensor_Name>
+  <Source_Name>
+    <Short_Name>NOAA POES</Short_Name>
+    <Long_Name>NOAA Polar Orbiting Environmental Satellites</Long_Name>
+  </Source_Name>
+  <Temporal_Coverage>
+    <Start_Date>1991-01-01</Start_Date>
+    <Stop_Date>1993-12-31</Stop_Date>
+  </Temporal_Coverage>
+  <Spatial_Coverage>
+    <Southernmost_Latitude>41.0</Southernmost_Latitude>
+    <Northernmost_Latitude>70.0</Northernmost_Latitude>
+    <Westernmost_Longitude>-141.0</Westernmost_Longitude>
+    <Easternmost_Longitude>-52.0</Easternmost_Longitude>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>ALBERTA</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>BRITISH COLUMBIA</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>ATLANTIC PROVINCES</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>MANITOBA</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>NEW BRUNSWICK</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>NEWFOUNDLAND AND LABRADOR</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>NOVA SCOTIA</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>ONTARIO</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>PRINCE EDWARD ISLAND</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>QUEBEC</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+    <Location_Subregion1>CANADA</Location_Subregion1>
+    <Detailed_Location>SASKATCHEWAN</Detailed_Location>
+  </Location>
+  <Location>
+    <Location_Category>CONTINENT</Location_Category>
+    <Location_Type>NORTH AMERICA</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>MID-LATITUDE</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>NORTHERN HEMISPHERE</Location_Type>
+  </Location>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>WESTERN HEMISPHERE</Location_Type>
+  </Location>
+  <Access_Constraints>none</Access_Constraints>
+  <Use_Constraints>noneOffline_Option Offline_Media</Use_Constraints>
+  <Data_Center>
+    <Data_Center_Name>
+      <Short_Name>CA/MB/MC/GEO/MRSC</Short_Name>
+      <Long_Name>Manitoba Remote Sensing Centre, Geomatics and Remote Sensing, Manitoba Conservation, Canada</Long_Name>
+    </Data_Center_Name>
+    <Data_Center_URL>http://www.gov.mb.ca/trade/globaltrade/environ/companies/remote.html</Data_Center_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <First_Name>ROY</First_Name>
+      <Last_Name>DIXON</Last_Name>
+      <Email>rdixon@gov.mb.ca</Email>
+      <Phone>+01-204-945-6594</Phone>
+      <Fax>+01-204-945-1365</Fax>
+      <Contact_Address>
+        <Address>1007 Century Street</Address>
+        <City>Winnipeg</City>
+        <Province_or_State>Manitoba</Province_or_State>
+        <Postal_Code>R3H 0W4</Postal_Code>
+        <Country>Canada</Country>
+      </Contact_Address>
+    </Personnel>
+  </Data_Center>
+  <Distribution>
+    <Fees>Contact Distributor</Fees>
+  </Distribution>
+  <Summary>
+    <Abstract>Thirteen land cover classes are covered using 1 km resolution data.
+
+      The land cover classes include; mixedwood forest, deciduous forest, water
+bodies and rivers, transitional forest, coniferous forest, arctic/alpine
+tundra, barren lands, perennial snow or ice, agricultural cropland, rangeland
+and pasture, built-up areas, United States of America and Greenland, boundary
+lines of provinces and territories and permanent polar ice.
+
+      The Canada map is at a scale of 1:6,500,000. Each provincial map is
+available at 1:1,000,000 and 1:2,000,000 scale.Data is used for global change
+research and mapping.
+Spatial Data Organization Information -
+
+    Indirect Spatial Reference:
+    Direct Spatial Reference:
+    Raster Object Type:
+    Row Count:
+    Column Count:
+    Vertical Count:
+Spatial Reference Information -
+     Horizontal Coordinate System Definition -
+
+Planar -
+
+    Planar Coordinate Encoding Method:
+    Coordinate Representation:
+     Abscissa Resolution:
+     Ordinate Resolution:
+    Distance and Bearing Representation:
+     Distance Resolution:
+     Bearing Resolution:
+     Bearing Units:
+     Bearing Reference Direction:
+     Bearing Reference Meridian:
+    Planar Distance Units:
+
+   Geodetic Model:
+     Horizontal Datum Name:
+    Ellipsoid Name:
+    Semi-major Axis:
+    Denominator of Flattening Ratio:</Abstract>
+  </Summary>
+  <Related_URL>
+    <!--Modified by Change List Tool on Tue Dec 06 15:32:15 EST 2016. Old value is "http://geodiscover.cgdi.ca/"-->
+<URL>http://www.nrcan.gc.ca/earth-sciences/geomatics/canadas-spatial-data-infrastructure/10783</URL>
+    <Description>GeoConnections Discovery Portal. Canada's IDN Node.</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>CANADA/CGDI</Short_Name>
+  </IDN_Node>
+  <IDN_Node>
+    <Short_Name>CEOS</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>CANADA-CGDI</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 9.7</Metadata_Version>
+  <DIF_Creation_Date>2001-06-13</DIF_Creation_Date>
+  <Last_DIF_Revision_Date>2017-04-21</Last_DIF_Revision_Date>
+  <Future_DIF_Review_Date>2005-01-19</Future_DIF_Review_Date>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.extraction_date</Name>
+      <Value>2015-12-02 12:27:38</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.keyword_version</Name>
+      <Value>8.1</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>
