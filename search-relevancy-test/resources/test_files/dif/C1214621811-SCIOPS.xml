@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?><DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd">
+   <Entry_ID>Canada_SCI_BowenIsGeoLibrary</Entry_ID>
+   <Entry_Title>(SCI) The Bowen Island GeoLibrary (Data Collection)</Entry_Title>
+   <Data_Set_Citation>
+      <Dataset_Creator>Bowen Island Forest and Water Management Society (BIFWMS)</Dataset_Creator>
+      <Dataset_Title>(SCI) The Bowen Island GeoLibrary (Data Collection)</Dataset_Title>
+      <Online_Resource>http://www.geoconnections.org/en/aboutGeo/successStories/id=949</Online_Resource>
+   </Data_Set_Citation>
+   <Personnel>
+      <Role>TECHNICAL CONTACT</Role>
+      <Role>DIF AUTHOR</Role>
+      <First_Name>MURRAY</First_Name>
+      <Last_Name>JOURNEAY</Last_Name>
+      <Email>mjournea@nrcan.gc.ca</Email>
+      <Phone>+01-604-947-0456</Phone>
+      <Contact_Address>
+         <Address>P.O.Box 188</Address>
+         <City>Bowen Island</City>
+         <Province_or_State>British Columbia</Province_or_State>
+         <Postal_Code>V0N 1G0</Postal_Code>
+         <Country>Canada</Country>
+      </Contact_Address>
+   </Personnel>
+   <Parameters uuid="d2056285-8249-4c11-810b-783600030525">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>AGRICULTURE</Topic>
+      <Term>FOREST SCIENCE</Term>
+      <Variable_Level_1>FOREST MANAGEMENT</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="c7b5c02c-724d-4a19-b824-98180f3900c9">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>BIOSPHERE</Topic>
+      <Term>VEGETATION</Term>
+   </Parameters>
+   <Parameters uuid="37a6c8e2-f2ac-48a4-a4fa-d80f700f68db">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>HUMAN DIMENSIONS</Topic>
+      <Term>INFRASTRUCTURE</Term>
+      <Variable_Level_1>TRANSPORTATION</Variable_Level_1>
+   </Parameters>
+   <Parameters uuid="d4313915-2d24-424c-a171-30ee9a6f4bb5">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>HUMAN DIMENSIONS</Topic>
+      <Term>INFRASTRUCTURE</Term>
+   </Parameters>
+   <Parameters uuid="734f8f27-6976-4b67-8794-c7fc79d6161e">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+      <Term>GROUND WATER</Term>
+   </Parameters>
+   <!--Modified by Change List Tool on Tue Oct 04 14:08:59 EDT 2016. Old value is "EARTH SCIENCE &gt; TERRESTRIAL HYDROSPHERE &gt; SURFACE WATER &gt; LAKES"-->
+<Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+    <Term>SURFACE WATER</Term>
+    <Variable_Level_1>SURFACE WATER FEATURES</Variable_Level_1>
+    <Variable_Level_2>LAKES/RESERVOIRS</Variable_Level_2>
+  </Parameters>
+   <!--Modified by Change List Tool on Thu Sep 29 10:24:26 EDT 2016. Old value is "EARTH SCIENCE &gt; TERRESTRIAL HYDROSPHERE &gt; SURFACE WATER &gt; RIVERS/STREAMS"-->
+<Parameters>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>TERRESTRIAL HYDROSPHERE</Topic>
+    <Term>SURFACE WATER</Term>
+    <Variable_Level_1>SURFACE WATER FEATURES</Variable_Level_1>
+    <Variable_Level_2>RIVERS/STREAMS</Variable_Level_2>
+  </Parameters>
+   <Parameters uuid="e5815f58-8232-4c7f-b50d-ea71d73891a9">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>LAND SURFACE</Topic>
+      <Term>LAND USE/LAND COVER</Term>
+   </Parameters>
+   <Parameters uuid="120f9132-a756-4f6f-a74c-78e94dfcd2a1">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>LAND SURFACE</Topic>
+      <Term>TOPOGRAPHY</Term>
+      <Variable_Level_1>TERRAIN ELEVATION</Variable_Level_1>
+      <Variable_Level_2>CONTOUR MAPS</Variable_Level_2>
+   </Parameters>
+   <Parameters uuid="74ed1690-968e-444c-8a31-7b8344a2aad3">
+      <Category>EARTH SCIENCE</Category>
+      <Topic>LAND SURFACE</Topic>
+      <Term>TOPOGRAPHY</Term>
+      <Variable_Level_1>TERRAIN ELEVATION</Variable_Level_1>
+   </Parameters>
+   <ISO_Topic_Category uuid="26173055-5433-42b3-bd00-9a1f6ba294e1">FARMING</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="c3d9cf68-90b1-46be-914c-38ecb2e70097">BIOTA</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="eb1b563c-c8d2-47df-af42-6c2064e74c8e">ECONOMY</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="4c68c358-7a7a-4e52-b6eb-86f4ee84e869">ELEVATION</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="d9cd5b7e-e9e7-4746-bbc8-bc69f7b606c7">GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="26ebb539-cae2-4961-9252-7f367642fa57">IMAGERY/BASE MAPS/EARTH COVER</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="0353d44f-2fc2-44df-9143-b1a3b86d5aa1">INLAND WATERS</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="ef90500d-0b55-4404-9b26-28e216cf1697">PLANNING CADASTRE</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="3c4cc2ed-793f-4d5a-8621-36d82a57ad52">TRANSPORTATION</ISO_Topic_Category>
+   <ISO_Topic_Category uuid="2184c696-62aa-46a8-b2d4-9727b11bc8ea">UTILITIES/COMMUNICATIONS</ISO_Topic_Category>
+   <Keyword>GCMD</Keyword>
+   <Keyword>Atlas</Keyword>
+   <Keyword>Geolibrary</Keyword>
+   <Keyword>Roads</Keyword>
+   <Keyword>forest and management services</Keyword>
+   <Keyword>library</Keyword>
+   <Spatial_Coverage>
+      <Southernmost_Latitude>49.337</Southernmost_Latitude>
+      <Northernmost_Latitude>49.426</Northernmost_Latitude>
+      <Westernmost_Longitude>-123.45</Westernmost_Longitude>
+      <Easternmost_Longitude>-123.325</Easternmost_Longitude>
+   </Spatial_Coverage>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>BRITISH COLUMBIA</Detailed_Location>
+   </Location>
+   <Location uuid="d0081284-5cef-484d-b1ee-a6787b197a33">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+      <Location_Subregion1>CANADA</Location_Subregion1>
+      <Detailed_Location>BOWEN ISLAND</Detailed_Location>
+   </Location>
+   <Location uuid="88bc8b39-ad19-4415-b426-e7d37450341a">
+      <Location_Category>CONTINENT</Location_Category>
+      <Location_Type>NORTH AMERICA</Location_Type>
+   </Location>
+   <Location uuid="46769685-522d-49c3-ad81-22e1cc8c0c2b">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>MID-LATITUDE</Location_Type>
+   </Location>
+   <Location uuid="507794a1-9563-49a4-b2d3-8a28347c1fd7">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>NORTHERN HEMISPHERE</Location_Type>
+   </Location>
+   <Location uuid="a29a6a2b-e0e5-4ba9-9768-df67db4f34a6">
+      <Location_Category>GEOGRAPHIC REGION</Location_Category>
+      <Location_Type>WESTERN HEMISPHERE</Location_Type>
+   </Location>
+   <Originating_Center/>
+   <Data_Center>
+      <Data_Center_Name uuid="a7609866-fc29-453e-ba44-3c1cbe2af13d">
+         <Short_Name>BIFWMS</Short_Name>
+         <Long_Name>Bowen Island Forest and Water Management Society</Long_Name>
+      </Data_Center_Name>
+   <Data_Center_URL>http://www.geoconnections.org/en/aboutGeo/successStories/id=949</Data_Center_URL>
+      <Personnel>
+         <Role>DATA CENTER CONTACT</Role>
+         <First_Name>MURRAY</First_Name>
+         <Last_Name>JOURNEAY</Last_Name>
+         <Email>mjournea@nrcan.gc.ca</Email>
+         <Phone>+01-604-947-0456</Phone>
+         <Contact_Address>
+            <Address>P.O.Box 188</Address>
+            <City>Bowen Island</City>
+            <Province_or_State>British Columbia</Province_or_State>
+            <Postal_Code>V0N 1G0</Postal_Code>
+            <Country>Canada</Country>
+         </Contact_Address>
+      </Personnel>
+   </Data_Center>
+   <Distribution>
+      <Fees>Contact Bowen Island Forest and Water Management Society (BIFWMS)</Fees>
+   </Distribution>
+   <Summary>
+      <Abstract>The Bowen Island GeoLibrary is a collection of map, text and image-based
+      information that reflects what we currently know about our island and about
+      ourselves as a community.
+      
+      It includes an atlas of biophysical and land use planning maps, and a
+      repository of key documents, including the Bowen Island Official Community
+      Plan, the Green Zone report, the State of Bowen Island Report, the Crown Lands
+      Report and more.
+      
+      The Bowen Island Sustainability Project (BISP) was initiated in June 2000 as an
+      extension of work conducted by the Capilano College Environmental Science
+      Program.
+      
+      BISP proceeded with direct funding by the Real Estate Foundation, and through
+      partnerships with Bowen Island Municipality, the Geological Survey of Canada
+      and Capilano College. The deliverables from this project are two-fold: a) State
+      of Bowen Island (SoBI) report and b) Bowen Island Information System. The Bowen
+      Island Information System includes four subdeliverables: a database catalogue,
+      Geographic Information System (GIS) atlas, maps &amp; spatial data for the SoBI
+      report, and an information system summary report.
+      
+      Through the deliverables, the Bowen Island Sustainability Project will assist
+      the community, the municipality, and any future initiatives in evaluating and
+      facilitating the decision making processes that leads to more sustainable
+      communities.The purpose of developing the information system as part of the
+      Bowen Island Sustainability Project is to support and provide critical
+      information about Bowen Island for the ?State of Bowen Island' report. It also
+      facilitates the use of information, both spatial and non-spatial, on Bowen
+      Island in future initiatives, by compiling a vital information catalogue and a
+      collection of GIS data for the community.
+      Spatial Data Organization Information -
+      
+          Indirect Spatial Reference:
+          Direct Spatial Reference:
+          Raster Object Type:
+          Row Count:
+          Column Count:
+          Vertical Count:
+      Spatial Reference Information -
+           Horizontal Coordinate System Definition -
+      
+      Planar -
+      
+      
+      
+      
+          Planar Coordinate Encoding Method:
+          Coordinate Representation:
+           Abscissa Resolution:
+           Ordinate Resolution:
+          Distance and Bearing Representation:
+           Distance Resolution:
+           Bearing Resolution:
+           Bearing Units:
+           Bearing Reference Direction:
+           Bearing Reference Meridian:
+          Planar Distance Units:
+      
+         Geodetic Model:
+           Horizontal Datum Name:
+          Ellipsoid Name:
+          Semi-major Axis:
+          Denominator of Flattening Ratio:</Abstract>
+   </Summary>
+   <Related_URL>
+      <!--Modified by Change List Tool on Tue Dec 06 15:32:15 EST 2016. Old value is "http://geodiscover.cgdi.ca/"-->
+<URL>http://www.nrcan.gc.ca/earth-sciences/geomatics/canadas-spatial-data-infrastructure/10783</URL>
+      <Description>
+         GeoConnections Discovery Portal. Canada's IDN Node.
+      </Description>
+   </Related_URL>
+   <IDN_Node uuid="1e9c313a-ca4a-4fab-a80f-c7aeb68a5d0b">
+      <Short_Name>CANADA/CGDI</Short_Name>
+   </IDN_Node>
+   <IDN_Node uuid="edff0791-121c-40aa-adf2-33feb2bc30e5">
+      <Short_Name>CEOS</Short_Name>
+   </IDN_Node>
+   <Originating_Metadata_Node>CANADA-CGDI</Originating_Metadata_Node>
+   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+   <Metadata_Version>VERSION 9.7</Metadata_Version>
+   <DIF_Creation_Date>2003-12-01</DIF_Creation_Date>
+   <Last_DIF_Revision_Date>2017-04-24</Last_DIF_Revision_Date>
+   <Future_DIF_Review_Date>2004-05-29</Future_DIF_Review_Date>
+   <Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2015-12-02 13:19:58</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.keyword_version</Name>
+        <Value>8.1</Value>
+      </Metadata>
+   </Extended_Metadata>
+</DIF>
