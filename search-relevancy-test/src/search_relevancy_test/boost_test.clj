@@ -83,7 +83,7 @@
           max-value (or (when max-value (Double/parseDouble max-value))
                         max-boost-value)
           ;; Hardcoded to run the provider test suite
-          filename relevancy-test/provider-anomaly-filename]
+          filename core/provider-anomaly-filename]
       (boost-tests filename boost-field min-value max-value))
     (println "No field specified for boosts tests. Must specify a field to
              test boosts with the '-field' argument")))
