@@ -354,7 +354,7 @@
               elastic-options)))))))
 
 (defn- index-associated-collection
-  "Index the associated collection conept of the given concept. This is used by indexing tag
+  "Index the associated collection concept of the given concept. This is used by indexing tag
    association and variable association. Indexing them is essentially indexing their associated
    collection concept."
   [context concept options]
@@ -374,15 +374,15 @@
 
 (defn- index-variable
   "Index the associated variable concept of the given variable concept id."
-  [context variable-concept-id]
+  [context variable-concept-id options]
   (let [var-concept (meta-db/get-latest-concept context variable-concept-id)
         parsed-var-concept (cp/parse-concept context var-concept)]
-    (index-concept context var-concept parsed-var-concept {})))
+    (index-concept context var-concept parsed-var-concept options)))
 
 (defn- index-associated-variable
   "Index the associated variable concept of the given variable association concept."
-  [context concept]
-  (index-variable context (get-in concept [:extra-fields :variable-concept-id])))
+  [context concept options]
+  (index-variable context (get-in concept [:extra-fields :variable-concept-id]) options))
 
 (defn- reindex-associated-variables
   "Reindex variables associated with the collection"
@@ -399,7 +399,8 @@
 (defmethod index-concept :variable-association
   [context concept parsed-concept options]
   (index-associated-collection context concept options)
-  (index-associated-variable context concept))
+  (index-associated-variable context concept {})
+  (index-associated-variable context concept {:all-revisions-index? true}))
 
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
