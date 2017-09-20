@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>GPM_3GPROFMETOPAMHS_DAY</Short_Name>
+        <Version>05</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>GPM MHS on METOP-A (GPROF) Radiometer Precipitation Profiling L3 1 day 0.25 degree x 0.25 degree V05 (GPM_3GPROFMETOPAMHS_DAY) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>GPM Science Team</Dataset_Creator>
+        <Dataset_Title>GPM MHS on METOP-A (GPROF) Radiometer Precipitation Profiling L3 1 day 0.25 degree x 0.25 degree V05</Dataset_Title>
+        <Dataset_Series_Name>GPM_3GPROFMETOPAMHS_DAY</Dataset_Series_Name>
+        <Dataset_Release_Date>2017-05-10</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>05</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/GPM/MHS/METOPA/3A-DAY/05</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/GPM_3GPROFMETOPAMHS_DAY_05.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>CHRISTIAN</First_Name>
+            <Last_Name>KUMMEROW</Last_Name>
+            <Address>
+                <Street_Address>Department of Atmospheric Science</Street_Address>
+                <Street_Address>Colorado State University</Street_Address>
+                <City>Fort Collins</City>
+                <State_Province>CO</State_Province>
+                <Postal_Code>80523</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>1-970-491-7473</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>1-970-491-8449</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>kummerow@atmos.colostate.edu</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WATER VAPOR</Term>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>Atmosphere, Precipitation, Water Vapor</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>GPM</Short_Name>
+        <Long_Name>Global Precipitation Measurement</Long_Name>
+        <Instrument>
+            <Short_Name>GMI</Short_Name>
+            <Long_Name>Global Precipitation Measurement Microwave Imager</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>METOP-A</Short_Name>
+        <Long_Name>Meteorological Operational Satellite - A</Long_Name>
+        <Instrument>
+            <Short_Name>MHS</Short_Name>
+            <Long_Name>Microwave Humidity Sounder</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2014-02-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>TROPICS</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.25 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.25 degree</Longitude_Resolution>
+        <Horizontal_Resolution_Range>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+        <Vertical_Resolution>1.0 km</Vertical_Resolution>
+        <Vertical_Resolution_Range>100 meters - &lt; 1 km</Vertical_Resolution_Range>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+        <Temporal_Resolution_Range>Daily - &lt; Weekly</Temporal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>GPM</Short_Name>
+        <Long_Name>Global Precipitation Measurement</Long_Name>
+    </Project>
+    <Quality>The primary limitation of the 3GPROF product is the reliance on a single sensor for each output file, thus limiting the available sampling to two times a day or less, except at high latitudes. In addition, with the exception of the GMI, TMI, and SAPHIR sensors, all of the other sensors are in Sun-synchronous orbits, meaning that they observe a given point on the Earth's surface at the same local times each day. Over land regions in particular, this can lead to large sampling errors associated with the diurnal cycle. Errors due to the limited sampling and differences in the sampling times between Sun-synchronous satellites (e.g., F16, F17, F18, NOAA-18, NOAA-19, NPP, METOP-A, METOP-B, and GCOM-W1) can lead to significant differences in the monthly mean values between satellites/sensors. The sampling errors are largest over land regions with large diurnal cycles in precipitation. Other sources of error that can significantly impact the 3GPROF products include difficulties over certain surface types such as sea ice, snow, frozen ground, and deserts, and limited sensitivity of the sounder instruments (in particular to light precipitation and/or shallow warm rain systems). The sounders include the ATMS, MHS, and SAPHIR sensors, which do not have channels with sensitivity to the surface and/or lower atmosphere.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>None</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>Precipitation Processing System (PPS)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>634 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>GPM</File>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/GPM/browse/3A-DAY-BR.METOPA.MHS.GRID2017R1.20150101-S000000-E235959.001.V05A.PNG</URL>
+        <Format>PNG</Format>
+        <Caption>Surface Precipitation</Caption>
+        <Description>Surface Precipitation from GPM MHS on METOP-A GPROF (0.25 degree x 0.25 degree) (GPM_3GPROFMETOPAMHS_DAY)</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>GPM/PPS File Specification 3GPROF.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Aires, F., F. Bernardo, H. Brogniez, and C. Prigent, 2010: An Innovative Calibration Method for the Inversion of Satellite Observations. J. of Appl. Meteorol. and Climatology, 49, 2458-2473, doi: 10.1175/2010JAMC2435.1.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Aires, F., C. Prigent, F. Bernardo, C. Jimenez, R. Saunders, and P. Brunel, 2011: A Tool to Estimate Land-Surface Emissivities at Microwave Frequencies (TELSEM) for Use in Numerical Weather Prediction. Q. J. of the Roy. Meteorol. Soc., 137: 690-699, doi: 10.1002/qj.803.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Boukabara, S.-A.; F. Weng, and Q. Liu, 2007: Passive Microwave Remote Sensing of Extreme Weather Events Using NOAA-18 AMSUA and MHS. Geoscience and Remote Sensing, IEEE Transactions on, 45, 2228-2246, doi: 10.1109/TGRS.2007.898263.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Boukabara, S.-A., K. Garrett, W. Chen, F. Iturbide-Sanchez, C. Grassotti, C. Kongoli, R. Chen, Q. Liu, B. Yan, F. Weng, R. Ferraro, T. J. Kleespies, and H. Meng, 20011: MiRS: An All-Weather 1DVAR Satellite Data Assimilation and Retrieval System. Geoscience and Remote Sensing, IEEE Transactions on, 49, 3249-3272, doi:10.1109/TGRS.2011.2158438.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Hiley, M. J., M. S. Kulie, and R. Bennartz, 2011: Uncertainty Analysis for CloudSat Snowfall Retrievals. J. Appl. Meteorol. Clim., 50, 399-418.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Kummerow, C., W. S. Olson, and L. Giglio, 1996: A Simplified Scheme for Obtaining Precipitation and Vertical Hydrometeor Profiles from Passive Microwave Sensors. IEEE, Trans on Geoscience and Remote Sensing, 34, 1213-1232, doi: 10.1109/36.536538.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Kummerow, C., S. Ringerud, S. Crook, D. Randel, and W. Berg, 2011: An Observationally Generated a-priori Database for Microwave Rainfall Retrievals. J. Atmos. Oceanic Technol., 28, 113-130.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Prigent, C., W. B. Rossow, and E. Matthews, 1997: Microwave Land Surface Emissivities Estimated from SSM/I Observations. J. Geophys. Res., 102, pp. 21867-21890, DOI: 10.1029/97JD01360.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Prigent, C., E. Jaumouille, F. Chevallier, and F. Aires, 2008: A Parameterization of the Microwave Land Surface Emissivity Between 19 and 100 GHz, Anchored to Satellite-Derived Estimates. IEEE Transaction on Geoscience and Remote Sensing, 46, 344-352, doi:10.1109/TGRS.2007.908881.</Citation>
+    </Reference>
+    <Reference>
+        <Citation>Sudradjat, A., N.-Y. Wang, K. Gopalan, and R. Ferraro, 2011: Prototyping a Generic, Unified Land Surface Classification and Screening Methodology for GPM-era Microwave Land Precipitation Retrieval Algorithms. J. Appl. Meteorol. and Climatology, 50, 1200-1211, doi: 10.1175/2010JAMC2572.1</Citation>
+    </Reference>
+    <Summary>
+        <Abstract> Version 5 is the current version of the data set. Version 4 is no longer available and has been superseded by Version 5.
+
+3GPROF products provide global gridded monthly/daily precipitation averages from multiple satellites that can be used for climate studies. The 3GPROF products are based on retrievals from high-quality microwave sensors, which are sensitive to liquid and ice-phase precipitation hydrometeors in the atmosphere.
+
+The purpose of the 3GPROF algorithm is to provide monthly and daily mean precipitation and related retrieved parameters from the Level 2 GPROF precipitation profiling algorithm for the GPM core and constellation satellites. Each 3GPROF product contains global 0.25 degree x 0.25 degree gridded monthly/daily means. Because this product is an accumulation of the Level 2 retrieval products, much more information is available via the GPROF Level 2 documentation.
+</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/data/GPM_L3/GPM_3GPROFMETOPAMHS_DAY.05/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=GPM_3GPROFMETOPAMHS_DAY</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/opendap/GPM_L3/GPM_3GPROFMETOPAMHS_DAY.05/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=GPM_3GPROFMETOPAMHS_DAY</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://pmm.gsfc.nasa.gov/GPM</URL>
+        <Description>GPM Project Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://gpm1.gesdisc.eosdis.nasa.gov/data/doc/README.GPM.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>FILE SPECIFICATION DOCUMENT</Subtype>
+        </URL_Content_Type>
+        <URL>ftp://gpmweb2.pps.eosdis.nasa.gov/pub/GPMfilespec/filespec.GPM.pdf</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://pps.gsfc.nasa.gov/Documents/V05ReleaseNotes/GPROFV05_releasenotes.pdf</URL>
+        <Description>Release Notes</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)</Subtype>
+        </URL_Content_Type>
+        <URL>http://rain.atmos.colostate.edu/ATBD/</URL>
+        <Description>GPM GPROF (Level 2) Algorithm Theoretical Basis Document.</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>V03A, V03B,V03C,V03D</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2017-05-12</Metadata_Creation>
+        <Metadata_Last_Revision>2017-05-12</Metadata_Last_Revision>
+        <Data_Creation>2017-05-01</Data_Creation>
+        <Data_Last_Revision>2017-05-10</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>5386398a-b433-4f05-99a8-db2456b401da</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:28:07</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:25Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.4</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

@@ -1,0 +1,172 @@
+<Collection>
+            <ShortName>NPP_CC_473</ShortName>
+            <VersionId>2</VersionId>
+            <InsertTime>2013-09-13T00:00:00Z</InsertTime>
+            <LastUpdate>2013-09-13T00:00:00Z</LastUpdate>
+            <LongName>NPP Tropical Forest: Cinnamon Bay, U.S. Virgin Islands, 1982-1993, R1</LongName>
+            <DataSetId>NPP Tropical Forest: Cinnamon Bay, U.S. Virgin Islands, 1982-1993, R1</DataSetId>
+            <Description>This data set contains three ASCII files (.txt format). One data file contains above-ground biomass, litter, litterfall, herbivory, biomass change, and above-ground net primary productivity (ANPP) estimates for a late secondary moist subtropical forest based on measurements from 16 permanent study plots located along an elevational (60-290 m) and topological gradient within the 132-ha Cinnamon Bay watershed on St. John, U.S. Virgin Islands. The purpose of the study was to provide information on forest structure, species composition, and forest productivity along environmental gradients, including the effects of hurricanes and drought. The other two files provide climate records from nearby weather stations (1917-1981).Above-ground biomass was measured every 5 years (1983-2003). Litterfall accumulation was determined in 1992-1993. In 1983, total above-ground biomass on all plots combined averaged 13,870 g/m2; by 2003 during a post-hurricane recovery period, it had declined by nearly 7 percent. In 1983, biomass was greatest on the summit, intermediate on slopes and valleys, and least on ridges; by 2003, the quantities for all sites had converged except on the summit plot.In 1992, ANPP was estimated based on annual litterfall accumulation (897 g/m2/year) plus biomass change due to delayed mortality (142 g/m2/year) plus estimated herbivory (25 g/m2/year), giving a total ANPP of 1,064 g/m2/year. Periodic storms and drought appear to maintain the forest in a disturbed state.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/473</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2013-09-13T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Weaver, P.L. 2001. NPP Tropical Forest: Cinnamon Bay, U.S. Virgin Islands, 1982-1993, R1. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/473</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1917-07-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2003-07-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>BIOMASS DYNAMICS</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>ECOLOGICAL DYNAMICS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ECOSYSTEM FUNCTIONS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>PRIMARY PRODUCTION</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>BIOSPHERE</TopicKeyword>
+                    <TermKeyword>VEGETATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>BIOMASS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>FIELD INVESTIGATION</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>BALANCE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>BALANCE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>STEEL MEASURING TAPE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>STEEL MEASURING TAPE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>CORING DEVICES</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>CORING DEVICES</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>QUADRATS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>QUADRATS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>NPP</ShortName>
+                    <LongName>Net Primary Productivity</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/npp/tropical_forest/NPP_CBAY/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/NPP/guides/NPP_CBAY.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/473</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/npp/tropical_forest/NPP_CBAY/comp/NPP_CBAY.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <Point>
+                            <PointLongitude>-64.80</PointLongitude>
+                            <PointLatitude>18.33</PointLatitude>
+                        </Point>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

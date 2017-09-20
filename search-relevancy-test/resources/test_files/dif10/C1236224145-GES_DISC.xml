@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>MSVOLSO2L4</Short_Name>
+        <Version>2</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>Multi-Satellite Volcanic Sulfur Dioxide L4 Long-Term Global Database V2 (MSVOLSO2L4) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Simon Carn</Dataset_Creator>
+        <Dataset_Title>Multi-Satellite Volcanic Sulfur Dioxide L4 Long-Term Global Database V2</Dataset_Title>
+        <Dataset_Series_Name>MSVOLSO2L4</Dataset_Series_Name>
+        <Dataset_Release_Date>2015-04-15</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Science Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>2</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/MEASURES/SO2/DATA402</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/MSVOLSO2L4_2.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>SIMON</First_Name>
+            <Last_Name>CARN</Last_Name>
+            <Email>scarn@mtu.edu</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <First_Name>PETER</First_Name>
+            <Last_Name>LEONARD</Last_Name>
+            <Email>pleonard@sesda3.com</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>SULFATE PARTICLES</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AIR QUALITY</Term>
+        <Variable_Level_1>SULFUR OXIDES</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC CHEMISTRY</Term>
+        <Variable_Level_1>SULFUR COMPOUNDS</Variable_Level_1>
+        <Variable_Level_2>SULFUR DIOXIDE</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>HUMAN DIMENSIONS</Topic>
+        <Term>NATURAL HAZARDS</Term>
+        <Variable_Level_1>VOLCANIC ERUPTIONS</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System, Aura</Long_Name>
+        <Instrument>
+            <Short_Name>OMI</Short_Name>
+            <Long_Name>Ozone Monitoring Instrument</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>SUOMI-NPP</Short_Name>
+        <Long_Name>Suomi National Polar-orbiting Partnership</Long_Name>
+        <Instrument>
+            <Short_Name>OMPS</Short_Name>
+            <Long_Name>Ozone Mapping and Profiler Suite</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>Nimbus-7</Short_Name>
+        <Instrument>
+            <Short_Name>TOMS</Short_Name>
+            <Long_Name>Total Ozone Mapping Spectrometer</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>EP-TOMS</Short_Name>
+        <Long_Name>Earth Probe-TOMS</Long_Name>
+        <Instrument>
+            <Short_Name>TOMS</Short_Name>
+            <Long_Name>Total Ozone Mapping Spectrometer</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1978-10-31T00:00:00</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Project>
+        <Short_Name>MEaSUREs</Short_Name>
+        <Long_Name>Making Earth Science Data Records for Use in Research Environments</Long_Name>
+    </Project>
+    <Access_Constraints>None</Access_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>OMI SIPS</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>21.5 KB per file</Distribution_Size>
+        <Distribution_Format>ASCII</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>toms_omi_inventory_data_alt_dec15.jpeg</File>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/public/project/MEaSUREs/Krotkov/toms_omi_inventory_data_alt_dec15.jpeg</URL>
+        <Format>JPEG</Format>
+        <Caption>Volcanic SO2 plume altitude and tonnage</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>
+
+Carn, S.A., K. Yang, A.J. Prata, and N.A. Krotkov (2015), Extending the long-term record of volcanic SO2 emissions with the Ozone Mapping and Profiler Suite (OMPS) Nadir Mapper, Geophys. Res. Lett., 42, 925-932, doi: 10.1002/2014GL062437.
+
+</Citation>
+    </Reference>
+    <Summary>
+        <Abstract>These data are a part of MEaSUREs 2012 projects. The particular project, "Multi-Decadal Sulfur Dioxide Climatology from Satellite Instruments", is expected to produce SO2 Earth Science Data Record by means of combining measurements from backscatter Ultraviolet (BUV), thermal infrared (IR) and microwave (MLS) instruments on multiple satellites. The data represent best estimates of the volcanic and anthropogenic contribution to global atmospheric SO2 concentrations. Since SO2 is the major precursor of sulfate aerosol, which has climate and air quality impact, SO2 measurements will contribute to better understanding of the sulfate aerosol distributions and its atmospheric impact."
+
+The released data file is a long-term database of volcanic SO2 emission derived from ultraviolet satellite measurements from October 31, 1978, to present.
+
+Data are in a table format in simple ASCII format:
+
+Column Descriptions:
+Column 1 = Name of volcano.
+Column 2 = Latitude of volcano.
+Column 3 = Longitude of volcano.
+Column 4 = Altitude of volcano (km).
+Column 5 = Eruption year.
+Column 6 = Eruption month of year.
+Column 7 = Eruption day of month.
+Column 8 = Eruption style: exp = explosive, eff = effusive.
+Column 9 = Eruption volcanic explosivity index (nd = no data or undetermined).
+Column 10 = Observed plume altitude (km) where known.
+Column 11 = Estimated plume altitude (km) above vent: 10 km for explosive, 5 km for effusive.
+Column 12 = Measured SO2 mass in kilotons (= 1000 metric tons).</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/data/SO2/MSVOLSO2L4.2</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=MSVOLSO2L4</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of
+Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://earthdata.nasa.gov/community/community-data-system-programs/measures-projects/multi-decadal-sulfur-dioxide-climatology-from-satellite-instruments</URL>
+        <Description>Project summary goals and description</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=MSVOLSO2L4</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2014-12-31</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-23</Metadata_Last_Revision>
+        <Metadata_Future_Review>2016-12-31</Metadata_Future_Review>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>4</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>36 years</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>f07f22cc-cb84-4a80-8466-ff09a8cdeedd</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:27:38</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:33Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/MEASURES/SO2/DATA401</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

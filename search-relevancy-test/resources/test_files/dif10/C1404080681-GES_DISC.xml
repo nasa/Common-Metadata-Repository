@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>NOBM_MON</Short_Name>
+        <Version>R2017</Version>
+    </Entry_ID>
+    <Version_Description>This data was processed in June 2017</Version_Description>
+    <Entry_Title>NASA Ocean Biogeochemical Model assimilating satellite chlorophyll data global monthly VR2017 (NOBM_MON) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Watson Gregg and Cecile Rousseaux</Dataset_Creator>
+        <Dataset_Editor>Watson Gregg and Cecile Rousseaux</Dataset_Editor>
+        <Dataset_Title>NASA Ocean Biogeochemical Model assimilating satellite chlorophyll data global monthly VR2017</Dataset_Title>
+        <Dataset_Series_Name>NOBM_MON</Dataset_Series_Name>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>R2017</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/BHCFDIICIOU5</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/NOBM_MON_R2017.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>SUHUNG</First_Name>
+            <Last_Name>SHEN</Last_Name>
+            <Email>suhung.shen@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>WATSON</First_Name>
+            <Middle_Name>W</Middle_Name>
+            <Last_Name>GREGG</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.1</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5711</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5644</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>watson.w.gregg@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <First_Name>CECILE</First_Name>
+            <Middle_Name>S</Middle_Name>
+            <Last_Name>ROUSSEAUX</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.1</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5750</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5644</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>cecile.s.rousseaux@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>BIOSPHERE</Topic>
+        <Term>AQUATIC ECOSYSTEMS</Term>
+        <Variable_Level_1>PLANKTON</Variable_Level_1>
+        <Variable_Level_2>PHYTOPLANKTON</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN CHEMISTRY</Term>
+        <Variable_Level_1>NITRATE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN CHEMISTRY</Term>
+        <Variable_Level_1>NUTRIENTS</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN CHEMISTRY</Term>
+        <Variable_Level_1>PIGMENTS</Variable_Level_1>
+        <Variable_Level_2>CHLOROPHYLL</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN OPTICS</Term>
+        <Variable_Level_1>OCEAN COLOR</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN OPTICS</Term>
+        <Variable_Level_1>PHOTOSYNTHETICALLY ACTIVE RADIATION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>OCEANS</Topic>
+        <Term>OCEAN TEMPERATURE</Term>
+        <Variable_Level_1>OCEAN MIXED LAYER</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <ISO_Topic_Category>OCEANS</ISO_Topic_Category>
+    <Ancillary_Keyword>NOBM</Ancillary_Keyword>
+    <Platform>
+        <Type>Models/Analyses</Type>
+        <Short_Name>NOBM</Short_Name>
+        <Long_Name>NASA Ocean Biogeochemical Model</Long_Name>
+        <Instrument>
+            <Short_Name>NOT APPLICABLE</Short_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1998-01-01</Beginning_Date_Time>
+            <Ending_Date_Time>2015-12-31</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-84.0</Southernmost_Latitude>
+                <Northernmost_Latitude>72.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>SEA SURFACE</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.67 degree</Latitude_Resolution>
+        <Longitude_Resolution>1.25 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 month</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>NOBM</Short_Name>
+        <Long_Name>NASA Ocean Biogeochemical Model</Long_Name>
+    </Project>
+    <Originating_Center>GES DISC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>2.3 MB per file</Distribution_Size>
+        <Distribution_Format>netCDF-4</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>nobm_sample_monthly_image</File>
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddb7e01b045fab4ecf2d/file</URL>
+        <Format>PNG</Format>
+        <Caption>Assimilated total chlorophyll [mg chlorophyll/m^3]</Caption>
+        <Description>Sample image of monthly assimilated total chlorophyll [mg chlorophyll/m^3] from the NASA Ocean Biogeochemical Model  (NOBM_MON.R2017), Jan 2012</Description>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Rousseaux C.S. and W.W. Gregg, 2014. Interannual Variation in Phytoplankton Primary Production at A Global Scale. Remote Sensing, 6, 1-19, doi:10.3390/rs6010001.</Citation>
+        <Author>ousseaux C.S. and W.W. Gregg</Author>
+        <Publication_Date>2014</Publication_Date>
+        <Title>Interannual Variation in Phytoplankton Primary Production at A Global Scale</Title>
+        <Series>Remote Sensing</Series>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.3390/rs6010001</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>http://www.mdpi.com/2072-4292/6/1/1</Online_Resource>
+    </Reference>
+    <Summary>
+        <Abstract>This is the assimilated monthly data from NASA Ocean Biogeochemical Model (NOBM). The NOBM is a comprehensive, interactive ocean biogeochemical model coupled with a circulation and radiative model in the global oceans (Gregg and Casey, 2007). It spans the domain from -84 to 72 degree latitude in increments of 1.25 degree longitude by 2/3 degree latitude, including only open ocean areas where bottom depth &gt;200m. NOBM contains 4 phytoplankton groups, 4 nutrient groups, a single herbivore group, and 3 detrital pools, and the major ocean carbon components, dissolved organic and inorganic carbon (DOC and DIC).</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://reason.gesdisc.eosdis.nasa.gov/data/nobm/NOBM_MON.R2017</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=NOBM_MON</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=NOBM_MON</URL>
+        <Description>Use the Earthdata Search Client (EDSC) to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>http://reason.gesdisc.eosdis.nasa.gov/opendap/nobm/NOBM_MON.R2017/contents.html</URL>
+        <Description>Access to the data via OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>http://giovanni.gsfc.nasa.gov/giovanni/#dataKeyword=NOBM_MON</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://reason.gsfc.nasa.gov/data/nobm/NOBM_MON.R2017/doc/README.NOBM_R2017.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://gmao.gsfc.nasa.gov/research/oceanbiology/references.php</URL>
+        <Description>NOBM project documentation page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>HOW-TO</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/information/howto</URL>
+        <Description>Data recipes for accessing and using data</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>DIF created on 07/10/2017; adapted from the previous NOBM DIF.
+4/7/2016: Shen, S. converted to DIF-10, added data access methods</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2017-07-10</Metadata_Creation>
+        <Metadata_Last_Revision>2017-07-12</Metadata_Last_Revision>
+        <Metadata_Future_Review>2018-07-30</Metadata_Future_Review>
+        <Data_Creation>2017-06-07</Data_Creation>
+        <Data_Last_Revision>2017-06-07</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>4</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Description>uuid</Description>
+            <Value>d3abbbc1-77e5-4db8-ad71-6f0c49413d13</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Description>extraction date</Description>
+            <Value>2016-01-19 09:27:36</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Description>DIF9.0 to DIF10 Converter</Description>
+            <Value>2016-01-20T13:00:49Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Description>Short Name of IDN_Node</Description>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Description>uuid of IDN_Node</Description>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Description>Citation DOI</Description>
+            <Value>doi:10.5067/BHCFDIICIOU5</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Description>version</Description>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Description>original schema</Description>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 month</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

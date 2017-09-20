@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>MSLERLSTL3d10</Short_Name>
+        <Version>1</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>Multi-Satellite Lambertian Equivalent Reflectivity (Local Satellite Time) 10-Day L3 Global 2.0x5.0deg Lat/Lon Grid V1 (MSLERLSTL3d10) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>J.R. Herman, et al.</Dataset_Creator>
+        <Dataset_Title>Multi-Satellite Lambertian Equivalent Reflectivity (Local Satellite Time) 10-Day L3 Global 2.0x5.0deg Lat/Lon Grid V1</Dataset_Title>
+        <Dataset_Series_Name>MSLERLSTL3d10</Dataset_Series_Name>
+        <Dataset_Release_Date>2013-01-08</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>1</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/MEASURES/MSLER/DATA303</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/MSLERLSTL3d10_1.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>JAY</First_Name>
+            <Middle_Name>R.</Middle_Name>
+            <Last_Name>HERMAN, PH. D</Last_Name>
+            <Address>
+                <Street_Address>NASA</Street_Address>
+                <Street_Address>Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 614.0</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Email>Jay.R.Herman@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JEROME</First_Name>
+            <Middle_Name>M</Middle_Name>
+            <Last_Name>ALFRED</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5121</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>jerome.m.alfred@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>REFLECTANCE</Variable_Level_1>
+        <Detailed_Variable>LAMBERTIAN EQUIVALENT REFLECTIVITY</Detailed_Variable>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>LER</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>Nimbus-7</Short_Name>
+        <Instrument>
+            <Short_Name>SBUV</Short_Name>
+            <Long_Name>Solar Backscatter Ultraviolet</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>NOAA-9</Short_Name>
+        <Long_Name>National Oceanic &amp;amp; Atmospheric Administration-9</Long_Name>
+        <Instrument>
+            <Short_Name>SBUV/2</Short_Name>
+            <Long_Name>Solar Backscatter Ultraviolet/2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>NOAA-11</Short_Name>
+        <Long_Name>National Oceanic &amp;amp; Atmospheric Administration-11</Long_Name>
+        <Instrument>
+            <Short_Name>SBUV/2</Short_Name>
+            <Long_Name>Solar Backscatter Ultraviolet/2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>NOAA-14</Short_Name>
+        <Long_Name>National Oceanic &amp;amp; Atmospheric Administration-14</Long_Name>
+        <Instrument>
+            <Short_Name>SBUV/2</Short_Name>
+            <Long_Name>Solar Backscatter Ultraviolet/2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>NOAA-16</Short_Name>
+        <Long_Name>National Oceanic &amp;amp; Atmospheric Administration-16</Long_Name>
+        <Instrument>
+            <Short_Name>SBUV/2</Short_Name>
+            <Long_Name>Solar Backscatter Ultraviolet/2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>NOAA-18</Short_Name>
+        <Long_Name>National Oceanic &amp;amp; Atmospheric Administration-18</Long_Name>
+        <Instrument>
+            <Short_Name>SBUV/2</Short_Name>
+            <Long_Name>Solar Backscatter Ultraviolet/2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>NOAA-19</Short_Name>
+        <Long_Name>National Oceanic &amp;amp; Atmospheric Administration-19</Long_Name>
+        <Instrument>
+            <Short_Name>SBUV/2</Short_Name>
+            <Long_Name>Solar Backscatter Ultraviolet/2</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1980-01-01</Beginning_Date_Time>
+            <Ending_Date_Time>2013-01-01</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-82.0</Southernmost_Latitude>
+                <Northernmost_Latitude>82.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>2 degrees</Latitude_Resolution>
+        <Longitude_Resolution>5 degrees</Longitude_Resolution>
+        <Temporal_Resolution>10 days</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>MEaSUREs</Short_Name>
+        <Long_Name>Earth Surface and Atmosphere Reflectivity Since 1979 from Multiple Satellites (TOMS, SBUV, SBUV-2, OMI, SeaWIFS, NPP, and NPOESS)</Long_Name>
+    </Project>
+    <Quality>These data were produced under the NASA MEaSUREs program with the goal being to apply a consistent instrument to instrument calibration so that the data could be used for long term trend analysis. The quality of the LER data varied depending on the instrument. In particular, the SBUV/2 data from NOAA 9, 11 and 14 are of somewhat lower quality due to various issues (Herman et al., 2012).</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>These data were produced under the NASA MEaSUREs program with the goal being to apply a consistent instrument to instrument calibration so that the data could be used for long term trend analysis. The quality of the LER data varied depending on the instrument. In particular, the SBUV/2 data from NOAA 9, 11 and 14 are of somewhat lower quality due to various issues (Herman et al., 2012). The Nimbus7 TOMS, Earth Probe TOMS, Aura OMI and SeaStar SeaWiFS data are not a part of the common calibration.</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>NASA GSFC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>10.9 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>https://disc.gsfc.nasa.gov/measures/LER/MSLERLSTL3d10.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:48:00 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/measures/LER/MSLERLSTL3d10.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddb6e01b045fab4ecef6/file</URL>
+        <Format>PNG</Format>
+        <Caption>MEaSUREs LER sample image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Author>Herman, J.R., G. Labow, N.C. Hsu, and D. Larko</Author>
+        <Publication_Date>2009</Publication_Date>
+        <Title>Changes in cloud and aerosol cover (1998 - 2006) from reflectivity time series using SeaWiFS, N7 - TOMS, EP - TOMS, SBUV - 2, and OMI radiance data</Title>
+        <Series>Journal of Geophysical Research: Atmospheres</Series>
+        <Volume>114</Volume>
+        <Issue>D1</Issue>
+        <Publisher>American Geophysical Union</Publisher>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1029/2007JD009508</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Author>Herman, J.R., M.T. DeLand, L. - K. Huang, et al.</Author>
+        <Publication_Date>2012</Publication_Date>
+        <Title>A net decrease in the Earth's cloud plus aerosol reflectivity during the past 33 yr (1979???2011) and increased solar heating at the surface</Title>
+        <Series>Atmospheric Chemistry and Physics Discussions</Series>
+        <Volume>12</Volume>
+        <Publisher>Copernicus GmbH</Publisher>
+        <Pages>31991-32038</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5194/acpd-12-31991-201</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Author>Labow, G.J., J.R. Herman, L. - K. Huang, et al.</Author>
+        <Publication_Date>2011</Publication_Date>
+        <Title>Diurnal variation of 340 nm Lambertian Equivalent Reflectivity due to clouds and aerosol over land and oceans</Title>
+        <Series>Journal of Geophysical Research: Atmospheres</Series>
+        <Volume>116</Volume>
+        <Issue>D11</Issue>
+        <Publisher>American Geophysical Union</Publisher>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1029/2010JD014980</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>The Multi-Satellite Lambertian Equivalent Reflectivity (Local Satellite Time) 10-Day L3 Global 2.0x5.0deg Lat/Lon Grid data product is derived from multi-satellite Solar Backscatter UltraViolet (SBUV) observations made by the Nimbus-7 SBUV, and NOAA 9, 11, 14, 16, 17, 18 SBUV/2 instruments at 340 nm. The Local Satellite Time (LST) data are uncorrected for the drift of the local equator crossing time of the spacecraft. The table below lists the date ranges for each instrument (note A = ascending node, D = descending node):
+
+Instrument            Start Date    End Date   
+------------------    ----------    ----------
+Nimbus-7 SBUV         1978-11-01    1990-06-21
+NOAA-9 SBUV/2  (A)    1985-02-02    1991-09-03
+NOAA-9 SBUV/2  (D)    1990-04-25    1997-05-31
+NOAA-11 SBUV/2 (A)    1988-12-01    1995-03-31
+NOAA-11 SBUV/2 (D)    1997-07-15    2001-03-26
+NOAA-14 SBUV/2 (A)    1995-02-05    2002-09-11
+NOAA-14 SBUV/2 (D)    2002-04-09    2006-09-28
+NOAA-16 SBUV/2 (A)    2000-10-03    2009-09-15
+NOAA-16 SBUV/2 (D)    2008-04-28    2012-12-31
+NOAA-17 SBUV/2        2002-07-10    2012-12-31
+NOAA-18 SBUV/2        2005-06-05    2012-12-12
+
+The scene reflectivities of the Earth at blue and ultraviolet (UV) wavelengths (320 nm to 415 nm) are low over most surfaces (except ice and snow), and are almost independent of the seasonal changes in vegetation on land and in the oceans. This makes it ideal for examining changes in radiation reflected back to space from changes in cloud and aerosol amounts, especially as affected by the start of climate change.
+
+The MSLERLSTL3d10 data are archived in the HDF-EOS5 file format using the Grid model. The product consists of a single data file representing the entire data set containing the reflectivity data in a single time versus latitude versus longitude data field array or variable. The data array contains attributes describing the variable, and the file contains metadata stored in the HDFEOS file attribute section.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://measures.gesdisc.eosdis.nasa.gov/data/LER/MSLERLSTL3d10.1/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=MSLERLSTL3d10</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA (DODS)</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/opendap/LER/MSLERLSTL3d10.1/MSLERLSTL3d10_v01-02-2013m0701t213228.he5.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>THREDDS CATALOG</Subtype>
+        </URL_Content_Type>
+        <URL>https://measures.gesdisc.eosdis.nasa.gov/opendap/LER/MSLERLSTL3d10.1/catalog.xml</URL>
+        <Description>Access the data using the THREDDS Catalog.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://measures.gesdisc.eosdis.nasa.gov/data/LER/MSLERLSTL3d10.1/doc/README.MSLERL3d10.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <IDN_Node>
+        <Short_Name>USA/NASA</Short_Name>
+    </IDN_Node>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2013-08-14, J. Johnson  Stop_Date extended to "2012-12-31".
+      2014-05-05, J. Johnson Changes made for GES DISC landing page support.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2012-12-05</Metadata_Creation>
+        <Metadata_Last_Revision>2016-10-06</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-05-01</Metadata_Future_Review>
+        <Data_Creation>2013-08-06</Data_Creation>
+        <Data_Last_Revision>2013-08-06</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Update_Date>2014-05-12 20:17:14</Update_Date>
+            <Value>9fd4ecc7-e713-4a6b-8c33-bfae85151a86</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:25:48</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:13Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/MEASURES/MSLER/DATA303</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Reference.DOI</Name>
+            <Value>10.1029/2007JD009508</Value>
+            <Value>10.5194/acpd-12-31991-201</Value>
+            <Value>10.1029/2010JD014980</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.8.4</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>ENGLISH</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>33 years</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>TRMM_3B43</Short_Name>
+        <Version>7</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>TRMM (TMPA/3B43) Rainfall Estimate L3 1 month 0.25 degree x 0.25 degree V7 (TRMM_3B43) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Tropical Rainfall Measuring Mission (TRMM)</Dataset_Creator>
+        <Dataset_Title>TRMM (TMPA/3B43) Rainfall Estimate L3 1 month 0.25 degree x 0.25 degree V7</Dataset_Title>
+        <Dataset_Series_Name>TRMM_3B43</Dataset_Series_Name>
+        <Dataset_Release_Date>2011-07-01</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/TRMM_3B43_7.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ANDREY</First_Name>
+            <Last_Name>SAVTCHENKO</Last_Name>
+            <Address>
+                <Street_Address>Distributed Active Archive Center Global Change Data Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5705</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>Andrey.Savtchenko@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>GEORGE</First_Name>
+            <Last_Name>HUFFMAN</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Mailstop 612</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6308</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5492</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>George.J.Huffman@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>UPPER AIR TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>CONVECTION</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>PRECIPITATION RATE</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>PRECIPITATION</Term>
+        <Variable_Level_1>LIQUID PRECIPITATION</Variable_Level_1>
+        <Variable_Level_2>RAIN</Variable_Level_2>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>ATMOSPHERIC HEATING</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>EOSDIS</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>TRMM</Short_Name>
+        <Long_Name>Tropical Rainfall Measuring Mission</Long_Name>
+        <Instrument>
+            <Short_Name>AMSR</Short_Name>
+            <Long_Name>Advanced Microwave Scanning Radiometer</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>AMSU-B</Short_Name>
+            <Long_Name>Advanced Microwave Sounding Unit-B</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>PR</Short_Name>
+            <Long_Name>TRMM Precipitation Radar</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>SSMIS</Short_Name>
+            <Long_Name>Special Sensor Microwave Imager/Sounder</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>TMI</Short_Name>
+            <Long_Name>TRMM Microwave Imager</Long_Name>
+        </Instrument>
+        <Instrument>
+            <Short_Name>RAIN GAUGES</Short_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1998-01-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-50.0</Southernmost_Latitude>
+                <Northernmost_Latitude>50.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>TROPICS</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>0.25 degree</Latitude_Resolution>
+        <Longitude_Resolution>0.25 degree</Longitude_Resolution>
+        <Temporal_Resolution>1 month</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>TRMM</Short_Name>
+        <Long_Name>Tropical Rainfall Measuring Mission Project</Long_Name>
+    </Project>
+    <Quality>Quality arrays have been set aside in the files to be populated in the future, once the characteristics of the sensor become better understood and enhancements are made to the science algorithms. Quality indicators will be available for each 5 degree gridbox in the monthly rainfall map.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>NASA Precipitation Processing System (PPS)</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>4.9 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>TRMM_3B43.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:56:04 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/TRMM/images/TRMM_3B43.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddede01b045fab4ed83e/file</URL>
+        <Format>PNG</Format>
+        <Caption>TRMM Sample Image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Huffman, G.J., 1997: "Estimates of Root-Mean-Square Random Error for Finite Samples of Estimated Precipitation," J. Appl. Meteor., 1191-1201.
+      
+Huffman, G.J., R.F. Adler, D.T. Bolvin, G. Gu, E.J. Nelkin, K.P. Bowman, Y. Hong, E.F. Stocker, D.B. Wolff, 2007:  The TRMM Multi-satellite Precipitation Analysis: Quasi- Global, Multi-Year, Combined-Sensor Precipitation Estimates at Fine Scale.  J. Hydrometeor., 8(1), 38-55.  PDF available at ftp://meso.gsfc.nasa.gov/agnes/huffman/papers/ TMPA_jhm_07.pdf.gz 
+
+Huffman, G.J., R.F. Adler, D.T. Bolvin, E.J. Nelkin, 2010:  The TRMM Multi-satellite Precipitation Analysis (TMPA).  Chapter 1 in Satellite Rainfall Applications for Surface Hydrology, F. Hossain and M. Gebremichael, Eds.  Springer Verlag, ISBN: 978-90-481-2914-0, 3-22.</Citation>
+    </Reference>
+    <Summary>
+        <Abstract>The 3B43 dataset is the monthly version of the 3B42 dataset.
+
+This product is created using TRMM-adjusted merged microwave-infrared precipitation rate (in mm/hr) and root-mean-square (RMS) precipitation-error estimates.
+It provides a ?best? precipitation estimate in a latitude band covering 50o N to 50o S, an expansion of the TRMM region, from all global data sources, namely high-quality microwave data, infrared data, and analyses of rain gauges. The granule size is one month.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc2.gesdisc.eosdis.nasa.gov/data/TRMM_L3/TRMM_3B43.7</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.gsfc.nasa.gov/SSW/#keywords=TRMM_3B43</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET RELATED VISUALIZATION</Type>
+            <Subtype>GIOVANNI</Subtype>
+        </URL_Content_Type>
+        <URL>https://giovanni.gsfc.nasa.gov/giovanni/#dataKeyword=TRMM_3B43</URL>
+        <Description>The GES-DISC Interactive Online Visualization ANd aNalysis Interface (Giovanni) is a web-based tool that allows users to interactively visualize and analyze data.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=TRMM_3B43</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>THREDDS DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc2.gesdisc.eosdis.nasa.gov/opendap/ncml/aggregation/TRMM_3B43.7/</URL>
+        <Description>Access the data via the THREDDS.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>GDS</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc2.gesdisc.eosdis.nasa.gov/dods/TRMM_3B43_7.info</URL>
+        <Description>The GrADS Data Server (GDS) is another form of OPeNDAP that provides subsetting and some analysis services across the Internet.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search?q=TRMM_3B43</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>https://trmm.gsfc.nasa.gov/</URL>
+        <Description>TRMM Project Home Page</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://pmm.nasa.gov/sites/default/files/document_files/3B42_3B43_doc_V7.pdf</URL>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://pps.gsfc.nasa.gov/Documents/filespec.TRMM.V7.pdf</URL>
+        <Description>File specification document.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://pps.gsfc.nasa.gov/Documents/formatChangesV7.pdf</URL>
+        <Description>Comparison between TRMM versions 6 and 7.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc2.gesdisc.eosdis.nasa.gov/data/TRMM_L3/TRMM_3B43/doc/README.TRMM_V7.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://pmm.nasa.gov/sites/default/files/imce/3B42_3B43_TMPA_restart.pdf</URL>
+        <Description>Details of the TMPA algorithm used in this product.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>ftp://gpmweb2.pps.eosdis.nasa.gov/tsdis/AB/docs/anomalous.html</URL>
+        <Description>TRMM Data Gaps</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <Metadata_Dates>
+        <Metadata_Creation>2011-07-15</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-22</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-04-20</Metadata_Future_Review>
+        <Data_Creation>2011-07-01</Data_Creation>
+        <Data_Last_Revision>2016-04-20</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 month</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

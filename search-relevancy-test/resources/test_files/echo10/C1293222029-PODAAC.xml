@@ -1,0 +1,170 @@
+<Collection>
+  <ShortName>AQUARIUS_L3_DENSITY_SMI_28DAY-RUNNINGMEAN_V4</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2015-06-16T03:12:15.081Z</InsertTime>
+  <LastUpdate>2015-06-16T03:12:15.081Z</LastUpdate>
+  <LongName>Aquarius Official Release Level 3 Sea Surface Density Standard Mapped Image 28-Day Running Mean Data V4.0</LongName>
+  <DataSetId>PODAAC-AQR40-3DRCS</DataSetId>
+  <Description>Level 3, 28-Day running mean, sea surface density product for version 4.0 of the Aquarius data set</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2015-07-29T20:26:43.781Z</RevisionDate>
+  <ProcessingCenter>Aquarius Project NASA/CONAE</ProcessingCenter>
+  <ProcessingLevelId>3</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>HDF5</DataFormat>
+  <SpatialKeywords>
+    <Keyword>Global</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2011-08-25T00:00:00.000Z</BeginningDateTime>
+      <EndingDateTime>2015-06-07T12:51:00.000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number>(818) 393-7165</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>podaac@podaac.jpl.nasa.gov</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>User</FirstName>
+          <MiddleName>null</MiddleName>
+          <LastName>Services</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>SALINITY/DENSITY</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>DENSITY</Value>
+      </VariableLevel1Keyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>AQUARIUS_SAC-D </ShortName>
+      <LongName>Aquarius SAC-D</LongName>
+      <Type>unknown</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>AQUARIUS_RADIOMETER</ShortName>
+          <LongName>Aquarius Radiometer</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>AQUARIUS_RADIOMETER</ShortName>
+              <LongName>Aquarius Radiometer</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+        <Instrument>
+          <ShortName>AQUARIUS_SCATTEROMETER</ShortName>
+          <LongName>Aquarius Scatterometer</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>AQUARIUS_SCATTEROMETER</ShortName>
+              <LongName>Aquarius Scatterometer</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/aquarius/L3/mapped/V4/28day_running/SCI</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+    <OnlineAccessURL>
+      <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/aquarius/L3/mapped/V4/28day_running/SCI/</URL>
+      <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/aquarius/docs/v4/AQ-010-UG-0008_AquariusUserGuide_DatasetV4.0.pdf</URL>
+      <Description>Aquarius Data User's Guide</Description>
+      <Type>PORTAL_DOC_USERS_GUIDE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://aquarius.nasa.gov/</URL>
+      <Description>NASA Aquarius/SAC-D mission website</Description>
+      <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/aquarius</URL>
+      <Description>Mission and Instrument Overview</Description>
+      <Type>PORTAL_DOC_ADDITIONAL_SITES</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/aquarius/sw/idl/</URL>
+      <Description>IDL Reader and calling routines</Description>
+      <Type>PORTAL_DA_READ_SOFTWARE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/aquarius/sw/matlab/</URL>
+      <Description>MATLAB Reader and calling routines</Description>
+      <Type>PORTAL_DA_READ_SOFTWARE</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://oceancolor.gsfc.nasa.gov/sdpscgi/public/aquarius_report.cgi</URL>
+      <Description>Information on observatory maneuvers, anomalies and other events</Description>
+      <Type>PORTAL_DOC_KNOWN_ISSUES</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>http://thredds.jpl.nasa.gov/thredds/catalog/ncml_aggregation/SalinityDensity/aquarius/catalog.html?dataset=ncml_aggregation/SalinityDensity/aquarius/aggregate__AQUARIUS_L3_DENSITY_SMI_28DAY-RUNNINGMEAN_V4.ncml</URL>
+      <Description>THREDDS SERVER</Description>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/aquarius/docs/v4/</URL>
+      <Description>ATBD, Validation Analysis, Product Specifications, etc</Description>
+      <Type>PORTAL_DOC_PROJECT_MATERIALS</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>

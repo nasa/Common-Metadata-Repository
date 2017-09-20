@@ -319,3 +319,30 @@
   (search/process-response
    (transmit-variable/search-for-variables (s/context) params {:raw? true
                                                                :http-options {:accept :json}})))
+
+(defn- matches-concept-id-and-revision-id?
+  "Returns true if the item matches the provided concept-id and revision-id."
+  [item concept-id revision-id]
+  (let [metadata (:meta item)]
+    (and (= concept-id (:concept-id metadata))
+         (= revision-id (:revision-id metadata)))))
+
+(defn- get-single-variable-from-umm-json
+  "Returns a single variable from a UMM JSON response. Returns nil if the provided concept-id and
+  revision-id are not found."
+  [umm-json-response concept-id revision-id]
+  (let [variables (filter #(matches-concept-id-and-revision-id? % concept-id revision-id)
+                          (get-in umm-json-response [:results :items]))]
+    ;; Sanity check that no more than one variable matches the concept-id and revision-id
+    (is (<= 0 (count variables) 1))
+    (first variables)))
+
+(defn assert-variable-associations
+  "Asserts that the expected variable associations are returned for the given variable concept."
+  [variable expected-associations search-params]
+  (let [umm-json-response (search/find-concepts-umm-json
+                           :variable (merge search-params
+                                            {:concept_id (:concept-id variable)}))
+        variable-revision (get-single-variable-from-umm-json
+                           umm-json-response (:concept-id variable) (:revision-id variable))]
+    (is (= expected-associations (:associations variable-revision)))))

@@ -1,0 +1,278 @@
+<DIF xmlns='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:dif='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd'>
+  <Entry_ID>
+    <Short_Name>MI3DAEF</Short_Name>
+    <Version>2</Version>
+  </Entry_ID>
+  <Version_Description>Not provided</Version_Description>
+  <Entry_Title>MISR Level 3 FIRSTLOOK Component Global Aerosol Product covering a day V002</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Release_Date>2009</Dataset_Release_Date>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>10.5067/TERRA/MISR/MI3DAEF_L3.002</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>http://eosweb.larc.nasa.gov/project/misr/misr_table</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Person>
+      <First_Name>ASDC</First_Name>
+      <Last_Name>USER SERVICES</Last_Name>
+      <Address>
+        <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+        <Street_Address>User and Data Services</Street_Address>
+        <Street_Address>NASA Langley Research Center</Street_Address>
+        <Street_Address>Mail Stop 157D</Street_Address>
+        <City>Hampton</City>
+        <State_Province>VA</State_Province>
+        <Postal_Code>23681-2199</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>757-864-8656</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Email>support-asdc@earthdata.nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Personnel>
+    <Role>INVESTIGATOR</Role>
+    <Contact_Person>
+      <First_Name>DAVID, DR.</First_Name>
+      <Middle_Name>J.</Middle_Name>
+      <Last_Name>DINER</Last_Name>
+      <Address>
+        <Street_Address>Jet Propulsion Laboratory</Street_Address>
+        <Street_Address>4800 Oak Grove Drive</Street_Address>
+        <City>Pasadena</City>
+        <State_Province>CA</State_Province>
+        <Postal_Code>91109-8099</Postal_Code>
+        <Country>United States</Country>
+      </Address>
+      <Phone>
+        <Number>818-354-6319</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>818-393-4616</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>david.j.diner@nasa.gov</Email>
+    </Contact_Person>
+  </Personnel>
+  <Science_Keywords uuid='02ea239e-4bca-4fda-ab87-be12c723c30a'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL PARTICLE PROPERTIES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords uuid='227cf2d4-968a-4312-89e6-8c6bcf616e5d'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AIR QUALITY</Term>
+    <Variable_Level_1>TURBIDITY</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords uuid='2e5a401b-1507-4f57-82b8-36557c13b154'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+  </Science_Keywords>
+  <Science_Keywords uuid='40633fe2-5b32-4bdc-a17b-b1cfebc01ae7'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL EXTINCTION</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords uuid='77397026-09c9-44e0-b85f-77b2bc9b1630'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AIR QUALITY</Term>
+  </Science_Keywords>
+  <Science_Keywords uuid='f9fe1bc0-88c5-4c26-9b4c-a9867d027685'>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AIR QUALITY</Term>
+    <Variable_Level_1>PARTICULATES</Variable_Level_1>
+  </Science_Keywords>
+  <ISO_Topic_Category uuid='1ebf71bd-d007-42f8-8f9b-8c44a6b65a28'>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+  <Ancillary_Keyword>COLUMN AEROSOL OPTICAL DEPTH</Ancillary_Keyword>
+  <Ancillary_Keyword>OPTICAL DEPTH</Ancillary_Keyword>
+  <Ancillary_Keyword>STRATOSPHERICAL AEROSOL OPTICAL DEPTH</Ancillary_Keyword>
+  <Ancillary_Keyword>CIRRUS OPTICAL DEPTH</Ancillary_Keyword>
+  <Platform uuid='80eca755-c564-4616-b910-a4c4387b7c54'>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+    <Instrument uuid='6f912d59-3932-4f05-8924-20628d508b84'>
+      <Short_Name>MISR</Short_Name>
+      <Long_Name>Multi-Angle Imaging SpectroRadiometer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Range_DateTime>
+      <Beginning_Date_Time>2007-06-01T00:00:00Z</Beginning_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>IN WORK</Dataset_Progress>
+  <Spatial_Coverage>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+        <Northernmost_Latitude>90.0</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+        <Easternmost_Longitude>180.0</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+  </Spatial_Coverage>
+  <Location uuid='51e3593f-4b42-4141-972e-96666c479f9c'>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Data_Resolution>
+    <Latitude_Resolution>0.5 Degree</Latitude_Resolution>
+    <Longitude_Resolution>0.5 Degree</Longitude_Resolution>
+    <Horizontal_Resolution_Range uuid='3b36beea-9637-4213-bdbe-42e878ca14df'>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+    <Temporal_Resolution>Daily</Temporal_Resolution>
+    <Temporal_Resolution_Range uuid='1ac968ef-a90a-4ffc-adbf-ea0c0d69a7f9'>Daily - &lt; Weekly</Temporal_Resolution_Range>
+  </Data_Resolution>
+  <Project uuid='be54c899-6ca6-49f5-8c64-5def73e16976'>
+    <Short_Name>MISR</Short_Name>
+    <Long_Name>Multi-angle Imaging SpectroRadiometer</Long_Name>
+  </Project>
+  <Dataset_Language>English</Dataset_Language>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Name>
+      <Short_Name>ASDC</Short_Name>
+      <Long_Name>Atmospheric Science Data Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://eosweb.larc.nasa.gov</Organization_URL>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Person>
+        <First_Name>ASDC</First_Name>
+        <Last_Name>USER SERVICES</Last_Name>
+        <Address>
+          <Street_Address>NASA Langley Atmospheric Science Data Center</Street_Address>
+          <Street_Address>User and Data Services</Street_Address>
+          <Street_Address>NASA Langley Research Center</Street_Address>
+          <Street_Address>Mail Stop 157D</Street_Address>
+          <City>Hampton</City>
+          <State_Province>VA</State_Province>
+          <Postal_Code>23681-2199</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>757-864-8656</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Email>support-asdc@earthdata.nasa.gov</Email>
+      </Contact_Person>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>Online</Distribution_Media>
+    <Distribution_Format>HDF and NetCDF</Distribution_Format>
+    <Fees>None</Fees>
+  </Distribution>
+  <Reference>
+    <Citation> Diner, D.J., J.C. Beckert, T.H. Reilly, C.J. Bruegge, J.E. Conel, R. Kahn, J.V. Martonchik, T.P. Ackerman, R. Davies, S.A.W. Gerstl, H.R. Gordon, J-P. Muller, R.B. Myneni, R.J. Sellers, B. Pinty, and M.M. Verstraete (1988). Multiangle Imaging SpectroRadiometer (MISR) description and experiment overview. IEEE Trans. Geosci. Rem. Sens., Vol. 36, pp 1072-1087. Martonchik, J.V., D.J. Diner, R. Kahn, T.P. Ackerman, M.M. Verstraete, B. Pinty, and H.R. Gordon (1988). Techniques for the retrieval of aerosol properties overland and ocean using multi-angle imaging, IEEE Trans. Geosci. Rem. Sens., VOl. 36, pp 1212-1227. A complete list of references can be found on the MISR web site's Publications page. (http://misr.jpl.nasa.gov/publications/peerReviewed/) </Citation>
+  </Reference>
+  <Summary>
+    <Abstract>The MISR Level 3 FIRSTLOOK Component Global Aerosol Product covering a day contains a statistical summary of column aerosol 555 nanometer optical depth, and a monthly aerosol compositional type frequency histogram. This data product is a global summary of the Level 2 aerosol parameters of interest averaged over a day and reported on a geographic grid, with resolution of 0.5 degree by 0.5 degree. The FIRSTLOOK processing uses the new time dependence of the Atmospheric and Surface Climatology (TASC) from the same month/previous year. The TASC data set now contains snow-ice and ocean surface wind speed values that are updated on a monthly basis therefore, these data sets cannot be generated until the end of the month. Products generated are distinguished by the presence of FIRSTLOOK in the file names.The MISR instrument consists of nine pushbroom cameras which measure radiance in four spectral bands. Global coverage is achieved in nine days. The cameras are arranged with one camera pointing toward the nadir, four cameras pointing forward and four cameras pointing aftward. It takes 7 minutes for all nine cameras to view the same surface location. The view angles relative to the surface reference ellipsoid, are 0, 26.1, 45.6, 60.0, and 70.5 degrees. The spectral band shapes are nominally gaussian, centered at 443, 555, 670, and 865 nm.</Abstract>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type uuid='3779ec72-c1e0-4a0f-aff8-8e2a2a7af486'>
+      <Type>GET DATA</Type>
+      <Subtype>EOSDIS DATA POOL</Subtype>
+    </URL_Content_Type>
+    <URL>ftp://l5eil01.larc.nasa.gov/MISR/MI3DAEF.002/</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5cb9c24e-1afe-471d-9f1a-808d390ab623'>
+      <Type>GET DATA</Type>
+      <Subtype>REVERB</Subtype>
+    </URL_Content_Type>
+    <URL>http://reverb.echo.nasa.gov/reverb/#utf8=%E2%9C%93&amp;spatial_map=satellite&amp;spatial_type=rectangle&amp;keywords=MI3DAE</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eospso.gsfc.nasa.gov/atbd-category/45</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/misr/dps</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/misr/dps/specific_products</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/misr/misr_table</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/misr/quality_summaries/misr_qual_stmts_current</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='5ec1bb9d-0efc-4099-9b31-ec791bbd8145'>
+      <Type>VIEW RELATED INFORMATION</Type>
+    </URL_Content_Type>
+    <URL>http://eosweb.larc.nasa.gov/project/misr/quality_summaries/misr_qual_stmts_new</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='62919237-f020-4f9d-abcb-3d46b9b021e6'>
+      <Type>GET DATA</Type>
+      <Subtype>OPENDAP DIRECTORY (DODS)</Subtype>
+    </URL_Content_Type>
+    <URL>http://l0dup05.larc.nasa.gov/opendap/misrl2l3/MISR/contents.html</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='6e72d128-7d28-4bd0-bac0-8c5ffd8b31f1'>
+      <Type>VIEW PROJECT HOME PAGE</Type>
+    </URL_Content_Type>
+    <URL>http://misr.jpl.nasa.gov/</URL>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type uuid='750f6c61-0f15-4185-94d8-c029dec04bc5'>
+      <Type>GET DATA</Type>
+    </URL_Content_Type>
+    <URL>http://l0dup05.larc.nasa.gov/MISR/cgi-bin/MISR/main.cgi</URL>
+  </Related_URL>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <DIF_Revision_History>2011-02-03, R. Key created the DIF.</DIF_Revision_History>
+  <Metadata_Dates>
+    <Metadata_Creation>2011-02-03</Metadata_Creation>
+    <Metadata_Last_Revision>2015-12-10</Metadata_Last_Revision>
+    <Data_Creation>Not provided</Data_Creation>
+    <Data_Last_Revision>Not provided</Data_Last_Revision>
+  </Metadata_Dates>
+  <Additional_Attributes>
+    <Name>SP_AM_MISR_ProductVersion</Name>
+    <DataType>INT</DataType>
+    <Description>Integer number corresponding to the product version field within the local granule id of the MISR products. Will support the production rule that selects dynamic inputs based on the product version number.</Description>
+  </Additional_Attributes>
+  <Product_Level_Id>3</Product_Level_Id>
+  <Product_Flag>DATA_PRODUCT_FILE</Product_Flag>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.earthdata.cmr.restriction</Group>
+      <Name>Restriction</Name>
+      <Value>5</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>UARWI3AT</Short_Name>
+        <Version>011</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>UARS Wind Imaging Interferometer (WINDII) Level 3AT V011 (UARWI3AT) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Shepherd, Gordon G., et al.</Dataset_Creator>
+        <Dataset_Title>UARS Wind Imaging Interferometer (WINDII) Level 3AT V011</Dataset_Title>
+        <Dataset_Series_Name>UARWI3AT</Dataset_Series_Name>
+        <Dataset_Release_Date>2001-06-04</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>011</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/UARWI3AT_011.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JAMES</First_Name>
+            <Middle_Name>EDWARD</Middle_Name>
+            <Last_Name>JOHNSON</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5121</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>James.Johnson@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>GORDON</First_Name>
+            <Middle_Name>G.</Middle_Name>
+            <Last_Name>SHEPHERD</Last_Name>
+            <Address>
+                <Street_Address>Centre for Research in Experimental Space Science</Street_Address>
+                <Street_Address>York University</Street_Address>
+                <Street_Address>4700 Keele Street</Street_Address>
+                <City>North York</City>
+                <State_Province>Ontario</State_Province>
+                <Postal_Code>L4J 3N3</Postal_Code>
+                <Country>CANADA</Country>
+            </Address>
+            <Phone>
+                <Number>(416) 736-5247</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>gordon@windic.yorku.ca</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>TECHNICAL CONTACT</Role>
+        <Contact_Person>
+            <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5224</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>gsfc-help-disc@lists.nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>UPPER LEVEL WINDS</Variable_Level_1>
+        <Detailed_Variable>MERIDIONAL WINDS</Detailed_Variable>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC WINDS</Term>
+        <Variable_Level_1>UPPER LEVEL WINDS</Variable_Level_1>
+        <Detailed_Variable>ZONAL WINDS</Detailed_Variable>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC TEMPERATURE</Term>
+        <Variable_Level_1>UPPER AIR TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <Ancillary_Keyword>U WIND</Ancillary_Keyword>
+    <Ancillary_Keyword>V WIND</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>UARS</Short_Name>
+        <Long_Name>Upper Atmosphere Research Satellite</Long_Name>
+        <Instrument>
+            <Short_Name>WINDII</Short_Name>
+            <Long_Name>Wind Imaging Interferometer</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>1991-11-04</Beginning_Date_Time>
+            <Ending_Date_Time>1997-08-19</Ending_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>COMPLETE</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-80.0</Southernmost_Latitude>
+                <Northernmost_Latitude>80.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+                <Minimum_Altitude>80</Minimum_Altitude>
+                <Maximum_Altitude>300</Maximum_Altitude>
+                <Altitude_Unit>km</Altitude_Unit>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Location>
+        <Location_Category>VERTICAL LOCATION</Location_Category>
+        <Location_Type>MESOSPHERE</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>500 km along track at limb</Latitude_Resolution>
+        <Longitude_Resolution>20 km wide footprint at limb</Longitude_Resolution>
+        <Vertical_Resolution>3 - 5 km</Vertical_Resolution>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>UARS</Short_Name>
+        <Long_Name>Upper Atmosphere Research Satellite</Long_Name>
+    </Project>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>UARS CDHF</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>40 MB per file</Distribution_Size>
+        <Distribution_Format>binary</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <File>UARWI3AT.png</File>
+        <!--Modified by Change List Tool on Mon Jun 26 16:43:05 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/UARS/images/UARWI3AT.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddf3e01b045fab4ed939/file</URL>
+        <Format>PNG</Format>
+        <Caption>UARS Sample Image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Reber, Carl A., Trevathan, Charles E., The Upper Atmosphere Research Satellite, J. Geophys. Res., Vol. 98, No. D6, pp 10643-10647, 1993.                                    Shepherd, G. G., et al., WINDII, the Wind Imaging Interferometer on the Upper Atmosphere Research Satellite, J. Geophys. Res., Vol. 98, No. D6, pp 10725-10750, 1993.</Citation>
+    </Reference>
+    <Summary>
+        <Abstract>The Wind Imaging Interferometer (WINDII) Level 3AT data product consists of daily, 65.536 second interval time-ordered vertical profiles of meridional and zonal wind components, and temperature. The instrument was a Michelson interferometer designed to measure Doppler shifts of spectral lines in the visible between 550 and 780 nm.  WINDII was flown on NASA's Upper Atmosphere Research Satellite (UARS) and designed to measure wind, temperature and emission rates in the mesosphere and thermosphere between 80 and 300 km at about 5 km resolution. Data were collected between latitude 40S and 72N and 72S and 40N, alternating each satellite yaw cycle of about 36 days. The WINDII Level 3AT data were processed with the version 11 algorithm.The WINDII level 3AT product consists of 3 granules per day. A data granule is one WINDII species or subtype per day.  The following subtypes are available:       1) MERWIN_A - meridional wind component on altitude grid  [m/s]       2) ZONWIN_A - zonal wind component on altitude grid       [m/s]       3) TEMP - temperature on altitude grid                    [Kelvin]WINDII data are on the UARS standard altitude levels (in km) given by:      z(i) = 5*i                 for  1 &lt;= i &lt;= 12      z(i) = 60 + (i-12)*3       for 13 &lt;= i &lt;= 32      z(i) = 120 + (i-32)*5      for 33 &lt;= i &lt;= 88Each of the 3 WINDII granules is accompanied by an additional parameter file, designated as level 3TP.  The parameter file, contains additional ancillary and quality information not found in the 3AT files.  The data files are available in a binary record oriented format.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://acdisc.gesdisc.eosdis.nasa.gov/data/UARS_WINDII_Level3/UARWI3AT/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=UARWI3AT</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>http://search.earthdata.nasa.gov/search?q=UARWI3AT</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://uars.gsfc.nasa.gov/</URL>
+        <Description>The UARS Project Homepage.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://acdisc.gesdisc.eosdis.nasa.gov/data/UARS_WINDII_Level3/UARWI3AT/doc/README.UARWI3A.doc</URL>
+        <Description>README</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2001-02-21, S. Ritz updated Summary URLs.2002-09-27, added WIND PROFILES parameter2014-07-25, J. Johnson Changes made for GES DISC landing page support.2015-06-09, J. Johnson cleaned up Science Keywords, Project, Data Resolution and Privacy.2016-04-22, J. Johnson upgraded metadata to DIF10 format.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2007-02-26</Metadata_Creation>
+        <Metadata_Last_Revision>2016-11-18</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-05-01</Metadata_Future_Review>
+        <Data_Creation>1999-03-12</Data_Creation>
+        <Data_Last_Revision>1999-03-12</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>3</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>f1c2d322-419f-4b8d-9c9f-4a2c1a0a8ebe</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:18:45</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:51Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Discipline</Name>
+            <Value>EARTH SCIENCE</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

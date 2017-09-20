@@ -1,0 +1,198 @@
+<Collection>
+            <ShortName>Daymet_V3_CFMosaics_1328</ShortName>
+            <VersionId>3</VersionId>
+            <InsertTime>2017-04-19T00:00:00Z</InsertTime>
+            <LastUpdate>2017-04-19T00:00:00Z</LastUpdate>
+            <LongName>Daymet: Daily Surface Weather Data on a 1-km Grid for North America, Version 3</LongName>
+            <DataSetId>Daymet: Daily Surface Weather Data on a 1-km Grid for North America, Version 3</DataSetId>
+            <Description>This data set provides Daymet Version 3 model output data as gridded estimates of daily weather parameters for North America and Hawaii: including Canada, Mexico, the United States of America, Puerto Rico, and Bermuda. The island areas of Hawaii and Puerto Rico are available as files separate from the continental land mass. Daymet output variables include the following parameters: minimum temperature, maximum temperature, precipitation, shortwave radiation, vapor pressure, snow water equivalent, and day length. The data set covers the period from January 1, 1980 to December 31 of the most recent full calendar year. Each subsequent year is processed individually at the close of a calendar year. Daymet variables are continuous surfaces provided as individual files, by variable and year, at a 1-km x 1-km spatial resolution and a daily temporal resolution. Data are in a Lambert Conformal Conic projection for North America and are distributed in a netCDF file (version 1.6) format compliant to Climate and Forecast (CF) metadata conventions.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1328</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2017-04-19T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Thornton, P.E., M.M. Thornton, B.W. Mayer, Y. Wei, R. Devarakonda, R.S. Vose, and R.B. Cook. 2017. Daymet: Daily Surface Weather Data on a 1-km Grid for North America, Version 3. ORNL DAAC, Oak Ridge, Tennessee, USA. https://doi.org/10.3334/ORNLDAAC/1328</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1980-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2016-12-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC RADIATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SHORTWAVE RADIATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC TEMPERATURE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SURFACE TEMPERATURE</Value>
+                        <VariableLevel2Keyword>
+                            <Value>MAXIMUM/MINIMUM TEMPERATURE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC WATER VAPOR</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>WATER VAPOR INDICATORS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>WATER VAPOR</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>PRECIPITATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PRECIPITATION AMOUNT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>PRECIPITATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SNOW WATER EQUIVALENT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>METEOROLOGICAL STATIONS</ShortName>
+                    <LongName> </LongName>
+                    <Type>In Situ Land-based Platforms</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>RAIN GAUGES</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>RAIN GAUGES</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                        <Instrument>
+                            <ShortName>TEMPERATURE SENSORS</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>TEMPERATURE SENSORS</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>DEM</ShortName>
+                    <LongName>Digital Elevation Model</LongName>
+                    <Type>Models/Analyses</Type>
+                    <Instruments>
+					</Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>Environmental Modeling</ShortName>
+                    <LongName>Soil Characteristics</LongName>
+                    <Type>Models/Analyses</Type>
+                    <Instruments>
+					</Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>Daymet</ShortName>
+                    <LongName>Daymet</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/daymet/Daymet_V3_CFMosaics/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/DAYMET/guides/Daymet_V3_CFMosaics.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1328</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/daymet/Daymet_V3_CFMosaics/comp/Daymet_V3_CFMosaics.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/daymet/Daymet_V3_CFMosaics/comp/2012_tmax_annavg_NA_PR_HI_4Guide.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/1328/catalog.html</URL>
+                    <Description>The THREDDS location for this Collection.</Description>
+                    <Type>THREDDS DIRECTORY</Type>
+                    <MimeType>text/html</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-179.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>83.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-52.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>14.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

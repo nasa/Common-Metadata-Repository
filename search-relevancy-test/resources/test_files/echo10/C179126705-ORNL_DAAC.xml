@@ -1,0 +1,207 @@
+<Collection>
+            <ShortName>NCEP_MET_1DEG_1226</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2014-06-16T00:00:00Z</InsertTime>
+            <LastUpdate>2014-06-16T00:00:00Z</LastUpdate>
+            <LongName>ISLSCP II Reanalysis Near-Surface Meteorology Data</LongName>
+            <DataSetId>ISLSCP II Reanalysis Near-Surface Meteorology Data</DataSetId>
+            <Description>This data set for the ISLSCP Initiative II data collection provides near surface meteorological variables, fluxes of heat, moisture and momentum at the surface, and land surface state variables, all with a spatial resolution of 1 degree in both latitude and longitude. There are four temporal categories of data: time invariant and monthly mean annual cycle fields (together referred to as "fixed" fields), monthly mean fields, monthly 3-hourly diurnal, and 3-hourly fields. Two types of variables exist in this data; instantaneous fields (primarily state variables), and average fields (primarily flux fields expressed as a rate). The Center for Ocean-Land Atmosphere Studies (COLA) near-surface data set for ISLSCP II was derived from the National Centers for Environmental Prediction (NCEP)/Department of Energy (DOE) Atmospheric Model Inter-comparison Project (AMIP-II) reanalysis (http://www.cpc.ncep.noaa.gov/products/wesley/reanalysis2/), covering the years from 1979-2003. The data set for ISLSCP II covers the period from 1986 to 1995. The purpose of the reanalysis was to provide an improved version of the original NCEP/National Center for Atmospheric Research (NCAR) reanalysis for General Circulation Model (GCM) validation. To co-register the NCEP/DOE reanalysis on the ISLSCP 1-degree grid, the reanalysis data set was regridded from its native T62 Gaussian grid) resolution (192 x 94 grid boxes globally) to 1-degree ISLSCP II required resolution.There are 136 compressed (.tar.gz) data files with this data set. When extrapolated, the individual data files are in ASCII (.asc) format.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1226</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2014-06-16T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>4</ProcessingLevelId>
+            <ProcessingLevelDescription>model products</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Dirmeyer, P., M. Zhao, G. White, W. Ebisuzaki, F.G. Hall, G.J. Collatz, B.W. Meeson, S.O. Los, E.Brown De Colstoun, and D.R. Landis. 2014. ISLSCP II Reanalysis Near-Surface Meteorology Data. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1226</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1986-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>1995-12-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC RADIATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>LONGWAVE RADIATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC RADIATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SHORTWAVE RADIATION</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC TEMPERATURE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>UPPER AIR TEMPERATURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC WINDS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SURFACE WINDS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>PRECIPITATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PRECIPITATION AMOUNT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>PRECIPITATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PRECIPITATION RATE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL MOISTURE/WATER CONTENT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL TEMPERATURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SURFACE RADIATIVE PROPERTIES</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ALBEDO</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>TOPOGRAPHY</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SURFACE ROUGHNESS</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>NOT APPLICABLE</ShortName>
+                    <LongName> </LongName>
+                    <Type>NOT APPLICABLE</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>NOT APPLICABLE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>NOT APPLICABLE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>ISLSCP II</ShortName>
+                    <LongName>International Satellite Land Surface Climatology Project II</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/near-surface_met/ncep_met_1deg//</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/ISLSCP_II/guides/ncep_met_1deg.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1226</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/near-surface_met/ncep_met_1deg//comp/0_ncep_met_readme.txt</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/near-surface_met/ncep_met_1deg//comp/1_ncep_met_doc.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/near-surface_met/ncep_met_1deg//comp/ncep_met_1deg.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>180.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-90.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

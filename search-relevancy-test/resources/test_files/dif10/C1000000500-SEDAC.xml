@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+  <Entry_ID>
+    <Short_Name>CIESIN_SEDAC_SDEI_PM25_MMSAOD</Short_Name>
+    <Version>1.0</Version>
+  </Entry_ID>
+  <Entry_Title>Global Annual PM2.5 Grids from MODIS, MISR and SeaWiFS Aerosol Optical Depth (AOD), 1998-2012</Entry_Title>
+  <Dataset_Citation>
+    <Dataset_Creator>van Donkelaar, A., R.V. Martin, M. Brauer, and B.L. BoysScience Information Network - CIESIN - Columbia University</Dataset_Creator>
+    <Dataset_Title>Global Annual PM2.5 Grids from MODIS, MISR and SeaWiFS Aerosol Optical Depth (AOD), 1998-2012</Dataset_Title>
+    <Dataset_Release_Date>2015-01-01</Dataset_Release_Date>
+    <Dataset_Release_Place>Palisades, NY</Dataset_Release_Place>
+    <Dataset_Publisher>Socioeconomic Data and Applications Center (SEDAC), Columbia University</Dataset_Publisher>
+    <Version>1.0</Version>
+    <Data_Presentation_Form>raster, map, map service</Data_Presentation_Form>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4028PFS</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4028PFS</Online_Resource>
+  </Dataset_Citation>
+  <Personnel>
+    <Role>METADATA AUTHOR</Role>
+    <Contact_Group>
+      <Name>CIESIN METADATA ADMINISTRATION</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8988</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>metadata@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Group>
+      <Name>SEDAC USER SERVICES</Name>
+      <Address>
+        <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+        <City>Palisades</City>
+        <State_Province>New York</State_Province>
+        <Postal_Code>10964</Postal_Code>
+        <Country>USA</Country>
+      </Address>
+      <Phone>
+        <Number>+1 845-365-8920</Number>
+        <Type>Telephone</Type>
+      </Phone>
+      <Phone>
+        <Number>+1 845-365-8922</Number>
+        <Type>Fax</Type>
+      </Phone>
+      <Email>ciesin.info@ciesin.columbia.edu</Email>
+    </Contact_Group>
+  </Personnel>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AEROSOLS</Term>
+    <Variable_Level_1>PARTICULATE MATTER</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>ATMOSPHERE</Topic>
+    <Term>AIR QUALITY</Term>
+    <Variable_Level_1>PARTICULATES</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>HUMAN SETTLEMENTS</Term>
+    <Variable_Level_1>URBAN AREAS</Variable_Level_1>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>PUBLIC HEALTH</Term>
+  </Science_Keywords>
+  <Science_Keywords>
+    <Category>EARTH SCIENCE</Category>
+    <Topic>HUMAN DIMENSIONS</Topic>
+    <Term>SUSTAINABILITY</Term>
+    <Variable_Level_1>ENVIRONMENTAL SUSTAINABILITY</Variable_Level_1>
+  </Science_Keywords>
+  <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+  <ISO_Topic_Category>HEALTH</ISO_Topic_Category>
+  <Ancillary_Keyword>Particulate Matter</Ancillary_Keyword>
+  <Ancillary_Keyword>PM2.5</Ancillary_Keyword>
+  <Ancillary_Keyword>Remote Sensing</Ancillary_Keyword>
+  <Ancillary_Keyword>Satellite Imagery</Ancillary_Keyword>
+  <Ancillary_Keyword>Environmental Indicators</Ancillary_Keyword>
+  <Ancillary_Keyword>MODIS</Ancillary_Keyword>
+  <Ancillary_Keyword>MISR</Ancillary_Keyword>
+  <Ancillary_Keyword>Aerosol Optical Depth</Ancillary_Keyword>
+  <Ancillary_Keyword>SeaWIFS</Ancillary_Keyword>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>AQUA</Short_Name>
+    <Long_Name>Earth Observing System, AQUA</Long_Name>
+    <Instrument>
+      <Short_Name>MODIS</Short_Name>
+      <Long_Name>Moderate-Resolution Imaging Spectroradiometer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>TERRA</Short_Name>
+    <Long_Name>Earth Observing System, TERRA (AM-1)</Long_Name>
+    <Instrument>
+      <Short_Name>MISR</Short_Name>
+      <Long_Name>Multi-Angle Imaging SpectroRadiometer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Platform>
+    <Type>Earth Observation Satellites</Type>
+    <Short_Name>SEASTAR</Short_Name>
+    <Long_Name>Orbital Sciences Corporation OrbView-2 Satellite</Long_Name>
+    <Instrument>
+      <Short_Name>SEAWIFS</Short_Name>
+      <Long_Name>Sea-Viewing Wide Field-of-View Sensor</Long_Name>
+    </Instrument>
+  </Platform>
+  <Platform>
+    <Type>Models/Analyses</Type>
+    <Short_Name>MODELS</Short_Name>
+    <Instrument>
+      <Short_Name>Computer</Short_Name>
+      <Long_Name>Computer</Long_Name>
+    </Instrument>
+  </Platform>
+  <Temporal_Coverage>
+    <Range_DateTime>
+      <Beginning_Date_Time>1998-01-01</Beginning_Date_Time>
+      <Ending_Date_Time>2012-12-31</Ending_Date_Time>
+    </Range_DateTime>
+  </Temporal_Coverage>
+  <Dataset_Progress>COMPLETE</Dataset_Progress>
+  <Spatial_Coverage>
+    <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+    <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+    <Geometry>
+      <Coordinate_System>CARTESIAN</Coordinate_System>
+      <Bounding_Rectangle>
+        <Southernmost_Latitude>-55.000000</Southernmost_Latitude>
+        <Northernmost_Latitude>70.000000</Northernmost_Latitude>
+        <Westernmost_Longitude>-180.000000</Westernmost_Longitude>
+        <Easternmost_Longitude>180.000000</Easternmost_Longitude>
+      </Bounding_Rectangle>
+    </Geometry>
+    <Spatial_Info>
+      <Spatial_Coverage_Type>Horizontal</Spatial_Coverage_Type>
+      <Horizontal_Coordinate_System>
+        <Geodetic_Model>
+          <Horizontal_DatumName>WGS84</Horizontal_DatumName>
+          <Ellipsoid_Name>WGS84</Ellipsoid_Name>
+          <Semi_Major_Axis>6378137</Semi_Major_Axis>
+          <Denominator_Of_Flattening_Ratio>298.257224</Denominator_Of_Flattening_Ratio>
+        </Geodetic_Model>
+        <Geographic_Coordinate_System>
+          <GeographicCoordinateUnits>Decimal Degrees</GeographicCoordinateUnits>
+          <LatitudeResolution>0.1000</LatitudeResolution>
+          <LongitudeResolution>0.1000</LongitudeResolution>
+        </Geographic_Coordinate_System>
+      </Horizontal_Coordinate_System>
+    </Spatial_Info>
+  </Spatial_Coverage>
+  <Location>
+    <Location_Category>GEOGRAPHIC REGION</Location_Category>
+    <Location_Type>GLOBAL</Location_Type>
+  </Location>
+  <Project>
+    <Short_Name>SDEI</Short_Name>
+    <Long_Name>Satellite-Derived Environmental Indicators</Long_Name>
+  </Project>
+  <Access_Constraints>None</Access_Constraints>
+  <Use_Constraints>Users are free to use, copy, distribute, transmit, and adapt the work for commercial and non-commercial purposes, without restriction, as long as clear attribution of the source is provided.</Use_Constraints>
+  <Dataset_Language>English</Dataset_Language>
+  <Originating_Center>SEDAC</Originating_Center>
+  <Organization>
+    <Organization_Type>ARCHIVER</Organization_Type>
+    <Organization_Type>DISTRIBUTOR</Organization_Type>
+    <Organization_Name>
+      <Short_Name>SEDAC</Short_Name>
+      <Long_Name>Socioeconomic Data and Applications Center</Long_Name>
+    </Organization_Name>
+    <Organization_URL>http://sedac.ciesin.columbia.edu/</Organization_URL>
+    <Dataset_ID>CIESIN_SEDAC_SDEI_PM25_MMSAOD</Dataset_ID>
+    <Personnel>
+      <Role>DATA CENTER CONTACT</Role>
+      <Contact_Group>
+        <Name>SEDAC USER SERVICES</Name>
+        <Address>
+          <Street_Address>61 Route 9W, P.O. Box 1000</Street_Address>
+          <City>Palisades</City>
+          <State_Province>NY</State_Province>
+          <Postal_Code>10964</Postal_Code>
+          <Country>USA</Country>
+        </Address>
+        <Phone>
+          <Number>+1 845-365-8920</Number>
+          <Type>Telephone</Type>
+        </Phone>
+        <Phone>
+          <Number>+1 845-365-8922</Number>
+          <Type>Fax</Type>
+        </Phone>
+        <Email>ciesin.info@ciesin.columbia.edu</Email>
+      </Contact_Group>
+    </Personnel>
+  </Organization>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>GRID</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PDF</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Distribution>
+    <Distribution_Media>HTTP</Distribution_Media>
+    <Distribution_Format>PNG</Distribution_Format>
+    <Fees>0</Fees>
+  </Distribution>
+  <Multimedia_Sample>
+    <URL>http://sedac.ciesin.columbia.edu/downloads/maps/sdei/sdei-global-annual-avg-pm2-5-modis-misr-seawifs-aod-1998-2012/pm2-5-global-2001-2010.png</URL>
+    <Format>PNG</Format>
+    <Caption>Global PM2.5 Grids (2001-2010)</Caption>
+    <Description>Sample browse graphic of the data set.</Description>
+  </Multimedia_Sample>
+  <Reference>
+    <Author>Battelle Memorial Institute, and Center for International Earth Science Information Network - CIESIN - Columbia University</Author>
+    <Publication_Date>2013-01-01</Publication_Date>
+    <Title>Global Annual Average PM2.5 Grids from MODIS and MISR Aerosol Optical Depth (AOD)</Title>
+    <Edition>1.00</Edition>
+    <Publication_Place>Palisades, NY</Publication_Place>
+    <Publisher>NASA Socioeconomic Data and Applications Center (SEDAC)</Publisher>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.7927/H4H41PB4</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>https://doi.org/10.7927/H4H41PB4</Online_Resource>
+  </Reference>
+  <Reference>
+    <Author>van Donkelaar, A., R.V. Martin, M. Brauer, R. Kahn, R. Levy, C. Verduzco, and P.J. Villeneuve</Author>
+    <Publication_Date>2010-01-01</Publication_Date>
+    <Title>Global Estimates of Ambien Fine Particulate Matter Concentrations from Satellite-based Aerosol Optical Depth</Title>
+    <Series>Environ. Health Perspec.</Series>
+    <Volume>118</Volume>
+    <Issue>6</Issue>
+    <Pages>847-855</Pages>
+    <Persistent_Identifier>
+      <Type>DOI</Type>
+      <Identifier>doi:10.1289/ehp.0901623</Identifier>
+    </Persistent_Identifier>
+    <Online_Resource>http://dx.doi.org/10.1289/ehp.0901623</Online_Resource>
+  </Reference>
+  <Summary>
+    <Abstract>The Global Annual PM2.5 Grids from MODIS, MISR and SeaWiFS Aerosol Optical Depth (AOD) data set represents a series of three-year running mean grids (1998-2012) of fine particulate matter (solid particles and liquid droplets) that were derived from a combination of MODIS (Moderate Resolution Imaging Spectroradiometer), MISR (Multi-angle Imaging SpectroRadiometer) and SeaWIFS (Sea-Viewing Wide Field-of-View Sensor) AOD satellite retrievals. Together the grids provide a continuous surface of concentrations in micrograms per cubic meter of particulate matter 2.5 micrometers or smaller (PM2.5) for health and environmental research. For each satellite-derived PM2.5 source, the total column retrievals of AOD were converted to near-ground PM2.5 levels using the GEOS-Chem chemical transport model to represent local relationships between AOD and PM2.5. A global decadal (2001-2010) mean PM2.5 concentration grid was also produced. The raster grids have a grid cell resolution of 6 arc-minutes (0.1 degree or approximately 10 km at the equator) and cover the global land surface from 70?N to 55?S latitude. Compared to SEDAC's earlier data set, Global Annual Average PM2.5 Grids from MODIS and MISR Aerosol Optical Depth (AOD), v1 (2001-2010), this data set provides higher accuracy; longer temporal range; higher resolution (0.1 x 0.1 degrees); and time varying AOD to PM2.5 relationships, necessary for appropriate representation of trends.</Abstract>
+    <Purpose>To provide a continuous surface of concentrations (micrograms per cubic meter) of fine particulate matter of 2.5 micrometers or smaller (PM2.5) for health and environmental research.</Purpose>
+  </Summary>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW DATA SET LANDING PAGE</Type>
+    </URL_Content_Type>
+    <URL>https://doi.org/10.7927/H4028PFS</URL>
+    <Description>Data Set DOI URL and Homepage</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET DATA</Type>
+      <Subtype>ON-LINE ARCHIVE</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-annual-avg-pm2-5-modis-misr-seawifs-aod-1998-2012/data-download</URL>
+    <Description>Data Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET RELATED VISUALIZATION</Type>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-annual-avg-pm2-5-modis-misr-seawifs-aod-1998-2012/maps</URL>
+    <Description>Maps Download Page</Description>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>GET SERVICE</Type>
+      <Subtype>GET WEB MAP SERVICE (WMS)</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-annual-avg-pm2-5-modis-misr-seawifs-aod-1998-2012/maps/services</URL>
+    <Description>Web Map Services</Description>
+    <Mime_Type>application/gml+xml</Mime_Type>
+  </Related_URL>
+  <Related_URL>
+    <URL_Content_Type>
+      <Type>VIEW RELATED INFORMATION</Type>
+      <Subtype>GENERAL DOCUMENTATION</Subtype>
+    </URL_Content_Type>
+    <URL>http://sedac.ciesin.columbia.edu/data/set/sdei-global-annual-avg-pm2-5-modis-misr-seawifs-aod-1998-2012/docs</URL>
+    <Description>Documentation Page</Description>
+  </Related_URL>
+  <IDN_Node>
+    <Short_Name>USA/CIESIN</Short_Name>
+  </IDN_Node>
+  <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 10.2</Metadata_Version>
+  <Metadata_Dates>
+    <Metadata_Creation>2015-05-05</Metadata_Creation>
+    <Metadata_Last_Revision>2017-09-08</Metadata_Last_Revision>
+    <Data_Creation>2015-01-01</Data_Creation>
+    <Data_Last_Revision>2015-01-01</Data_Last_Revision>
+  </Metadata_Dates>
+  <Private>False</Private>
+  <Product_Level_Id>3</Product_Level_Id>
+  <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+<Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.tool</Name>
+      <Value>2017-09-08:docbuilder</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

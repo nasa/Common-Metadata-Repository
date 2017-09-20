@@ -6,6 +6,14 @@
    [clojure.java.io :as io]
    [clojure.string :as string]))
 
+(def provider-anomaly-filename
+  "Provider anomaly filename"
+  "anomaly_tests.csv")
+
+(def edsc-anomaly-filename
+  "EDSC user anomaly filename."
+  "edsc_anomaly_tests.csv")
+
 (def test-collection-formats
  [:iso-smap :echo10 :dif10 :dif :iso19115 :umm-json])
 
@@ -44,11 +52,10 @@
        csv/read-csv
        csv-data->maps))
 
-
 (defn read-anomaly-test-csv
   "Read the anomaly test CSV and convert data to clojure map"
-  []
-  (read-csv "anomaly_tests.csv"))
+  [filename]
+  (read-csv filename))
 
 (defn get-argument-value
   "Get the value of the argument or nil if the argument does not exist"

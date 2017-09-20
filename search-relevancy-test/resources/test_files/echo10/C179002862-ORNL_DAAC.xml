@@ -1,0 +1,177 @@
+<Collection>
+            <ShortName>lba_monthly_clim_682</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2003-09-15T00:00:00Z</InsertTime>
+            <LastUpdate>2003-09-15T00:00:00Z</LastUpdate>
+            <LongName>LBA Regional Monthly Climatology for the 20th Century (New et al.)</LongName>
+            <DataSetId>LBA Regional Monthly Climatology for the 20th Century (New et al.)</DataSetId>
+            <Description>This data set is a subset of "Global Monthly Climatology for the 20th Century (New et al.)" (2000a). This subset characterizes mean monthly surface climate over the study area of the Large Scale Biosphere-Atmosphere Experiment in Amazonia (LBA) in South America (i.e., latitude 10 N to 25 S, longitude 30 to 85 W) during nearly all of the 20th Century. The data are gridded at 0.5-degree latitude/longitude resolution and include seven variables: precipitation, mean temperature, diurnal temperature range, wet-day frequency, vapour pressure, cloud cover, and ground-frost frequency. All variables have mean monthly values for the period 1901-1995, several have data as recent as 1998, and further data will be added by the data originators. In constructing the monthly grids, the authors used an anomaly approach that attempts to maximize station data in space and time (New et al. 2000b). In this technique, grids of monthly historic anomalies are derived in relation to a standard normal period. Station measurement data for the years 1961-1990 were extracted from the monthly data holdings of the Climatic Research Unit and the Global Historic Climatology Network (GHCN) and used in constructing the normal period (New et al. 1999). The anomaly grids were then combined with high-resolution mean monthly climatology to arrive at fields of estimated historical monthly surface climate. Data are in ASCII GRID format for ArcInfo. Information on creating this LBA subset is available in ftp://daac.ornl.gov/data/lba/physical_climate/GIS_EastAngliaClimateMonthly/comp/eastanglia_readme.pdf.Data users are encouraged to see the companion file New et al. (2000) for a complete description of this technique and potential applications and limitations of the data set. For additional information, refer to the IPCC Data Distribution Centre.To access the complete year-by-year monthly data set or data more recent than posted here, users may make a request with the Climate Impacts LINK Project at the Climatic Research Unit (e-mail: d.viner@uea.ac.uk; web site: www.cru.uea.ac.uk/link). LBA was a cooperative international research initiative led by Brazil. NASA was a lead sponsor for several experiments. LBA was designed to create the new knowledge needed to understand the climatological, ecological, biogeochemical, and hydrological functioning of Amazonia; the impact of land use change on these functions; and the interactions between Amazonia and the Earth system. More information about LBA can be found at http://www.daac.ornl.gov/LBA/misc_amazon.html. </Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/682</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2003-09-15T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>New, M., M. Hulme, and P.D. Jones. 2003. LBA Regional Monthly Climatology for the 20th Century (New et al.). ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/682</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>1901-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2004-09-08T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC TEMPERATURE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SURFACE TEMPERATURE</Value>
+                        <VariableLevel2Keyword>
+                            <Value>AIR TEMPERATURE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC TEMPERATURE</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SURFACE TEMPERATURE</Value>
+                        <VariableLevel2Keyword>
+                            <Value>MAXIMUM/MINIMUM TEMPERATURE</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>ATMOSPHERIC WATER VAPOR</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>WATER VAPOR INDICATORS</Value>
+                        <VariableLevel2Keyword>
+                            <Value>WATER VAPOR</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>CLOUDS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>CLOUD PROPERTIES</Value>
+                        <VariableLevel2Keyword>
+                            <Value>CLOUD FREQUENCY</Value>
+                        </VariableLevel2Keyword>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>PRECIPITATION</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>PRECIPITATION AMOUNT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>ATMOSPHERE</TopicKeyword>
+                    <TermKeyword>WEATHER EVENTS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>FREEZE/FROST</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>NOT APPLICABLE</ShortName>
+                    <LongName> </LongName>
+                    <Type>NOT APPLICABLE</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>NOT APPLICABLE</ShortName>
+                            <LongName> </LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>NOT APPLICABLE</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>LBA-ECO</ShortName>
+                    <LongName>Large Scale Biosphere-Atmosphere Experiment - Ecology</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/lba/physical_climate/GIS_EastAngliaClimateMonthly/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/LBA/guides/lba_eastanglia_1901_1995.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/682</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/lba/physical_climate/GIS_EastAngliaClimateMonthly/comp//eastanglia_readme.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-85.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>10.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-30.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-25.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

@@ -1,0 +1,162 @@
+<Collection>
+            <ShortName>AirMOSS_L4_RZ_Soil_Moisture_1421</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2016-12-15T00:00:00Z</InsertTime>
+            <LastUpdate>2016-12-15T00:00:00Z</LastUpdate>
+            <LongName>AirMOSS: L4 Modeled Volumetric Root Zone Soil Moisture, 2012-2015</LongName>
+            <DataSetId>AirMOSS: L4 Modeled Volumetric Root Zone Soil Moisture, 2012-2015</DataSetId>
+            <Description>This data set provides hourly gridded soil moisture estimates derived from hydrologic modeling at nine AirMOSS sites across North America. The AirMOSS L4 RZSM product represents a temporal interpolation of intermittent AirMOSS L2/3 RZSM retrievals into a temporally-continuous, multi-layer, hourly soil moisture product. The L4 RZSM data have the same spatial resolution (3-arcsecs or ~100 m), and the same temporal coverage (generally Fall 2012 through Fall 2015), as the underlying L2/3 RZSM data. The L4 RZSM data were produced by the integration of the Level 2/3 product and other ancillary information into the Penn State Integrated Hydrologic Model (PIHM). Many key applications for AirMOSS data products, including the calculation of net ecosystem exchange (NEE), require temporally continuous RZSM estimates such as those provided here.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/1421</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2016-12-15T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Crow, W.T., S. Milak, and R.H. Reichle. 2016. AirMOSS: L4 Modeled Volumetric Root Zone Soil Moisture, 2012-2015. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/1421</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2012-09-21T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2015-09-28T23:59:59Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL DAAC User Services</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>AGRICULTURE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL MOISTURE/WATER CONTENT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>CLIMATE INDICATORS</TopicKeyword>
+                    <TermKeyword>LAND SURFACE/AGRICULTURE INDICATORS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL MOISTURE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SOILS</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>SOIL MOISTURE/WATER CONTENT</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>Environmental Modeling</ShortName>
+                    <LongName>Soil Characteristics</LongName>
+                    <Type>Models/Analyses</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>Computer</ShortName>
+                            <LongName>Computer</LongName>
+                            <Sensors>
+                                <Sensor>
+                                    <ShortName>Computer</ShortName>
+                                </Sensor>
+                            </Sensors>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>AirMOSS</ShortName>
+                    <LongName>Airborne Microwave Observatory of Subcanopy and Subsurface</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/airmoss/campaign/AirMOSS_L4_RZ_Soil_Moisture/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1421</URL>
+                    <URLDescription>ORNL DAAC Landing Page URL for this Collection</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/AIRMOSS/guides/AirMOSS_L4_RZ_Soil_Moisture.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/1421</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DOI</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/airmoss/campaign/AirMOSS_L4_RZ_Soil_Moisture/comp/AirMOSS_L4_RZ_Soil_Moisture.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/airmoss/campaign/AirMOSS_L4_RZ_Soil_Moisture/comp/L4RZSM_ATBD_V10.pdf</URL>
+                    <Description>Data Set Documentation</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/1421_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>BROWSE SAMPLE</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/1421/catalog.html</URL>
+                    <Description>The THREDDS location for this Collection.</Description>
+                    <Type>THREDDS DIRECTORY</Type>
+                    <MimeType>text/html</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-123.28</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>54.13</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>-68.12</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>19.12</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

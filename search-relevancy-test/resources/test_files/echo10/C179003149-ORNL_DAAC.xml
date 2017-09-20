@@ -1,0 +1,159 @@
+<Collection>
+            <ShortName>ISLSCP_II_MODIS_ALBEDO_2002_958</ShortName>
+            <VersionId>1</VersionId>
+            <InsertTime>2017-06-29T00:00:00Z</InsertTime>
+            <LastUpdate>2017-06-29T00:00:00Z</LastUpdate>
+            <LongName>ISLSCP II MODIS (Collection 4) Albedo, 2002</LongName>
+            <DataSetId>ISLSCP II MODIS (Collection 4) Albedo, 2002</DataSetId>
+            <Description>This data set, ISLSCP II MODIS (Collection 4) Albedo, 2002 , provides albedo data for the period January 2002 through December 2002 .The MODerate Resolution Imaging Spectroradiometer (MODIS) bidirectional reflectance distribution function (BRDF) Albedo Product (MOD43B) provides measures of clear sky surface albedo every 16 days. Both white-sky albedo (bihemispherical reflectance) and black-sky albedo (directional hemispherical reflectance) at local solar noon are provided for 7 spectral bands and 3 broadbands. Since black-sky albedo represents the direct beam contribution while white-sky represents the completely diffuse contribution, these measures can be linearly combined as a function of the fraction of diffuse skylight (itself a function of optical depth) to provide an actual or instantaneous albedo at local solar noon.</Description>
+            <DOI>
+                <DOI>10.3334/ORNLDAAC/958</DOI>
+                <Authority>ORNL_DAAC</Authority>
+            </DOI>
+            <Orderable>false</Orderable>
+            <Visible>true</Visible>
+            <RevisionDate>2017-06-29T00:00:00Z</RevisionDate>
+            <ProcessingLevelId>3</ProcessingLevelId>
+            <ProcessingLevelDescription>Variables mapped on uniform space-time grid scales with completeness and consistency</ProcessingLevelDescription>
+            <ArchiveCenter>ORNL_DAAC</ArchiveCenter>
+            <CitationForExternalPublication>Strahler, A.H., C. Schaaf, F. Gao,  F.G. Hall, G.J. Collatz, B.W. Meeson, S.O. Los, E.Brown De Colstoun, and D.R. Landis. 2009. ISLSCP II MODIS (Collection 4) Albedo, 2002. ORNL DAAC, Oak Ridge, Tennessee, USA. http://dx.doi.org/10.3334/ORNLDAAC/958</CitationForExternalPublication>
+            <CollectionState>COMPLETE</CollectionState>
+            <MaintenanceAndUpdateFrequency>As needed</MaintenanceAndUpdateFrequency>
+            <Price>0</Price>
+            <SpatialKeywords>
+                <Keyword>GLOBAL LAND</Keyword>
+            </SpatialKeywords>
+            <Temporal>
+                <RangeDateTime>
+                    <BeginningDateTime>2002-01-01T00:00:00Z</BeginningDateTime>
+                    <EndingDateTime>2002-12-31T00:00:00Z</EndingDateTime>
+                </RangeDateTime>
+            </Temporal>
+            <Contacts>
+                <Contact>
+                    <Role>ARCHIVER</Role>
+                    <OrganizationName>ORNL_DAAC</OrganizationName>
+                    <OrganizationAddresses>
+                        <Address>
+                            <StreetAddress>ORNL DAAC User Services Office, P.O. Box 2008, MS 6407, Oak Ridge National Laboratory</StreetAddress>
+                            <City>Oak Ridge</City>
+                            <StateProvince>Tennessee</StateProvince>
+                            <PostalCode>37831-6407</PostalCode>
+                            <Country>USA</Country>
+                        </Address>
+                    </OrganizationAddresses>
+                    <OrganizationPhones>
+                        <Phone>
+                            <Number>(865) 241-3952</Number>
+                            <Type>Direct Line</Type>
+                        </Phone>
+                    </OrganizationPhones>
+                    <OrganizationEmails>
+                        <Email>uso@daac.ornl.gov</Email>
+                    </OrganizationEmails>
+                </Contact>
+            </Contacts>
+            <ScienceKeywords>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SURFACE RADIATIVE PROPERTIES</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>ALBEDO</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+                <ScienceKeyword>
+                    <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+                    <TopicKeyword>LAND SURFACE</TopicKeyword>
+                    <TermKeyword>SURFACE RADIATIVE PROPERTIES</TermKeyword>
+                    <VariableLevel1Keyword>
+                        <Value>REFLECTANCE</Value>
+                    </VariableLevel1Keyword>
+                </ScienceKeyword>
+            </ScienceKeywords>
+            <Platforms>
+                <Platform>
+                    <ShortName>TERRA</ShortName>
+                    <LongName>Earth Observing System, TERRA (AM-1)</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+                <Platform>
+                    <ShortName>NOAA-14</ShortName>
+                    <LongName>National Oceanic &amp; Atmospheric Administration-14</LongName>
+                    <Type>Earth Observation Satellites</Type>
+                    <Instruments>
+                        <Instrument>
+                            <ShortName>MODIS</ShortName>
+                            <LongName>Moderate-Resolution Imaging Spectroradiometer</LongName>
+                        </Instrument>
+                    </Instruments>
+                </Platform>
+            </Platforms>
+            <Campaigns>
+                <Campaign>
+                    <ShortName>ISLSCP II</ShortName>
+                    <LongName>International Satellite Land Surface Climatology Project II</LongName>
+                </Campaign>
+            </Campaigns>
+            <OnlineAccessURLs>
+                <OnlineAccessURL>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/vegetation/modis_albedo_2002_xdeg/</URL>
+                    <URLDescription>This link allows direct data access via Earthdata login</URLDescription>
+                </OnlineAccessURL>
+            </OnlineAccessURLs>
+            <OnlineResources>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/ISLSCP_II/guides/modis_albedo_2002_xdeg.html</URL>
+                    <Description>ORNL DAAC Data Set Documentation</Description>
+                    <Type>USER'S GUIDE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://doi.org/10.3334/ORNLDAAC/958</URL>
+                    <Description>Data set Landing Page DOI URL</Description>
+                    <Type>DATA SET LANDING PAGE</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/vegetation/modis_albedo_2002_xdeg//comp/0_modis_albedo_2002_readme.txt</URL>
+                    <Description>Data set text file containing the file naming convention and data formats of the granules in this collection.</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://daac.ornl.gov/daacdata/islscp_ii/vegetation/modis_albedo_2002_xdeg//comp/1_modis_albedo_2002_doc.pdf</URL>
+                    <Description>Data set documentation PDF.</Description>
+                    <Type>GENERAL DOCUMENTATION</Type>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/sdat/pimg/958_1_fit.png</URL>
+                    <Description>Browse Image</Description>
+                    <Type>GET RELATED VISUALIZATION</Type>
+                    <MimeType>image/png</MimeType>
+                </OnlineResource>
+                <OnlineResource>
+                    <URL>https://webmap.ornl.gov/wcsdown/dataset.jsp?ds_id=958</URL>
+                    <Description>Web Coverage Service for this collection.</Description>
+                    <Type>WEB COVERAGE SERVICE (WCS)</Type>
+                    <MimeType>application/gml+xml</MimeType>
+                </OnlineResource>
+            </OnlineResources>
+            <Spatial>
+                <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+                <HorizontalSpatialDomain>
+                    <Geometry>
+                        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+                        <BoundingRectangle>
+                            <WestBoundingCoordinate>-180.00</WestBoundingCoordinate>
+                            <NorthBoundingCoordinate>90.00</NorthBoundingCoordinate>
+                            <EastBoundingCoordinate>180.00</EastBoundingCoordinate>
+                            <SouthBoundingCoordinate>-90.00</SouthBoundingCoordinate>
+                        </BoundingRectangle>
+                    </Geometry>
+                </HorizontalSpatialDomain>
+                <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+            </Spatial>
+        </Collection>

@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ https://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>OMAERUV</Short_Name>
+        <Version>003</Version>
+    </Entry_ID>
+    <Version_Description>OMI Collection 003 data uses an improved Level-0 to Level-1B algorithm over previous Collections. The reprocessing of L1B data is largely to account for the strong impact of the OMI row anomaly. For more detailed information consult with the Release Notes.</Version_Description>
+    <Entry_Title>OMI/Aura Near UV Aerosol Optical Depth and Single Scattering Albedo 1-orbit L2 Swath 13x24 km V003 (OMAERUV) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Omar O. Torres</Dataset_Creator>
+        <Dataset_Title>OMI/Aura Near UV Aerosol Optical Depth and Single Scattering Albedo 1-orbit L2 Swath 13x24 km V003</Dataset_Title>
+        <Dataset_Series_Name>OMAERUV</Dataset_Series_Name>
+        <Dataset_Release_Date>2006-08-06</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>003</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.5067/Aura/OMI/DATA2004</Identifier>
+        </Persistent_Identifier>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/OMAERUV_003.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>INVESTIGATOR</Role>
+        <Contact_Person>
+            <First_Name>OMAR</First_Name>
+            <Middle_Name>O.</Middle_Name>
+            <Last_Name>TORRES, PH. D</Last_Name>
+            <Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <Street_Address>Code 614</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-6776</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>omar.o.torres@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>JEROME</First_Name>
+            <Middle_Name>M.</Middle_Name>
+            <Last_Name>ALFRED</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-286-8337</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Email>jerome.m.alfred@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL EXTINCTION</Variable_Level_1>
+        <Detailed_Variable>AEROSOL SINGLE SCATTERING-ALBEDO</Detailed_Variable>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>AEROSOLS</Term>
+        <Variable_Level_1>AEROSOL OPTICAL DEPTH/THICKNESS</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+    <ISO_Topic_Category>HEALTH</ISO_Topic_Category>
+    <Ancillary_Keyword>Aerosol Optical Depth/Thickness</Ancillary_Keyword>
+    <Ancillary_Keyword>Aerosol Absorption Optical Depth</Ancillary_Keyword>
+    <Ancillary_Keyword>Aerosol Extinction Optical Depth</Ancillary_Keyword>
+    <Ancillary_Keyword>Aerosol Single Scattering Albedo</Ancillary_Keyword>
+    <Ancillary_Keyword>UV Aerosol Index</Ancillary_Keyword>
+    <Ancillary_Keyword>Visible Aerosol Index</Ancillary_Keyword>
+    <Ancillary_Keyword>Air Pollutant</Ancillary_Keyword>
+    <Ancillary_Keyword>Aerosol Layer Height</Ancillary_Keyword>
+    <Ancillary_Keyword>Aerosol Type</Ancillary_Keyword>
+    <Ancillary_Keyword>Dust</Ancillary_Keyword>
+    <Ancillary_Keyword>Smoke</Ancillary_Keyword>
+    <Ancillary_Keyword>BEDI</Ancillary_Keyword>
+    <Ancillary_Keyword>Agriculture and Forestry</Ancillary_Keyword>
+    <Ancillary_Keyword>Climate</Ancillary_Keyword>
+    <Ancillary_Keyword>Disasters</Ancillary_Keyword>
+    <Ancillary_Keyword>Human Health</Ancillary_Keyword>
+    <Ancillary_Keyword>Transportation</Ancillary_Keyword>
+    <Ancillary_Keyword>Weather</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System, Aura</Long_Name>
+        <Instrument>
+            <Short_Name>OMI</Short_Name>
+            <Long_Name>Ozone Monitoring Instrument</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2004-10-01</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Spatial_Coverage_Type>Orbit</Spatial_Coverage_Type>
+        <Granule_Spatial_Representation>ORBIT</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>GEODETIC</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+        <Orbit_Parameters>
+            <Swath_Width>2600</Swath_Width>
+            <Period>98.83</Period>
+            <Inclination_Angle>98.22</Inclination_Angle>
+            <Number_Of_Orbits>1</Number_Of_Orbits>
+        </Orbit_Parameters>
+    </Spatial_Coverage>
+    <Location>
+        <Location_Category>GEOGRAPHIC REGION</Location_Category>
+        <Location_Type>GLOBAL</Location_Type>
+    </Location>
+    <Data_Resolution>
+        <Latitude_Resolution>13 km</Latitude_Resolution>
+        <Longitude_Resolution>24 km</Longitude_Resolution>
+        <Horizontal_Resolution_Range>10 km - &lt; 50 km or approximately .09 degree - &lt; .5 degree</Horizontal_Resolution_Range>
+        <Vertical_Resolution>80 km</Vertical_Resolution>
+        <Temporal_Resolution>1 hour</Temporal_Resolution>
+        <Temporal_Resolution_Range>Hourly - &lt; Daily</Temporal_Resolution_Range>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>AURA</Short_Name>
+        <Long_Name>Earth Observing System (EOS), AURA</Long_Name>
+    </Project>
+    <Quality>This is the new public release of OMAERUV aerosol product in collection 003. Major updates have been made in the retrieval algorithms. For details, please see the README document.</Quality>
+    <Access_Constraints>None</Access_Constraints>
+    <Use_Constraints>This Data set (third public release in collection 3) is better than the earlier released products but it is not fully validated yet. Before using it in any trend analysis please contact algorithm team lead for the current known problems and updates.</Use_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>NASA GSFC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>4.5 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-5</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <URL>https://disc.gsfc.nasa.gov/api/images/594c9b0fe01b04e7193d6d1b/file</URL>
+        <Format>PNG</Format>
+        <Caption>OMAERUV sample image</Caption>
+    </Multimedia_Sample>
+    <Reference>
+        <Citation>Ahmad, S. P., P. F. Levelt, P. K. Bhartia, E. Hilsenrath, G. W. Leppelmeier,and J. E. Johnson, &amp;Atmospheric Products from the Ozone Monitoring Instrument(OMI), Proceedings of SPIE conference on Earth Observing Systems VIII, San Diego, California, Aug 3-8, 2003.</Citation>
+        <Author>Ahmad, S. P., P. F. Levelt, P. K. Bhartia, E. Hilsenrath, G. W. Leppelmeier,and J. E. Johnson</Author>
+        <Publication_Date>2003/08</Publication_Date>
+        <Title>Atmospheric Products from the Ozone Monitoring Instrument(OMI)</Title>
+        <Series>Proceedings of SPIE conference on Earth Observing Systems VIII, San Diego, California</Series>
+    </Reference>
+    <Reference>
+        <Citation>Bhartia, P. K., P. F. Levelt, J. Tamminen, O. Torres, Recent results from the Ozone Monitoring Instrument (OMI) on EOS Aura, Proceedings of SPIE conference on Remote Sensing of the Atmosphere and Clouds, Volume 6408, Si-Chee Tsay et al. (Ed.), 64080Y, Goa, India, Nov 28, 2006</Citation>
+        <Author>Bhartia, P. K., P. F. Levelt, J. Tamminen, O. Torres</Author>
+        <Publication_Date>Nov 28, 2006</Publication_Date>
+        <Title>Recent results from the Ozone Monitoring Instrument (OMI) on EOS Aura</Title>
+        <Series>Proceedings of SPIE conference on Remote Sensing of the Atmosphere and Clouds</Series>
+        <Volume>6408</Volume>
+    </Reference>
+    <Reference>
+        <Citation>Brinksma, E. J., K. F. Boersma, and P. F. Levelt, OMI-Validation Requirements, May 16, 2003.</Citation>
+        <Author>Brinksma, E. J., K. F. Boersma, and P. F. Levelt</Author>
+        <Publication_Date>May 16, 2003</Publication_Date>
+        <Title>OMI-Validation Requirements</Title>
+    </Reference>
+    <Reference>
+        <Citation>Dirksen, R., M.R. Dobber, R. Voors and P. Levelt, Pre-launch characterization of the Ozone Monitoring Instrument transfer function in the spectral domain, Appl. Optics, 2006, 45, no 17, 3972-3981 .</Citation>
+        <Author>Dirksen, R., M.R. Dobber, R. Voors and P. Level</Author>
+        <Publication_Date>2006-06-10</Publication_Date>
+        <Title>Pre-launch characterization of the Ozone Monitoring Instrument transfer function in the spectral domain</Title>
+        <Series>Appl. Optics</Series>
+        <Volume>45</Volume>
+        <Issue>17</Issue>
+        <Pages>3972-81</Pages>
+    </Reference>
+    <Reference>
+        <Citation>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross, M. Kowalewski, E. Hilsenrath, G. Leppelmeier, J. de Vries, W. Dierssen and N. Rozemeijer, Ozone Monitoring Instrument calibration, IEEE Trans. Geo. Rem. Sens., 2006, Vol. 44, No. 5, 1209-1238, doi:10.1109/TGRS.2006.869987.</Citation>
+        <Author>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross, M. Kowalewski, E. Hilsenrath, G. Leppelmeier, J. de Vries, W. Dierssen and N. Rozemeijer</Author>
+        <Publication_Date>2006/05</Publication_Date>
+        <Title>Ozone Monitoring Instrument Calibrtation</Title>
+        <Series>IEEE Trans. Geo. Rem. Sens</Series>
+        <Volume>44</Volume>
+        <Issue>5</Issue>
+        <Pages>1209-1238</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2006.869987</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross en M. Kowalewski, Ozone Monitoring Instrument in-flight performance and calibration, Proceedings SPIE Optical Systems Design 2005, 12-16 September 2005, Jena, Germany, 2006</Citation>
+        <Author>Dobber, M.R., R. Dirksen, P. Levelt, G.H.J. van den Oord, R. Voors, Q. Kleipool, G. Jaross en M. Kowalewski</Author>
+        <Publication_Date>2005/09</Publication_Date>
+        <Title>Ozone Monitoring Instrument in-flight performance and calibration</Title>
+        <Series>Proceedings SPIE Optical Systems Design 2005, 12-16 September 2005, Jena, Germany, 2006</Series>
+    </Reference>
+    <Reference>
+        <Citation>Kowalewski, J.M.G., G.R. Jaross, R.P Cebula, S.L. Taylor, G.H.J. van den Oord, M.R. Dobber, R.J. Dirksen, Evaluation of OMI pre-launch radiometric calibration and on-orbit performance using in-flight data, Proceedings SPIE's Annual Meeting, San Diego (U.S.A.), 31 July - 4 August 2005, Optical Science, Engineering, and Instrumentation. Earth observing systems X (vol. 5882).</Citation>
+        <Author>Kowalewski, J.M.G., G.R. Jaross, R.P Cebula, S.L. Taylor, G.H.J. van den Oord, M.R. Dobber, R.J. Dirksen</Author>
+        <Publication_Date>2005/08</Publication_Date>
+        <Title>Evaluation of OMI pre-launch radiometric calibration and on-orbit performance using in-flight data</Title>
+        <Series>Proceedings SPIE's Annual Meeting, San Diego (U.S.A.), 31 July - 4 August 2005, Optical Science, Engineering, and Instrumentation. Earth observing systems</Series>
+        <Edition>X</Edition>
+        <Volume>5882</Volume>
+    </Reference>
+    <Reference>
+        <Citation>Levelt, P.F., J. P. Veefkind, R. H. M. Voors, and J. de Vries, Instrument Description, Algorithm Theoretical Baseline Document: OMI Instrument, Level 0 - 1B processor, Calibration &amp; Operations, P. F. Levelt (ed.), vol. I, ATBD-OMI-01, version 2, Aug. 2002.</Citation>
+        <Author>Levelt, P.F., J. P. Veefkind, R. H. M. Voors, and J. de Vries</Author>
+        <Publication_Date>2002/08</Publication_Date>
+        <Title>Instrument Description, Algorithm Theoretical Baseline Document: OMI Instrument, Level 0 - 1B processor, Calibration &amp; Operations</Title>
+    </Reference>
+    <Reference>
+        <Citation>Oord, G.H.J. van den, N.C. Rozemeijer, V. Schenkelaars, P.F. Levelt, M.R. Dobber, R.H.M. Voors, J. Claas, J. de Vries, M. ter Linden, C. De Haan and T. van den Berg, OMI level 0 to 1b processing and operational aspects, IEEE Trans. Geo. Rem. Sens., 2006, Vol. 44, No. 5, 1380-1397, doi:10.1109/TGRS.2006.872935.</Citation>
+        <Author>Oord, G.H.J. van den, N.C. Rozemeijer, V. Schenkelaars, P.F. Levelt, M.R. Dobber, R.H.M. Voors, J. Claas, J. de Vries, M. ter Linden, C. De Haan and T. van den Berg</Author>
+        <Publication_Date>2006</Publication_Date>
+        <Title>OMI level 0 to 1b processing and operational aspects</Title>
+        <Series>IEEE Trans. Geo. Rem. Sens.</Series>
+        <Volume>44</Volume>
+        <Issue>5</Issue>
+        <Pages>1380-1397</Pages>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1109/TGRS.2006.872935</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Reference>
+        <Citation>Vries, J. de, R.H.M. Voors, R.J. Dirksen, and M.R. Dobber, In-orbit performance of the Ozone Monitoring Instrument, Proceedings SPIE Remote Sensing Europe conference, Bruges, Belgium, 19-22 September 2005.</Citation>
+        <Author>Vries, J. de, R.H.M. Voors, R.J. Dirksen, and M.R. Dobber</Author>
+        <Publication_Date>2005/10</Publication_Date>
+        <Title>In-orbit performance of the Ozone Monitoring Instrument</Title>
+        <Series>Proceedings of SPIE - The International Society for Optical Engineering</Series>
+        <Persistent_Identifier>
+            <Type>DOI</Type>
+            <Identifier>10.1117/12.627013</Identifier>
+        </Persistent_Identifier>
+    </Reference>
+    <Summary>
+        <Abstract>The Aura Ozone Monitoring Instrument level-2 near UV Aerosol data product 'OMAERUV', recently re-processed using an enhanced algorithm, is now released (April 2012) to the public. The data are available from the NASA Goddard Earth Sciences Data and Information Services  Center (GES DISC).The shortname for this Level-2 near-UV Aerosol Product is OMAERUV_V003. The OMAERUV retrieval algorithm is developed by the US OMI Team Scientists. Dr. Omar Torres (GSFC/NASA) is the principal investigator of this product. The OMAERUV product contains Aerosol Absorption and Aerosol Extinction Optical Depths, and Single Scattering Albedo at three different wavelengths (354, 388 and 500 nm), Aerosol Index, and other ancillary and geolocation parameters, in the OMI field of view (13x24 km).OMAERUV files are stored in EOS Hierarchical Data Format (HDF-EOS5). Each file contains data from the day lit portion of an orbit (~53 minutes). There are approximately 14 orbits per day. The maximum file size for the OMAERUV data product is about 6 Mbytes.                        A short OMAERUV Readme Document that includes brief algorithm description and currently known data quality issues is provided by the OMAERUV Algorithm lead available on the GES DISC OMI webpage.OMAERUV Data Groups and Parameters:The OMAERUV data file contains a swath which consists of two groups:Data fields: Total Aerosol Optical Depth (extinction optical depth) and Aerosol Absorption Optical Depths (at 354, 388 and 500 nm), Single Scattering Albedo, UV Aerosol Index, Visible Aerosol Index, and other intermediate and ancillary parameters, e.g. Estimates of Aerosol Total Extinction and Absorption Optical Depths and Single Scattering Albedo at five atmospheric levels, Aerosol Type, Aerosol Layer Height, Normalized Radiance, Lambert equivalent Reflectivity, Surface Albedo, Imaginary Component of Refractive Index and Data Quality Flags.Geolocation Fields:Latitude, Longitude, Time(TAI93), Seconds, Solar Zenith Angles, Viewing Zenith Angles, Relative Azimuth Angle, Terrain Pressure, Ground Pixel Quality Flags.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>https://aura.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level2/OMAERUV.003/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>SSW</Subtype>
+        </URL_Content_Type>
+        <URL>https://disc.sci.gsfc.nasa.gov/SSW/#keywords=OMAERUV</URL>
+        <Description>Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>MIRADOR</Subtype>
+        </URL_Content_Type>
+        <URL>https://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=OMAERUV</URL>
+        <Description>Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>EARTHDATA SEARCH</Subtype>
+        </URL_Content_Type>
+        <URL>https://search.earthdata.nasa.gov/search/granules?p=C1239966768-GES_DISC&amp;tl=1479393264!4!!&amp;q=omaeruv&amp;ok=omaeruv</URL>
+        <Description>Use the Earthdata Search to find and retrieve data sets across multiple data centers.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>OPENDAP DATA</Subtype>
+        </URL_Content_Type>
+        <URL>https://aura.gesdisc.eosdis.nasa.gov/opendap/Aura_OMI_Level2/OMAERUV.003/contents.html</URL>
+        <Description>Access the data via the OPeNDAP protocol.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/OMI/3.3_ScienceDataProductDocumentation/3.3.2_ProductRequirements_Designs/README.OMI_DUG.pdf</URL>
+        <Description>User's Guide</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://aura.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level2/OMAERUV.003/doc/README.OMAERUV.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PI DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/OMI/3.3_ScienceDataProductDocumentation/3.3.2_ProductRequirements_Designs/OMAERUV_FileSpec_V003.pdf</URL>
+        <Description>FileSpec for Product</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>GENERAL DOCUMENTATION</Subtype>
+        </URL_Content_Type>
+        <URL>https://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/OMI/3.3_ScienceDataProductDocumentation/3.3.2_ProductRequirements_Designs/OMAERUV_ReleaseDetails_V003_pre_fall2011.pdf</URL>
+        <Description>Product Release Notes</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW PROJECT HOME PAGE</Type>
+        </URL_Content_Type>
+        <URL>http://projects.knmi.nl/omi/research/news/newsWrap.php?language=only_enhttp://www.knmi.nl/omi/research/news/index.htmltimeFrame=latesthttp://www.knmi.nl/omi/research/news/index.htmlchoise=page</URL>
+        <Description>Project and Product Links.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>PUBLICATIONS</Subtype>
+        </URL_Content_Type>
+        <URL>http://projects.knmi.nl/omi/research/documents/</URL>
+    </Related_URL>
+    <IDN_Node>
+        <Short_Name>USA/NASA</Short_Name>
+    </IDN_Node>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2009-08-21, S. Ritz updated Summary and Related URL links.2015-06-02, J. Johnson cleaned up Science Keywords and Project.2016-04-08, J. Alfred updated to DIF 10.2 format.  2017-03-30, Ed Esfandiari - Added BEDI SBA related ancillary keywords. 2017-05-10, J. Alfred - Updated Get Data Related URLs. 2017-08-10, J. Alfred - Cleaned up related URLs.</DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2007-03-28</Metadata_Creation>
+        <Metadata_Last_Revision>2017-05-19</Metadata_Last_Revision>
+        <Metadata_Future_Review>2017-01-30</Metadata_Future_Review>
+        <Data_Creation>2006-08-31</Data_Creation>
+        <Data_Last_Revision>2014-04-16</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>2</Product_Level_Id>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>2e79d1c7-f39d-49ea-8fa3-f45e078d6a99</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:19:06</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:21Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>CEOS</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>edff0791-121c-40aa-adf2-33feb2bc30e5</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Citation.DOI</Name>
+            <Value>10.5067/Aura/OMI/DATA2004</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>53 minutes</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

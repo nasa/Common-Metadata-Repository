@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd">
+    <Entry_ID>
+        <Short_Name>SPCSMA4D</Short_Name>
+        <Version>10</Version>
+    </Entry_ID>
+    <Version_Description>Not provided</Version_Description>
+    <Entry_Title>Sounder PEATE MetOp-A IASI Random Calibration Subset Observations V10 (SPCSMA4D) at GES DISC</Entry_Title>
+    <Dataset_Citation>
+        <Dataset_Creator>Sounder PEATE (Product Evaluation and Test Element) Team/Ruth Monarrez, JPL</Dataset_Creator>
+        <Dataset_Title>Sounder PEATE MetOp-A IASI Random Calibration Subset Observations V10</Dataset_Title>
+        <Dataset_Series_Name>SPCSMA4D</Dataset_Series_Name>
+        <Dataset_Release_Date>2014-08-18</Dataset_Release_Date>
+        <Dataset_Release_Place>Greenbelt, MD, USA</Dataset_Release_Place>
+        <Dataset_Publisher>Goddard Earth Sciences Data and Information Services Center (GES DISC)</Dataset_Publisher>
+        <Version>10</Version>
+        <Data_Presentation_Form>Digital Science Data</Data_Presentation_Form>
+        <Online_Resource>https://disc.gsfc.nasa.gov/datacollection/SPCSMA4D_10.html</Online_Resource>
+    </Dataset_Citation>
+    <Personnel>
+        <Role>METADATA AUTHOR</Role>
+        <Contact_Person>
+            <First_Name>ED</First_Name>
+            <Last_Name>ESFANDIARI</Last_Name>
+            <Address>
+                <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                <Street_Address>Code 610.2</Street_Address>
+                <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                <City>Greenbelt</City>
+                <State_Province>MD</State_Province>
+                <Postal_Code>20771</Postal_Code>
+                <Country>USA</Country>
+            </Address>
+            <Phone>
+                <Number>301-614-5960</Number>
+                <Type>Telephone</Type>
+            </Phone>
+            <Phone>
+                <Number>301-614-5268</Number>
+                <Type>Fax</Type>
+            </Phone>
+            <Email>asghar.e.esfandiari@nasa.gov</Email>
+        </Contact_Person>
+    </Personnel>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE SERVICES</Category>
+        <Topic>DATA ANALYSIS AND VISUALIZATION</Topic>
+        <Term>CALIBRATION/VALIDATION</Term>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>ATMOSPHERE</Topic>
+        <Term>ATMOSPHERIC RADIATION</Term>
+        <Variable_Level_1>RADIATIVE FLUX</Variable_Level_1>
+    </Science_Keywords>
+    <Science_Keywords>
+        <Category>EARTH SCIENCE</Category>
+        <Topic>SPECTRAL/ENGINEERING</Topic>
+        <Term>INFRARED WAVELENGTHS</Term>
+        <Variable_Level_1>BRIGHTNESS TEMPERATURE</Variable_Level_1>
+    </Science_Keywords>
+    <ISO_Topic_Category>CLIMATOLOGY/METEOROLOGY/ATMOSPHERE</ISO_Topic_Category>
+    <ISO_Topic_Category>ENVIRONMENT</ISO_Topic_Category>
+    <ISO_Topic_Category>GEOSCIENTIFIC INFORMATION</ISO_Topic_Category>
+    <ISO_Topic_Category>OCEANS</ISO_Topic_Category>
+    <Ancillary_Keyword>Radiance</Ancillary_Keyword>
+    <Ancillary_Keyword>Brightness Temperature</Ancillary_Keyword>
+    <Platform>
+        <Type>Earth Observation Satellites</Type>
+        <Short_Name>METOP-A</Short_Name>
+        <Long_Name>Meteorological Operational Satellite - A</Long_Name>
+        <Instrument>
+            <Short_Name>IASI</Short_Name>
+            <Long_Name>Infrared Atmospheric Sounding Interferometer</Long_Name>
+        </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+        <Range_DateTime>
+            <Beginning_Date_Time>2007-02-08</Beginning_Date_Time>
+        </Range_DateTime>
+    </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
+    <Spatial_Coverage>
+        <Granule_Spatial_Representation>CARTESIAN</Granule_Spatial_Representation>
+        <Geometry>
+            <Coordinate_System>CARTESIAN</Coordinate_System>
+            <Bounding_Rectangle>
+                <Southernmost_Latitude>-90.0</Southernmost_Latitude>
+                <Northernmost_Latitude>90.0</Northernmost_Latitude>
+                <Westernmost_Longitude>-180.0</Westernmost_Longitude>
+                <Easternmost_Longitude>180.0</Easternmost_Longitude>
+            </Bounding_Rectangle>
+        </Geometry>
+    </Spatial_Coverage>
+    <Data_Resolution>
+        <Latitude_Resolution>18 km at nadir</Latitude_Resolution>
+        <Longitude_Resolution>18 km at nadir</Longitude_Resolution>
+        <Temporal_Resolution>1 day</Temporal_Resolution>
+    </Data_Resolution>
+    <Project>
+        <Short_Name>NPP-JPSS</Short_Name>
+        <Long_Name>NPOESS Preparatory Project</Long_Name>
+    </Project>
+    <Access_Constraints>None</Access_Constraints>
+    <Dataset_Language>English</Dataset_Language>
+    <Originating_Center>GES DISC</Originating_Center>
+    <Organization>
+        <Organization_Type>ARCHIVER</Organization_Type>
+        <Organization_Name>
+            <Short_Name>NASA/GSFC/SED/ESD/GCDC/GESDISC</Short_Name>
+            <Long_Name>Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA</Long_Name>
+        </Organization_Name>
+        <Organization_URL>https://disc.gsfc.nasa.gov/</Organization_URL>
+        <Personnel>
+            <Role>DATA CENTER CONTACT</Role>
+            <Contact_Person>
+                <Last_Name>GES DISC HELP DESK SUPPORT GROUP</Last_Name>
+                <Address>
+                    <Street_Address>Goddard Earth Sciences Data and Information Services Center</Street_Address>
+                    <Street_Address>Code 610.2</Street_Address>
+                    <Street_Address>NASA Goddard Space Flight Center</Street_Address>
+                    <City>Greenbelt</City>
+                    <State_Province>MD</State_Province>
+                    <Postal_Code>20771</Postal_Code>
+                    <Country>USA</Country>
+                </Address>
+                <Phone>
+                    <Number>301-614-5224</Number>
+                    <Type>Telephone</Type>
+                </Phone>
+                <Phone>
+                    <Number>301-614-5268</Number>
+                    <Type>Fax</Type>
+                </Phone>
+                <Email>gsfc-help-disc@lists.nasa.gov</Email>
+            </Contact_Person>
+        </Personnel>
+    </Organization>
+    <Distribution>
+        <Distribution_Media>Online Archive</Distribution_Media>
+        <Distribution_Size>500.0 MB per file</Distribution_Size>
+        <Distribution_Format>HDF-EOS</Distribution_Format>
+        <Fees>None</Fees>
+    </Distribution>
+    <Multimedia_Sample>
+        <!--Modified by Change List Tool on Mon Jun 26 16:50:09 EDT 2017. Old value is "https://disc.gsfc.nasa.gov/AIRS/images/SPCSMA4D.png"-->
+        <URL>https://disc.gsfc.nasa.gov/api/images/5915ddd1e01b045fab4ed25d/file</URL>
+        <Description>SPCSMA4D image</Description>
+    </Multimedia_Sample>
+    <Summary>
+        <Abstract>CalSub product files are constructed from calibrated radiance files (infrared and microwave) from either the SNPP, Aqua or MetOP-A/B. Nominally one logical file is constructed for a 24-hour period, from midnight to midnight of the following day. This file is split into a set of four physical files to support specific concept studies and to further minimize the need to handle extraneous data. The four files are Clear fields of view, Fixed calibration sites (ARMS sites), Clouds and extreme conditions, and Randomly selected spectra within 3-degrees of nadir. This product is a MetOP-A Random Calibration Subset.</Abstract>
+    </Summary>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>GET DATA</Type>
+            <Subtype>ON-LINE ARCHIVE</Subtype>
+        </URL_Content_Type>
+        <URL>http://airsl2.gesdisc.eosdis.nasa.gov/data/Sounder_PEATE/SPCSMA4D.10/</URL>
+        <Description>Access the data via HTTP.</Description>
+    </Related_URL>
+    <Related_URL>
+        <URL_Content_Type>
+            <Type>VIEW RELATED INFORMATION</Type>
+            <Subtype>USER'S GUIDE</Subtype>
+        </URL_Content_Type>
+        <URL>http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/SNPP_Sounder/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/ReadmeGES_sPEATE_CalSub_2014-02-27.pdf</URL>
+        <Description>README Document</Description>
+    </Related_URL>
+    <Originating_Metadata_Node>GCMD</Originating_Metadata_Node>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
+    <DIF_Revision_History>2014-04-24, Ed Esfandiari - First Version.
+      2014-04-29, Ed Esfandiari - Made private til Dataset_Release_Date and Temporal_Coverage are finalized.
+      2014-08-26, Ed Esfandiari - Updated Temporal_Coverage and Dataset_Release_Date. Set Data_Set_Progress to Planned and removed Private.
+                                  Will set Data_Set_Progress to IN WORK when product becomes available.
+      2014-09-12, Ed Esfandiari - Made public and set Data_Set_Progress to IN WORK.
+      2015-06-22, Ed Esfandiari - Added RADIATIVE FLUX and BRIGHTNESS TEMPERATURE parameters.
+      2016-04-06, Ed Esfandiari - Modified fields for DIF10.2 compatibility.
+      2016-04-15, Ed Esfandiari - Changed version from 010 to 10.
+      2016-05-09, Ed Esfandiari - Changed Granule_Spatial_Representation from CARTESIAN to NO_SPATIAL.
+      2016-06-30, Ed Esfandiari - Removed "VIEW PROJECT HOME PAGE" Related_URL for non GESDISC projects.
+      2016-11-02, Ed Esfandiari - Added Multimedia_Sample.
+      2016-12-08, Ed Esfandiari - Changed Plone document links to docserver.
+      2017-03-31, Ed Esfandiari - Replaced NO_SPATIAL to CARTESIAN coordinates.
+    </DIF_Revision_History>
+    <Metadata_Dates>
+        <Metadata_Creation>2014-04-22</Metadata_Creation>
+        <Metadata_Last_Revision>2015-06-22</Metadata_Last_Revision>
+        <Metadata_Future_Review>2016-01-01</Metadata_Future_Review>
+        <Data_Creation>Not provided</Data_Creation>
+        <Data_Last_Revision>Not provided</Data_Last_Revision>
+    </Metadata_Dates>
+    <Product_Level_Id>1</Product_Level_Id>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.disc</Group>
+            <Name>Data Granularity</Name>
+            <Description>The time coverage of individual data granules.</Description>
+            <Value>1 day</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.uuid</Name>
+            <Value>97c02603-d680-44b8-a8e9-95aeda88a836</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.extraction_date</Name>
+            <Value>2016-01-19 09:27:09</Value>
+        </Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>metadata.keyword_version</Name>
+            <Value>8.1</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>DIF9.0-to-DIF10-Converter</Name>
+            <Value>2016-01-20T13:00:23Z</Value>
+            <Value>Version:-3.0</Value>
+            <Value>Target:10.2</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Discipline</Name>
+            <Value>EARTH SCIENCE</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.Short_Name</Name>
+            <Value>ECHO</Value>
+            <Value>USA/NASA</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>IDN_Node.UUID</Name>
+            <Value>2efb470f-61f8-4046-b2ee-ebed27e2f310</Value>
+            <Value>9ae20472-ba4c-4b01-8d97-857b73fa3c95</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Metadata_Version</Name>
+            <Value>VERSION 9.9.3</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.Dataset_Language</Name>
+            <Value>English</Value>
+        </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+        <Metadata>
+            <Group>gov.nasa.gsfc.gcmd</Group>
+            <Name>Original.xsi:schemaLocation</Name>
+            <Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd</Value>
+        </Metadata>
+    </Extended_Metadata>
+</DIF>

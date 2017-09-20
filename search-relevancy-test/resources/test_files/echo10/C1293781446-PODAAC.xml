@@ -1,0 +1,128 @@
+<Collection>
+  <ShortName>QSCAT_LEVEL_2B_OWV_COMP_12</ShortName>
+  <VersionId>1</VersionId>
+  <InsertTime>2011-05-17T21:55:55.223Z</InsertTime>
+  <LastUpdate>2013-03-14T18:41:07.000Z</LastUpdate>
+  <LongName>QuikSCAT Level 2B Ocean Wind Vectors in 12.5km Slice Composites Version 3</LongName>
+  <DataSetId>PODAAC-QSX12-L2B01</DataSetId>
+  <Description>This dataset contains the latest reprocessed version 3 of the Level 2B science-quality ocean surface wind vector retrievals from the QuikSCAT scatterometer. The retrievals are provided on a non-uniform grid within the swath at 12.5 km pixel resolution. Higher resolution is achieved through a slice composite technique in which high resolution slice measurements from L1B data are composited into a 12.5 km wind vector cell. Version 3 processing begins with the same L1B (time-ordered backscatter) data as used in the previous processing. Version 3 has several improvements over the previous JPL processing of the QuikSCAT L2B winds: 1) changes to measurement binning, which was done in order to decrease noise and reduce gaps in the 12.5 km L2B wind retrievals, 2) an improved geophysical model function (GMF) to model the effect of wind on backscatter, 3) a neural network approach to correct rain contaminated winds speeds, 4) cross-track dependent wind speed biases were estimated and removed from the wind retrievals. The 12.5 km binning resolution enables users to obtain wind vector retrievals 10 km closer to shore when compared to the 25 km L2B dataset (only available in versions 1 and 2). More details to the processing changes and improvements are noted by Fore et al. (2013): ftp://podaac.jpl.nasa.gov/allData/quikscat/L2B12/docs/fore_et_al_ieee_2013.pdf . Each L2B file corresponds to a specific orbital revolution (rev) number, which begins at the southernmost point of the ascending orbit. This is the official dataset produced by the QuikSCAT Project through the SeaWinds Processing and Analysis Center (SeaPAC). The Version 3 User Guide document is accessible here: ftp://podaac.jpl.nasa.gov/allData/quikscat/L2B12/docs/qscat_l2b_v3_ug_v1_0.pdf . Read software is made available in MATLAB, Python, R, and IDL and is accessible here: ftp://podaac.jpl.nasa.gov/allData/quikscat/L2B12/sw/</Description>
+  <Orderable>false</Orderable>
+  <Visible>true</Visible>
+  <RevisionDate>2014-07-30T02:52:22.191Z</RevisionDate>
+  <ProcessingCenter>SeaWinds Processing and Analysis Center (SeaPAC)</ProcessingCenter>
+  <ProcessingLevelId>2</ProcessingLevelId>
+  <ArchiveCenter>PO.DAAC</ArchiveCenter>
+  <DataFormat>NETCDF</DataFormat>
+  <SpatialKeywords>
+    <Keyword>Global</Keyword>
+  </SpatialKeywords>
+  <TemporalKeywords/>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>1999-10-27T15:18:34.000Z</BeginningDateTime>
+      <EndingDateTime>2009-11-22T00:06:42.000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Contacts>
+    <Contact>
+      <Role>Archiver</Role>
+      <OrganizationName>European Space Agency</OrganizationName>
+      <OrganizationAddresses/>
+      <OrganizationPhones>
+        <Phone>
+          <Number> 39 06 94180777</Number>
+          <Type>Primary</Type>
+        </Phone>
+      </OrganizationPhones>
+      <OrganizationEmails>
+        <Email>eohelp@esa.int</Email>
+      </OrganizationEmails>
+      <ContactPersons>
+        <ContactPerson>
+          <FirstName>ESA User</FirstName>
+          <MiddleName>none</MiddleName>
+          <LastName>Services</LastName>
+          <JobPosition>Technical Contact</JobPosition>
+        </ContactPerson>
+      </ContactPersons>
+    </Contact>
+  </Contacts>
+  <ScienceKeywords>
+    <ScienceKeyword>
+      <CategoryKeyword>EARTH SCIENCE</CategoryKeyword>
+      <TopicKeyword>OCEANS</TopicKeyword>
+      <TermKeyword>OCEAN WINDS</TermKeyword>
+      <VariableLevel1Keyword>
+        <Value>SURFACE WINDS</Value>
+      </VariableLevel1Keyword>
+      <DetailedVariableKeyword>OCEAN SURFACE WIND VECTORS</DetailedVariableKeyword>
+    </ScienceKeyword>
+  </ScienceKeywords>
+  <Platforms>
+    <Platform>
+      <ShortName>QUIKSCAT</ShortName>
+      <LongName>QUIKSCAT</LongName>
+      <Type>SPACECRAFT</Type>
+      <Characteristics/>
+      <Instruments>
+        <Instrument>
+          <ShortName>SEAWINDS</ShortName>
+          <LongName>SeaWinds Scatterometer</LongName>
+          <Characteristics/>
+          <Sensors>
+            <Sensor>
+              <ShortName>SEAWINDS</ShortName>
+              <LongName>SeaWinds Scatterometer</LongName>
+              <Characteristics/>
+            </Sensor>
+          </Sensors>
+          <OperationModes/>
+        </Instrument>
+      </Instruments>
+    </Platform>
+  </Platforms>
+  <AdditionalAttributes/>
+  <CSDTDescriptions/>
+  <CollectionAssociations/>
+  <Campaigns/>
+  <AlgorithmPackages/>
+  <TwoDCoordinateSystems/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>http://podaac-opendap.jpl.nasa.gov/opendap/allData/quikscat/L2B12/v3/</URL>
+      <URLDescription>The OPeNDAP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+    <OnlineAccessURL>
+      <URL>ftp://podaac-ftp.jpl.nasa.gov/allData/quikscat/L2B12/v3</URL>
+      <URLDescription>The FTP base directory location for the collection.</URLDescription>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources>
+    <OnlineResource>
+      <URL>http://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-QSX12-L2B01&amp;apidoc</URL>
+      <Description>(Search Granule)</Description>
+      <Type>PORTAL_DA_DIRECT_ACCESS</Type>
+    </OnlineResource>
+    <OnlineResource>
+      <URL>ftp://podaac.jpl.nasa.gov/allData/quikscat/L2B12/docs/qscat_l2b_v3_ug_v1_0.pdf</URL>
+      <Description>Dataset User Guide</Description>
+      <Type>Reference Materials</Type>
+    </OnlineResource>
+  </OnlineResources>
+  <AssociatedDIFs/>
+  <Spatial>
+    <SpatialCoverageType>HORIZONTAL</SpatialCoverageType>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <CoordinateSystem>CARTESIAN</CoordinateSystem>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>90</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-90</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+    <GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+  </Spatial>
+</Collection>
