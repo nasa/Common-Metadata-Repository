@@ -11,7 +11,7 @@
     [com.dadrox/quiet-slf4j "0.1"]
     [com.gfredericks/test.chuck "0.2.7"]
     [com.github.fge/json-schema-validator "2.2.6"]
-    [com.taoensso/timbre "4.1.4"]
+    [com.taoensso/timbre "4.10.0"]
     [compojure "1.5.1"]
     [environ "1.1.0"]
     [gorilla-repl "0.3.6" :exclusions [org.clojure/java.classpath

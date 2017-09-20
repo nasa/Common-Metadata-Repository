@@ -3,6 +3,7 @@
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.log :as common-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
@@ -102,6 +103,8 @@
       (GET "/" {} {:status 200})
 
       admin-routes
+      ;; add routes for changing logging during run time.
+      common-log/log-api-routes
       (common-health/health-api-routes health)
       key-routes)
     (route/not-found "Not Found")))

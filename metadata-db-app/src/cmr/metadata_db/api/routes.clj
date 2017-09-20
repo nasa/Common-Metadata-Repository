@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.log :as common-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
@@ -65,6 +66,10 @@
 
       concepts-api/concepts-api-routes
       provider-api/provider-api-routes
+
+      ;; add routes for changing logging during run time.
+      common-log/log-api-routes
+
       common-routes/cache-api-routes
       job-api-routes
       (common-health/health-api-routes hs/health)

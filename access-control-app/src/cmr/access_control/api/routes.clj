@@ -13,6 +13,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.log :as common-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
@@ -219,6 +220,9 @@
        ;; add routes for enabling/disabling writes
       (common-enabled/write-enabled-api-routes
        #(acl/verify-ingest-management-permission % :update))
+
+      ;; add routes for changing logging during run time.
+      common-log/log-api-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

@@ -1,18 +1,20 @@
 (ns cmr.virtual-product.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [cmr.common-app.api.health :as common-health]
-            [cmr.common-app.api.routes :as common-routes]
-            [compojure.core :refer :all]
-            [ring.middleware.json :as ring-json]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.api.context :as context]
-            [cmr.common.mime-types :as mt]
-            [cmr.virtual-product.services.translation-service :as ts]
-            [cmr.virtual-product.services.health-service :as hs]))
-
+  (:require
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.log :as common-log]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.api.context :as context]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
+   [cmr.virtual-product.services.health-service :as hs]
+   [cmr.virtual-product.services.translation-service :as ts]
+   [compojure.core :refer :all]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]))
+           
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -25,6 +27,9 @@
              :body (ts/translate request-context (slurp body))}
             {:status 415
              :body (str "Unsupported content type [" content-type "]")})))
+
+      ;; add routes for changing logging during run time.
+      common-log/log-api-routes
 
       (common-health/health-api-routes hs/health))
     (route/not-found "Not Found")))

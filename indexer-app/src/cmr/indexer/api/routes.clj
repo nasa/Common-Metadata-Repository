@@ -1,28 +1,28 @@
 (ns cmr.indexer.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [compojure.core :refer :all]
-            [clojure.string :as string]
-            [ring.util.response :as r]
-            [ring.middleware.json :as ring-json]
-            [clojure.stacktrace :refer [print-stack-trace]]
-            [clojure.walk :as walk]
-            [cheshire.core :as json]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.api.errors :as errors]
-            [cmr.common.cache :as cache]
-            [cmr.acl.core :as acl]
-
-            ;; These must be required here to make multimethod implementations available.
-            [cmr.indexer.data.concepts.collection]
-            [cmr.indexer.data.concepts.granule]
-            [cmr.indexer.data.concepts.tag]
-
-            [cmr.indexer.services.index-service :as index-svc]
-            [cmr.common.api.context :as context]
-            [cmr.common-app.api.health :as common-health]
-            [cmr.common-app.api.routes :as common-routes]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.stacktrace :refer [print-stack-trace]]
+   [clojure.string :as string]
+   [clojure.walk :as walk]
+   [cmr.acl.core :as acl]
+   [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.log :as common-log]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
+   [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   ;; These must be required here to make multimethod implementations available.
+   [cmr.indexer.data.concepts.collection]
+   [cmr.indexer.data.concepts.granule]
+   [cmr.indexer.data.concepts.tag]
+   [cmr.indexer.services.index-service :as index-svc]
+   [compojure.core :refer :all]
+   [compojure.handler :as handler]
+   [compojure.route :as route]
+   [ring.middleware.json :as ring-json]
+   [ring.util.response :as r]))
 
 (defn- ignore-conflict?
   "Return false if ignore_conflict parameter is set to false; otherwise return true"
@@ -75,6 +75,9 @@
         (acl/verify-ingest-management-permission request-context :update)
         (index-svc/update-indexes request-context params)
         {:status 200})
+
+      ;; add routes for changing logging during run time.
+      common-log/log-api-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

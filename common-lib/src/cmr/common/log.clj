@@ -2,11 +2,13 @@
   "Defines a Logger component and functions for logging. The functions here
   should be used for logging to limit the dependency on a particular logging
   framework."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [taoensso.timbre :as t]
-            [taoensso.timbre.appenders.core :as a]
-            [clojure.string :as s]
-            [clojure.java.io :as io]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [cmr.common.lifecycle :as lifecycle]
+   [taoensso.encore :as enc]
+   [taoensso.timbre :as t]
+   [taoensso.timbre.appenders.core :as a]))
 
 (def ^:dynamic *request-id*
   "Request id is a unique identifier to include in log messages. It's expected
@@ -23,7 +25,7 @@
           (or *request-id*
               (.getName (Thread/currentThread))
               (.getId (Thread/currentThread)))
-          (-> level name s/upper-case)
+          (-> level name string/upper-case)
           (or ?ns-str "?ns")
           (force msg_)
           (if-let [err (force ?err_)]
@@ -31,6 +33,30 @@
             ;; codes in exception stacktraces.
             (str "\n" (t/stacktrace err {:stacktrace-fonts {}}))
             "")))
+
+;; The next two functions are needed to allow run time logging. The base
+;; knowledge for these functions came from here:
+;; https://github.com/ptaoussanis/timbre/issues/208
+;; https://github.com/yonatane/timbre-ns-pattern-level
+;; I modified the above solutions to be able to set a log level by namespace
+;; during run time.
+
+(defn ns-filter [fltr] (-> fltr enc/compile-ns-filter enc/memoize_))
+
+(defn log-by-ns-pattern
+  [& [{:keys [?ns-str config level] :as opts}]]
+  (let [ns-pattern-map (get config :ns-pattern-map)
+        namesp   (or (some->> ns-pattern-map
+                              keys
+                              (filter #(and (string? %)
+                                            ((ns-filter %) ?ns-str)))
+                              not-empty
+                              (apply max-key count))
+                     :all)
+        loglevel (get ns-pattern-map namesp (get config :level))]
+    (when (and (t/may-log? loglevel namesp)
+               (t/level>= level loglevel))
+      opts)))
 
 ;; Checkout the config before and after
 (defn- setup-logging
@@ -49,7 +75,30 @@
   ;; Set the format for logging.
   (t/merge-config!
     {:output-fn log-formatter
-     :appenders {:println {:enabled? stdout-enabled?}}}))
+     :appenders {:println {:enabled? stdout-enabled?}}})
+
+  ;; this is to be able to set a log level by namespace at run time
+  (t/merge-config! {:middleware [(partial log-by-ns-pattern)]})
+  (t/merge-config! {:ns-pattern-map {:all level}}))
+
+;; The following 2 functions are to implement run-time log changes.
+(defn get-logging-configuration
+  "This function gets the logging configuration to the caller as a map."
+  []
+  t/*config*)
+
+(defn merge-logging-configuration
+  "This function merges the passed in configuration with the current logging configuration.
+  The passed in configuration map includes a map of name spaces with logging levels and at the end
+  use :all and its level to signify what all the other non identified name spaces' logging level
+  should be.
+  An example of a passed in configuration is as follows
+  { :level :info
+    :ns-pattern-map {\"namespace1.foo.bar\" :warn
+                    \"namespace2.another.level.down\" :debug
+                    :all :info}})"
+  [partial-log-config]
+  (t/merge-config! partial-log-config))
 
 (defmacro with-request-id
   "Sets the dynamic var *request-id* so that any log messages executed within
@@ -116,5 +165,5 @@
    debug."
   [level]
   (let [options (when level
-                  {:level (keyword (s/lower-case level))})]
+                  {:level (keyword (string/lower-case level))})]
     (create-logger options)))
