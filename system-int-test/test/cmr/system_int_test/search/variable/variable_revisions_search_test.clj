@@ -59,10 +59,8 @@
         (do
           ;; find references with all revisions
           (variables/assert-variable-references-match variables (search/find-refs :variable params))
-
           ;; search in JSON with all-revisions
           (variables/assert-variable-search variables (variables/search params))
-
           ;; search in UMM JSON with all-revisions
           (du/assert-variable-umm-jsons-match
            umm-version/current-variable-version variables
@@ -125,26 +123,33 @@
       (metadata-db/force-delete-concept
         (:concept-id var2-3-tombstone) (:revision-id var2-3-tombstone))
       (index/wait-until-indexed)
-
       ;; force deleted revisions are no longer in the search result
       (variables/assert-variable-references-match
        [var1-2-tombstone var1-3 var2-1 var2-2 var3]
        (search/find-refs :variable {:all-revisions true}))
-
-      (testing "force delete cascade to variable association"
-        (variables/associate-by-concept-ids token
-                                            (:concept-id var1-3)
-                                            [{:concept-id (:concept-id coll1)}])
-        (index/wait-until-indexed)
-        ;; search collections by variable native-id found the collection
-        (d/refs-match? [coll1] (search/find-refs :collection {:variable_native_id "var1"}))
-
-        ;; force delete the latest revision of the variable cascade to variable association
-        (metadata-db/force-delete-concept (:concept-id var1-3) (:revision-id var1-3))
-        (index/wait-until-indexed)
-        
-        ;; search collections by variable native-id no longer found the collection
-        (d/refs-match? [] (search/find-refs :collection {:variable_native_id "var1"}))))))
+      ;; Associate a collection and variable
+      (variables/associate-by-concept-ids token
+                                          (:concept-id var1-3)
+                                          [{:concept-id (:concept-id coll1)}])
+      (index/wait-until-indexed)
+      (let [expected-associations {:collections [{:concept-id (:concept-id coll1)}]}]
+        (testing "associations to collections are captured in the variables all revisions endpoint"
+          (variables/assert-variable-associations var1-3 expected-associations
+                                                  {:all_revisions true}))
+        (let [var1-4 (variables/ingest-variable var1-concept)]
+          (index/wait-until-indexed)
+          (testing (str "associations are correct in the all revisions endpoint when ingesting a "
+                        "new variable revision")
+            (variables/assert-variable-associations var1-4 expected-associations
+                                                    {:all_revisions true}))
+          (testing "force delete cascade to variable association"
+            ;; search collections by variable native-id found the collection
+            (d/refs-match? [coll1] (search/find-refs :collection {:variable_native_id "var1"}))
+            ;; force delete the latest revision of the variable cascade to variable association
+            (metadata-db/force-delete-concept (:concept-id var1-4) (:revision-id var1-4))
+            (index/wait-until-indexed)
+            ;; search collections by variable native-id no longer found the collection
+            (d/refs-match? [] (search/find-refs :collection {:variable_native_id "var1"}))))))))
 
 (deftest search-all-revisions-error-cases
   (testing "variable search with all_revisions bad value"
