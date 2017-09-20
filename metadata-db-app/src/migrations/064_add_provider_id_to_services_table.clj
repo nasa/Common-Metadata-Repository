@@ -2,7 +2,6 @@
   "Adds `provider_id` column to services table."
   (:require
    [clojure.java.jdbc :as j]
-   [cmr.metadata-db.services.provider-validation :as provider-validation]
    [config.mdb-migrate-helper :as h]))
 
 (defn- drop-old-constraint
@@ -39,9 +38,8 @@
   ;; don't care about what's in the database right now, and the new field can't
   ;; be null, so:
   (h/sql "TRUNCATE TABLE METADATA_DB.cmr_services")
-  (h/sql (format (str "ALTER TABLE METADATA_DB.cmr_services "
-                      "ADD provider_id VARCHAR(%s) NOT NULL")
-                 provider-validation/PROVIDER_ID_MAX_LENGTH))
+  (h/sql (str "ALTER TABLE METADATA_DB.cmr_services "
+              "ADD provider_id VARCHAR(10) NOT NULL"))
   (drop-old-constraint)
   (add-new-constraint))
 
