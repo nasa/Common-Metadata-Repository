@@ -390,7 +390,7 @@
   (let [var-associations (meta-db/get-associations-by-collection-concept-id
                           context coll-concept-id coll-revision-id :variable-association)]
     (doseq [association var-associations]
-      (index-variable context (get-in association [:extra-fields :variable-concept-id])))))
+      (index-variable context (get-in association [:extra-fields :variable-concept-id]) {}))))
 
 (defmethod index-concept :tag-association
   [context concept parsed-concept options]
