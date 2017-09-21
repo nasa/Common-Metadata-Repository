@@ -161,7 +161,7 @@
           keyword-hierarchy (cmr-keyword-scheme kf/nested-fields-mappings)
           hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]
       {:staus 200
-       :headers {"Content-Type" (mt/format->mime-type :json)}
+       :headers {"Content-Type" (mt/with-utf-8 mt/json)}
        :body (json/generate-string hierarchical-keywords)})))
 
 (def keyword-api-routes
