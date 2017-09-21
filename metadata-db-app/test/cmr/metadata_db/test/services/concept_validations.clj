@@ -30,14 +30,6 @@
    :provider-id "CMR"
    :concept-type :tag})
 
-(def valid-service
-  {:concept-id "S1-CMR"
-   :native-id "foo"
-   :provider-id "CMR"
-   :concept-type :service
-   :user-id "user1"
-   :extra-fields {:service-name "service1"}})
-
 (def valid-group
   {:concept-id "AG1-PROV1"
    :native-id "foo"
@@ -164,25 +156,6 @@
            (v/default-concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))
     (is (= [(msg/missing-extra-field :granule-ur)]
            (v/default-concept-validation (update-in valid-granule [:extra-fields] dissoc :granule-ur))))))
-
-(deftest service-validation-test
-  (testing "valid-concept"
-    (is (= [] (v/service-concept-validation valid-service))))
-  (testing "missing concept type"
-    (is (= [(msg/missing-concept-type)
-            (msg/invalid-concept-id "S1-CMR" "CMR" nil)]
-           (v/service-concept-validation (dissoc valid-service :concept-type)))))
-  (testing "missing native id"
-    (is (= [(msg/missing-native-id)]
-           (v/service-concept-validation (dissoc valid-service :native-id)))))
-  (testing "invalid concept-id"
-    (is (= ["Concept-id [1234] is not valid."]
-           (v/service-concept-validation (assoc valid-service :concept-id "1234")))))
-  (testing "concept type and concept-id don't match"
-    (is (= [(msg/invalid-concept-id "S1-CMR" "CMR" :collection)]
-           (v/service-concept-validation (assoc valid-service
-                                                :concept-type :collection
-                                                :extra-fields (:extra-fields valid-collection)))))))
 
 (deftest tag-validation-test
   (testing "valid-concept"

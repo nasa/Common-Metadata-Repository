@@ -88,8 +88,9 @@
     given-concept-id
     given-native-id))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Concept Constraint Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Concept Constraint Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn duplicate-field-msg
   "Returns an error message to use for concepts which violate the given unique field constraint.
@@ -128,19 +129,21 @@
           this-revision-id
           this-transaction-id))
 
-(defn pvn-equality-failure
-  [concept]
-  (format (str "The provider id [%s] and variable name [%s] combined must be "
+(defn pfn-equality-failure
+  [field-type concept]
+  (format (str "The provider id [%s] and %s [%s] combined must be "
                "unique for a given native-id [%s]. The following concept "
-               "with the same provider id, variable name and native-id was "
-               "found: [%s].")
+               "with the same provider id, %s, and native-id was found: [%s].")
           (:provider-id concept)
-          (get-in concept [:extra-fields :variable-name])
+          field-type
+          (get-in concept [:extra-fields field-type])
           (:native-id concept)
+          field-type
           (:concept-id concept)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Provider Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Provider Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn provider-id-parameter-required []
   "A provider parameter was required but was not provided.")

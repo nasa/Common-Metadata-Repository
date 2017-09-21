@@ -1,13 +1,15 @@
 (ns cmr.metadata-db.services.concept-constraints
   "Functions for enforcing constraint checks just after a concept has been saved."
   (:require
-    [clojure.set :as set]
-    [cmr.common.config :refer [defconfig]]
-    [cmr.common.log :as log :refer (warn)]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.metadata-db.data.concepts :as c]
-    [cmr.metadata-db.services.messages :as msg]))
+   [clojure.set :as set]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.log :as log :refer (warn)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.services.messages :as msg])
+  (:import
+   (clojure.lang Keyword)))
 
 (defconfig enforce-granule-ur-constraint
   "Configuration to allow enabling and disabling of the granule UR uniqueness constraint"
@@ -108,40 +110,41 @@
                           this-transaction-id)]))))
           transaction-revisions)))
 
-(defn validate-pvn-equalities
-  "For any two given concepts, compares provider-ids, variable-names, and
-  native-ids between the two. Validation will return an error message if
-  provider-ids and variable-names match between the two, but the native-ids
-  don't.
+(defn validate-pfn-equalities
+  "For any two given concepts, compares provider-ids, a given field type value
+  (e.g., `variable-name`, `service-name`, etc.), and native-ids between the
+  two. Validation will return an error message if provider-ids and the given
+  field match between the two, but the native-ids don't.
 
   Note that old-style validation functions (see `cmr.common.util`) expect
   validation functions to return an empty list upon success and a list of
   one or more error messages upon failure."
-  [new-concept old-concept]
+  [^Keyword field-type new-concept old-concept]
   (if (and (= (:provider-id new-concept)
               (:provider-id old-concept))
-           (= (get-in new-concept [:extra-fields :variable-name])
-              (get-in old-concept [:extra-fields :variable-name]))
+           (= (get-in new-concept [:extra-fields field-type])
+              (get-in old-concept [:extra-fields field-type]))
            (not= (:native-id new-concept)
                  (:native-id old-concept)))
-    (msg/pvn-equality-failure old-concept)
+    (msg/pfn-equality-failure field-type old-concept)
     []))
 
-(defn variable-pvn-constraint
-  "The 'pvn' constraint is for `provider-id`, `variable-name`, and `native-id`.
+(defn pfn-constraint
+  "The 'pfn' constraint is for `provider-id`, field-type, and `native-id`.
   This function ensures that for these three attributes of a concept, updates
   will only succeed if all three are the same for the most current revision-id.
-  If `provider-id` and `variable-name` are the same, but `native-id` is
+  If `provider-id` and the provided field-type (e.g.,  `variable-name`,
+  `service-name`, etc.) are the same, but `native-id` is
   different, this constraint will not be met and the valdiations will fail.
 
   Any failures result in a list of error messages returned. Successful passing
   of the constraint will result in an empty list being returned."
-  [db provider {:keys [native-id extra-fields] :as concept}]
-  (let [variable-name (:variable-name extra-fields)
+  [^Keyword field-type db provider {:keys [native-id extra-fields] :as concept}]
+  (let [field-name (field-type extra-fields)
         concepts (find-latest-matching-concepts
-                  db provider concept :variable-name variable-name)]
+                  db provider concept field-type field-name)]
     (->> concepts
-         (mapv (partial validate-pvn-equalities concept))
+         (mapv (partial validate-pfn-equalities field-type concept))
          (flatten))))
 
 ;; Note: This needs to be changed back to a var once the enforce-granule-ur-
@@ -154,7 +157,8 @@
                 (unique-field-constraint :entry-id)]
    :granule (when (enforce-granule-ur-constraint) [granule-ur-unique-constraint])
    :acl [(unique-field-constraint :acl-identity)]
-   :variable [variable-pvn-constraint]})
+   :variable [(partial pfn-constraint :variable-name)]
+   :service [(partial pfn-constraint :service-name)]})
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks aggregating any constraint
