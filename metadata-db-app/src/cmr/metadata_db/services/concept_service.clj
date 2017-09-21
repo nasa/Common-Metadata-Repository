@@ -6,7 +6,7 @@
    [clojure.string]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug error info warn trace)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.time-keeper :as time-keeper]
@@ -61,7 +61,7 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :service :variable-association})
+  #{:tag :tag-association :humanizer :variable-association})
 
 ;;; utility methods
 
@@ -77,7 +77,6 @@
                       :tag (msg/tags-only-system-level provider-id)
                       :tag-association (msg/tag-associations-only-system-level provider-id)
                       :humanizer (msg/humanizers-only-system-level provider-id)
-                      :service (msg/services-only-system-level provider-id)
                       :variable-association (msg/variable-associations-only-system-level
                                              provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
@@ -144,6 +143,10 @@
   (set-or-generate-created-at-for-concept db provider concept))
 
 (defmethod set-or-generate-created-at :granule
+  [db provider concept]
+  (set-or-generate-created-at-for-concept db provider concept))
+
+(defmethod set-or-generate-created-at :service
   [db provider concept]
   (set-or-generate-created-at-for-concept db provider concept))
 
@@ -544,6 +547,8 @@
 
 (defmethod save-concept-revision false
   [context concept]
+  (trace "concept:" (keys concept))
+  (trace "provider id:" (:provider-id concept))
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider-id (or (:provider-id concept)

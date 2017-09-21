@@ -55,8 +55,6 @@
         (mdb-jobs/expired-concept-cleanup request-context)
         {:status 204}))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []

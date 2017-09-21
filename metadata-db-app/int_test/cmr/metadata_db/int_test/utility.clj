@@ -47,12 +47,9 @@
   []
   (str "http://localhost:" (transmit-config/metadata-db-port) "/providers"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; utility methods
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;; concepts
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Concepts
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def granule-xml
   "Valid ECHO10 granule for concept generation"
@@ -80,10 +77,6 @@
     <Orderable>true</Orderable>
     <Visible>true</Visible>
   </Collection>")
-
-(def service-edn
-  (pr-str {:name "Some Service"
-           :etc "TBD"}))
 
 (def tag-edn
   "Valid EDN for tag metadata"
@@ -114,34 +107,39 @@
     [{"type" "trim_whitespace", "field" "platform", "order" -100},
      {"type" "priority", "field" "platform", "source_value" "Aqua", "order" 10, "priority" 10}]))
 
+(def service-json
+  (json/generate-string
+   {"Name" "someService"
+    "Other" "TBD"}))
+
 (def variable-json
   (json/generate-string
-    { "Name" "totCldH2OStdErr",
-      "LongName" "totCldH2OStdErr",
-      "Units" "",
-      "DataType" "float",
-      "DimensionsName" [
-        "H2OFunc",
-        "H2OPressureLay",
-        "MWHingeSurf",
-        "Cloud",
-        "HingeSurf",
-        "H2OPressureLev",
-        "AIRSXTrack",
-        "StdPressureLay",
-        "CH4Func",
-        "StdPressureLev",
-        "COFunc",
-        "O3Func",
-        "AIRSTrack"
-      ],
-      "Dimensions" [ "11", "14", "7", "2", "100", "15", "3", "28", "10", "9" ],
-      "ValidRange" nil,
-      "Scale" "1.0",
-      "Offset" "0.0",
-      "FillValue" "-9999.0 ",
-      "VariableType" "",
-      "ScienceKeywords" []}))
+    {"Name" "totCldH2OStdErr",
+     "LongName" "totCldH2OStdErr",
+     "Units" "",
+     "DataType" "float",
+     "DimensionsName" [
+       "H2OFunc",
+       "H2OPressureLay",
+       "MWHingeSurf",
+       "Cloud",
+       "HingeSurf",
+       "H2OPressureLev",
+       "AIRSXTrack",
+       "StdPressureLay",
+       "CH4Func",
+       "StdPressureLev",
+       "COFunc",
+       "O3Func",
+       "AIRSTrack"
+     ],
+     "Dimensions" [ "11", "14", "7", "2", "100", "15", "3", "28", "10", "9" ],
+     "ValidRange" nil,
+     "Scale" "1.0",
+     "Offset" "0.0",
+     "FillValue" "-9999.0 ",
+     "VariableType" "",
+     "ScienceKeywords" []}))
 
 (def variable-association-edn
   "Valid EDN for variable association metadata"
@@ -157,12 +155,12 @@
   by default."
   {:collection collection-xml
    :granule granule-xml
-   :service service-edn
    :tag tag-edn
    :tag-association tag-association-edn
    :access-group group-edn
    :acl acl-edn
    :humanizer humanizer-json
+   :service service-json
    :variable variable-json
    :variable-association variable-association-edn})
 
@@ -272,17 +270,18 @@
 
 (defn service-concept
   "Creates a service concept"
-  ([uniq-num]
-   (service-concept uniq-num {}))
-  ([uniq-num attributes]
-   (let [extra-fields (merge {:service-name (str "service_name_" uniq-num)}
+  ([provider-id uniq-num]
+   (service-concept provider-id uniq-num {}))
+  ([provider-id uniq-num attributes]
+   (let [native-id (str "svc-native" uniq-num)
+         extra-fields (merge {:service-name (str "svc" uniq-num)}
                              (:extra-fields attributes))
          attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"
+                            :format "application/json"
+                            :native-id native-id
                             :extra-fields extra-fields}
                            (dissoc attributes :extra-fields))]
-     ;; no provider-id should be specified for services
-     (dissoc (concept nil :service uniq-num attributes) :provider-id))))
+     (concept provider-id :service uniq-num attributes))))
 
 (defn humanizer-concept
  "Creates a humanizer concept"
@@ -493,13 +492,16 @@
     {:status status :revision-id revision-id :concept-id concept-id :errors errors}))
 
 (defn save-concept
-  "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
-  status, revision-id, transaction-id, and a list of error messages"
+  "Make a POST request to save a concept with JSON encoding of the concept.
+
+  Returns a map with status, revision-id, transaction-id, and a list of error
+  messages."
   ([concept]
    (save-concept concept 1))
   ([concept num-revisions]
    (let [concept (update-in concept [:revision-date]
-                            ;; Convert date times to string but allow invalid strings to be passed through
+                            ;; Convert date times to string but allow invalid
+                            ;; strings to be passed through
                             #(when % (str %)))]
      (dotimes [n (dec num-revisions)]
        (assert-no-errors (save-concept-core concept)))
@@ -639,12 +641,12 @@
 
 (defn create-and-save-service
   "Creates, saves, and returns a service concept with its data from metadata-db."
-  ([uniq-num]
-   (create-and-save-service uniq-num 1))
-  ([uniq-num num-revisions]
-   (create-and-save-service uniq-num num-revisions {}))
-  ([uniq-num num-revisions attributes]
-   (let [concept (service-concept uniq-num attributes)
+  ([provider-id uniq-num]
+   (create-and-save-service provider-id uniq-num 1))
+  ([provider-id uniq-num num-revisions]
+   (create-and-save-service provider-id uniq-num num-revisions {}))
+  ([provider-id uniq-num num-revisions attributes]
+   (let [concept (service-concept provider-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
@@ -715,8 +717,20 @@
           {:keys [concept-id revision-id]} (save-concept concept)]
       (assoc concept :concept-id concept-id :revision-id revision-id))))
 
+(defn get-revisions
+  "This is a utility function that returns revisions of interest (given the
+  respective revision ids).
+
+  The results of this function are intended to be used with `(apply ...)`."
+  [concept-id initial-revision-id second-revision-id tombstone-revision-id
+   final-revision-id]
+  (mapv #(:concept (get-concept-by-id-and-revision concept-id %))
+        [initial-revision-id second-revision-id tombstone-revision-id
+         final-revision-id]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Providers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider. Returns a map with
@@ -786,8 +800,9 @@
                  (util/remove-nil-keys provider-map))}
         (:providers (get-providers))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Miscellaneous
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn old-revision-concept-cleanup
   "Runs the old revision concept cleanup job"
@@ -823,8 +838,10 @@
     (and (apply = created-ats)
          (not-any? nil? created-ats))))
 
-;;; fixtures
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixtures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn reset-database-fixture
   "Creates a database fixture function to reset the database after every test.
   Optionally accepts a list of provider-ids to create before the test"

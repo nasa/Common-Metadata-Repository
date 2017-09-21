@@ -1,7 +1,6 @@
 (ns cmr.metadata-db.data.oracle.concepts.variable
-  "Implements multi-method variations for variables"
+  "Implements multi-method variations for variables."
   (:require
-   [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts :as c]))
 
 (defmethod c/db-result->concept-map :variable

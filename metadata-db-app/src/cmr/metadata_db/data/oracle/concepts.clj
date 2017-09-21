@@ -7,7 +7,7 @@
    [clojure.string :as str]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (debug error info trace warn)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -112,6 +112,10 @@
   (add-provider-clause provider-id base-clause))
 
 (defmethod by-provider :variable
+  [_ {:keys [provider-id]} base-clause]
+  (add-provider-clause provider-id base-clause))
+
+(defmethod by-provider :service
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
@@ -381,8 +385,7 @@
                            (str/join "," cols)
                            seq-name
                            (str/join "," (repeat (count values) "?")))]
-          ;; Uncomment to debug what's inserted
-          ; (debug "Executing" stmt "with values" (pr-str values))
+          (trace "Executing" stmt "with values" (pr-str values))
           (j/db-do-prepared db stmt values)
           (after-save conn provider concept)
 
@@ -470,6 +473,7 @@
    (j/db-do-commands this "DELETE FROM cmr_groups")
    (j/db-do-commands this "DELETE FROM cmr_acls")
    (j/db-do-commands this "DELETE FROM cmr_humanizers")
+   (j/db-do-commands this "DELETE FROM cmr_services")
    (j/db-do-commands this "DELETE FROM cmr_variables")
    (j/db-do-commands this "DELETE FROM cmr_variable_associations"))
 
