@@ -7,8 +7,9 @@
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.utility :as util]))
 
-;;; fixtures & one-off utility functions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixtures & one-off utility functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-fixtures :each (util/reset-database-fixture
                      {:provider-id "PROV1" :small false}
@@ -18,19 +19,10 @@
   [_ provider-id uniq-num attributes]
   (util/variable-concept "PROV1" uniq-num attributes))
 
-(defn- get-revisions
-  "This is a utility function that returns revisions of interest (given the
-  respective revision ids).
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Tests
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  The results of this function are intended to be used with `(apply ...)`."
-  [concept-id initial-revision-id second-revision-id tombstone-revision-id
-   final-revision-id]
-  (mapv #(:concept (util/get-concept-by-id-and-revision concept-id %))
-        [initial-revision-id second-revision-id tombstone-revision-id
-         final-revision-id]))
-
-;; tests
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-variable
   (c-spec/general-save-concept-test :variable ["PROV1"]))
 
@@ -60,9 +52,11 @@
                                                 concept-id)
           _ (Thread/sleep 100)
           {final-revision-id :revision-id} (util/save-concept initial-var)
-          revisions (get-revisions concept-id initial-revision-id
-                                   second-revision-id tombstone-revision-id
-                                   final-revision-id)]
+          revisions (util/get-revisions concept-id
+                                        initial-revision-id
+                                        second-revision-id
+                                        tombstone-revision-id
+                                        final-revision-id)]
       (is (apply util/created-at-same? revisions)))))
 
 (deftest save-variable-with-conflicting-native-id
@@ -95,10 +89,10 @@
           (is (= nil (:revision-id response)))
           (is (= 409 (:status response)))
           (is (= 404 (:status find-response)))
-          (is (= [(format (str "The provider id [%s] and variable name [%s] "
+          (is (= [(format (str "The provider id [%s] and :variable-name [%s] "
                                "combined must be unique for a given native-id "
                                "[%s]. The following concept with the same "
-                               "provider id, variable name and native-id was "
+                               "provider id, :variable-name, and native-id was "
                                "found: [%s].")
                           "PROV1"
                           (get-in var1 [:extra-fields :variable-name])

@@ -28,7 +28,7 @@
    :tag-association (into common-columns
                           [:associated_concept_id :associated_revision_id :tag_key :user_id])
    :access-group (into common-columns [:provider_id :user_id])
-   :service (into common-columns [:service_name :user_id])
+   :service (into common-columns [:provider_id :service_name :user_id])
    :acl (into common-columns [:provider_id :user_id :acl_identity])
    :humanizer (into common-columns [:user_id])
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id])
@@ -96,7 +96,8 @@
   normal providers."
   (fn [db table concept-type providers params]
     (or (:small (first providers))
-        (= :variable concept-type))))
+        (= :variable concept-type)
+        (= :service concept-type))))
 
 ;; Execute a query against the small providers table
 (defmethod find-concepts-in-table true
