@@ -9,10 +9,15 @@
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.util :as util]
+   [cmr.common.validations.core :as validations]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.transmit.config :as transmit-config]
    [inflections.core :as inf]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Constants and utility functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def conn-mgr-atom (atom nil))
 
@@ -46,6 +51,41 @@
 (defn providers-url
   []
   (str "http://localhost:" (transmit-config/metadata-db-port) "/providers"))
+
+(defn old-revision-concept-cleanup
+  "Runs the old revision concept cleanup job"
+  []
+  (:status
+    (client/post (old-revision-concept-cleanup-url)
+                 {:throw-exceptions false
+                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                  :connection-manager (conn-mgr)})))
+
+(defn expired-concept-cleanup
+  "Runs the expired concept cleanup job"
+  []
+  (:status
+    (client/post (expired-concept-cleanup-url)
+                 {:throw-exceptions false
+                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                  :connection-manager (conn-mgr)})))
+
+(defn reset-database
+  "Make a request to reset the database by clearing out all stored concepts."
+  []
+  (:status
+   (client/post (reset-url)
+                {:throw-exceptions false
+                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                 :connection-manager (conn-mgr)})))
+
+(defn created-at-same?
+  "Returns true if the `created-at` for the given concept revisions are the same
+  and none of them are nil"
+  [& concepts]
+  (let [created-ats (map :created-at concepts)]
+    (and (apply = created-ats)
+         (not-any? nil? created-ats))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Concepts
@@ -728,6 +768,79 @@
         [initial-revision-id second-revision-id tombstone-revision-id
          final-revision-id]))
 
+(defn concept-created-at-assertions
+  "This function is used in tests to do the following:
+    1) Save a service
+    2) Then wait for a small period of time before saving it again
+    3) Then wait again and save a tombstone.
+    4) Finally, wait a bit and save a new (non-tombstone) revision.
+
+  All should have the same `created-at` value."
+  [test-type initial-concept]
+  (testing (format "Save %s multiple times gets same created-at" test-type)
+    (let [{concept-id :concept-id
+           initial-revision-id :revision-id} (save-concept initial-concept)
+          ;; Note - Originally planned to use the time-keeper functionality
+          ;; for this, but metadata-db tests don't have access to the control
+          ;; api that would allow this to work in CI.
+          _ (Thread/sleep 100)
+          {second-revision-id :revision-id} (save-concept initial-concept)
+          _ (Thread/sleep 100)
+          {tombstone-revision-id :revision-id} (delete-concept concept-id)
+          _ (Thread/sleep 100)
+          {final-revision-id :revision-id} (save-concept initial-concept)
+          revisions (get-revisions concept-id
+                                   initial-revision-id
+                                   second-revision-id
+                                   tombstone-revision-id
+                                   final-revision-id)]
+      (is (apply created-at-same? revisions)))))
+
+(defn concept-with-conflicting-native-id-assertions
+  "For use in tests that need to check the for conflicting concept ids."
+  [test-type field-type concept1 different-native-id]
+  (testing (str "Save a " test-type)
+    (let [{:keys [status revision-id concept-id]} (save-concept concept1)]
+      (is (= status 201))
+      (is (= 1 revision-id))
+      (testing "and another with all the same data"
+        (let [concept2 concept1
+              {:keys [status revision-id]} (save-concept concept2)]
+          (is (= 201 status))
+          (is (= 2 revision-id))))
+      (testing "and another with same data but different provider"
+        (let [concept3 (assoc concept1 :provider-id "PROV2")
+              {:keys [status revision-id]} (save-concept concept3)]
+          (is (= status 201))
+          (is (= 1 revision-id))))
+      (testing "and another the same data but with a different native-id"
+        (let [concept4 (assoc concept1 :native-id different-native-id)
+              response (save-concept concept4)
+              humanized-field (validations/humanize-field field-type)
+              ;; after the saving of concept2, the revision id was 2; the
+              ;; saving of concept3 was for a different provider, so it
+              ;; has a revision-id of 1; if the call above with concept4
+              ;; passed the constaint checks (which it shouldn't) the
+              ;; revision-id would now be 3 (but it shouldn't be)
+              failed-revision-id 3
+              find-response (get-concept-by-id-and-revision
+                             concept-id failed-revision-id)]
+          (is (= nil (:revision-id response)))
+          (is (= 409 (:status response)))
+          (is (= 404 (:status find-response)))
+          (is (= [(format (str "The provider id [%s] and %s [%s] "
+                               "combined must be unique for a given native-id "
+                               "[%s]. The following concept with the same "
+                               "provider id, %s, and native-id was "
+                               "found: [%s].")
+                          "PROV1"
+                          humanized-field
+                          (get-in concept1 [:extra-fields field-type])
+                          (:native-id concept1)
+                          humanized-field
+                          concept-id)]
+                 (:errors response))))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -801,44 +914,6 @@
         (:providers (get-providers))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Miscellaneous
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn old-revision-concept-cleanup
-  "Runs the old revision concept cleanup job"
-  []
-  (:status
-    (client/post (old-revision-concept-cleanup-url)
-                 {:throw-exceptions false
-                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                  :connection-manager (conn-mgr)})))
-
-(defn expired-concept-cleanup
-  "Runs the expired concept cleanup job"
-  []
-  (:status
-    (client/post (expired-concept-cleanup-url)
-                 {:throw-exceptions false
-                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                  :connection-manager (conn-mgr)})))
-
-(defn reset-database
-  "Make a request to reset the database by clearing out all stored concepts."
-  []
-  (:status
-   (client/post (reset-url) {:throw-exceptions false
-                             :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                             :connection-manager (conn-mgr)})))
-
-(defn created-at-same?
-  "Returns true if the `created-at` for the given concept revisions are the same
-  and none of them are nil"
-  [& concepts]
-  (let [created-ats (map :created-at concepts)]
-    (and (apply = created-ats)
-         (not-any? nil? created-ats))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -848,8 +923,8 @@
   [& providers]
   (fn [f]
     (try
-      ;; We set this to false during a test so that messages won't be published when this is run
-      ;; in dev system and cause exceptions in the indexer.
+      ;; We set this to false during a test so that messages won't be published
+      ;; when this is run in dev system and cause exceptions in the indexer.
       (side/eval-form `(mdb-config/set-publish-messages! false))
       (reset-database)
       (doseq [provider providers]
