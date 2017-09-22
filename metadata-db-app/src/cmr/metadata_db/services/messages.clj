@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.services.messages
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [cmr.common.validations.core :as validations]))
 
 (defn missing-concept-id [concept-type provider-id native-id]
   (format
@@ -131,15 +132,16 @@
 
 (defn pfn-equality-failure
   [field-type concept]
-  (format (str "The provider id [%s] and %s [%s] combined must be "
-               "unique for a given native-id [%s]. The following concept "
-               "with the same provider id, %s, and native-id was found: [%s].")
-          (:provider-id concept)
-          field-type
-          (get-in concept [:extra-fields field-type])
-          (:native-id concept)
-          field-type
-          (:concept-id concept)))
+  (let [humanized-field (validations/humanize-field field-type)]
+    (format (str "The provider id [%s] and %s [%s] combined must be "
+                 "unique for a given native-id [%s]. The following concept "
+                 "with the same provider id, %s, and native-id was found: [%s].")
+            (:provider-id concept)
+            humanized-field
+            (get-in concept [:extra-fields field-type])
+            (:native-id concept)
+            humanized-field
+            (:concept-id concept))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Provider Messages
