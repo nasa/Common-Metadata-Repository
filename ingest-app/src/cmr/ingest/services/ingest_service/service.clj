@@ -43,6 +43,9 @@
   db."
   [service]
   {:concept-type :service
+   ;; The following is a placeholder until UMM-Service fully supports
+   ;; provider ids; see CMR-4468
+   :provider-id (or (:provider-id service) "CMR")
    :native-id (:native-id service)
    :metadata (pr-str service)
    :user-id (:originator-id service)
