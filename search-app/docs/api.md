@@ -2693,7 +2693,7 @@ Additionally, deleted granules search can be filtered by the provider parameter,
 
 The following search will return the concept-id, parent-collection-id, granule-ur, revision-date, and provider-id of the granules that are deleted since 01/20/2017.
 
-    curl -i "%CMR-ENDPOINT%/deleted-granules?revision_date=2017-01-20T00:00:00Z&pretty=true"
+    curl -i "%CMR-ENDPOINT%/deleted-granules.json?revision_date=2017-01-20T00:00:00Z&pretty=true"
 
 __Example Response__
 
