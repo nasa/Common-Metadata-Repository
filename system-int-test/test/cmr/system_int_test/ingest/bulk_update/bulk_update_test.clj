@@ -65,6 +65,25 @@
                       :VariableLevel1 "CLOUD MICROPHYSICS"
                       :VariableLevel2 "CLOUD LIQUID WATER/ICE"}]})
 
+(def find-remove-all-platforms-instruments-umm
+  {:Platforms [{:ShortName "a340-600-1"
+                :LongName "airbus a340-600-1"
+                :Type "Aircraft"}
+               {:ShortName "a340-600-2"
+                :LongName "airbus a340-600"
+                :Type "Aircraft"
+                :Instruments [{:ShortName "atm"
+                               :LongName "airborne topographic mapper"
+                               :Technique "testing"
+                               :NumberOfInstruments 0
+                               :OperationalModes ["mode1" "mode2"]}]}
+               {:ShortName "a340-600-3"
+                :LongName "airbus a340-600"
+                :Type "Aircraft"
+                :Instruments [{:ShortName "atm"
+                               :LongName "airborne topographic mapper"}]}]})
+
+
 (defn- generate-concept-id
   [index provider]
   (format "C120000000%s-%s" index provider))
@@ -80,6 +99,18 @@
                             format)]]
       (:concept-id (ingest/ingest-concept
                     (assoc collection :concept-id (generate-concept-id x "PROV1")))))))
+
+(defn- ingest-collection-in-umm-json-format
+  "Ingest a collection in UMM Json format and return a list of one concept-id.
+   This is used to test the FIND_AND_REMOVE on platforms/instruments. Since differenct
+   formats keep different parts of the platforms/instruments, can't combine them together
+   to test what's found and what's removed."
+  [attribs]
+  (let [collection (data-umm-c/collection-concept
+                     (data-umm-c/collection 1 attribs)
+                     :umm-json)]
+    [(:concept-id (ingest/ingest-concept
+                   (assoc collection :concept-id (generate-concept-id 1 "PROV1"))))])) 
 
 (deftest bulk-update-science-keywords
   ;; Ingest a collection in each format with science keywords to update
@@ -216,6 +247,83 @@
                 :Term "AIR QUALITY"
                 :VariableLevel1 "EMISSIONS"}]
               (:ScienceKeywords (:umm concept)))))))
+
+(deftest bulk-update-remove-all-platforms-test
+  (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :update-type "FIND_AND_REMOVE"
+                          :update-field "PLATFORMS"
+                          :find-value {:Type "Aircraft"}}
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
+            collection-status (first (:collection-statuses collection-response))]
+        (is (= "COMPLETE" (:task-status collection-response)))
+        (is (= "FAILED" (:status collection-status)))
+        (is (= "object has missing required properties ([\"Platforms\"])" (:status-message collection-status))))
+
+      ;; Check that each concept was not updated because Platforms is required for a UMM JSON collection.
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+       (is (= 1 
+              (:revision-id (:meta concept))))
+       (is (= [{:ShortName "a340-600-1"
+                :LongName "airbus a340-600-1"
+                :Type "Aircraft"}
+               {:ShortName "a340-600-2"
+                :LongName "airbus a340-600"
+                :Type "Aircraft"
+                :Instruments [{:ShortName "atm"
+                               :LongName "airborne topographic mapper"
+                               :Technique "testing"
+                               :NumberOfInstruments 0
+                               :OperationalModes ["mode1" "mode2"]}]}
+               {:ShortName "a340-600-3"
+                :LongName "airbus a340-600"
+                :Type "Aircraft"
+                :Instruments [{:ShortName "atm"
+                               :LongName "airborne topographic mapper"}]}]
+              (:Platforms (:umm concept)))))))
+
+(deftest bulk-update-remove-all-instruments-test
+  (let [concept-ids (ingest-collection-in-umm-json-format find-remove-all-platforms-instruments-umm)
+        _ (index/wait-until-indexed)
+        bulk-update-body {:concept-ids concept-ids
+                          :update-type "FIND_AND_REMOVE"
+                          :update-field "INSTRUMENTS"
+                          :find-value {:ShortName "atm"}}
+        task-id (:task-id (ingest/bulk-update-collections "PROV1" bulk-update-body))]
+      (index/wait-until-indexed)
+      (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
+            collection-status (first (:collection-statuses collection-response))]
+        (is (= "COMPLETE" (:task-status collection-response)))
+        (is (= "COMPLETE" (:status collection-status)))
+        (is (= "Collection was updated successfully, but translating the collection to UMM-C had the following issues: [:MetadataDates] latest UPDATE date value: [2017-01-01T00:00:00.000Z] should be in the past. " (:status-message collection-status))))
+
+      ;; Check that each concept was not updated because Platforms is required for a UMM JSON collection.
+      (doseq [concept-id concept-ids
+              :let [concept (-> (search/find-concepts-umm-json :collection
+                                                               {:concept-id concept-id})
+                                :results
+                                :items
+                                first)]]
+       (is (= 2
+              (:revision-id (:meta concept))))
+       (is (= [{:ShortName "a340-600-1"
+                :LongName "airbus a340-600-1"
+                :Type "Aircraft"}
+               {:ShortName "a340-600-2"
+                :LongName "airbus a340-600"
+                :Type "Aircraft"}
+               {:ShortName "a340-600-3"
+                :LongName "airbus a340-600"
+                :Type "Aircraft"}]
+              (:Platforms (:umm concept)))))))
 
 (deftest bulk-update-update-test
   (let [concept-ids (ingest-collection-in-each-format find-update-keywords-umm)
