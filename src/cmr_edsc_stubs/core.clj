@@ -1,9 +1,9 @@
-(ns oubiwann.cmr-edsc-stubs
+(ns cmr-edsc-stubs.core
   (:require
    [clojure.pprint :refer [pprint]]
-   [oubiwann.cmr-edsc-stubs.data.core :as data]
-   [oubiwann.cmr-edsc-stubs.data.sources :as data-sources]
-   [oubiwann.cmr-edsc-stubs.util :as util]))
+   [cmr-edsc-stubs.data.core :as data]
+   [cmr-edsc-stubs.data.sources :as data-sources]
+   [cmr-edsc-stubs.util :as util]))
 
 (defn load-service
   [filename]

@@ -1,7 +1,7 @@
-(ns oubiwann.cmr-edsc-stubs.data.sources
+(ns cmr-edsc-stubs.data.sources
   (:require
    [clojure.java.io :as io]
-   [oubiwann.cmr-edsc-stubs.util :as util]))
+   [cmr-edsc-stubs.util :as util]))
 
 (def services-dir (io/resource "data/services"))
 (def variables-dir (io/resource "data/variables"))

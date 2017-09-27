@@ -1,4 +1,4 @@
-(ns oubiwann.cmr-edsc-stubs.data.core
+(ns cmr-edsc-stubs.data.core
   (:require [clojure.java.jdbc :as jdbc])
   (:import (clojure.lang Keyword)))
 

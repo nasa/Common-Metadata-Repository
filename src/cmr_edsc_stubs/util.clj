@@ -1,4 +1,4 @@
-(ns oubiwann.cmr-edsc-stubs.util
+(ns cmr-edsc-stubs.util
   (:require [clojure.java.io :as io]))
 
 (defn files?
