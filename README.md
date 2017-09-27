@@ -1,8 +1,14 @@
 # `oubiwann.cmr-edsc-stubs`
 
-*A quick little hack for getting stubbed UMM-S/UMM-V data into CMR for EDSC testing*
+*Various Stubbed Data for CMR / EDSC*
+
 
 ## Usage
 
 TBD
 
+
+## License
+
+Copyright © 2017 United States Government as represented by the Administrator of the National Aeronautics and Space Administration.
+All Rights Reserved.
