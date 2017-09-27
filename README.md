@@ -1,4 +1,4 @@
-# `oubiwann.cmr-edsc-stubs`
+# `cmr-edsc-stubs`
 
 *Various Stubbed Data for CMR / EDSC*
 
