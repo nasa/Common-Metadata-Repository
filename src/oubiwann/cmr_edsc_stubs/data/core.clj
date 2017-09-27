@@ -9,7 +9,7 @@
 (defn query
   [system sql]
   (jdbc/with-db-connection [db-conn (get-db system)]
-    (pprint (jdbc/query db-conn [sql]))))
+    (jdbc/query db-conn [sql])))
 
 (defn insert
   [system ^Keyword table data]
