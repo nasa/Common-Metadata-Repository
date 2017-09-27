@@ -5,4 +5,6 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/java.jdbc "0.7.1"]])
+    [org.clojure/java.jdbc "0.7.1"]]
+  :profiles {
+    :uberjar {:aot :all}})
