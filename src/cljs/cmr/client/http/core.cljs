@@ -41,12 +41,14 @@
     ([this url]
       (head this url {}))
     ([this url options]
-      :not-implemented))
+      (http/head this url options)))
   (put
     ([this url]
       (put this url {}))
-    ([this url options]
-      :not-implemented))
+    ([this url data]
+      (put this url data {}))
+    ([this url data options]
+      (http/put this url data options)))
   (post
     ([this url]
       (post this url {}))

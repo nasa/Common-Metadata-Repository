@@ -57,3 +57,13 @@
   "Perform an HTTP `GET`."
   [this url options]
   (http/get url (create-http-options this options)))
+
+(defn head
+  "Perform an HTTP `HEAD`."
+  [this url options]
+  (http/head url (create-http-options this options)))
+
+(defn put
+  [this url data options]
+  (http/put url (merge (create-http-options this options)
+                       {:form-params data})))

@@ -101,13 +101,20 @@
   ([this url]
     (head this url {}))
   ([this url options]
-    :not-implemented))
+    (->> (create-http-client-args this url options)
+         (apply http/head)
+         (handle-response this options))))
 
 (defn- put
   ([this url]
     (put this url {}))
-  ([this url options]
-    :not-implemented))
+  ([this url data]
+    (put this url {} {}))
+  ([this url data options]
+    (->> (create-http-client-args this url options)
+         (merge {:body data})
+         (apply http/put)
+         (handle-response this options))))
 
 (defn- post
   ([this url]

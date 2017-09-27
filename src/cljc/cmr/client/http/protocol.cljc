@@ -7,14 +7,10 @@
   (^:export get [this url] [this url opts]
     "Perform an HTTP `GET`.")
   (^:export head [this url] [this url opts]
-    "Perform an HTTP `HEAD`.
-
-    Not yet implemented.")
-  (^:export put [this url] [this url opts]
-    "Perform an HTTP `PUT`.
-
-    Not yet implemented.")
-  (^:export post [this url] [this url opts]
+    "Perform an HTTP `HEAD`.")
+  (^:export put [this url] [this url data] [this url data opts]
+    "Perform an HTTP `PUT`.")
+  (^:export post [this url data] [this url data opts]
     "Perform an HTTP `POST`.
 
     Not yet implemented.")
