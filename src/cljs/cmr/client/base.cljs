@@ -18,7 +18,9 @@
 
 (import-vars
   [cmr.client.base.protocol
-    get-url])
+    get-url
+    get-token
+    get-token-header])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,4 +30,10 @@
   CMRClientAPI
   (get-url
     [this segment]
-    (base/get-url this segment)))
+    (base/get-url this segment))
+  (get-token
+    [this segment]
+    (base/get-token this segment))
+  (get-token-header
+    [this segment]
+    (base/get-token-header this segment)))

@@ -19,7 +19,9 @@
 
 (import-vars
   [cmr.client.base.protocol
-    get-url])
+    get-url
+    get-token
+    get-token-header])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

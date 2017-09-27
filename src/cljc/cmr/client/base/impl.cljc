@@ -23,9 +23,19 @@
   [this segment]
   (str (:endpoint this) segment))
 
+(defn get-token
+  [this]
+  (:token this))
+
+(defn get-token-header
+  [this]
+  {"echo-token" (get-token this)})
+
 #?(:clj
 (def client-behaviour
-  {:get-url get-url}))
+  {:get-url get-url
+   :get-token get-token
+   :get-token-header get-token-header}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Client Options   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

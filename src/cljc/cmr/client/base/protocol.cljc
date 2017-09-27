@@ -6,4 +6,6 @@
   CMR service API clients.")
 
 (defprotocol CMRClientAPI
-  (^:export get-url [this segment]))
+  (^:export get-url [this segment])
+  (^:export get-token [this])
+  (^:export get-token-header [this]))
