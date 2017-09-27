@@ -102,9 +102,9 @@
 
 (defn- ingest-collection-in-umm-json-format
   "Ingest a collection in UMM Json format and return a list of one concept-id.
-   This is used to test the FIND_AND_REMOVE on platforms/instruments. Since differenct
-   formats keep different parts of the platforms/instruments, can't combine them together
-   to test what's found and what's removed."
+   This is used to test the CMR-4517, on complete removal of platforms/instruments. 
+   Since it's only testing the bulk update part after the ingest, which format to use 
+   for ingest is irrelevant. So it's easier to just test with one format of ingest."
   [attribs]
   (let [collection (data-umm-c/collection-concept
                      (data-umm-c/collection 1 attribs)
