@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-client "0.1.0"
+(defproject gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"
   :description "A Clojure(Script) Client for NASA's Common Metadata Repository"
   :url "https://github.com/oubiwann/cmr-client"
   :license {
