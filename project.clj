@@ -1,11 +1,25 @@
+(defn get-prompt
+  [ns]
+  (str "\u001B[35m[\u001B[34m"
+       ns
+       "\u001B[35m]\u001B[33m λ\u001B[m=> "))
+
 (defproject gov.nasa.earthdata/cmr-edsc-stubs "0.1.0-SNAPSHOT"
   :description "Various Stubbed Data for CMR / EDSC"
   :url "http://example.com/FIXME"
   :license {:name "Apache License 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
+    [cheshire "5.8.0"]
     [gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/java.jdbc "0.7.1"]]
   :profiles {
-    :uberjar {:aot :all}})
+    :uberjar {:aot :all}
+    :dev {
+      :dependencies [
+        [org.clojure/tools.namespace "0.2.11"]]
+      :source-paths ["dev-resources/src"]
+      :repl-options {
+        :init-ns cmr-edsc-stubs.dev
+        :prompt ~get-prompt}}})
