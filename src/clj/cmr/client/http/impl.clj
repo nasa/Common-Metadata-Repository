@@ -92,6 +92,9 @@
            (apply func)
            (handle-response client options))
       (catch Exception e
+        ;; XXX check here for return-body? option; if true, don't return
+        ;;     everything that's in ex-data (e.g., headers, etc.), but
+        ;;     rather just {:status ... :errors ...}
         (let [data (ex-data e)
               content-type (parse-content-type data)
               errors (:errors (convert-body data content-type))]
