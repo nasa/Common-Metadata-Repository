@@ -53,13 +53,42 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ingest-ges-disc-airx3std-collection
-  []
-  (let [client (ingest/create-client {:endpoint :local
-                                   :token util/local-token
-                                   :return-body? true})]
-    (ingest/create-collection client
-                              "GES_DISC"
-                              "coll-native-id"
-                              (data-sources/get-ges-disc-airx3std-collection)
-                              {:content-type "application/echo10+xml"
-                               :accept "application/json"})))
+  ([]
+    (ingest-ges-disc-airx3std-collection :local))
+  ([deployment]
+    (let [provider-id "GES_DISC"
+          submit-content-type "application/echo10+xml"
+          accept-content-type "application/json"
+          native-id (str (java.util.UUID/randomUUID))
+          client (ingest/create-client {:endpoint deployment
+                                        :token util/local-token
+                                        :return-body? true})]
+      (ingest/create-collection client
+                                provider-id
+                                native-id
+                                (data-sources/get-ges-disc-airx3std-collection)
+                                {:content-type submit-content-type
+                                 :accept accept-content-type}))))
+
+(defn ingest-ges-disc-airx3std-variables
+  ([]
+    (ingest-ges-disc-airx3std-variables :local))
+  ([deployment]
+    (let [provider-id "GES_DISC"
+          submit-content-type (str "application/vnd.nasa.cmr.umm+json;"
+                                   "version=1.0; charset=UTF-8")
+          accept-content-type "application/json"
+          client (ingest/create-client {:endpoint deployment
+                                        :token util/local-token
+                                        :return-body? true})]
+      (doseq [var-files [(data-sources/get-ges-disc-airx3std-ch4-variables)
+                         ;; add more groups of variables here
+                         ]]
+        (doseq [var-data (map slurp var-files)]
+          (let [native-id (str (java.util.UUID/randomUUID))]
+            (ingest/create-variable client
+                                    provider-id
+                                    native-id
+                                    var-data
+                                    {:content-type submit-content-type
+                                     :accept accept-content-type})))))))

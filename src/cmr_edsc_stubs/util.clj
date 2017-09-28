@@ -18,13 +18,20 @@
                          (io/reader)
                          (json/parse-stream true))))))
 
+(defn get-dir
+  [dir-path]
+  (-> dir-path
+      (io/resource)
+      (.getFile)
+      (io/file)))
+
 (defn files?
   [files-or-dirs]
   (filter #(.isFile %) files-or-dirs))
 
 (defn get-files
   [dir]
-  (->> dir
-       (io/file)
-       (file-seq)
-       files?))
+  (-> dir
+      (get-dir)
+      (file-seq)
+      files?))
