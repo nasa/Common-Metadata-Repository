@@ -49,7 +49,25 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies ~(concat '[[org.clojure/clojure "1.8.0"]
+  :dependencies ~(concat '[[gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"
+                            :exclusions [org.clojure/clojurescript
+                                         org.clojure/data.xml
+                                         com.google.code.findbugs/jsr305
+                                         clj-http
+                                         cljs-http
+                                         org.clojure/core.async
+                                         org.clojure/tools.analyzer.jvm
+                                         org.clojure/tools.reader]]
+                           [gov.nasa.earthdata/cmr-edsc-stubs "0.1.0-SNAPSHOT"
+                            :exclusions [org.clojure/clojurescript
+                                         com.google.code.findbugs/jsr305
+                                         gov.nasa.earthdata/cmr-client
+                                         cljs-http
+                                         org.clojure/core.async
+                                         org.clojure/tools.analyzer.jvm
+                                         org.clojure/tools.reader
+                                         org.clojure/java.jdbc]]
+                           [org.clojure/clojure "1.8.0"]
                            [org.clojure/tools.nrepl "0.2.12"]
                            ;; Add groovy to support groovy scripting in elastic
                            [org.codehaus.groovy/groovy-all "2.4.0"]]
