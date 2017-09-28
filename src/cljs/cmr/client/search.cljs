@@ -17,6 +17,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (import-vars
+  [cmr.client.base.protocol
+    get-url
+    get-token
+    get-token-header]
   [cmr.client.search.protocol
     get-collections
     get-concept

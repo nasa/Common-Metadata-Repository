@@ -12,4 +12,10 @@
     "Create a collection.")
   (^:export update-collection [this provider-id native-id metadata]
                               [this provider-id native-id metadata options]
-    "Update a collection."))
+    "Update a collection.")
+  (^:export create-variable [this provider-id native-id metadata]
+                            [this provider-id native-id metadata options]
+    "Create a variable.")
+  (^:export update-variable [this provider-id native-id metadata]
+                            [this provider-id native-id metadata options]
+    "Update a variable."))

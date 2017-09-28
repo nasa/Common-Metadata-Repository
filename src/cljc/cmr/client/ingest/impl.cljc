@@ -42,6 +42,21 @@
                   (http-util/merge-header options
                                           (base/get-token-header this))))))
 
+(defn save-variable
+  "Save a variable."
+  ([this provider-id native-id metadata]
+    (save-variable this provider-id native-id metadata {}))
+  ([this provider-id native-id metadata options]
+    (-> this
+        :http-client
+        (http/put (base/get-url this
+                                (format "/providers/%s/variables/%s"
+                                        provider-id
+                                        native-id))
+                  metadata
+                  (http-util/merge-header options
+                                          (base/get-token-header this))))))
+
 #?(:clj
 (def client-behaviour
   "A map of method names to implementations.
@@ -49,4 +64,6 @@
   Intended for use by the `extend` protocol function."
   {:get-providers get-providers
    :create-collection save-collection
-   :update-collection save-collection}))
+   :update-collection save-collection
+   :create-variable save-variable
+   :update-variable save-variable}))

@@ -77,8 +77,28 @@
      (:body (parse-body! response))
      (parse-body! response))))
 
+(defn get-http-func
+  [method]
+  (case method
+    :get http/get
+    :head http/head
+    :put http/put))
+
+(defn- call
+  [client method args options]
+  (let [func (get-http-func method)]
+    (try
+      (->> args
+           (apply func)
+           (handle-response client options))
+      (catch Exception e
+        (let [data (ex-data e)
+              content-type (parse-content-type data)
+              errors (:errors (convert-body data content-type))]
+        (assoc data :errors errors))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Records &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;   Records &tc.   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord HTTPClientData [
@@ -93,17 +113,19 @@
   ([this url]
     (get this url {}))
   ([this url options]
-    (->> (create-http-client-args this url options)
-         (apply http/get)
-         (handle-response this options))))
+    (call this
+          :get
+          (create-http-client-args this url options)
+          options)))
 
 (defn- head
   ([this url]
     (head this url {}))
   ([this url options]
-    (->> (create-http-client-args this url options)
-         (apply http/head)
-         (handle-response this options))))
+    (call this
+          :head
+          (create-http-client-args this url options)
+          options)))
 
 (defn- put
   ([this url]
@@ -111,12 +133,12 @@
   ([this url data]
     (put this url data {}))
   ([this url data options]
-    (->> {:body data}
-         (merge options)
-         (create-http-client-args this url)
-         ((fn [x] (println "DEBUG:" x) x))
-         (apply http/put)
-         (handle-response this options))))
+    (call this
+          :put
+          (->> {:body data}
+               (merge options)
+               (create-http-client-args this url))
+          options)))
 
 (defn- post
   ([this url]

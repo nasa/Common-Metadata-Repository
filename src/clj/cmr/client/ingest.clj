@@ -23,7 +23,9 @@
   [cmr.client.ingest.protocol
     get-providers
     create-collection
-    update-collection])
+    update-collection
+    create-variable
+    update-variable])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

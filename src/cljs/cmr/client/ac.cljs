@@ -18,6 +18,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (import-vars
+  [cmr.client.base.protocol
+    get-url
+    get-token
+    get-token-header]
   [cmr.client.ac.protocol
     get-acls
     get-groups

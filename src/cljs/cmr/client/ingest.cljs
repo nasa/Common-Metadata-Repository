@@ -17,10 +17,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (import-vars
+  [cmr.client.base.protocol
+    get-url
+    get-token
+    get-token-header]
   [cmr.client.ingest.protocol
     get-providers
     create-collection
-    update-collection])
+    update-collection
+    create-variable
+    update-variable])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -48,7 +54,13 @@
     (ingest/save-collection this provider-id native-id data))
   (update-collection
     [this]
-    (ingest/save-collection this provider-id native-id data)))
+    (ingest/save-collection this provider-id native-id data))
+  (create-variable
+    [this]
+    (ingest/save-variable this provider-id native-id data))
+  (update-variable
+    [this]
+    (ingest/save-variable this provider-id native-id data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constrcutor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
