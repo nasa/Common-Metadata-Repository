@@ -2,17 +2,32 @@
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
   :dependencies [[com.github.fge/json-schema-validator "2.2.6"]
-                 ;; XXX REMOVE the following dep when the stubbed
+                 ;; XXX REMOVE the following deps when the stubbed
                  ;;     responses are replaced with the real ones
-                 [gov.nasa.earthdata/cmr-edsc-stubs "0.1.0-SNAPSHOT"
-                  :exclusions [org.clojure/clojurescript
+                 [gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"
+                  :exclusions [cljs-http
                                com.google.code.findbugs/jsr305
                                gov.nasa.earthdata/cmr-client
-                               cljs-http
+                               instaparse
+                               org.clojure/clojurescript
                                org.clojure/core.async
+                               org.clojure/data.xml
                                org.clojure/tools.analyzer.jvm
                                org.clojure/tools.reader
-                               org.clojure/java.jdbc]]
+                               org.clojure/java.jdbc
+                               ring/ring-codec]]
+                 [gov.nasa.earthdata/cmr-edsc-stubs "0.1.0-SNAPSHOT"
+                  :exclusions [cljs-http
+                               com.google.code.findbugs/jsr305
+                               gov.nasa.earthdata/cmr-client
+                               instaparse
+                               org.clojure/clojurescript
+                               org.clojure/core.async
+                               org.clojure/data.xml
+                               org.clojure/tools.analyzer.jvm
+                               org.clojure/tools.reader
+                               org.clojure/java.jdbc
+                               ring/ring-codec]]
                  [nasa-cmr/cmr-collection-renderer-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
