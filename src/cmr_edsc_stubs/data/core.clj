@@ -38,11 +38,13 @@
     (create-provider provider-data :local :metadata-db))
   ([provider-data environment-type service-key]
     (let [endpoint (client-util/get-endpoint environment-type service-key)]
-      (client/post (format "%s/providers" endpoint)
-       {:body provider-data
-        :content-type :json
-        :throw-exceptions false
-        :headers util/local-token-header}))))
+      (-> {:body provider-data
+           :content-type :json
+           :throw-exceptions false
+           :headers util/local-token-header}
+          ((partial client/post (format "%s/providers" endpoint)))
+          (select-keys [:status :body])
+          (update-in [:body] #(json/parse-string % true))))))
 
 (defn create-ges-disc-provider
   []
@@ -81,14 +83,16 @@
           client (ingest/create-client {:endpoint deployment
                                         :token util/local-token
                                         :return-body? true})]
-      (doseq [var-files [(data-sources/get-ges-disc-airx3std-ch4-variables)
-                         ;; add more groups of variables here
-                         ]]
-        (doseq [var-data (map slurp var-files)]
-          (let [native-id (str (java.util.UUID/randomUUID))]
-            (ingest/create-variable client
-                                    provider-id
-                                    native-id
-                                    var-data
-                                    {:content-type submit-content-type
-                                     :accept accept-content-type})))))))
+      (for [var-files [(data-sources/get-ges-disc-airx3std-ch4-variables)
+                       ;; add more groups of variables here
+                       ]]
+        (for [var-file var-files]
+          (do
+            (println "Loading" (str var-file) "...")
+            (let [native-id (str (java.util.UUID/randomUUID))]
+              (ingest/create-variable client
+                                      provider-id
+                                      native-id
+                                      (slurp var-file)
+                                      {:content-type submit-content-type
+                                       :accept accept-content-type}))))))))
