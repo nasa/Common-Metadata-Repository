@@ -16,6 +16,7 @@
 
 (defrecord CMRSearchClientData [
   endpoint
+  token
   options
   http-client])
 

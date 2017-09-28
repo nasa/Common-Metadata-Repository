@@ -6,4 +6,10 @@
    "Get a list of providers defined in the system.
 
    Each element of the list is a hash which constains very basic info on the
-   given provider."))
+   given provider.")
+  (^:export create-collection [this provider-id native-id metadata]
+                              [this provider-id native-id metadata options]
+    "Create a collection.")
+  (^:export update-collection [this provider-id native-id metadata]
+                              [this provider-id native-id metadata options]
+    "Update a collection."))

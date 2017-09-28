@@ -12,3 +12,10 @@
                            :cljs (js->clj query-params))}
          #?(:clj http-options
             :cljs (js->clj http-options))))
+
+(defn merge-headers
+  [options headers]
+  (assoc options :headers (merge (:headers options)
+                                  headers)))
+
+(def merge-header #'merge-headers)

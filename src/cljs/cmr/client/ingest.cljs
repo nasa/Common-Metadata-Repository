@@ -18,7 +18,9 @@
 
 (import-vars
   [cmr.client.ingest.protocol
-    get-providers])
+    get-providers
+    create-collection
+    update-collection])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,13 +30,25 @@
   CMRClientAPI
   (get-url
     [this segment]
-    (base-impl/get-url this segment)))
+    (base-impl/get-url this segment))
+  (get-token
+    [this segment]
+    (base/get-token this segment))
+  (get-token-header
+    [this segment]
+    (base/get-token-header this segment)))
 
 (extend-type CMRIngestClientData
   CMRIngestAPI
   (get-providers
     [this]
-    (ingest/get-providers this)))
+    (ingest/get-providers this))
+  (create-collection
+    [this]
+    (ingest/save-collection this provider-id native-id data))
+  (update-collection
+    [this]
+    (ingest/save-collection this provider-id native-id data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Constrcutor   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

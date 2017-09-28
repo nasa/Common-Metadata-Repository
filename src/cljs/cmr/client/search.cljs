@@ -35,7 +35,13 @@
   CMRClientAPI
   (get-url
     [this segment]
-    (base-impl/get-url this segment)))
+    (base-impl/get-url this segment))
+  (get-token
+    [this segment]
+    (base/get-token this segment))
+  (get-token-header
+    [this segment]
+    (base/get-token-header this segment)))
 
 (extend-type CMRSearchClientData
   CMRSearchAPI

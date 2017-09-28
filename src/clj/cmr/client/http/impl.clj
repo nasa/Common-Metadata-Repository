@@ -109,10 +109,12 @@
   ([this url]
     (put this url {}))
   ([this url data]
-    (put this url {} {}))
+    (put this url data {}))
   ([this url data options]
-    (->> (create-http-client-args this url options)
-         (merge {:body data})
+    (->> {:body data}
+         (merge options)
+         (create-http-client-args this url)
+         ((fn [x] (println "DEBUG:" x) x))
          (apply http/put)
          (handle-response this options))))
 

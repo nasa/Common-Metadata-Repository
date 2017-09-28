@@ -16,6 +16,7 @@
 
 (defrecord CMRAccessControlClientData [
   endpoint
+  token
   options
   http-client])
 

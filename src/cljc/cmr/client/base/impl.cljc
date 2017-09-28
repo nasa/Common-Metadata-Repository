@@ -17,7 +17,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord CMRClientData [
-  endpoint])
+  endpoint
+  token])
 
 (defn get-url
   [this segment]
@@ -29,7 +30,8 @@
 
 (defn get-token-header
   [this]
-  {"echo-token" (get-token this)})
+  (when-let [token (get-token this)]
+    {"echo-token" token}))
 
 #?(:clj
 (def client-behaviour
@@ -42,7 +44,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defrecord CMRClientOptions [
-  return-body?])
+  return-body?
+  connection-manager])
 
 #?(:clj
 (defn create-options
@@ -64,4 +67,4 @@
   (let [options (if (object? options)
                  (js->clj options :keywordize-keys true)
                  options)]
-    (->CMRClientOptions (:return-body? options)))))
+    (->CMRClientOptions (:return-body? options) nil))))

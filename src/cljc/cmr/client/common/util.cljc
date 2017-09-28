@@ -25,6 +25,12 @@
   (or (:endpoint options)
       (get-endpoint service-key)))
 
+(defn get-default-token
+  "Use the token that is defined in the options data structure; if one is not
+  provided, a null value for token will be used."
+  [options]
+  (:token options))
+
 (defn parse-endpoint
   "Given a string or a deployment environment and a service key, retur the
   service endpoint."
@@ -67,7 +73,7 @@
 
   This docstring is a bit dense; for more clarity, be sure to view the calls
   made to this function in both the Clojure and ClojureScript clients."
-  [servie-type client-constructor-var client-data-constructor options-fn
+  [service-type client-constructor-var client-data-constructor options-fn
    http-client-constructor]
   (fn
     ([]
@@ -75,12 +81,15 @@
     ([options]
      (client-constructor-var options {}))
     ([options http-options]
-     (let [endpoint (get-default-endpoint options servie-type)
+     (let [endpoint (get-default-endpoint options service-type)
+           token (get-default-token options)
            client-options (options-fn options)
            http-client (http-client-constructor client-options http-options)]
-       (client-data-constructor (parse-endpoint endpoint servie-type)
-                       client-options
-                       http-client)))))
+       (client-data-constructor
+         (parse-endpoint endpoint service-type)
+         token
+         client-options
+         http-client)))))
 
 (defn create-http-client-constructor
   "This is a utility function that returns a function for creating clients of

@@ -60,3 +60,26 @@ Run against a local instance instead of production:
 (def results (ingest/get-providers client))
 (pprint results)
 ```
+
+Create a collection:
+
+```clj
+(def client (ingest/create-client {:endpoint :local
+                                   :token "mock-echo-system-token"
+                                   :return-body? true}))
+(def xml-file "/Users/dmcgregg/lab/NASA/CMR/cmr-edsc-stubs/resources/data/collections/GES_DISC/AIRX3STD_006.xml")
+(def results (ingest/create-collection client
+                                       "GES_DISC"
+                                       "coll-native-id"
+                                       (slurp xml-file)
+                                       {:content-type "application/echo10+xml"
+                                        :accept "application/json"}))
+(print results)
+```
+
+Check the collection:
+
+```clj
+(def client (search/create-client {:endpoint :local :return-body? true}))
+(def results (search/get-collections client {:accept "application/json"}))
+```
