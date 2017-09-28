@@ -100,12 +100,14 @@ Check the collection:
 Create a variable:
 
 ```clj
-(def json-file "/Users/dmcgregg/lab/NASA/CMR/cmr-edsc-stubs/resources/data/variables/GES_DISC/AIRX3STD/CH4/CH4_VMR_TqJ_D_max.json")
-(def content-type "application/vnd.nasa.cmr.umm+json;version=1.0; charset=UTF-8")
+(def json-file "/Users/dmcgregg/lab/NASA/CMR/cmr-edsc-stubs/resources/data/variables/GES_DISC/AIRX3STD/CH4/CH4_VMR_A.json")
+(def submit-content-type "application/vnd.nasa.cmr.umm+json;version=1.0; charset=UTF-8")
+(def accept-content-type "application/json")
 (def results (ingest/create-variable authed-ingest-client
                                      "GES_DISC"
                                      "var-native-id"
                                      (slurp json-file)
-                                     {:content-type content-type
-                                      :accept "application/json"}))
+                                     {:content-type submit-content-type
+                                      :accept accept-content-type}))
+(or (pprint (:errors results)) (pprint results))
 ```
