@@ -111,3 +111,28 @@ Create a variable:
                                       :accept accept-content-type}))
 (or (pprint (:errors results)) (pprint results))
 ```
+
+Associate a variable with a collection:
+
+```clj
+(require '[clojure.data.json :as json])
+(def authed-search-client (search/create-client {:endpoint :local
+                                                 :token "mock-echo-system-token"
+                                                 :return-body? true}))
+(def submit-content-type "application/json")
+(def accept-content-type "application/json")
+(def results (search/create-variable-association
+              authed-search-client
+              "V1200000117-GES_DISC"
+              (json/write-str
+               [{:concept_id "C1200000100-GES_DISC"}])
+              {:content-type submit-content-type
+               :accept accept-content-type}))
+(or (pprint (:errors results)) (pprint results))
+```
+
+curl -XPOST -i \
+  -H "Content-Type: application/json" \
+  -H "Echo-Token: mock-echo-system-token" \
+  http://localhost:3003/variables/V1200000117-GES_DISC/associations \
+  -d '[{"concept_id": "C1200000100-GES_DISC"}]'
