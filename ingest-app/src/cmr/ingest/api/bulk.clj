@@ -36,11 +36,15 @@
  {:id :status :status-message}"
  ([result status-list-key status-key id-key]
   (generate-xml-status-list result status-list-key status-key id-key nil))
- ([result status-list-key status-key id-key additional-keys]
+ ([result status-list-key status-key id-key created-at-key]
+  (generate-xml-status-list result status-list-key status-key id-key created-at-key nil))
+ ([result status-list-key status-key id-key created-at-key additional-keys]
   (xml/element status-list-key {}
     (for [status (get result status-list-key)
           :let [message (:status-message status)]]
      (xml/element status-key {}
+      (when created-at-key
+        (xml/element created-at-key {} (str (:created-at status))))
       (xml/element id-key {} (get status id-key))
       (xml/element :status {} (:status status))
       (when message
@@ -65,7 +69,7 @@
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (xml/emit-str
           (xml/element :result {}
-           (generate-xml-status-list result :tasks :task :task-id
+           (generate-xml-status-list result :tasks :task :task-id :created-at
              [:request-json-body])))})
 
 (defn get-provider-tasks
@@ -96,6 +100,7 @@
    :headers {"Content-Type" (mt/format->mime-type :xml)}
    :body (xml/emit-str
           (xml/element :result {}
+           (xml/element :created-at {} (str (:created-at result)))
            (xml/element :task-status {} (:task-status result))
            (xml/element :status-message {} (:status-message result))
            (xml/element :request-json-body {} (:request-json-body result))
@@ -116,6 +121,7 @@
     (generate-provider-task-status-response
      headers
      {:status 200
+      :created-at (:created-at task-status)
       :task-status (:status task-status)
       :status-message (:status-message task-status)
       :request-json-body (:request-json-body task-status)
