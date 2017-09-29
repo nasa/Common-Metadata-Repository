@@ -31,6 +31,9 @@
   (update-bulk-update-collection-status [db task-id concept-id status status-message])
   (reset-bulk-update [db]))
 
+(def bulk_update_task_status
+ "bulk_update_task_status")
+
 ;; Extends the BulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol BulkUpdateStore
   cmr.oracle.connection.OracleStore
@@ -41,8 +44,8 @@
      [conn db]
      ;; Returns a list of bulk update statuses for the provider
      (let [stmt (su/build (su/select [:created-at :task-id :status :status-message :request-json-body]
-                            (su/from "bulk_update_task_status")
-                            (su/where `(= :provider-id ~provider-id))))
+                          (su/from bulk_update_task_status)
+                          (su/where `(= :provider-id ~provider-id))))
            ;; Note: the column selected out of the database is created_at, instead of created-at.
            statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn)) 
                                 (su/query conn stmt)))
@@ -57,8 +60,8 @@
      ;; Returns a status for the particular task
      (some-> conn 
              (su/find-one (su/select [:created-at :status :status-message :request-json-body]
-                                     (su/from "bulk_update_task_status")
-                                     (su/where `(= :task-id ~task-id))))
+                          (su/from bulk_update_task_status)
+                          (su/where `(= :task-id ~task-id))))
              util/map-keys->kebab-case
              (update :request-json-body util/gzip-blob->string)
              (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
