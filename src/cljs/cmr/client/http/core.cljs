@@ -52,8 +52,10 @@
   (post
     ([this url]
       (post this url {}))
-    ([this url options]
-      :not-implemented))
+    ([this url data]
+      (post this url data {}))
+    ([this url data options]
+      (http/post this url data options)))
   (delete
     ([this url]
       (delete this url {}))

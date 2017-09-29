@@ -18,10 +18,11 @@
 
 (import-vars
   [cmr.client.base.protocol
-    get-url
     get-token
-    get-token-header]
+    get-token-header
+    get-url]
   [cmr.client.search.protocol
+    create-variable-association
     get-collections
     get-concept
     get-granules
@@ -49,6 +50,14 @@
 
 (extend-type CMRSearchClientData
   CMRSearchAPI
+  (create-variable-association
+    ([this concept-id collection-data]
+     (create-variable-association this {}))
+    ([this concept-id collection-data http-options]
+     (create-variable-association this {} http-options))
+    ([this concept-id collection-data query-params http-options]
+     (search/create-variable-association
+      this concept-id collection-data query-params http-options)))
   (get-collections
     ([this]
      (get-collections this {}))

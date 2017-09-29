@@ -2,12 +2,18 @@
   "This namespace defines the protocols used by CMR search client.")
 
 (defprotocol CMRSearchAPI
+  (^:export create-variable-association
+   [this concept-id collection-data]
+   [this concept-id collection-data http-options]
+   [this concept-id collection-data query-params http-options]
+   "Create an association between a variable and one or more collections.")
   (^:export get-collections
    [this]
    [this http-options]
    [this query-params http-options]
    "Find all collections.")
   (^:export get-concept
+   [this concept-id]
    [this concept-id http-options]
    [this concept-id revision-id http-options]
    "Not yet implemented.")

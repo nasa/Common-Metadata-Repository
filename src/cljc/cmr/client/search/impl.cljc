@@ -20,6 +20,22 @@
   options
   http-client])
 
+(defn create-variable-association
+  ([this concept-id collection-data]
+    (create-variable-association this concept-id collection-data {}))
+  ([this concept-id collection-data http-options]
+    (create-variable-association
+     this concept-id collection-data {} http-options))
+  ([this concept-id collection-data query-params http-options]
+    (-> this
+        :http-client
+        (http/post (base/get-url this
+                                 (format "/variables/%s/associations"
+                                         concept-id))
+                   collection-data
+                   (http-util/merge-header http-options
+                                           (base/get-token-header this))))))
+
 (defn get-collections
   "See protocol defintion for docstring."
   ([this]
@@ -30,10 +46,14 @@
    (-> this
        :http-client
        (http/get (base/get-url this "/collections")
-                 (http-util/query+options query-params http-options)))))
+                 (-> query-params
+                     (http-util/query+options http-options)
+                     (http-util/merge-header (base/get-token-header this)))))))
 
 (defn get-concept
   "See protocol defintion for docstring."
+  ([this concept-id]
+    (get-concept this concept-id {}))
   ([this concept-id http-options]
    (-> this
        :http-client
@@ -46,7 +66,8 @@
                                          concept-id
                                          "/"
                                          revision-id))
-                 http-options))))
+                 (http-util/merge-header http-options
+                                         (base/get-token-header this))))))
 
 (defn get-granules
   "See protocol defintion for docstring."
@@ -113,7 +134,8 @@
   "A map of method names to implementations.
 
   Intended for use by the `extend` protocol function."
-  {:get-collections get-collections
+  {:create-variable-association create-variable-association
+   :get-collections get-collections
    :get-concept get-concept
    :get-granules get-granules
    :get-humanizers get-humanizers

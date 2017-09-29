@@ -67,3 +67,8 @@
   [this url data options]
   (http/put url (merge (create-http-options this options)
                        {:form-params data})))
+
+(defn post
+  [this url data options]
+  (http/post url (merge (create-http-options this options)
+                        {:form-params data})))

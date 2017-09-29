@@ -82,7 +82,8 @@
   (case method
     :get http/get
     :head http/head
-    :put http/put))
+    :put http/put
+    :post http/post))
 
 (defn- call
   [client method args options]
@@ -146,8 +147,15 @@
 (defn- post
   ([this url]
     (post this url {}))
-  ([this url options]
-    :not-implemented))
+  ([this url data]
+    (put this url data {}))
+  ([this url data options]
+    (call this
+          :post
+          (->> {:body data}
+               (merge options)
+               (create-http-client-args this url))
+          options)))
 
 (defn- delete
   ([this url]

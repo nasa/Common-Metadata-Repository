@@ -11,9 +11,7 @@
   (^:export put [this url] [this url data] [this url data opts]
     "Perform an HTTP `PUT`.")
   (^:export post [this url data] [this url data opts]
-    "Perform an HTTP `POST`.
-
-    Not yet implemented.")
+    "Perform an HTTP `POST`.")
   (^:export delete [this url] [this url opts]
     "Perform an HTTP `DELETE`.
 
