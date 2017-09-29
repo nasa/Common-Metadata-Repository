@@ -96,3 +96,29 @@
                                       (slurp var-file)
                                       {:content-type submit-content-type
                                        :accept accept-content-type}))))))))
+
+(defn associate-ch4-variables-with-ges-disc-airx3std-collection
+  ([]
+    (associate-ch4-variables-with-ges-disc-airx3std-collection :local))
+  ([deployment]
+    (let [provider-id "GES_DISC"
+          submit-content-type "application/json"
+          accept-content-type "application/json"
+          client (search/create-client {:endpoint deployment
+                                        :token util/local-token
+                                        :return-body? true})
+          vars (search/get-variables client
+                                     {:provider provider-id
+                                      :page_size 1000}
+                                     {:accept accept-content-type})
+          cols (search/get-collections client
+                                       {:provider provider-id}
+                                       {:accept accept-content-type})
+          collection-id (:id (get-in cols [:feed :entry 0]))]
+      (for [var-id (map :concept_id (:items vars))]
+        (search/create-variable-association client
+                                            var-id
+                                            (json/generate-string
+                                             [{:concept_id collection-id}])
+                                            {:content-type submit-content-type
+                                             :accept accept-content-type})))))
