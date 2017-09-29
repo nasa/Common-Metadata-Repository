@@ -121,13 +121,17 @@
 
 (defn get-variables
   "See protocol defintion for docstring."
+  ([this]
+   (get-variables this {}))
   ([this http-options]
    (get-variables this {} http-options))
   ([this query-params http-options]
    (-> this
        :http-client
        (http/get (base/get-url this "/variables")
-                 (http-util/query+options query-params http-options)))))
+                 (-> query-params
+                     (http-util/query+options http-options)
+                     (http-util/merge-header (base/get-token-header this)))))))
 
 #?(:clj
 (def client-behaviour

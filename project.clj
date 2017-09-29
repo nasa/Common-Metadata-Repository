@@ -82,6 +82,8 @@
          :optimizations :simple
          :output-to "resources/public/js/cmr_client.js"}}]}
   :aliases {
+    "repl"
+      ["with-profile" "+dev,+test" "repl"]
     "build-cljs-dev"
       ^{:doc "Build just the dev version of the ClojureScript code"}
       ["cljsbuild" "once" "cmr-dev"]

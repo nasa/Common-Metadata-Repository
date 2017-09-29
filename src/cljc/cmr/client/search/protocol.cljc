@@ -16,20 +16,33 @@
    [this concept-id]
    [this concept-id http-options]
    [this concept-id revision-id http-options]
+   "Get the contept metadata for associated with the given concept-id.")
+  (^:export get-granules
+   [this]
+   [this http-options]
+   [this query-params http-options]
    "Not yet implemented.")
-  (^:export get-granules [this http-options] [this query-params http-options]
-   "Not yet implemented.")
-  (^:export get-humanizers [this] [this http-options]
+  (^:export get-humanizers
+   [this]
+   [this http-options]
    "Not yet implemented.")
   (^:export get-tag
+   [this tag-id]
    [this tag-id http-options]
    [this tag-id query-params http-options]
    "Not yet implemented.")
-  (^:export get-tags [this http-options] [this query-params http-options]
-   "Not yet implemented.")
-  (^:export get-tiles [this http-options] [this query-params http-options]
-   "Not yet implemented.")
-  (^:export get-variables
+  (^:export get-tags
+   [this]
    [this http-options]
    [this query-params http-options]
-   "Not yet implemented."))
+   "Not yet implemented.")
+  (^:export get-tiles
+   [this]
+   [this http-options]
+   [this query-params http-options]
+   "Not yet implemented.")
+  (^:export get-variables
+   [this]
+   [this http-options]
+   [this query-params http-options]
+   "Get variables."))

@@ -66,36 +66,48 @@
     ([this query-params http-options]
      (search/get-collections this query-params http-options)))
   (get-concept
+    ([this concept-id]
+     (get-concept this concept-id {}))
     ([this concept-id http-options]
      (search/get-concept this concept-id http-options))
     ([this concept-id revision-id http-options]
      (search/get-concept this concept-id revision-id http-options)))
   (get-granules
+    ([this]
+     (get-granules this {}))
     ([this http-options]
      (get-granules this {} http-options))
     ([this query-params http-options]
      (search/get-granules this query-params http-options)))
   (get-humanizers
     ([this]
-     (get-granules this {}))
+     (get-humanizers this {}))
     ([this http-options]
-     (search/get-granules this http-options)))
+     (search/get-humanizers this http-options)))
   (get-tag
+    ([this tag-id]
+     (get-tag this tag-id {}))
     ([this tag-id http-options]
      (get-tag this tag-id {} http-options))
     ([this tag-id query-params http-options]
      (search/get-concept this tag-id query-params http-options)))
   (get-tags
+    ([this]
+     (get-tags this {}))
     ([this http-options]
      (get-tags this {} http-options))
     ([this query-params http-options]
      (search/get-tags this query-params http-options)))
   (get-tiles
+    ([this]
+     (get-tiles this {}))
     ([this http-options]
      (get-tiles this {} http-options))
     ([this query-params http-options]
      (search/get-tiles this query-params http-options)))
   (get-variables
+    ([this]
+     (get-variables this {}))
     ([this http-options]
      (get-variables this {} http-options))
     ([this query-params http-options]
