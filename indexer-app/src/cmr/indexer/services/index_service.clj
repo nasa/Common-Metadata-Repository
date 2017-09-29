@@ -579,9 +579,7 @@
 (defn update-indexes
   "Updates the index mappings and settings."
   [context params]
-  (cache/reset-caches context)
-  (es/update-indexes context params)
-  (cache/reset-caches context))
+  (es/update-indexes context params))
 
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
