@@ -35,10 +35,7 @@
 (defn- create-service-associations-indices
   []
   (h/sql "CREATE INDEX s_assoc_crdi ON CMR_SERVICE_ASSOCIATIONS (concept_id, revision_id, deleted)")
-  (h/sql "CREATE INDEX s_assoc_acari ON CMR_SERVICE_ASSOCIATIONS (associated_concept_id, associated_revision_id)")
-  (h/sql "CREATE INDEX s_assoc_vnri ON CMR_SERVICE_ASSOCIATIONS (service_name, revision_id)")
-  (h/sql "CREATE INDEX s_assoc_vncid ON CMR_SERVICE_ASSOCIATIONS (service_name, associated_concept_id)")
-  (h/sql "CREATE INDEX s_assoc_vncrid ON CMR_SERVICE_ASSOCIATIONS (service_name, associated_concept_id, associated_revision_id)"))
+  (h/sql "CREATE INDEX s_assoc_acari ON CMR_SERVICE_ASSOCIATIONS (associated_concept_id, associated_revision_id)"))
 
 (defn- create-service-associations-sequence
   []
