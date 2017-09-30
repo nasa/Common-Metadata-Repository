@@ -260,6 +260,7 @@
       (let [collection-response (ingest/bulk-update-task-status "PROV1" task-id)
             collection-status (first (:collection-statuses collection-response))]
         (is (= "COMPLETE" (:task-status collection-response)))
+        (not (= nil (:created-at collection-response)))
         (is (= "FAILED" (:status collection-status)))
         (is (= "object has missing required properties ([\"Platforms\"])" (:status-message collection-status))))
 

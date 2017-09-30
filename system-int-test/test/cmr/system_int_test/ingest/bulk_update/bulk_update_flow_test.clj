@@ -65,7 +65,7 @@
                           :status-message "All collection updates completed successfully.",
                           :status "COMPLETE",
                           :request-json-body json-body}])
-                   (set (:tasks response)))))
+                   (set (map #(dissoc % :created-at) (:tasks response))))))
           "JSON" :json
           "XML" :xml))
 
@@ -86,7 +86,7 @@
                                          {:status-message nil,
                                           :status "COMPLETE",
                                           :concept-id "C1200000002-PROV1"}]}
-                  response)))
+                  (dissoc response :created-at))))
          "JSON" :json
          "XML" :xml)))))
 
@@ -101,7 +101,8 @@
         json-body (json/generate-string bulk-update-body)
         {:keys [task-id]} (ingest/bulk-update-collections "PROV1" bulk-update-body)
         _ (qb-side-api/wait-for-terminal-states)
-        status-response (ingest/bulk-update-task-status "PROV1" task-id)]
+        status-response (ingest/bulk-update-task-status "PROV1" task-id)
+        status-response (dissoc status-response :created-at)]
     (is (= {:status-message "Task completed with 2 collection update failures out of 2",
             :status 200,
             :request-json-body json-body
