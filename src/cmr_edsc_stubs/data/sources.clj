@@ -41,3 +41,9 @@
 (defn get-ges-disc-airx3std-ch4-variables
   []
   (util/get-files "data/variables/GES_DISC/AIRX3STD/CH4"))
+
+(defn get-ges-disc-airx3std-opendap-service
+  ([]
+    (get-ges-disc-airx3std-opendap-service [:json :edn]))
+  ([as-data]
+    (util/get-file "data/services/GES_DISC/AIRX3STD/OPeNDAP.json" as-data)))

@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.java.jdbc :as jdbc]
+   [cmr-edsc-stubs.data.service :as service]
    [cmr-edsc-stubs.data.sources :as data-sources]
    [cmr-edsc-stubs.util :as util]
    [cmr.client.ingest :as ingest]
@@ -14,6 +15,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Raw DB / JDBC Operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; These functions all require a running component-system. The intent is
+;;; for them to be run in the dev-system REPL.
 
 (defn get-db
   [system]
@@ -29,9 +32,22 @@
   (jdbc/with-db-connection [db-conn (get-db system)]
     (jdbc/insert! db-conn table data)))
 
+(defn ingest-ges-disc-airx3std-opendap-service
+  ([system]
+    (ingest-ges-disc-airx3std-opendap-service system "S1000000001-GES_DISC"))
+  ([system concept-id]
+    (let [opendap (service/create
+                   "GES_DISC"
+                   concept-id
+                   data-sources/get-ges-disc-airx3std-opendap-service)]
+      (insert system :cmr-services opendap))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Metadata DB Operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; The CMR metadata-db is only accessibly via the localhost, so the intent
+;;; with these functions is that they be used against a local instance of
+;;; the CMR or be run directly on the systems where they are deployed.
 
 (defn create-provider
   ([provider-data]
@@ -53,6 +69,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   HTTP Service Operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Since these functions use the publicly accessible API endpoints for the
+;;; published CMR services, they may be run from anywhere.
 
 (defn ingest-ges-disc-airx3std-collection
   ([]

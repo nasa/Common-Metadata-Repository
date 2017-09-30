@@ -11,6 +11,7 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [
     [cheshire "5.8.0"]
+    [clj-time "0.14.0"]
     [gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/java.jdbc "0.7.1"]]

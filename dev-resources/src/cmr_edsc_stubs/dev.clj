@@ -5,6 +5,7 @@
    [clojure.tools.namespace.repl :as repl]
    [cmr-edsc-stubs.core :as stubs]
    [cmr-edsc-stubs.data.core :as data]
+   [cmr-edsc-stubs.data.service :as service]
    [cmr-edsc-stubs.data.sources :as data-sources]
    [cmr-edsc-stubs.util :as util]
    [cmr.client.ingest :as ingest]
