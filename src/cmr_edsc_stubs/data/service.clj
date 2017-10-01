@@ -1,5 +1,6 @@
 (ns cmr-edsc-stubs.data.service
-  (:require [clj-time.local :as time]))
+  (:require [clj-time.coerce :as tc]
+            [clj-time.local :as time]))
 
 (defn create
   ([provider-id concept-id source-fn]
@@ -10,7 +11,7 @@
     (create provider-id concept-id service-name metadata
                     (str (java.util.UUID/randomUUID))))
   ([provider-id concept-id service-name metadata native-id]
-    (let [now (time/local-now)]
+    (let [now (tc/to-sql-time (time/local-now))]
       {;:id
        :concept-id concept-id
        :native-id native-id
@@ -19,7 +20,7 @@
        :revision-id 1
        :revision-date now
        :created-at now
-       :deleted false
+       :deleted 0
        :user-id "cmr-stubbed-data"
        :service-name service-name
        ;:transaction-id
