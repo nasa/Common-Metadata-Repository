@@ -62,6 +62,17 @@ Associate above-ingested sample collection and sample variables:
   (23 more)
 ```
 
+Insert a service, using the metadata-db connection in a running system:
+
+```clj
+(reset :db :external)
+(require '[cmr-edsc-stubs.data.core :as data])
+(data/ingest-ges-disc-airx3std-opendap-service system)
+```
+```clj
+```
+
+
 ## License
 
 Copyright © 2017 United States Government as represented by the Administrator of the National Aeronautics and Space Administration.
