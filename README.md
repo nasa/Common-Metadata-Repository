@@ -14,7 +14,7 @@ $ lein repl
 Create provider (via local metadata-db service):
 
 ```clj
-(data/create-ges-disc-provider)
+(stubs/create-ges-disc-provider)
 ```
 ```clj
 {:status 201, :body nil}
@@ -23,7 +23,7 @@ Create provider (via local metadata-db service):
 Ingest sample collection (via local ingest service):
 
 ```clj
-(data/ingest-ges-disc-airx3std-collection)
+(stubs/ingest-ges-disc-airx3std-collection)
 ```
 ```
 {:concept-id "C1200000020-GES_DISC", :revision-id 1, :warnings nil}
@@ -33,7 +33,7 @@ Ingest sample methane variables (via local ingest service) for above-ingested
 sample collection:
 
 ```clj
-(data/ingest-ges-disc-airx3std-variables)
+(stubs/ingest-ges-disc-airx3std-variables)
 ```
 ```
 Loading /Users/dmcgregg/lab/NASA/CMR/cmr-edsc-stubs/resources/data/variables/GES_DISC/AIRX3STD/CH4/CH4_VMR_A.json ...
@@ -52,7 +52,7 @@ Loading /Users/dmcgregg/lab/NASA/CMR/cmr-edsc-stubs/resources/data/variables/GES
 Associate above-ingested sample collection and sample variables:
 
 ```clj
-(data/associate-ch4-variables-with-ges-disc-airx3std-collection)
+(stubs/associate-ch4-variables-with-ges-disc-airx3std-collection)
 ```
 ```clj
 ([{:variable_association
@@ -62,12 +62,13 @@ Associate above-ingested sample collection and sample variables:
   (23 more)
 ```
 
-Insert a service, using the metadata-db connection in a running system:
+Insert a service, using the metadata-db connection in a running CMR
+dev-system REPL:
 
 ```clj
 (reset :db :external)
-(require '[cmr-edsc-stubs.data.core :as data])
-(data/ingest-ges-disc-airx3std-opendap-service system)
+(require '[cmr-edsc-stubs.core :as stubs])
+(stubs/ingest-ges-disc-airx3std-opendap-service system)
 ```
 ```clj
 ```
