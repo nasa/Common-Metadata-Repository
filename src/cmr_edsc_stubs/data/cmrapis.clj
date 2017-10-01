@@ -1,89 +1,14 @@
-(ns cmr-edsc-stubs.data.core
+(ns cmr-edsc-stubs.data.cmrapis
+  "HTTP Service Operations
+
+  Since these functions use the publicly accessible API endpoints for the
+  published CMR services, they may be run from anywhere."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clojure.java.jdbc :as jdbc]
-   [cmr-edsc-stubs.data.service :as service]
    [cmr-edsc-stubs.data.sources :as data-sources]
    [cmr-edsc-stubs.util :as util]
    [cmr.client.ingest :as ingest]
-   [cmr.client.search :as search]
-   [cmr.client.common.util :as client-util])
-  (:import
-   (clojure.lang Keyword)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Raw DB / JDBC Operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; These functions all require a running component-system. The intent is
-;;; for them to be run in the dev-system REPL.
-
-(defn get-db
-  [system]
-  (get-in system [:apps :metadata-db :db :spec]))
-
-(defn query
-  [system sql]
-  (jdbc/with-db-connection [db-conn (get-db system)]
-    (jdbc/query db-conn [sql])))
-
-(defn insert
-  [system ^Keyword table data]
-  (jdbc/with-db-connection [db-conn (get-db system)]
-    (jdbc/insert! db-conn table data)))
-
-(defn prepared
-  [system sql values]
-  (jdbc/with-db-connection [db-conn (get-db system)]
-    (jdbc/db-do-prepared db-conn sql values)))
-
-(defn ingest-ges-disc-airx3std-opendap-service
-  ([system]
-    (ingest-ges-disc-airx3std-opendap-service system 1 "S1000000001-GES_DISC"))
-  ([system internal-id concept-id]
-    (let [edn-data (data-sources/get-ges-disc-airx3std-opendap-service)
-          metadata (data-sources/get-ges-disc-airx3std-opendap-service :data)
-          sql (str "INSERT INTO CMR_SERVICES "
-                   "(transaction_id, created_at, revision_date, id, native_id,"
-                   " provider_id, user_id, service_name, deleted,"
-                   " format, revision_id, concept_id, metadata) "
-                   "VALUES "
-                   "(GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL,CURRENT_TIMESTAMP,"
-                   "CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?)")
-          values [internal-id (str (java.util.UUID/randomUUID)) "GES_DISC"
-                  "cmr-edsc-stubber" (:name edn-data) 0 "application/json" 1
-                  concept-id (.getBytes metadata)]]
-      (prepared system sql values))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   Metadata DB Operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; The CMR metadata-db is only accessibly via the localhost, so the intent
-;;; with these functions is that they be used against a local instance of
-;;; the CMR or be run directly on the systems where they are deployed.
-
-(defn create-provider
-  ([provider-data]
-    (create-provider provider-data :local :metadata-db))
-  ([provider-data environment-type service-key]
-    (let [endpoint (client-util/get-endpoint environment-type service-key)]
-      (-> {:body provider-data
-           :content-type :json
-           :throw-exceptions false
-           :headers util/local-token-header}
-          ((partial client/post (format "%s/providers" endpoint)))
-          (select-keys [:status :body])
-          (update-in [:body] #(json/parse-string % true))))))
-
-(defn create-ges-disc-provider
-  []
-  (create-provider (data-sources/get-ges-disc-provider)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;   HTTP Service Operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Since these functions use the publicly accessible API endpoints for the
-;;; published CMR services, they may be run from anywhere.
+   [cmr.client.search :as search]))
 
 (defn ingest-ges-disc-airx3std-collection
   ([]

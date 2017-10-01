@@ -1,34 +1,17 @@
 (ns cmr-edsc-stubs.core
   (:require
-   [clojure.pprint :refer [pprint]]
-   [cmr-edsc-stubs.data.core :as data]
-   [cmr-edsc-stubs.data.sources :as data-sources]
-   [cmr-edsc-stubs.util :as util]))
+   [cmr-edsc-stubs.data.cmrapis]
+   [cmr-edsc-stubs.data.jdbc]
+   [cmr-edsc-stubs.data.metadatadb]
+   [potemkin :refer [import-vars]]))
 
-(defn load-service
-  [filename]
-  (let [metadata (slurp filename)]
-    (pprint metadata)
-    ;(data/insert system :cmr_services {})
-    ))
+(import-vars
+  [cmr-edsc-stubs.data.jdbc
+    ingest-ges-disc-airx3std-opendap-service]
+  [cmr-edsc-stubs.data.metadatadb
+    create-ges-disc-provider]
+  [cmr-edsc-stubs.data.cmrapis
+    ingest-ges-disc-airx3std-collection
+    ingest-ges-disc-airx3std-variables
+    associate-ch4-variables-with-ges-disc-airx3std-collection])
 
-(defn load-variable
-  [filename]
-  (let [metadata (slurp filename)]
-    (pprint metadata)
-    ;(data/insert system :cmr_variables {})
-    ))
-
-(defn load-services
-  []
-  (->> data-sources/services-dir
-       (util/get-files)
-       (map load-service)))
-
-(defn load-variables
-  []
-  (->> data-sources/variables-dir
-       (util/get-files)
-       (map load-variable)))
-
-; (data/query system "SELECT * FROM CMR_VARIABLES")

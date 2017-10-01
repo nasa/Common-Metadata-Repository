@@ -1,7 +1,8 @@
 (ns cmr-edsc-stubs.data.service
-  (:require [clj-time.coerce :as tc]
-            [clj-time.local :as time]
-            [cmr-edsc-stubs.util :as util]))
+  (:require
+   [clj-time.coerce :as tc]
+   [clj-time.local :as time]
+   [cmr-edsc-stubs.util :as util]))
 
 (defn create
   ([internal-id provider-id concept-id source-fn]
