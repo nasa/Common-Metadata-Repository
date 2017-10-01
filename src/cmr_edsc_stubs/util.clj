@@ -51,6 +51,18 @@
              name)
        seq-strings))
 
+(defn kebab->snake
+  [string-or-seq-data]
+  (if (seq? string-or-seq-data)
+    (map kebab->snake string-or-seq-data)
+    (string/replace string-or-seq-data "-" "_")))
+
+(defn snake->kebab
+  [string-or-seq-data]
+  (if (seq? string-or-seq-data)
+    (map kebab->snake string-or-seq-data)
+    (string/replace string-or-seq-data "_" "-")))
+
 (defn camel->kebab
   [string-or-seq-data]
   (let [regex #"([^-A-Z])([A-Z])"
@@ -69,10 +81,11 @@
 
 (defn lookup-converter
   [mode]
-  (println "Mode:" mode)
   (case mode
     [:camel :kebab] camel->kebab
     [:camel :snake] camel->snake
+    [:kebab :snake] kebab->snake
+    [:snake :kebab] snake->kebab
     identity))
 
 (defn get-all-keys

@@ -32,15 +32,28 @@
   (jdbc/with-db-connection [db-conn (get-db system)]
     (jdbc/insert! db-conn table data)))
 
+(defn prepared
+  [system sql values]
+  (jdbc/with-db-connection [db-conn (get-db system)]
+    (jdbc/db-do-prepared db-conn sql values)))
+
 (defn ingest-ges-disc-airx3std-opendap-service
   ([system]
-    (ingest-ges-disc-airx3std-opendap-service system "S1000000001-GES_DISC"))
-  ([system concept-id]
-    (let [opendap (service/create
-                   "GES_DISC"
-                   concept-id
-                   data-sources/get-ges-disc-airx3std-opendap-service)]
-      (insert system :cmr-services opendap))))
+    (ingest-ges-disc-airx3std-opendap-service system 1 "S1000000001-GES_DISC"))
+  ([system internal-id concept-id]
+    (let [edn-data (data-sources/get-ges-disc-airx3std-opendap-service)
+          metadata (data-sources/get-ges-disc-airx3std-opendap-service :data)
+          sql (str "INSERT INTO CMR_SERVICES "
+                   "(transaction_id, created_at, revision_date, id, native_id,"
+                   " provider_id, user_id, service_name, deleted,"
+                   " format, revision_id, concept_id, metadata) "
+                   "VALUES "
+                   "(GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL,CURRENT_TIMESTAMP,"
+                   "CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?)")
+          values [internal-id (str (java.util.UUID/randomUUID)) "GES_DISC"
+                  "cmr-edsc-stubber" (:name edn-data) 0 "application/json" 1
+                  concept-id (.getBytes metadata)]]
+      (prepared system sql values))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Metadata DB Operations   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
