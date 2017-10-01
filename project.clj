@@ -25,7 +25,7 @@
         [lein-figwheel "0.5.13" :exclusions [org.clojure/clojure]]
         [lein-shell "0.5.0"]]
       :resource-paths ["dev-resources"]
-      :source-paths ["dev-resources/src"]
+      :source-paths ["dev-resources/src" "test/clj"]
       :repl-options {
         :init-ns cmr.client.dev}}
     :test {
