@@ -3,6 +3,7 @@ lein: 2.7.1
 script:
   - lein check
   - lein uberjar
+  - lein test :unit
 jdk:
   - oraclejdk8
   - oraclejdk7

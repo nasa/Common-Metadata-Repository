@@ -3,5 +3,5 @@
    [clojure.test :refer :all]
    [cmr.client.common.const :as const]))
 
-(deftest default-environment-type
+(deftest ^:unit default-environment-type
   (is (= :prod const/default-environment-type)))

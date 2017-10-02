@@ -34,6 +34,11 @@
         ]
       :source-paths ["test/clj"]
       :resource-paths ["test/data"]
+      :test-selectors {
+        :default :unit
+        :unit :unit
+        :system :system
+        :integration :integration}
     }
     :lint {
       :source-paths ^:replace ["src"]
