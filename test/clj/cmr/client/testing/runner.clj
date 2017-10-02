@@ -1,19 +1,37 @@
 (ns cmr.client.testing.runner
-  #_(:require
+  (:require
+   [cmr.client.tests]
    [ltest.core :as ltest])
-  #_(:gen-class))
+  (:gen-class))
 
-#_(defn run-tests
+(def tests-regex #"cmr\.client\.tests\..*")
+
+(defn run-tests
   ([]
-   (ltest/run-all-tests #"cmr.client.tests.*"))
+   (ltest/run-all-tests tests-regex))
   ([arg]
    (cond
     (coll? arg) (ltest/run-tests arg)
     (var? arg) (ltest/run-test arg))))
 
-#_(defn -main
+(defn print-header
+  []
+  (println)
+  (println (apply str (repeat 80 "=")))
+  (println "CMR Client Test Runner")
+  (println (apply str (repeat 80 "=")))
+  (println))
+
+(defn -main
+  "This can be run from `lein` in the following ways:
+
+  * `lein run-tests unit`"
   [& args]
-  (println "main args:" args)
-  (if (nil? args)
-    (run-tests)
-    (run-tests args)))
+  (print-header)
+  (case (keyword (first args))
+    :unit (ltest/run-unit-tests tests-regex)
+    :integration (ltest/run-integration-tests tests-regex)
+    :system (ltest/run-system-tests tests-regex)
+    (if (nil? args)
+      (run-tests)
+      (run-tests args))))
