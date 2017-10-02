@@ -13,7 +13,8 @@
     [org.clojure/data.json "0.2.6"]
     [org.clojure/data.xml "0.2.0-alpha2"]
     [potemkin "0.4.4"]]
-  :source-paths ["src/clj" "src/cljc"]
+  :source-paths ["src/clj" "src/cljc" "test/clj"]
+  :resource-paths ["test/data"]
   :profiles {
     :uberjar {
       :aot :all}
@@ -30,16 +31,12 @@
         :init-ns cmr.client.dev}}
     :test {
       :dependencies [
-        ;[clojusc/ltest "0.2.0-SNAPSHOT"]
-        ]
-      :source-paths ["test/clj"]
-      :resource-paths ["test/data"]
+        [clojusc/ltest "0.2.0-SNAPSHOT"]]
       :test-selectors {
         :default :unit
         :unit :unit
         :system :system
-        :integration :integration}
-    }
+        :integration :integration}}
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
