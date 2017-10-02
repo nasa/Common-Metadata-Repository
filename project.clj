@@ -33,6 +33,7 @@
         ;[clojusc/ltest "0.2.0-SNAPSHOT"]
         ]
       :source-paths ["test/clj"]
+      :resource-paths ["test/data"]
     }
     :lint {
       :source-paths ^:replace ["src"]
