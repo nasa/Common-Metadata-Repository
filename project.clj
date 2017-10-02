@@ -4,39 +4,44 @@
   :license {
     :name "Apache License, Version 2.0"
     :url "https://opensource.org/licenses/Apache-2.0"}
+  :exclusions [org.clojure/clojure]
   :dependencies [
     [clj-http "3.7.0"]
     [cljs-http "0.1.43"]
+    [clojusc/ltest "0.2.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/clojurescript "1.9.908"]
     [org.clojure/core.async "0.3.443"]
     [org.clojure/data.json "0.2.6"]
     [org.clojure/data.xml "0.2.0-alpha2"]
     [potemkin "0.4.4"]]
-  :source-paths ["src/clj" "src/cljc" "test/clj"]
-  :resource-paths ["test/data"]
+  :source-paths ["src/clj" "src/cljc"]
   :profiles {
     :uberjar {
       :aot :all}
     :dev {
       :dependencies [
+        [leiningen-core "2.7.1"]
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
-        [lein-cljsbuild "1.1.7" :exclusions [org.clojure/clojure]]
-        [lein-figwheel "0.5.13" :exclusions [org.clojure/clojure]]
+        [lein-cljsbuild "1.1.7"]
+        [lein-figwheel "0.5.13"]
         [lein-shell "0.5.0"]]
-      :resource-paths ["dev-resources"]
-      :source-paths ["dev-resources/src" "test/clj"]
+      :resource-paths ["dev-resources" "test/data" "test/clj"]
+      :source-paths ["src/clj" "src/cljc" "test/clj" "dev-resources/src"]
+      :test-paths ["test/clj"]
       :repl-options {
         :init-ns cmr.client.dev}}
     :test {
-      :dependencies [
-        [clojusc/ltest "0.2.0-SNAPSHOT"]]
+      :resource-paths ["test/data"]
+      :source-paths ["test/clj"]
+      :test-paths ["test/clj"]
       :test-selectors {
         :default :unit
         :unit :unit
         :system :system
-        :integration :integration}}
+        :integration :integration}
+      }
     :lint {
       :source-paths ^:replace ["src"]
       :test-paths ^:replace []
@@ -86,7 +91,7 @@
          :output-to "resources/public/js/cmr_client.js"}}]}
   :aliases {
     "repl"
-      ["with-profile" "+dev,+test" "repl"]
+      ["with-profile" "+dev" "repl"]
     "build-cljs-dev"
       ^{:doc "Build just the dev version of the ClojureScript code"}
       ["cljsbuild" "once" "cmr-dev"]
