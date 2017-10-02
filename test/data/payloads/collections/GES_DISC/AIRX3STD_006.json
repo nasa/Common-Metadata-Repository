@@ -1,0 +1,588 @@
+{
+  "DataLanguage": "eng",
+  "AncillaryKeywords": [
+    "ATMOSPHERE",
+    "CALIBRATED",
+    "GEOLOCATED",
+    "TEMPERATURE",
+    "CLOUD",
+    "EOSDIS",
+    "Total Ozone",
+    "Global Gridded",
+    "Total Integrated Column Water Vapor Burden",
+    "Total Integrated Column Cloud Liquid Water",
+    "Total Integrated Column Carbon Monoxide",
+    "Spectral IR Surface Emissivities",
+    "Spectral Microwave Surface Emissivities",
+    "Total Integrated Column Ozone Burden",
+    "Outgoing Longwave Radiation Flux",
+    "Clear Sky Outgoing Longwave Radiation Flux",
+    "Relative Humidity Profile",
+    "Cloud Layer Pressure At Coarse Cloud Resolution",
+    "Cloud Layer Pressure At Fine Cloud Resolution",
+    "Water Vapor Mass Mixing Ratio Profile",
+    "Tropopause Height",
+    "Tropopause Temperature",
+    "Effective Methane Volume Mixing Ratio Profile",
+    "Effective Carbon Monoxide Volume Mixing Ratio Profile",
+    "Total Integrated Cloud Liquid Water"
+  ],
+  "CollectionCitations": [
+    {
+      "Creator": "AIRS Science Team/Joao Texeira",
+      "DataPresentationForm": "Digital Science Data",
+      "OnlineResource": {
+        "Linkage": "https://disc.gsfc.nasa.gov/datacollection/AIRX3STD_006.html",
+        "Name": "Dataset Citation",
+        "Description": "Dataset Citation"
+      },
+      "Publisher": "Goddard Earth Sciences Data and Information Services Center (GES DISC)",
+      "Title": "AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006",
+      "SeriesName": "AIRX3STD",
+      "ReleaseDate": "2013-03-12T00:00:00.000Z",
+      "Version": "006",
+      "ReleasePlace": "Greenbelt, MD, USA"
+    }
+  ],
+  "AdditionalAttributes": [
+    {
+      "Group": "gov.nasa.gsfc.disc",
+      "Value": "1 day",
+      "Name": "Data Granularity",
+      "Description": "The time coverage of individual data granules.",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "2b9d4ac2-3143-4a02-aacf-be728da1b858",
+      "Name": "metadata.uuid",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "2015-12-22 13:28:23",
+      "Name": "metadata.extraction_date",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "8.1",
+      "Name": "metadata.keyword_version",
+      "Description": "Not provided",
+      "DataType": "FLOAT"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "2015-12-28T18:06:58ZVersion:-3.0Target:10.2",
+      "Name": "DIF9.0-to-DIF10-Converter",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "EARTH SCIENCE",
+      "Name": "Discipline",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "ECHOUSA/NASA",
+      "Name": "IDN_Node.Short_Name",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "2efb470f-61f8-4046-b2ee-ebed27e2f3109ae20472-ba4c-4b01-8d97-857b73fa3c95",
+      "Name": "IDN_Node.UUID",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "10.5067/AQUA/AIRS/DATA301",
+      "Name": "Original.Dataset_Citation.DOI",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "VERSION 9.8.4",
+      "Name": "Original.Metadata_Version",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "English",
+      "Name": "Original.Dataset_Language",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    },
+    {
+      "Group": "gov.nasa.gsfc.gcmd",
+      "Value": "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd",
+      "Name": "Original.xsi:schemaLocation",
+      "Description": "Not provided",
+      "DataType": "STRING"
+    }
+  ],
+  "SpatialExtent": {
+    "HorizontalSpatialDomain": {
+      "Geometry": {
+        "CoordinateSystem": "CARTESIAN",
+        "BoundingRectangles": [
+          {
+            "WestBoundingCoordinate": -180,
+            "NorthBoundingCoordinate": 90,
+            "EastBoundingCoordinate": 180,
+            "SouthBoundingCoordinate": -90
+          }
+        ]
+      }
+    },
+    "GranuleSpatialRepresentation": "CARTESIAN"
+  },
+  "Distributions": [
+    {
+      "DistributionMedia": "Online Archive",
+      "Sizes": [
+        {
+          "Size": 376.1,
+          "Unit": "MB"
+        }
+      ],
+      "DistributionFormat": "HDF-EOS",
+      "Fees": "None"
+    }
+  ],
+  "CollectionProgress": "IN WORK",
+  "ScienceKeywords": [
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ALTITUDE",
+      "VariableLevel1": "TROPOPAUSE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC PRESSURE",
+      "VariableLevel1": "SURFACE PRESSURE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC TEMPERATURE",
+      "VariableLevel1": "SURFACE TEMPERATURE",
+      "VariableLevel2": "AIR TEMPERATURE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC TEMPERATURE",
+      "VariableLevel1": "UPPER AIR TEMPERATURE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC WATER VAPOR",
+      "VariableLevel1": "PRECIPITABLE WATER"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC WATER VAPOR",
+      "VariableLevel1": "WATER VAPOR"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "CLOUDS",
+      "VariableLevel1": "CLOUD PROPERTIES",
+      "VariableLevel2": "CLOUD HEIGHT"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "CLOUDS",
+      "VariableLevel1": "CLOUD PROPERTIES",
+      "VariableLevel2": "CLOUD TOP PRESSURE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "CLOUDS",
+      "VariableLevel1": "CLOUD PROPERTIES",
+      "VariableLevel2": "CLOUD TOP TEMPERATURE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "CLOUDS",
+      "VariableLevel1": "CLOUD PROPERTIES",
+      "VariableLevel2": "CLOUD VERTICAL DISTRIBUTION"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "LAND SURFACE",
+      "Term": "SURFACE RADIATIVE PROPERTIES",
+      "VariableLevel1": "EMISSIVITY"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "OCEANS",
+      "Term": "OCEAN TEMPERATURE",
+      "VariableLevel1": "SEA SURFACE TEMPERATURE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "LAND SURFACE",
+      "Term": "SURFACE THERMAL PROPERTIES",
+      "VariableLevel1": "SKIN TEMPERATURE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "AIR QUALITY",
+      "VariableLevel1": "CARBON MONOXIDE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ALTITUDE",
+      "VariableLevel1": "GEOPOTENTIAL HEIGHT"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC WATER VAPOR",
+      "VariableLevel1": "HUMIDITY"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC WATER VAPOR",
+      "VariableLevel1": "WATER VAPOR PROFILES"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "CLOUDS",
+      "VariableLevel1": "CLOUD MICROPHYSICS",
+      "VariableLevel2": "CLOUD LIQUID WATER/ICE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC RADIATION",
+      "VariableLevel1": "OUTGOING LONGWAVE RADIATION"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC CHEMISTRY",
+      "VariableLevel1": "CARBON AND HYDROCARBON COMPOUNDS",
+      "VariableLevel2": "METHANE"
+    },
+    {
+      "Category": "EARTH SCIENCE",
+      "Topic": "ATMOSPHERE",
+      "Term": "ATMOSPHERIC CHEMISTRY",
+      "VariableLevel1": "OXYGEN COMPOUNDS",
+      "VariableLevel2": "OZONE"
+    }
+  ],
+  "TemporalExtents": [
+    {
+      "EndsAtPresentFlag": false,
+      "RangeDateTimes": [
+        {
+          "BeginningDateTime": "2002-08-30T00:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "ProcessingLevel": {
+    "Id": "3"
+  },
+  "DOI": {
+    "DOI": "10.5067/AQUA/AIRS/DATA301"
+  },
+  "ShortName": "AIRX3STD",
+  "EntryTitle": "AIRS/Aqua L3 Daily Standard Physical Retrieval (AIRS+AMSU) 1 degree x 1 degree V006 (AIRX3STD) at GES DISC",
+  "ISOTopicCategories": [
+    "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE",
+    "IMAGERY/BASE MAPS/EARTH COVER",
+    "ENVIRONMENT",
+    "GEOSCIENTIFIC INFORMATION"
+  ],
+  "AccessConstraints": {
+    "Description": "None"
+  },
+  "RelatedUrls": [
+    {
+      "Description": "Sample data of the \"AIRS/Aqua Level 3 daily standard physical retrieval product (Without HSB)\".",
+      "URLContentType": "VisualizationURL",
+      "Type": "GET RELATED VISUALIZATION",
+      "URL": "https://disc.gsfc.nasa.gov/api/images/5915dd47e01b045fab4ec0d0/file"
+    },
+    {
+      "Description": "Access the data via HTTP.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET DATA",
+      "Subtype": "ON-LINE ARCHIVE",
+      "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level3/AIRX3STD.006/"
+    },
+    {
+      "Description": "Mirador is a data search interface that allows searching, browsing, and retrieving of Earth science data archived at NASA GES DISC.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET DATA",
+      "Subtype": "MIRADOR",
+      "URL": "http://mirador.gsfc.nasa.gov/cgi-bin/mirador/homepageAlt.pl?keyword=AIRX3STD"
+    },
+    {
+      "Description": "Access the data via the OPeNDAP protocol.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET SERVICE",
+      "Subtype": "OPENDAP DATA",
+      "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/contents.html"
+    },
+    {
+      "Description": "Use the Simple Subset Wizard (SSW) to submit subset requests for data sets across multiple data centers from a single unified interface.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET SERVICE",
+      "Subtype": "SSW",
+      "URL": "https://disc.gsfc.nasa.gov/SSW/#keywords=AIRX3STD%20006"
+    },
+    {
+      "Description": "Use the Earthdata Search to find and retrieve data sets across multiple data centers.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET DATA",
+      "Subtype": "EARTHDATA SEARCH",
+      "URL": "https://search.earthdata.nasa.gov/search?q=AIRX3STD+006"
+    },
+    {
+      "Description": "NASA GES DISC AIRS Gridded L3 data Web Map Service.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET SERVICE",
+      "Subtype": "WEB MAP SERVICE (WMS)",
+      "URL": "https://disc1.gsfc.nasa.gov/daac-bin/wms_airs?service=WMS&version=1.1.1&request=GetCapabilities"
+    },
+    {
+      "Description": "Get map example for NASA GES DISC AIRS Gridded L3 data Web Map Service.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET SERVICE",
+      "Subtype": "WEB MAP SERVICE (WMS)",
+      "URL": "https://disc1.gsfc.nasa.gov/daac-bin/wms_airs?service=WMS&VERSION=1.1.1&REQUEST=GetMap&SRS=EPSG:4326&WIDTH=720&HEIGHT=360&LAYERS=AIRX3STD_TOTH2OVAP_A&TRANSPARENT=TRUE&FORMAT=image/png&bbox=-180,-90,180,90"
+    },
+    {
+      "Description": "NASA GES DISC AIRS Gridded L3 data Web Coverage Service.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET SERVICE",
+      "Subtype": "WEB COVERAGE SERVICE (WCS)",
+      "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsAIRSL3?service=WCS&version=1.0.0&request=GetCapabilities"
+    },
+    {
+      "Description": "Get Coverage data example for NASA GES DISC AIRS Gridded L3 data Web Coverage Service.",
+      "URLContentType": "DistributionURL",
+      "Type": "GET SERVICE",
+      "Subtype": "WEB COVERAGE SERVICE (WCS)",
+      "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/daac-bin/wcsAIRSL3?service=WCS&version=1.0.0&request=GetCoverage&CRS=EPSG:4326&format=netCDF&resx=1.0&resy=1.0&BBOX=-179.5,-89.5,179.5,89.5&Coverage=AIRX3STD:CO_VMR_A&Time=2013-08-11"
+    },
+    {
+      "Description": "AIRS home page at NASA/JPL. General information on the AIRS instrument, algorithms, and other AIRS-related activities can be found.",
+      "URLContentType": "CollectionURL",
+      "Type": "PROJECT HOME PAGE",
+      "URL": "http://airs.jpl.nasa.gov/index.html"
+    },
+    {
+      "Description": "AIRS Documentation Page",
+      "URLContentType": "PublicationURL",
+      "Type": "VIEW RELATED INFORMATION",
+      "URL": "https://disc.gsfc.nasa.gov/information/documents?title=AIRS%20Documentation"
+    },
+    {
+      "Description": "README Document",
+      "URLContentType": "PublicationURL",
+      "Type": "VIEW RELATED INFORMATION",
+      "Subtype": "USER'S GUIDE",
+      "URL": "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/README.AIRS_V6.pdf"
+    },
+    {
+      "Description": "AIRS Version 6 Processing Files Description Document.",
+      "URLContentType": "PublicationURL",
+      "Type": "VIEW RELATED INFORMATION",
+      "Subtype": "GENERAL DOCUMENTATION",
+      "URL": "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_Released_Processing_File_Description.pdf"
+    }
+  ],
+  "DataDates": [
+    {
+      "Date": "1970-01-01T00:00:00.000Z",
+      "Type": "CREATE"
+    },
+    {
+      "Date": "1970-01-01T00:00:00.000Z",
+      "Type": "UPDATE"
+    }
+  ],
+  "Abstract": "The Atmospheric Infrared Sounder (AIRS) is a grating spectrometer (R = 1200) aboard the second Earth Observing System (EOS) polar-orbiting platform, EOS Aqua. In combination with the Advanced Microwave Sounding Unit (AMSU) and the Humidity Sounder for Brazil (HSB), AIRS constitutes an innovative atmospheric sounding group of visible, infrared, and microwave sensors. The AIRS Level 3 Daily Gridded Product contains standard retrieval means, standard deviations and input counts. Each file covers a temporal period of 24 hours for either the descending (equatorial crossing North to South @1:30 AM local time) or ascending (equatorial crossing South to North @1:30 PM local time) orbit. The data starts at the international dateline and progresses westward (as do the subsequent orbits of the satellite) so that neighboring gridded cells of data are no more than a swath of time apart (about 90 minutes). The two parts of a scan line crossing the dateline are included in separate L3 files, according to the date, so that data points in a grid box are always coincident in time. The edge of the AIRS Level 3 gridded cells is at the date line (the 180E/W longitude boundary). When plotted, this produces a map with 0 degrees longitude in the center of the image unless the bins are reordered. This method is preferred because the left (West) side of the image and the right (East) side of the image contain data farthest apart in time. The gridding scheme used by AIRS is the same as used by TOVS Pathfinder to create Level 3 products. The daily Level 3 products have gores between satellite paths where there is no coverage for that day. The geophysical parameters have been averaged and binned into 1 x 1 deg grid cells, from -180.0 to +180.0 deg longitude and from -90.0 to +90.0 deg latitude. For each grid map of 4-byte floating-point mean values there is a corresponding 4-byte floating-point map of standard deviation and a 2-byte integer grid map of counts. The counts map provides the user with the number of points per bin that were included in the mean and can be used to generate custom multi-day maps from the daily gridded products. The thermodynamic parameters are: Skin Temperature (land and sea surface), Air Temperature at the surface, Profiles of Air Temperature and Water Vapor, Tropopause Characteristics, Column Precipitable Water, Cloud Amount/Frequency, Cloud Height, Cloud Top Pressure, Cloud Top Temperature, Reflectance, Emissivity, Surface Pressure, Cloud Vertical Distribution. The trace gases parameters are: Total Amounts and Vertical Profiles of Carbon Monoxide, Methane, and Ozone. The actual names of the variables in the data files should be inferred from the Processing File Description document.",
+  "LocationKeywords": [
+    {
+      "Category": "OCEAN",
+      "Type": "ATLANTIC OCEAN"
+    },
+    {
+      "Category": "OCEAN",
+      "Type": "INDIAN OCEAN"
+    },
+    {
+      "Category": "OCEAN",
+      "Type": "PACIFIC OCEAN"
+    },
+    {
+      "Category": "GEOGRAPHIC REGION",
+      "Type": "GLOBAL"
+    },
+    {
+      "Category": "GEOGRAPHIC REGION",
+      "Type": "GLOBAL LAND"
+    },
+    {
+      "Category": "GEOGRAPHIC REGION",
+      "Type": "GLOBAL OCEAN"
+    }
+  ],
+  "MetadataDates": [
+    {
+      "Date": "2013-02-14T00:00:00.000Z",
+      "Type": "CREATE"
+    },
+    {
+      "Date": "2016-01-28T00:00:00.000Z",
+      "Type": "UPDATE"
+    }
+  ],
+  "VersionDescription": "Not provided",
+  "Version": "006",
+  "Projects": [
+    {
+      "ShortName": "AQUA",
+      "LongName": "Earth Observing System (EOS), AQUA"
+    }
+  ],
+  "ContactPersons": [
+    {
+      "Roles": [
+        "Metadata Author"
+      ],
+      "ContactInformation": {
+        "ContactMechanisms": [
+          {
+            "Type": "Email",
+            "Value": "asghar.e.esfandiari@nasa.gov"
+          },
+          {
+            "Type": "Telephone",
+            "Value": "301-614-5960"
+          },
+          {
+            "Type": "Fax",
+            "Value": "301-614-5268"
+          }
+        ],
+        "Addresses": [
+          {
+            "StreetAddresses": [
+              "Goddard Earth Sciences Data and Information Services Center",
+              "Code 610.2",
+              "NASA Goddard Space Flight Center"
+            ],
+            "City": "Greenbelt",
+            "StateProvince": "MD",
+            "Country": "USA",
+            "PostalCode": "20771"
+          }
+        ]
+      },
+      "FirstName": "ED",
+      "LastName": "ESFANDIARI"
+    }
+  ],
+  "DataCenters": [
+    {
+      "Roles": [
+        "ARCHIVER"
+      ],
+      "ShortName": "NASA/GSFC/SED/ESD/GCDC/GESDISC",
+      "LongName": "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA",
+      "ContactPersons": [
+        {
+          "Roles": [
+            "Data Center Contact"
+          ],
+          "ContactInformation": {
+            "ContactMechanisms": [
+              {
+                "Type": "Email",
+                "Value": "gsfc-help-disc@lists.nasa.gov"
+              },
+              {
+                "Type": "Telephone",
+                "Value": "301-614-5224"
+              },
+              {
+                "Type": "Fax",
+                "Value": "301-614-5268"
+              }
+            ],
+            "Addresses": [
+              {
+                "StreetAddresses": [
+                  "Goddard Earth Sciences Data and Information Services Center",
+                  "Code 610.2",
+                  "NASA Goddard Space Flight Center"
+                ],
+                "City": "Greenbelt",
+                "StateProvince": "MD",
+                "Country": "USA",
+                "PostalCode": "20771"
+              }
+            ]
+          },
+          "LastName": "GES DISC HELP DESK SUPPORT GROUP"
+        }
+      ],
+      "ContactInformation": {
+        "RelatedUrls": [
+          {
+            "URLContentType": "DataCenterURL",
+            "Type": "HOME PAGE",
+            "URL": "https://disc.gsfc.nasa.gov/"
+          }
+        ]
+      }
+    }
+  ],
+  "Platforms": [
+    {
+      "Type": "Earth Observation Satellites",
+      "ShortName": "AQUA",
+      "LongName": "Earth Observing System, AQUA",
+      "Instruments": [
+        {
+          "ShortName": "AIRS",
+          "LongName": "Atmospheric Infrared Sounder"
+        },
+        {
+          "ShortName": "AMSU-A",
+          "LongName": "Advanced Microwave Sounding Unit-A"
+        }
+      ]
+    }
+  ]
+}

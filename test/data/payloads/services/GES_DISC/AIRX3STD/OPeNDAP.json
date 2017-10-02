@@ -1,0 +1,24 @@
+{
+  "Name": "AIRX3STD",
+  "Type": "OPeNDAP",
+  "Version": "1.9",
+  "Description": "AIRS Level-3 retieval product created using AIRS IR, AMSU without HSB.",
+  "OnlineResource": {
+    "Linkage": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf",
+    "Name": "OPeNDAP Service for AIRS Level-3 retieval product: AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf",
+    "Description": "OPeNDAP Service"
+  },
+  "SubsetTypes": [
+    "Spatial",
+    "Variable"
+  ],
+  "SupportedProjections": [
+    "Geographic"
+  ],
+  "SupportedFormats": [
+    "netCDF-3",
+    "netCDF-4",
+    "Binary",
+    "ASCII"
+  ]
+}
