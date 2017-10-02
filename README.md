@@ -1,8 +1,6 @@
 # A Clojure(Script) CMR Client
 
-<!--
 [![Build Status][travis badge]][travis]
-/-->
 [![Dependencies Status][deps-badge]][deps]
 [![Clojure Version][clojure-v]](project.clj)
 [![Clojars Project][clojars-badge]][clojars]
