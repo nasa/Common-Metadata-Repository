@@ -200,7 +200,7 @@
         (let [request-handler (if use-compression?
                                 (create-gzip-handler (.getHandler server) MIN_GZIP_SIZE)
                                 (.getHandler server))
-              request-handler (if true ;use-access-log?
+              request-handler (if use-access-log?
                                 (create-access-log-handler request-handler)
                                 request-handler)]
           (doto server
