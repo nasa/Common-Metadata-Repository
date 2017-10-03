@@ -44,4 +44,5 @@
           values [internal-id (str (java.util.UUID/randomUUID)) "GES_DISC"
                   "cmr-edsc-stubber" (:Name edn-data) 0 "application/json" 1
                   concept-id (.getBytes metadata)]]
-      (prepared system sql values))))
+      (prepared system sql values))
+    {:service-id concept-id}))
