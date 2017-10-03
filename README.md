@@ -55,7 +55,7 @@ The default data format returned is determined by how the CMR typically uses
 the data in question (i.e., what format it expects the data to be in).
 
 For a full list of functions availble for accessing the sample data, refer to
-the [cmr.sample-data.core](blob/master/src/cmr/sample_data/core.clj) source file
+the [cmr.sample-data.core](src/cmr/sample_data/core.clj) source file
 (aliases to `data` in the `cmr.sample-data.dev` REPL namespace).
 
 
