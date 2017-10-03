@@ -5,9 +5,20 @@
 [![Clojure Version][clojure-v]](project.clj)
 [![Clojars Project][clojars-badge]][clojars]
 [![Tag][tag-badge]][tag]
-[![npm Release][npm-badge]][npm]
 
 *Sample Data for the open source NASA Common Metadata Repository (CMR)*
+
+[![][logo]][logo-large]
+
+
+## About the CMR
+
+The [Common Metadata Repository][cmr-project] (CMR) is a high-performance,
+high-quality, continuously evolving metadata system that catalogs all data and
+service metadata records for the [EOSDIS][eosdis] system and will be the
+authoritative management system for all EOSDIS metadata. These metadata records
+are registered, modified, discovered, and accessed through programmatic
+interfaces leveraging standard protocols and APIs.
 
 
 ## Usage
@@ -63,3 +74,24 @@ the [cmr.sample-data.core](src/cmr/sample_data/core.clj) source file
 
 Copyright © 2017 United States Government as represented by the Administrator of the National Aeronautics and Space Administration.
 All Rights Reserved.
+
+
+<!-- Named page links below: /-->
+
+[logo]: resources/images/logo-250px.png
+[logo-large]: resources/images/logo-2400px.png
+[travis]: https://travis-ci.org/oubiwann/cmr-sample-data
+[travis badge]: https://img.shields.io/travis/oubiwann/cmr-sample-data.svg
+[deps]: http://jarkeeper.com/oubiwann/cmr-sample-data
+[deps-badge]: http://jarkeeper.com/oubiwann/cmr-sample-data/status.svg
+[tag-badge]: https://img.shields.io/github/tag/oubiwann/cmr-sample-data.svg
+[tag]: https://github.com/oubiwann/cmr-sample-data/tags
+[clojure-v]: https://img.shields.io/badge/clojure-1.8.0-blue.svg
+[jdk-v]: https://img.shields.io/badge/jdk-1.7+-blue.svg
+[clojars]: https://clojars.org/gov.nasa.earthdata/cmr-sample-data
+[clojars-badge]: https://img.shields.io/clojars/v/gov.nasa.earthdata/cmr-sample-data.svg
+
+[cmr-project]: https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository
+[eosdis]: https://earthdata.nasa.gov/about
+[cmr-github]: https://github.com/nasa/Common-Metadata-Repository
+[clojure]: https://clojure.org/
