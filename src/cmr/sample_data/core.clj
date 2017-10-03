@@ -63,5 +63,5 @@
     (get-ges-disc-airx3std-opendap-service [:json :edn]))
   ([as-data]
     (util/get-file
-     (str const/variables-resource "/GES_DISC/AIRX3STD/OPeNDAP.json")
+     (str const/services-resource "/GES_DISC/AIRX3STD/OPeNDAP.json")
      as-data)))
