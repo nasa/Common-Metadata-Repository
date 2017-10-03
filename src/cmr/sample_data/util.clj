@@ -5,17 +5,20 @@
    [clojure.string :as string]
    [cmr.sample-data.const :as const]))
 
+(def as-data-handlers
+  {:obj identity
+   :data slurp
+   [:json :edn] #(-> %
+                     (io/reader)
+                     (json/parse-stream true))})
+
 (defn get-file
   ([file-path]
-    (get-file file-path const/default-as-data))
-  ([file-path handler]
-    (let [file-obj (io/resource file-path)]
-      (case handler
-        :obj file-obj
-        :data (slurp file-obj)
-        [:json :edn] (-> file-obj
-                         (io/reader)
-                         (json/parse-stream true))))))
+    (get-file file-path const/default-as-data)) ; XXX change to default-handler-key
+  ([file-path handler-key]
+    (let [file-obj (io/resource file-path)
+          handler (as-data-handlers handler-key)]
+      (handler file-obj))))
 
 (defn get-dir
   [dir-path]
@@ -29,8 +32,11 @@
   (filter #(.isFile %) files-or-dirs))
 
 (defn get-files
-  [dir]
-  (-> dir
-      (get-dir)
-      (file-seq)
-      files?))
+  ([dir]
+    (get-files dir :obj))
+  ([dir handler-key]
+    (->> dir
+         (get-dir)
+         (file-seq)
+         files?
+         (map (as-data-handlers handler-key)))))
