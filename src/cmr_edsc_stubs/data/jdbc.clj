@@ -42,6 +42,6 @@
                    "(GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL,CURRENT_TIMESTAMP,"
                    "CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?)")
           values [internal-id (str (java.util.UUID/randomUUID)) "GES_DISC"
-                  "cmr-edsc-stubber" (:name edn-data) 0 "application/json" 1
+                  "cmr-edsc-stubber" (:Name edn-data) 0 "application/json" 1
                   concept-id (.getBytes metadata)]]
       (prepared system sql values))))
