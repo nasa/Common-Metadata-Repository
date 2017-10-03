@@ -52,7 +52,7 @@
 
 (defn get-ges-disc-airx3std-ch4-variables
   ([]
-   (get-ges-disc-airx3std-ch4-variables const/default-handler-key))
+   (get-ges-disc-airx3std-ch4-variables :obj))
   ([^Keyword as-data]
    (util/get-files
     (str const/variables-resource "/GES_DISC/AIRX3STD/CH4")
