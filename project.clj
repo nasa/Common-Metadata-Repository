@@ -10,7 +10,7 @@
     [cljs-http "0.1.43"]
     [clojusc/ltest "0.2.0"]
     [org.clojure/clojure "1.8.0"]
-    [org.clojure/clojurescript "1.9.908"]
+    [org.clojure/clojurescript "1.9.946"]
     [org.clojure/core.async "0.3.443"]
     [org.clojure/data.json "0.2.6"]
     [org.clojure/data.xml "0.2.0-alpha2"]
@@ -25,7 +25,7 @@
         [org.clojure/tools.namespace "0.2.11"]]
       :plugins [
         [lein-cljsbuild "1.1.7"]
-        [lein-figwheel "0.5.13"]
+        [lein-figwheel "0.5.14"]
         [lein-shell "0.5.0"]]
       :resource-paths ["dev-resources" "test/data" "test/clj"]
       :source-paths ["src/clj" "src/cljc" "test/clj" "dev-resources/src"]
@@ -47,7 +47,7 @@
       :test-paths ^:replace []
       :plugins [
         [jonase/eastwood "0.2.4"]
-        [lein-ancient "0.6.10"]
+        [lein-ancient "0.6.12"]
         [lein-bikeshed "0.4.1"]
         [lein-kibit "0.1.5"]
         [venantius/yagni "0.1.4"]]}
@@ -106,7 +106,7 @@
        "run" "-m" "cmr.client.testing.runner"]
     "check-deps"
       ^{:doc "Check to see if any dependencies are out of date"}
-      ["with-profile" "lint" "ancient" "all"]
+      ["with-profile" "lint" "ancient" ":all"]
     "lint"
       ^{:doc "Run linting tools against the source"}
       ["with-profile" "+test" "kibit"]
