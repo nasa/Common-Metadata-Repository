@@ -1,6 +1,6 @@
 (ns cmr.sample-data.const)
 
-(def default-as-data :data)
+(def default-handler-key :data)
 (def collections-resource "data/collections")
 (def providers-resource "data/providers")
 (def services-resource "data/services")

@@ -14,7 +14,7 @@
 
 (defn get-file
   ([file-path]
-    (get-file file-path const/default-as-data)) ; XXX change to default-handler-key
+    (get-file file-path const/default-handler-key))
   ([file-path handler-key]
     (let [file-obj (io/resource file-path)
           handler (as-data-handlers handler-key)]

@@ -19,7 +19,7 @@
   ([]
     (get-ges-disc-airx3std-collection :xml))
   ([^Keyword file-type]
-    (get-ges-disc-airx3std-collection file-type const/default-as-data))
+    (get-ges-disc-airx3std-collection file-type const/default-handler-key))
   ([^Keyword file-type as-data]
     (case file-type
       :json (util/get-file
@@ -31,7 +31,7 @@
 
 (defn get-ges-disc-airx3std-opendap-service
   ([]
-   (get-ges-disc-airx3std-opendap-service const/default-as-data))
+   (get-ges-disc-airx3std-opendap-service const/default-handler-key))
   ([as-data]
    (util/get-file
      (str const/services-resource "/GES_DISC/AIRX3STD/OPeNDAP.json")
@@ -52,7 +52,7 @@
 
 (defn get-ges-disc-airx3std-ch4-variables
   ([]
-   (get-ges-disc-airx3std-ch4-variables const/default-as-data))
+   (get-ges-disc-airx3std-ch4-variables const/default-handler-key))
   ([^Keyword as-data]
    (util/get-files
     (str const/variables-resource "/GES_DISC/AIRX3STD/CH4")
