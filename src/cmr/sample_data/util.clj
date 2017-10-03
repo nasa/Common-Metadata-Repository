@@ -2,14 +2,12 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.string :as string]))
-
-(def local-token "mock-echo-system-token")
-(def local-token-header {"echo-token" local-token})
+   [clojure.string :as string]
+   [cmr.sample-data.const :as const]))
 
 (defn get-file
   ([file-path]
-    (get-file file-path :data))
+    (get-file file-path const/default-as-data))
   ([file-path handler]
     (let [file-obj (io/resource file-path)]
       (case handler
