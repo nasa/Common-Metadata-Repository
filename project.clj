@@ -8,7 +8,7 @@
   :dependencies [
     [clj-http "3.7.0"]
     [cljs-http "0.1.43"]
-    [clojusc/ltest "0.2.0-SNAPSHOT"]
+    [clojusc/ltest "0.2.0"]
     [org.clojure/clojure "1.8.0"]
     [org.clojure/clojurescript "1.9.908"]
     [org.clojure/core.async "0.3.443"]
@@ -39,8 +39,8 @@
       :test-selectors {
         :default :unit
         :unit :unit
-        :system :system
-        :integration :integration}
+        :integration :integration
+        :system :system}
       }
     :lint {
       :source-paths ^:replace ["src"]
