@@ -5,7 +5,7 @@
   for them to be run in the dev-system REPL."
   (:require
    [clojure.java.jdbc :as jdbc]
-   [cmr-edsc-stubs.data.sources :as data-sources])
+   [cmr.sample-data.core :as data-sources])
   (:import
    (clojure.lang Keyword)))
 

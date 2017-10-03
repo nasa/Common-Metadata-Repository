@@ -5,10 +5,10 @@
   published CMR services, they may be run from anywhere."
   (:require
    [cheshire.core :as json]
-   [cmr-edsc-stubs.data.sources :as data-sources]
    [cmr-edsc-stubs.util :as util]
    [cmr.client.ingest :as ingest]
-   [cmr.client.search :as search]))
+   [cmr.client.search :as search]
+   [cmr.sample-data.core :as data-sources]))
 
 (defn ingest-ges-disc-airx3std-collection
   ([]

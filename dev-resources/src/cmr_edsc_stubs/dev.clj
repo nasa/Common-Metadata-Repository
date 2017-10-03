@@ -6,10 +6,10 @@
    [cmr-edsc-stubs.core :as stubs]
    [cmr-edsc-stubs.data.core :as data]
    [cmr-edsc-stubs.data.service :as service]
-   [cmr-edsc-stubs.data.sources :as data-sources]
    [cmr-edsc-stubs.util :as util]
    [cmr.client.ingest :as ingest]
-   [cmr.client.search :as search]))
+   [cmr.client.search :as search]
+   [cmr.sample-data.core :as data-sources]))
 
 ;;; Aliases
 

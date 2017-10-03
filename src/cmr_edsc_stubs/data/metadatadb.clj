@@ -7,9 +7,9 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [cmr-edsc-stubs.data.sources :as data-sources]
    [cmr-edsc-stubs.util :as util]
-   [cmr.client.common.util :as client-util]))
+   [cmr.client.common.util :as client-util]
+   [cmr.sample-data.core :as data-sources]))
 
 (defn create-provider
   ([provider-data]
