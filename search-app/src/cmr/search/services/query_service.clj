@@ -70,6 +70,7 @@
     cmr.search.services.query-execution.facets.facets-v2-results-feature
     cmr.search.services.query-execution.granule-counts-results-feature
     cmr.search.services.query-execution.has-granules-created-at-feature
+    cmr.search.services.query-execution.has-granules-revised-at-feature
     cmr.search.services.query-execution.has-granules-results-feature
     cmr.search.services.query-execution.highlight-results-feature
     cmr.search.services.query-execution.tags-results-feature
@@ -281,24 +282,6 @@
                    (common-search/validate-query context))
         results (qe/execute-query context query)]
     (common-search/search-results->response context query results)))
-
-(defn get-collections-from-new-granules
-  "Finds granules that were added after a given date and return their parent collection ids.
-   Supports CMR Harvesting."
-  [context params]
-  (when-let [[start-date end-date] (mapv time-format/parse
-                                         (string/split (or (:has_granules_created_at params)
-                                                           (:has-granules-created-at params)) #","))]
-    (let [query (qm/query {:concept-type :granule
-                           :page-size 0
-                           :result-format :query-specified
-                           :condition (qm/date-range-condition
-                                        :created-at start-date end-date)
-                           :result-fields []
-                           :aggregations {:collections
-                                          {:terms {:size query-aggregation-size
-                                                   :field :collection-concept-id}}}})]
-      (qe/execute-query context query))))
 
 (defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"

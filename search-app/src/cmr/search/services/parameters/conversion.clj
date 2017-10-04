@@ -35,6 +35,7 @@
    :exclude :exclude
    :has-granules :has-granules
    :has-granules-created-at :multi-date-range
+   :has-granules-revised-at :multi-date-range
    :instrument :string
    :instrument-h :humanizer
    :keyword :keyword
@@ -146,7 +147,8 @@
   "Mapping of parameter names in a collection query to the parameter name to use in the granule
   query."
   {:concept-id :collection-concept-id
-   :has-granules-created-at :created-at})
+   :has-granules-created-at :created-at
+   :has-granules-revised-at :revision-date})
 
 (defmulti tag-param->condition
   "Convert tag param and value into query condition"
@@ -337,6 +339,8 @@
                                   [:highlights])
                                 (when (:has-granules-created-at params)
                                   [:has-granules-created-at])
+                                (when (:has-granules-revised-at params)
+                                  [:has-granules-revised-at])
                                 (when-not (str/blank? (:include-tags params))
                                   [:tags])
                                 ;; Always include temporal, the processor will see if any temporal
