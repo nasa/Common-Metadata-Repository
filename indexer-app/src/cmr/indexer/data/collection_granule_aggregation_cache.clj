@@ -30,7 +30,8 @@
   :collection-granule-aggregation-cache)
 
 (defconfig coll-gran-agg-cache-consistent-timeout-seconds
-  "The number of seconds between when the collection granule aggregate cache should check with cubby for consistence"
+  "The number of seconds between when the collection granule aggregate cache should check with
+   cubby for consistence."
   {:default (* 5 60) ; 5 minutes
    :type Long})
 
@@ -44,8 +45,8 @@
     ;; But if it's not available we'll fetch it from cubby.
     (fallback-cache/create-fallback-cache
 
-      ;; Consistent cache is required so that if we have multiple instances of the indexer we'll have
-      ;; only a single indexer refreshing it's cache.
+      ;; Consistent cache is required so that if we have multiple instances of the indexer we'll
+      ;; have only a single indexer refreshing it's cache.
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (coll-gran-agg-cache-consistent-timeout-seconds)})
       (cubby-cache/create-cubby-cache))))
