@@ -29,6 +29,22 @@
             (str const/collections-resource "/GES_DISC/AIRX3STD_006.xml")
             as-data))))
 
+(defn get-ges-disc-airx3std-collection-metadata
+  ([]
+    (get-ges-disc-airx3std-collection :json))
+  ([^Keyword file-type]
+    (get-ges-disc-airx3std-collection file-type const/default-handler-key))
+  ([^Keyword file-type as-data]
+    (case file-type
+      :json (util/get-file
+             (str const/collections-resource
+                  "/GES_DISC/AIRX3STD_006-metadata.json")
+             as-data)
+      :xml (util/get-file
+            (str const/collections-resource
+                 "/GES_DISC/AIRX3STD_006-metadata.xml")
+            as-data))))
+
 (defn get-ges-disc-airx3std-opendap-service
   ([]
    (get-ges-disc-airx3std-opendap-service const/default-handler-key))
