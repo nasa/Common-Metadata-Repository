@@ -12,7 +12,7 @@
 (defn get-ges-disc-provider
   ([]
     (get-ges-disc-provider :data))
-  ([^Keyword as-data]
+  ([as-data]
     (util/get-file (str const/providers-resource "/GES_DISC.json") as-data)))
 
 (defn get-ges-disc-airx3std-collection
@@ -31,9 +31,10 @@
 
 (defn get-ges-disc-airx3std-collection-metadata
   ([]
-    (get-ges-disc-airx3std-collection :json))
+    (get-ges-disc-airx3std-collection-metadata :json))
   ([^Keyword file-type]
-    (get-ges-disc-airx3std-collection file-type const/default-handler-key))
+    (get-ges-disc-airx3std-collection-metadata
+     file-type const/default-handler-key))
   ([^Keyword file-type as-data]
     (case file-type
       :json (util/get-file
@@ -58,7 +59,7 @@
     (get-ges-disc-airx3std-ch4-variable filename-part :json))
   ([filename-part ^Keyword file-type]
     (get-ges-disc-airx3std-ch4-variable filename-part file-type :data))
-  ([filename-part ^Keyword file-type ^Keyword as-data]
+  ([filename-part ^Keyword file-type as-data]
     (util/get-file
       (format "%s/GES_DISC/AIRX3STD/CH4/CH4_%s.%s"
               const/variables-resource
@@ -69,7 +70,7 @@
 (defn get-ges-disc-airx3std-ch4-variables
   ([]
    (get-ges-disc-airx3std-ch4-variables :obj))
-  ([^Keyword as-data]
+  ([as-data]
    (util/get-files
     (str const/variables-resource "/GES_DISC/AIRX3STD/CH4")
     as-data)))
