@@ -16,15 +16,15 @@
                      {:provider-id "PROV2" :small false}))
 
 (defmethod c-spec/gen-concept :service
-  [_ _ uniq-num attributes]
-  (util/service-concept "PROV1" uniq-num attributes))
+  [_ provider-id uniq-num attributes]
+  (util/service-concept provider-id uniq-num attributes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest save-service
-  (c-spec/general-save-concept-test :service ["PROV1"]))
+  (c-spec/general-save-concept-test :service ["PROV1" "PROV2"]))
 
 (deftest save-service-with-missing-required-parameters
   (c-spec/save-test-with-missing-required-parameters

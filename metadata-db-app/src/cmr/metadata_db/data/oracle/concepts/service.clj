@@ -11,14 +11,19 @@
           (assoc :user-id (:user_id result))
           (assoc-in [:extra-fields :service-name] (:service_name result))))
 
-;; Only "CMR" provider is supported now which is not considered a 'small' provider.
-;; If we ever associate real providers with services then we will need to add support
-;; for small providers as well.
-(defmethod c/concept->insert-args [:service false]
-  [concept _]
+(defn- service-concept->insert-args
+  [concept]
   (let [{{:keys [service-name]} :extra-fields
          user-id :user-id
          provider-id :provider-id} concept
         [cols values] (c/concept->common-insert-args concept)]
     [(concat cols ["provider_id" "user_id" "service_name"])
      (concat values [provider-id user-id service-name])]))
+
+(defmethod c/concept->insert-args [:service false]
+  [concept _]
+  (service-concept->insert-args concept))
+
+(defmethod c/concept->insert-args [:service true]
+  [concept _]
+  (service-concept->insert-args concept))
