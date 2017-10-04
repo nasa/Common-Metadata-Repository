@@ -26,4 +26,4 @@
     (assoc query
            :condition
            (mp-query-common/generate-collection-query-condition
-            context query concept-ids :has-granules-revised-at-at))))
+            context query concept-ids :has-granules-revised-at))))
