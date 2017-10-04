@@ -12,14 +12,19 @@
           (assoc-in [:extra-fields :variable-name] (:variable_name result))
           (assoc-in [:extra-fields :measurement] (:measurement result))))
 
-;; Only "CMR" provider is supported now which is not considered a 'small' provider.
-;; If we ever associate real providers with variables then we will need to add support
-;; for small providers as well.
-(defmethod c/concept->insert-args [:variable false]
-  [concept _]
+(defn- variable-concept->insert-args
+  [concept]
   (let [{{:keys [variable-name measurement]} :extra-fields
          user-id :user-id
          provider-id :provider-id} concept
         [cols values] (c/concept->common-insert-args concept)]
     [(concat cols ["provider_id" "user_id" "variable_name" "measurement"])
      (concat values [provider-id user-id variable-name measurement])]))
+
+(defmethod c/concept->insert-args [:variable false]
+  [concept _]
+  (variable-concept->insert-args concept))
+
+(defmethod c/concept->insert-args [:variable true]
+  [concept _]
+  (variable-concept->insert-args concept))

@@ -17,14 +17,14 @@
 
 (defmethod c-spec/gen-concept :variable
   [_ provider-id uniq-num attributes]
-  (util/variable-concept "PROV1" uniq-num attributes))
+  (util/variable-concept provider-id uniq-num attributes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest save-variable
-  (c-spec/general-save-concept-test :variable ["PROV1"]))
+  (c-spec/general-save-concept-test :variable ["PROV1" "PROV2"]))
 
 (deftest save-variable-with-missing-required-parameters
   (c-spec/save-test-with-missing-required-parameters
