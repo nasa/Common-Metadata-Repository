@@ -10,50 +10,40 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
-   [cmr.ingest.services.ingest-service :as ingest]))
+   [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.ingest.validation.validation :as v]))
 
-(defn- verify-service-modification-permission
-  "Verifies the current user has been granted permission to modify services in
-  ECHO ACLs."
-  [context permission-type]
-  (when-not (seq (acl/get-permitting-acls context
-                  :system-object
-                  "INGEST_MANAGEMENT_ACL"
-                  permission-type))
-    (errors/throw-service-error
-      :unauthorized
-      (format "You do not have permission to %s a service." (name permission-type)))))
+(defn- validate-and-prepare-service-concept
+  "Validate service concept, set the concept format and returns the concept;
+  throws error if the metadata is not a valid against the UMM service JSON schema."
+  [concept]
+  (let [concept (update-in concept [:format] (partial ingest/fix-ingest-concept-format :service))]
+    (v/validate-concept-request concept)
+    (v/validate-concept-metadata concept)
+    concept))
 
-(defn- validate-service-content-type
-  "Validates that content type sent with a service is JSON"
-  [headers]
-  (mt/extract-header-mime-type #{mt/json} headers "content-type" true))
+(defn ingest-service
+  "Processes a request to create or update a service."
+  [provider-id native-id request]
+  (let [{:keys [body content-type headers request-context]} request
+        concept (api-core/body->concept!
+                 :service provider-id native-id body content-type headers)]
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission
+      request-context :update :provider-object provider-id)
+    (common-enabled/validate-write-enabled request-context "ingest")
+    (let [concept (validate-and-prepare-service-concept concept)]
+      (->> (api-core/set-user-id concept request-context headers)
+           (ingest/save-service request-context)
+           (api-core/generate-ingest-response headers)))))
 
-(defn create-service
-  "Processes a create service request.
-
-  IMPORTANT: Note that the permission require for creating a concept
-             during ingest is :update and not :create. This is due to
-             the fact that the ACL system for CMR has no 'create'
-             permission in the system for any ingest; only 'update' is
-             allowed for ingest operations. The mock ACL system (rightly)
-             inherits this limitation from the real system."
-  [context headers body]
-  (verify-service-modification-permission context :update)
-  (common-enabled/validate-write-enabled context "ingest")
-  (validate-service-content-type headers)
-  (let [metadata (api-core/read-body! body)]
+(defn delete-service
+  "Deletes the service with the given native id."
+  [provider-id native-id request]
+  (let [{:keys [body content-type headers request-context]} request]
+    (acl/verify-ingest-management-permission
+     request-context :update :provider-object provider-id)
+    (common-enabled/validate-write-enabled request-context "ingest")
     (api-core/generate-ingest-response
      headers
-     (ingest/create-service context metadata))))
-
-(defn update-service
-  "Processes a request to update a service."
-  [context headers body service-key]
-  (verify-service-modification-permission context :update)
-  (common-enabled/validate-write-enabled context "ingest")
-  (validate-service-content-type headers)
-  (let [metadata (api-core/read-body! body)]
-    (api-core/generate-ingest-response
-     headers
-     (ingest/update-service context service-key metadata))))
+     (ingest/delete-service request-context provider-id native-id))))

@@ -27,9 +27,9 @@
    validate-granule-with-parent-collection]
   [cmr.ingest.services.ingest-service.service
    ;; Public service functions
-   create-service
+   delete-service
    overwrite-service-tombstone
-   update-service
+   save-service
    validate-update-service]
   [cmr.ingest.services.ingest-service.variable
    ;; Public variable functions
