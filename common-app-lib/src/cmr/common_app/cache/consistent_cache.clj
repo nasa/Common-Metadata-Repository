@@ -91,7 +91,7 @@
     [this key]
     (let [mem-value (c/get-value memory-cache key)]
       (when (and (not (nil? mem-value))
-                 (= (hash mem-value) 
+                 (= (hash mem-value)
                     (c/get-value hash-cache (key->hash-cache-key key))))
         mem-value)))
 
@@ -144,12 +144,9 @@
    (create-consistent-cache nil))
   ([options]
    (let [timeout (get options :hash-timeout-seconds (consistent-cache-default-hash-timeout-seconds))
-         hash-cache (fallback-with-timeout (cubby-cache/create-cubby-cache) timeout)
+         hash-cache (cubby-cache/create-cubby-cache options)
          main-cache (mem-cache/create-in-memory-cache)]
-     (create-consistent-cache main-cache hash-cache)))
+     (create-consistent-cache main-cache (fallback-with-timeout hash-cache timeout))))
   ([memory-cache hash-cache]
    (->ConsistentMemoryCache
     memory-cache hash-cache)))
-
-
-

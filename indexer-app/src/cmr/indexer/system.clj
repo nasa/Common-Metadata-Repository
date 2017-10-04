@@ -46,6 +46,11 @@
   {:default 5
    :type Long})
 
+(def index-set-mappings-cubby-keys
+  "The list of keys related to index-set-mappings which should be deleted when we want to clear
+  the index-set-mappings cache."
+  [":concept-mapping-types-hash-code" ":concept-indices-hash-code"])
+
 (defconfig log-level
   "App logging level"
   {:default "info"})
@@ -61,7 +66,8 @@
              :caches {af/acl-cache-key (af/create-consistent-acl-cache
                                         [:catalog-item :system-object :provider-object])
                       index-set/index-set-cache-key (consistent-cache/create-consistent-cache
-                                                     {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)})
+                                                     {:hash-timeout-seconds (index-set-cache-consistent-timeout-seconds)
+                                                      :keys-to-track index-set-mappings-cubby-keys})
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
