@@ -87,14 +87,16 @@
      [:collection :umm-json] (umm-json/json->umm
                               context :collection metadata (umm-json-version :collection fmt))
      [:collection :echo10]   (echo10-to-umm/echo10-xml-to-umm-c
-                               context (xpath/context metadata) options)
+                              context (xpath/context metadata) options)
      [:collection :dif]      (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata) options)
      [:collection :dif10]    (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata) options)
      [:collection :iso19115] (iso19115-2-to-umm/iso19115-2-xml-to-umm-c
-                               context (xpath/context metadata) options)
+                              context (xpath/context metadata) options)
      [:collection :iso-smap] (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata) options)
      [:variable :umm-json]   (umm-json/json->umm
-                              context :variable metadata (umm-json-version :variable fmt)))))
+                              context :variable metadata (umm-json-version :variable fmt))
+     [:service :umm-json]   (umm-json/json->umm
+                             context :service metadata (umm-json-version :service fmt)))))
 
 (defn generate-metadata
   "Returns the generated metadata for the given metadata format and umm record.

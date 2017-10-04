@@ -23,7 +23,8 @@
   valid-concept-mime-types
   {:collection #{mt/echo10 mt/iso-smap mt/iso19115 mt/dif mt/dif10 mt/umm-json}
    :granule #{mt/echo10 mt/iso-smap}
-   :variable #{mt/umm-json}})
+   :variable #{mt/umm-json}
+   :service #{mt/umm-json}})
 
 
 (defn- validate-format

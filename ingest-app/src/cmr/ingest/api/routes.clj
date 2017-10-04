@@ -107,6 +107,14 @@
           (DELETE "/"
                   request
                   (variables/delete-variable provider-id native-id request)))
+        ;; Services
+        (context ["/services/:native-id" :native-id #".*$"] [native-id]
+        (PUT "/"
+        request
+        (services/ingest-service provider-id native-id request))
+        (DELETE "/"
+          request
+          (services/delete-service provider-id native-id request)))
         ;; Bulk updates
         (context "/bulk-update/collections" []
           (POST "/"
@@ -117,18 +125,7 @@
                (bulk/get-provider-tasks provider-id request))
           (GET "/status/:task-id"
                [task-id :as request]
-               (bulk/get-provider-task-status provider-id task-id request)))))
-    ;; Services ingest routes
-    (api-core/set-default-error-format
-      :xml
-      (context "/services" []
-        (POST "/"
-              {:keys [request-context headers body]}
-              (services/create-service request-context headers body))
-        (PUT "/:service-id"
-             [service-id :as {:keys [request-context headers body]}]
-             (services/update-service
-              request-context headers body service-id))))))
+               (bulk/get-provider-task-status provider-id task-id request)))))))
 
 (defn build-routes [system]
   (routes
