@@ -3,7 +3,7 @@
   persistence and returning strings so this automatically serializes and deserializes the keys and
   values with EDN. Any key or value serializable to EDN is supported. Operationally cubby uses
   Elasticsearch as a backend store, and multiple applications have multiple caches which use cubby.
-  Therefore calling reset on a cubby cache will not delete all of the data stored in the backend.
+  Therefore calling reset on a cubby cache should not delete all of the data stored in the backend.
   Instead when creating a cubby cache the caller must provide a list of keys which should be deleted
   when calling reset on that particular cache."
   (:require
