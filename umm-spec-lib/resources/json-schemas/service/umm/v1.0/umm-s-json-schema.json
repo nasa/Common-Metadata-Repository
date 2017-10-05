@@ -31,10 +31,10 @@
           "minItems": 0
         },
         "SupportedFormats": {
-          "description": "The project element describes the list of names of the formats supported by the service.",
+          "description": "This project element describes the list of names of the formats supported by the service.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/FormatType"
+            "$ref": "#/definitions/FormatTypeEnum"
           },
           "minItems": 0
         }
@@ -48,17 +48,17 @@
     "ProjectionTypeEnum": {
       "description": "This element is used to identify the projection type of the variable.",
       "type": "string",
-      "enum": ["Geographic", "Sinusoidal", "Mercator", "Transverse Mercator", "Universal Transverse Mercator",  "UTM Northern Hemosphere", "UTM Southern Hemisphere", "State Plane Coordinates", "Albers Equal-Area Conic",  "Lambert Conic Conformal", "Lambert Azimuthal Equal Area", "Cylindrical Equal Area", "Polar Stereographic", "EASE-Grid", "EASE-Grid 2.0"]
+      "enum": ["Geographic", "Sinusoidal", "Mercator", "Transverse Mercator", "Universal Transverse Mercator",  "UTM Northern Hemisphere", "UTM Southern Hemisphere", "State Plane Coordinates", "Albers Equal-Area Conic",  "Lambert Conic Conformal", "Lambert Azimuthal Equal Area", "Cylindrical Equal Area", "Polar Stereographic", "EASE-Grid", "EASE-Grid 2.0", "WGS 84 / UPS North (N,E)", "WGS84 - World Geodetic System 1984", "NSIDC EASE-Grid North", "NSIDC EASE-Grid Global", "NSIDC Sea Ice Polar Stereographic North", "WGS 84 / NSIDC Sea Ice Polar Stereographic North", "WGS 84 / North Pole LAEA Bering Sea", "WGS 84 / North Pole LAEA Alaska", "WGS 84 / North Pole LAEA Canada", "WGS 84 / North Pole LAEA Atlantic", "WGS 84 / North Pole LAEA Europe", "WGS 84 / North Pole LAEA Russia", "WGS 84 / NSIDC EASE-Grid North", "WGS 84 / NSIDC EASE-Grid Global", "WGS 84 / UTM zone 24N", "WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI", "Google Maps Global Mercator -- Spherical Mercator", "WGS 84 / Antarctic Polar Stereographic", "NSIDC EASE-Grid South", "NSIDC Sea Ice Polar Stereographic South", "WGS 84 / NSIDC EASE-Grid South", "WGS 84 / NSIDC Sea Ice Polar Stereographic South", "WGS 84 / UPS South (N,E)"]
     },
     "InterpolationTypeEnum": {
       "description": "This element is used to identify the interpolation type of the variable.",
       "type": "string",
       "enum": ["Bilinear Interpolation", "Bicubic Interpolation", "Distance-weighted average resampling", "Nearest Neighbor"]
     },
-    "FormatType": {
-     "description": "The SupportedFormats element contains a list of file formats supported by this service.",
+    "FormatTypeEnum": {
+     "description": "This element contains a list of file formats supported by the service.",
      "type": "string",
-     "enum": ["HDF4", "HDF5", "HDF-EOS4", "HDF-EOS5", "netCDF-3", "netCDF-4", "Binary", "ASCII", "PNG", "JPEG", "GeoTIFF"]
+     "enum": ["HDF4", "HDF5", "HDF-EOS4", "HDF-EOS5", "netCDF-3", "netCDF-4", "Binary", "ASCII", "PNG", "JPEG", "GeoTIFF", "image/png", "image/tiff", "image/gif", "image/png; mode=24bit", "image/jpeg", "image/vnd.wap.wbmp"]
     },
     "LayerType": {
       "type": "object",
@@ -112,13 +112,17 @@
         "description": "This element describes the service root universal resource locator.",
         "$ref": "umm-cmn-json-schema.json#/definitions/OnlineResourceType"
       },
+      "Layer": {
+        "description": "This element contains important information about the Unique Resource Locator for the service.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/LayerType"
+        },
+        "minItems": 0
+      },
       "ServiceOptions": {
         "description": "This element contains important information about the Unique Resource Locator for the service.",
         "$ref": "#/definitions/ServiceOptionsType"
-      },
-      "Layer": {
-        "description": "This element is used to provide a list of layer names (identifiers) which are available via the service.",
-        "$ref": "#/definitions/LayerType"
       }
     },
     "required": [

@@ -21,11 +21,10 @@
    OnlineResource
 
    ;; This element contains important information about the Unique Resource Locator for the service.
-   ServiceOptions
-
-   ;; This element is used to provide a list of layer names (identifiers) which are available via
-   ;; the service.
    Layer
+
+   ;; This element contains important information about the Unique Resource Locator for the service.
+   ServiceOptions
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-S)
 
@@ -41,7 +40,7 @@
    ;; This element is used to identify the list of supported interpolation types.
    InterpolationType
 
-   ;; The project element describes the list of names of the formats supported by the service.
+   ;; This project element describes the list of names of the formats supported by the service.
    SupportedFormats
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceOptionsType)
