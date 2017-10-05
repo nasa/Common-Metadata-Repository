@@ -19,7 +19,7 @@
                     :Description "OPeNDAP Service"}})
 
 (defn- service
-  "Returns a UmmVar from the given attribute map."
+  "Returns a UMM-S record from the given attribute map."
   ([]
    (service {}))
   ([attribs]
