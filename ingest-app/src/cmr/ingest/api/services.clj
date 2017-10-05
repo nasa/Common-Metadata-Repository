@@ -1,14 +1,9 @@
 (ns cmr.ingest.api.services
   "Service ingest functions in support of the ingest API."
   (:require
-   [cheshire.core :as json]
-   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.log :refer [debug info warn error]]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]))
@@ -40,10 +35,19 @@
 (defn delete-service
   "Deletes the service with the given native id."
   [provider-id native-id request]
-  (let [{:keys [body content-type headers request-context]} request]
-    (acl/verify-ingest-management-permission
-     request-context :update :provider-object provider-id)
+  (let [{:keys [request-context params headers]} request
+        concept-attribs (-> {:provider-id provider-id
+                             :native-id native-id
+                             :concept-type :service}
+                            (api-core/set-revision-id headers)
+                            (api-core/set-user-id request-context headers))]
     (common-enabled/validate-write-enabled request-context "ingest")
-    (api-core/generate-ingest-response
-     headers
-     (ingest/delete-service request-context provider-id native-id))))
+    (api-core/verify-provider-exists request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (info (format "Deleting service %s from client %s"
+                  (pr-str concept-attribs) (:client-id request-context)))
+    (api-core/generate-ingest-response headers
+                                       (api-core/contextualize-warnings
+                                        (ingest/delete-concept
+                                         request-context
+                                         concept-attribs)))))

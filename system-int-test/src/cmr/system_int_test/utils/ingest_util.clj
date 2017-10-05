@@ -256,8 +256,12 @@
   [response options]
   (if (get options :raw? false)
     response
-    (assoc (parse-ingest-body (or (:accept-format options) :xml) response)
-           :status (:status response))))
+    (let [response-format (or (:accept-format options)
+                              (if-let [header-format (get-in response [:headers "Content-Type"])]
+                                (mt/mime-type->format header-format)
+                                :xml))]
+      (assoc (parse-ingest-body response-format response)
+             :status (:status response)))))
 
 (defmulti parse-validate-body
   "Parse the validate response body as a given format"

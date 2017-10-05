@@ -125,7 +125,12 @@
                                                                    concept-type
                                                                    source-version
                                                                    (umm-json-version :variable fmt)
-                                                                   umm))))))
+                                                                   umm))
+       [:service :umm-json]   (umm-json/umm->json (vm/migrate-umm context
+                                                            concept-type
+                                                            source-version
+                                                            (umm-json-version :service fmt)
+                                                            umm))))))
 
 (defn parse-collection-temporal
   "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
