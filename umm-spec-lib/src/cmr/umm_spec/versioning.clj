@@ -21,6 +21,10 @@
   "The current version of the variable UMM schema."
   (-> versions :variable last))
 
+(def current-service-version
+  "The current version of the service UMM schema."
+  (-> versions :service last))
+
 (defn current-version
   "Returns the current UMM version of the given concept type."
   [concept-type]

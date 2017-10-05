@@ -1,39 +1,16 @@
 (ns cmr.system-int-test.ingest.variable-ingest-test
   "CMR variable ingest integration tests.
-
   For variable permissions tests, see `provider-ingest-permissions-test`."
   (:require
-   [clj-http.client :as client]
-   [clj-time.core :as t]
-   [clojure.edn :as edn]
-   [clojure.java.io :as io]
-   [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.access-control.test.util :as ac]
-   [cmr.common-app.test.side-api :as side]
-   [cmr.common.date-time-parser :as p]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.common.util :refer [are3]]
-   [cmr.ingest.config :as config]
-   [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-   [cmr.system-int-test.data2.umm-spec-variable :as data-umm-v]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.system-int-test.utils.variable-util :as variable-util]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-   [cmr.umm-spec.test.expected-conversion :as exc]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.system-int-test.utils.variable-util :as variable-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
                                           {:grant-all-ingest? false}))
@@ -88,9 +65,9 @@
       (is (= 401 status)))))
 
 (deftest update-concept-with-new-user-from-token
-  (util/are3 [ingest-header1 expected-user-id1
-              ingest-header2 expected-user-id2
-              ingest-header3 expected-user-id3]
+  (are3 [ingest-header1 expected-user-id1
+         ingest-header2 expected-user-id2
+         ingest-header3 expected-user-id3]
     (let [concept (variable-util/make-variable-concept)
           {:keys [concept-id revision-id]} (variable-util/ingest-variable
                                             concept
@@ -106,11 +83,11 @@
       (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3))
     "user id from token"
     (variable-util/setup-update-acl
-      (s/context) "PROV1" "user1" "update-group") "user1"
+     (s/context) "PROV1" "user1" "update-group") "user1"
     (variable-util/setup-update-acl
-      (s/context) "PROV1" "user2" "update-group") "user2"
+     (s/context) "PROV1" "user2" "update-group") "user2"
     (variable-util/setup-update-acl
-      (s/context) "PROV1" "user3" "update-group") "user3"))
+     (s/context) "PROV1" "user3" "update-group") "user3"))
 
 ;; XXX write `update-concept-with-new-user-from-user-id`
     ; "user id from user-id header"

@@ -1,102 +1,173 @@
 (ns cmr.system-int-test.ingest.service-ingest-test
-  "CMR service ingest integration tests."
+  "CMR service ingest integration tests.
+  For service permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [clojure.test :refer :all]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.ingest-util :as ingest-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.service-util :as service-util]))
 
-(use-fixtures :each (ingest-util/reset-fixture))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest create-service-ingest-test
-  ;; CMR-4335 - services failures when using Oracle as the backend
-  (s/only-with-in-memory-database
-    (testing "ingest a new service"
-      (let [;; Groups
-            update-group-id (e/get-or-create-group (s/context) "umm-var-guid1")
-            ;; Tokens
-            update-token (e/login (s/context) "umm-var-user1" [update-group-id])
-            ;; Grants
-            update-grant-id (e/grant-group-admin
-                             (assoc (s/context) :token update-token)
-                             update-group-id
-                             :update)
-            service-data (service-util/make-service)]
-        (is (e/permitted? update-token
-                          update-grant-id
-                          update-group-id
-                          (ingest-util/get-ingest-update-acls update-token)))
-        (let [{:keys [status concept-id revision-id]} (service-util/create-service
-                                                       update-token service-data)]
-          (is (= 201 status))
-          (is (= 1 revision-id))
-          (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-          (service-util/assert-service-saved service-data
-                                             "umm-var-user1"
-                                             concept-id
-                                             revision-id))))))
+(deftest service-ingest-test
+  (testing "ingest of a new service concept"
+    (let [concept (service-util/make-service-concept)
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+      (index/wait-until-indexed)
+      (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+      (is (= 1 revision-id))))
+  (testing "ingest of a service concept with a revision id"
+    (let [concept (service-util/make-service-concept {} {:revision-id 5})
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+      (index/wait-until-indexed)
+      (is (= 5 revision-id))
+      (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
-(deftest create-service-ingest-permissions-test
-  ;; CMR-4335 - services failures when using Oracle as the backend
-  (s/only-with-in-memory-database
-    (testing "ingest create service permissions"
-      (let [;; Groups
-            guest-group-id (e/get-or-create-group
-                            (s/context) "umm-var-guid1")
-            reg-user-group-id (e/get-or-create-group
-                               (s/context) "umm-var-guid2")
-            update-group-id (e/get-or-create-group
-                             (s/context) "umm-var-guid3")
-            ;; Tokens
-            guest-token (e/login
-                         (s/context) "umm-var-user1" [guest-group-id])
-            reg-user-token (e/login
-                            (s/context) "umm-var-user1" [reg-user-group-id])
-            update-token (e/login
-                          (s/context) "umm-var-user2" [update-group-id])
-            ;; Grants
-            guest-grant-id (e/grant
-                            (assoc (s/context) :token guest-token)
-                            [{:permissions [:read]
-                              :user_type :guest}]
-                            :system_identity
-                            {:target nil})
-            reg-user-grant-id (e/grant
-                               (assoc (s/context) :token reg-user-token)
-                               [{:permissions [:read]
-                                 :user_type :registered}]
-                               :system_identity
-                               {:target nil})
-            update-grant-id (e/grant-group-admin
-                             (assoc (s/context) :token update-token)
-                             update-group-id
-                             :update)
-            service-data (service-util/make-service)]
-        (testing "acl setup and grants for different users"
-          (is (e/not-permitted? guest-token
-                                guest-grant-id
-                                guest-group-id
-                                (ingest-util/get-ingest-update-acls guest-token)))
-          (is (e/not-permitted? reg-user-token
-                                reg-user-grant-id
-                                reg-user-group-id
-                                (ingest-util/get-ingest-update-acls reg-user-token)))
-          (is (e/permitted? update-token
-                            update-grant-id
-                            update-group-id
-                            (ingest-util/get-ingest-update-acls update-token))))
-        (testing "ingest service creation permissions"
-          (are3 [token expected]
-            (let [response (service-util/create-service token service-data)]
-              (is (= expected (:status response))))
-            "System update permission allowed"
-            update-token 201
-            "Regular user denied"
-            reg-user-token 401
-            "Guest user denied"
-            guest-token 401
-            "No token provided"
-            nil 401))))))
+;; Verify that the accept header works
+(deftest service-ingest-accept-header-response-test
+  (let [supplied-concept-id "S1000-PROV1"]
+    (testing "json response"
+      (let [response (ingest/ingest-concept
+                      (service-util/make-service-concept
+                       {:concept-id supplied-concept-id})
+                      {:accept-format :json
+                       :raw? true})]
+        (is (= {:revision-id 1
+                :concept-id supplied-concept-id}
+               (ingest/parse-ingest-body :json response)))))
+
+    (testing "xml response"
+      (let [response (ingest/ingest-concept
+                      (service-util/make-service-concept
+                       {:concept-id supplied-concept-id})
+                      {:accept-format :xml
+                       :raw? true})]
+        (is (= {:revision-id 2
+                :concept-id supplied-concept-id}
+               (ingest/parse-ingest-body :xml response)))))))
+
+;; Verify that the accept header works with returned errors
+(deftest service-ingest-with-errors-accept-header-test
+  (testing "json response"
+    (let [concept-no-metadata (assoc (service-util/make-service-concept)
+                                     :metadata "")
+          response (ingest/ingest-concept
+                    concept-no-metadata
+                    {:accept-format :json
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :json response)]
+      (is (re-find #"Request content is too short." (first errors)))))
+  (testing "xml response"
+    (let [concept-no-metadata (assoc (service-util/make-service-concept)
+                                     :metadata "")
+          response (ingest/ingest-concept
+                    concept-no-metadata
+                    {:accept-format :xml
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :xml response)]
+      (is (re-find #"Request content is too short." (first errors))))))
+
+;; Verify that user-id is saved from User-Id or token header
+(deftest service-ingest-user-id-test
+  (testing "ingest of new concept"
+    (are3 [ingest-headers expected-user-id]
+      (let [concept (service-util/make-service-concept)
+            {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
+        (index/wait-until-indexed)
+        (ingest/assert-user-id concept-id revision-id expected-user-id))
+
+      "user id from token"
+      {:token (e/login (s/context) "user1")} "user1"
+
+      "user id from user-id header"
+      {:user-id "user2"} "user2"
+
+      "both user-id and token in the header results in the revision getting user id from user-id header"
+      {:token (e/login (s/context) "user3")
+       :user-id "user4"} "user4"
+
+      "neither user-id nor token in the header"
+      {} nil))
+  (testing "update of existing concept with new user-id"
+    (are3 [ingest-header1 expected-user-id1
+           ingest-header2 expected-user-id2
+           ingest-header3 expected-user-id3
+           ingest-header4 expected-user-id4]
+      (let [concept (service-util/make-service-concept)
+            {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-header1)]
+        (ingest/ingest-concept concept ingest-header2)
+        (ingest/delete-concept concept ingest-header3)
+        (ingest/ingest-concept concept ingest-header4)
+        (index/wait-until-indexed)
+        (ingest/assert-user-id concept-id revision-id expected-user-id1)
+        (ingest/assert-user-id concept-id (inc revision-id) expected-user-id2)
+        (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
+        (ingest/assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
+
+      "user id from token"
+      {:token (e/login (s/context) "user1")} "user1"
+      {:token (e/login (s/context) "user2")} "user2"
+      {:token (e/login (s/context) "user3")} "user3"
+      {:token nil} nil
+
+      "user id from user-id header"
+      {:user-id "user1"} "user1"
+      {:user-id "user2"} "user2"
+      {:user-id "user3"} "user3"
+      {:user-id nil} nil)))
+
+;; Service with concept-id ingest and update scenarios.
+(deftest service-w-concept-id-ingest-test
+  (let [supplied-concept-id "S1000-PROV1"
+        concept (service-util/make-service-concept
+                 {:concept-id supplied-concept-id
+                  :native-id "Atlantic-1"})]
+    (testing "ingest of a new service concept with concept-id present"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (index/wait-until-indexed)
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (is (= [supplied-concept-id 1] [concept-id revision-id]))))
+
+    (testing "Update the concept with the concept-id"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (index/wait-until-indexed)
+        (is (= [supplied-concept-id 2] [concept-id revision-id]))))
+
+    (testing "update the concept without the concept-id"
+      (let [{:keys [concept-id revision-id]} (ingest/ingest-concept
+                                              (dissoc concept :concept-id))]
+        (index/wait-until-indexed)
+        (is (= [supplied-concept-id 3] [concept-id revision-id]))))))
+
+(deftest service-update-error-test
+  (let [supplied-concept-id "S1000-PROV1"
+        concept (service-util/make-service-concept
+                 {:concept-id supplied-concept-id
+                  :native-id "Atlantic-1"})
+        _ (ingest/ingest-concept concept)]
+    (testing "update concept with a different concept-id is invalid"
+      (let [{:keys [status errors]} (ingest/ingest-concept
+                                     (assoc concept :concept-id "S1111-PROV1"))]
+        (index/wait-until-indexed)
+        (is (= [409 [(str "A concept with concept-id [S1000-PROV1] and "
+                          "native-id [Atlantic-1] already exists for "
+                          "concept-type [:service] provider-id [PROV1]. "
+                          "The given concept-id [S1111-PROV1] and native-id "
+                          "[Atlantic-1] would conflict with that one.")]]
+               [status errors]))))
+    (testing "update concept with a different native-id is invalid"
+      (let [{:keys [status errors]} (ingest/ingest-concept
+                                     (assoc concept :native-id "other"))]
+        (index/wait-until-indexed)
+        (is (= [409 [(str "A concept with concept-id [S1000-PROV1] and "
+                          "native-id [Atlantic-1] already exists for "
+                          "concept-type [:service] provider-id [PROV1]. "
+                          "The given concept-id [S1000-PROV1] and native-id "
+                          "[other] would conflict with that one.")]]
+               [status errors]))))))
