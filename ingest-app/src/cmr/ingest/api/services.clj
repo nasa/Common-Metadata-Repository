@@ -33,21 +33,6 @@
            (api-core/generate-ingest-response headers)))))
 
 (defn delete-service
-  "Deletes the service with the given native id."
+  "Deletes the service with the given provider id and native id."
   [provider-id native-id request]
-  (let [{:keys [request-context params headers]} request
-        concept-attribs (-> {:provider-id provider-id
-                             :native-id native-id
-                             :concept-type :service}
-                            (api-core/set-revision-id headers)
-                            (api-core/set-user-id request-context headers))]
-    (common-enabled/validate-write-enabled request-context "ingest")
-    (api-core/verify-provider-exists request-context provider-id)
-    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-    (info (format "Deleting service %s from client %s"
-                  (pr-str concept-attribs) (:client-id request-context)))
-    (api-core/generate-ingest-response headers
-                                       (api-core/contextualize-warnings
-                                        (ingest/delete-concept
-                                         request-context
-                                         concept-attribs)))))
+  (api-core/delete-concept :service provider-id native-id request))
