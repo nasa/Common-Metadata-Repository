@@ -197,12 +197,12 @@
             coll
             [:Projects]
             ["Projects must be unique. This contains duplicates named [C1, C2]."])))
-      (testing "start and end date not in the past"
+      (testing "start date not in the past"
         (let [coll (coll/map->UMM-C {:Projects [c4]})]
-          (h/assert-warnings-multiple-invalid
+          (h/assert-warnings-invalid
             coll
-            [{:path [:Projects 0 :StartDate]
-              :errors ["Date should be in the past."]}])))
+            [:Projects 0 :StartDate]
+            ["Date should be in the past."])))
       (testing "start date after end date"
         (let [coll (coll/map->UMM-C {:Projects [c5]})]
           (h/assert-invalid
