@@ -3,7 +3,9 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [cmr.sample-data.const :as const]))
+   [cmr.sample-data.const :as const])
+  (:import
+   (java.util.zip ZipFile)))
 
 (def as-data-handlers
   {:obj identity
@@ -31,12 +33,53 @@
   [files-or-dirs]
   (filter #(.isFile %) files-or-dirs))
 
+(defn get-dir-files
+  [dir]
+  (->> dir
+       (get-dir)
+       file-seq
+       files?))
+
+(defn parse-jar-file
+  [dir]
+  (-> (io/resource dir)
+      (.getPath)
+      (string/split #"!")
+      first
+      (string/split #"file:")
+      last))
+
+(defn jar-file?
+  [entry]
+  (not (.isDirectory entry)))
+
+(defn jar-file-starts-with?
+  [jar-file dir]
+  (-> jar-file
+      (.getName)
+      (string/starts-with? dir)))
+
+(defn get-jar-files
+  [dir]
+  (let [jar-file (parse-jar-file dir)
+        zip-file (new ZipFile jar-file)
+        entries (enumeration-seq (.entries zip-file))]
+    (->> (.entries zip-file)
+         enumeration-seq
+         (filter jar-file?)
+         (filter #(jar-file-starts-with? % dir))
+         (map #(io/resource (.getName %))))))
+
+(defn get-dir-or-jar-files
+  [dir]
+  (case (.getProtocol (io/resource dir))
+    "file" (get-dir-files dir)
+    "jar" (get-jar-files dir)))
+
 (defn get-files
   ([dir]
     (get-files dir :obj))
   ([dir handler-key]
     (->> dir
-         (get-dir)
-         (file-seq)
-         files?
+         (get-dir-or-jar-files)
          (map (as-data-handlers handler-key)))))
