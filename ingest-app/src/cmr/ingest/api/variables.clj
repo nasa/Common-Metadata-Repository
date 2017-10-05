@@ -38,12 +38,6 @@
            (api-core/generate-ingest-response headers)))))
 
 (defn delete-variable
-  "Deletes the variable with the given variable-key."
+  "Deletes the variable with the given provider id and native id."
   [provider-id native-id request]
-  (let [{:keys [body content-type headers request-context]} request]
-    (acl/verify-ingest-management-permission
-     request-context :update :provider-object provider-id)
-    (common-enabled/validate-write-enabled request-context "ingest")
-    (api-core/generate-ingest-response
-     headers
-     (ingest/delete-variable request-context provider-id native-id))))
+  (api-core/delete-concept :variable provider-id native-id request))

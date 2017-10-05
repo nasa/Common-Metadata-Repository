@@ -30,7 +30,4 @@
    save-service]
   [cmr.ingest.services.ingest-service.variable
    ;; Public variable functions
-   delete-variable
-   overwrite-variable-tombstone
-   save-variable
-   validate-update-variable])
+   save-variable])
