@@ -179,7 +179,7 @@
                                 :EndDate (time/date-time 2013 4 26)})
         c3 (c/map->ProjectType {:ShortName "C3"
                                 :StartDate (time/date-time 2013 12 1)
-                                :EndDate (time/date-time 2014 3 20)})
+                                :EndDate (time/date-time 2020 3 20)})
         c4 (c/map->ProjectType {:ShortName "C4"
                                 :StartDate (time/date-time 2020 1 1)
                                 :EndDate (time/date-time 2021 1 1)})
