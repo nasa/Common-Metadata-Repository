@@ -202,8 +202,6 @@
           (h/assert-warnings-multiple-invalid
             coll
             [{:path [:Projects 0 :StartDate]
-              :errors ["Date should be in the past."]}
-             {:path [:Projects 0 :EndDate]
               :errors ["Date should be in the past."]}])))
       (testing "start date after end date"
         (let [coll (coll/map->UMM-C {:Projects [c5]})]

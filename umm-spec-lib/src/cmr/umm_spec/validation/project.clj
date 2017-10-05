@@ -19,5 +19,4 @@
    (v/every project-date-validation)])
 
 (def projects-warning-validation
-  [(v/every {:StartDate vu/date-in-past-validator
-             :EndDate vu/date-in-past-validator})])
+  [(v/every {:StartDate vu/date-in-past-validator})])
