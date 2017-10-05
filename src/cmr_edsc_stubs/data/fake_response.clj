@@ -79,6 +79,13 @@
    :took 42
    :items items})
 
+(defn data->payload
+  [item-payload-fn data]
+  (->> data
+       (map item-payload-fn)
+       (get-result-payload)
+       (json/generate-string)))
+
 (defn get-concept-ids
   [params]
   (let [concept-id (:concept_id params)]
@@ -106,46 +113,31 @@
         svcs (get-ges-disc-services-map)
         meta-data (make-collection-metadata (first (keys svcs)))
         assocns (make-variables-services-associations vars svcs)]
-    (->> [[meta-data umm-data assocns]]
-         (map get-item-assocns-payload)
-         (get-result-payload)
-         (json/generate-string))))
+    (data->payload get-item-assocns-payload
+                   [[meta-data umm-data assocns]])))
+
+(defn- get-umm-json-ges-disc-airx3std-type
+  [params lookup metadata-fn]
+  (->> params
+       (get-concept-ids-or-all lookup)
+       (map (fn [x] [(metadata-fn x) (lookup x)]))
+       (data->payload get-item-payload)))
 
 (defn get-umm-json-ges-disc-airx3std-variables
   [params]
-  (let [vars (get-ges-disc-variables-map)]
-    (->> params
-         (get-concept-ids-or-all vars)
-         (map (fn [x] [(make-variable-metadata x) (vars x)]))
-         (map get-item-payload)
-         (get-result-payload)
-         (json/generate-string))))
+  (get-umm-json-ges-disc-airx3std-type params
+                                       (get-ges-disc-variables-map)
+                                       make-variable-metadata))
 
-(defn get-umm-json-ges-disc-airx3std-variable
+(defn get-umm-json-ges-disc-airx3std-services
   [params]
-  (let [vars (get-ges-disc-variables-map)
-        concept-id (get-concept-id params)
-        umm-data (vars concept-id)
-        meta-data (make-variable-metadata concept-id)]
-    (->> [[meta-data umm-data]]
-         (map get-item-payload)
-         (get-result-payload)
-         (json/generate-string))))
-
-(defn get-umm-json-ges-disc-airx3std-service
-  [params]
-  (let [svcs (get-ges-disc-services-map)
-        concept-id (get-concept-id params)
-        umm-data (svcs concept-id)
-        meta-data (make-service-metadata concept-id)]
-    (->> [[meta-data umm-data]]
-         (map get-item-payload)
-         (get-result-payload)
-         (json/generate-string))))
+  (get-umm-json-ges-disc-airx3std-type params
+                                       (get-ges-disc-services-map)
+                                       make-service-metadata))
 
 (defn handle-prototype-request
   [path-w-extension params headers query-string]
   (case path-w-extension
     "collections" (get-umm-json-ges-disc-airx3std-collection)
     "variables" (get-umm-json-ges-disc-airx3std-variables params)
-    "services" (get-umm-json-ges-disc-airx3std-service params)))
+    "services" (get-umm-json-ges-disc-airx3std-services params)))

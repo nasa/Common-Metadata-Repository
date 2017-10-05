@@ -12,6 +12,7 @@
   :dependencies [
     [cheshire "5.8.0"]
     [clj-time "0.14.0"]
+    [clojusc/trifl "0.1.0"]
     [gov.nasa.earthdata/cmr-client "0.2.0-SNAPSHOT"]
     [gov.nasa.earthdata/cmr-sample-data "0.1.0-SNAPSHOT"]
     [org.clojure/clojure "1.8.0"]
@@ -21,7 +22,6 @@
     :uberjar {:aot :all}
     :dev {
       :dependencies [
-        [clojusc/trifl "0.1.0"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths ["dev-resources/src"]
       :repl-options {
