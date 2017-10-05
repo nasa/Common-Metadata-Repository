@@ -3,6 +3,8 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   ;; XXX REMOVE the next require once the service and associations work is complete
+   [cmr-edsc-stubs.core :as stubs]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
@@ -394,11 +396,16 @@
               (find-concept-by-cmr-concept-id ctx path-w-extension params headers)))
 
         ;; Find concepts
-        (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables))(?:\..+)?"] [path-w-extension]
+        (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:services))(?:\..+)?"] [path-w-extension]
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
                {params :params headers :headers ctx :request-context query-string :query-string}
-               (find-concepts ctx path-w-extension params headers query-string))
+               ;; XXX REMOVE this check and the stubs once the service and
+               ;;     the associations work is complete
+               (if (headers "cmr-prototype-umm")
+                 (stubs/handle-prototype-request
+                  path-w-extension params headers query-string)
+                 (find-concepts ctx path-w-extension params headers query-string)))
           ;; Find concepts - form encoded or JSON
           (POST "/"
                 {params :params headers :headers ctx :request-context body :body-copy}

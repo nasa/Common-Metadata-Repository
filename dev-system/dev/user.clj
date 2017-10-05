@@ -108,6 +108,7 @@
        (remove #(nil? (val %)))
        (into {})
        (merge @settings/run-modes)
+       ((fn [x] (println "Resetting with the run modes:" x) x))
        (reset! settings/run-modes)))
 
 (defn reset-modes!
