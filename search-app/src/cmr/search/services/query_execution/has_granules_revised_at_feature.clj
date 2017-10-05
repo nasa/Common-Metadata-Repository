@@ -1,15 +1,10 @@
 (ns cmr.search.services.query-execution.has-granules-revised-at-feature
-  "Supports the has_granules_created_at query parameter for collections. Returns collections
-  which have any granules that were created within the time ranges specified by the
-  has_granules_created_at time range(s).
+  "Supports the has_granules_revised_at query parameter for collections. Returns collections
+  which have any granules that were created or updated within the time ranges specified by the
+  has_granules_revised_at time range(s).
 
-  Supporting the feature requires three queries
-  1.) Perform a collection query to find only the collections that could potentially match based
-  on the collection query parameters ignoring the granule time range.
-  2.) Perform a granule search for any granules that match the passed in query parameters and
-  collection concept-ids returned in the first query and have a created_at in the
-  has_granules_created_at time ranges.
-  3.) Return the full search results for those collection-ids returned by the granule query."
+  This works exactly the same as the has_granules_created_at feature, but uses a different
+  parameter to search for relevant granules."
   (:require
    [clojure.set :as set]
    [cmr.common-app.services.search.query-execution :as query-execution]
