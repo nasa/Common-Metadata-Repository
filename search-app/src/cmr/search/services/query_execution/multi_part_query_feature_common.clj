@@ -1,5 +1,9 @@
 (ns cmr.search.services.query-execution.multi-part-query-feature-common
-  ""
+  "This encapsulates the common functionality of multi-part queries that return
+   for collections from an initial search on granules. Currently the parameters
+   that use this are:
+   - has_granules_created_at
+   - has_granules_revised_at"
   (:require
    [clojure.set :as set]
    [cmr.common-app.services.search.group-query-conditions :as group-query-conditions]

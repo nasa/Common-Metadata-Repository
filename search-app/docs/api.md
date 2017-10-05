@@ -44,6 +44,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
     * [Revision date](#c-revision-date)
     * [Created at](#c-created-at)
     * [Collections with new Granules](#c-with-new-granules)
+    * [Collections with revised Granules](#c-with-revised-granules)
     * [Processing level id](#c-processing-level-id)
     * [Platform](#c-platform)
     * [Instrument](#c-instrument)
@@ -1205,6 +1206,14 @@ Find collections that match all of the 'project' param values
   Find collections containing granules added within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_created_at\[\]=2015-01-01T10:00:00Z,"
+
+#### <a name="c-with-revised-granules"></a> Find collections with granules revised inside of a given range
+
+  This supports option `and`.
+
+  Find collections containing granules created or updated within the range of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+    curl "%CMR-ENDPOINT%/collections?has_granules_revised_at\[\]=2015-01-01T10:00:00Z,"
 
 #### <a name="c-revision-date"></a> Find collections by revision_date
 
