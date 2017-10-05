@@ -1,7 +1,7 @@
 {
   "Name": "CH4_VMR_TqJ_A",
-  "LongName": "Volume mixing ratio of methane in air",
-  "Definition": "Volume mixing ratio of methane in air measured in units of ppv (mixing ratio by volume)",
+  "LongName": "32 bit floating point value per grid cell of volume mixing ratio of methane in air",
+  "Definition": "32 bit floating point value per grid cell of volume mixing ratio of methane in air.",
   "Units": "ppv",
   "DataType": "float",
   "Dimensions": [
