@@ -28,29 +28,102 @@
         ids (gen-ids "GES_DISC" "S000" svcs)]
     (zipmap ids svcs)))
 
+(defn make-metadata
+  ([concept-type concept-id]
+    (make-metadata
+     "GES_DISC" (str (java.util.UUID/randomUUID)) concept-type concept-id))
+  ([provider-id native-id concept-type concept-id]
+    {:revision-id 1
+     :deleted false
+     :format "application/vnd.nasa.cmr.umm+json"
+     :provider-id provider-id
+     :user-id "cmr-edsc-stubs"
+     :native-id native-id
+     :concept-id concept-id
+     :revision-date "2017-09-27T18:20:46Z"
+     :concept-type concept-type}))
+
+(defn make-collection-metadata
+  [concept-id]
+  (assoc (make-metadata "collection" concept-id)
+         :has-variables true
+         :has-transforms true
+         :has-formats false))
+
+(defn make-service-metadata
+  [concept-id]
+  (make-metadata "service" concept-id))
+
+(defn make-variable-metadata
+  [concept-id]
+  (make-metadata "variable" concept-id))
+
 (defn make-variables-services-associations
   [vars svcs]
-  (json/generate-string
-    {:variables (keys vars)
-     :services (keys svcs)}))
+  {:variables (keys vars)
+   :services (keys svcs)})
+
+(defn get-item-payload
+  [[meta-data umm-data]]
+  {:meta meta-data
+   :umm umm-data})
+
+(defn get-item-assocns-payload
+  [[meta-data umm-data associations]]
+  (assoc (get-item-payload [meta-data umm-data])
+         :associations associations))
+
+(defn get-result-payload
+  [items]
+  {:hits (count items)
+   :took 42
+   :items items})
+
+(defn get-concept-ids
+  [params]
+  (let [concept-id (:concept_id params)]
+    (println "type:" (type concept-id))
+    (if (seq concept-id)
+      concept-id
+      [concept-id])))
+
+(defn get-concept-id
+  [params]
+  (first (get-concept-ids params)))
 
 (defn get-umm-json-ges-disc-airx3std-collection
   []
-  (let [metadata (data-sources/get-ges-disc-airx3std-collection-metadata :json)
-        umm (data-sources/get-ges-disc-airx3std-collection :json)
+  (let [umm-data (data-sources/get-ges-disc-airx3std-collection
+                  :json [:json :edn])
         vars (get-ges-disc-variables-map)
-        svcs (get-ges-disc-services-map)]
-    (str
-      "{\"hits\": 1,
-        \"took\": 27,
-        \"items\": [{"
-        "\"meta\":" metadata ","
-        "\"associations\":" (make-variables-services-associations vars svcs) ","
-        "\"umm\":" umm
-      "}]}")))
+        svcs (get-ges-disc-services-map)
+        meta-data (make-collection-metadata (first (keys svcs)))
+        assocns (make-variables-services-associations vars svcs)]
+    (->> [[meta-data umm-data assocns]]
+         (map get-item-assocns-payload)
+         (get-result-payload)
+         (json/generate-string))))
+
+(defn get-umm-json-ges-disc-airx3std-variables
+  [params]
+  (let [vars (get-ges-disc-variables-map)]
+    ))
+
+(defn get-umm-json-ges-disc-airx3std-services
+  [params]
+  (let [svcs (get-ges-disc-services-map)
+        concept-id (get-concept-id params)
+        umm-data (svcs concept-id)
+        meta-data (make-service-metadata concept-id)]
+    (println "concept-id: " concept-id)
+    (->> [[meta-data umm-data]]
+         (map get-item-payload)
+         (get-result-payload)
+         (json/generate-string))))
 
 (defn handle-prototype-request
   [path-w-extension params headers query-string]
   (case path-w-extension
     "collections" (get-umm-json-ges-disc-airx3std-collection)
-    "variables" "{}"))
+    "variables" (get-umm-json-ges-disc-airx3std-variables params)
+    "services" (get-umm-json-ges-disc-airx3std-services params)))
