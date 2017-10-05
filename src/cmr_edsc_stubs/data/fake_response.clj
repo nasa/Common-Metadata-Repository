@@ -82,8 +82,7 @@
 (defn get-concept-ids
   [params]
   (let [concept-id (:concept_id params)]
-    (println "type:" (type concept-id))
-    (if (seq concept-id)
+    (if (coll? concept-id)
       concept-id
       [concept-id])))
 
@@ -115,7 +114,6 @@
         concept-id (get-concept-id params)
         umm-data (svcs concept-id)
         meta-data (make-service-metadata concept-id)]
-    (println "concept-id: " concept-id)
     (->> [[meta-data umm-data]]
          (map get-item-payload)
          (get-result-payload)
