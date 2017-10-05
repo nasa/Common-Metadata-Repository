@@ -20,6 +20,6 @@
         (merge attrs)))
   ([metadata-attrs attrs idx]
     (-> (merge {:provider-id "PROV1"} metadata-attrs)
-        (data-umm-s/service-concept :umm-json idx)
+        (data-umm-s/service-concept idx)
         (assoc :format (mt/with-version content-type schema-version))
         (merge attrs))))
