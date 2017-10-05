@@ -16,6 +16,7 @@
     get-ges-disc-services-map
     get-ges-disc-variables-map
     get-umm-json-ges-disc-airx3std-collection
+    get-umm-json-ges-disc-airx3std-variables
     handle-prototype-request]
   [cmr-edsc-stubs.data.jdbc
     ingest-ges-disc-airx3std-opendap-service]

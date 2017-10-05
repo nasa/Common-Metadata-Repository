@@ -21,6 +21,7 @@
     :uberjar {:aot :all}
     :dev {
       :dependencies [
+        [clojusc/trifl "0.1.0"]
         [org.clojure/tools.namespace "0.2.11"]]
       :source-paths ["dev-resources/src"]
       :repl-options {

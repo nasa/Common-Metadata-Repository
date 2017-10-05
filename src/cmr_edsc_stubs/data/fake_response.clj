@@ -82,13 +82,21 @@
 (defn get-concept-ids
   [params]
   (let [concept-id (:concept_id params)]
-    (if (coll? concept-id)
-      concept-id
-      [concept-id])))
+    (cond
+      (nil? concept-id) []
+      (coll? concept-id) concept-id
+      :else [concept-id])))
 
 (defn get-concept-id
   [params]
   (first (get-concept-ids params)))
+
+(defn get-concept-ids-or-all
+  [lookup params]
+  (let [passed-concept-ids (get-concept-ids params)]
+    (if (seq passed-concept-ids)
+      passed-concept-ids
+      (keys lookup))))
 
 (defn get-umm-json-ges-disc-airx3std-collection
   []
@@ -106,9 +114,25 @@
 (defn get-umm-json-ges-disc-airx3std-variables
   [params]
   (let [vars (get-ges-disc-variables-map)]
-    ))
+    (->> params
+         (get-concept-ids-or-all vars)
+         (map (fn [x] [(make-variable-metadata x) (vars x)]))
+         (map get-item-payload)
+         (get-result-payload)
+         (json/generate-string))))
 
-(defn get-umm-json-ges-disc-airx3std-services
+(defn get-umm-json-ges-disc-airx3std-variable
+  [params]
+  (let [vars (get-ges-disc-variables-map)
+        concept-id (get-concept-id params)
+        umm-data (vars concept-id)
+        meta-data (make-variable-metadata concept-id)]
+    (->> [[meta-data umm-data]]
+         (map get-item-payload)
+         (get-result-payload)
+         (json/generate-string))))
+
+(defn get-umm-json-ges-disc-airx3std-service
   [params]
   (let [svcs (get-ges-disc-services-map)
         concept-id (get-concept-id params)
@@ -124,4 +148,4 @@
   (case path-w-extension
     "collections" (get-umm-json-ges-disc-airx3std-collection)
     "variables" (get-umm-json-ges-disc-airx3std-variables params)
-    "services" (get-umm-json-ges-disc-airx3std-services params)))
+    "services" (get-umm-json-ges-disc-airx3std-service params)))
