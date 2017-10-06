@@ -393,7 +393,12 @@
           (OPTIONS "/" req common-routes/options-response)
           (GET "/"
               {params :params headers :headers ctx :request-context}
-              (find-concept-by-cmr-concept-id ctx path-w-extension params headers)))
+              ;; XXX REMOVE this check and the stubs once the service and
+               ;;     the associations work is complete
+               (if (headers "cmr-prototype-umm")
+                 (stubs/handle-prototype-request
+                  path-w-extension params headers)
+                 (find-concept-by-cmr-concept-id ctx path-w-extension params headers))))
 
         ;; Find concepts
         (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:services))(?:\..+)?"] [path-w-extension]
