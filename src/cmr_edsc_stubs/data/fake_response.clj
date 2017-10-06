@@ -28,6 +28,11 @@
         ids (gen-ids "GES_DISC" "S000" svcs)]
     (zipmap ids svcs)))
 
+(defn get-all-metadata
+  []
+  (merge (get-ges-disc-variables-map)
+         (get-ges-disc-services-map)))
+
 (defn make-metadata
   ([concept-type concept-id]
     (make-metadata
@@ -134,10 +139,17 @@
   (get-umm-json-ges-disc-airx3std-type params
                                        (get-ges-disc-services-map)
                                        make-service-metadata))
+(defn get-umm-json-concept
+  [concept-id]
+  (json/generate-string
+    ((get-all-metadata) concept-id)))
 
 (defn handle-prototype-request
-  [path-w-extension params headers query-string]
-  (case path-w-extension
-    "collections" (get-umm-json-ges-disc-airx3std-collection)
-    "variables" (get-umm-json-ges-disc-airx3std-variables params)
-    "services" (get-umm-json-ges-disc-airx3std-services params)))
+  ([path-w-extension params headers]
+    (handle-prototype-request path-w-extension params headers ""))
+  ([path-w-extension params headers query-string]
+    (case path-w-extension
+      "collections" (get-umm-json-ges-disc-airx3std-collection)
+      "variables" (get-umm-json-ges-disc-airx3std-variables params)
+      "services" (get-umm-json-ges-disc-airx3std-services params)
+      (get-umm-json-concept path-w-extension))))
