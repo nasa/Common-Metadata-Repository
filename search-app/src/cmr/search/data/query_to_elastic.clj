@@ -61,6 +61,16 @@
   "Groovy script used by elastic to bin the keyword score based on bin-size"
   (slurp (io/resource "bin_keyword_score.groovy")))
 
+(defconfig community-usage-bin-size
+  "When sort-bin-keyword-scores is true, the keyword score should
+  be rounded to the nearest keyword-score-bin-size"
+  {:type Double
+   :default 1000.0})
+
+(def community-usage-bin-script
+  "Groovy script used by elastic to bin the community usage value based on bin-size"
+  (slurp (io/resource "bin_community_usage.groovy")))
+
 (defn- doc-values-field-name
   "Returns the doc-values field-name for the given field."
   [field]
@@ -375,7 +385,15 @@
 
 (defn- score-sort-order
   "Determine the keyword sort order based on the sort-use-relevancy-score config and the presence
-   of temporal range parameters in the query"
+   of temporal range parameters in the query.
+
+   The algorithm is to currently compare scores in the following order (we only go to the next level
+   in the scoring system in the case of a tie at the higher level):
+   1. keyword boost
+   2. temporal overlap
+   3. community usage
+   4. temporal end date of the collection
+   5. processing level."
   [query]
   (let [use-keyword-sort? (keywords-extractor/contains-keyword-condition? query)
         use-temporal-sort? (and (temporal-conditions/contains-temporal-conditions? query)
@@ -394,7 +412,11 @@
        ;; We only include this if one of the others is present
        (when (and (or use-temporal-sort? use-keyword-sort?)
                   (sort-use-relevancy-score))
-         [{:usage-relevancy-score {:order :desc :missing 0}}])
+         [{:_script {:params {:binSize  (community-usage-bin-size)}
+                     :type :number
+                     :script community-usage-bin-script
+                     :order :desc
+                     :missing 0}}])
        ;; If end-date is nil, collection is ongoing so use today so ongoing
        ;; collections will be at the top
        (when use-keyword-sort?
