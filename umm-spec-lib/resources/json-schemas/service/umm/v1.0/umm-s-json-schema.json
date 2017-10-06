@@ -12,7 +12,7 @@
           "items": {
             "$ref": "#/definitions/SubsetTypeEnum"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "SupportedProjections": {
           "description": "This element is used to identify the list of supported projections types.",
@@ -20,7 +20,7 @@
           "items": {
             "$ref": "#/definitions/ProjectionTypeEnum"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "InterpolationType": {
           "description": "This element is used to identify the list of supported interpolation types.",
@@ -28,7 +28,7 @@
           "items": {
             "$ref": "#/definitions/InterpolationTypeEnum"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "SupportedFormats": {
           "description": "This project element describes the list of names of the formats supported by the service.",
@@ -36,7 +36,7 @@
           "items": {
             "$ref": "#/definitions/FormatTypeEnum"
           },
-          "minItems": 0
+          "minItems": 1
         }
       }
     },
@@ -118,7 +118,7 @@
         "items": {
           "$ref": "#/definitions/LayerType"
         },
-        "minItems": 0
+        "minItems": 1
       },
       "ServiceOptions": {
         "description": "This element contains important information about the Unique Resource Locator for the service.",
