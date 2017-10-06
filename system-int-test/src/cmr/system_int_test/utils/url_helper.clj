@@ -239,30 +239,6 @@
   provider-id
   task-id))
 
-(defn ingest-create-variable-url
-  "Get the variable ingest URL"
-  []
-  (format "http://localhost:%s/variables" (transmit-config/ingest-port)))
-
-(defn ingest-update-variable-url
-  "Get the variable ingest URL"
-  [variable-id]
-  (format "http://localhost:%s/variables/%s"
-          (transmit-config/ingest-port)
-          variable-id))
-
-(defn ingest-create-service-url
-  "Get the service ingest URL"
-  []
-  (format "http://localhost:%s/services" (transmit-config/ingest-port)))
-
-(defn ingest-update-service-url
-  "Get the service ingest URL"
-  [service-id]
-  (format "http://localhost:%s/services/%s"
-          (transmit-config/ingest-port)
-          service-id))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 
