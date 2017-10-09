@@ -28,34 +28,41 @@
   (str "Product,Version,Hosts\n"
        "Usage-10,3,10\n"
        "Usage-100,1,100\n"
-       "Usage-30,2,30\n"))
+       "Usage-30,2,30\n"
+       "Usage-130,1,130\n"))
 
 (deftest relevancy-temporal-ranges
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
   (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! false))
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                             {:ShortName "Usage-30"
-                                              :Version "2"
-                                              :EntryTitle "Elevation coll1"
-                                              :Platforms [(data-umm-c/platform {:ShortName "Usage"})]
-                                              :TemporalExtents [(data-common/temporal-extent {:beginning-date-time "2003-08-01T00:00:00Z"
-                                                                                              :ending-date-time "2005-10-01T00:00:00Z"})]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                             {:ShortName "Usage-100"
-                                              :Version "1"
-                                              :EntryTitle "Elevation coll2"
-                                              :TemporalExtents [(data-common/temporal-extent {:beginning-date-time "2001-08-01T00:00:00Z"
-                                                                                              :ending-date-time "2010-10-01T00:00:00Z"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1"
-                                            (data-umm-c/collection
-                                             {:ShortName "Usage-10"
-                                              :Version "3"
-                                              :EntryTitle "Elevation coll3"
-                                              :TemporalExtents [(data-common/temporal-extent {:beginning-date-time "2002-10-15T12:00:00Z"
-                                                                                              :ends-at-present? true})]}))]
+  (let [coll1 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "Usage-30"
+                 :Version "2"
+                 :EntryTitle "Elevation coll1"
+                 :Platforms [(data-umm-c/platform {:ShortName "Usage"})]
+                 :TemporalExtents [(data-common/temporal-extent
+                                    {:beginning-date-time "2003-08-01T00:00:00Z"
+                                     :ending-date-time "2005-10-01T00:00:00Z"})]}))
+        coll2 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "Usage-100"
+                 :Version "1"
+                 :EntryTitle "Elevation coll2"
+                 :TemporalExtents [(data-common/temporal-extent
+                                    {:beginning-date-time "2001-08-01T00:00:00Z"
+                                     :ending-date-time "2010-10-01T00:00:00Z"})]}))
+        coll3 (d/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "Usage-10"
+                 :Version "3"
+                 :EntryTitle "Elevation coll3"
+                 :TemporalExtents [(data-common/temporal-extent
+                                    {:beginning-date-time "2002-10-15T12:00:00Z"
+                                     :ends-at-present? true})]}))]
     (index/wait-until-indexed)
 
     (testing "Keyword and temporal"
@@ -63,28 +70,36 @@
         (is (d/refs-match-order? expected-collections (search/find-refs :collection search-params)))
 
         "Keyword search baseline"
-        [coll3 coll2 coll1] {:keyword "Elevation"}
+        [coll3 coll2 coll1]
+        {:keyword "Elevation"}
 
         "Keyword tie breaker temporal"
-        [coll3 coll2 coll1] {:keyword "Elevation" :temporal ["2005-01-01T10:00:00Z,2011-03-01T0:00:00Z"]}
+        [coll3 coll2 coll1]
+        {:keyword "Elevation" :temporal ["2005-01-01T10:00:00Z,2011-03-01T0:00:00Z"]}
 
         "Equal temporal and keyword"
-        [coll3 coll2 coll1] {:keyword "Elevation" :temporal ["2004-01-01T10:00:00Z,2005-03-01T0:00:00Z"]}
+        [coll3 coll2 coll1]
+        {:keyword "Elevation" :temporal ["2004-01-01T10:00:00Z,2005-03-01T0:00:00Z"]}
 
         "Keyword takes precedence over temporal"
-        [coll1 coll3 coll2] {:keyword "Usage" :temporal ["2004-01-01T10:00:00Z,2015-03-01T0:00:00Z"]}))
+        [coll1 coll3 coll2]
+        {:keyword "Usage" :temporal ["2004-01-01T10:00:00Z,2015-03-01T0:00:00Z"]}))
 
    (testing "Keyword, temporal, and usage"
+     ;; No binning of community usage
+     (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-community-usage-bin-size! 1))
      (hu/ingest-community-usage-metrics sample-usage-csv)
 
      (are3 [expected-collections search-params]
        (is (d/refs-match-order? expected-collections (search/find-refs :collection search-params)))
 
        "Equal temporal and keyword, community usage tie breaker"
-       [coll2 coll1 coll3] {:keyword "Elevation" :temporal ["2004-01-01T10:00:00Z,2005-03-01T0:00:00Z"]}
+       [coll2 coll1 coll3] {:keyword "Elevation"
+                            :temporal ["2004-01-01T10:00:00Z,2005-03-01T0:00:00Z"]}
 
        "Temporal takes precedence over community usage"
-       [coll3 coll2 coll1] {:keyword "Elevation" :temporal ["2005-01-01T10:00:00Z,2011-03-01T0:00:00Z"]}))
+       [coll3 coll2 coll1] {:keyword "Elevation"
+                            :temporal ["2005-01-01T10:00:00Z,2011-03-01T0:00:00Z"]}))
 
    (testing "Keyword and usage"
      (are3 [expected-collections search-params]
@@ -106,15 +121,82 @@
 
      (testing "bin size 0.1, same order"
        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.1))
-       (is (d/refs-match-order? [coll1 coll2 coll3] (search/find-refs :collection {:keyword "Usage"}))))
+       (is (d/refs-match-order? [coll1 coll2 coll3]
+                                (search/find-refs :collection {:keyword "Usage"}))))
 
      (testing "bin size 0.2, order by usage"
        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.2))
-       (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"}))))
+       (is (d/refs-match-order? [coll2 coll1 coll3]
+                                (search/find-refs :collection {:keyword "Usage"}))))
 
      (testing "bin size 0.3 - same as 0.2"
        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-keyword-score-bin-size! 0.3))
-       (is (d/refs-match-order? [coll2 coll1 coll3] (search/find-refs :collection {:keyword "Usage"})))))))
+       (is (d/refs-match-order? [coll2 coll1 coll3]
+                                (search/find-refs :collection {:keyword "Usage"})))))))
+
+(deftest community-usage-binning
+  (let [coll-usage-10 (d/ingest-umm-spec-collection
+                       "PROV1"
+                       (data-umm-c/collection
+                        {:ShortName "Usage-10"
+                         :Version "3"
+                         :EntryTitle "Usage-10"
+                         :TemporalExtents [(data-common/temporal-extent
+                                            {:beginning-date-time "2001-08-01T00:00:00Z"
+                                             :ending-date-time "2004-01-01T00:00:00Z"})]}))
+        coll-usage-30 (d/ingest-umm-spec-collection
+                       "PROV1"
+                       (data-umm-c/collection
+                        {:ShortName "Usage-30"
+                         :Version "2"
+                         :EntryTitle "Usage-30"
+                         :TemporalExtents [(data-common/temporal-extent
+                                            {:beginning-date-time "2001-08-01T00:00:00Z"
+                                             :ending-date-time "2003-01-01T00:00:00Z"})]}))
+        coll-usage-100 (d/ingest-umm-spec-collection
+                        "PROV1"
+                        (data-umm-c/collection
+                         {:ShortName "Usage-100"
+                          :Version "1"
+                          :EntryTitle "Usage-100"
+                          :TemporalExtents [(data-common/temporal-extent
+                                             {:beginning-date-time "2001-08-01T00:00:00Z"
+                                              :ending-date-time "2002-01-01T00:00:00Z"})]}))
+        coll-usage-130 (d/ingest-umm-spec-collection
+                        "PROV1"
+                        (data-umm-c/collection
+                         {:ShortName "Usage-130"
+                          :Version "1"
+                          :EntryTitle "Usage-130"
+                          :TemporalExtents [(data-common/temporal-extent
+                                             {:beginning-date-time "2000-08-01T00:00:00Z"
+                                              :ending-date-time "2001-01-01T00:00:00Z"})]}))
+        coll-no-usage (d/ingest-umm-spec-collection
+                       "PROV1"
+                       (data-umm-c/collection
+                        {:ShortName "No-usage"
+                         :Version "3"
+                         :EntryTitle "No-usage"
+                         :TemporalExtents [(data-common/temporal-extent
+                                            {:beginning-date-time "2001-08-01T00:00:00Z"
+                                             :ends-at-present? true})]}))]
+    (hu/ingest-community-usage-metrics sample-usage-csv)
+    (testing "Community usage binning"
+      (testing "All in different bins returns by community usage order."
+        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-community-usage-bin-size! 1))
+        (is (d/refs-match-order?
+             [coll-usage-130 coll-usage-100 coll-usage-30 coll-usage-10 coll-no-usage]
+             (search/find-refs :collection {:keyword "Usage"}))))
+      (testing "All in the same bin returns by temporal end date."
+        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-community-usage-bin-size! 1000))
+        (is (d/refs-match-order?
+             [coll-no-usage coll-usage-10 coll-usage-30 coll-usage-100 coll-usage-130]
+             (search/find-refs :collection {:keyword "Usage"}))))
+      (testing "Usage 100 and 130 binned together and no usage, 10, and 30 binned together"
+        (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-community-usage-bin-size! 100))
+        (is (d/refs-match-order?
+             [coll-usage-100 coll-usage-130 coll-no-usage coll-usage-10 coll-usage-30]
+             (search/find-refs :collection {:keyword "Usage"})))))))
 
 ;; Collections with the same keyword score, community usage, and end date
 ;; should be sorted by humanized processing level descending
