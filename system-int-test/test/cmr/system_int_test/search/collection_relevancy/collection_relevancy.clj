@@ -8,7 +8,6 @@
    [cmr.common.config :as config]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-common]
@@ -32,9 +31,9 @@
        "Usage-130,1,130\n"))
 
 (deftest relevancy-temporal-ranges
-  (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-relevancy-score! true))
-  (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-temporal-relevancy! true))
-  (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-bin-keyword-scores! false))
+  (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-sort-use-relevancy-score! true))
+  (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-sort-use-temporal-relevancy! true))
+  (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-sort-bin-keyword-scores! false))
   (let [coll1 (d/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection
@@ -87,7 +86,7 @@
 
    (testing "Keyword, temporal, and usage"
      ;; No binning of community usage
-     (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-community-usage-bin-size! 1))
+     (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-community-usage-bin-size! 1))
      (hu/ingest-community-usage-metrics sample-usage-csv)
 
      (are3 [expected-collections search-params]
@@ -117,20 +116,20 @@
      (is (= [0.65 0.5 0.5]
             (map :score (:refs (search/find-refs :collection {:keyword "Usage"})))))
 
-     (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-bin-keyword-scores! true))
+     (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-sort-bin-keyword-scores! true))
 
      (testing "bin size 0.1, same order"
-       (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-keyword-score-bin-size! 0.1))
+       (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-keyword-score-bin-size! 0.1))
        (is (d/refs-match-order? [coll1 coll2 coll3]
                                 (search/find-refs :collection {:keyword "Usage"}))))
 
      (testing "bin size 0.2, order by usage"
-       (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-keyword-score-bin-size! 0.2))
+       (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-keyword-score-bin-size! 0.2))
        (is (d/refs-match-order? [coll2 coll1 coll3]
                                 (search/find-refs :collection {:keyword "Usage"}))))
 
      (testing "bin size 0.3 - same as 0.2"
-       (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-keyword-score-bin-size! 0.3))
+       (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-keyword-score-bin-size! 0.3))
        (is (d/refs-match-order? [coll2 coll1 coll3]
                                 (search/find-refs :collection {:keyword "Usage"})))))))
 
@@ -183,17 +182,17 @@
     (hu/ingest-community-usage-metrics sample-usage-csv)
     (testing "Community usage binning"
       (testing "All in different bins returns by community usage order."
-        (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-community-usage-bin-size! 1))
+        (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-community-usage-bin-size! 1))
         (is (d/refs-match-order?
              [coll-usage-130 coll-usage-100 coll-usage-30 coll-usage-10 coll-no-usage]
              (search/find-refs :collection {:keyword "Usage"}))))
       (testing "All in the same bin returns by temporal end date."
-        (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-community-usage-bin-size! 1000))
+        (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-community-usage-bin-size! 1000))
         (is (d/refs-match-order?
              [coll-no-usage coll-usage-10 coll-usage-30 coll-usage-100 coll-usage-130]
              (search/find-refs :collection {:keyword "Usage"}))))
       (testing "Usage 100 and 130 binned together and no usage, 10, and 30 binned together"
-        (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-community-usage-bin-size! 100))
+        (dev-sys-util/eval-in-dev-sys `(cmr.search.data.elastic-relevancy-scoring/set-community-usage-bin-size! 100))
         (is (d/refs-match-order?
              [coll-usage-100 coll-usage-130 coll-no-usage coll-usage-10 coll-usage-30]
              (search/find-refs :collection {:keyword "Usage"})))))))
