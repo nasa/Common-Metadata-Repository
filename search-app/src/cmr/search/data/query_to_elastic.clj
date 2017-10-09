@@ -65,7 +65,7 @@
   "When sort-bin-keyword-scores is true, the keyword score should
   be rounded to the nearest keyword-score-bin-size"
   {:type Double
-   :default 1000.0})
+   :default 25.0})
 
 (def community-usage-bin-script
   "Groovy script used by elastic to bin the community usage value based on bin-size"
