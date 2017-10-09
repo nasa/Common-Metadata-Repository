@@ -20,7 +20,6 @@
           :Offset
           :Scale
           :ScienceKeywords
-          :Services
           :Sets
           :Units
           :ValidRanges
