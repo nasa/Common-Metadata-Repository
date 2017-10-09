@@ -17,6 +17,7 @@
    [cmr.common.util :as util]
    ;; Required to be available at runtime.
    [cmr.search.data.query-to-elastic]
+   [cmr.search.data.elastic-relevancy-scoring]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex]
    [cmr.transmit.index-set :as index-set]))
