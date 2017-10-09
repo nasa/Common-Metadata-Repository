@@ -46,9 +46,6 @@
    ;; for Science Keywords is maintained in the Keyword Management System (KMS).
    ScienceKeywords
 
-   ;; The service information of a variable.
-   Services
-
    ;; The name of a variable.
    Name
 
@@ -62,55 +59,6 @@
    DataType
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Var)
-
-;; The elements of this section apply to the fill value of a variable.
-(defrecord FillValueType
-  [
-   ;; The fill value of the variable in the data file.
-   Value
-
-   ;; Type of the fill value of the variable in the data file.
-   Type
-
-   ;; Description of the fill value of the variable in the data file.
-   Description
-  ])
-(record-pretty-printer/enable-record-pretty-printing FillValueType)
-
-;; Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.
-(defrecord ValidRangeType
-  [
-   ;; Minimum data value of a variable. For example, '-100'.
-   Min
-
-   ;; Maximum data value of a variable. For example, '5000'.
-   Max
-  ])
-(record-pretty-printer/enable-record-pretty-printing ValidRangeType)
-
-;; A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An
-;; example of a dimension size is '1200'. Variables are rarely one dimensional.
-(defrecord DimensionType
-  [
-   ;; The name of the dimension of the variable represented in the data field. For example, 'XDim.
-   Name
-
-   ;; The size of the dimension of the variable represented in the data field. For example, '1200'.
-   Size
-  ])
-(record-pretty-printer/enable-record-pretty-printing DimensionType)
-
-;; The elements of this section apply to a measurement.
-(defrecord MeasurementsType
-  [
-   ;; This element allows authors to provide community sourced words or phrases to further describe
-   ;; the variable data.
-   MeasurementName
-
-   ;; This element allows authors to identify the source of the measurements.
-   MeasurementSource
-  ])
-(record-pretty-printer/enable-record-pretty-printing MeasurementsType)
 
 ;; The elements of this section apply to a variable.
 (defrecord CharacteristicsType
@@ -160,6 +108,32 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing CharacteristicsType)
 
+;; The elements of this section apply to a measurement.
+(defrecord MeasurementsType
+  [
+   ;; This element allows authors to provide community sourced words or phrases to further describe
+   ;; the variable data.
+   MeasurementName
+
+   ;; This element allows authors to identify the source of the measurements.
+   MeasurementSource
+  ])
+(record-pretty-printer/enable-record-pretty-printing MeasurementsType)
+
+;; The elements of this section apply to the fill value of a variable.
+(defrecord FillValueType
+  [
+   ;; The fill value of the variable in the data file.
+   Value
+
+   ;; Type of the fill value of the variable in the data file.
+   Type
+
+   ;; Description of the fill value of the variable in the data file.
+   Description
+  ])
+(record-pretty-printer/enable-record-pretty-printing FillValueType)
+
 ;; The elements of this section apply to variable sets.
 (defrecord SetType
   [
@@ -181,18 +155,25 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SetType)
 
-;; The elements of this section apply to a variable.
-(defrecord ServiceType
+;; Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.
+(defrecord ValidRangeType
   [
-   ;; The service types available for the variable. For example, 'WMS, WCS'.
-   ServiceTypes
+   ;; Minimum data value of a variable. For example, '-100'.
+   Min
 
-   ;; A flag to indicate whether this variable is able to be visualized within the context of a
-   ;; service.
-   Visualizable
-
-   ;; A flag to indicate whether this variable is able to be subsetted within the context of a
-   ;; service.
-   Subsettable
+   ;; Maximum data value of a variable. For example, '5000'.
+   Max
   ])
-(record-pretty-printer/enable-record-pretty-printing ServiceType)
+(record-pretty-printer/enable-record-pretty-printing ValidRangeType)
+
+;; A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An
+;; example of a dimension size is '1200'. Variables are rarely one dimensional.
+(defrecord DimensionType
+  [
+   ;; The name of the dimension of the variable represented in the data field. For example, 'XDim.
+   Name
+
+   ;; The size of the dimension of the variable represented in the data field. For example, '1200'.
+   Size
+  ])
+(record-pretty-printer/enable-record-pretty-printing DimensionType)
