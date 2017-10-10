@@ -40,6 +40,20 @@
       "nil if no acceptable type"
       {"content-type" "text/html2, application/foo"} nil)))
 
+(deftest mime-type-existance
+  (testing "mime-types exist"
+    (is (= true (mt/mime-type-exists? mt/html "accept" {"accept" "text/html"})))
+    (is (= true (mt/mime-type-exists? mt/html "accept" {"accept" "text/csv, text/html"})))
+    (is (= true (mt/mime-type-exists? mt/html "accept" {"content-type" mt/json, "accept" "*/* , text/csv, text/html"})))
+    (is (= true (mt/mime-type-exists? mt/html "accept" {"connection" "keep-alive", "user-agent" "Apache-HttpClient/4.5 (Java/1.8.0_92)", "host" "localhost:3003", "accept" "*/*, text/html", "echo-token" "ABC-2"}))))
+
+  (testing "mime-types do not exist"
+    (is (= false (mt/mime-type-exists? mt/html "accept" {"accept" "application/xml; q=1"})))
+    (is (= false (mt/mime-type-exists? mt/html "accept" {"concept-type" "application/xml; q=1"})))
+    (is (= false (mt/mime-type-exists? mt/html "accept" {"connection" "keep-alive", "user-agent" "Apache-HttpClient/4.5 (Java/1.8.0_92)", "host" "localhost:3003", "accept" "*/*, text/csv", "echo-token" "ABC-2"})))))
+
+
+
 (deftest convert-format-extension-to-mime-type
   (testing "valid extensions"
     (is (= mt/json (mt/path->mime-type "granules.json")))
@@ -97,4 +111,3 @@
 (deftest test-format->mime-type
   (is (= "application/json" (mt/format->mime-type :json)))
   (is (= "application/vnd.nasa.cmr.umm+json" (mt/format->mime-type :umm-json))))
-

@@ -5,7 +5,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
-   [cmr.common-app.api.log :as common-log]
+   [cmr.common-app.api.logging-config :as common-logging-config]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.log :refer (debug info warn error)]
@@ -149,7 +149,7 @@
       job-management-routes
 
       ;; add routes for changing logging during run time.
-      common-log/log-api-routes
+      common-logging-config/logging-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

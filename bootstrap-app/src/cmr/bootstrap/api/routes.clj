@@ -8,7 +8,6 @@
    [cmr.bootstrap.api.virtual-products :as virtual-products]
    [cmr.bootstrap.services.health-service :as hs]
    [cmr.common-app.api.health :as common-health]
-   [cmr.common-app.api.log :as common-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
@@ -62,9 +61,6 @@
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}
           (virtual-products/bootstrap request-context params)))
-
-      ;; add routes for changing logging during run time.
-      common-log/log-api-routes
 
       ;; Add routes for accessing caches
       common-routes/cache-api-routes

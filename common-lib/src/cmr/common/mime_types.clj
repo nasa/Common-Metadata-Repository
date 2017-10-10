@@ -3,10 +3,13 @@
   type and HTTP Content-Type strings and data formats supported by the
   CMR."
   (:refer-clojure :exclude [atom])
-  (:require [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as svc-errors]
-            [clojure.set :as set]))
+  (:require
+   [clojure.string :as string]
+   [clojure.set :as set]
+   [cmr.common.services.errors :as svc-errors]
+   [cmr.common.util :as util]))
+
+
 
 ;;; Core Functions
 
@@ -15,10 +18,10 @@
 (defn- parse-mime-type*
   [mt]
   (when mt
-    (let [[base & parts] (str/split mt #"\s*;\s*")
+    (let [[base & parts] (string/split mt #"\s*;\s*")
           params (into {}
                        (for [part parts]
-                         (let [[k v] (str/split part #"=")]
+                         (let [[k v] (string/split part #"=")]
                            [k v])))]
       {:base       base
        :parameters params})))
@@ -163,12 +166,12 @@
   Wildcards (e.g. \"*/xml\") are not supported."
   [header-value]
   (when header-value
-    (map base-mime-type-of (str/split header-value #"\s*,\s*"))))
+    (map base-mime-type-of (string/split header-value #"\s*,\s*"))))
 
 (defn get-header
   "Gets a value from a header map in a case-insensitive way."
   [m k]
-  (get (util/map-keys str/lower-case m) (str/lower-case k)))
+  (get (util/map-keys string/lower-case m) (string/lower-case k)))
 
 (defn- header-mime-type-getter
   "Returns a function which uses the supplied header key k to retrieve supplied mime types."
@@ -187,6 +190,18 @@
 (def content-type-mime-type
   "Returns the mime type passed in the Content-Type header"
   (header-mime-type-getter "content-type"))
+
+(defn mime-type-exists?
+  "Returns true if the passed in mime-type exists in the passed in headers,
+   otherwise the function returns false. This function replacates 
+   (.contains (mt/get-header headers header-type) mime-type)) in a more idiomatic way"
+  [mime-type header-type headers]
+  (let [header (-> headers
+                   (get-header header-type))]
+    (if (and (not (nil? header))
+             (some #{mime-type} (string/split header #"\s*,\s*")))
+      true
+      false)))
 
 (def extension-aliases
   "This defines aliases for URL extensions that are supported"
@@ -208,7 +223,7 @@
   ([search-path-w-extension valid-mime-types]
    (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
      ;; Convert extension into a keyword. We don't use camel snake kebab as it would convert "echo10" to "echo-10"
-     (let [extension-key (keyword (str/replace extension #"_" "-"))
+     (let [extension-key (keyword (string/replace extension #"_" "-"))
            ;; Parse the extension as version UMM JSON extension or look it up using format->mime-type
            mime-type (or (parse-versioned-umm-json-path-extension extension)
                          (format->mime-type (get extension-aliases extension-key extension-key)))]

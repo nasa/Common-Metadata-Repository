@@ -153,8 +153,11 @@
   ;; Change system integration tests to the new level
   (sit-sys/set-logging-level level)
 
-  ;; Set timbre.logging to the level
-  (taoensso.timbre/set-level! level)
+  ;; Set common logging to the level. Use merge-logging-configuration to by pass the logging
+  ;; restrictions if we want to set the logging levels higher than the coded allowed values since
+  ;; this is for the development environment.
+  (log/merge-logging-configuration {:level level
+                                    :ns-pattern-map {:all level}})
   (println "Logging level set to" level)
   nil)
 

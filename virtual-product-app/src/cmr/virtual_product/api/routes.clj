@@ -2,7 +2,6 @@
   "Defines the HTTP URL routes for the application."
   (:require
    [cmr.common-app.api.health :as common-health]
-   [cmr.common-app.api.log :as common-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.errors :as errors]
    [cmr.common.api.context :as context]
@@ -14,7 +13,7 @@
    [compojure.handler :as handler]
    [compojure.route :as route]
    [ring.middleware.json :as ring-json]))
-           
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -27,9 +26,6 @@
              :body (ts/translate request-context (slurp body))}
             {:status 415
              :body (str "Unsupported content type [" content-type "]")})))
-
-      ;; add routes for changing logging during run time.
-      common-log/log-api-routes
 
       (common-health/health-api-routes hs/health))
     (route/not-found "Not Found")))

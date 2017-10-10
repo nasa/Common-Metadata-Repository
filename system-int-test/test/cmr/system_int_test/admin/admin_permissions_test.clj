@@ -1,15 +1,16 @@
 (ns cmr.system-int-test.admin.admin-permissions-test
   "Verifies the correct administrative permissions are enforced admin only apis"
-  (:require [clojure.test :refer :all]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.index-util :as index]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.utils.url-helper :as url]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.index-util :as index-util]
-            [cmr.transmit.config :as transmit-config]
-            [clj-http.client :as client]))
+  (:require
+   [clj-http.client :as client]
+   [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.index-util :as index-util]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-search? false
                                                                  :grant-all-ingest? false}))
