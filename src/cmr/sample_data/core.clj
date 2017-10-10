@@ -22,6 +22,9 @@
     (get-ges-disc-airx3std-collection file-type const/default-handler-key))
   ([^Keyword file-type as-data]
     (case file-type
+      :umm-json (util/get-file
+                 (str const/collections-resource "/GES_DISC/AIRX3STD_006.umm-json")
+                 as-data)
       :json (util/get-file
              (str const/collections-resource "/GES_DISC/AIRX3STD_006.json")
              as-data)
@@ -37,6 +40,10 @@
      file-type const/default-handler-key))
   ([^Keyword file-type as-data]
     (case file-type
+      :umm-json (util/get-file
+                 (str const/collections-resource
+                      "/GES_DISC/AIRX3STD_006-metadata.umm-json")
+                 as-data)
       :json (util/get-file
              (str const/collections-resource
                   "/GES_DISC/AIRX3STD_006-metadata.json")
@@ -51,12 +58,12 @@
    (get-ges-disc-airx3std-opendap-service const/default-handler-key))
   ([as-data]
    (util/get-file
-     (str const/services-resource "/GES_DISC/AIRX3STD/OPeNDAP.json")
+     (str const/services-resource "/GES_DISC/AIRX3STD/OPeNDAP.umm-json")
      as-data)))
 
 (defn get-ges-disc-airx3std-ch4-variable
   ([filename-part]
-    (get-ges-disc-airx3std-ch4-variable filename-part :json))
+    (get-ges-disc-airx3std-ch4-variable filename-part :umm-json))
   ([filename-part ^Keyword file-type]
     (get-ges-disc-airx3std-ch4-variable filename-part file-type :data))
   ([filename-part ^Keyword file-type as-data]
