@@ -2043,7 +2043,7 @@ The following extensions and MIME types are supported by the `/concepts/` resour
 
 The following extensions and MIME types are supported by the `/concepts/` resource for the variable concept type:
 
-  * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.9"
+  * `umm_json`     "application/vnd.nasa.cmr.umm+json;version=1.1"
 
 ### <a name="search-with-post"></a> Search with POST
 
@@ -3235,7 +3235,7 @@ __Example__
 ```
 curl -g -i "%CMR-ENDPOINT%/variables.umm_json?name=Variable1234&pretty=true"
 HTTP/1.1 200 OK
-Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.9; charset=UTF-8
+Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.1; charset=utf-8
 Content-Length: 1177
 
 {
