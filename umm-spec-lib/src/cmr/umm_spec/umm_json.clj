@@ -7,7 +7,7 @@
    ;; To get ability to convert joda time to json
    [cmr.common.joda-time]
    [cmr.umm-spec.json-schema :as js]
-   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.record-generator :as record-gen]
    [cmr.umm-spec.versioning :as ver]))
 

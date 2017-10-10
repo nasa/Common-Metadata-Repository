@@ -7,7 +7,7 @@
    [cmr.common.xml.simple-xpath :as xpath]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
-   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.umm-to-xml-mappings.dif10 :as umm-to-dif10]
    [cmr.umm-spec.umm-to-xml-mappings.dif9 :as umm-to-dif9]
