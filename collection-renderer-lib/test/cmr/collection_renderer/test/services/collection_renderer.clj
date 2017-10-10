@@ -22,9 +22,9 @@
 
 (deftest render-default-collection
   (let [coll expected-conversion/example-collection-record
-          ^String html (cr/render-collection (renderer-context) coll)]
-      (is html "Expected some HTML to be returned")
-      (is (.contains html (:EntryTitle coll)))))
+        ^String html (cr/render-collection (renderer-context) coll)]
+    (is html "Expected some HTML to be returned")
+    (is (.contains html (:EntryTitle coll)))))
 
 ;; This checks that we can render any UMM collection without getting an exception.
 ;; A small number of tries is done to avoid making tests take a long time.
@@ -36,6 +36,6 @@
 ;; Verify that the title of the html is the entry title
 (deftest render-title-as-entry-title
   (let [coll expected-conversion/example-collection-record
-            ^String html (cr/render-collection (renderer-context) coll)]
-        (is html "Expected a title containing the entry title")
-        (is (.contains html (str "<title>" (:EntryTitle coll) "</title>")))))
+         ^String html (cr/render-collection (renderer-context) coll)]
+    (is html "Expected a title containing the entry title")
+    (is (.contains html (str "<title>" (:EntryTitle coll) "</title>")))))
