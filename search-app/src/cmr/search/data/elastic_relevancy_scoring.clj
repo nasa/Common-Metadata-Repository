@@ -43,8 +43,8 @@
   (slurp (io/resource "bin_keyword_score.groovy")))
 
 (defconfig community-usage-bin-size
-  "When sort-bin-keyword-scores is true, the keyword score should
-  be rounded to the nearest keyword-score-bin-size"
+  "When sort-use-relevancy-score is true, the community usage score should
+  be rounded to the nearest community-usage-bin-size"
   {:type Double
    :default 400.0})
 
