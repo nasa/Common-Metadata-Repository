@@ -6,7 +6,7 @@
    [clojure.string :as str]
    [cmr.common.lifecycle :as l]
    [cmr.common.log :refer [info]]
-   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.versioning :as umm-version])
   (:import

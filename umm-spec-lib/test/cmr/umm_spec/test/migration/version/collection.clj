@@ -1,10 +1,10 @@
-(ns cmr.umm-spec.test.migration.version-migration
+(ns cmr.umm-spec.test.migration.version.collection
   (:require
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
-   [cmr.umm-spec.migration.version-migration :as vm]
+   [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
