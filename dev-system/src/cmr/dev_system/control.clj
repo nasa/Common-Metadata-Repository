@@ -89,14 +89,14 @@
 
     ;; Allow code eval
     side-api/eval-routes
-    
+
     ;; Retrieve KMS resources
     (GET "/kms/:keyword-scheme/:filename" [keyword-scheme filename]
       (let [resource (io/resource (str "kms_examples/" keyword-scheme "/" filename))]
         (if resource
           {:status 200
            :body (slurp resource)
-           :headers {"Content-Type" "application/csv"}}
+           :headers {"Content-Type" "application/csv; charset=utf-8"}}
           (route/not-found "KMS resource not found\n"))))
 
     ;; For debugging. Gets the state of the world in relations to ACLs and what's indexed

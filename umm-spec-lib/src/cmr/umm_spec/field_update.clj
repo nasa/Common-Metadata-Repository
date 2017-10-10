@@ -34,9 +34,12 @@
 (defmethod apply-umm-list-update :find-and-remove
   [update-type umm update-field update-value find-value]
   (if (seq (get-in umm update-field))
-    (update-in umm update-field #(remove (fn [x]
-                                           (value-matches? find-value x))
-                                         %))
+    (let [umm-updated (update-in umm update-field #(remove (fn [x]
+                                                             (value-matches? find-value x))
+                                                     %))]
+      (if (seq (get-in umm-updated update-field))
+        umm-updated
+        (update-in umm-updated update-field seq)))
     umm))
 
 (defmethod apply-umm-list-update :find-and-replace

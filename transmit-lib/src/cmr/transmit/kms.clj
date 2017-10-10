@@ -199,7 +199,8 @@
         url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
         params (merge
                  (config/conn-params conn)
-                 {:throw-exceptions true})
+                 {:headers {:accept-charset "utf-8"}
+                  :throw-exceptions true})
         start (System/currentTimeMillis)
         response (client/get url params)]
     (debug

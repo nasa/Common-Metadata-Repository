@@ -576,12 +576,19 @@
   (es/reset-es-store context)
   (cache/reset-caches context))
 
+(defn- reset-index-set-mappings-cache
+  "Resets the index set mappings cache. It is important that the latest mappings are used whenever
+  we try to update the indexes in Elasticsearch."
+  [context]
+  (let [index-set-mappings-cache (get-in context [:system :caches idx-set/index-set-cache-key])]
+    (cache/reset index-set-mappings-cache)))
+
 (defn update-indexes
   "Updates the index mappings and settings."
   [context params]
-  (cache/reset-caches context)
+  (reset-index-set-mappings-cache context)
   (es/update-indexes context params)
-  (cache/reset-caches context))
+  (reset-index-set-mappings-cache context))
 
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"

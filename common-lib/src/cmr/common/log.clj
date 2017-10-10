@@ -251,6 +251,11 @@
 ;; think they're more efficient if they are macros when there is a lot of
 ;; logging.
 
+(defmacro trace
+  "Logs a message at the trace level."
+  [& body]
+  `(t/trace ~@body))
+
 (defmacro debug
   "Logs a message at the debug level."
   [& body]

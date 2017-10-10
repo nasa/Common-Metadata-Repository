@@ -1550,8 +1550,8 @@ If a keyword search is performed then the search results will be sorted by:
 
   * Relevance Score (descending), binned to the nearest 0.2. For example a score of 0.75 and 0.85 will be considered equal for sorting purposes.
   * Temporal Overlap (descending), if one or more temporal ranges are provided.
-  * EMS Community Usage Score (descending). The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
-  * Collection End Date (descending),  with ongoing collections defaulting to today.
+  * EMS Community Usage Score (descending), binned to the nearest 400. For example, usage of 400 and 500 will be considered equal for sorting purposes. The usage score comes from EMS metrics which contain access counts of the collections by short name and version. The metrics are ingested into the CMR.
+  * Collection End Date (descending), with ongoing collections defaulting to today.
   * Humanized processing level Id (descending)
 
 If a temporal range search is performed, the search results will be sorted by temporal overlap percentage over all ranges provided.
@@ -1579,9 +1579,6 @@ Examples of sorting by start_date in descending(Most recent data first) and asce
 
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date"
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=%2Bstart_date"
-
-
-
 
 #### <a name="retrieving-all-revisions-of-a-collection"></a> Retrieving All Revisions of a Collection
 
@@ -2677,14 +2674,6 @@ CMR-Hits: 3
 </results>
 ```
 
-Tagging allows arbitrary sets of collections to be grouped under a single namespaced value. The sets of collections can be recalled later when searching by tag fields.
-
-Tags have the following fields:
-
-* tag_key (REQUIRED): free text specifying the key of the tag. Tag key cannot contain `/` character. Tag key is case-insensitive, it is always saved in lower case. When it is specified as mixed case, CMR will convert it into lower case. It normally consists of the name of the organization or the project who created the tag followed by a dot and the name of the tag. For example, org.ceos.wgiss.cwic.quality. The maximum length for tag key is 1030 characters.
-* description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
-* originator_id (REQUIRED): the Earthdata Login ID of the person who created the tag.
-
 ### <a name="deleted-granules"></a> Find granules that have been deleted after a given date
 
 To support metadata harvesting, a harvesting client can search CMR for granules that are deleted after a given date. The only search parameter supported is `revision_date` and its format is slightly different from the `revision_date` parameter in regular granule search in that only one revision date can be provided and it can only be a starting date, not a date range. The only supported result format is json. The revision_date is limited to 1 year in the past.
@@ -2693,7 +2682,7 @@ Additionally, deleted granules search can be filtered by the provider parameter,
 
 The following search will return the concept-id, parent-collection-id, granule-ur, revision-date, and provider-id of the granules that are deleted since 01/20/2017.
 
-    curl -i "%CMR-ENDPOINT%/deleted-granules?revision_date=2017-01-20T00:00:00Z&pretty=true"
+    curl -i "%CMR-ENDPOINT%/deleted-granules.json?revision_date=2017-01-20T00:00:00Z&pretty=true"
 
 __Example Response__
 

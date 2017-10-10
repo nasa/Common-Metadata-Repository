@@ -20,11 +20,11 @@
   {:collection #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id}
    :tag #{:concept-id :native-id}
    :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
-   :service #{:concept-id :native-id}
+   :service #{:provider-id :concept-id :native-id}
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
    :humanizer #{:concept-id :native-id}
-   :variable #{:concept-id :provider-id :native-id}
+   :variable #{:provider-id :concept-id :native-id}
    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :variable-concept-id}})
 
@@ -114,7 +114,7 @@
   [context params]
   (validate-find-params params)
   (cond
-    (contains? #{:tag :tag-association :service :acl :humanizer :variable-association}
+    (contains? #{:tag :tag-association :acl :humanizer :variable-association}
                (:concept-type params))
     (find-cmr-concepts context params)
 

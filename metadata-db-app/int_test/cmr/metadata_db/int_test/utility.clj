@@ -9,10 +9,15 @@
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.util :as util]
+   [cmr.common.validations.core :as validations]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.transmit.config :as transmit-config]
    [inflections.core :as inf]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Constants and utility functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def conn-mgr-atom (atom nil))
 
@@ -47,12 +52,44 @@
   []
   (str "http://localhost:" (transmit-config/metadata-db-port) "/providers"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; utility methods
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn old-revision-concept-cleanup
+  "Runs the old revision concept cleanup job"
+  []
+  (:status
+    (client/post (old-revision-concept-cleanup-url)
+                 {:throw-exceptions false
+                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                  :connection-manager (conn-mgr)})))
 
-;;; concepts
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn expired-concept-cleanup
+  "Runs the expired concept cleanup job"
+  []
+  (:status
+    (client/post (expired-concept-cleanup-url)
+                 {:throw-exceptions false
+                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                  :connection-manager (conn-mgr)})))
+
+(defn reset-database
+  "Make a request to reset the database by clearing out all stored concepts."
+  []
+  (:status
+   (client/post (reset-url)
+                {:throw-exceptions false
+                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                 :connection-manager (conn-mgr)})))
+
+(defn created-at-same?
+  "Returns true if the `created-at` for the given concept revisions are the same
+  and none of them are nil"
+  [& concepts]
+  (let [created-ats (map :created-at concepts)]
+    (and (apply = created-ats)
+         (not-any? nil? created-ats))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Concepts
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def granule-xml
   "Valid ECHO10 granule for concept generation"
@@ -80,10 +117,6 @@
     <Orderable>true</Orderable>
     <Visible>true</Visible>
   </Collection>")
-
-(def service-edn
-  (pr-str {:name "Some Service"
-           :etc "TBD"}))
 
 (def tag-edn
   "Valid EDN for tag metadata"
@@ -114,34 +147,39 @@
     [{"type" "trim_whitespace", "field" "platform", "order" -100},
      {"type" "priority", "field" "platform", "source_value" "Aqua", "order" 10, "priority" 10}]))
 
+(def service-json
+  (json/generate-string
+   {"Name" "someService"
+    "Other" "TBD"}))
+
 (def variable-json
   (json/generate-string
-    { "Name" "totCldH2OStdErr",
-      "LongName" "totCldH2OStdErr",
-      "Units" "",
-      "DataType" "float",
-      "DimensionsName" [
-        "H2OFunc",
-        "H2OPressureLay",
-        "MWHingeSurf",
-        "Cloud",
-        "HingeSurf",
-        "H2OPressureLev",
-        "AIRSXTrack",
-        "StdPressureLay",
-        "CH4Func",
-        "StdPressureLev",
-        "COFunc",
-        "O3Func",
-        "AIRSTrack"
-      ],
-      "Dimensions" [ "11", "14", "7", "2", "100", "15", "3", "28", "10", "9" ],
-      "ValidRange" nil,
-      "Scale" "1.0",
-      "Offset" "0.0",
-      "FillValue" "-9999.0 ",
-      "VariableType" "",
-      "ScienceKeywords" []}))
+    {"Name" "totCldH2OStdErr",
+     "LongName" "totCldH2OStdErr",
+     "Units" "",
+     "DataType" "float",
+     "DimensionsName" [
+       "H2OFunc",
+       "H2OPressureLay",
+       "MWHingeSurf",
+       "Cloud",
+       "HingeSurf",
+       "H2OPressureLev",
+       "AIRSXTrack",
+       "StdPressureLay",
+       "CH4Func",
+       "StdPressureLev",
+       "COFunc",
+       "O3Func",
+       "AIRSTrack"
+     ],
+     "Dimensions" [ "11", "14", "7", "2", "100", "15", "3", "28", "10", "9" ],
+     "ValidRange" nil,
+     "Scale" "1.0",
+     "Offset" "0.0",
+     "FillValue" "-9999.0 ",
+     "VariableType" "",
+     "ScienceKeywords" []}))
 
 (def variable-association-edn
   "Valid EDN for variable association metadata"
@@ -157,12 +195,12 @@
   by default."
   {:collection collection-xml
    :granule granule-xml
-   :service service-edn
    :tag tag-edn
    :tag-association tag-association-edn
    :access-group group-edn
    :acl acl-edn
    :humanizer humanizer-json
+   :service service-json
    :variable variable-json
    :variable-association variable-association-edn})
 
@@ -272,17 +310,18 @@
 
 (defn service-concept
   "Creates a service concept"
-  ([uniq-num]
-   (service-concept uniq-num {}))
-  ([uniq-num attributes]
-   (let [extra-fields (merge {:service-name (str "service_name_" uniq-num)}
+  ([provider-id uniq-num]
+   (service-concept provider-id uniq-num {}))
+  ([provider-id uniq-num attributes]
+   (let [native-id (str "svc-native" uniq-num)
+         extra-fields (merge {:service-name (str "svc" uniq-num)}
                              (:extra-fields attributes))
          attributes (merge {:user-id (str "user" uniq-num)
-                            :format "application/edn"
+                            :format "application/json"
+                            :native-id native-id
                             :extra-fields extra-fields}
                            (dissoc attributes :extra-fields))]
-     ;; no provider-id should be specified for services
-     (dissoc (concept nil :service uniq-num attributes) :provider-id))))
+     (concept provider-id :service uniq-num attributes))))
 
 (defn humanizer-concept
  "Creates a humanizer concept"
@@ -493,13 +532,16 @@
     {:status status :revision-id revision-id :concept-id concept-id :errors errors}))
 
 (defn save-concept
-  "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
-  status, revision-id, transaction-id, and a list of error messages"
+  "Make a POST request to save a concept with JSON encoding of the concept.
+
+  Returns a map with status, revision-id, transaction-id, and a list of error
+  messages."
   ([concept]
    (save-concept concept 1))
   ([concept num-revisions]
    (let [concept (update-in concept [:revision-date]
-                            ;; Convert date times to string but allow invalid strings to be passed through
+                            ;; Convert date times to string but allow invalid
+                            ;; strings to be passed through
                             #(when % (str %)))]
      (dotimes [n (dec num-revisions)]
        (assert-no-errors (save-concept-core concept)))
@@ -639,12 +681,12 @@
 
 (defn create-and-save-service
   "Creates, saves, and returns a service concept with its data from metadata-db."
-  ([uniq-num]
-   (create-and-save-service uniq-num 1))
-  ([uniq-num num-revisions]
-   (create-and-save-service uniq-num num-revisions {}))
-  ([uniq-num num-revisions attributes]
-   (let [concept (service-concept uniq-num attributes)
+  ([provider-id uniq-num]
+   (create-and-save-service provider-id uniq-num 1))
+  ([provider-id uniq-num num-revisions]
+   (create-and-save-service provider-id uniq-num num-revisions {}))
+  ([provider-id uniq-num num-revisions attributes]
+   (let [concept (service-concept provider-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
@@ -715,8 +757,93 @@
           {:keys [concept-id revision-id]} (save-concept concept)]
       (assoc concept :concept-id concept-id :revision-id revision-id))))
 
+(defn get-revisions
+  "This is a utility function that returns revisions of interest (given the
+  respective revision ids).
+
+  The results of this function are intended to be used with `(apply ...)`."
+  [concept-id initial-revision-id second-revision-id tombstone-revision-id
+   final-revision-id]
+  (mapv #(:concept (get-concept-by-id-and-revision concept-id %))
+        [initial-revision-id second-revision-id tombstone-revision-id
+         final-revision-id]))
+
+(defn concept-created-at-assertions
+  "This function is used in tests to do the following:
+    1) Save a service
+    2) Then wait for a small period of time before saving it again
+    3) Then wait again and save a tombstone.
+    4) Finally, wait a bit and save a new (non-tombstone) revision.
+
+  All should have the same `created-at` value."
+  [test-type initial-concept]
+  (testing (format "Save %s multiple times gets same created-at" test-type)
+    (let [{concept-id :concept-id
+           initial-revision-id :revision-id} (save-concept initial-concept)
+          ;; Note - Originally planned to use the time-keeper functionality
+          ;; for this, but metadata-db tests don't have access to the control
+          ;; api that would allow this to work in CI.
+          _ (Thread/sleep 100)
+          {second-revision-id :revision-id} (save-concept initial-concept)
+          _ (Thread/sleep 100)
+          {tombstone-revision-id :revision-id} (delete-concept concept-id)
+          _ (Thread/sleep 100)
+          {final-revision-id :revision-id} (save-concept initial-concept)
+          revisions (get-revisions concept-id
+                                   initial-revision-id
+                                   second-revision-id
+                                   tombstone-revision-id
+                                   final-revision-id)]
+      (is (apply created-at-same? revisions)))))
+
+(defn concept-with-conflicting-native-id-assertions
+  "For use in tests that need to check the for conflicting concept ids."
+  [test-type field-type concept1 different-native-id]
+  (testing (str "Save a " test-type)
+    (let [{:keys [status revision-id concept-id]} (save-concept concept1)]
+      (is (= status 201))
+      (is (= 1 revision-id))
+      (testing "and another with all the same data"
+        (let [concept2 concept1
+              {:keys [status revision-id]} (save-concept concept2)]
+          (is (= 201 status))
+          (is (= 2 revision-id))))
+      (testing "and another with same data but different provider"
+        (let [concept3 (assoc concept1 :provider-id "PROV2")
+              {:keys [status revision-id]} (save-concept concept3)]
+          (is (= status 201))
+          (is (= 1 revision-id))))
+      (testing "and another the same data but with a different native-id"
+        (let [concept4 (assoc concept1 :native-id different-native-id)
+              response (save-concept concept4)
+              humanized-field (validations/humanize-field field-type)
+              ;; after the saving of concept2, the revision id was 2; the
+              ;; saving of concept3 was for a different provider, so it
+              ;; has a revision-id of 1; if the call above with concept4
+              ;; passed the constaint checks (which it shouldn't) the
+              ;; revision-id would now be 3 (but it shouldn't be)
+              failed-revision-id 3
+              find-response (get-concept-by-id-and-revision
+                             concept-id failed-revision-id)]
+          (is (= nil (:revision-id response)))
+          (is (= 409 (:status response)))
+          (is (= 404 (:status find-response)))
+          (is (= [(format (str "The provider id [%s] and %s [%s] "
+                               "combined must be unique for a given native-id "
+                               "[%s]. The following concept with the same "
+                               "provider id, %s, and native-id was "
+                               "found: [%s].")
+                          "PROV1"
+                          humanized-field
+                          (get-in concept1 [:extra-fields field-type])
+                          (:native-id concept1)
+                          humanized-field
+                          concept-id)]
+                 (:errors response))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Providers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider. Returns a map with
@@ -786,53 +913,18 @@
                  (util/remove-nil-keys provider-map))}
         (:providers (get-providers))))
 
-;;; Miscellaneous
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixtures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn old-revision-concept-cleanup
-  "Runs the old revision concept cleanup job"
-  []
-  (:status
-    (client/post (old-revision-concept-cleanup-url)
-                 {:throw-exceptions false
-                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                  :connection-manager (conn-mgr)})))
-
-(defn expired-concept-cleanup
-  "Runs the expired concept cleanup job"
-  []
-  (:status
-    (client/post (expired-concept-cleanup-url)
-                 {:throw-exceptions false
-                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                  :connection-manager (conn-mgr)})))
-
-(defn reset-database
-  "Make a request to reset the database by clearing out all stored concepts."
-  []
-  (:status
-   (client/post (reset-url) {:throw-exceptions false
-                             :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                             :connection-manager (conn-mgr)})))
-
-(defn created-at-same?
-  "Returns true if the `created-at` for the given concept revisions are the same
-  and none of them are nil"
-  [& concepts]
-  (let [created-ats (map :created-at concepts)]
-    (and (apply = created-ats)
-         (not-any? nil? created-ats))))
-
-;;; fixtures
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn reset-database-fixture
   "Creates a database fixture function to reset the database after every test.
   Optionally accepts a list of provider-ids to create before the test"
   [& providers]
   (fn [f]
     (try
-      ;; We set this to false during a test so that messages won't be published when this is run
-      ;; in dev system and cause exceptions in the indexer.
+      ;; We set this to false during a test so that messages won't be published
+      ;; when this is run in dev system and cause exceptions in the indexer.
       (side/eval-form `(mdb-config/set-publish-messages! false))
       (reset-database)
       (doseq [provider providers]

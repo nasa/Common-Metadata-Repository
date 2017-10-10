@@ -19,6 +19,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
   * /providers/\<provider-id>/variables/\<native-id>
     * [PUT - Create or update a variable.](#create-update-variable)
     * [DELETE - Delete a variable.](#delete-variable)
+  * /providers/\<provider-id>/services/\<native-id>
+    * [PUT - Create or update a service.](#create-update-service)
+    * [DELETE - Delete a service.](#delete-service)
   * /translate/collection
     * [POST - Translate collection metadata.](#translate-collection)
 
@@ -463,6 +466,62 @@ curl -i -X DELETE \
 {"concept-id":"V1200000012-PROV1","revision-id":2}
 ```
 
+### <a name="create-update-service"></a> Create / Update a Service
+
+Service concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/services/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+
+```
+curl -i -XPUT \
+-H "Content-type: application/vnd.nasa.cmr.umm+json" \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/services/service123 -d \
+"{\"Name\": \"AIRX3STD\",  \"Type\": \"OPeNDAP\",  \"Version\": \"1.9\",  \"Description\": \"AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB.\",  \"OnlineResource\": {    \"Linkage\": \"https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/\",    \"Name\": \"OPeNDAP Service for AIRS Level-3 retrieval products\",    \"Description\": \"OPeNDAP Service\"  },  \"ServiceOptions\": {\"SubsetType\": [\"Spatial\", \"Service\"],    \"SupportedProjections\": [\"Geographic\"], \"SupportedFormats\": [\"netCDF-3\", \"netCDF-4\", \"Binary\", \"ASCII\"]}}"
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>S1200000015-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+By passing the option `-H "Accept: application/json"` to `curl`, one may
+get a JSON response:
+
+```
+{"concept-id":"S1200000015-PROV1","revision-id":1}
+```
+
+### <a name="delete-service"></a> Delete a Service
+
+Service metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/services/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+
+```
+curl -i -X DELETE \
+-H "Echo-Token: XXXX" \
+%CMR-ENDPOINT%/providers/PROV1/services/service123
+```
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>S1200000015-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"S1200000015-PROV1","revision-id":2}
+```
 
 ## <a name="translate-collection"></a> Translate Collection Metadata
 
@@ -580,7 +639,7 @@ The following update types are supported:
   * Find and remove - remove any instance from the list that matches the find value.
 
 Bulk update post request takes the following parameters:
-  
+
   * Concept-ids (required) - a list of concept ids to update
   * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`
   * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
@@ -602,7 +661,7 @@ Bulk update can be initiated by sending an HTTP POST request to `%CMR-ENDPOINT%/
 
 The return value includes a status code indicating that the bulk update was successfully initiated, any errors if not successful, and on success a task-id that can be used for querying the bulk update status. The bulk update will be run asynchronously and the status of the overall bulk update task as well as the status of individual collection updates can be queried using the task id.
 
-Example: Initiate a bulk update of 3 collections. Find platforms that have Type being "Aircraft" and replace the LongName and Characteristics of these platforms with "new long name" and new Characteristics in the update-value, or add the fields specified in the update-value if they don't exist in the matched platforms. 
+Example: Initiate a bulk update of 3 collections. Find platforms that have Type being "Aircraft" and replace the LongName and Characteristics of these platforms with "new long name" and new Characteristics in the update-value, or add the fields specified in the update-value if they don't exist in the matched platforms.
 
 ```
 curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections -d

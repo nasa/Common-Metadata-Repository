@@ -48,8 +48,9 @@
       "concept-type": "service",
       "native-id": "mod10cm",
       "user-id": "user101",
-      "metadata": "service edn here",
-      "format": "application/edn",
+      "metadata": "{\"Name\": \"AIRX3STD\",  \"Type\": \"OPeNDAP\",  \"Version\":
+                   \"1.9\",  \"Description\": \"AIRS Level-3 retrieval product created using AIRS IR, AMSU without HSB.\",  \"OnlineResource\": {    \"Linkage\": \"https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/\",    \"Name\": \"OPeNDAP Service for AIRS Level-3 retrieval products\",    \"Description\": \"OPeNDAP Service\"  },  \"ServiceOptions\": {\"SubsetType\": [\"Spatial\", \"Variable\"],    \"SupportedProjections\": [\"Geographic\"], \"SupportedFormats\": [      \"netCDF-3\", \"netCDF-4\", \"Binary\", \"ASCII\"]}}",
+      "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
       "revision-id": 1, //(optional field)
       "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
@@ -119,7 +120,7 @@ The tag association metadata can have "value": "string to be indexed" or "data":
   "metadata": "{ :name \"totCldH2OStdErr\", :long-name \"totCldH2OStdErrMeasurement\", :units \"\", :data-type \"float\", :dimensions-name [ \"H2OFunc\", \"H2OPressureLay\", \"MWHingeSurf\", \"Cloud\", \"HingeSurf\", \"H2OPressureLev\", \"AIRSXTrack\", \"StdPressureLay\", \"CH4Func\", \"StdPressureLev\", \"COFunc\", \"O3Func\", \"AIRSTrack\" ], :dimensions [ \"11\", \"14\", \"7\", \"2\", \"100\", \"15\", \"3\", \"28\", \"10\", \"9\" ], :valid-range null, :scale \"1.0\", :offset \"0.0\", :fill-value \"-9999.0 \", :variable-type \"\", :science-keywords [] :originator-id \"user1\"}",
   "user-id": "user1",
   "deleted": false,
-  "format": "application/vnd.nasa.cmr.umm+json;version=1.9",
+  "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
   "extra-fields": {
     "variable-name": "totCldH2OStdErr",
     "measurement": "totCldH2OStdErrMeasurement"

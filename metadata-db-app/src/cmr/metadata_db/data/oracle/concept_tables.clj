@@ -8,8 +8,7 @@
            [inflections.core :as inf]
            [cmr.metadata-db.services.provider-validation :as pv]
            [cmr.metadata-db.data.oracle.collection-table :as ct]
-           [cmr.metadata-db.data.oracle.granule-table :as gt]
-           [cmr.metadata-db.data.oracle.service-table :as st]))
+           [cmr.metadata-db.data.oracle.granule-table :as gt]))
 
 (def all-provider-concept-types
   "All the concept types that have tables for each (non-small) provider"
@@ -40,6 +39,10 @@
   [_ _]
   "cmr_humanizers")
 
+(defmethod get-table-name :service
+  [_ _]
+  "cmr_services")
+
 (defmethod get-table-name :variable
   [_ _]
   "cmr_variables")
@@ -47,10 +50,6 @@
 (defmethod get-table-name :variable-association
   [_ _]
   "cmr_variable_associations")
-
-(defmethod get-table-name :service
-  [_ _]
-  "cmr_services")
 
 (defmethod get-table-name :default
   [provider concept-type]

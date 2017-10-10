@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.services.messages
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [cmr.common.validations.core :as validations]))
 
 (defn missing-concept-id [concept-type provider-id native-id]
   (format
@@ -88,8 +89,9 @@
     given-concept-id
     given-native-id))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Concept Constraint Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Concept Constraint Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn duplicate-field-msg
   "Returns an error message to use for concepts which violate the given unique field constraint.
@@ -128,19 +130,22 @@
           this-revision-id
           this-transaction-id))
 
-(defn pvn-equality-failure
-  [concept]
-  (format (str "The provider id [%s] and variable name [%s] combined must be "
-               "unique for a given native-id [%s]. The following concept "
-               "with the same provider id, variable name and native-id was "
-               "found: [%s].")
-          (:provider-id concept)
-          (get-in concept [:extra-fields :variable-name])
-          (:native-id concept)
-          (:concept-id concept)))
+(defn pfn-equality-failure
+  [field-type concept]
+  (let [humanized-field (validations/humanize-field field-type)]
+    (format (str "The provider id [%s] and %s [%s] combined must be "
+                 "unique for a given native-id [%s]. The following concept "
+                 "with the same provider id, %s, and native-id was found: [%s].")
+            (:provider-id concept)
+            humanized-field
+            (get-in concept [:extra-fields field-type])
+            (:native-id concept)
+            humanized-field
+            (:concept-id concept))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Provider Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Provider Messages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn provider-id-parameter-required []
   "A provider parameter was required but was not provided.")

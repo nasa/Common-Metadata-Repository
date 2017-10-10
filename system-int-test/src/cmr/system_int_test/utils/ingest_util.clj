@@ -256,8 +256,12 @@
   [response options]
   (if (get options :raw? false)
     response
-    (assoc (parse-ingest-body (or (:accept-format options) :xml) response)
-           :status (:status response))))
+    (let [response-format (or (:accept-format options)
+                              (if-let [header-format (get-in response [:headers "Content-Type"])]
+                                (mt/mime-type->format header-format)
+                                :xml))]
+      (assoc (parse-ingest-body response-format response)
+             :status (:status response)))))
 
 (defmulti parse-validate-body
   "Parse the validate response body as a given format"
@@ -533,7 +537,8 @@
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
-                      {:task-id (cx/string-at-path task [:task-id])
+                      {:created-at (cx/string-at-path task [:created-at])
+                       :task-id (cx/string-at-path task [:task-id])
                        :status (cx/string-at-path task [:status])
                        :status-message (cx/string-at-path task [:status-message])
                        :request-json-body (cx/string-at-path task [:request-json-body])}))}))
@@ -582,7 +587,8 @@
     (let [xml-elem (x/parse-str (:body response))]
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
-        {:task-status (cx/string-at-path xml-elem [:task-status])
+        {:created-at (cx/string-at-path xml-elem [:created-at])
+         :task-status (cx/string-at-path xml-elem [:task-status])
          :status-message (cx/string-at-path xml-elem [:status-message])
          :request-json-body (cx/string-at-path xml-elem [:request-json-body])
          :collection-statuses

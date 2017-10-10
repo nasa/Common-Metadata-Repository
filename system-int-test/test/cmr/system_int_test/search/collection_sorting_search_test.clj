@@ -4,7 +4,7 @@
     [clojure.string :as str]
     [clojure.test :refer :all]
     [cmr.common-app.services.search.messages :as msg]
-    [cmr.search.data.query-to-elastic :as query-to-elastic]
+    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -12,7 +12,6 @@
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.umm.collection.entry-id :as eid]))
-
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -234,7 +233,7 @@
 
 ;; This tests that the default sorting for parameters that are scored is by the score found.
 (deftest default-sorting-for-scored-parameters-is-by-score-test
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! false))
+  (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-bin-keyword-scores! false))
   (let [platform (dc/platform {:short-name "wood"
                                :instruments [(dc/instrument {:short-name "wood"
                                                              :sensors [(dc/sensor {:short-name "wood"})]})]})
@@ -290,7 +289,7 @@
         {:processing-level-id "wood"}
         {:data-center "wood"}
         {:archive-center "wood"})))
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-bin-keyword-scores! true)))
+  (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-bin-keyword-scores! true)))
 
 (deftest multiple-sort-key-test
   (let [c1 (make-coll "PROV1" "et10" 10 nil)

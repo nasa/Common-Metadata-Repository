@@ -1,22 +1,19 @@
 (ns cmr.metadata-db.int-test.concepts.search-test
-  "Contains integration tests for getting concepts. Tests gets with various
-  configurations including checking for proper error handling."
-  (:require [clojure.test :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as cheshire]
-            [clojure.data]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]
-            [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.util :refer [are3]]))
+  "Contains integration tests for searching concepts."
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer :all]
+   [cmr.common.time-keeper :as tk]
+   [cmr.common.util :refer [are3]]
+   [cmr.metadata-db.int-test.utility :as util]
+   [cmr.metadata-db.services.messages :as msg]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                  {:provider-id "REG_PROV1" :small false}
                                                  {:provider-id "SMAL_PROV1" :small true}
                                                  {:provider-id "SMAL_PROV2" :small true}))
 
-(defn concepts-for-comparison
+(defn- concepts-for-comparison
   "Removes revision-date, transaction-id, and created-at from concepts so they can be compared."
   [concepts]
   (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
@@ -171,92 +168,92 @@
                                                              :short-name "s7"}})]
     (testing "find-with-parameters"
       (are3 [collections params]
-            (= (set collections)
+        (is (= (set collections)
                (set (-> (util/find-concepts :collection params)
                         :concepts
-                        concepts-for-comparison)))
-            "regular provider - provider-id"
-            [coll1 coll2-2 coll5-2] {:provider-id "REG_PROV" :latest true}
+                        concepts-for-comparison))))
+        "regular provider - provider-id"
+        [coll1 coll2-2 coll5-2] {:provider-id "REG_PROV" :latest true}
 
-            "small provider with tombstones - provider-id"
-            [coll3 coll6-2] {:provider-id "SMAL_PROV1" :latest true}
+        "small provider with tombstones - provider-id"
+        [coll3 coll6-2] {:provider-id "SMAL_PROV1" :latest true}
 
-            "small provider - provider-id"
-            [coll4-3] {:provider-id "SMAL_PROV2" :latest true}
+        "small provider - provider-id"
+        [coll4-3] {:provider-id "SMAL_PROV2" :latest true}
 
-            "regular provider - provider-id, entry-title"
-            [coll1] {:provider-id "REG_PROV" :entry-title "et1" :latest true}
+        "regular provider - provider-id, entry-title"
+        [coll1] {:provider-id "REG_PROV" :entry-title "et1" :latest true}
 
-            "small provider - provider-id, entry-title"
-            [coll3] {:provider-id "SMAL_PROV1" :entry-title "et3" :latest true}
+        "small provider - provider-id, entry-title"
+        [coll3] {:provider-id "SMAL_PROV1" :entry-title "et3" :latest true}
 
-            "regular provider - provider-id, entry-id"
-            [coll2-2] {:provider-id "REG_PROV" :entry-id "entry-2" :latest true}
+        "regular provider - provider-id, entry-id"
+        [coll2-2] {:provider-id "REG_PROV" :entry-id "entry-2" :latest true}
 
-            "small provider - provider-id, entry-id"
-            [coll4-3] {:provider-id "SMAL_PROV2" :entry-id "entry-1" :latest true}
+        "small provider - provider-id, entry-id"
+        [coll4-3] {:provider-id "SMAL_PROV2" :entry-id "entry-1" :latest true}
 
-            "regular provider - short-name, version-id"
-            [coll2-2] {:short-name "s2" :version-id "v2" :latest true}
+        "regular provider - short-name, version-id"
+        [coll2-2] {:short-name "s2" :version-id "v2" :latest true}
 
-            "small provider - short-name, version-id"
-            [coll4-3] {:short-name "s4" :version-id "v5" :latest true}
+        "small provider - short-name, version-id"
+        [coll4-3] {:short-name "s4" :version-id "v5" :latest true}
 
-            "small provider - match multiple - version-id"
-            [coll3] {:version-id "v3" :latest true}
+        "small provider - match multiple - version-id"
+        [coll3] {:version-id "v3" :latest true}
 
-            ;; This test verifies that the provider-id is being used with the small_providers
-            ;; table. Otherwise we would get both coll3 and coll4 back (see previous test).
-            "small provider - provider-id, version-id"
-            [coll4-3] {:provider-id "SMAL_PROV2" :version-id "v5" :latest true}
+        ;; This test verifies that the provider-id is being used with the small_providers
+        ;; table. Otherwise we would get both coll3 and coll4 back (see previous test).
+        "small provider - provider-id, version-id"
+        [coll4-3] {:provider-id "SMAL_PROV2" :version-id "v5" :latest true}
 
-            "mixed providers - entry-title"
-            [coll1 coll4-3] {:entry-title "et1" :latest true}
+        "mixed providers - entry-title"
+        [coll1 coll4-3] {:entry-title "et1" :latest true}
 
-            "exclude-metadata=true"
-            [(dissoc coll3 :metadata)]
-            {:provider-id "SMAL_PROV1" :entry-id "entry-3" :exclude-metadata "true" :latest true}
+        "exclude-metadata=true"
+        [(dissoc coll3 :metadata)]
+        {:provider-id "SMAL_PROV1" :entry-id "entry-3" :exclude-metadata "true" :latest true}
 
-            "exclude-metadata=false"
-            [coll3]
-            {:provider-id "SMAL_PROV1" :entry-id "entry-3" :exclude-metadata "false" :latest true}
+        "exclude-metadata=false"
+        [coll3]
+        {:provider-id "SMAL_PROV1" :entry-id "entry-3" :exclude-metadata "false" :latest true}
 
-            "regular provider - concept-id"
-            [coll1] {:concept-id (:concept-id coll1) :latest true}
+        "regular provider - concept-id"
+        [coll1] {:concept-id (:concept-id coll1) :latest true}
 
-            "small provider - concept-id"
-            [coll4-3] {:concept-id (:concept-id coll4-1) :latest true}
+        "small provider - concept-id"
+        [coll4-3] {:concept-id (:concept-id coll4-1) :latest true}
 
-            "concept-id and version-id - latest"
-            [coll4-3] {:concept-id (:concept-id coll4-1) :version-id "v5" :latest true}
+        "concept-id and version-id - latest"
+        [coll4-3] {:concept-id (:concept-id coll4-1) :version-id "v5" :latest true}
 
-            "find none - bad provider-id"
-            [] {:provider-id "PROV_NONE" :latest true}
+        "find none - bad provider-id"
+        [] {:provider-id "PROV_NONE" :latest true}
 
-            "find none - provider-id, bad version-id"
-            [] {:provider-id "REG_PROV" :version-id "v7" :latest true}
+        "find none - provider-id, bad version-id"
+        [] {:provider-id "REG_PROV" :version-id "v7" :latest true}
 
-            ;; all revisions
-            "provider-id - all revisions"
-            [coll4-1 coll4-2 coll4-3] {:provider-id "SMAL_PROV2"}
+        ;; all revisions
+        "provider-id - all revisions"
+        [coll4-1 coll4-2 coll4-3] {:provider-id "SMAL_PROV2"}
 
-            "entry-title - all revisions"
-            [coll2-1 coll2-2] {:entry-title "et2"}
+        "entry-title - all revisions"
+        [coll2-1 coll2-2] {:entry-title "et2"}
 
-            "entry-title - all revisions - find latest false"
-            [coll2-1 coll2-2] {:entry-title "et2" :latest false}
+        "entry-title - all revisions - find latest false"
+        [coll2-1 coll2-2] {:entry-title "et2" :latest false}
 
-            "concept-id - all revisions"
-            [coll4-1 coll4-2 coll4-3] {:concept-id (:concept-id coll4-1)}
+        "concept-id - all revisions"
+        [coll4-1 coll4-2 coll4-3] {:concept-id (:concept-id coll4-1)}
 
-            "concept-id and version-id - all revisions"
-            [coll4-1] {:concept-id (:concept-id coll4-1) :version-id "v3"}
+        "concept-id and version-id - all revisions"
+        [coll4-1] {:concept-id (:concept-id coll4-1) :version-id "v3"}
 
-            "params containing a vector are ORed"
-            [coll1 coll3 coll4-3] {:entry-title ["et1" "et3"] :latest true}
+        "params containing a vector are ORed"
+        [coll1 coll3 coll4-3] {:entry-title ["et1" "et3"] :latest true}
 
-            "multiple ORed param lists are ANDed together"
-            [coll3] {:entry-title ["et1" "et3"] :short-name ["s3" "s5"] :latest true}))))
+        "multiple ORed param lists are ANDed together"
+        [coll3] {:entry-title ["et1" "et3"] :short-name ["s3" "s5"] :latest true}))))
 
 (deftest get-expired-collections-concept-ids
   (let [time-now (tk/now)
@@ -311,32 +308,32 @@
     (testing "find with parameters"
       (testing "latest revsions"
         (are3 [granules params]
-              (= (set (map util/expected-concept granules))
+          (is (= (set (map util/expected-concept granules))
                  (set (-> (util/find-latest-concepts :granule params)
                           :concepts
-                          concepts-for-comparison)))
-              ;; These are the only valid combinations for granules
-              "provider-id, granule-ur"
-              [gran1] {:provider-id "REG_PROV" :granule-ur "G1-UR"}
+                          concepts-for-comparison))))
+          ;; These are the only valid combinations for granules
+          "provider-id, granule-ur"
+          [gran1] {:provider-id "REG_PROV" :granule-ur "G1-UR"}
 
-              "provider-id, native-id"
-              [gran2] {:provider-id "REG_PROV" :native-id "G2-NAT"}
+          "provider-id, native-id"
+          [gran2] {:provider-id "REG_PROV" :native-id "G2-NAT"}
 
-              "no metadata"
-              [(dissoc gran1 :metadata)] {:provider-id "REG_PROV"
-                                          :granule-ur "G1-UR"
-                                          :exclude-metadata true}))
+          "no metadata"
+          [(dissoc gran1 :metadata)] {:provider-id "REG_PROV"
+                                      :granule-ur "G1-UR"
+                                      :exclude-metadata true}))
 
       (testing "all revisions"
         (are3 [rev-count params]
-              (= rev-count
+          (is (= rev-count
                  (count (-> (util/find-concepts :granule params)
-                            :concepts)))
-              "provider-id, granule-ur - two revisions"
-              2 {:provider-id "REG_PROV" :granule-ur "G2-UR"}
+                            :concepts))))
+          "provider-id, granule-ur - two revisions"
+          2 {:provider-id "REG_PROV" :granule-ur "G2-UR"}
 
-              "provider-id, native-id - three revisons"
-              3 {:provider-id "REG_PROV":native-id "G1-NAT"})))))
+          "provider-id, native-id - three revisons"
+          3 {:provider-id "REG_PROV":native-id "G1-NAT"})))))
 
 
 (deftest find-collections-with-invalid-parameters
@@ -361,15 +358,15 @@
         tag2 (util/create-and-save-tag 2 2)]
     (testing "find latest revsions"
       (are3 [tags params]
-            (= (set tags)
+        (is (= (set tags)
                (set (->> (util/find-latest-concepts :tag params)
                          :concepts
-                         (map #(dissoc % :provider-id :revision-date :transaction-id)))))
-            "with metadata"
-            [tag1 tag2] {}
+                         (map #(dissoc % :provider-id :revision-date :transaction-id))))))
+        "with metadata"
+        [tag1 tag2] {}
 
-            "exclude metadata"
-            [(dissoc tag1 :metadata) (dissoc tag2 :metadata)] {:exclude-metadata true}))
+        "exclude metadata"
+        [(dissoc tag1 :metadata) (dissoc tag2 :metadata)] {:exclude-metadata true}))
 
     (testing "find all revisions"
       (let [num-of-tags (-> (util/find-concepts :tag)
@@ -389,27 +386,27 @@
                                                             :version-id "v1"
                                                             :short-name "s1"}})
         coll2 (save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
-                                                              :entry-title "et2"
-                                                              :version-id "v1"
-                                                              :short-name "s2"}})
+                                                            :entry-title "et2"
+                                                            :version-id "v1"
+                                                            :short-name "s2"}})
         associated-tag (util/create-and-save-tag 1)
         tag-association1 (util/create-and-save-tag-association coll1 associated-tag 1 3)
         tag-association2 (util/create-and-save-tag-association coll2 associated-tag 2 2)]
     (testing "find latest revisions"
       (are3 [tag-associations params]
-            (= (set tag-associations)
+        (is (= (set tag-associations)
                (set (->> (util/find-latest-concepts :tag-association params)
                          :concepts
-                         (map #(dissoc % :provider-id :revision-date :transaction-id)))))
+                         (map #(dissoc % :provider-id :revision-date :transaction-id))))))
 
-            "by associated-concept-id"
-            [tag-association1] {:associated-concept-id "C1200000000-REG_PROV"}
+        "by associated-concept-id"
+        [tag-association1] {:associated-concept-id "C1200000000-REG_PROV"}
 
-            "with metadata"
-            [tag-association1 tag-association2] {}
+        "with metadata"
+        [tag-association1 tag-association2] {}
 
-            "exclude metadata"
-            [(dissoc tag-association1 :metadata) (dissoc tag-association2 :metadata)] {:exclude-metadata true}))
+        "exclude metadata"
+        [(dissoc tag-association1 :metadata) (dissoc tag-association2 :metadata)] {:exclude-metadata true}))
 
     (testing "find all revisions"
       (let [num-of-tag-associations (-> (util/find-concepts :tag-association {})
@@ -423,39 +420,50 @@
             :errors ["Finding concept type [tag-association] with parameters [provider-id] is not supported."]}
            (util/find-concepts :tag-association {:provider-id "REG_PROV"})))))
 
-;; Failing in external Oracle
-;; CMR-4335 - services
-#_(deftest find-services
-    (let [serv1 (util/create-and-save-service 1 3)
-          serv2 (util/create-and-save-service 2 2)]
-      (testing "find latest revsions"
-        (are3 [servs params]
-              (= (set servs)
-                 (set (->> (util/find-latest-concepts :service params)
-                           :concepts
-                           (map #(dissoc % :provider-id :revision-date :transaction-id)))))
-              "with metadata search by concept-id"
-              [serv1] {:concept-id (:concept-id serv1)}
+(deftest find-services
+  (let [;; create two services with the same native-id on different providers with multiple revisions
+        serv1 (util/create-and-save-service "REG_PROV" 1 3)
+        serv2 (util/create-and-save-service "SMAL_PROV1" 1 2)]
+    (testing "find latest revisions"
+      (are3 [servs params]
+        (is (= (set servs)
+               (set (->> (util/find-latest-concepts :service params)
+                         :concepts
+                         concepts-for-comparison))))
 
-              "with metadata search by native-id"
-              [serv2] {:native-id (:native-id serv2)}
+        "with metadata search by provider-id"
+        [serv1] {:provider-id "REG_PROV"}
 
-              "exclude metadata search by concept-id"
-              [(dissoc serv1 :metadata)] {:concept-id (:concept-id serv1)
-                                          :exclude-metadata true}
+        "with metadata search by concept-id"
+        [serv1] {:concept-id (:concept-id serv1)}
 
-              "exclude metadata search by native-id"
-              [(dissoc serv2 :metadata)] {:native-id (:native-id serv2)
-                                          :exclude-metadata true}
+        "with metadata search by native-id"
+        [serv1 serv2] {:native-id (:native-id serv2)}
 
-              "no match"
-              [] {:native-id "foo"}))
+        "with metadata search by provider-id and native-id"
+        [serv2] {:provider-id "SMAL_PROV1"
+                 :native-id (:native-id serv2)}
 
-      (testing "find all revisions"
-        (let [num-of-servs (-> (util/find-concepts :service {})
-                              :concepts
-                              count)]
-          (is (= 5 num-of-servs))))))
+        "exclude metadata search by concept-id"
+        [(dissoc serv1 :metadata)] {:concept-id (:concept-id serv1)
+                                    :exclude-metadata true}
+
+        "exclude metadata search by provider-id and native-id"
+        [(dissoc serv2 :metadata)] {:provider-id "SMAL_PROV1"
+                                    :native-id (:native-id serv2)
+                                    :exclude-metadata true}
+
+        "no match by native id"
+        [] {:native-id "foo"}
+
+        "no match by concept id"
+        [] {:concept-id "S99-REG_PROV"}))
+
+    (testing "find all revisions"
+      (let [num-of-servs (-> (util/find-concepts :service {})
+                             :concepts
+                             count)]
+        (is (= 5 num-of-servs))))))
 
 (deftest find-services-with-invalid-parameters
   (testing "extra parameters"
@@ -469,52 +477,71 @@
     (testing "find with parameters"
       (testing "latest revisions"
         (are3 [groups params]
-              (= (set (map util/expected-concept groups))
+          (is (= (set (map util/expected-concept groups))
                  (set (-> (util/find-latest-concepts :access-group params)
                           :concepts
-                          concepts-for-comparison)))
-              ;; These are the only valid combinations for groups
-              "provider-id, native-id"
-              [group1] {:provider-id "REG_PROV" :native-id "native-id 1"}
+                          concepts-for-comparison))))
+          ;; These are the only valid combinations for groups
+          "provider-id, native-id"
+          [group1] {:provider-id "REG_PROV" :native-id "native-id 1"}
 
-              "no metadata"
-              [(dissoc group1 :metadata)] {:provider-id "REG_PROV"
-                                           :exclude-metadata true}))
+          "no metadata"
+          [(dissoc group1 :metadata)] {:provider-id "REG_PROV"
+                                       :exclude-metadata true}))
 
       (testing "all revisions"
         (are3 [rev-count params]
-              (= rev-count
-                 (count (-> (util/find-concepts :access-group params)
-                            :concepts)))
-              "provider-id, native-id - three revisons"
-              3 {:provider-id "REG_PROV" :native-id "native-id 1"}
-              "everything"
-              5 {})))))
+          (= rev-count
+             (count (-> (util/find-concepts :access-group params)
+                        :concepts)))
+          "provider-id, native-id - three revisons"
+          3 {:provider-id "REG_PROV" :native-id "native-id 1"}
+          "everything"
+          5 {})))))
 
 (deftest find-variables
-  (let [variable1 (util/create-and-save-variable "REG_PROV" 1 3)
-        variable2 (util/create-and-save-variable "REG_PROV" 2 2)]
+  (let [;; create two variables with the same native-id on different providers with multiple revisions
+         variable1 (util/create-and-save-variable "REG_PROV" 1 3)
+         variable2 (util/create-and-save-variable "SMAL_PROV1" 1 2)]
     (testing "find latest revsions"
       (are3 [variables params]
-        (= (set variables)
-           (set (->> (util/find-latest-concepts :variable params)
-                     :concepts
-                     (map #(dissoc % :provider-id :revision-date :transaction-id :created-at)))))
+        (is (= (set variables)
+               (set (->> (util/find-latest-concepts :variable params)
+                         :concepts
+                         concepts-for-comparison))))
 
-        "with metadata"
-        [variable1 variable2]
-        {:provider-id "REG_PROV"}
+        "with metadata search by provider-id"
+        [variable1] {:provider-id "REG_PROV"}
 
-        "find none - bad provider-id"
+        "with metadata search by concept-id"
+        [variable1] {:concept-id (:concept-id variable1)}
+
+        "with metadata search by native-id"
+        [variable1 variable2] {:native-id (:native-id variable1)}
+
+        "with metadata search by provider-id and native-id"
+        [variable2] {:provider-id "SMAL_PROV1"
+                     :native-id (:native-id variable1)}
+
+        "exclude metadata search by concept-id"
+        [(dissoc variable1 :metadata)] {:concept-id (:concept-id variable1)
+                                        :exclude-metadata true}
+
+        "exclude metadata search by provider-id and native-id"
+        [(dissoc variable2 :metadata)] {:provider-id "SMAL_PROV1"
+                                        :native-id (:native-id variable1)
+                                        :exclude-metadata true}
+
+        "no match by native id"
+        [] {:native-id "foo"}
+
+        "no match by provider-id"
         []
-        {:provider-id "PROV_NONE"}
+        {:provider-id "PROV_NONE"}))
 
-        "exclude metadata"
-        [(dissoc variable1 :metadata) (dissoc variable2 :metadata)]
-        {:provider-id "REG_PROV" :exclude-metadata true}))
     (testing "find all revisions"
       (let [num-of-variables (-> :variable
-                                 (util/find-concepts {:provider-id "REG_PROV"})
+                                 (util/find-concepts {:native-id (:native-id variable1)})
                                  :concepts
                                  count)]
         (is (= 5 num-of-variables))))))
@@ -533,10 +560,10 @@
         var-association2 (util/create-and-save-variable-association coll2 associated-variable 2 2)]
     (testing "find latest revisions"
       (are3 [variable-associations params]
-        (= (set variable-associations)
-           (set (->> (util/find-latest-concepts :variable-association params)
-                     :concepts
-                     (map #(dissoc % :provider-id :revision-date :transaction-id)))))
+        (is (= (set variable-associations)
+               (set (->> (util/find-latest-concepts :variable-association params)
+                         :concepts
+                         (map #(dissoc % :provider-id :revision-date :transaction-id))))))
 
         "by associated-concept-id"
         [var-association1]

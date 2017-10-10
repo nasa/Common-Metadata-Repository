@@ -189,7 +189,7 @@
    Replace it with a valid URI."
   [record]
   (if (get-in record [:OnlineResource :Function])
-   (assoc-in record [:OnlineResource :Function] valid-uri) 
+   (assoc-in record [:OnlineResource :Function] valid-uri)
    record))
 
 (defn sanitized-umm-c-record
@@ -211,9 +211,7 @@
 (defn sanitized-umm-s-record
   "Include only the sanitizers needed for a given umm-s record."
   [record]
-  (-> record
-      (sanitize-science-keywords)
-      (sanitize-umm-record-related-urls)))
+  record)
 
 (defn sanitized-umm-var-record
   "Include only the sanitizers needed for a given umm-var record."

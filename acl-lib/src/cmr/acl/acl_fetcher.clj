@@ -19,6 +19,11 @@
   "The key used to store the acl cache in the system cache map."
   :acls)
 
+(def acl-keys-to-track
+  "The collection of keys which should be deleted from cubby whenever someone attempts to clear the
+  ACL cache."
+  [":acls-hash-code"])
+
 (defn create-acl-cache*
   "Creates the acl cache using the given cmr cache protocol implementation and object-identity-types.
   The object-identity-types are specified and stored as extra information in the cache so that when
@@ -45,7 +50,8 @@
   [object-identity-types]
   (create-acl-cache* (stl-cache/create-single-thread-lookup-cache
                       (consistent-cache/create-consistent-cache
-                       {:hash-timeout-seconds (acl-cache-consistent-timeout-seconds)}))
+                       {:hash-timeout-seconds (acl-cache-consistent-timeout-seconds)
+                        :keys-to-track acl-keys-to-track}))
                      object-identity-types))
 
 (defn- context->cached-object-identity-types
@@ -117,4 +123,3 @@
   {:job-type RefreshAclCacheJob
    :job-key job-key
    :interval 3600})
-
