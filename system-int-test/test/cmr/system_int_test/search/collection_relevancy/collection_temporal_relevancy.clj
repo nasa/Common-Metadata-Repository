@@ -8,11 +8,11 @@
    [cmr.common.config :as config]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.data.query-to-elastic :as query-to-elastic]
-   [cmr.system-int-test.data2.umm-spec-collection :as umm-c]
-   [cmr.system-int-test.data2.umm-spec-common :as umm-common]
+   [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as umm-common]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
@@ -38,7 +38,7 @@
 ;; * Sort by end date
 
 (deftest relevancy-temporal-ranges
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
+  (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-temporal-relevancy! true))
   (let [coll1 (d/ingest-umm-spec-collection
                "PROV1"
                (umm-c/collection 1
@@ -128,7 +128,7 @@
                                   (search/find-refs :collection {:keyword "coll"}))))))))
 
 (deftest relevancy-multiple-temporal-ranges
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-temporal-relevancy! true))
+  (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-temporal-relevancy! true))
   (let [coll1 (d/ingest-umm-spec-collection
                "PROV1"
                (umm-c/collection 1
