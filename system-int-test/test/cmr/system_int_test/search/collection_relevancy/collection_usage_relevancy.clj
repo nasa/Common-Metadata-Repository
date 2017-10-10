@@ -1,6 +1,8 @@
 (ns cmr.system-int-test.search.collection-relevancy.collection-usage-relevancy
   "This tests the CMR Search API's community usage relevancy scoring and ranking
-  capabilities"
+  capabilities. Note binning of community usage scores are tested in the
+  cmr.system-int-test.search.collection-relevancy.collection-relevancy namespace.
+  For all of the tests in this namespace we bin each integer value to its own bin."
   (:require
    [clojure.string :as str]
    [clojure.test :refer :all]
@@ -8,9 +10,9 @@
    [cmr.common.config :as config]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.data.query-to-elastic :as query-to-elastic]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
@@ -19,7 +21,7 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.search-util :as search]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+; (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (def sample-usage-csv
   (str "Product,Version,Hosts\n"
@@ -28,9 +30,20 @@
        "AG_MAPSS,2,30\n"
        "AST_05,B,8\n"))
 
+(defn- init-community-usage-fixture
+  "Sets up the community usage config required for each test."
+  []
+  (fn [f]
+    (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-relevancy-score! true))
+    (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-community-usage-bin-size! 1))
+    (hu/ingest-community-usage-metrics sample-usage-csv)
+    (f)))
+
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       (init-community-usage-fixture)]))
+
 (deftest community-usage-relevancy-scoring
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (hu/ingest-community-usage-metrics sample-usage-csv)
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AMSR-L1A"
                                                         :EntryTitle "Relevancy 1"
@@ -60,13 +73,11 @@
       (is (= "Relevancy 4" (:name (last results))))))
 
   (testing "Turn off using relevancy score"
-    (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! false))
+    (dev-sys-util/eval-in-dev-sys `(elastic-relevancy-scoring/set-sort-use-relevancy-score! false))
     (let [results (:refs (search/find-refs :collection {:keyword "Relevancy"}))]
       (is (= ["Relevancy 4" "Relevancy 3" "Relevancy 2" "Relevancy 1"] (map :name results))))))
 
 (deftest keyword-relevancy-takes-precedence
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
-  (hu/ingest-community-usage-metrics sample-usage-csv)
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AMSR-L1A"
                                                         :EntryTitle "Relevancy 1"
@@ -97,7 +108,6 @@
              (map :name results))))))
 
 (deftest ingest-metrics-after-collections
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AMSR-L1A"
                                                         :EntryTitle "Relevancy 1"
@@ -117,7 +127,6 @@
     (is (= ["Relevancy 2" "Relevancy 3" "Relevancy 1"] (map :name results)))))
 
 (deftest change-metrics
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-usage-csv)
 
   (d/ingest-umm-spec-collection "PROV1"
@@ -145,7 +154,6 @@
 
 ;; Outside of keyword search, allow the user to sort by community usage
 (deftest sort-by-community-usage
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-usage-csv)
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AMSR-L1A" ;10
@@ -181,7 +189,6 @@
        "MOD10A2,N/A,55\n"))
 
 (deftest community-usage-not-provided-versions
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics sample-csv-not-provided-versions)
   (d/ingest-umm-spec-collection "PROV1"
                                 (data-umm-c/collection {:ShortName "AMSR-L1A"
@@ -209,7 +216,6 @@
            (map :name results)))))
 
 (deftest community-usage-version-formatting
-  (dev-sys-util/eval-in-dev-sys `(query-to-elastic/set-sort-use-relevancy-score! true))
   (hu/ingest-community-usage-metrics (str "Product,Version,Hosts\n"
                                           "AMSR-L1A,1,10\n"
                                           "AMSR-L1A,3,100\n"
