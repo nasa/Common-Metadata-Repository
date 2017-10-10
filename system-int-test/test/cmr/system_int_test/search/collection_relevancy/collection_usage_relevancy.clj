@@ -21,8 +21,6 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.search-util :as search]))
 
-; (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
-
 (def sample-usage-csv
   (str "Product,Version,Hosts\n"
        "AMSR-L1A,3,10\n"
