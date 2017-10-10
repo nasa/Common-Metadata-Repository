@@ -2,23 +2,14 @@
   "This tests the CMR runtime change logging capabilities"
   (:require
    [cheshire.core :as json]
-;   [clojure.edn :as edn]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are3]]
    [cmr.common-app.services.logging-config :as common-logging-config]
-   ;[cmr.access-control.test.util :as u]))
    [cmr.mock-echo.client.echo-util :as e]
-   ;[cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.logging-util :as log]
-   ;[cmr.system-int-test.utils.humanizer-util :as hu]
-   ;[cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
-   ;[cmr.system-int-test.utils.search-util :as search]
-   ;[cmr.transmit.config :as transmit-config]
-   ;[cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
 (use-fixtures :each (ingest/reset-fixture
                      {"provguid1" "PROV1"}
