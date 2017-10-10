@@ -179,7 +179,7 @@
                                 :EndDate (time/date-time 2013 4 26)})
         c3 (c/map->ProjectType {:ShortName "C3"
                                 :StartDate (time/date-time 2013 12 1)
-                                :EndDate (time/date-time 2014 3 20)})
+                                :EndDate (time/date-time 2020 3 20)})
         c4 (c/map->ProjectType {:ShortName "C4"
                                 :StartDate (time/date-time 2020 1 1)
                                 :EndDate (time/date-time 2021 1 1)})
@@ -197,14 +197,12 @@
             coll
             [:Projects]
             ["Projects must be unique. This contains duplicates named [C1, C2]."])))
-      (testing "start and end date not in the past"
+      (testing "start date not in the past"
         (let [coll (coll/map->UMM-C {:Projects [c4]})]
-          (h/assert-warnings-multiple-invalid
+          (h/assert-warnings-invalid
             coll
-            [{:path [:Projects 0 :StartDate]
-              :errors ["Date should be in the past."]}
-             {:path [:Projects 0 :EndDate]
-              :errors ["Date should be in the past."]}])))
+            [:Projects 0 :StartDate]
+            ["Date should be in the past."])))
       (testing "start date after end date"
         (let [coll (coll/map->UMM-C {:Projects [c5]})]
           (h/assert-invalid
