@@ -1,0 +1,1 @@
+web: java -classpath /app/cmr-bootstrap-app-0.1.0-SNAPSHOT-standalone.jar cmr.bootstrap_app.runner
