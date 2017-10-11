@@ -152,7 +152,7 @@
         ;; went through
         (is (= [expired-2]
                (for [concept (c/get-expired-concepts db {:provider-id "PROV1"} :collection)]
-                 (dissoc concept :revision-date))))
+                 (dissoc concept :revision-date :created-at))))
 
         ;; run it again, this time without the conflict...
         (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
