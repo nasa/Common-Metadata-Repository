@@ -55,9 +55,9 @@
 
 (defn get-ges-disc-airx3std-opendap-service
   ([]
-   (get-ges-disc-airx3std-opendap-service const/default-handler-key))
+    (get-ges-disc-airx3std-opendap-service [:json :edn]))
   ([as-data]
-   (util/get-file
+    (util/get-file
      (str const/services-resource "/GES_DISC/AIRX3STD/OPeNDAP.umm-json")
      as-data)))
 
@@ -81,11 +81,3 @@
    (util/get-files
     (str const/variables-resource "/GES_DISC/AIRX3STD/CH4")
     as-data)))
-
-(defn get-ges-disc-airx3std-opendap-service
-  ([]
-    (get-ges-disc-airx3std-opendap-service [:json :edn]))
-  ([as-data]
-    (util/get-file
-     (str const/services-resource "/GES_DISC/AIRX3STD/OPeNDAP.json")
-     as-data)))
