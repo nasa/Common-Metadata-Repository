@@ -152,6 +152,12 @@
    {"Name" "someService"
     "Other" "TBD"}))
 
+(def service-association-edn
+  "Valid EDN for variable association metadata"
+  (pr-str {:service-concept-id "S120000008-PROV1"
+           :associated-concept-id "C120000000-PROV1"
+           :revision-id 1}))
+
 (def variable-json
   (json/generate-string
     {"Name" "totCldH2OStdErr",
@@ -183,7 +189,7 @@
 
 (def variable-association-edn
   "Valid EDN for variable association metadata"
-  (pr-str {:variable-name "totCldH2OStdErr"
+  (pr-str {:variable-concept-id "V120000008-PROV1"
            :associated-concept-id "C120000000-PROV1"
            :revision-id 1
            :value "Some Value"}))
@@ -202,7 +208,8 @@
    :humanizer humanizer-json
    :service service-json
    :variable variable-json
-   :variable-association variable-association-edn})
+   :variable-association variable-association-edn
+   :service-association service-association-edn})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -322,6 +329,27 @@
                             :extra-fields extra-fields}
                            (dissoc attributes :extra-fields))]
      (concept provider-id :service uniq-num attributes))))
+
+(defn service-association-concept
+  "Creates a service association concept"
+  ([assoc-concept service uniq-num]
+  (service-association-concept assoc-concept service uniq-num {}))
+  ([assoc-concept service uniq-num attributes]
+  (let [{:keys [concept-id revision-id]} assoc-concept
+       service-concept-id (:concept-id service)
+       user-id (str "user" uniq-num)
+       native-id (string/join "/" [service-concept-id concept-id revision-id])
+       extra-fields (merge {:associated-concept-id concept-id
+                            :associated-revision-id revision-id
+                            :service-concept-id service-concept-id}
+                           (:extra-fields attributes))
+       attributes (merge {:user-id user-id
+                          :format "application/edn"
+                          :native-id native-id
+                          :extra-fields extra-fields}
+                         (dissoc attributes :extra-fields))]
+   ;; no provider-id should be specified for service associations
+   (dissoc (concept nil :service-association uniq-num attributes) :provider-id))))
 
 (defn humanizer-concept
  "Creates a humanizer concept"

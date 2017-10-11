@@ -49,6 +49,8 @@
    :variable {true #{}
               false #{:variable-name :measurement}}
    :variable-association {true #{}
+                          false #{:associated-concept-id :associated-revision-id}}
+   :service-association {true #{}
                           false #{:associated-concept-id :associated-revision-id}}})
 
 (defn extra-fields-missing-validation
@@ -218,6 +220,10 @@
 (defmethod validate-concept :humanizer
   [concept]
   (validate-humanizer-concept concept))
+
+(defmethod validate-concept :service-association
+  [concept]
+  (validate-association-concept concept))
 
 (defmethod validate-concept :variable-association
   [concept]

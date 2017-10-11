@@ -58,6 +58,21 @@
       }
     }
 
+#### Service Association
+
+  {
+    "concept-type": "service-association",
+    "native-id": "S1200000008-PROV1/C1200000005-PROV1",
+    "user-id": "user1",
+    "format": "application/edn",
+    "metadata": "{:service-concept-id \"S1200000008-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
+    "extra-fields": {
+      "service-concept-id": "S1200000008-PROV1",
+      "associated-concept-id": "C1200000005-PROV1",
+      "associated-revision-id": 1
+    }
+  }
+
 #### Group
 
   {
@@ -131,12 +146,12 @@ The tag association metadata can have "value": "string to be indexed" or "data":
 
   {
     "concept-type": "variable-association",
-    "native-id": "totCldH2OStdErr/C1200000005-PROV1",
+    "native-id": "V1200000006-PROV1/C1200000005-PROV1",
     "user-id": "user1",
     "format": "application/edn",
-    "metadata": "{:variable-name \"totCldH2OStdErr\", :originator-id \"user1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1, :data {:description \"Needs more work\"}}",
+    "metadata": "{:variable-concept-id \"V1200000006-PROV1\", :associated-concept-id \"C1200000005-PROV1\", :associated-revision-id 1}",
     "extra-fields": {
-      "variable-name": "totCldH2OStdErr",
+      "variable-concept-id": "V1200000006-PROV1",
       "associated-concept-id": "C1200000005-PROV1",
       "associated-revision-id": 1
     }

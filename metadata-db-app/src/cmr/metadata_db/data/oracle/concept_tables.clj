@@ -51,6 +51,10 @@
   [_ _]
   "cmr_variable_associations")
 
+(defmethod get-table-name :service-association
+  [_ _]
+  "cmr_service_associations")
+
 (defmethod get-table-name :default
   [provider concept-type]
   ;; Don't remove the next line - needed to prevent SQL injection

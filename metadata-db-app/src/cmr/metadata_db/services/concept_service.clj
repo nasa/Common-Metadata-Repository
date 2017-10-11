@@ -28,6 +28,7 @@
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
    [cmr.metadata-db.data.oracle.concepts.humanizer]
+   [cmr.metadata-db.data.oracle.concepts.service-association]
    [cmr.metadata-db.data.oracle.concepts.service]
    [cmr.metadata-db.data.oracle.concepts.tag-association]
    [cmr.metadata-db.data.oracle.concepts.tag]
@@ -48,7 +49,8 @@
    :access-group 10
    :humanizer 10
    :variable 10
-   :variable-association 10})
+   :variable-association 10
+   :service-association 10})
 
 (defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -61,7 +63,7 @@
 
 (def system-level-concept-types
   "A set of concept types that only exist on system level provider CMR."
-  #{:tag :tag-association :humanizer :variable-association})
+  #{:tag :tag-association :humanizer :variable-association :service-association})
 
 ;;; utility methods
 
@@ -78,6 +80,8 @@
                       :tag-association (msg/tag-associations-only-system-level provider-id)
                       :humanizer (msg/humanizers-only-system-level provider-id)
                       :variable-association (msg/variable-associations-only-system-level
+                                             provider-id)
+                      :service-association (msg/service-associations-only-system-level
                                              provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
