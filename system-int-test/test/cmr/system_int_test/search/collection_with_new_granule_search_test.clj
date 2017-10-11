@@ -1,6 +1,10 @@
 (ns cmr.system-int-test.search.collection-with-new-granule-search-test
-  "Integration test for searching collections created after a given date.
-   These tests are to ensure proper CMR Harvesting functionality."
+  "Integration test for searching collections created after a given date. These tests are to ensure
+   proper CMR Harvesting functionality.
+
+   Note that we can only perform these tests with the in-memory database because with Oracle we use
+   the Oracle database server time for setting created-at and revision-date. With the in-memory
+   database we are able to use timekeeper so we can set the dates to the values we want."
   (:require
    [clj-http.client :as client]
    [clojure.string :as string]
@@ -181,155 +185,157 @@
      :coll-platform-match coll-platform-match}))
 
 (deftest collections-has-granules-created-at-test
-  (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
-                coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
-                coll-spatial-match coll-archive-center-match coll-platform-match]}
-        (create-test-collections-and-granules)]
-    (testing "has_granules_created_at parameter by itself"
-      (util/are3
-        [date-ranges expected-results]
-        (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
-          (d/assert-refs-match expected-results actual-results))
+  (s/only-with-in-memory-database
+    (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
+                  coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
+                  coll-spatial-match coll-archive-center-match coll-platform-match]}
+          (create-test-collections-and-granules)]
+      (testing "has_granules_created_at parameter by itself"
+        (util/are3
+          [date-ranges expected-results]
+          (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
+            (d/assert-refs-match expected-results actual-results))
 
-        "Single date range"
-        ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
+          "Single date range"
+          ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
 
-        "Prior to date"
-        [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule
-                                   coll-temporal-match coll-temporal-no-match coll-spatial-match
-                                   coll-archive-center-match coll-platform-match]
+          "Prior to date"
+          [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule
+                                     coll-temporal-match coll-temporal-no-match coll-spatial-match
+                                     coll-archive-center-match coll-platform-match]
 
-        "After date"
-        ["2015-06-01T16:13:12Z,"] [coll-w-june-2016-granule coll-prov2-w-june-2016-granule
-                                   coll-platform-match]
+          "After date"
+          ["2015-06-01T16:13:12Z,"] [coll-w-june-2016-granule coll-prov2-w-june-2016-granule
+                                     coll-platform-match]
 
-        "Multiple time ranges"
-        [",2014-07-01T16:13:12Z"
-         "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
-         "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
-        [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
-         coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
-         coll-spatial-match coll-archive-center-match coll-platform-match]
+          "Multiple time ranges"
+          [",2014-07-01T16:13:12Z"
+           "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
+           "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
+          [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
+           coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
+           coll-spatial-match coll-archive-center-match coll-platform-match]
 
-        "No matches"
-        [",2090-01-01T12:34:56ZZ"] []))
+          "No matches"
+          [",2090-01-01T12:34:56ZZ"] []))
 
-    (testing "Parameters are correctly passed to the granule query"
-      (util/are3
-        [params expected-results]
-        (let [date-range ["2015-06-01T16:13:12Z,"]
-              actual-results (search/find-refs
-                              :collection
-                              (merge {:has-granules-created-at date-range} params))]
-          (d/assert-refs-match expected-results actual-results))
+      (testing "Parameters are correctly passed to the granule query"
+        (util/are3
+          [params expected-results]
+          (let [date-range ["2015-06-01T16:13:12Z,"]
+                actual-results (search/find-refs
+                                :collection
+                                (merge {:has-granules-created-at date-range} params))]
+            (d/assert-refs-match expected-results actual-results))
 
-        "Provider ID"
-        {:provider "PROV2"} [coll-prov2-w-june-2016-granule]
+          "Provider ID"
+          {:provider "PROV2"} [coll-prov2-w-june-2016-granule]
 
-        "Collection concept-id"
-        {:concept-id (:concept-id coll-w-june-2016-granule)} [coll-w-june-2016-granule]
+          "Collection concept-id"
+          {:concept-id (:concept-id coll-w-june-2016-granule)} [coll-w-june-2016-granule]
 
-        "Collection concept-id with no matching granule in time range for that concept-id"
-        {:concept-id (:concept-id coll-w-june-2016-granule)
-         :has-granules-created-at [",2015-06-01T16:13:12Z"]}
-        []
+          "Collection concept-id with no matching granule in time range for that concept-id"
+          {:concept-id (:concept-id coll-w-june-2016-granule)
+           :has-granules-created-at [",2015-06-01T16:13:12Z"]}
+          []
 
-        "Short name"
-        {:short-name "coll-platform-match"} [coll-platform-match]
+          "Short name"
+          {:short-name "coll-platform-match"} [coll-platform-match]
 
-        "Version"
-        {:version "1"
-         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
-        [coll-spatial-match]
+          "Version"
+          {:version "1"
+           :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+          [coll-spatial-match]
 
-        "Entry title case insensitive"
-        {:entry-title "COLL-PLATFORM-match"
-         "options[entry-title][ignore-case]" "true"}
-        [coll-platform-match]
+          "Entry title case insensitive"
+          {:entry-title "COLL-PLATFORM-match"
+           "options[entry-title][ignore-case]" "true"}
+          [coll-platform-match]
 
-        "Entry title case-sensitive"
-        {:entry-title "COLL-PLATFORM-match"
-         "options[entry-title][ignore-case]" "false"}
-        []
+          "Entry title case-sensitive"
+          {:entry-title "COLL-PLATFORM-match"
+           "options[entry-title][ignore-case]" "false"}
+          []
 
-        "Temporal"
-        {:temporal ["2010-12-25T12:00:00Z,2011-01-01T12:00:00Z"]
-         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
-        [coll-temporal-match]
+          "Temporal"
+          {:temporal ["2010-12-25T12:00:00Z,2011-01-01T12:00:00Z"]
+           :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+          [coll-temporal-match]
 
-        "Spatial"
-        {:bounding-box "0,85,180,85"
-         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
-        [coll-spatial-match]
+          "Spatial"
+          {:bounding-box "0,85,180,85"
+           :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+          [coll-spatial-match]
 
-        "Spatial does not match granule but matches collection"
-        {:bounding-box "-20,0,-15,1"
-         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
-        []
+          "Spatial does not match granule but matches collection"
+          {:bounding-box "-20,0,-15,1"
+           :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+          []
 
-        "Platform"
-        {:platform "AQUA"} [coll-platform-match]
+          "Platform"
+          {:platform "AQUA"} [coll-platform-match]
 
-        (str "Platform that matches collection, has matching granules for the time range, but a "
-             "different granule platform does not match")
-        {:platform "AQUA"
-         :has-granules-created-at [",2011-06-07T13:00:00Z"]}
-        []))
+          (str "Platform that matches collection, has matching granules for the time range, but a "
+               "different granule platform does not match")
+          {:platform "AQUA"
+           :has-granules-created-at [",2011-06-07T13:00:00Z"]}
+          []))
 
 
-    (testing "Other collection specific parameters are applied"
-      (util/are3
-        [params expected-results]
-        (let [date-range ["2015-06-01T16:13:12Z," ",2011-06-07T13:00:00Z"]
-              actual-results (search/find-refs
-                              :collection
-                              (merge {:has-granules-created-at date-range} params))]
-          (d/assert-refs-match expected-results actual-results))
+      (testing "Other collection specific parameters are applied"
+        (util/are3
+          [params expected-results]
+          (let [date-range ["2015-06-01T16:13:12Z," ",2011-06-07T13:00:00Z"]
+                actual-results (search/find-refs
+                                :collection
+                                (merge {:has-granules-created-at date-range} params))]
+            (d/assert-refs-match expected-results actual-results))
 
-        "Archive center"
-        {:archive-center "NSIDC"} [coll-archive-center-match]
+          "Archive center"
+          {:archive-center "NSIDC"} [coll-archive-center-match]
 
-        "Keyword"
-        {:keyword "PROV1"} [coll-temporal-match coll-temporal-no-match
-                            coll-spatial-match coll-w-june-2016-granule
-                            coll-w-may-2010-granule coll-platform-match]))))
+          "Keyword"
+          {:keyword "PROV1"} [coll-temporal-match coll-temporal-no-match
+                              coll-spatial-match coll-w-june-2016-granule
+                              coll-w-may-2010-granule coll-platform-match])))))
 
 (deftest collection-has-granules-revised-at-test
-  (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
-                coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
-                coll-spatial-match coll-archive-center-match coll-platform-match]}
-        (create-test-collections-and-granules)
-        _ (dev-system-util/freeze-time! "2017-05-01T10:00:00Z")
-        may-2010-granule-rev (d/ingest "PROV1"
-                                       (dg/granule-with-umm-spec-collection
-                                         coll-w-may-2010-granule
-                                         (:concept-id coll-w-may-2010-granule)
-                                         {:revision-id 2}))]
-   (index/wait-until-indexed)
-   (testing "has_granules_revised_at parameter by itself"
-     (util/are3
-       [date-ranges expected-results]
-       (let [actual-results (search/find-refs :collection {:has-granules-revised-at date-ranges})]
-         (d/assert-refs-match expected-results actual-results))
+  (s/only-with-in-memory-database
+    (let [{:keys [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
+                  coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
+                  coll-spatial-match coll-archive-center-match coll-platform-match]}
+          (create-test-collections-and-granules)
+          _ (dev-system-util/freeze-time! "2017-05-01T10:00:00Z")
+          may-2010-granule-rev (d/ingest "PROV1"
+                                         (dg/granule-with-umm-spec-collection
+                                           coll-w-may-2010-granule
+                                           (:concept-id coll-w-may-2010-granule)
+                                           {:revision-id 2}))]
+     (index/wait-until-indexed)
+     (testing "has_granules_revised_at parameter by itself"
+       (util/are3
+         [date-ranges expected-results]
+         (let [actual-results (search/find-refs :collection {:has-granules-revised-at date-ranges})]
+           (d/assert-refs-match expected-results actual-results))
 
-       "Single date range"
-       ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
+         "Single date range"
+         ["2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"] [coll-w-may-2015-granule]
 
-       "Prior to date"
-       [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule
-                                  coll-temporal-match coll-temporal-no-match coll-spatial-match
-                                  coll-archive-center-match coll-platform-match]
+         "Prior to date"
+         [",2015-06-01T16:13:12Z"] [coll-w-may-2010-granule coll-w-may-2015-granule
+                                    coll-temporal-match coll-temporal-no-match coll-spatial-match
+                                    coll-archive-center-match coll-platform-match]
 
-       "After date"
-       ["2017-04-01T10:00:00Z,"] [coll-w-may-2010-granule]
+         "After date"
+         ["2017-04-01T10:00:00Z,"] [coll-w-may-2010-granule]
 
-       "Multiple time ranges"
-       [",2014-07-01T16:13:12Z"
-        "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
-        "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
-       [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
-        coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
-        coll-spatial-match coll-archive-center-match coll-platform-match]
+         "Multiple time ranges"
+         [",2014-07-01T16:13:12Z"
+          "2015-04-01T10:10:00Z,2015-06-01T16:13:12Z"
+          "2016-04-01T10:10:00Z,2016-07-01T16:13:12Z"]
+         [coll-w-may-2010-granule coll-w-may-2015-granule coll-w-june-2016-granule
+          coll-prov2-w-june-2016-granule coll-temporal-match coll-temporal-no-match
+          coll-spatial-match coll-archive-center-match coll-platform-match]
 
-       "No matches"
-       [",2090-01-01T12:34:56ZZ"] []))))
+         "No matches"
+         [",2090-01-01T12:34:56ZZ"] [])))))
