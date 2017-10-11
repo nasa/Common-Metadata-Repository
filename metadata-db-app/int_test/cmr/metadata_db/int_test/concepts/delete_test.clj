@@ -20,7 +20,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest delete-concepts-test
-  (doseq [concept-type [:collection :granule :variable :variable-association :service]]
+  (doseq [concept-type [:collection :granule :variable :variable-association :service
+                        :service-association]]
     (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
 (deftest delete-tag-general
