@@ -1,0 +1,1 @@
+web: java -classpath /app/cmr-indexer-app-0.1.0-SNAPSHOT-standalone.jar cmr.indexer_app.runner

@@ -1,0 +1,1 @@
+web: java -classpath /app/cmr-virtual-product-app-0.1.0-SNAPSHOT-standalone.jar cmr.virtual_product_app.runner
