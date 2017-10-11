@@ -182,7 +182,7 @@
     {:updated "2017-10-10T23:19:19.360Z",
      :id "stubbed-data/search/collections.json",
      :title "ECHO dataset metadata",
-     :entry [items]}})
+     :entry items}})
 
 (defn data->json-payload
   [item-payload-fn data]
@@ -221,9 +221,13 @@
     (handle-prototype-request path-w-extension params headers ""))
   ([path-w-extension params headers query-string]
     (println "path-w-extension:" path-w-extension)
+    (println "params:" params)
     (println "headers:" headers)
-    (case path-w-extension
-      "collections" (get-collections path-w-extension params headers)
-      "variables" (get-umm-json-ges-disc-airx3std-variables params)
-      "services" (get-umm-json-ges-disc-airx3std-services params)
-      (get-umm-json-concept path-w-extension))))
+    (cond
+      (string/starts-with? path-w-extension "collections")
+        (get-collections path-w-extension params headers)
+      (string/starts-with? path-w-extension "variables")
+        (get-umm-json-ges-disc-airx3std-variables params)
+      (string/starts-with? path-w-extension "services")
+        (get-umm-json-ges-disc-airx3std-services params)
+      :else (get-umm-json-concept path-w-extension))))
