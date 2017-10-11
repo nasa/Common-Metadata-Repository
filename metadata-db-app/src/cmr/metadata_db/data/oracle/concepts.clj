@@ -193,10 +193,10 @@
                 revision-id
                 deleted]
         fields (cond->> fields
-                        revision-date (cons (cr/to-sql-time (p/parse-datetime revision-date)))
+                        revision-date (cons "revision_date")
                         created-at (cons "created_at"))
         values (cond->> values
-                        revision-date (cons (cr/to-sql-time revision-date))
+                        revision-date (cons (cr/to-sql-time (p/parse-datetime revision-date)))
                         created-at (cons (cr/to-sql-time created-at)))]
     [fields values]))
 
