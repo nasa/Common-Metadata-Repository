@@ -167,7 +167,8 @@
                              :format (db-format->mime-type format)
                              :revision-id (int revision_id)
                              :revision-date (oracle/oracle-timestamp->str-time db revision_date)
-                             :created-at (when created_at (oracle/oracle-timestamp->str-time db created_at))
+                             :created-at (when created_at
+                                           (oracle/oracle-timestamp->str-time db created_at))
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
 
@@ -192,10 +193,10 @@
                 revision-id
                 deleted]
         fields (cond->> fields
-                        revision-date (cons "revision_date")
+                        revision-date (cons (cr/to-sql-time (p/parse-datetime revision-date)))
                         created-at (cons "created_at"))
         values (cond->> values
-                        revision-date (cons (cr/to-sql-time (p/parse-datetime revision-date)))
+                        revision-date (cons (cr/to-sql-time revision-date))
                         created-at (cons (cr/to-sql-time created-at)))]
     [fields values]))
 

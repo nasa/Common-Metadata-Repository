@@ -282,6 +282,9 @@
            concept (update-in concept
                               [:revision-date]
                               #(or % (f/unparse (f/formatters :date-time) (tk/now))))
+           concept (update-in concept
+                              [:created-at]
+                              #(or % (f/unparse (f/formatters :date-time) (tk/now))))
            concept (assoc concept :transaction-id (swap! next-transaction-id-atom inc))
            concept (if (= concept-type :granule)
                      (-> concept
