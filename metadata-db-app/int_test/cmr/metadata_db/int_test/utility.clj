@@ -653,6 +653,18 @@
     (is (= 200 status))
     (is (= deleted? (:deleted concept)))))
 
+(defn concepts-for-comparison
+  "Removes irrelevant fields from concepts so they can be compared in search tests."
+  [concepts]
+  (map #(dissoc % :revision-date :transaction-id :created-at) concepts))
+
+(defn save-collection
+  "Save the collection with the given provider-id, unique number, and attribute map."
+  [provider-id uniq-num attributes]
+  (let [concept (collection-concept provider-id uniq-num attributes)
+        {:keys [concept-id revision-id]} (save-concept concept)]
+    (assoc concept :revision-id revision-id :concept-id concept-id)))
+
 (defn create-and-save-collection
   "Creates, saves, and returns a collection concept with its data from metadata-db. "
   ([provider-id uniq-num]
@@ -719,6 +731,19 @@
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
      (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-service-association
+  "Creates, saves, and returns a service association concept with its data from metadata-db"
+  ([concept service uniq-num]
+   (create-and-save-service-association concept service uniq-num 1))
+  ([concept service uniq-num num-revisions]
+   (create-and-save-service-association concept service uniq-num num-revisions {}))
+  ([concept service uniq-num num-revisions attributes]
+   (let [concept (service-association-concept concept service uniq-num attributes)
+          _ (dotimes [n (dec num-revisions)]
+              (assert-no-errors (save-concept concept)))
+          {:keys [concept-id revision-id]} (save-concept concept)]
+      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-group
   "Creates, saves, and returns a group concept with its data from metadata-db."
