@@ -1,9 +1,9 @@
 FROM centos:7
 
-RUN yum install -y java-1.8.0-openjdk
+http://www.npr.org/2017/10/12/556944857/first-listen-bully-losing
 
 COPY . target/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar
 
 WORKDIR /app
 
-CMD ["java", "-classpath", "/app/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar", "cmr.ingest_app.runner"]
+CMD ["java", "-classpath", "/app/cmr-ingest-app-0.1.0-SNAPSHOT-standalone.jar", "cmr.ingest.runner"]

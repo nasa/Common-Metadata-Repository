@@ -1,32 +1,32 @@
 #!/bin/bash
 
 if [[ $1 == "separate" ]]; then
-    cd ../metadata-db-app
-    sh build-metadata-db-for-container.sh
+    cd ../../cubby-app
+    sh build-cubby-for-container.sh &
 
-    cd ../search-app
-    sh build-search-app-for-container.sh
+    cd ../metadata-db-app
+    sh build-metadata-db-for-container.sh &
 
     cd ../access-control-app
-    sh build-access-control-for-container.sh
+    sh build-access-control-for-container.sh &
+
+    cd ../search-app
+    sh build-search-app-for-container.sh &
 
     cd ../bootstrap-app
-    sh build-bootstrap-for-container.sh
+    sh build-bootstrap-for-container.sh &
 
     cd ../virtual-product-app
-    sh build-virtual-product-for-container.sh
-
-    cd ../cubby-app
-    sh build-cubby-for-container.sh
+    sh build-virtual-product-for-container.sh &
 
     cd ../index-set-app
-    sh build-index-set-for-container.sh
+    sh build-index-set-for-container.sh &
 
     cd ../indexer-app
-    sh build-indexer-for-container.sh
+    sh build-indexer-for-container.sh &
 
     cd ../ingest-app
-    sh build-ingest-for-container.sh
+    sh build-ingest-for-container.sh &
 
     cd ../dev-system
 fi
