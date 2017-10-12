@@ -333,23 +333,23 @@
 (defn service-association-concept
   "Creates a service association concept"
   ([assoc-concept service uniq-num]
-  (service-association-concept assoc-concept service uniq-num {}))
+   (service-association-concept assoc-concept service uniq-num {}))
   ([assoc-concept service uniq-num attributes]
-  (let [{:keys [concept-id revision-id]} assoc-concept
-       service-concept-id (:concept-id service)
-       user-id (str "user" uniq-num)
-       native-id (string/join "/" [service-concept-id concept-id revision-id])
-       extra-fields (merge {:associated-concept-id concept-id
-                            :associated-revision-id revision-id
-                            :service-concept-id service-concept-id}
-                           (:extra-fields attributes))
-       attributes (merge {:user-id user-id
-                          :format "application/edn"
-                          :native-id native-id
-                          :extra-fields extra-fields}
-                         (dissoc attributes :extra-fields))]
-   ;; no provider-id should be specified for service associations
-   (dissoc (concept nil :service-association uniq-num attributes) :provider-id))))
+   (let [{:keys [concept-id revision-id]} assoc-concept
+         service-concept-id (:concept-id service)
+         user-id (str "user" uniq-num)
+         native-id (string/join "/" [service-concept-id concept-id revision-id])
+         extra-fields (merge {:associated-concept-id concept-id
+                              :associated-revision-id revision-id
+                              :service-concept-id service-concept-id}
+                             (:extra-fields attributes))
+         attributes (merge {:user-id user-id
+                            :format "application/edn"
+                            :native-id native-id
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     ;; no provider-id should be specified for service associations
+     (dissoc (concept nil :service-association uniq-num attributes) :provider-id))))
 
 (defn humanizer-concept
  "Creates a humanizer concept"
