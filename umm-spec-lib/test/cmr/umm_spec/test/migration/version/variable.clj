@@ -36,4 +36,4 @@
   (is (nil?
        (:Services
         (vm/migrate-umm {} :variable "1.1" "1.0"
-                        {:Services nil})))))
+                        {})))))

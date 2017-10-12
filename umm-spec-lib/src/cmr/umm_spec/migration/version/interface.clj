@@ -12,7 +12,8 @@
 (defmulti migrate-umm-version
   "Returns the given data structure of the indicated concept type and UMM
   version updated to conform to the target UMM schema version."
-  #'dispatch-migrate)
+  (fn [_context _concept concept-type source-version dest-version]
+   [concept-type source-version dest-version]))
 
 (defmethod migrate-umm-version :default
   [context concept & _]
