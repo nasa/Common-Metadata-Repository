@@ -678,8 +678,8 @@ curl -i -XPOST -H "Cmr-Pretty:true" -H "Content-Type: application/json" -H "Echo
 
 <?xml version="1.0" encoding="UTF-8"?
 <result>
-    <status200</status>
-    <task-id4</task-id>
+    <status>200</status>
+    <task-id>4</task-id>
 </result>
 ```
 
