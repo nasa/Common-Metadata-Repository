@@ -1,12 +1,13 @@
 (ns cmr.metadata-db.services.search-service
   "Contains functions for retrieving concepts using parameter search"
-  (:require [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.services.util :as db-util]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.services.messages :as msg]
-            [clojure.set :as set]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.util :as util]
+   [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.provider-service :as provider-service]
+   [cmr.metadata-db.services.util :as db-util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for find concepts
