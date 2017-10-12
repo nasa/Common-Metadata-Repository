@@ -350,15 +350,19 @@ Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
-  * tags, tag associations, variables, variable associations or humanizers with concept-id or native-id
-  * tag associations or variable associations with associated-concept-id, associated-revision-id
-  * services with concept-id or native-id
+  * humanizers with concept-id, native-id
+  * tags with concept-id, native-id
+  * tag associations with concept-id, native-id, tag-key, associated-concept-id, associated-revision-id
+  * services with concept-id, provider-id, native-id
+  * service associations with concept-id, service-concept-id, associated-concept-id, associated-revision-id
+  * variables with concept-id, provider-id, native-id
+  * variable associations with concept-id, native-id, variable-concept-id, associated-concept-id, associated-revision-id
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-title=et"
-curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&granule_ur=ur"
-curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native_id=id"
+curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&granule-ur=ur"
+curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native-id=id"
 curl "http://localhost:3001/concepts/search/tags"
 curl "http://localhost:3001/concepts/search/tag-associatons?associated-concept-id=C12-PROV1"
 ```
