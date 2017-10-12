@@ -361,7 +361,8 @@
         (is (= (set tags)
                (set (->> (util/find-latest-concepts :tag params)
                          :concepts
-                         (map #(dissoc % :provider-id :revision-date :transaction-id))))))
+                         (map #(dissoc % :provider-id :revision-date :transaction-id
+                                       :created-at))))))
         "with metadata"
         [tag1 tag2] {}
 
@@ -397,7 +398,8 @@
         (is (= (set tag-associations)
                (set (->> (util/find-latest-concepts :tag-association params)
                          :concepts
-                         (map #(dissoc % :provider-id :revision-date :transaction-id))))))
+                         (map #(dissoc % :provider-id :revision-date :transaction-id
+                                       :created-at))))))
 
         "by associated-concept-id"
         [tag-association1] {:associated-concept-id "C1200000000-REG_PROV"}
@@ -406,7 +408,8 @@
         [tag-association1 tag-association2] {}
 
         "exclude metadata"
-        [(dissoc tag-association1 :metadata) (dissoc tag-association2 :metadata)] {:exclude-metadata true}))
+        [(dissoc tag-association1 :metadata) (dissoc tag-association2 :metadata)]
+        {:exclude-metadata true}))
 
     (testing "find all revisions"
       (let [num-of-tag-associations (-> (util/find-concepts :tag-association {})
@@ -563,7 +566,8 @@
         (is (= (set variable-associations)
                (set (->> (util/find-latest-concepts :variable-association params)
                          :concepts
-                         (map #(dissoc % :provider-id :revision-date :transaction-id))))))
+                         (map #(dissoc % :provider-id :revision-date :transaction-id
+                                       :created-at))))))
 
         "by associated-concept-id"
         [var-association1]
