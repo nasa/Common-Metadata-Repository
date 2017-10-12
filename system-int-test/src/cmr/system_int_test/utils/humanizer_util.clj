@@ -85,7 +85,7 @@
             :deleted false
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date :transaction-id)))))
+           (dissoc concept :revision-date :transaction-id :created-at)))))
 
 (defn ingest-community-usage-metrics
   "Ingest sample metrics to use in tests"
