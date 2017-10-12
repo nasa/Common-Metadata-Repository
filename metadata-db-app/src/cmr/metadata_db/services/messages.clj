@@ -189,38 +189,46 @@
 (defn invalid-provider-id [provider-id]
   (format "%%s [%s] is invalid" provider-id))
 
-(defn tags-only-system-level [provider-id]
+(defn tags-only-system-level
+  [provider-id]
   (format "Tag could not be associated with provider [%s]. Tags are system level entities."
           provider-id))
 
-(defn tag-associations-only-system-level [provider-id]
+(defn tag-associations-only-system-level
+  [provider-id]
   (format (str "Tag association could not be associated with provider [%s]. Tag associations are "
                "system level entities.")
           provider-id))
 
-(defn humanizers-only-system-level [provider-id]
+(defn humanizers-only-system-level
+  [provider-id]
   (format "Humanizer could not be associated with provider [%s]. Humanizer is system level entity."
           provider-id))
 
-(defn services-only-system-level [provider-id]
+(defn services-only-system-level
+  [provider-id]
   (format "Service could not be associated with provider [%s]. Services are system level entities."
           provider-id))
 
-(defn variables-only-system-level [provider-id]
+(defn variables-only-system-level
+  [provider-id]
   (format "Variable could not be associated with provider [%s]. Variables are system level entities."
           provider-id))
 
-(defn variable-associations-only-system-level [provider-id]
+(defn variable-associations-only-system-level
+  [provider-id]
   (format (str "Variable association could not be associated with provider [%s]. "
                "Variable associations are system level entities.")
           provider-id))
 
-(defn service-associations-only-system-level [provider-id]
+(defn service-associations-only-system-level
+  [provider-id]
   (format (str "Service association could not be associated with provider [%s]. "
                "Service associations are system level entities.")
           provider-id))
 
-(defn concept-not-found [provider-id field-name field-value]
+(defn concept-not-found
+  [provider-id field-name field-value]
   (format "Unable to find saved concept for provider [%s] and %s [%s]"
           provider-id
           field-name
