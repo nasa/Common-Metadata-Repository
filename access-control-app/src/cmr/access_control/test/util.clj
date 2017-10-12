@@ -278,7 +278,7 @@
             :deleted false
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date :transaction-id :native-id)))))
+           (dissoc concept :revision-date :transaction-id :native-id :created-at)))))
 
 (defn assert-group-deleted
   "Checks that a group tombstone was persisted correctly in metadata db."
@@ -292,7 +292,7 @@
             :deleted true
             :concept-id concept-id
             :revision-id revision-id}
-           (dissoc concept :revision-date :transaction-id :native-id)))))
+           (dissoc concept :revision-date :transaction-id :native-id :created-at)))))
 
 (def sample-system-acl
   "A sample system ACL."
