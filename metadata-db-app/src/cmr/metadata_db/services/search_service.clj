@@ -26,7 +26,9 @@
    :humanizer #{:concept-id :native-id}
    :variable #{:provider-id :concept-id :native-id}
    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                           :variable-concept-id}})
+                           :variable-concept-id}
+   :service-association #{:concept-id :associated-concept-id :associated-revision-id
+                           :service-concept-id}})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
@@ -114,7 +116,7 @@
   [context params]
   (validate-find-params params)
   (cond
-    (contains? #{:tag :tag-association :acl :humanizer :variable-association}
+    (contains? #{:tag :tag-association :acl :humanizer :variable-association :service-association}
                (:concept-type params))
     (find-cmr-concepts context params)
 
