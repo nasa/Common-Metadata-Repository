@@ -7,6 +7,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -42,13 +43,13 @@
 
     ;; create variable associations
     ;; Variable1 is associated with coll1 and coll2
-    (vu/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}
+    (au/associate-by-concept-ids token variable1-concept-id [{:concept-id (:concept-id coll1)}
                                                              {:concept-id (:concept-id coll2)}])
     ;; Variable2 is associated with coll2 and coll3
-    (vu/associate-by-concept-ids token variable2-concept-id [{:concept-id (:concept-id coll2)}
+    (au/associate-by-concept-ids token variable2-concept-id [{:concept-id (:concept-id coll2)}
                                                              {:concept-id (:concept-id coll3)}])
     ;; SomeVariable is associated with coll4
-    (vu/associate-by-concept-ids token variable3-concept-id [{:concept-id (:concept-id coll4)}])
+    (au/associate-by-concept-ids token variable3-concept-id [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
 
     (testing "search collections by variables"

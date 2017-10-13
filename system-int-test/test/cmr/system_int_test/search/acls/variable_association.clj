@@ -8,6 +8,7 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -29,8 +30,8 @@
         {delete-token :token} (variable-util/setup-update-acl
                                (s/context) "PROV1" :delete)
         coll-concept-id (->> {:token update-token}
-                              (d/ingest "PROV1" (dc/collection))
-                              :concept-id)
+                             (d/ingest "PROV1" (dc/collection))
+                             :concept-id)
         var-concept (variable-util/make-variable-concept)
         {var-concept-id :concept-id} (variable-util/ingest-variable
                                       var-concept
@@ -38,7 +39,7 @@
     (index/wait-until-indexed)
     (testing "disallowed variable association responses"
       (are3 [token expected]
-        (let [response (variable-util/associate-by-concept-ids
+        (let [response (au/associate-by-concept-ids
                         token
                         var-concept-id
                         [{:concept-id coll-concept-id}])]
@@ -49,9 +50,9 @@
         guest-token 401
         "regular user denied"
         registered-token 401))
-     (testing "disallowed variable dissociation responses"
+    (testing "disallowed variable dissociation responses"
       (are3 [token expected]
-        (let [response (variable-util/dissociate-by-concept-ids
+        (let [response (au/dissociate-by-concept-ids
                         token
                         var-concept-id
                         [{:concept-id coll-concept-id}])]
@@ -66,13 +67,13 @@
         "regular user denied"
         registered-token 401))
     (testing "allowed variable association responses"
-      (let [response (variable-util/associate-by-concept-ids
+      (let [response (au/associate-by-concept-ids
                       create-token
                       var-concept-id
                       [{:concept-id coll-concept-id}])]
         (is (= 200 (:status response)))))
     (testing "allowed variable dissociation responses"
-      (let [response (variable-util/dissociate-by-concept-ids
+      (let [response (au/dissociate-by-concept-ids
                       delete-token
                       var-concept-id
                       [{:concept-id coll-concept-id}])]

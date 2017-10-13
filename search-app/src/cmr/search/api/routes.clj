@@ -21,6 +21,7 @@
    [cmr.search.api.community-usage-metrics :as metrics-api]
    [cmr.search.api.humanizer :as humanizers-api]
    [cmr.search.api.keyword :as keyword-api]
+   [cmr.search.api.services :as services-api]
    [cmr.search.api.tags :as tags-api]
    [cmr.search.api.variables :as variables-api]
 
@@ -375,6 +376,9 @@
 
         ;; Add routes for variable association
         variables-api/variable-api-routes
+
+         ;; Add routes for service association
+         services-api/service-api-routes
 
         ;; Add routes for humanizers
         humanizers-api/humanizers-routes

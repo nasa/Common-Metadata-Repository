@@ -12,6 +12,7 @@
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
@@ -92,13 +93,13 @@
                                             {:Name "Variable2"
                                              :LongName "Measurement2"})]
     ;; create variable associations
-    (variable-util/associate-by-concept-ids token
-                                            variable1-concept-id
-                                            [{:concept-id (:concept-id coll1)}
-                                             {:concept-id (:concept-id coll2)}])
-    (variable-util/associate-by-concept-ids token
-                                            variable2-concept-id
-                                            [{:concept-id (:concept-id coll2)}]))
+    (au/associate-by-concept-ids token
+                                 variable1-concept-id
+                                 [{:concept-id (:concept-id coll1)}
+                                  {:concept-id (:concept-id coll2)}])
+    (au/associate-by-concept-ids token
+                                 variable2-concept-id
+                                 [{:concept-id (:concept-id coll2)}]))
   (index/wait-until-indexed)
   (testing "No fields applied for facets"
     (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
@@ -655,57 +656,57 @@
     ;; Variable1 is associated with coll1 and coll2
     ;; Variable2 is associated with coll2 and coll3
     ;; SomeVariable is associated with coll4
-    (variable-util/associate-by-concept-ids token
-                                            variable1-concept-id
-                                            [{:concept-id (:concept-id coll1)}
-                                             {:concept-id (:concept-id coll2)}])
-    (variable-util/associate-by-concept-ids token
-                                            variable2-concept-id
-                                            [{:concept-id (:concept-id coll2)}
-                                             {:concept-id (:concept-id coll3)}])
-    (variable-util/associate-by-concept-ids token
-                                            variable3-concept-id
-                                            [{:concept-id (:concept-id coll4)}])
+    (au/associate-by-concept-ids token
+                                 variable1-concept-id
+                                 [{:concept-id (:concept-id coll1)}
+                                  {:concept-id (:concept-id coll2)}])
+    (au/associate-by-concept-ids token
+                                 variable2-concept-id
+                                 [{:concept-id (:concept-id coll2)}
+                                  {:concept-id (:concept-id coll3)}])
+    (au/associate-by-concept-ids token
+                                 variable3-concept-id
+                                 [{:concept-id (:concept-id coll4)}])
     (index/wait-until-indexed)
     (testing "variable facets are disabled by default")
+    (let [facets-result (search-and-return-v2-facets
+                         {:variables-h {:0 {:variable "Variable1"}}})]
+      (assert-facet-field-not-exist facets-result "Measurements" "Measurement1")
+      (assert-facet-field-not-exist facets-result "Measurements" "Measurement2"))
+    (testing "variable facets enabled")
+    (dev-sys-util/eval-in-dev-sys
+     `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
+       true))
+    ;; We only check the top level variables facet for convenience since the whole
+    ;; hierarchical structure of variables facet has been covered in all facets test.
+    (testing "search by variables param filters the other facets, but not variables facets"
       (let [facets-result (search-and-return-v2-facets
                            {:variables-h {:0 {:variable "Variable1"}}})]
-        (assert-facet-field-not-exist facets-result "Measurements" "Measurement1")
-        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2"))
-    (testing "variable facets enabled")
-      (dev-sys-util/eval-in-dev-sys
-       `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
-         true))
-      ;; We only check the top level variables facet for convenience since the whole
-      ;; hierarchical structure of variables facet has been covered in all facets test.
-      (testing "search by variables param filters the other facets, but not variables facets"
-        (let [facets-result (search-and-return-v2-facets
-                             {:variables-h {:0 {:variable "Variable1"}}})]
-          (assert-facet-field facets-result "Measurements" "Measurement1" 2)
-          (assert-facet-field facets-result "Measurements" "Measurement2" 3)
-          (assert-facet-field facets-result "Platforms" "P1" 1)
-          (assert-facet-field facets-result "Platforms" "P2" 1)
-          (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+        (assert-facet-field facets-result "Measurements" "Measurement1" 2)
+        (assert-facet-field facets-result "Measurements" "Measurement2" 3)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field facets-result "Platforms" "P2" 1)
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
 
-      (testing "search by both variables param and regular param"
-        (let [facets-result (search-and-return-v2-facets
-                             {:short-name "S1"
-                              :variables-h {:0 {:variable "Variable1"}}})]
-          (assert-facet-field facets-result "Measurements" "Measurement1" 1)
-          (assert-facet-field facets-result "Platforms" "P1" 1)
-          (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
-          (assert-facet-field-not-exist facets-result "Platforms" "P2")
-          (assert-facet-field-not-exist facets-result "Platforms" "P3")))
+    (testing "search by both variables param and regular param"
+      (let [facets-result (search-and-return-v2-facets
+                           {:short-name "S1"
+                            :variables-h {:0 {:variable "Variable1"}}})]
+        (assert-facet-field facets-result "Measurements" "Measurement1" 1)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P3")))
 
-      (testing "search by both variables param and another facet field param"
-        (let [facets-result (search-and-return-v2-facets
-                             {:platform-h "P1"
-                              :variables-h {:0 {:variable "Variable1"}}})]
-          (assert-facet-field facets-result "Measurements" "Measurement1" 1)
-          (assert-facet-field facets-result "Platforms" "P1" 1)
-          (assert-facet-field facets-result "Platforms" "P2" 1)
-          (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
-          (assert-facet-field-not-exist facets-result "Platforms" "P3"))))
+    (testing "search by both variables param and another facet field param"
+      (let [facets-result (search-and-return-v2-facets
+                           {:platform-h "P1"
+                            :variables-h {:0 {:variable "Variable1"}}})]
+        (assert-facet-field facets-result "Measurements" "Measurement1" 1)
+        (assert-facet-field facets-result "Platforms" "P1" 1)
+        (assert-facet-field facets-result "Platforms" "P2" 1)
+        (assert-facet-field-not-exist facets-result "Measurements" "Measurement2")
+        (assert-facet-field-not-exist facets-result "Platforms" "P3"))))
   (dev-sys-util/eval-in-dev-sys
    `(cmr.search.services.query-execution.facets.facets-v2-results-feature/set-include-variable-facets!
      false)))

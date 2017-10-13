@@ -9,6 +9,7 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -374,9 +375,9 @@
     ;; Now verify that after we delete a variable that has variable association,
     ;; we can't find it through search
     ;; create variable associations on variable2
-    (variables/associate-by-concept-ids token
-                                        (:concept-id variable2)
-                                        [{:concept-id (:concept-id coll1)}])
+    (au/associate-by-concept-ids token
+                                 (:concept-id variable2)
+                                 [{:concept-id (:concept-id coll1)}])
     ;; Delete variable2
     (ingest/delete-concept var2-concept {:token token})
     (index/wait-until-indexed)
@@ -418,8 +419,8 @@
       ;; index the collections so that they can be found during variable association
       (index/wait-until-indexed)
       ;; create variable associations
-      (variables/associate-by-concept-ids token variable1-concept-id variable1-assoc-colls)
-      (variables/associate-by-concept-ids token variable2-concept-id variable2-assoc-colls)
+      (au/associate-by-concept-ids token variable1-concept-id variable1-assoc-colls)
+      (au/associate-by-concept-ids token variable2-concept-id variable2-assoc-colls)
       (index/wait-until-indexed)
 
       ;; verify variable search UMM JSON response has associated collections

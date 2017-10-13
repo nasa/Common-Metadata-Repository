@@ -2,6 +2,7 @@
   "This contains functions for interacting with the variable API."
   (:require
    [cheshire.core :as json]
+   [cmr.common.concepts :as concepts]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.http-helper :as h]
@@ -18,14 +19,12 @@
   [conn variable-name]
   (str (variables-url conn) "/" variable-name))
 
-(defn- variable-associations-by-concept-ids-url
-  [conn variable-name]
-  (str (variable-url conn variable-name) "/associations"))
-
-;; This function is for the future when we add the associate collections to variables by query
-(defn- variable-associations-by-query-url
-  [conn variable-name]
-  (str (variable-associations-by-concept-ids-url conn variable-name) "/by_query"))
+(defn- associations-by-concept-ids-url
+  [conn concept-type concept-id]
+  (format "%s/%ss/%s/associations"
+          (conn/root-url conn)
+          (name concept-type)
+          concept-id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Ingest Request functions
@@ -46,16 +45,16 @@
 (defmulti variable-associations-url
   "Returns the url to associate a variable based on the association type.
   Valid association types are :query and :concept-ids."
-  (fn [context variable-name association-type]
-    association-type))
+  (fn [context concept-id]
+    (:concept-type (concepts/parse-concept-id concept-id))))
 
-(defmethod variable-associations-url :query
-  [context variable-name _]
-  (variable-associations-by-query-url context variable-name))
+(defmethod variable-associations-url :service
+  [context concept-id]
+  (associations-by-concept-ids-url context :service concept-id))
 
-(defmethod variable-associations-url :concept-ids
-  [context variable-name _]
-  (variable-associations-by-concept-ids-url context variable-name))
+(defmethod variable-associations-url :variable
+  [context concept-id]
+  (associations-by-concept-ids-url context :variable concept-id))
 
 (defn associate-variable
   "Sends a request to associate the variable with collections based on the given association type.
@@ -66,13 +65,13 @@
   * token - the user token to use when creating the token. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
-  ([association-type context variable-key content]
-   (associate-variable association-type context variable-key content nil))
-  ([association-type context variable-key content {:keys [raw? token http-options]}]
+  ([context variable-key content]
+   (associate-variable context variable-key content nil))
+  ([context variable-key content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
      (h/request context :search
-                {:url-fn #(variable-associations-url % variable-key association-type)
+                {:url-fn #(variable-associations-url % variable-key)
                  :method :post
                  :raw? raw?
                  :http-options (merge {:body (json/generate-string content)
@@ -90,13 +89,13 @@
   * token - the user token to use when creating the token. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
-  ([association-type context concept-id content]
+  ([context concept-id content]
    (dissociate-variable context concept-id content nil))
-  ([association-type context concept-id content {:keys [raw? token http-options]}]
+  ([context concept-id content {:keys [raw? token http-options]}]
    (let [token (or token (:token context))
          headers (when token {config/token-header token})]
      (h/request context :search
-                {:url-fn #(variable-associations-url % concept-id association-type)
+                {:url-fn #(variable-associations-url % concept-id)
                  :method :delete
                  :raw? raw?
                  :http-options (merge {:body (json/generate-string content)
