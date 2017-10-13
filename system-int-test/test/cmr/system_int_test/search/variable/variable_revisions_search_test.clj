@@ -8,6 +8,7 @@
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as metadata-db]
@@ -128,9 +129,9 @@
        [var1-2-tombstone var1-3 var2-1 var2-2 var3]
        (search/find-refs :variable {:all-revisions true}))
       ;; Associate a collection and variable
-      (variables/associate-by-concept-ids token
-                                          (:concept-id var1-3)
-                                          [{:concept-id (:concept-id coll1)}])
+      (au/associate-by-concept-ids token
+                                   (:concept-id var1-3)
+                                   [{:concept-id (:concept-id coll1)}])
       (index/wait-until-indexed)
       (let [expected-associations {:collections [{:concept-id (:concept-id coll1)}]}]
         (testing "associations to collections are captured in the variables all revisions endpoint"

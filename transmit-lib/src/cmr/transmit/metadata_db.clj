@@ -164,7 +164,7 @@
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
   excpetion, returns the status and error message in a map in case of error."
   [context params concept-type]
-  (let [{:keys [status body]} (find-concepts-raw context params concept-type)
+  (let [{:keys [status body]} (find-concepts-raw context (assoc params :latest true) concept-type)
         status (int status)]
     (case status
       200 (first (map mdb2/finish-parse-concept (json/decode body true)))

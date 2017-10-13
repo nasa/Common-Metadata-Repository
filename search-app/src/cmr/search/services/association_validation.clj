@@ -173,6 +173,46 @@
                    "please delete one of the conflicting variable associations.")
               variable-concept-id (:concept-id variable-association)))))
 
+(defmethod validate-association-conflict-for-collection :service
+  [context assoc-type service-concept-id service-association]
+  (let [vas (->> (mdb/find-concepts context
+                                    {:service-concept-id service-concept-id
+                                     :associated-concept-id (:concept-id service-association)
+                                     :exclude-metadata true
+                                     :latest true}
+                                    :service-association)
+                 (filter #(not (:deleted %))))
+        coll-revision-ids (map #(get-in % [:extra-fields :associated-revision-id]) vas)
+        not-nil-revision-ids (remove nil? coll-revision-ids)]
+    (cond
+      ;; there is no existing service association found, no need to validate
+      (= 0 (count coll-revision-ids))
+      nil
+
+      ;; there are existing service associations and they are all on collection revisions
+      (= (count coll-revision-ids) (count not-nil-revision-ids))
+      (when-not (:revision-id service-association)
+        (format (str "There are already service associations with service concept id [%s] on "
+                     "collection [%s] revision ids [%s], cannot create service association "
+                     "on the same collection without revision id.")
+                service-concept-id (:concept-id service-association) (string/join ", " coll-revision-ids)))
+
+      ;; there are existing service associations and they are all on collection without revision
+      (= 0 (count not-nil-revision-ids))
+      (when-let [revision-id (:revision-id service-association)]
+        (format (str "There are already service associations with service concept id [%s] on "
+                     "collection [%s] without revision id, cannot create service association "
+                     "on the same collection with revision id [%s].")
+                service-concept-id (:concept-id service-association) revision-id))
+
+      ;; there are conflicts within the existing service associations in metadata-db already
+      :else
+      (format (str "Service can only be associated with a collection or a collection revision, "
+                   "never both at the same time. There are already conflicting service associations "
+                   "in metadata-db with service concept id [%s] on collection [%s] , "
+                   "please delete one of the conflicting service associations.")
+              service-concept-id (:concept-id service-association)))))
+
 (defn- validate-association-conflict
   "Validates the association (either on a specific revision or over the whole collection)
   does not conflict with one or more existing associations in Metadata DB. Tag/Variable

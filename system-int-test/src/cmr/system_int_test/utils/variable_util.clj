@@ -2,7 +2,6 @@
   "This contains utilities for testing variables."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -12,9 +11,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.variable :as transmit-variable]
    [cmr.umm-spec.versioning :as versioning]))
 
@@ -125,90 +122,7 @@
   ([metadata-attrs attrs idx]
    (ingest-variable (make-variable-concept metadata-attrs attrs idx))))
 
-(defn- associate-variable
-  "Associate a variable with collections by the JSON condition.
-  Valid association types are :query and :concept-ids."
-  [association-type token variable-name condition options]
-  (let [options (merge {:raw? true :token token} options)
-        response (transmit-variable/associate-variable
-                  association-type (s/context) variable-name condition options)]
-    (index/wait-until-indexed)
-    (ingest-util/parse-map-response response)))
-
-(defn associate-by-query
-  "Associates a variable with collections found with a JSON query"
-  ([token variable-name condition]
-   (associate-by-query token variable-name condition nil))
-  ([token variable-name condition options]
-   (associate-variable :query token variable-name {:condition condition} options)))
-
-(defn associate-by-concept-ids
-  "Associates a variable with collections by collection concept ids"
-  ([token variable-name coll-concept-ids]
-   (associate-by-concept-ids token variable-name coll-concept-ids nil))
-  ([token variable-name coll-concept-ids options]
-   (associate-variable :concept-ids token variable-name coll-concept-ids options)))
-
-(defn- dissociate-variable
-  "Dissociates a variable with collections found with a JSON query"
-  [association-type token variable-name condition options]
-  (let [options (merge {:raw? true :token token} options)
-        response (transmit-variable/dissociate-variable
-                  association-type (s/context) variable-name condition options)]
-    (index/wait-until-indexed)
-    (ingest-util/parse-map-response response)))
-
-(defn dissociate-by-query
-  "Dissociates a variable with collections found with a JSON query"
-  ([token variable-name condition]
-   (dissociate-by-query token variable-name condition nil))
-  ([token variable-name condition options]
-   (dissociate-variable :query token variable-name {:condition condition} options)))
-
-(defn dissociate-by-concept-ids
-  "Dissociates a variable with collections by collection concept ids"
-  ([token variable-name coll-concept-ids]
-   (dissociate-by-concept-ids token variable-name coll-concept-ids nil))
-  ([token variable-name coll-concept-ids options]
-   (dissociate-variable :concept-ids token variable-name coll-concept-ids options)))
-
-(defn expected-concept
-  "Create an expected concept given a service, its concept-id, a revision-id,
-  and a user-id."
-  [variable concept-id revision-id user-id]
-  (let [native-id (string/lower-case (:Name variable))]
-    {:concept-type :variable
-     :native-id native-id
-     :provider-id "CMR"
-     ;; XXX The next two lines will change very soon, with the implementation
-     ;;     of CMR-4204.
-     :format mt/edn
-     :metadata (pr-str (assoc (util/kebab-case-data variable)
-                              :originator-id user-id
-                              :native-id native-id))
-     :user-id user-id
-     :deleted false
-     :concept-id concept-id
-     :revision-id revision-id}))
-
-(defn assert-variable-saved
-  "Checks that a variable was persisted correctly in metadata db. The variable should already
-   have originator id set correctly. The user-id indicates which user updated this revision."
-  [variable user-id concept-id revision-id]
-  (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= (expected-concept variable concept-id revision-id user-id)
-           (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
-
-(defn assert-variable-deleted
-  "Checks that a variable tombstone was persisted correctly in metadata db."
-  [variable user-id concept-id revision-id]
-  (let [concept (mdb/get-concept concept-id revision-id)]
-    (is (= (-> variable
-               (expected-concept concept-id revision-id user-id)
-               (assoc :metadata "" :deleted true))
-           (dissoc concept :revision-date :created-at :transaction-id :extra-fields)))))
-
-(def variable-names-in-expected-response
+(def ^:private variable-names-in-expected-response
   [:concept-id :revision-id :provider-id :native-id :deleted])
 
 (defn assert-variable-search
@@ -256,7 +170,7 @@
 (defn- coll-variable-association->expected-variable-association
   "Returns the expected variable association for the given collection concept id to
   variable association mapping, which is in the format of, e.g.
-  {[C1200000000-CMR 1] {:concept-id \"TA1200000005-CMR\" :revision-id 1}}."
+  {[C1200000000-CMR 1] {:concept-id \"VA1200000005-CMR\" :revision-id 1}}."
   [coll-variable-association error?]
   (let [[[coll-concept-id coll-revision-id] variable-association] coll-variable-association
         {:keys [concept-id revision-id]} variable-association
@@ -296,13 +210,6 @@
   "Assert the variable association response when status code is 200 is correct."
   [coll-variable-associations response]
   (assert-variable-association-response-ok? coll-variable-associations response false))
-
-(defn assert-invalid-data-error
-  "Assert variable association response when status code is 422 is correct"
-  [expected-errors response]
-  (let [{:keys [status body errors]} response]
-    (is (= [422 (set expected-errors)]
-           [status (set errors)]))))
 
 (defn assert-variable-associated-with-query
   "Assert the collections found by the variable query matches the given collection revisions"
