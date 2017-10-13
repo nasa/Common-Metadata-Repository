@@ -133,13 +133,12 @@
 (defn pfn-equality-failure
   [field-type concept]
   (let [humanized-field (validations/humanize-field field-type)]
-    (format (str "The provider id [%s] and %s [%s] combined must be "
-                 "unique for a given native-id [%s]. The following concept "
-                 "with the same provider id, %s, and native-id was found: [%s].")
+    (format (str "The Provider Id [%s] and %s [%s] combination must be "
+                 "unique for a given native-id. The following concept "
+                 "with the same Provider Id and %s was found: [%s].")
             (:provider-id concept)
             humanized-field
             (get-in concept [:extra-fields field-type])
-            (:native-id concept)
             humanized-field
             (:concept-id concept))))
 
