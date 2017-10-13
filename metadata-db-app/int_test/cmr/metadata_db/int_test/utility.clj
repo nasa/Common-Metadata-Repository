@@ -881,15 +881,13 @@
           (is (= nil (:revision-id response)))
           (is (= 409 (:status response)))
           (is (= 404 (:status find-response)))
-          (is (= [(format (str "The provider id [%s] and %s [%s] "
-                               "combined must be unique for a given native-id "
-                               "[%s]. The following concept with the same "
-                               "provider id, %s, and native-id was "
-                               "found: [%s].")
+          (is (= [(format (str "The Provider Id [%s] and %s [%s] "
+                               "combination must be unique for a given native-id. "
+                               "The following concept with the same "
+                               "Provider Id and %s was found: [%s].")
                           "PROV1"
                           humanized-field
                           (get-in concept1 [:extra-fields field-type])
-                          (:native-id concept1)
                           humanized-field
                           concept-id)]
                  (:errors response))))))))
