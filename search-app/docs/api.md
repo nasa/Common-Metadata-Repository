@@ -3118,7 +3118,7 @@ Content-Length: 292
 
 ### <a name="variable"></a> Variable
 
-Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service. Variable metadata is in JSON format and conforms to UMM-Var Schema.
+Variable is some of the measurement variables that belongs to collections/granules that can be processed by a service. Variable metadata is in JSON format and conforms to [UMM-Var Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable).
 
 #### <a name="searching-for-variables"></a> Searching for Variables
 
@@ -3456,7 +3456,7 @@ Status code 422 is returned when:
 
 ### <a name="service"></a> Service
 
-Service is operation that can be performed on collection/granule to produce higher level products or extract specific information of the data. Service metadata describes the resource locator information and service options of the service. It is in JSON format and conforms to UMM-S Schema.
+A service enables data to be accessed via a universal resource locator, and has options to enable a variety of transformations to be performed on the data, e.g. spatial, temporal, variable subsetting, reprojection or reformatting. Service metadata is in JSON format and conforms to [UMM-S Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/service).
 
 #### <a name="service-association"></a> Service Association
 
